@@ -1,6 +1,6 @@
-Remote Capture
+# Remote Capture
 
-Capture traffic on android devices and send the PCAP via UDP. No root privileges required.
+Capture traffic on Android devices and send the PCAP via UDP. No root privileges required.
 
 Features:
 
