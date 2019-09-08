@@ -38,3 +38,7 @@ socat -b 65535 - udp4-listen:1234 | tcpdump -w dump.pcap -r -
 
 Note: the `-b` option of `socat` is required as the default UDP buffer size of 8192 B
 of `nc` or `socat` is not enough to handle the encapsulated packets.
+
+## Building
+
+In order to build the app, you need to clone https://github.com/emanuele-f/zdtun beside the RemoteCapture directory
