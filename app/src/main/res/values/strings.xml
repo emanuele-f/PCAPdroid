@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Remote Capture</string>
+    <string name="pcap_collector_ip">Collector IP</string>
+    <string name="pcap_collector_port">Collector Port</string>
+    <string name="start_button">Start</string>
+    <string name="stop_button">Stop</string>
+</resources>
