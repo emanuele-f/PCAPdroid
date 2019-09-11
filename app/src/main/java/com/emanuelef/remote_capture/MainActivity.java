@@ -41,6 +41,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
+import cat.ereza.customactivityoncrash.config.CaocConfig;
+
 public class MainActivity extends AppCompatActivity {
     static final String PREF_COLLECTOR_IP_KEY = "collector_ip";
     static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
@@ -79,6 +81,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        CaocConfig.Builder.create()
+                .errorDrawable(R.drawable.ic_app_crash)
+                .apply();
+
         setContentView(R.layout.activity_main);
 
         TextWatcher start_button_enabler = new TextWatcher() {
