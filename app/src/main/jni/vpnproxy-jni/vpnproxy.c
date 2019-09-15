@@ -81,6 +81,7 @@ static u_int16_t ip_checksum(const void *buf, size_t hdr_len) {
 static u_int32_t getIPv4Pref(vpnproxy_data_t *proxy, const char *key) {
     JNIEnv *env = proxy->env;
     struct in_addr addr;
+    const char *value = NULL;
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
 
     jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, key, "()Ljava/lang/String;");
@@ -89,7 +90,8 @@ static u_int32_t getIPv4Pref(vpnproxy_data_t *proxy, const char *key) {
 
     jstring obj = (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod);
 
-    const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+    if(obj)
+        value = (*env)->GetStringUTFChars(env, obj, 0);
 
     if(!value)
         __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "%s() returned non-string", key);
@@ -98,8 +100,6 @@ static u_int32_t getIPv4Pref(vpnproxy_data_t *proxy, const char *key) {
 
     if(inet_aton(value, &addr) == 0)
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "%s() returned invalid address", key);
-
-    (*env)->ReleaseStringUTFChars(env, obj, value);
 
     return(addr.s_addr);
 }
@@ -151,6 +151,7 @@ static void protect_sock_callback(zdtun_t *tun, socket_t sock) {
 static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, size_t bufsize) {
     JNIEnv *env = proxy->env;
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
+    const char *value = NULL;
 
     jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "getApplicationByUid", "(I)Ljava/lang/String;");
     if(!midMethod)
@@ -158,7 +159,8 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
     jstring obj = (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod, uid);
 
-    const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+    if(obj)
+        value = (*env)->GetStringUTFChars(env, obj, 0);
 
     if(!value) {
         strncpy(buf, "???", bufsize);
@@ -168,8 +170,6 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
     strncpy(buf, value, bufsize);
     buf[bufsize-1] = '\0';
-
-    (*env)->ReleaseStringUTFChars(env, obj, value);
 
     return(buf);
 }
@@ -244,6 +244,8 @@ static int resolve_uid(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_
 
         if(uid == 0)
             strncpy(appbuf, "ROOT", sizeof(appbuf));
+        else if(uid == 1051)
+            strncpy(appbuf, "netd", sizeof(appbuf));
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
 
