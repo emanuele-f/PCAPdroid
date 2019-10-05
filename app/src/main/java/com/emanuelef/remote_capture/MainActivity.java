@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         mPrefs = getPreferences(Context.MODE_PRIVATE);
+        mFilterUid = -1;
         mUpdatePrefs = false;
 
         mAppList = findViewById(R.id.installed_app_list);
