@@ -127,6 +127,9 @@ public class MainActivity extends AppCompatActivity {
         mAppList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(CaptureService.isRunning())
+                    return;
+
                 if(mSelectedApp == view) {
                     // Deselect
                     mSelectedApp = null;
