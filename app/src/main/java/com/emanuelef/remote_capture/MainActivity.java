@@ -28,14 +28,16 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.VpnService;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -44,18 +46,11 @@ import java.util.List;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends AppCompatActivity {
-    static final String PREF_COLLECTOR_IP_KEY = "collector_ip";
-    static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
-    static final String PREF_UID_FILTER = "uid_filter";
-
     ListView mAppList;
     Button mStartButton;
-    EditText mCollectorIP;
-    EditText mCollectorPort;
     View mSelectedApp;
     int mFilterUid;
     SharedPreferences mPrefs;
-    boolean mUpdatePrefs;
 
     private static final int REQUECT_CODE_VPN = 2;
 
@@ -69,15 +64,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void recheckStartButton() {
-        if((mCollectorIP.getText().length() > 0) && (mCollectorPort.getText().length() > 0))
-            mStartButton.setEnabled(true);
-        else
-            mStartButton.setEnabled(false);
-
-        mUpdatePrefs = true;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,37 +74,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        TextWatcher start_button_enabler = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                recheckStartButton();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        };
-
-        mPrefs = getPreferences(Context.MODE_PRIVATE);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mFilterUid = -1;
-        mUpdatePrefs = false;
 
         mAppList = findViewById(R.id.installed_app_list);
         mStartButton = findViewById(R.id.button_start);
-        mCollectorIP = findViewById(R.id.pcap_collector_ip);
-        mCollectorPort = findViewById(R.id.pcap_collector_port);
-
-        mCollectorIP.setText(mPrefs.getString(PREF_COLLECTOR_IP_KEY, ""));
-        mCollectorIP.addTextChangedListener(start_button_enabler);
-
-        mCollectorPort.setText(String.valueOf(mPrefs.getInt(PREF_COLLECTOR_PORT_KEY, 1234)));
-        mCollectorPort.addTextChangedListener(start_button_enabler);
 
         List<AppDescriptor> installedApps = getInstalledApps();
         AppAdapter installedAppAdapter = new AppAdapter(MainActivity.this, installedApps);
@@ -149,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateConnectStatus(CaptureService.isRunning());
-        recheckStartButton();
 
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,17 +127,26 @@ public class MainActivity extends AppCompatActivity {
                     }
                     updateConnectStatus(true);
                 }
-
-                if(mUpdatePrefs) {
-                    SharedPreferences.Editor editor = mPrefs.edit();
-                    editor.putString(PREF_COLLECTOR_IP_KEY, mCollectorIP.getText().toString());
-                    editor.putInt(PREF_COLLECTOR_PORT_KEY, Integer.parseInt(mCollectorPort.getText().toString()));
-                    editor.apply();
-
-                    mUpdatePrefs = false;
-                }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.settings_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -191,9 +159,9 @@ public class MainActivity extends AppCompatActivity {
 
             // the configuration for the VPN
             bundle.putString("dns_server", "8.8.8.8"); // TODO: read system DNS
-            bundle.putString(PREF_COLLECTOR_IP_KEY, mCollectorIP.getText().toString());
-            bundle.putInt(PREF_COLLECTOR_PORT_KEY, Integer.parseInt(mCollectorPort.getText().toString()));
-            bundle.putInt(PREF_UID_FILTER, mFilterUid);
+            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, mPrefs.getString(Prefs.PREF_COLLECTOR_IP_KEY, getString(R.string.default_collector_ip)));
+            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port))));
+            bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
             intent.putExtra("settings", bundle);
 
             Log.d("Main", "onActivityResult -> start CaptureService");

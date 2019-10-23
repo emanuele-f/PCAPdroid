@@ -7,46 +7,10 @@
     android:orientation="vertical"
     tools:context="com.emanuelef.remote_capture.MainActivity">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/pcap_collector_ip"
-            android:text="@string/pcap_collector_ip"/>
-
-        <EditText
-            android:id="@+id/pcap_collector_ip"
-            android:inputType="number|numberDecimal"
-            android:digits="0123456789."
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/pcap_collector_port"
-            android:text="@string/pcap_collector_port"/>
-
-        <EditText
-            android:id="@+id/pcap_collector_port"
-            android:inputType="number|numberDecimal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
-
     <Button
         android:id="@+id/button_start"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:enabled="false"
         android:text="@string/start_button" />
 
     <ListView

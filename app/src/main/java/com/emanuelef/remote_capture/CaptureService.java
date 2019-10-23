@@ -73,9 +73,9 @@ public class CaptureService extends VpnService implements Runnable {
         public_dns = settings.getString("dns_server");
         vpn_dns = "10.215.173.2";
         vpn_ipv4 = "10.215.173.1";
-        collector_address = settings.getString(MainActivity.PREF_COLLECTOR_IP_KEY);
-        collector_port = settings.getInt(MainActivity.PREF_COLLECTOR_PORT_KEY);;
-        uid_filter = settings.getInt(MainActivity.PREF_UID_FILTER);
+        collector_address = settings.getString(Prefs.PREF_COLLECTOR_IP_KEY);
+        collector_port = settings.getInt(Prefs.PREF_COLLECTOR_PORT_KEY);;
+        uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
 
         // VPN
         /* In order to see the DNS packets into the VPN we must set an internal address as the DNS

@@ -1,7 +1,15 @@
 <resources>
     <string name="app_name">Remote Capture</string>
-    <string name="pcap_collector_ip">Collector IP</string>
-    <string name="pcap_collector_port">Collector Port</string>
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Defaults -->
+    <string name="default_collector_ip">127.0.0.1</string>
+    <string name="default_collector_port">1234</string>
+
+    <!-- Preferences -->
+    <string name="collector_prefs_header">Remote Collector</string>
+    <string name="ip_address">IP Address</string>
+    <string name="port">Port</string>
 </resources>
