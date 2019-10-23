@@ -13,9 +13,4 @@
         android:layout_height="wrap_content"
         android:text="@string/start_button" />
 
-    <ListView
-        android:id="@+id/installed_app_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
 </LinearLayout>

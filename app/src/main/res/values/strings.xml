@@ -3,6 +3,7 @@
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="no_filter">No Filter</string>
 
     <!-- Defaults -->
     <string name="default_collector_ip">127.0.0.1</string>
@@ -12,4 +13,5 @@
     <string name="collector_prefs_header">Remote Collector</string>
     <string name="ip_address">IP Address</string>
     <string name="port">Port</string>
+    <string name="app_filter">App Filter</string>
 </resources>

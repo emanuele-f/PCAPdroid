@@ -19,14 +19,11 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.VpnService;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
@@ -36,21 +33,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends AppCompatActivity {
-    ListView mAppList;
     Button mStartButton;
-    View mSelectedApp;
-    int mFilterUid;
     SharedPreferences mPrefs;
+    Menu mMenu;
+    int mFilterUid;
 
     private static final int REQUECT_CODE_VPN = 2;
 
@@ -68,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mFilterUid = -1;
+
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
                 .apply();
@@ -75,38 +68,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mFilterUid = -1;
-
-        mAppList = findViewById(R.id.installed_app_list);
         mStartButton = findViewById(R.id.button_start);
-
-        List<AppDescriptor> installedApps = getInstalledApps();
-        AppAdapter installedAppAdapter = new AppAdapter(MainActivity.this, installedApps);
-        //mAppList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-        mAppList.setAdapter(installedAppAdapter);
-        mAppList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(CaptureService.isRunning())
-                    return;
-
-                if(mSelectedApp == view) {
-                    // Deselect
-                    mSelectedApp = null;
-                    mFilterUid = -1;
-                    view.setBackgroundColor(Color.TRANSPARENT);
-                } else {
-                    if(mSelectedApp != null)
-                        mSelectedApp.setBackgroundColor(Color.TRANSPARENT);
-
-                    view.setBackgroundColor(Color.LTGRAY);
-                    mSelectedApp = view;
-                    mFilterUid = ((AppDescriptor) mAppList.getAdapter().getItem(i)).getUid();
-                }
-
-                Log.w("Main", "App filter: " + mFilterUid);
-            }
-        });
 
         updateConnectStatus(CaptureService.isRunning());
 
@@ -135,7 +97,30 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.settings_menu, menu);
+        mMenu = menu;
         return true;
+    }
+
+    private void openAppSelector() {
+        AppsView apps = new AppsView(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.app_filter);
+        builder.setView(apps);
+
+        final AlertDialog alert = builder.create();
+
+        apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
+            @Override
+            public void onSelectedApp(AppDescriptor app) {
+                mFilterUid = app.getUid();
+                mMenu.getItem(0).setIcon(app.getIcon());
+
+                // dismiss the dialog
+                alert.cancel();
+            }
+        });
+
+        alert.show();
     }
 
     @Override
@@ -144,6 +129,9 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
+            return true;
+        } else if(id == R.id.action_show_app_filter) {
+            openAppSelector();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -168,23 +156,5 @@ public class MainActivity extends AppCompatActivity {
 
             startService(intent);
         }
-    }
-
-    private List<AppDescriptor> getInstalledApps() {
-        List<AppDescriptor> apps = new ArrayList<>();
-        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
-
-        for (int i = 0; i < packs.size(); i++) {
-            PackageInfo p = packs.get(i);
-
-            if((p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                String appName = p.applicationInfo.loadLabel(getPackageManager()).toString();
-                Drawable icon = p.applicationInfo.loadIcon(getPackageManager());
-                String packages = p.applicationInfo.packageName;
-                int uid = p.applicationInfo.uid;
-                apps.add(new AppDescriptor(appName, icon, packages, uid));
-            }
-        }
-        return apps;
     }
 }
