@@ -2,15 +2,16 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
 // TODO add searchbar
 // https://stackoverflow.com/questions/31085086/how-to-implement-floating-searchwidget-android
 
-class AppsView extends ListView {
+class AppsView extends RecyclerView {
     List<AppDescriptor> mInstalledApps;
 
     public interface OnSelectedAppListener {
@@ -21,18 +22,20 @@ class AppsView extends ListView {
         super(context);
 
         mInstalledApps = installedApps;
-        AppAdapter installedAppAdapter = new AppAdapter(getContext(), mInstalledApps);
-
-        setAdapter(installedAppAdapter);
+        setLayoutManager(new LinearLayoutManager(context));
+        setHasFixedSize(true);
     }
 
     public void setSelectedAppListener(final OnSelectedAppListener listener) {
-        setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        AppAdapter installedAppAdapter = new AppAdapter(getContext(), mInstalledApps, new OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                AppDescriptor app = ((AppDescriptor) getAdapter().getItem(i));
+            public void onClick(View view) {
+                int itemPosition = getChildLayoutPosition(view);
+                AppDescriptor app = mInstalledApps.get(itemPosition);
                 listener.onSelectedApp(app);
             }
         });
+
+        setAdapter(installedAppAdapter);
     }
 }

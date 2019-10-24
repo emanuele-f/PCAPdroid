@@ -160,19 +160,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
 
+        mOpenAppsWhenDone = false;
+
         AppsView apps = new AppsView(this, mInstalledApps);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.app_filter);
         builder.setView(apps);
-        mOpenAppsWhenDone = false;
-
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
             @Override
             public void onSelectedApp(AppDescriptor app) {
                 mFilterUid = app.getUid();
-                mMenu.getItem(0).setIcon(app.getIcon());
+                // clone the drawable to avoid a "zoom-in" effect when clicked
+                mMenu.getItem(0).setIcon(app.getIcon().getConstantState().newDrawable());
 
                 // dismiss the dialog
                 alert.cancel();

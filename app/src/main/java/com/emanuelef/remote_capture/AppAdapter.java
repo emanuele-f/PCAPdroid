@@ -23,61 +23,58 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
-public class AppAdapter extends BaseAdapter {
+public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
     private LayoutInflater layoutInflater;
     private List<AppDescriptor> listStorage;
+    private View.OnClickListener mListener;
 
-    AppAdapter(Context context, List<AppDescriptor> customizedListView) {
-        layoutInflater =(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    AppAdapter(Context context, List<AppDescriptor> customizedListView, final View.OnClickListener listener) {
+        layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         listStorage = customizedListView;
+        mListener = listener;
+    }
+
+    @NonNull
+    @Override
+    public AppAdapter.AppViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.installed_app_list, parent, false);
+        AppViewHolder recyclerViewHolder = new AppViewHolder(view);
+        view.setOnClickListener(mListener);
+
+        return(recyclerViewHolder);
     }
 
     @Override
-    public int getCount() {
+    public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {
+        holder.textInListView.setText(listStorage.get(position).getName());
+        holder.imageInListView.setImageDrawable(listStorage.get(position).getIcon());
+        holder.packageInListView.setText(listStorage.get(position).getPackages());
+    }
+
+    @Override
+    public int getItemCount() {
         return listStorage.size();
     }
 
-    @Override
-    public Object getItem(int position) {
-        return listStorage.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        ViewHolder listViewHolder;
-        if(convertView == null){
-            listViewHolder = new ViewHolder();
-            convertView = layoutInflater.inflate(R.layout.installed_app_list, parent, false);
-
-            listViewHolder.textInListView = convertView.findViewById(R.id.list_app_name);
-            listViewHolder.imageInListView = convertView.findViewById(R.id.app_icon);
-            listViewHolder.packageInListView= convertView.findViewById(R.id.app_package);
-            convertView.setTag(listViewHolder);
-        }else{
-            listViewHolder = (ViewHolder)convertView.getTag();
-        }
-        listViewHolder.textInListView.setText(listStorage.get(position).getName());
-        listViewHolder.imageInListView.setImageDrawable(listStorage.get(position).getIcon());
-        listViewHolder.packageInListView.setText(listStorage.get(position).getPackages());
-
-        return convertView;
-    }
-
-    class ViewHolder{
+    public static class AppViewHolder extends RecyclerView.ViewHolder {
         TextView textInListView;
         ImageView imageInListView;
         TextView packageInListView;
+
+        public AppViewHolder(View view) {
+            super(view);
+
+            textInListView = view.findViewById(R.id.list_app_name);
+            imageInListView = view.findViewById(R.id.app_icon);
+            packageInListView= view.findViewById(R.id.app_package);
+        }
     }
 }
