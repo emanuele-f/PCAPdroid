@@ -21,10 +21,19 @@ package com.emanuelef.remote_capture;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.VpnService;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import androidx.preference.PreferenceManager;
 
 import android.os.Bundle;
@@ -35,15 +44,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
     Button mStartButton;
     SharedPreferences mPrefs;
     Menu mMenu;
     int mFilterUid;
+    boolean mOpenAppsWhenDone;
+    List<AppDescriptor> mInstalledApps;
 
-    private static final int REQUECT_CODE_VPN = 2;
+    private static final int REQUEST_CODE_VPN = 2;
+    public static final int OPERATION_SEARCH_LOADER = 23;
 
     private void updateConnectStatus(boolean is_running) {
         if(is_running) {
@@ -60,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         mFilterUid = -1;
+        mOpenAppsWhenDone = false;
+        mInstalledApps = null;
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -83,14 +100,49 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
                     if (vpnPrepareIntent != null) {
-                        startActivityForResult(vpnPrepareIntent, REQUECT_CODE_VPN);
+                        startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
                     } else {
-                        onActivityResult(REQUECT_CODE_VPN, RESULT_OK, null);
+                        onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
                     }
                     updateConnectStatus(true);
                 }
             }
         });
+
+        startLoadingApps();
+    }
+
+    private void startLoadingApps() {
+        LoaderManager lm = LoaderManager.getInstance(this);
+        Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
+
+        if(loader==null) {
+            loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
+            loader.forceLoad();
+        } else
+            lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
+    }
+
+    private List<AppDescriptor> getInstalledApps() {
+        PackageManager pm = getPackageManager();
+        List<AppDescriptor> apps = new ArrayList<>();
+        List<PackageInfo> packs = pm.getInstalledPackages(0);
+
+        // Add the "No Filter" app
+        apps.add(new AppDescriptor("", getResources().getDrawable(android.R.drawable.ic_menu_view), getResources().getString(R.string.no_filter), -1));
+
+        for (int i = 0; i < packs.size(); i++) {
+            PackageInfo p = packs.get(i);
+
+            if((p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                String appName = p.applicationInfo.loadLabel(pm).toString();
+                Drawable icon = p.applicationInfo.loadIcon(pm);
+                String packages = p.applicationInfo.packageName;
+                int uid = p.applicationInfo.uid;
+                apps.add(new AppDescriptor(appName, icon, packages, uid));
+            }
+        }
+        return apps;
     }
 
     @Override
@@ -102,10 +154,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openAppSelector() {
-        AppsView apps = new AppsView(this);
+        if(mInstalledApps == null) {
+            /* The applications loader has not finished yet. */
+            mOpenAppsWhenDone = true;
+            return;
+        }
+
+        AppsView apps = new AppsView(this, mInstalledApps);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.app_filter);
         builder.setView(apps);
+        mOpenAppsWhenDone = false;
 
         final AlertDialog alert = builder.create();
 
@@ -141,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQUECT_CODE_VPN && resultCode == RESULT_OK) {
+        if(requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
             Intent intent = new Intent(MainActivity.this, CaptureService.class);
             Bundle bundle = new Bundle();
 
@@ -156,5 +215,33 @@ public class MainActivity extends AppCompatActivity {
 
             startService(intent);
         }
+    }
+
+    @NonNull
+    @Override
+    public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new AsyncTaskLoader<List<AppDescriptor>>(this) {
+
+            @Nullable
+            @Override
+            public List<AppDescriptor> loadInBackground() {
+                Log.d("AppsLoader", "Loading APPs...");
+                return getInstalledApps();
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
+        Log.d("AppsLoader", data.size() + " APPs loaded");
+        mInstalledApps = data;
+
+        if(mOpenAppsWhenDone)
+            openAppSelector();
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {
+
     }
 }
