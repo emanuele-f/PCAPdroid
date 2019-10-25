@@ -193,6 +193,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String packages = p.applicationInfo.packageName;
                 int uid = p.applicationInfo.uid;
                 apps.add(new AppDescriptor(appName, icon, packages, uid));
+
+                Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
             }
         }
         return apps;
@@ -319,12 +321,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void processStatsUpdateIntent(Intent intent) {
-        long bytes_sent  = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
-        long bytes_rcvd= intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
+        long bytes_sent = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
+        long bytes_rcvd = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
         int pkts_sent = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_PKTS, 0);
         int pkts_rcvd = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_PKTS, 0);
 
-        Log.w("MainReceiver", "Got StatsUpdate: bytes_sent=" + bytes_sent + ", bytes_rcvd=" +
+        Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + bytes_sent + ", bytes_rcvd=" +
                 bytes_rcvd + ", pkts_sent=" + pkts_sent + ", pkts_rcvd=" + pkts_rcvd);
 
         mCaptureStatus.setText(formatBytes(bytes_sent + bytes_rcvd));

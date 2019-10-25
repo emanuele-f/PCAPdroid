@@ -179,7 +179,8 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
 static int dumper_socket = -1;
 
-static void process_packet_info(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info, struct vpnproxy_data *proxy) {
+static void process_packet_info(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info,
+        struct vpnproxy_data *proxy) {
     struct sockaddr_in servaddr = {0};
     bool send_header = false;
     int uid = (int)conn_info->user_data;
@@ -193,17 +194,18 @@ static void process_packet_info(char *packet, size_t size, bool from_tap, const 
 
     if((proxy->pcap_dump.uid_filter != -1) &&
         (uid != -1) && /* Always capture unknown-uid flows */
+        (uid != 1051) && /* Always capture netd DNS resolver flows as we don't know we requested them */
         (proxy->pcap_dump.uid_filter != uid)) {
-        //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d", uid);
+        //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d [filter=%d]", uid, proxy->pcap_dump.uid_filter);
         return;
     }
 
     if(from_tap) {
-        proxy->capture_stats.rcvd_pkts++;
-        proxy->capture_stats.rcvd_bytes += size;
-    } else {
         proxy->capture_stats.sent_pkts++;
         proxy->capture_stats.sent_bytes += size;
+    } else {
+        proxy->capture_stats.rcvd_pkts++;
+        proxy->capture_stats.rcvd_bytes += size;
     }
 
     /* New stats to notify */
@@ -269,7 +271,7 @@ static int resolve_uid(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_
         addr.s_addr = conn_info->dst_ip;
         strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
 
-        __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "[proto=%d]: %s:%u -> %s:%u [%d/%s]",
+        __android_log_print(ANDROID_LOG_INFO, VPN_TAG, "[proto=%d]: %s:%u -> %s:%u [%d/%s]",
                             conn_info->ipproto,
                             srcip, ntohs(conn_info->src_port),
                             dstip, ntohs(conn_info->dst_port),
@@ -340,7 +342,7 @@ static int check_dns(struct vpnproxy_data *proxy, char *packet, size_t size, boo
             return(0);
     }
 
-    //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Detected DNS[%u] query=%u", dns_length, query);
+    __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Detected DNS[%u] query=%u", dns_length, query);
 
     if(query) {
         /*
@@ -492,11 +494,17 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
             if(size > 0) {
                 zdtun_conn_t conn_info;
+                int rc;
+
                 proxy.dns_changed = check_dns(&proxy, buffer, size, 1 /* query */) != 0;
 
-                zdtun_forward(tun, buffer, size, &conn_info);
-
-                process_packet_info(buffer, size, true, &conn_info, &proxy);
+                /* Forward the packet and retrieve connection information
+                 * The uid userdata will be set in on_connection_open. */
+                if((rc = zdtun_forward(tun, buffer, size, &conn_info)) == 0)
+                    process_packet_info(buffer, size, true, &conn_info, &proxy);
+                else
+                    /* NOTE: rc -1 is currently returned for unhandled non-IPv4 flows */
+                    __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "zdtun_forward failed with code %d", rc);
             } else if (size < 0)
                 __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "recv(tapfd) returned error [%d]: %s", errno, strerror(errno));
         } else

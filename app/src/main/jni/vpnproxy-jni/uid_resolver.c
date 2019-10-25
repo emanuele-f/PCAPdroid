@@ -301,8 +301,12 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
 /* ******************************************************* */
 
 jint get_uid(struct vpnproxy_data *proxy, const zdtun_conn_t *conn_info) {
+    // TODO test the get_uid_q
+#if 0
     if (proxy->sdk <= 28) // Android 9 Pie
         return(get_uid_slow(proxy, conn_info));
     else
         return(get_uid_q(proxy, conn_info));
+#endif
+    return(get_uid_slow(proxy, conn_info));
 }
