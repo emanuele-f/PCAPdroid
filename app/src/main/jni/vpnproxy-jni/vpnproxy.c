@@ -178,11 +178,11 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 /* ******************************************************* */
 
 static int dumper_socket = -1;
+static bool send_header = true;
 
 static void process_packet_info(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info,
         struct vpnproxy_data *proxy) {
     struct sockaddr_in servaddr = {0};
-    bool send_header = false;
     int uid = (int)conn_info->user_data;
 
 #if 0
@@ -211,28 +211,18 @@ static void process_packet_info(char *packet, size_t size, bool from_tap, const 
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
-    if(!proxy->pcap_dump.enabled)
+    if(dumper_socket <= 0)
         return;
 
 #if 1
-    if(dumper_socket <= 0) {
-        dumper_socket = socket(AF_INET, SOCK_DGRAM, 0);
-
-        if(!dumper_socket) {
-            __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "could not open UDP pcap dump socket [%d]: %s", errno, strerror(errno));
-            return;
-        }
-
-        protect_sock(proxy, dumper_socket);
-        send_header = true;
-    }
-
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = proxy->pcap_dump.collector_port;
     servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
 
-    if(send_header)
-        write_pcap_hdr(dumper_socket, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    if(send_header) {
+        write_pcap_hdr(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr));
+        send_header = false;
+    }
 
     write_pcap_rec(dumper_socket, (struct sockaddr *)&servaddr, sizeof(servaddr), (u_int8_t*)packet, size);
 #endif
@@ -417,6 +407,39 @@ static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
 
 /* ******************************************************* */
 
+static int connect_dumper(vpnproxy_data_t *proxy) {
+    if(proxy->pcap_dump.enabled) {
+        dumper_socket = socket(AF_INET, proxy->pcap_dump.tcp_socket ? SOCK_STREAM : SOCK_DGRAM, 0);
+
+        if (!dumper_socket) {
+            __android_log_print(ANDROID_LOG_ERROR, VPN_TAG,
+                                "could not open UDP pcap dump socket [%d]: %s", errno,
+                                strerror(errno));
+            return(-1);
+        }
+
+        protect_sock(proxy, dumper_socket);
+
+        if(proxy->pcap_dump.tcp_socket) {
+            struct sockaddr_in servaddr = {0};
+            servaddr.sin_family = AF_INET;
+            servaddr.sin_port = proxy->pcap_dump.collector_port;
+            servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
+
+            if(connect(dumper_socket, &servaddr, sizeof(servaddr)) < 0) {
+                __android_log_print(ANDROID_LOG_ERROR, VPN_TAG,
+                                    "connection to the PCAP receiver failed [%d]: %s", errno,
+                                    strerror(errno));
+                return(-2);
+            }
+        }
+    }
+
+    return(0);
+}
+
+/* ******************************************************* */
+
 static int running = 0;
 
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
@@ -435,6 +458,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 .collector_addr = getIPv4Pref(&proxy, "getPcapCollectorAddress"),
                 .collector_port = htons(getIntPref(&proxy, "getPcapCollectorPort")),
                 .uid_filter = getIntPref(&proxy, "getPcapUidFilter"),
+                .tcp_socket = false,
                 .enabled = true,
             },
     };
@@ -465,6 +489,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Starting packet loop [tapfd=%d]", tapfd);
 
     notifyServiceStatus(&proxy, "started");
+
+    if(proxy.pcap_dump.enabled) {
+        if(connect_dumper(&proxy) < 0)
+            running = false;
+    }
 
     while(running) {
         int max_fd;
@@ -522,7 +551,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     ztdun_finalize(tun);
 
-    if(dumper_socket) {
+    if(dumper_socket > 0) {
         close(dumper_socket);
         dumper_socket = -1;
     }

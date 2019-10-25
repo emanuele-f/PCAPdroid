@@ -120,8 +120,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } else {
                     Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
                     if (vpnPrepareIntent != null) {
-                        startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
                         mStartButton.setEnabled(false);
+                        startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
                     } else {
                         onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
                     }
@@ -152,10 +152,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 if(status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
                     mCaptureStatus.setText(formatBytes(0));
                     mStartButton.setEnabled(true);
+                    updateConnectStatus(true);
                 } else if(status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                     mCaptureStatus.setText(R.string.ready);
                     mStartButton.setEnabled(true);
                     mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+                    updateConnectStatus(false);
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
