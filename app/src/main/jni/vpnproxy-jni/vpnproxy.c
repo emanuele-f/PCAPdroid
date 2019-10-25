@@ -23,6 +23,7 @@
 #include "pcap.h"
 
 #define VPN_TAG "VPNProxy"
+#define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 
 /* ******************************************************* */
 
@@ -178,7 +179,7 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
 static int dumper_socket = -1;
 
-static void dump_packet_to_udp(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info, struct vpnproxy_data *proxy) {
+static void process_packet_info(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info, struct vpnproxy_data *proxy) {
     struct sockaddr_in servaddr = {0};
     bool send_header = false;
     int uid = (int)conn_info->user_data;
@@ -196,6 +197,20 @@ static void dump_packet_to_udp(char *packet, size_t size, bool from_tap, const z
         //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d", uid);
         return;
     }
+
+    if(from_tap) {
+        proxy->capture_stats.rcvd_pkts++;
+        proxy->capture_stats.rcvd_bytes += size;
+    } else {
+        proxy->capture_stats.sent_pkts++;
+        proxy->capture_stats.sent_bytes += size;
+    }
+
+    /* New stats to notify */
+    proxy->capture_stats.new_stats = true;
+
+    if(!proxy->pcap_dump.enabled)
+        return;
 
 #if 1
     if(dumper_socket <= 0) {
@@ -355,12 +370,47 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, ssize_t pkt_size, const zdtun_co
 
     check_dns(proxy, pkt_buf, pkt_size, 0 /* reply */);
 
-    if(proxy->pcap_dump.enabled)
-        dump_packet_to_udp(pkt_buf, pkt_size, false, conn_info, proxy);
+    process_packet_info(pkt_buf, pkt_size, false, conn_info, proxy);
 
     // TODO return value check
     write(proxy->tapfd, pkt_buf, pkt_size);
     return 0;
+}
+
+/* ******************************************************* */
+
+static void sendCaptureStats(vpnproxy_data_t *proxy) {
+    JNIEnv *env = proxy->env;
+    capture_stats_t *stats = &proxy->capture_stats;
+    jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
+    const char *value = NULL;
+
+    jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "sendCaptureStats", "(JJII)V");
+    if(!midMethod)
+        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(sendCaptureStats) failed");
+
+    (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod, stats->sent_bytes, stats->rcvd_bytes,
+            stats->sent_pkts, stats->rcvd_pkts);
+}
+
+/* ******************************************************* */
+
+static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
+    JNIEnv *env = proxy->env;
+    capture_stats_t *stats = &proxy->capture_stats;
+    jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
+    const char *value = NULL;
+    jstring status_str;
+
+    jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "sendServiceStatus", "(Ljava/lang/String;)V");
+    if(!midMethod)
+        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(sendServiceStatus) failed");
+
+    status_str = (*env)->NewStringUTF(env, status);
+
+    (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod, status_str);
+
+    (*env)->DeleteLocalRef(env, status_str);
 }
 
 /* ******************************************************* */
@@ -412,39 +462,52 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Starting packet loop [tapfd=%d]", tapfd);
 
-    // TODO wake via select event
+    notifyServiceStatus(&proxy, "started");
+
     while(running) {
         int max_fd;
         fd_set fdset;
         fd_set wrfds;
         ssize_t size;
+        u_int64_t now_ms;
+        struct timeval now_tv;
+        struct timeval timeout = {.tv_sec = 0, .tv_usec = 500*1000}; // wake every 500 ms
 
         zdtun_fds(tun, &max_fd, &fdset, &wrfds);
 
         FD_SET(tapfd, &fdset);
         max_fd = max(max_fd, tapfd);
 
-        select(max_fd + 1, &fdset, &wrfds, NULL, NULL);
+        select(max_fd + 1, &fdset, &wrfds, NULL, &timeout);
 
         if(!running)
             break;
 
+        gettimeofday(&now_tv, NULL);
+        now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+
         if(FD_ISSET(tapfd, &fdset)) {
             /* Packet from VPN */
             size = read(tapfd, buffer, sizeof(buffer));
-            const zdtun_conn_t conn_info;
 
             if(size > 0) {
+                zdtun_conn_t conn_info;
                 proxy.dns_changed = check_dns(&proxy, buffer, size, 1 /* query */) != 0;
 
-                if(proxy.pcap_dump.enabled)
-                    dump_packet_to_udp(buffer, size, true, &conn_info, &proxy);
-
                 zdtun_forward(tun, buffer, size, &conn_info);
+
+                process_packet_info(buffer, size, true, &conn_info, &proxy);
             } else if (size < 0)
                 __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "recv(tapfd) returned error [%d]: %s", errno, strerror(errno));
         } else
             zdtun_handle_fd(tun, &fdset, &wrfds);
+
+        if(proxy.capture_stats.new_stats
+         && ((now_ms - proxy.capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS)) {
+            sendCaptureStats(&proxy);
+            proxy.capture_stats.new_stats = false;
+            proxy.capture_stats.last_update_ms = now_ms;
+        }
     }
 
     __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Stopped packet loop");
@@ -456,6 +519,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         dumper_socket = -1;
     }
 
+    notifyServiceStatus(&proxy, "stopped");
     return(0);
 }
 
@@ -463,8 +527,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jclass type) {
+    /* NOTE: the select on the packets loop uses a timeout to wake up periodically */
     running = 0;
-    /* TODO wake the possibly sleeping thread */
 }
 
 JNIEXPORT void JNICALL

@@ -29,6 +29,8 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -44,6 +46,17 @@ public class CaptureService extends VpnService implements Runnable {
     private int collector_port;
     private int uid_filter;
     private static CaptureService INSTANCE;
+
+    public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
+    public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
+    public static final String TRAFFIC_STATS_UPDATE_RCVD_BYTES = "rcvd_bytes";
+    public static final String TRAFFIC_STATS_UPDATE_SENT_PKTS = "sent_pkts";
+    public static final String TRAFFIC_STATS_UPDATE_RCVD_PKTS = "rcvd_pkts";
+
+    public static final String ACTION_SERVICE_STATUS = "service_status";
+    public static final String SERVICE_STATUS_KEY = "status";
+    public static final String SERVICE_STATUS_STARTED = "started";
+    public static final String SERVICE_STATUS_STOPPED = "stopped";
 
     static {
         /* Load native library */
@@ -198,6 +211,23 @@ public class CaptureService extends VpnService implements Runnable {
         int uid = cm.getConnectionOwnerUid(protocol, local, remote);
         Log.i(TAG, "Get uid=" + uid);
         return uid;
+    }
+
+    public void sendCaptureStats(long sent_bytes, long rcvd_bytes, int sent_pkts, int rcvd_pkts) {
+        Intent intent = new Intent(ACTION_TRAFFIC_STATS_UPDATE);
+
+        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_BYTES, sent_bytes);
+        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_BYTES, rcvd_bytes);
+        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_PKTS, sent_pkts);
+        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_PKTS, rcvd_pkts);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void sendServiceStatus(String cur_status) {
+        Intent intent = new Intent(ACTION_SERVICE_STATUS);
+        intent.putExtra(SERVICE_STATUS_KEY, cur_status);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public String getApplicationByUid(int uid) {

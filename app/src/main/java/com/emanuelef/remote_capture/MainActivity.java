@@ -19,7 +19,10 @@
 
 package com.emanuelef.remote_capture;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -34,6 +37,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import android.os.Bundle;
@@ -43,6 +47,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,12 +57,15 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
     Button mStartButton;
     SharedPreferences mPrefs;
+    TextView mExporterInfo;
+    TextView mCaptureStatus;
     Menu mMenu;
     int mFilterUid;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
 
     private static final int REQUEST_CODE_VPN = 2;
+    private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
     private void updateConnectStatus(boolean is_running) {
@@ -86,6 +94,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mStartButton = findViewById(R.id.button_start);
+        mExporterInfo = findViewById(R.id.exporter_info);
+        mCaptureStatus = findViewById(R.id.status_view);
+
+        mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+                refreshExporterInfo();
+            }
+        });
+        refreshExporterInfo();
 
         updateConnectStatus(CaptureService.isRunning());
 
@@ -97,19 +115,54 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 if(CaptureService.isRunning()) {
                     CaptureService.stopService();
                     updateConnectStatus(false);
+                    mStartButton.setEnabled(false);
+                    //mCaptureStatus.setText(R.string.stopping);
                 } else {
                     Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
                     if (vpnPrepareIntent != null) {
                         startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
+                        mStartButton.setEnabled(false);
                     } else {
                         onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
                     }
                     updateConnectStatus(true);
+                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
                 }
             }
         });
 
         startLoadingApps();
+
+        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
+
+        /* Register for stats update */
+        bcast_man.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                processStatsUpdateIntent(intent);
+            }
+        }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
+
+        /* Register for service status */
+        bcast_man.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
+
+                if(status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
+                    mCaptureStatus.setText(formatBytes(0));
+                    mStartButton.setEnabled(true);
+                } else if(status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
+                    mCaptureStatus.setText(R.string.ready);
+                    mStartButton.setEnabled(true);
+                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+                }
+            }
+        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+    private void refreshExporterInfo() {
+        mExporterInfo.setText("UDP Collector: " + getCollectorIPPref() + ":" + getCollectorPortPref());
     }
 
     private void startLoadingApps() {
@@ -173,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onSelectedApp(AppDescriptor app) {
                 mFilterUid = app.getUid();
                 // clone the drawable to avoid a "zoom-in" effect when clicked
-                mMenu.getItem(0).setIcon(app.getIcon().getConstantState().newDrawable());
+                mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(app.getIcon().getConstantState().newDrawable());
 
                 // dismiss the dialog
                 alert.cancel();
@@ -197,6 +250,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
+    private String getCollectorIPPref() {
+        return(mPrefs.getString(Prefs.PREF_COLLECTOR_IP_KEY, getString(R.string.default_collector_ip)));
+    }
+
+    private String getCollectorPortPref() {
+        return(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port)));
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -207,14 +268,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             // the configuration for the VPN
             bundle.putString("dns_server", "8.8.8.8"); // TODO: read system DNS
-            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, mPrefs.getString(Prefs.PREF_COLLECTOR_IP_KEY, getString(R.string.default_collector_ip)));
-            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port))));
+            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
+            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
             bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
             intent.putExtra("settings", bundle);
 
             Log.d("Main", "onActivityResult -> start CaptureService");
 
             startService(intent);
+            //mCaptureStatus.setText(R.string.starting);
         }
     }
 
@@ -242,7 +304,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {
+    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {}
 
+    public static String formatBytes(long bytes) {
+        long divisor;
+        String suffix;
+        if(bytes < 1024) return bytes + " B";
+
+        if(bytes < 1024*1024)               { divisor = 1024;           suffix = "KB"; }
+        else if(bytes < 1024*1024*1024)     { divisor = 1024*1024;      suffix = "MB"; }
+        else                                { divisor = 1024*1024*1024; suffix = "GB"; }
+
+        return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
+    }
+
+    public void processStatsUpdateIntent(Intent intent) {
+        long bytes_sent  = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
+        long bytes_rcvd= intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
+        int pkts_sent = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_PKTS, 0);
+        int pkts_rcvd = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_PKTS, 0);
+
+        Log.w("MainReceiver", "Got StatsUpdate: bytes_sent=" + bytes_sent + ", bytes_rcvd=" +
+                bytes_rcvd + ", pkts_sent=" + pkts_sent + ", pkts_rcvd=" + pkts_rcvd);
+
+        mCaptureStatus.setText(formatBytes(bytes_sent + bytes_rcvd));
     }
 }

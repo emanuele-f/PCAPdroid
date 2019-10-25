@@ -14,4 +14,7 @@
     <string name="ip_address">IP Address</string>
     <string name="port">Port</string>
     <string name="app_filter">App Filter</string>
+    <string name="ready">Ready</string>
+    <string name="stopping">Stopping...</string>
+    <string name="starting">Starting...</string>
 </resources>

@@ -24,6 +24,16 @@
 #ifndef REMOTE_CAPTURE_VPNPROXY_H
 #define REMOTE_CAPTURE_VPNPROXY_H
 
+typedef struct capture_stats {
+    u_int64_t sent_bytes;
+    u_int64_t rcvd_bytes;
+    u_int32_t sent_pkts;
+    u_int32_t rcvd_pkts;
+
+    bool new_stats;
+    u_int64_t last_update_ms;
+} capture_stats_t;
+
 typedef struct vpnproxy_data {
     int tapfd;
     jint sdk;
@@ -41,6 +51,8 @@ typedef struct vpnproxy_data {
         int uid_filter;
         bool enabled;
     } pcap_dump;
+
+    capture_stats_t capture_stats;
 } vpnproxy_data_t;
 
 /* ******************************************************* */
