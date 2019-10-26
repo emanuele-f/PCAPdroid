@@ -44,6 +44,12 @@ typedef struct dns_packet {
 
 /* ******************************************************* */
 
+/* NOTE: these must be reset during each run, as android may reuse the service */
+static int dumper_socket;
+static bool send_header;
+
+/* ******************************************************* */
+
 // from DHCPd
 static u_int16_t in_cksum(const char *buf, size_t nbytes, u_int32_t sum) {
     u_int16_t i;
@@ -177,13 +183,10 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
 /* ******************************************************* */
 
-static int dumper_socket = -1;
-static bool send_header = true;
-
-static void process_packet_info(char *packet, size_t size, bool from_tap, const zdtun_conn_t *conn_info,
-        struct vpnproxy_data *proxy) {
+static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     int uid = (int)conn_info->user_data;
+    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
 #if 0
     if(from_tap)
@@ -362,8 +365,6 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, ssize_t pkt_size, const zdtun_co
 
     check_dns(proxy, pkt_buf, pkt_size, 0 /* reply */);
 
-    process_packet_info(pkt_buf, pkt_size, false, conn_info, proxy);
-
     // TODO return value check
     write(proxy->tapfd, pkt_buf, pkt_size);
     return 0;
@@ -464,9 +465,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     };
     zdtun_callbacks_t callbacks = {
             .send_client = net2tap,
+            .account_packet = account_packet,
             .on_socket_open = protect_sock_callback,
             .on_connection_open = resolve_uid,
     };
+
+    /* Important: init global state every time. Android may reuse the service. */
+    dumper_socket = -1;
+    send_header = true;
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -529,9 +535,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
                 /* Forward the packet and retrieve connection information
                  * The uid userdata will be set in on_connection_open. */
-                if((rc = zdtun_forward(tun, buffer, size, &conn_info)) == 0)
-                    process_packet_info(buffer, size, true, &conn_info, &proxy);
-                else
+                if((rc = zdtun_forward(tun, buffer, size, &conn_info)) != 0)
                     /* NOTE: rc -1 is currently returned for unhandled non-IPv4 flows */
                     __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "zdtun_forward failed with code %d", rc);
             } else if (size < 0)
