@@ -28,6 +28,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.net.VpnService;
 
 import androidx.annotation.NonNull;
@@ -249,6 +250,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         } else if(id == R.id.action_show_app_filter) {
             openAppSelector();
+            return true;
+        } else if(id == R.id.action_about) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/emanuele-f/RemoteCapture"));
+            startActivity(browserIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

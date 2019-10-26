@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_show_app_filter"
         android:title="@string/app_filter"
-        android:orderInCategory="100"
+        android:orderInCategory="50"
         android:icon="@android:drawable/ic_menu_view"
         app:showAsAction="always"
         />
@@ -14,6 +14,13 @@
         android:id="@+id/action_settings"
         android:title="@string/title_activity_settings"
         android:orderInCategory="100"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/about"
+        android:orderInCategory="150"
         app:showAsAction="never"
         />
 

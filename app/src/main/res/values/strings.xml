@@ -17,4 +17,5 @@
     <string name="ready">Ready</string>
     <string name="stopping">Stopping...</string>
     <string name="starting">Starting...</string>
+    <string name="about">About</string>
 </resources>
