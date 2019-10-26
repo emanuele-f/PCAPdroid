@@ -11,6 +11,10 @@ Features:
 - Show captured traffic realtime statistics
 - Apply a filter to only capture traffic for the selected app
 
+Download:
+
+https://github.com/emanuele-f/RemoteCapture/releases
+
 ## Receiving the PCAP
 
 In order to receive the PCAP on the collector host, perform the following steps in order:
