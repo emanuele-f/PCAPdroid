@@ -1,16 +1,15 @@
 # Remote Capture
 
-Capture traffic on Android devices and send the PCAP via UDP. No root privileges required.
+Remote Capture captures the android apps traffic to analyze it remotely (e.g. via Wireshark). The traffic is sent live via an UDP socket and can be easily captured remotely with:
+
+<img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/playstore/screenshots/capturing.jpg" width="200" />
 
 Features:
 
-  - Capture DNS traffic
-  - Only capture traffic of a specific APP
-
-TODO:
-
-  - ICMP support
-  - App icon and layout
+- Capture apps traffic without root
+- Send captured traffic via UDP
+- Show captured traffic realtime statistics
+- Apply a filter to only capture traffic for the selected app
 
 ## Receiving the PCAP
 
