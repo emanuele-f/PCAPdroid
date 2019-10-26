@@ -382,7 +382,7 @@ static void sendCaptureStats(vpnproxy_data_t *proxy) {
     if(!midMethod)
         __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(sendCaptureStats) failed");
 
-    (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod, stats->sent_bytes, stats->rcvd_bytes,
+    (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, stats->sent_bytes, stats->rcvd_bytes,
             stats->sent_pkts, stats->rcvd_pkts);
 }
 
@@ -401,7 +401,7 @@ static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
 
     status_str = (*env)->NewStringUTF(env, status);
 
-    (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod, status_str);
+    (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, status_str);
 
     (*env)->DeleteLocalRef(env, status_str);
 }

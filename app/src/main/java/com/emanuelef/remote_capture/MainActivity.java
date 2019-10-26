@@ -191,13 +191,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             PackageInfo p = packs.get(i);
 
             if((p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                String appName = p.applicationInfo.loadLabel(pm).toString();
-                Drawable icon = p.applicationInfo.loadIcon(pm);
                 String packages = p.applicationInfo.packageName;
-                int uid = p.applicationInfo.uid;
-                apps.add(new AppDescriptor(appName, icon, packages, uid));
 
-                Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
+                if(!packages.equals("com.emanuelef.remote_capture")) {
+                    String appName = p.applicationInfo.loadLabel(pm).toString();
+                    Drawable icon = p.applicationInfo.loadIcon(pm);
+                    int uid = p.applicationInfo.uid;
+                    apps.add(new AppDescriptor(appName, icon, packages, uid));
+
+                    Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
+                }
             }
         }
         return apps;
