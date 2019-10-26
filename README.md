@@ -33,6 +33,12 @@ To start a new capture, stop the VPN and repeat the steps above.
 socat -b 65535 - udp4-listen:1234 | wireshark -k -i -
 ```
 
+- Analyze the traffic with ntopng:
+
+```bash
+socat -b 65535 - udp4-listen:1234 | ntopng -m “10.215.173.0/24” -i -
+```
+
 - Write the traffic to a PCAP file:
 
 ```bash
