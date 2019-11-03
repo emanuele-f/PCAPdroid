@@ -2,7 +2,9 @@
 
 Remote Capture is an android app to capture the phone traffic and analyze it remotely (e.g. via Wireshark). The traffic can be easily captured on a remote PC via an UDP socket.
 
-<img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/playstore/screenshots/capturing.jpg" width="200" />
+<p align="center">
+<img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/assets/screenshots/capturing.jpg" width="200" />
+</p>
 
 Realtime Traffic Analysis:
 
@@ -47,6 +49,15 @@ udp_receiver.py -p 1234 | ntopng -m “10.215.173.0/24” -i -
 ```bash
 udp_receiver.py -p 1234 | tcpdump -w dump.pcap -r -
 ```
+
+## How it Works
+
+In order to run without root, the app takes advantage of the Android VPNService API to collect the packets on the device (they are *not* sent to an external VPN server). The [zdtun](https://github.com/emanuele-f/zdtun) connections proxy library is used to route the packets back to their original destination. Here are some example of how it works:
+  
+<p align="center">
+  <img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/assets/handshake.png" width="250" />
+  <img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/assets/send_recv.png" width="250" />
+</p>
 
 ## Building
 
