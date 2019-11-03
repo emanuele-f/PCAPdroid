@@ -186,6 +186,7 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     int uid = (int)conn_info->user_data;
+    bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
 #if 0
@@ -195,10 +196,8 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
         __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "net2tap: %lu B", size);
 #endif
 
-    if((proxy->pcap_dump.uid_filter != -1) &&
-        (uid != -1) && /* Always capture unknown-uid flows */
-        (uid != 1051) && /* Always capture netd DNS resolver flows as we don't know we requested them */
-        (proxy->pcap_dump.uid_filter != uid)) {
+    if(((proxy->pcap_dump.uid_filter != -1) && (proxy->pcap_dump.uid_filter != uid))
+        && (!is_unknown_app || !proxy->pcap_dump.capture_unknown_app_traffic)) {
         //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d [filter=%d]", uid, proxy->pcap_dump.uid_filter);
         return;
     }
@@ -460,6 +459,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 .collector_port = htons(getIntPref(&proxy, "getPcapCollectorPort")),
                 .uid_filter = getIntPref(&proxy, "getPcapUidFilter"),
                 .tcp_socket = false,
+                .capture_unknown_app_traffic = getIntPref(&proxy, "getCaptureUnknownTraffic"),
                 .enabled = true,
             },
     };

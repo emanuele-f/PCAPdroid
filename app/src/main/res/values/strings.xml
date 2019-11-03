@@ -19,4 +19,7 @@
     <string name="stopping">Stopping...</string>
     <string name="starting">Starting...</string>
     <string name="about">About</string>
+    <string name="capture_unknown_app">Capture Unknown Traffic</string>
+    <string name="capture_unknown_app_summary">When an app filter is set, also capture general purpose traffic which cannot be associated to a specific app. This is usually needed to properly capture DNS traffic.</string>
+    <string name="capture_prefs">Capture</string>
 </resources>

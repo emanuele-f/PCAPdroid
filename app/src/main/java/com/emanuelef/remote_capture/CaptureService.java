@@ -43,6 +43,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String public_dns;
     private String collector_address;
+    private boolean capture_unknown_app_traffic;
     private int collector_port;
     private int uid_filter;
     private long last_bytes;
@@ -90,6 +91,7 @@ public class CaptureService extends VpnService implements Runnable {
         collector_address = settings.getString(Prefs.PREF_COLLECTOR_IP_KEY);
         collector_port = settings.getInt(Prefs.PREF_COLLECTOR_PORT_KEY);;
         uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
+        capture_unknown_app_traffic = settings.getBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC);
         last_bytes = 0;
 
         // VPN
@@ -203,13 +205,16 @@ public class CaptureService extends VpnService implements Runnable {
         return(collector_address);
     }
 
-    /* TODO use int */
     public int getPcapCollectorPort() {
         return(collector_port);
     }
 
     public int getPcapUidFilter() {
         return(uid_filter);
+    }
+
+    public int getCaptureUnknownTraffic() {
+        return(capture_unknown_app_traffic ? 1 : 0);
     }
 
     // from NetGuard

@@ -16,19 +16,32 @@
 
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/collector_prefs_header">
+    <PreferenceCategory app:title="@string/collector_prefs_header" app:iconSpaceReserved="false">
 
         <EditTextPreference
             app:key="collector_ip_address"
             app:title="@string/ip_address"
+            app:iconSpaceReserved="false"
             app:defaultValue="@string/default_collector_ip"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
             app:key="collector_port"
             app:title="@string/port"
+            app:iconSpaceReserved="false"
             app:defaultValue="@string/default_collector_port"
             app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false">
+
+    <SwitchPreference
+        app:key="capture_unknown_app"
+        app:title="@string/capture_unknown_app"
+        app:iconSpaceReserved="false"
+        app:summary="@string/capture_unknown_app_summary"
+        app:defaultValue="true" />
 
     </PreferenceCategory>
 

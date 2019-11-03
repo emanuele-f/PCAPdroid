@@ -318,6 +318,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port)));
     }
 
+    private boolean getCaptureUnknownTrafficPref() {
+        return(mPrefs.getBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, true));
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -331,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
             bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
             bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
+            bundle.putBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, getCaptureUnknownTrafficPref());
             intent.putExtra("settings", bundle);
 
             Log.d("Main", "onActivityResult -> start CaptureService");

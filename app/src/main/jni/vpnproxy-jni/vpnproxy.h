@@ -50,6 +50,7 @@ typedef struct vpnproxy_data {
         u_int16_t collector_port;
         int uid_filter;
         bool tcp_socket;
+        bool capture_unknown_app_traffic;
         bool enabled;
     } pcap_dump;
 
