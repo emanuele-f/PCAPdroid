@@ -52,7 +52,7 @@ udp_receiver.py -p 1234 | tcpdump -w dump.pcap -r -
 
 ## How it Works
 
-In order to run without root, the app takes advantage of the Android VPNService API to collect the packets on the device (they are *not* sent to an external VPN server). The [zdtun](https://github.com/emanuele-f/zdtun) connections proxy library is used to route the packets back to their original destination. Here are some example of how it works:
+In order to run without root, the app takes advantage of the Android VPNService API to collect the packets on the device (they are *not* sent to an external VPN server). The [zdtun](https://github.com/emanuele-f/zdtun) connections proxy library is used to route the packets back to their original destination. Here are some diagrams of how it works:
   
 <p align="center">
   <img src="https://raw.githubusercontent.com/emanuele-f/RemoteCapture/master/assets/handshake.png" width="250" />
