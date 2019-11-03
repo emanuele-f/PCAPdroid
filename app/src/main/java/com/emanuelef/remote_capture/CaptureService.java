@@ -45,6 +45,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String collector_address;
     private int collector_port;
     private int uid_filter;
+    private long last_bytes;
     private static CaptureService INSTANCE;
 
     public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
@@ -89,6 +90,7 @@ public class CaptureService extends VpnService implements Runnable {
         collector_address = settings.getString(Prefs.PREF_COLLECTOR_IP_KEY);
         collector_port = settings.getInt(Prefs.PREF_COLLECTOR_PORT_KEY);;
         uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
+        last_bytes = 0;
 
         // VPN
         /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
@@ -148,10 +150,26 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    /* Check if the VPN service is running */
-    public static boolean isRunning() {
+    /* Check if the VPN service was launched */
+    public static boolean isServiceActive() {
         return((INSTANCE != null) &&
                 (INSTANCE.mParcelFileDescriptor != null));
+    }
+
+    public static int getUidFilter() {
+        return((INSTANCE != null) ? INSTANCE.uid_filter : -1);
+    }
+
+    public static long getBytes() {
+        return((INSTANCE != null) ? INSTANCE.last_bytes : 0);
+    }
+
+    public static String getCollectorAddress() {
+        return((INSTANCE != null) ? INSTANCE.collector_address : "");
+    }
+
+    public static int getCollectorPort() {
+        return((INSTANCE != null) ? INSTANCE.collector_port : 0);
     }
 
     /* Stop a running VPN service */
@@ -220,6 +238,8 @@ public class CaptureService extends VpnService implements Runnable {
         intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_BYTES, rcvd_bytes);
         intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_PKTS, sent_pkts);
         intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_PKTS, rcvd_pkts);
+
+        last_bytes = sent_bytes + rcvd_bytes;
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

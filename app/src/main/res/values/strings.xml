@@ -4,6 +4,7 @@
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
     <string name="no_filter">No Filter</string>
+    <string name="collector_info">UDP Collector: %1$s:%2$s</string>
 
     <!-- Defaults -->
     <string name="default_collector_ip">127.0.0.1</string>

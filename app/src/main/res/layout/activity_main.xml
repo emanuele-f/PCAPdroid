@@ -16,12 +16,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/exporter_info"
+        app:layout_constraintTop_toBottomOf="@id/collector_info"
 
         app:layout_constraintWidth_default="wrap" />
 
     <TextView
-        android:id="@+id/exporter_info"
+        android:id="@+id/collector_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="92dp"

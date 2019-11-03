@@ -58,32 +58,78 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
     Button mStartButton;
     SharedPreferences mPrefs;
-    TextView mExporterInfo;
+    TextView mCollectorInfo;
     TextView mCaptureStatus;
     Menu mMenu;
     int mFilterUid;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
+    AppState mState;
 
     private static final int REQUEST_CODE_VPN = 2;
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
-    private void updateConnectStatus(boolean is_running) {
-        if(is_running) {
-            Log.d("Main", "VPN Running");
-            mStartButton.setText(R.string.stop_button);
-        } else {
-            Log.d("Main", "VPN NOT Running");
-            mStartButton.setText(R.string.start_button);
-        }
+    /* App state handling: ready -> starting -> running -> stopping -> ready  */
+    enum AppState {
+        ready,
+        starting,
+        running,
+        stopping
+    }
+
+    private void appStateReady() {
+        mState = AppState.ready;
+
+        mStartButton.setText(R.string.start_button);
+        mStartButton.setEnabled(true);
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+
+        mCaptureStatus.setText(R.string.ready);
+        setCollectorInfo(getCollectorIPPref(), getCollectorPortPref());
+    }
+
+    private void appStateStarting() {
+        mState = AppState.starting;
+
+        mStartButton.setEnabled(false);
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+    }
+
+    private void appStateRunning() {
+        mState = AppState.running;
+
+        mStartButton.setText(R.string.stop_button);
+        mStartButton.setEnabled(true);
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+
+        mCaptureStatus.setText(formatBytes(CaptureService.getBytes()));
+        setCollectorInfo(CaptureService.getCollectorAddress(),
+                Integer.toString(CaptureService.getCollectorPort()));
+    }
+
+    private void appStateStopping() {
+        mState = AppState.stopping;
+
+        mStartButton.setEnabled(false);
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+    }
+
+    /* Try to determine the current app state */
+    private void setAppState() {
+        boolean is_active = CaptureService.isServiceActive();
+
+        if(!is_active)
+            appStateReady();
+        else
+            appStateRunning();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFilterUid = -1;
+        mFilterUid = CaptureService.getUidFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
 
@@ -95,39 +141,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mStartButton = findViewById(R.id.button_start);
-        mExporterInfo = findViewById(R.id.exporter_info);
+        mCollectorInfo = findViewById(R.id.collector_info);
         mCaptureStatus = findViewById(R.id.status_view);
 
         mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                refreshExporterInfo();
+                if(mState == AppState.ready)
+                    setCollectorInfo(getCollectorIPPref(), getCollectorPortPref());
             }
         });
-        refreshExporterInfo();
-
-        updateConnectStatus(CaptureService.isRunning());
 
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d("Main", "Clicked");
 
-                if(CaptureService.isRunning()) {
+                if(CaptureService.isServiceActive()) {
                     CaptureService.stopService();
-                    updateConnectStatus(false);
-                    mStartButton.setEnabled(false);
-                    //mCaptureStatus.setText(R.string.stopping);
+                    appStateStopping();
                 } else {
                     Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
-                    if (vpnPrepareIntent != null) {
-                        mStartButton.setEnabled(false);
+                    if (vpnPrepareIntent != null)
                         startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
-                    } else {
+                    else
                         onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
-                    }
-                    updateConnectStatus(true);
-                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+
+                    appStateStarting();
                 }
             }
         });
@@ -150,33 +190,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onReceive(Context context, Intent intent) {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
-                if(status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
-                    mCaptureStatus.setText(formatBytes(0));
-                    mStartButton.setEnabled(true);
-                    updateConnectStatus(true);
-                } else if(status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
-                    mCaptureStatus.setText(R.string.ready);
-                    mStartButton.setEnabled(true);
-                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
-                    updateConnectStatus(false);
+                if(status != null) {
+                    if(status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
+                        appStateRunning();
+                    } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
+                        appStateReady();
+                    }
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
-    private void refreshExporterInfo() {
-        mExporterInfo.setText("UDP Collector: " + getCollectorIPPref() + ":" + getCollectorPortPref());
+    private void setCollectorInfo(String collector_ip, String collector_port) {
+        mCollectorInfo.setText(String.format(getResources().getString(R.string.collector_info),
+                collector_ip, collector_port));
     }
 
     private void startLoadingApps() {
         LoaderManager lm = LoaderManager.getInstance(this);
         Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
 
-        if(loader==null) {
+        Log.d("startLoadingApps", "Loader? " + Boolean.toString(loader != null));
+
+        if(loader==null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
-            loader.forceLoad();
-        } else
-            lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
+        else
+            loader = lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
+
+        loader.forceLoad();
     }
 
     private List<AppDescriptor> getInstalledApps() {
@@ -211,7 +252,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.settings_menu, menu);
         mMenu = menu;
+
+        // Possibly set an initial app state
+        setAppState();
         return true;
+    }
+
+    private void setSelectedAppIcon(AppDescriptor app) {
+        // clone the drawable to avoid a "zoom-in" effect when clicked
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(app.getIcon().getConstantState().newDrawable());
     }
 
     private void openAppSelector() {
@@ -233,8 +282,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onSelectedApp(AppDescriptor app) {
                 mFilterUid = app.getUid();
-                // clone the drawable to avoid a "zoom-in" effect when clicked
-                mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(app.getIcon().getConstantState().newDrawable());
+                setSelectedAppIcon(app);
 
                 // dismiss the dialog
                 alert.cancel();
@@ -288,7 +336,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.d("Main", "onActivityResult -> start CaptureService");
 
             startService(intent);
-            //mCaptureStatus.setText(R.string.starting);
         }
     }
 
@@ -310,6 +357,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
         Log.d("AppsLoader", data.size() + " APPs loaded");
         mInstalledApps = data;
+
+        if(mFilterUid != -1) {
+            /* An filter is active, try to set the corresponding app image */
+            for(int i=0; i<mInstalledApps.size(); i++) {
+                AppDescriptor app = mInstalledApps.get(i);
+
+                if(app.getUid() == mFilterUid) {
+                    setSelectedAppIcon(app);
+                    break;
+                }
+            }
+        }
 
         if(mOpenAppsWhenDone)
             openAppSelector();
