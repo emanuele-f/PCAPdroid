@@ -53,7 +53,7 @@ while True:
 	if(data == PCAP_HDR_BYTES):
 		if(args.verbose):
 			sys.stderr.write("PCAP header detected, skipping\n");
-			continue
+		continue
 
 	sys.stdout.buffer.write(data)
 	sys.stdout.flush()
