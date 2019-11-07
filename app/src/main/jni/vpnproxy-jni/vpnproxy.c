@@ -24,6 +24,7 @@
 
 #define VPN_TAG "VPNProxy"
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
+#define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
 
 /* ******************************************************* */
 
@@ -41,6 +42,19 @@ typedef struct dns_packet {
     uint8_t initial_dot; // just skip
     uint8_t queries[];
 } dns_packet_t __attribute__((packed));
+
+/* ******************************************************* */
+
+typedef struct conn_data {
+    time_t first_seen;
+    time_t last_seen;
+    u_int64_t sent_bytes;
+    u_int64_t rcvd_bytes;
+    u_int32_t sent_pkts;
+    u_int32_t rcvd_pkts;
+    char *info;
+    int uid;
+} conn_data_t;
 
 /* ******************************************************* */
 
@@ -185,9 +199,19 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
-    int uid = (int)conn_info->user_data;
-    bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
-    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
+    conn_data_t *data = (conn_data_t*)conn_info->user_data;
+    vpnproxy_data_t *proxy;
+    bool is_unknown_app;
+    int uid;
+
+    if(!data) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "Missing user_data in connection");
+        return;
+    }
+
+    uid = data->uid;
+    is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
+    proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
 #if 0
     if(from_tap)
@@ -195,6 +219,17 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
     else
         __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "net2tap: %lu B", size);
 #endif
+
+    /* NOTE: account connection stats also for non-matched connections */
+    if(from_tap) {
+        data->sent_pkts++;
+        data->sent_bytes += size;
+    } else {
+        data->rcvd_pkts++;
+        data->rcvd_bytes += size;
+    }
+
+    data->last_seen = time(NULL);
 
     if(((proxy->pcap_dump.uid_filter != -1) && (proxy->pcap_dump.uid_filter != uid))
         && (!is_unknown_app || !proxy->pcap_dump.capture_unknown_app_traffic)) {
@@ -232,9 +267,8 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
 
 /* ******************************************************* */
 
-static int resolve_uid(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_data) {
+static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info) {
     int uid;
-    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     zdtun_conn_t unproxied_info = *conn_info;
 
     if(proxy->dns_changed) {
@@ -272,10 +306,44 @@ static int resolve_uid(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_
     } else
         uid = -1;
 
-    *conn_data = (void*)uid;
+    return(uid);
+}
+
+/* ******************************************************* */
+
+static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_data) {
+    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
+    conn_data_t *data = calloc(1, sizeof(conn_data_t));
+
+    if(!data) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "calloc(conn_data_t) failed with code %d/%s",
+                errno, strerror(errno));
+        /* reject connection */
+        return(1);
+    }
+
+    data->first_seen = data->last_seen = time(NULL);
+    data->uid = resolve_uid(proxy, conn_info);
+    *conn_data = data;
 
     /* accept connection */
     return(0);
+}
+
+/* ******************************************************* */
+
+static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
+    conn_data_t *data = (conn_data_t*) conn_info->user_data;
+
+    if(!data) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "Missing user_data in connection");
+        return;
+    }
+
+    if(data->info)
+        free(data->info);
+
+    free(data);
 }
 
 /* ******************************************************* */
@@ -387,6 +455,123 @@ static void sendCaptureStats(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
+typedef struct dump_data {
+    jclass conn_cls;
+    jmethodID conn_constructor;
+    jmethodID conn_set_data;
+    jobjectArray connections;
+    u_int32_t idx;
+    u_int32_t num_connections;
+} dump_data_t;
+
+static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *user_data) {
+    char srcip[64], dstip[64];
+    struct in_addr addr;
+    dump_data_t *dump_data = (dump_data_t *)user_data;
+    conn_data_t *data = (conn_data_t *)conn_info->user_data;
+    vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
+    JNIEnv *env = proxy->env;
+
+    addr.s_addr = conn_info->src_ip;
+    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
+    addr.s_addr = conn_info->dst_ip;
+    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
+
+#if 0
+    __android_log_print(ANDROID_LOG_INFO, VPN_TAG, "DUMP: [proto=%d]: %s:%u -> %s:%u [%d]",
+                        conn_info->ipproto,
+                        srcip, ntohs(conn_info->src_port),
+                        dstip, ntohs(conn_info->dst_port),
+                        data->uid);
+#endif
+
+    if(dump_data->idx >= dump_data->num_connections) {
+        /* Cannot proceed as dump_data->connections would overflow */
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "Connections count is inconsistent! num_connections=%d",
+                dump_data->num_connections);
+
+        /* Abort */
+        return(1);
+    }
+
+    jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
+    jobject src_string = (*env)->NewStringUTF(env, srcip);
+    jobject dst_string = (*env)->NewStringUTF(env, dstip);
+    jobject conn_descriptor = (*env)->NewObject(env, dump_data->conn_cls, dump_data->conn_constructor);
+
+    if(!conn_descriptor) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ConnDescriptor constructor failed");
+
+        /* Abort */
+        return(1);
+    }
+
+    /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
+     * SetIntField like methods could be used. */
+    (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
+            conn_info->ipproto, src_string, dst_string, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
+            data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
+            data->sent_pkts, data->rcvd_pkts, info_string, data->info);
+
+    /* Add the connection to the array */
+    (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
+
+    /* Continue */
+    return(0);
+}
+
+/* Perform a full dump of the active connections */
+static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
+    JNIEnv *env = proxy->env;
+    dump_data_t dump_data = {0};
+    jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
+
+    dump_data.num_connections = zdtun_get_num_connections(tun);
+
+    jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "sendConnectionsDump",
+                                              "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
+    if(!midMethod) {
+        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(sendConnectionsDump) failed");
+        return;
+    }
+
+    dump_data.conn_cls = (*env)->FindClass(env, "com/emanuelef/remote_capture/ConnDescriptor");
+    if(dump_data.conn_cls == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "FindClass(ConnDescriptor) failed");
+        return;
+    }
+
+    dump_data.conn_constructor = (*env)->GetMethodID(env, dump_data.conn_cls, "<init>", "()V");
+    if(dump_data.conn_constructor == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(<init>) failed");
+        return;
+    }
+
+    /* NOTE: must match ConnDescriptor::setData */
+    dump_data.conn_set_data = (*env)->GetMethodID(env, dump_data.conn_cls, "setData",
+            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;I)V");
+    if(dump_data.conn_set_data == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(conn_set_data) failed");
+        return;
+    }
+
+    dump_data.connections = (*env)->NewObjectArray(env, dump_data.num_connections, dump_data.conn_cls, NULL);
+    if(!dump_data.connections) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "NewObjectArray() failed");
+        return;
+    }
+
+    /* Add connections to the array */
+    zdtun_iter_connections(tun, connection_dumper, &dump_data);
+
+    /* Send the dump */
+    (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, dump_data.connections);
+
+    (*env)->DeleteLocalRef(env, dump_data.connections);
+}
+
+/* ******************************************************* */
+
 static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
     JNIEnv *env = proxy->env;
     capture_stats_t *stats = &proxy->capture_stats;
@@ -445,7 +630,8 @@ static int running = 0;
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
-    running = 1;
+    time_t last_connections_dump = time(NULL);
+
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,
             .sdk = sdk,
@@ -467,12 +653,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .send_client = net2tap,
             .account_packet = account_packet,
             .on_socket_open = protect_sock_callback,
-            .on_connection_open = resolve_uid,
+            .on_connection_open = handle_new_connection,
+            .on_connection_close = destroy_connection,
     };
 
     /* Important: init global state every time. Android may reuse the service. */
     dumper_socket = -1;
     send_header = true;
+    running = 1;
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -548,6 +736,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             sendCaptureStats(&proxy);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
+        }
+
+        if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
+            sendConnectionsDump(tun, &proxy);
+            last_connections_dump = now_ms;
         }
     }
 

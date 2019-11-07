@@ -184,6 +184,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
+        /* Register for connections update */
+        bcast_man.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                processConnectionsDump(intent);
+            }
+        }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
+
         /* Register for service status */
         bcast_man.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -404,5 +412,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 bytes_rcvd + ", pkts_sent=" + pkts_sent + ", pkts_rcvd=" + pkts_rcvd);
 
         mCaptureStatus.setText(formatBytes(bytes_sent + bytes_rcvd));
+    }
+
+    public void processConnectionsDump(Intent intent) {
+        Bundle bundle = intent.getExtras();
+
+        if(bundle != null) {
+            ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
+
+            Log.i("ConnectionsDump", "TODO: handle " + connections.length + " connections");
+        }
     }
 }
