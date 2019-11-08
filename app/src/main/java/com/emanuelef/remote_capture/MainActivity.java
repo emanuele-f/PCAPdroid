@@ -24,10 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 
@@ -35,36 +31,34 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
+import androidx.viewpager.widget.ViewPager;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
-    Button mStartButton;
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>>, AppStateListener {
     SharedPreferences mPrefs;
-    TextView mCollectorInfo;
-    TextView mCaptureStatus;
     Menu mMenu;
     int mFilterUid;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
     AppState mState;
+    StatusFragment statusFragment;
+    ConnectionsFragment connectionsFragment;
 
     private static final int REQUEST_CODE_VPN = 2;
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
@@ -78,51 +72,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         stopping
     }
 
-    private void appStateReady() {
-        mState = AppState.ready;
+    public class MainPagerAdapter extends FragmentPagerAdapter {
+        public MainPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
 
-        mStartButton.setText(R.string.start_button);
-        mStartButton.setEnabled(true);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            if(position == 0) {
+                return new StatusFragment();
+            } else {
+                return new ConnectionsFragment();
+            }
+        }
 
-        mCaptureStatus.setText(R.string.ready);
-        setCollectorInfo(getCollectorIPPref(), getCollectorPortPref());
-    }
+        @Override
+        public CharSequence getPageTitle(int position) {
+            if(position == 0) {
+                return getResources().getString(R.string.status_view);
+            } else {
+                return getResources().getString(R.string.connections_view);
+            }
+        }
 
-    private void appStateStarting() {
-        mState = AppState.starting;
 
-        mStartButton.setEnabled(false);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-    }
-
-    private void appStateRunning() {
-        mState = AppState.running;
-
-        mStartButton.setText(R.string.stop_button);
-        mStartButton.setEnabled(true);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-
-        mCaptureStatus.setText(formatBytes(CaptureService.getBytes()));
-        setCollectorInfo(CaptureService.getCollectorAddress(),
-                Integer.toString(CaptureService.getCollectorPort()));
-    }
-
-    private void appStateStopping() {
-        mState = AppState.stopping;
-
-        mStartButton.setEnabled(false);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-    }
-
-    /* Try to determine the current app state */
-    private void setAppState() {
-        boolean is_active = CaptureService.isServiceActive();
-
-        if(!is_active)
-            appStateReady();
-        else
-            appStateRunning();
+        @Override
+        public int getCount() {
+            return 2;
+        }
     }
 
     @Override
@@ -132,57 +110,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mFilterUid = CaptureService.getUidFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
+        statusFragment = null;
+        connectionsFragment = null;
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
                 .apply();
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_activity);
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.main_viewpager);
+        MainPagerAdapter pagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mStartButton = findViewById(R.id.button_start);
-        mCollectorInfo = findViewById(R.id.collector_info);
-        mCaptureStatus = findViewById(R.id.status_view);
-
-        mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if(mState == AppState.ready)
-                    setCollectorInfo(getCollectorIPPref(), getCollectorPortPref());
-            }
-        });
-
-        mStartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("Main", "Clicked");
-
-                if(CaptureService.isServiceActive()) {
-                    CaptureService.stopService();
-                    appStateStopping();
-                } else {
-                    Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
-                    if (vpnPrepareIntent != null)
-                        startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
-                    else
-                        onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
-
-                    appStateStarting();
-                }
-            }
-        });
 
         startLoadingApps();
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
-
-        /* Register for stats update */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                processStatsUpdateIntent(intent);
-            }
-        }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
         /* Register for connections update */
         bcast_man.registerReceiver(new BroadcastReceiver() {
@@ -209,9 +154,180 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
-    private void setCollectorInfo(String collector_ip, String collector_port) {
-        mCollectorInfo.setText(String.format(getResources().getString(R.string.collector_info),
-                collector_ip, collector_port));
+    @Override
+    public void appStateReady() {
+        mState = AppState.ready;
+
+        if(statusFragment != null)
+            statusFragment.appStateReady();
+
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+    }
+
+    @Override
+    public void appStateStarting() {
+        mState = AppState.starting;
+
+        if(statusFragment != null)
+            statusFragment.appStateStarting();
+
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+    }
+
+    @Override
+    public void appStateRunning() {
+        mState = AppState.running;
+
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+
+        if(statusFragment != null)
+            statusFragment.appStateRunning();
+    }
+
+    @Override
+    public void appStateStopping() {
+        mState = AppState.stopping;
+
+        if(statusFragment != null)
+            statusFragment.appStateStopping();
+
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.settings_menu, menu);
+        mMenu = menu;
+
+        // Possibly set an initial app state
+        setAppState();
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        } else if(id == R.id.action_show_app_filter) {
+            openAppSelector();
+            return true;
+        } else if(id == R.id.action_about) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/emanuele-f/RemoteCapture"));
+            startActivity(browserIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
+            Intent intent = new Intent(MainActivity.this, CaptureService.class);
+            Bundle bundle = new Bundle();
+
+            // the configuration for the VPN
+            bundle.putString("dns_server", "8.8.8.8"); // TODO: read system DNS
+            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
+            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
+            bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
+            bundle.putBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, getCaptureUnknownTrafficPref());
+            intent.putExtra("settings", bundle);
+
+            Log.d("Main", "onActivityResult -> start CaptureService");
+
+            startService(intent);
+        }
+    }
+
+    @NonNull
+    @Override
+    public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new AsyncTaskLoader<List<AppDescriptor>>(this) {
+
+            @Nullable
+            @Override
+            public List<AppDescriptor> loadInBackground() {
+                Log.d("AppsLoader", "Loading APPs...");
+                return Utils.getInstalledApps(getContext());
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
+        Log.d("AppsLoader", data.size() + " APPs loaded");
+        mInstalledApps = data;
+
+        if(mFilterUid != -1) {
+            /* An filter is active, try to set the corresponding app image */
+            for(int i=0; i<mInstalledApps.size(); i++) {
+                AppDescriptor app = mInstalledApps.get(i);
+
+                if(app.getUid() == mFilterUid) {
+                    setSelectedAppIcon(app);
+                    break;
+                }
+            }
+        }
+
+        if(mOpenAppsWhenDone)
+            openAppSelector();
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {}
+
+    public void processConnectionsDump(Intent intent) {
+        Bundle bundle = intent.getExtras();
+
+        if(bundle != null) {
+            ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
+
+            Log.i("ConnectionsDump", "TODO: handle " + connections.length + " connections");
+        }
+    }
+
+
+    /* Try to determine the current app state */
+    private void setAppState() {
+        boolean is_active = CaptureService.isServiceActive();
+
+        if(!is_active)
+            appStateReady();
+        else
+            appStateRunning();
+    }
+
+    public void toggleService() {
+        if(CaptureService.isServiceActive()) {
+            CaptureService.stopService();
+            appStateStopping();
+        } else {
+            Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
+            if (vpnPrepareIntent != null)
+                startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
+            else
+                onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
+
+            appStateStarting();
+        }
+    }
+
+    void setStatusFragment(StatusFragment screen) {
+        statusFragment = screen;
+    }
+
+    void setConnectionsFragment(ConnectionsFragment view) {
+        connectionsFragment = view;
+    }
+
+    AppState getState() {
+        return(mState);
     }
 
     private void startLoadingApps() {
@@ -226,44 +342,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             loader = lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
 
         loader.forceLoad();
-    }
-
-    private List<AppDescriptor> getInstalledApps() {
-        PackageManager pm = getPackageManager();
-        List<AppDescriptor> apps = new ArrayList<>();
-        List<PackageInfo> packs = pm.getInstalledPackages(0);
-
-        // Add the "No Filter" app
-        apps.add(new AppDescriptor("", getResources().getDrawable(android.R.drawable.ic_menu_view), getResources().getString(R.string.no_filter), -1));
-
-        for (int i = 0; i < packs.size(); i++) {
-            PackageInfo p = packs.get(i);
-
-            if((p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                String packages = p.applicationInfo.packageName;
-
-                if(!packages.equals("com.emanuelef.remote_capture")) {
-                    String appName = p.applicationInfo.loadLabel(pm).toString();
-                    Drawable icon = p.applicationInfo.loadIcon(pm);
-                    int uid = p.applicationInfo.uid;
-                    apps.add(new AppDescriptor(appName, icon, packages, uid));
-
-                    Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
-                }
-            }
-        }
-        return apps;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.settings_menu, menu);
-        mMenu = menu;
-
-        // Possibly set an initial app state
-        setAppState();
-        return true;
     }
 
     private void setSelectedAppIcon(AppDescriptor app) {
@@ -300,127 +378,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         alert.show();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        } else if(id == R.id.action_show_app_filter) {
-            openAppSelector();
-            return true;
-        } else if(id == R.id.action_about) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/emanuele-f/RemoteCapture"));
-            startActivity(browserIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private String getCollectorIPPref() {
+    String getCollectorIPPref() {
         return(mPrefs.getString(Prefs.PREF_COLLECTOR_IP_KEY, getString(R.string.default_collector_ip)));
     }
 
-    private String getCollectorPortPref() {
+    String getCollectorPortPref() {
         return(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port)));
     }
 
     private boolean getCaptureUnknownTrafficPref() {
         return(mPrefs.getBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, true));
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
-            Intent intent = new Intent(MainActivity.this, CaptureService.class);
-            Bundle bundle = new Bundle();
-
-            // the configuration for the VPN
-            bundle.putString("dns_server", "8.8.8.8"); // TODO: read system DNS
-            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
-            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
-            bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
-            bundle.putBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, getCaptureUnknownTrafficPref());
-            intent.putExtra("settings", bundle);
-
-            Log.d("Main", "onActivityResult -> start CaptureService");
-
-            startService(intent);
-        }
-    }
-
-    @NonNull
-    @Override
-    public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
-        return new AsyncTaskLoader<List<AppDescriptor>>(this) {
-
-            @Nullable
-            @Override
-            public List<AppDescriptor> loadInBackground() {
-                Log.d("AppsLoader", "Loading APPs...");
-                return getInstalledApps();
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
-        Log.d("AppsLoader", data.size() + " APPs loaded");
-        mInstalledApps = data;
-
-        if(mFilterUid != -1) {
-            /* An filter is active, try to set the corresponding app image */
-            for(int i=0; i<mInstalledApps.size(); i++) {
-                AppDescriptor app = mInstalledApps.get(i);
-
-                if(app.getUid() == mFilterUid) {
-                    setSelectedAppIcon(app);
-                    break;
-                }
-            }
-        }
-
-        if(mOpenAppsWhenDone)
-            openAppSelector();
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {}
-
-    public static String formatBytes(long bytes) {
-        long divisor;
-        String suffix;
-        if(bytes < 1024) return bytes + " B";
-
-        if(bytes < 1024*1024)               { divisor = 1024;           suffix = "KB"; }
-        else if(bytes < 1024*1024*1024)     { divisor = 1024*1024;      suffix = "MB"; }
-        else                                { divisor = 1024*1024*1024; suffix = "GB"; }
-
-        return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
-    }
-
-    public void processStatsUpdateIntent(Intent intent) {
-        long bytes_sent = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
-        long bytes_rcvd = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
-        int pkts_sent = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_PKTS, 0);
-        int pkts_rcvd = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_PKTS, 0);
-
-        Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + bytes_sent + ", bytes_rcvd=" +
-                bytes_rcvd + ", pkts_sent=" + pkts_sent + ", pkts_rcvd=" + pkts_rcvd);
-
-        mCaptureStatus.setText(formatBytes(bytes_sent + bytes_rcvd));
-    }
-
-    public void processConnectionsDump(Intent intent) {
-        Bundle bundle = intent.getExtras();
-
-        if(bundle != null) {
-            ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
-
-            Log.i("ConnectionsDump", "TODO: handle " + connections.length + " connections");
-        }
     }
 }
