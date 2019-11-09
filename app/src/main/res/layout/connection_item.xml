@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:paddingHorizontal="10dp"
+    android:paddingHorizontal="5dp"
     android:layout_height="40dp">
 
     <ImageView
         android:layout_width="40dp"
         android:layout_height="match_parent"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="5dp"
         android:id="@+id/icon"/>
 
     <TextView
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.7"
+        android:layout_weight="0.2"
+        android:text="HTTP"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="5dp"
+        android:id="@+id/l7proto"/>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.5"
         android:text="example.org:80"
         android:gravity="center_vertical"
         android:id="@+id/remote"/>

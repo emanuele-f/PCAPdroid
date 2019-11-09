@@ -43,19 +43,21 @@ public class ConnectionsAdapter extends BaseAdapter {
         assert conn != null;
         ImageView icon = convertView.findViewById(R.id.icon);
         TextView remote = convertView.findViewById(R.id.remote);
+        TextView l7proto = convertView.findViewById(R.id.l7proto);
         TextView traffic = convertView.findViewById(R.id.traffic);
         AppDescriptor app = mActivity.findAppByUid(conn.uid);
         Drawable appIcon;
 
-        if(app != null)
-            appIcon = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
-        else
-            appIcon = mUnknownIcon;
-
+        appIcon = (app != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : mUnknownIcon;
         icon.setImageDrawable(appIcon);
 
-        remote.setText(String.format(mActivity.getResources().getString(R.string.ip_and_port),
-                conn.dst_ip, conn.dst_port));
+        if(conn.info.length() > 0)
+            remote.setText(conn.info);
+        else
+            remote.setText(String.format(mActivity.getResources().getString(R.string.ip_and_port),
+                    conn.dst_ip, conn.dst_port));
+
+        l7proto.setText(conn.l7proto);
         traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
 
         return(convertView);

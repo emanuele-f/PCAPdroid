@@ -20,6 +20,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include "zdtun.h"
+#include "ndpi_api.h"
 
 #ifndef REMOTE_CAPTURE_VPNPROXY_H
 #define REMOTE_CAPTURE_VPNPROXY_H
@@ -39,12 +40,12 @@ typedef struct vpnproxy_data {
     int incr_id;
     jint sdk;
     JNIEnv *env;
-    jobject handler_cls; // TODO remove?
     jobject vpn_service;
     u_int32_t vpn_dns;
     u_int32_t public_dns;
     u_int32_t vpn_ipv4;
     bool dns_changed;
+    struct ndpi_detection_module_struct *ndpi;
 
     struct {
         u_int32_t collector_addr;

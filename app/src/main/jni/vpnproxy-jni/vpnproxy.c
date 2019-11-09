@@ -21,10 +21,12 @@
 #include <netinet/ip.h>
 #include "vpnproxy.h"
 #include "pcap.h"
+#include "../../../../../../nDPI/src/include/ndpi_protocol_ids.h"
 
 #define VPN_TAG "VPNProxy"
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
+#define MAX_DPI_PACKETS 12
 
 /* ******************************************************* */
 
@@ -41,12 +43,18 @@ typedef struct dns_packet {
     uint16_t additional_rrs;
     uint8_t initial_dot; // just skip
     uint8_t queries[];
-} dns_packet_t __attribute__((packed));
+} __attribute__((packed)) dns_packet_t;
 
 /* ******************************************************* */
 
 typedef struct conn_data {
     int incr_id; /* an incremental identifier */
+
+    /* nDPI */
+    struct ndpi_flow_struct *ndpi_flow;
+    struct ndpi_id_struct *src_id, *dst_id;
+    ndpi_protocol l7proto;
+
     time_t first_seen;
     time_t last_seen;
     u_int64_t sent_bytes;
@@ -198,6 +206,84 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 
 /* ******************************************************* */
 
+struct ndpi_detection_module_struct* init_ndpi() {
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module();
+    NDPI_PROTOCOL_BITMASK protocols;
+
+    if(!ndpi)
+        return(NULL);
+
+    // enable all the protocols
+    NDPI_BITMASK_SET_ALL(protocols);
+
+    ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
+    ndpi_finalize_initalization(ndpi);
+
+    return(ndpi);
+}
+
+/* ******************************************************* */
+
+void free_ndpi(conn_data_t *data) {
+    if(data->ndpi_flow) {
+        ndpi_free_flow(data->ndpi_flow);
+        data->ndpi_flow = NULL;
+    }
+    if(data->src_id) {
+        ndpi_free(data->src_id);
+        data->src_id = NULL;
+    }
+    if(data->dst_id) {
+        ndpi_free(data->dst_id);
+        data->dst_id = NULL;
+    }
+}
+
+/* ******************************************************* */
+
+const char *getL7ProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol l7proto) {
+    return ndpi_get_proto_name(mod, l7proto.master_protocol);
+}
+
+/* ******************************************************* */
+
+static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const char *packet,
+        ssize_t size, uint8_t from_tap) {
+    bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
+
+    data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, packet, size, data->last_seen,
+                                                  from_tap ? data->src_id : data->dst_id,
+                                                  from_tap ? data->dst_id : data->src_id);
+
+    if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
+            (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))) {
+        if (data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+            uint8_t proto_guessed;
+
+            data->l7proto = ndpi_detection_giveup(proxy->ndpi, data->ndpi_flow, 1 /* Guess */,
+                                                  &proto_guessed);
+        }
+
+        __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "l7proto: app=%d, master=%d",
+                            data->l7proto.app_protocol, data->l7proto.master_protocol);
+
+        switch (data->l7proto.master_protocol) {
+            case NDPI_PROTOCOL_DNS:
+            case NDPI_PROTOCOL_HTTP:
+            case NDPI_PROTOCOL_TLS:
+                if (data->ndpi_flow->host_server_name[0]) {
+                    data->info = strdup(data->ndpi_flow->host_server_name);
+                    __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "info: %s", data->info);
+                }
+                break;
+        }
+
+        free_ndpi(data);
+    }
+}
+
+/* ******************************************************* */
+
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     conn_data_t *data = (conn_data_t*)conn_info->user_data;
@@ -231,6 +317,9 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
     }
 
     data->last_seen = time(NULL);
+
+    if(data->ndpi_flow)
+        process_ndpi_packet(data, proxy, packet, size, from_tap);
 
     if(((proxy->pcap_dump.uid_filter != -1) && (proxy->pcap_dump.uid_filter != uid))
         && (!is_unknown_app || !proxy->pcap_dump.capture_unknown_app_traffic)) {
@@ -323,6 +412,22 @@ static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
         return(1);
     }
 
+    /* nDPI */
+    if((data->ndpi_flow = ndpi_flow_malloc(SIZEOF_FLOW_STRUCT)) == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_flow_malloc failed");
+        free_ndpi(data);
+    }
+
+    if((data->src_id = ndpi_malloc(SIZEOF_ID_STRUCT)) == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_malloc(src_id) failed");
+        free_ndpi(data);
+    }
+
+    if((data->dst_id = ndpi_malloc(SIZEOF_ID_STRUCT)) == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_malloc(dst_id) failed");
+        free_ndpi(data);
+    }
+
     data->incr_id = proxy->incr_id++;
     data->first_seen = data->last_seen = time(NULL);
     data->uid = resolve_uid(proxy, conn_info);
@@ -341,6 +446,8 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "Missing user_data in connection");
         return;
     }
+
+    free_ndpi(data);
 
     if(data->info)
         free(data->info);
@@ -497,6 +604,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     }
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
+    jobject proto_string = (*env)->NewStringUTF(env, getL7ProtoName(proxy->ndpi, data->l7proto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     jobject conn_descriptor = (*env)->NewObject(env, dump_data->conn_cls, dump_data->conn_constructor);
@@ -513,7 +621,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
             conn_info->ipproto, src_string, dst_string, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
             data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
-            data->sent_pkts, data->rcvd_pkts, info_string, data->uid, data->incr_id);
+            data->sent_pkts, data->rcvd_pkts, info_string, proto_string, data->uid, data->incr_id);
 
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
@@ -551,7 +659,7 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* NOTE: must match ConnDescriptor::setData */
     dump_data.conn_set_data = (*env)->GetMethodID(env, dump_data.conn_cls, "setData",
-            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;II)V");
+            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;Ljava/lang/String;II)V");
     if(dump_data.conn_set_data == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(conn_set_data) failed");
         return;
@@ -613,7 +721,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
             servaddr.sin_port = proxy->pcap_dump.collector_port;
             servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
 
-            if(connect(dumper_socket, &servaddr, sizeof(servaddr)) < 0) {
+            if(connect(dumper_socket, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
                 __android_log_print(ANDROID_LOG_ERROR, VPN_TAG,
                                     "connection to the PCAP receiver failed [%d]: %s", errno,
                                     strerror(errno));
@@ -664,6 +772,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     dumper_socket = -1;
     send_header = true;
     running = 1;
+
+    /* nDPI */
+    proxy.ndpi = init_ndpi();
+
+    if(proxy.ndpi == NULL) {
+        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "nDPI initialization failed");
+        return(-1);
+    }
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -750,6 +866,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Stopped packet loop");
 
     ztdun_finalize(tun);
+    ndpi_exit_detection_module(proxy.ndpi);
 
     if(dumper_socket > 0) {
         close(dumper_socket);

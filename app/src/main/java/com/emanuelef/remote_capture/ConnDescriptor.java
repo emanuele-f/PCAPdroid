@@ -19,13 +19,15 @@ class ConnDescriptor implements Serializable {
     int sent_pkts;
     int rcvd_pkts;
     String info;
+    String l7proto;
     int uid;
     int incr_id;
 
     /* Invoked by native code */
     public void setData(int _ipproto, String _src_ip, String _dst_ip, int _src_port, int _dst_port,
                           long _first_seen, long _last_seen, long _sent_bytes, long _rcvd_bytes,
-                          int _sent_pkts, int _rcvd_pkts, String _info, int _uid, int _incr_id) {
+                          int _sent_pkts, int _rcvd_pkts, String _info, String _l7proto, int _uid,
+                          int _incr_id) {
         /* Metadata */
         ipproto = _ipproto;
         src_ip = _src_ip;
@@ -41,6 +43,7 @@ class ConnDescriptor implements Serializable {
         sent_pkts = _sent_pkts;
         rcvd_pkts = _rcvd_pkts;
         info = _info;
+        l7proto = _l7proto;
         uid = _uid;
         incr_id = _incr_id;
     }

@@ -154,7 +154,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        getSupportFragmentManager().putFragment(outState, "ConnectionsFragment", mConnectionsFragment);
+        if(mConnectionsFragment != null)
+            getSupportFragmentManager().putFragment(outState, "ConnectionsFragment", mConnectionsFragment);
     }
 
     @Override
