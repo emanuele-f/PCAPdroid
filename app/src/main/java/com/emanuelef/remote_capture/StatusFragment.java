@@ -23,20 +23,19 @@ public class StatusFragment extends Fragment implements AppStateListener {
     private Button mStartButton;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
-    private MainActivity activity;
+    private MainActivity mActivity;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        activity = (MainActivity) context;
-        activity.setStatusFragment(this);
+        mActivity = (MainActivity) context;
     }
 
     @Override
-    public void onDetach() {
-        activity.setStatusFragment(null);
-        super.onDetach();
+    public void onDestroy() {
+        mActivity.setStatusFragment(null);
+        super.onDestroy();
     }
 
     @Override
@@ -51,13 +50,13 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
 
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
 
         mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if(activity.getState() == MainActivity.AppState.ready)
-                    setCollectorInfo(activity.getCollectorIPPref(), activity.getCollectorPortPref());
+                if(mActivity.getState() == MainActivity.AppState.ready)
+                    setCollectorInfo(mActivity.getCollectorIPPref(), mActivity.getCollectorPortPref());
             }
         });
 
@@ -65,11 +64,11 @@ public class StatusFragment extends Fragment implements AppStateListener {
             @Override
             public void onClick(View view) {
                 Log.d("Main", "Clicked");
-                activity.toggleService();
+                mActivity.toggleService();
             }
         });
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(activity);
+        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(mActivity);
 
         /* Register for stats update */
         bcast_man.registerReceiver(new BroadcastReceiver() {
@@ -78,6 +77,9 @@ public class StatusFragment extends Fragment implements AppStateListener {
                 processStatsUpdateIntent(intent);
             }
         }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
+
+        /* Important: call this after all the fields have been initialized */
+        mActivity.setStatusFragment(this);
     }
 
     @Override
@@ -86,7 +88,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mStartButton.setEnabled(true);
         mCaptureStatus.setText(R.string.ready);
 
-        setCollectorInfo(activity.getCollectorIPPref(), activity.getCollectorPortPref());
+        setCollectorInfo(mActivity.getCollectorIPPref(), mActivity.getCollectorPortPref());
     }
 
     @Override

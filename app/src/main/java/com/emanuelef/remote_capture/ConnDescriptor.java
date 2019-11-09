@@ -1,7 +1,9 @@
 package com.emanuelef.remote_capture;
 
+import java.io.Serializable;
+
 /* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
-class ConnDescriptor {
+class ConnDescriptor implements Serializable {
     /* Metadata */
     int ipproto;
     String src_ip;
@@ -18,11 +20,12 @@ class ConnDescriptor {
     int rcvd_pkts;
     String info;
     int uid;
+    int incr_id;
 
     /* Invoked by native code */
     public void setData(int _ipproto, String _src_ip, String _dst_ip, int _src_port, int _dst_port,
                           long _first_seen, long _last_seen, long _sent_bytes, long _rcvd_bytes,
-                          int _sent_pkts, int _rcvd_pkts, String _info, int _uid) {
+                          int _sent_pkts, int _rcvd_pkts, String _info, int _uid, int _incr_id) {
         /* Metadata */
         ipproto = _ipproto;
         src_ip = _src_ip;
@@ -39,5 +42,6 @@ class ConnDescriptor {
         rcvd_pkts = _rcvd_pkts;
         info = _info;
         uid = _uid;
+        incr_id = _incr_id;
     }
 }

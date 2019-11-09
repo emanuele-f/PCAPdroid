@@ -57,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
     AppState mState;
-    StatusFragment statusFragment;
-    ConnectionsFragment connectionsFragment;
+    StatusFragment mStatusFragment;
+    ConnectionsFragment mConnectionsFragment;
 
     private static final int REQUEST_CODE_VPN = 2;
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            if(position == 0) {
+            if (position == 0) {
                 return new StatusFragment();
             } else {
                 return new ConnectionsFragment();
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         @Override
         public CharSequence getPageTitle(int position) {
-            if(position == 0) {
+            if (position == 0) {
                 return getResources().getString(R.string.status_view);
             } else {
                 return getResources().getString(R.string.connections_view);
@@ -110,8 +110,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mFilterUid = CaptureService.getUidFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
-        statusFragment = null;
-        connectionsFragment = null;
+        mStatusFragment = null;
+        mConnectionsFragment = null;
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -125,6 +125,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        if (savedInstanceState != null) {
+            mConnectionsFragment = (ConnectionsFragment) getSupportFragmentManager().getFragment(savedInstanceState, "ConnectionsFragment");
+        }
+
         startLoadingApps();
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
@@ -135,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onReceive(Context context, Intent intent) {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
-                if(status != null) {
-                    if(status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
+                if (status != null) {
+                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                         appStateReady();
@@ -147,11 +151,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        getSupportFragmentManager().putFragment(outState, "ConnectionsFragment", mConnectionsFragment);
+    }
+
+    @Override
     public void appStateReady() {
         mState = AppState.ready;
 
-        if(statusFragment != null)
-            statusFragment.appStateReady();
+        if (mStatusFragment != null)
+            mStatusFragment.appStateReady();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
     }
@@ -160,8 +171,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void appStateStarting() {
         mState = AppState.starting;
 
-        if(statusFragment != null)
-            statusFragment.appStateStarting();
+        if (mStatusFragment != null)
+            mStatusFragment.appStateStarting();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
@@ -172,16 +183,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
 
-        if(statusFragment != null)
-            statusFragment.appStateRunning();
+        if (mStatusFragment != null)
+            mStatusFragment.appStateRunning();
+
+        if (mConnectionsFragment != null)
+            mConnectionsFragment.reset();
     }
 
     @Override
     public void appStateStopping() {
         mState = AppState.stopping;
 
-        if(statusFragment != null)
-            statusFragment.appStateStopping();
+        if (mStatusFragment != null)
+            mStatusFragment.appStateStopping();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
@@ -192,8 +206,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         menuInflater.inflate(R.menu.settings_menu, menu);
         mMenu = menu;
 
-        // Possibly set an initial app state
-        setAppState();
+        recheckFragments();
+
         return true;
     }
 
@@ -204,21 +218,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        } else if(id == R.id.action_show_app_filter) {
+        } else if (id == R.id.action_show_app_filter) {
             openAppSelector();
             return true;
-        } else if(id == R.id.action_about) {
+        } else if (id == R.id.action_about) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/emanuele-f/RemoteCapture"));
             startActivity(browserIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
             Intent intent = new Intent(MainActivity.this, CaptureService.class);
             Bundle bundle = new Bundle();
 
@@ -255,48 +270,49 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.d("AppsLoader", data.size() + " APPs loaded");
         mInstalledApps = data;
 
-        if(mFilterUid != -1) {
+        if (mFilterUid != -1) {
             /* An filter is active, try to set the corresponding app image */
             AppDescriptor app = findAppByUid(mFilterUid);
 
-            if(app != null)
+            if (app != null)
                 setSelectedAppIcon(app);
         }
 
-        if(mOpenAppsWhenDone)
+        if (mOpenAppsWhenDone)
             openAppSelector();
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {}
+    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {
+    }
 
     AppDescriptor findAppByUid(int uid) {
-        if(mInstalledApps == null)
-            return(null);
+        if (mInstalledApps == null)
+            return (null);
 
-        for(int i=0; i<mInstalledApps.size(); i++) {
+        for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
 
-            if(app.getUid() == uid) {
-                return(app);
+            if (app.getUid() == uid) {
+                return (app);
             }
         }
 
-        return(null);
+        return (null);
     }
 
     /* Try to determine the current app state */
     private void setAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
-        if(!is_active)
+        if (!is_active)
             appStateReady();
         else
             appStateRunning();
     }
 
     public void toggleService() {
-        if(CaptureService.isServiceActive()) {
+        if (CaptureService.isServiceActive()) {
             CaptureService.stopService();
             appStateStopping();
         } else {
@@ -311,11 +327,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     void setStatusFragment(StatusFragment screen) {
-        statusFragment = screen;
+        mStatusFragment = screen;
+        recheckFragments();
     }
 
     void setConnectionsFragment(ConnectionsFragment view) {
-        connectionsFragment = view;
+        mConnectionsFragment = view;
+        recheckFragments();
+    }
+
+    private void recheckFragments() {
+        /* Must wait for the fragments to properly update them */
+        if((mStatusFragment != null) && (mConnectionsFragment != null) && (mMenu != null)) {
+            // Possibly set an initial app state
+            setAppState();
+        }
     }
 
     AppState getState() {

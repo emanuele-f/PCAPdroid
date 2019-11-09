@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class ConnectionsFragment extends Fragment {
+    private static final String TAG = "ConnectionsFragment";
     private MainActivity activity;
     private ConnectionsAdapter mAdapter;
 
@@ -26,13 +27,12 @@ public class ConnectionsFragment extends Fragment {
         super.onAttach(context);
 
         activity = (MainActivity) context;
-        activity.setConnectionsFragment(this);
     }
 
     @Override
-    public void onDetach() {
+    public void onDestroy() {
         activity.setConnectionsFragment(null);
-        super.onDetach();
+        super.onDestroy();
     }
 
     @Override
@@ -59,6 +59,34 @@ public class ConnectionsFragment extends Fragment {
                 processConnectionsDump(intent);
             }
         }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
+
+        if(savedInstanceState != null) {
+            ConnDescriptor connections[] = (ConnDescriptor[]) savedInstanceState.getSerializable("connections");
+
+            if(connections != null) {
+                mAdapter.updateConnections(connections);
+                Log.d(TAG, "Restored " + connections.length + " connections");
+            }
+        }
+
+        /* Important: call this after all the fields have been initialized */
+        activity.setConnectionsFragment(this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        ConnDescriptor items[] = new ConnDescriptor[mAdapter.getCount()];
+
+        for(int i = 0; i<items.length; i++) {
+            ConnDescriptor conn = mAdapter.getItem(i);
+
+            if(conn != null)
+                items[i] = conn;
+        }
+
+        outState.putSerializable("connections", items);
+        Log.d(TAG, "Saved " + items.length + " connections");
     }
 
     private void processConnectionsDump(Intent intent) {
@@ -68,7 +96,12 @@ public class ConnectionsFragment extends Fragment {
             ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
 
             Log.d("ConnectionsDump", "Got " + connections.length + " connections");
-            mAdapter.updateView(connections);
+            mAdapter.updateConnections(connections);
         }
+    }
+
+    void reset() {
+        mAdapter.clear();
+        mAdapter.notifyDataSetChanged();
     }
 }

@@ -36,6 +36,7 @@ typedef struct capture_stats {
 
 typedef struct vpnproxy_data {
     int tapfd;
+    int incr_id;
     jint sdk;
     JNIEnv *env;
     jobject handler_cls; // TODO remove?

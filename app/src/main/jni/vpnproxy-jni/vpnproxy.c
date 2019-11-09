@@ -46,6 +46,7 @@ typedef struct dns_packet {
 /* ******************************************************* */
 
 typedef struct conn_data {
+    int incr_id; /* an incremental identifier */
     time_t first_seen;
     time_t last_seen;
     u_int64_t sent_bytes;
@@ -322,6 +323,7 @@ static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
         return(1);
     }
 
+    data->incr_id = proxy->incr_id++;
     data->first_seen = data->last_seen = time(NULL);
     data->uid = resolve_uid(proxy, conn_info);
     *conn_data = data;
@@ -511,7 +513,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
             conn_info->ipproto, src_string, dst_string, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
             data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
-            data->sent_pkts, data->rcvd_pkts, info_string, data->uid);
+            data->sent_pkts, data->rcvd_pkts, info_string, data->uid, data->incr_id);
 
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
@@ -549,7 +551,7 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* NOTE: must match ConnDescriptor::setData */
     dump_data.conn_set_data = (*env)->GetMethodID(env, dump_data.conn_cls, "setData",
-            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;I)V");
+            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;II)V");
     if(dump_data.conn_set_data == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(conn_set_data) failed");
         return;
@@ -640,6 +642,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .vpn_ipv4 = getIPv4Pref(&proxy, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(&proxy, "getVpnDns"),
             .public_dns = getIPv4Pref(&proxy, "getPublicDns"),
+            .incr_id = 0,
             .pcap_dump = {
                 .collector_addr = getIPv4Pref(&proxy, "getPcapCollectorAddress"),
                 .collector_port = htons(getIntPref(&proxy, "getPcapCollectorPort")),
