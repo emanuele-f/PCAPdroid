@@ -129,14 +129,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
 
-        /* Register for connections update */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                processConnectionsDump(intent);
-            }
-        }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
-
         /* Register for service status */
         bcast_man.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -265,14 +257,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if(mFilterUid != -1) {
             /* An filter is active, try to set the corresponding app image */
-            for(int i=0; i<mInstalledApps.size(); i++) {
-                AppDescriptor app = mInstalledApps.get(i);
+            AppDescriptor app = findAppByUid(mFilterUid);
 
-                if(app.getUid() == mFilterUid) {
-                    setSelectedAppIcon(app);
-                    break;
-                }
-            }
+            if(app != null)
+                setSelectedAppIcon(app);
         }
 
         if(mOpenAppsWhenDone)
@@ -282,16 +270,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {}
 
-    public void processConnectionsDump(Intent intent) {
-        Bundle bundle = intent.getExtras();
+    AppDescriptor findAppByUid(int uid) {
+        if(mInstalledApps == null)
+            return(null);
 
-        if(bundle != null) {
-            ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
+        for(int i=0; i<mInstalledApps.size(); i++) {
+            AppDescriptor app = mInstalledApps.get(i);
 
-            Log.i("ConnectionsDump", "TODO: handle " + connections.length + " connections");
+            if(app.getUid() == uid) {
+                return(app);
+            }
         }
-    }
 
+        return(null);
+    }
 
     /* Try to determine the current app state */
     private void setAppState() {

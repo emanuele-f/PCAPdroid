@@ -35,7 +35,7 @@
         android:id="@+id/status_view"
         android:layout_width="240dp"
         android:layout_height="240dp"
-        android:layout_marginTop="88dp"
+        android:layout_marginTop="50dp"
         android:background="@drawable/rounded_bg"
         android:gravity="center"
         android:text="@string/ready"

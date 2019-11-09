@@ -511,7 +511,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
             conn_info->ipproto, src_string, dst_string, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
             data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
-            data->sent_pkts, data->rcvd_pkts, info_string, data->info);
+            data->sent_pkts, data->rcvd_pkts, info_string, data->uid);
 
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);

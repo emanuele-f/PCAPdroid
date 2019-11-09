@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="40dp"
         android:textStyle="italic"
         android:textSize="15dp"
         android:text="@string/no_connections">
