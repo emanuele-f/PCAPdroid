@@ -632,7 +632,7 @@ static int running = 0;
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
-    time_t last_connections_dump = time(NULL);
+    time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
 
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,

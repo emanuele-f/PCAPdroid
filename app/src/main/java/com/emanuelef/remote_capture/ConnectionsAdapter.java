@@ -21,10 +21,12 @@ public class ConnectionsAdapter extends BaseAdapter {
     private static final String TAG = "ConnectionsAdapter";
     private MainActivity mActivity;
     private ArrayList<ConnDescriptor> mItems;
+    private Drawable mUnknownIcon;
 
     ConnectionsAdapter(MainActivity context) {
         mActivity = context;
         mItems = new ArrayList<>();
+        mUnknownIcon = mActivity.getResources().getDrawable(android.R.drawable.ic_menu_help);
     }
 
     @NonNull
@@ -48,7 +50,7 @@ public class ConnectionsAdapter extends BaseAdapter {
         if(app != null)
             appIcon = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
         else
-            appIcon = mActivity.getResources().getDrawable(android.R.drawable.ic_menu_help);
+            appIcon = mUnknownIcon;
 
         icon.setImageDrawable(appIcon);
 
@@ -87,17 +89,18 @@ public class ConnectionsAdapter extends BaseAdapter {
             }
         });
 
-        /* The existing items will be updated, wherease the new
-         * items will be added. Old items will be just set as closed. */
+        /* NOTE: we could just replace all the connections objects instead of the merge code
+         * below. However, the code below might be useful in the future to implement more complex
+         * status change/cleanup. */
         int adapter_pos = 0;
 
         for (ConnDescriptor eval_conn : connections) {
             ConnDescriptor adapter_conn = getItem(adapter_pos);
 
-            /* Skip the closed connections */
+            /* Remove the closed connections */
             while ((adapter_conn != null) && (eval_conn.incr_id > adapter_conn.incr_id)) {
-                // TODO set closed
-                adapter_conn = getItem(++adapter_pos);
+                mItems.remove(adapter_pos);
+                adapter_conn = getItem(adapter_pos);
             }
 
             if (adapter_conn == null)
