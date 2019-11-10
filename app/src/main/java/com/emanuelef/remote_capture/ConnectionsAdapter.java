@@ -19,6 +19,7 @@ import java.util.Objects;
 
 public class ConnectionsAdapter extends BaseAdapter {
     private static final String TAG = "ConnectionsAdapter";
+    private static final int MIN_CONNECTION_DISPLAY_SECONDS = 10;
     private MainActivity mActivity;
     private ArrayList<ConnDescriptor> mItems;
     private Drawable mUnknownIcon;
@@ -83,6 +84,8 @@ public class ConnectionsAdapter extends BaseAdapter {
     }
 
     void updateConnections(ConnDescriptor[] connections) {
+        long now = Utils.now();
+
         /* Sort connections by ascending ID */
         Arrays.sort(connections, new Comparator<ConnDescriptor>() {
             @Override
@@ -91,17 +94,17 @@ public class ConnectionsAdapter extends BaseAdapter {
             }
         });
 
-        /* NOTE: we could just replace all the connections objects instead of the merge code
-         * below. However, the code below might be useful in the future to implement more complex
-         * status change/cleanup. */
         int adapter_pos = 0;
 
         for (ConnDescriptor eval_conn : connections) {
             ConnDescriptor adapter_conn = getItem(adapter_pos);
 
-            /* Remove the closed connections */
+            /* Check the closed connections */
             while ((adapter_conn != null) && (eval_conn.incr_id > adapter_conn.incr_id)) {
-                mItems.remove(adapter_pos);
+                if((now - adapter_conn.first_seen) >= MIN_CONNECTION_DISPLAY_SECONDS)
+                    mItems.remove(adapter_pos);
+                else
+                    adapter_pos++;
                 adapter_conn = getItem(adapter_pos);
             }
 

@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class Utils {
@@ -48,5 +49,10 @@ public class Utils {
             }
         }
         return apps;
+    }
+
+    public static long now() {
+        Calendar calendar = Calendar.getInstance();
+        return(calendar.getTimeInMillis() / 1000);
     }
 }

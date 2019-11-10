@@ -63,6 +63,7 @@ typedef struct conn_data {
     u_int32_t rcvd_pkts;
     char *info;
     int uid;
+    bool notified;
 } conn_data_t;
 
 /* ******************************************************* */
@@ -439,6 +440,20 @@ static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
 
 /* ******************************************************* */
 
+static void free_connection_data(conn_data_t *data) {
+    if(!data)
+        return;
+
+    free_ndpi(data);
+
+    if(data->info)
+        free(data->info);
+
+    free(data);
+}
+
+/* ******************************************************* */
+
 static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     conn_data_t *data = (conn_data_t*) conn_info->user_data;
 
@@ -447,12 +462,35 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         return;
     }
 
-    free_ndpi(data);
+    if(!data->notified) {
+        /* Connection was not notified to java. Copy it to a special list of pending connections */
+        vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
-    if(data->info)
-        free(data->info);
+        if(proxy->cur_notif_pending >= proxy->notif_pending_size) {
+            /* Extend array */
+            if(proxy->notif_pending_size == 0)
+                proxy->notif_pending_size = 8;
+            else
+                proxy->notif_pending_size *= 2;
 
-    free(data);
+            proxy->notif_pending = realloc(proxy->notif_pending, proxy->notif_pending_size * sizeof(zdtun_conn_t));
+
+            if(proxy->notif_pending == NULL) {
+                __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "realloc(notif_pending) failed");
+                return;
+            }
+        }
+
+        memcpy(&proxy->notif_pending[proxy->cur_notif_pending], conn_info, sizeof(zdtun_conn_t));
+        proxy->cur_notif_pending++;
+
+        __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Pending conns: %u/%u", proxy->cur_notif_pending, proxy->notif_pending_size);
+
+        /* Will free the data in sendConnectionsDump */
+        return;
+    }
+
+    free_connection_data(data);
 }
 
 /* ******************************************************* */
@@ -619,6 +657,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
 
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
+    data->notified = true;
 
     /* Continue */
     return(0);
@@ -630,7 +669,7 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     dump_data_t dump_data = {0};
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
 
-    dump_data.num_connections = zdtun_get_num_connections(tun);
+    dump_data.num_connections = zdtun_get_num_connections(tun) + proxy->cur_notif_pending;
 
     jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "sendConnectionsDump",
                                               "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
@@ -668,6 +707,21 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* Add connections to the array */
     zdtun_iter_connections(tun, connection_dumper, &dump_data);
+
+    /* Handle possibly pending data */
+    if(proxy->cur_notif_pending > 0) {
+        __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Processing %u pending conns", proxy->cur_notif_pending);
+
+        for(int i = 0; i < proxy->cur_notif_pending; i++) {
+            connection_dumper(tun, &proxy->notif_pending[i], &dump_data);
+            free_connection_data(proxy->notif_pending[i].user_data);
+        }
+
+        /* Empty the pending notifications list */
+        free(proxy->notif_pending);
+        proxy->notif_pending = NULL;
+        proxy->cur_notif_pending = proxy->notif_pending_size = 0;
+    }
 
     /* Send the dump */
     (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, dump_data.connections);
@@ -860,6 +914,16 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     ztdun_finalize(tun);
     ndpi_exit_detection_module(proxy.ndpi);
+
+    /* Free possible pending data */
+    if(proxy.cur_notif_pending > 0) {
+        for(int i = 0; i < proxy.cur_notif_pending; i++) {
+            free_connection_data(proxy.notif_pending[i].user_data);
+        }
+
+        /* Empty the pending notifications list */
+        free(proxy.notif_pending);
+    }
 
     if(dumper_socket > 0) {
         close(dumper_socket);

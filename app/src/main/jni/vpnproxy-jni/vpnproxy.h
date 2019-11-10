@@ -46,6 +46,9 @@ typedef struct vpnproxy_data {
     u_int32_t vpn_ipv4;
     bool dns_changed;
     struct ndpi_detection_module_struct *ndpi;
+    zdtun_conn_t *notif_pending;
+    u_int32_t cur_notif_pending;
+    u_int32_t notif_pending_size;
 
     struct {
         u_int32_t collector_addr;
