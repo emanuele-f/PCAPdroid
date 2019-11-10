@@ -265,6 +265,9 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
                                                   &proto_guessed);
         }
 
+        if(data->l7proto.master_protocol == 0)
+            data->l7proto.master_protocol = data->l7proto.app_protocol;
+
         __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "l7proto: app=%d, master=%d",
                             data->l7proto.app_protocol, data->l7proto.master_protocol);
 
