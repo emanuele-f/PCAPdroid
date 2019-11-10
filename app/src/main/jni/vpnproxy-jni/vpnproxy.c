@@ -413,17 +413,17 @@ static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
     }
 
     /* nDPI */
-    if((data->ndpi_flow = ndpi_flow_malloc(SIZEOF_FLOW_STRUCT)) == NULL) {
+    if((data->ndpi_flow = calloc(1, SIZEOF_FLOW_STRUCT)) == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_flow_malloc failed");
         free_ndpi(data);
     }
 
-    if((data->src_id = ndpi_malloc(SIZEOF_ID_STRUCT)) == NULL) {
+    if((data->src_id = calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_malloc(src_id) failed");
         free_ndpi(data);
     }
 
-    if((data->dst_id = ndpi_malloc(SIZEOF_ID_STRUCT)) == NULL) {
+    if((data->dst_id = calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ndpi_malloc(dst_id) failed");
         free_ndpi(data);
     }
@@ -609,19 +609,13 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     jobject conn_descriptor = (*env)->NewObject(env, dump_data->conn_cls, dump_data->conn_constructor);
 
-    if(!conn_descriptor) {
-        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "ConnDescriptor constructor failed");
-
-        /* Abort */
-        return(1);
-    }
-
     /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
      * SetIntField like methods could be used. */
     (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
-            conn_info->ipproto, src_string, dst_string, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
+            src_string, dst_string, info_string, proto_string,
+            conn_info->ipproto, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
             data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
-            data->sent_pkts, data->rcvd_pkts, info_string, proto_string, data->uid, data->incr_id);
+            data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
 
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
@@ -659,7 +653,8 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* NOTE: must match ConnDescriptor::setData */
     dump_data.conn_set_data = (*env)->GetMethodID(env, dump_data.conn_cls, "setData",
-            "(ILjava/lang/String;Ljava/lang/String;IIJJJJIILjava/lang/String;Ljava/lang/String;II)V");
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
+
     if(dump_data.conn_set_data == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(conn_set_data) failed");
         return;
@@ -676,8 +671,6 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* Send the dump */
     (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, dump_data.connections);
-
-    (*env)->DeleteLocalRef(env, dump_data.connections);
 }
 
 /* ******************************************************* */

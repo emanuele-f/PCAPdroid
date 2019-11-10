@@ -23,11 +23,13 @@ class ConnDescriptor implements Serializable {
     int uid;
     int incr_id;
 
-    /* Invoked by native code */
-    public void setData(int _ipproto, String _src_ip, String _dst_ip, int _src_port, int _dst_port,
-                          long _first_seen, long _last_seen, long _sent_bytes, long _rcvd_bytes,
-                          int _sent_pkts, int _rcvd_pkts, String _info, String _l7proto, int _uid,
-                          int _incr_id) {
+    /* Invoked by native code
+    * NOTE: interleaving String and int in the parameters is not good as it makes the app crash
+    * nto the emulator! Better to put the strings first. */
+    public void setData(String _src_ip, String _dst_ip, String _info, String _l7proto,
+                        int _ipproto, int _src_port, int _dst_port, long _first_seen, long _last_seen,
+                        long _sent_bytes, long _rcvd_bytes, int _sent_pkts, int _rcvd_pkts, int _uid,
+                        int _incr_id) {
         /* Metadata */
         ipproto = _ipproto;
         src_ip = _src_ip;
