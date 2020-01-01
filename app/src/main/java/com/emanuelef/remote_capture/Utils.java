@@ -29,6 +29,29 @@ public class Utils {
         return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
     }
 
+    public static String formatPkts(long pkts) {
+        long divisor;
+        String suffix;
+        if(pkts < 1000) return Long.toString(pkts);
+
+        if(pkts < 1000*1000)               { divisor = 1000;           suffix = "K"; }
+        else if(pkts < 1000*1000*1000)     { divisor = 1000*1000;      suffix = "M"; }
+        else                               { divisor = 1000*1000*1000; suffix = "G"; }
+
+        return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
+    }
+
+    public static String formatDuration(long seconds) {
+        if(seconds == 0)
+            return "< 1 s";
+        else if(seconds < 60)
+            return String.format("%d s", seconds);
+        else if(seconds < 3600)
+            return String.format("> %d m", seconds / 60);
+        else
+            return String.format("> %d h", seconds / 3600);
+    }
+
     public static List<AppDescriptor> getInstalledApps(Context context) {
         PackageManager pm = context.getPackageManager();
         List<AppDescriptor> apps = new ArrayList<>();
@@ -54,6 +77,15 @@ public class Utils {
             }
         }
         return apps;
+    }
+
+    public static String proto2str(int proto) {
+        switch(proto) {
+            case 6:     return "TCP";
+            case 17:    return "UDP";
+            case 1:     return "ICMP";
+            default:    return(Integer.toString(proto));
+        }
     }
 
     public static String getDnsServer(Context context) {

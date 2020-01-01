@@ -6,6 +6,10 @@
     <string name="no_filter">No Filter</string>
     <string name="collector_info">UDP Collector: %1$s:%2$s</string>
     <string name="ip_and_port">%1$s:%2$d</string>
+    <string name="up_and_down">%1$s down — %2$s up</string>
+    <string name="app_and_proto">%1$s (%2$s)</string>
+    <string name="query">Query</string>
+    <string name="host">Host</string>
 
     <!-- Defaults -->
     <string name="default_collector_ip">127.0.0.1</string>
@@ -26,5 +30,15 @@
     <string name="status_view">Status</string>
     <string name="connections_view">Connections</string>
     <string name="no_connections">No connections</string>
+    <string name="connection_details">Connection Details</string>
+    <string name="app">App</string>
+    <string name="protocol">Protocol</string>
+    <string name="sni">SNI</string>
+    <string name="source">Source</string>
+    <string name="destination">Destination</string>
+    <string name="url">URL</string>
+    <string name="bytes">Bytes</string>
+    <string name="packets">Packets</string>
+    <string name="duration">Duration</string>
 </resources>
 

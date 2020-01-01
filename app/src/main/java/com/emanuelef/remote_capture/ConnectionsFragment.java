@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -49,6 +50,32 @@ public class ConnectionsFragment extends Fragment {
 
         mAdapter = new ConnectionsAdapter(activity);
         connList.setAdapter(mAdapter);
+        connList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
+                ConnDescriptor item = (ConnDescriptor) adapterView.getItemAtPosition(pos);
+
+                if(item != null) {
+                    Intent intent = new Intent(getContext(), ConnectionDetails.class);
+                    AppDescriptor app = activity.findAppByUid(item.uid);
+                    String app_name = null;//;1051
+
+                    if(app != null)
+                        app_name = app.getName();
+                    else if(item.uid == 1000)
+                        app_name = "system";
+                    else if(item.uid == 1051)
+                        app_name = "netd";
+
+                    intent.putExtra(ConnectionDetails.CONN_EXTRA_KEY, item);
+
+                    if(app_name != null)
+                        intent.putExtra(ConnectionDetails.APP_NAME_EXTRA_KEY, app_name);
+
+                    startActivity(intent);
+                }
+            }
+        });
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(activity);
 

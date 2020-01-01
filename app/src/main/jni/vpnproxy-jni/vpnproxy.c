@@ -19,6 +19,7 @@
 
 #include <netinet/udp.h>
 #include <netinet/ip.h>
+#include <ndpi_typedefs.h>
 #include "vpnproxy.h"
 #include "pcap.h"
 #include "../../../../../../nDPI/src/include/ndpi_protocol_ids.h"
@@ -62,6 +63,7 @@ typedef struct conn_data {
     u_int32_t sent_pkts;
     u_int32_t rcvd_pkts;
     char *info;
+    char *url;
     int uid;
     bool notified;
 } conn_data_t;
@@ -273,9 +275,14 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 
         switch (data->l7proto.master_protocol) {
             case NDPI_PROTOCOL_DNS:
-            case NDPI_PROTOCOL_HTTP:
-                if (data->ndpi_flow->host_server_name[0])
+                if(data->ndpi_flow->host_server_name[0])
                     data->info = strdup(data->ndpi_flow->host_server_name);
+                break;
+            case NDPI_PROTOCOL_HTTP:
+                if(data->ndpi_flow->host_server_name[0])
+                    data->info = strdup(data->ndpi_flow->host_server_name);
+                if(data->ndpi_flow->http.url)
+                    data->url = strdup(data->ndpi_flow->http.url);
                 break;
             case NDPI_PROTOCOL_TLS:
                 if(data->ndpi_flow->protos.stun_ssl.ssl.client_certificate[0])
@@ -455,6 +462,9 @@ static void free_connection_data(conn_data_t *data) {
 
     if(data->info)
         free(data->info);
+
+    if(data->url)
+        free(data->url);
 
     free(data);
 }
@@ -649,6 +659,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     }
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
+    jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
     jobject proto_string = (*env)->NewStringUTF(env, getL7ProtoName(proxy->ndpi, data->l7proto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
@@ -657,7 +668,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
      * SetIntField like methods could be used. */
     (*env)->CallVoidMethod(env, conn_descriptor, dump_data->conn_set_data,
-            src_string, dst_string, info_string, proto_string,
+            src_string, dst_string, info_string, url_string, proto_string,
             conn_info->ipproto, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
             data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
             data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
@@ -699,7 +710,7 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* NOTE: must match ConnDescriptor::setData */
     dump_data.conn_set_data = (*env)->GetMethodID(env, dump_data.conn_cls, "setData",
-            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
 
     if(dump_data.conn_set_data == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(conn_set_data) failed");
