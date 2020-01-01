@@ -1,12 +1,17 @@
 package com.emanuelef.remote_capture;
 
+import android.app.Service;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.os.Build;
 import android.util.Log;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -49,6 +54,25 @@ public class Utils {
             }
         }
         return apps;
+    }
+
+    public static String getDnsServer(Context context) {
+        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Service.CONNECTIVITY_SERVICE);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Network net = conn.getActiveNetwork();
+
+            if(net != null) {
+                List<InetAddress> dns_server = conn.getLinkProperties(net).getDnsServers();
+
+                for(InetAddress server : dns_server) {
+                    return server.getHostAddress();
+                }
+            }
+        }
+
+        // Fallback
+        return "8.8.8.8";
     }
 
     public static long now() {

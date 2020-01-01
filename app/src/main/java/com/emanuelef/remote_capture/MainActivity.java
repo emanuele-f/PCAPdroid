@@ -237,9 +237,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
             Intent intent = new Intent(MainActivity.this, CaptureService.class);
             Bundle bundle = new Bundle();
+            String dns_server = Utils.getDnsServer(getApplicationContext());
+
+            Log.i("Main", "Using DNS server " + dns_server);
 
             // the configuration for the VPN
-            bundle.putString("dns_server", "8.8.8.8"); // TODO: read system DNS
+            bundle.putString("dns_server", dns_server);
             bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
             bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
             bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
