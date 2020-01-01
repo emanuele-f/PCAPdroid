@@ -208,7 +208,7 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, siz
 /* ******************************************************* */
 
 struct ndpi_detection_module_struct* init_ndpi() {
-    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module();
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
     NDPI_PROTOCOL_BITMASK protocols;
 
     if(!ndpi)
@@ -274,13 +274,17 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
         switch (data->l7proto.master_protocol) {
             case NDPI_PROTOCOL_DNS:
             case NDPI_PROTOCOL_HTTP:
-            case NDPI_PROTOCOL_TLS:
-                if (data->ndpi_flow->host_server_name[0]) {
+                if (data->ndpi_flow->host_server_name[0])
                     data->info = strdup(data->ndpi_flow->host_server_name);
-                    __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "info: %s", data->info);
-                }
+                break;
+            case NDPI_PROTOCOL_TLS:
+                if(data->ndpi_flow->protos.stun_ssl.ssl.client_certificate[0])
+                    data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_certificate);
                 break;
         }
+
+        if(data->info)
+            __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "info: %s", data->info);
 
         free_ndpi(data);
     }
