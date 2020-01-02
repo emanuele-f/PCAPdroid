@@ -285,8 +285,8 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
                     data->url = strdup(data->ndpi_flow->http.url);
                 break;
             case NDPI_PROTOCOL_TLS:
-                if(data->ndpi_flow->protos.stun_ssl.ssl.client_certificate[0])
-                    data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_certificate);
+                if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0])
+                    data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
                 break;
         }
 
