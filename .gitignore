@@ -11,3 +11,4 @@
 /build
 /captures
 .externalNativeBuild
+.cxx

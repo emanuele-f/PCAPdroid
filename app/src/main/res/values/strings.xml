@@ -26,7 +26,7 @@
     <string name="about">Instructions</string>
     <string name="capture_unknown_app">Capture Unknown Traffic</string>
     <string name="capture_unknown_app_summary">When an app filter is set, also capture general purpose traffic which cannot be associated to a specific app. This is usually needed to properly capture DNS traffic.</string>
-    <string name="capture_prefs">Capture</string>
+    <string name="misc_prefs">Misc</string>
     <string name="status_view">Status</string>
     <string name="connections_view">Connections</string>
     <string name="no_connections">No connections</string>
@@ -40,5 +40,14 @@
     <string name="bytes">Bytes</string>
     <string name="packets">Packets</string>
     <string name="duration">Duration</string>
+    <string name="http_server">HTTP Server</string>
+    <string name="udp_exporter">UDP Exporter</string>
+    <string name="no_dump">None</string>
+    <string name="no_dump_info">PCAP will not be dumped</string>
+    <string name="http_server_info">Start an HTTP server for the PCAP download</string>
+    <string name="udp_exporter_info">Sends the PCAP to an UDP receiver</string>
+    <string name="http_server_port">HTTP Server Port</string>
+    <string name="receiver_ip_address">Receiver IP Address</string>
+    <string name="receiver_port">Receiver Port</string>
 </resources>
 

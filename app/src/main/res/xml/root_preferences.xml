@@ -14,35 +14,49 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory app:title="@string/collector_prefs_header" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="PCAP Dump" app:iconSpaceReserved="false">
+        <ListPreference
+            app:key="pcap_dump_mode"
+            app:title="Dump Mode"
+            app:iconSpaceReserved="false"
+            app:summary="@string/no_dump_info"
+            app:defaultValue="http_server"
+            app:entries="@array/pcap_dump_modes_labels"
+            app:entryValues="@array/pcap_dump_modes"/>
+
+        <EditTextPreference
+            app:key="http_server_port"
+            app:title="@string/http_server_port"
+            app:defaultValue="8080"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
             app:key="collector_ip_address"
-            app:title="@string/ip_address"
+            app:title="@string/receiver_ip_address"
             app:iconSpaceReserved="false"
             app:defaultValue="@string/default_collector_ip"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
             app:key="collector_port"
-            app:title="@string/port"
+            app:title="@string/receiver_port"
             app:iconSpaceReserved="false"
             app:defaultValue="@string/default_collector_port"
             app:useSimpleSummaryProvider="true" />
-
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/misc_prefs" app:iconSpaceReserved="false">
 
-    <SwitchPreference
-        app:key="capture_unknown_app"
-        app:title="@string/capture_unknown_app"
-        app:iconSpaceReserved="false"
-        app:summary="@string/capture_unknown_app_summary"
-        app:defaultValue="true" />
+        <SwitchPreference
+            app:key="capture_unknown_app"
+            app:title="@string/capture_unknown_app"
+            app:iconSpaceReserved="false"
+            app:summary="@string/capture_unknown_app_summary"
+            app:defaultValue="true" />
 
     </PreferenceCategory>
-
 </PreferenceScreen>
