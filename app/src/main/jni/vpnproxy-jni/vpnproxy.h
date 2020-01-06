@@ -49,15 +49,23 @@ typedef struct vpnproxy_data {
     zdtun_conn_t *notif_pending;
     u_int32_t cur_notif_pending;
     u_int32_t notif_pending_size;
+    int uid_filter;
+    bool capture_unknown_app_traffic;
+    uint64_t now_ms;
 
     struct {
         u_int32_t collector_addr;
         u_int16_t collector_port;
-        int uid_filter;
         bool tcp_socket;
-        bool capture_unknown_app_traffic;
         bool enabled;
     } pcap_dump;
+
+    struct {
+        bool enabled;
+        u_char *buffer;
+        int buffer_idx;
+        u_int64_t last_dump_ms;
+    } java_dump;
 
     capture_stats_t capture_stats;
 } vpnproxy_data_t;

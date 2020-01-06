@@ -14,13 +14,12 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory app:title="PCAP Dump" app:iconSpaceReserved="false">
         <ListPreference
             app:key="pcap_dump_mode"
-            app:title="Dump Mode"
+            app:title="@string/dump_mode"
             app:iconSpaceReserved="false"
             app:summary="@string/no_dump_info"
             app:defaultValue="http_server"

@@ -4,12 +4,14 @@
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
     <string name="no_filter">No Filter</string>
-    <string name="collector_info">UDP Collector: %1$s:%2$s</string>
+    <string name="collector_info">UDP Collector: %1$s:%2$d</string>
+    <string name="http_server_status">HTTP Server: http://%1$s:%2$d</string>
     <string name="ip_and_port">%1$s:%2$d</string>
     <string name="up_and_down">%1$s down — %2$s up</string>
     <string name="app_and_proto">%1$s (%2$s)</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
+    <string name="capture_not_started">Capture not running!</string>
 
     <!-- Defaults -->
     <string name="default_collector_ip">127.0.0.1</string>
@@ -45,9 +47,10 @@
     <string name="no_dump">None</string>
     <string name="no_dump_info">PCAP will not be dumped</string>
     <string name="http_server_info">Start an HTTP server for the PCAP download</string>
-    <string name="udp_exporter_info">Sends the PCAP to an UDP receiver</string>
+    <string name="udp_exporter_info">Sends the PCAP to a remote UDP receiver</string>
     <string name="http_server_port">HTTP Server Port</string>
     <string name="receiver_ip_address">Receiver IP Address</string>
     <string name="receiver_port">Receiver Port</string>
+    <string name="dump_mode">Dump Mode</string>
 </resources>
 

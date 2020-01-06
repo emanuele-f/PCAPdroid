@@ -37,4 +37,5 @@ dependencies {
     implementation project(path: ':zdtun')
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     implementation project(path: ':ndpi')
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
 }

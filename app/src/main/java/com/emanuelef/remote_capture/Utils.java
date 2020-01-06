@@ -12,8 +12,10 @@ import android.os.Build;
 import android.util.Log;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class Utils {
@@ -107,8 +109,38 @@ public class Utils {
         return "8.8.8.8";
     }
 
+    public static String getLocalIPAddress() {
+        // https://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device-from-code
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress() /* Exclude public IPs */) {
+                        String sAddr = addr.getHostAddress();
+                        boolean isIPv4 = sAddr.indexOf(':')<0;
+
+                        if(isIPv4)
+                            return sAddr;
+                    }
+                }
+            }
+        } catch (Exception ignored) { }
+        return "";
+    }
+
     public static long now() {
         Calendar calendar = Calendar.getInstance();
         return(calendar.getTimeInMillis() / 1000);
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 }

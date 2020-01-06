@@ -237,16 +237,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
             Intent intent = new Intent(MainActivity.this, CaptureService.class);
             Bundle bundle = new Bundle();
-            String dns_server = Utils.getDnsServer(getApplicationContext());
 
-            Log.i("Main", "Using DNS server " + dns_server);
-
-            // the configuration for the VPN
-            bundle.putString("dns_server", dns_server);
-            bundle.putString(Prefs.PREF_COLLECTOR_IP_KEY, getCollectorIPPref());
-            bundle.putInt(Prefs.PREF_COLLECTOR_PORT_KEY, Integer.parseInt(getCollectorPortPref()));
             bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
-            bundle.putBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, getCaptureUnknownTrafficPref());
             intent.putExtra("settings", bundle);
 
             Log.d("Main", "onActivityResult -> start CaptureService");
@@ -398,17 +390,5 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         alert.show();
-    }
-
-    String getCollectorIPPref() {
-        return(mPrefs.getString(Prefs.PREF_COLLECTOR_IP_KEY, getString(R.string.default_collector_ip)));
-    }
-
-    String getCollectorPortPref() {
-        return(mPrefs.getString(Prefs.PREF_COLLECTOR_PORT_KEY, getString(R.string.default_collector_port)));
-    }
-
-    private boolean getCaptureUnknownTrafficPref() {
-        return(mPrefs.getBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC, true));
     }
 }

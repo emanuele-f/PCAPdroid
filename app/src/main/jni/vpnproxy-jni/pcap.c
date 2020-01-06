@@ -23,33 +23,13 @@
 #include <sys/socket.h>
 #include <android/log.h>
 #include <errno.h>
+#include "pcap.h"
 
 /* ******************************************************* */
 
 #define LINKTYPE_RAW 101
 #define PCAP_TAG "PCAP_DUMP"
 #define SNAPLEN 65535
-
-typedef uint16_t guint16_t;
-typedef uint32_t guint32_t;
-typedef int32_t gint32_t;
-
-typedef struct pcap_hdr_s {
-    guint32_t magic_number;
-    guint16_t version_major;
-    guint16_t version_minor;
-    gint32_t thiszone;
-    guint32_t sigfigs;
-    guint32_t snaplen;
-    guint32_t network;
-} __packed pcap_hdr_s;
-
-typedef struct pcaprec_hdr_s {
-    guint32_t ts_sec;
-    guint32_t ts_usec;
-    guint32_t incl_len;
-    guint32_t orig_len;
-} __packed pcaprec_hdr_s;
 
 /* ******************************************************* */
 
@@ -61,6 +41,30 @@ static uint8_t pcap_buffer[sizeof(struct pcaprec_hdr_s) + SNAPLEN];
 static void write_pcap(int fd, const struct sockaddr *srv, size_t srv_size, const void *ptr, size_t len) {
   if(sendto(fd, ptr, len, 0, srv, srv_size) < 0)
       __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "sendto error[%d]: %s", errno, strerror(errno));
+}
+
+/* ******************************************************* */
+
+static size_t init_pcap_rec_hdr(struct pcaprec_hdr_s *pcap_rec, int length) {
+    size_t incl_len;
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts))
+        __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "clock_gettime error[%d]: %s", errno, strerror(errno));
+
+    incl_len = (length < SNAPLEN ? length : SNAPLEN);
+
+    pcap_rec->ts_sec = (guint32_t) ts.tv_sec;
+    pcap_rec->ts_usec = (guint32_t) (ts.tv_nsec / 1000);
+    pcap_rec->incl_len = (guint32_t) incl_len;
+    pcap_rec->orig_len = (guint32_t) length;
+
+    pcap_rec->ts_sec = (guint32_t) ts.tv_sec;
+    pcap_rec->ts_usec = (guint32_t) (ts.tv_nsec / 1000);
+    pcap_rec->incl_len = (guint32_t) incl_len;
+    pcap_rec->orig_len = (guint32_t) length;
+
+    return(incl_len);
 }
 
 /* ******************************************************* */
@@ -80,23 +84,28 @@ void write_pcap_hdr(int fd, const struct sockaddr *srv, size_t srv_size) {
 /* ******************************************************* */
 
 void write_pcap_rec(int fd, const struct sockaddr *srv, size_t srv_size, const uint8_t *buffer, size_t length) {
-    size_t incl_len, tot_len;
-    struct timespec ts;
-    struct pcaprec_hdr_s *pcap_rec;
+    struct pcaprec_hdr_s *pcap_rec = (struct pcaprec_hdr_s *) pcap_buffer;
 
-    if (clock_gettime(CLOCK_REALTIME, &ts))
-        __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "clock_gettime error[%d]: %s", errno, strerror(errno));
+    size_t incl_len = init_pcap_rec_hdr(pcap_rec, length);
+    size_t tot_len = sizeof(struct pcaprec_hdr_s) + incl_len;
 
-    incl_len = (length < SNAPLEN ? length : SNAPLEN);
-    tot_len = sizeof(struct pcaprec_hdr_s) + incl_len;
-
-    pcap_rec = (struct pcaprec_hdr_s *) pcap_buffer;
-    pcap_rec->ts_sec = (guint32_t) ts.tv_sec;
-    pcap_rec->ts_usec = (guint32_t) (ts.tv_nsec / 1000);
-    pcap_rec->incl_len = (guint32_t) incl_len;
-    pcap_rec->orig_len = (guint32_t) length;
-
+    // NOTE: use incl_size as the packet may be cut due to the SNAPLEN
     memcpy(pcap_buffer + sizeof(struct pcaprec_hdr_s), buffer, incl_len);
 
     write_pcap(fd, srv, srv_size, pcap_rec, tot_len);
+}
+
+/* ******************************************************* */
+
+size_t dump_pcap_rec(uint8_t *buffer, const uint8_t *pkt, size_t pkt_len) {
+    struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
+
+    size_t incl_len = init_pcap_rec_hdr(pcap_rec, pkt_len);
+    size_t tot_len = sizeof(struct pcaprec_hdr_s) + incl_len;
+
+    // NOTE: use incl_size as the packet may be cut due to the SNAPLEN
+    // Assumption: there is enough available space in buffer
+    memcpy(buffer + sizeof(struct pcaprec_hdr_s), pkt, incl_len);
+
+    return(tot_len);
 }

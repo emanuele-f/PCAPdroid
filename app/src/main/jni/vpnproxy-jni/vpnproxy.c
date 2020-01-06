@@ -27,7 +27,9 @@
 #define VPN_TAG "VPNProxy"
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
+#define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
+#define JAVA_PCAP_BUFFER_SIZE (1*1024*1204)
 
 /* ******************************************************* */
 
@@ -299,6 +301,27 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 
 /* ******************************************************* */
 
+static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
+    JNIEnv *env = proxy->env;
+    jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
+
+    jmethodID midMethod = (*env)->GetMethodID(env, vpn_service_cls, "dumpPcapData", "([B)V");
+    if(!midMethod) {
+        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(dumpPcapData) failed");
+        return;
+    }
+
+    jbyteArray barray = (*env)->NewByteArray(env, proxy->java_dump.buffer_idx);
+    (*env)->SetByteArrayRegion(env, barray, 0, proxy->java_dump.buffer_idx, proxy->java_dump.buffer);
+
+    (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, barray);
+
+    proxy->java_dump.buffer_idx = 0;
+    proxy->java_dump.last_dump_ms = proxy->now_ms;
+}
+
+/* ******************************************************* */
+
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     conn_data_t *data = (conn_data_t*)conn_info->user_data;
@@ -336,9 +359,9 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
     if(data->ndpi_flow)
         process_ndpi_packet(data, proxy, packet, size, from_tap);
 
-    if(((proxy->pcap_dump.uid_filter != -1) && (proxy->pcap_dump.uid_filter != uid))
-        && (!is_unknown_app || !proxy->pcap_dump.capture_unknown_app_traffic)) {
-        //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d [filter=%d]", uid, proxy->pcap_dump.uid_filter);
+    if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
+        && (!is_unknown_app || !proxy->capture_unknown_app_traffic)) {
+        //__android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Discarding connection: UID=%d [filter=%d]", uid, proxy->uid_filter);
         return;
     }
 
@@ -353,21 +376,30 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
-    if(dumper_socket <= 0)
-        return;
+    if(proxy->java_dump.buffer) {
+        int rem_size = JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx;
 
-#if 1
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = proxy->pcap_dump.collector_port;
-    servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
+        if((size + sizeof(pcaprec_hdr_s)) > rem_size) {
+            // Flush the buffer
+            javaPcapDump(tun, proxy);
+        }
 
-    if(send_header) {
-        write_pcap_hdr(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr));
-        send_header = false;
+        proxy->java_dump.buffer_idx += dump_pcap_rec(proxy->java_dump.buffer + proxy->java_dump.buffer_idx, packet, size);
     }
 
-    write_pcap_rec(dumper_socket, (struct sockaddr *)&servaddr, sizeof(servaddr), (u_int8_t*)packet, size);
-#endif
+    if(dumper_socket > 0) {
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_port = proxy->pcap_dump.collector_port;
+        servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
+
+        if (send_header) {
+            write_pcap_hdr(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr));
+            send_header = false;
+        }
+
+        write_pcap_rec(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr),
+                       (u_int8_t *) packet, size);
+    }
 }
 
 /* ******************************************************* */
@@ -816,13 +848,16 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .vpn_dns = getIPv4Pref(&proxy, "getVpnDns"),
             .public_dns = getIPv4Pref(&proxy, "getPublicDns"),
             .incr_id = 0,
+            .uid_filter = getIntPref(&proxy, "getPcapUidFilter"),
+            .capture_unknown_app_traffic = getIntPref(&proxy, "getCaptureUnknownTraffic"),
+            .java_dump = {
+                .enabled = getIntPref(&proxy, "dumpPcapToJava"),
+            },
             .pcap_dump = {
                 .collector_addr = getIPv4Pref(&proxy, "getPcapCollectorAddress"),
                 .collector_port = htons(getIntPref(&proxy, "getPcapCollectorPort")),
-                .uid_filter = getIntPref(&proxy, "getPcapUidFilter"),
                 .tcp_socket = false,
-                .capture_unknown_app_traffic = getIntPref(&proxy, "getCaptureUnknownTraffic"),
-                .enabled = true,
+                .enabled = getIntPref(&proxy, "dumpPcapToUdp"),
             },
     };
     zdtun_callbacks_t callbacks = {
@@ -873,6 +908,17 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             running = false;
     }
 
+    if(proxy.java_dump.enabled) {
+        proxy.java_dump.buffer = malloc(JAVA_PCAP_BUFFER_SIZE);
+        proxy.java_dump.buffer_idx = 0;
+
+        if(!proxy.java_dump.buffer) {
+            __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "malloc(java_dump.buffer) failed with code %d/%s",
+                                errno, strerror(errno));
+            running = false;
+        }
+    }
+
     while(running) {
         int max_fd;
         fd_set fdset;
@@ -894,6 +940,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
         gettimeofday(&now_tv, NULL);
         now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+        proxy.now_ms = now_ms;
 
         if(FD_ISSET(tapfd, &fdset)) {
             /* Packet from VPN */
@@ -920,11 +967,12 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             sendCaptureStats(&proxy);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
-        }
-
-        if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
+        } else if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
             sendConnectionsDump(tun, &proxy);
             last_connections_dump = now_ms;
+        } else if((proxy.java_dump.buffer_idx > 0)
+         && (now_ms - proxy.java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
+            javaPcapDump(tun, &proxy);
         }
     }
 
@@ -946,6 +994,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     if(dumper_socket > 0) {
         close(dumper_socket);
         dumper_socket = -1;
+    }
+
+    if(proxy.java_dump.buffer) {
+        free(proxy.java_dump.buffer);
+        proxy.java_dump.buffer = NULL;
     }
 
     notifyServiceStatus(&proxy, "stopped");

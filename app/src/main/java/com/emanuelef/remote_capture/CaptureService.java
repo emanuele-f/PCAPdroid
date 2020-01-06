@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.VpnService;
 import android.os.Build;
@@ -30,6 +31,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -43,11 +45,14 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String public_dns;
     private String collector_address;
+    private Prefs.DumpMode dump_mode;
     private boolean capture_unknown_app_traffic;
     private int collector_port;
+    private int http_server_port;
     private int uid_filter;
     private long last_bytes;
     private static CaptureService INSTANCE;
+    private HTTPServer mHttpServer;
 
     public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
     public static final String ACTION_CONNECTIONS_DUMP = "connections_dump";
@@ -82,18 +87,37 @@ public class CaptureService extends VpnService implements Runnable {
 
         Log.d(CaptureService.TAG, "onStartCommand");
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Bundle settings = intent.getBundleExtra("settings");
-
-        // retrieve settings
         assert settings != null;
-        public_dns = settings.getString("dns_server");
+
+        // Retrieve Configuration
+        public_dns = Utils.getDnsServer(getApplicationContext());
         vpn_dns = "10.215.173.2";
         vpn_ipv4 = "10.215.173.1";
-        collector_address = settings.getString(Prefs.PREF_COLLECTOR_IP_KEY);
-        collector_port = settings.getInt(Prefs.PREF_COLLECTOR_PORT_KEY);;
         uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
-        capture_unknown_app_traffic = settings.getBoolean(Prefs.PREF_CAPTURE_UNKNOWN_APP_TRAFFIC);
+
+        collector_address = Prefs.getCollectorIp(prefs);
+        collector_port = Prefs.getCollectorPort(prefs);
+        http_server_port = Prefs.getHttpServerPort(prefs);
+        capture_unknown_app_traffic = Prefs.getCaptureUnknownAppTraffic(prefs);
+        dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
+
+        if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
+            if (mHttpServer == null)
+                mHttpServer = new HTTPServer(getApplicationContext(), http_server_port);
+
+            try {
+                mHttpServer.startConnections();
+            } catch (IOException e) {
+                Log.e(CaptureService.TAG, "Could not start the HTTP server");
+                e.printStackTrace();
+            }
+        } else
+            mHttpServer = null;
+
+        Log.i("Main", "Using DNS server " + public_dns);
 
         // VPN
         /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
@@ -139,6 +163,9 @@ public class CaptureService extends VpnService implements Runnable {
         if(mThread != null) {
             mThread.interrupt();
         }
+        if(mHttpServer != null)
+            mHttpServer.stop();
+
         super.onDestroy();
     }
 
@@ -151,6 +178,10 @@ public class CaptureService extends VpnService implements Runnable {
             }
             mParcelFileDescriptor = null;
         }
+
+        if(mHttpServer != null)
+            mHttpServer.endConnections();
+        // NOTE: do not destroy the mHttpServer, let it terminate the active connections
     }
 
     /* Check if the VPN service was launched */
@@ -173,6 +204,14 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static int getCollectorPort() {
         return((INSTANCE != null) ? INSTANCE.collector_port : 0);
+    }
+
+    public static int getHTTPServerPort() {
+        return((INSTANCE != null) ? INSTANCE.http_server_port : 0);
+    }
+
+    public static Prefs.DumpMode getDumpMode() {
+        return((INSTANCE != null) ? INSTANCE.dump_mode : Prefs.DumpMode.NONE);
     }
 
     /* Stop a running VPN service */
@@ -216,6 +255,15 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getCaptureUnknownTraffic() {
         return(capture_unknown_app_traffic ? 1 : 0);
+    }
+
+    // returns 1 if dumpPcapData should be called
+    public int dumpPcapToJava() {
+        return((mHttpServer != null) ? 1 : 0);
+    }
+
+    public int dumpPcapToUdp() {
+        return((dump_mode == Prefs.DumpMode.UDP_EXPORTER) ? 1 : 0);
     }
 
     // from NetGuard
@@ -269,6 +317,12 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getApplicationByUid(int uid) {
         return(getPackageManager().getNameForUid(uid));
+    }
+
+    /* Exports a PCAP data chunk */
+    public void dumpPcapData(byte[] data) {
+        if(mHttpServer != null)
+            mHttpServer.pushData(data);
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

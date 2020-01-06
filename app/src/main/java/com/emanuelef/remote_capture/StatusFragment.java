@@ -1,13 +1,17 @@
 package com.emanuelef.remote_capture;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -24,6 +28,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
     private MainActivity mActivity;
+    private SharedPreferences mPrefs;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -35,6 +40,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
     @Override
     public void onDestroy() {
         mActivity.setStatusFragment(null);
+        mActivity = null;
         super.onDestroy();
     }
 
@@ -44,19 +50,40 @@ public class StatusFragment extends Fragment implements AppStateListener {
         return inflater.inflate(R.layout.status, container, false);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mStartButton = view.findViewById(R.id.button_start);
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
 
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        // Make URLs clickable
+        mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // Add settings icon click
+        mCollectorInfo.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Drawable mCollectorInfoDrawable = mCollectorInfo.getCompoundDrawables()[2 /* Right */];
+
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    if(event.getRawX() >= (mCollectorInfo.getRight() - mCollectorInfoDrawable.getBounds().width())) {
+                        Intent intent = new Intent(mActivity, SettingsActivity.class);
+                        startActivity(intent);
+
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if(mActivity.getState() == MainActivity.AppState.ready)
-                    setCollectorInfo(mActivity.getCollectorIPPref(), mActivity.getCollectorPortPref());
+                if((mActivity != null) && (mActivity.getState() == MainActivity.AppState.ready))
+                    refreshPcapDumpInfo();
             }
         });
 
@@ -88,7 +115,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mStartButton.setEnabled(true);
         mCaptureStatus.setText(R.string.ready);
 
-        setCollectorInfo(mActivity.getCollectorIPPref(), mActivity.getCollectorPortPref());
+        refreshPcapDumpInfo();
     }
 
     @Override
@@ -102,8 +129,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mStartButton.setEnabled(true);
         mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
 
-        setCollectorInfo(CaptureService.getCollectorAddress(),
-                Integer.toString(CaptureService.getCollectorPort()));
+        refreshPcapDumpInfo();
     }
 
     @Override
@@ -123,8 +149,35 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mCaptureStatus.setText(Utils.formatBytes(bytes_sent + bytes_rcvd));
     }
 
-    private void setCollectorInfo(String collector_ip, String collector_port) {
-        mCollectorInfo.setText(String.format(getResources().getString(R.string.collector_info),
-                collector_ip, collector_port));
+    private void refreshPcapDumpInfo() {
+        String info;
+        String modeName;
+
+        Prefs.DumpMode mode = CaptureService.isServiceActive() ? CaptureService.getDumpMode() : Prefs.getDumpMode(mPrefs);
+
+        switch (mode) {
+        case HTTP_SERVER:
+            modeName = getResources().getString(R.string.http_server);
+            info = String.format(getResources().getString(R.string.http_server_status),
+                    Utils.getLocalIPAddress(), CaptureService.getHTTPServerPort());
+            break;
+        case UDP_EXPORTER:
+            modeName = getResources().getString(R.string.udp_exporter);
+            info = String.format(getResources().getString(R.string.collector_info),
+                    CaptureService.getCollectorAddress(), CaptureService.getCollectorPort());
+            break;
+        default:
+            modeName = getResources().getString(R.string.no_dump);
+            info = "";
+            break;
+        }
+
+        if(!CaptureService.isServiceActive()) {
+            info = getResources().getString(R.string.dump_mode) + ": " + modeName;
+            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.settins_icon, 0);
+        } else
+            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+
+        mCollectorInfo.setText(info);
     }
 }

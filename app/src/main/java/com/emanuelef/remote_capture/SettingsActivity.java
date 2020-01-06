@@ -42,7 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            mDumpModePref = findPreference("pcap_dump_mode");
+            mDumpModePref = findPreference(Prefs.PREF_PCAP_DUMP_MODE);
             mDumpModePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {

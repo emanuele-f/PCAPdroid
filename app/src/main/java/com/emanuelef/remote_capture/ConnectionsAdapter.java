@@ -104,19 +104,27 @@ public class ConnectionsAdapter extends BaseAdapter {
                 if((now - adapter_conn.first_seen) >= MIN_CONNECTION_DISPLAY_SECONDS)
                     mItems.remove(adapter_pos);
                 else
+                    /* Too early, let the connection displayed for a while */
                     adapter_pos++;
                 adapter_conn = getItem(adapter_pos);
             }
 
             if (adapter_conn == null)
+                /* New untracked connection */
                 mItems.add(eval_conn);
             else {
+                /* Existing connection */
                 if (eval_conn.incr_id == adapter_conn.incr_id) {
                     /* Update data */
                     mItems.set(adapter_pos, eval_conn);
                 } else {
-                    Log.e(TAG, "Logic error: missing item #" + eval_conn.incr_id +
+                    /* This should never happen as it would mean that a connection ID has been
+                     * reused. */
+                    Log.w(TAG, "Logic error? Missing item #" + eval_conn.incr_id +
                             " (adapter item: #" + adapter_conn.incr_id + ")");
+
+                    /* Try to recover */
+                    clear();
                 }
             }
 
