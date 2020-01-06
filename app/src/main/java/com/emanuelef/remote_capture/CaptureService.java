@@ -38,7 +38,7 @@ import java.net.InetSocketAddress;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
-    private static final String VpnSessionName = "Remote Capture VPN";
+    private static final String VpnSessionName = "PCAPdroid VPN";
     private ParcelFileDescriptor mParcelFileDescriptor = null;
     private Thread mThread;
     private String vpn_ipv4;
