@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 #
-#  This file is part of RemoteCapture.
+#  This file is part of PCAPdroid.
 #
-#  RemoteCapture is free software: you can redistribute it and/or modify
+#  PCAPdroid is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  RemoteCapture is distributed in the hope that it will be useful,
+#  PCAPdroid is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with RemoteCapture.  If not, see <http://www.gnu.org/licenses/>.
+#  along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
 #
-#  Copyright 2019 by Emanuele Faranda
+#  Copyright 2020 by Emanuele Faranda
 #
 
 import socket
@@ -28,7 +28,7 @@ PCAP_HDR_BYTES = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000065000000
 pcap_header_sent = False
 
 parser = argparse.ArgumentParser(
-    description='''Receives data from the RemoteCapture app and outputs it to stdout.''')
+    description='''Receives data from the PCAPdroid app and outputs it to stdout.''')
 
 parser.add_argument('-p', '--port', type=int, help='The UDP port to listen', required=True)
 parser.add_argument('-v', '--verbose', help='Enable verbose log to stderr', action='store_true')
