@@ -159,7 +159,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         case HTTP_SERVER:
             modeName = getResources().getString(R.string.http_server);
             info = String.format(getResources().getString(R.string.http_server_status),
-                    Utils.getLocalIPAddress(), CaptureService.getHTTPServerPort());
+                    Utils.getLocalIPAddress(mActivity), CaptureService.getHTTPServerPort());
             break;
         case UDP_EXPORTER:
             modeName = getResources().getString(R.string.udp_exporter);

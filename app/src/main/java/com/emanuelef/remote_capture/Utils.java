@@ -7,19 +7,26 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.text.format.Formatter;
 import android.util.Log;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
 public class Utils {
-    public static String formatBytes(long bytes) {
+    static String formatBytes(long bytes) {
         long divisor;
         String suffix;
         if(bytes < 1024) return bytes + " B";
@@ -31,7 +38,7 @@ public class Utils {
         return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
     }
 
-    public static String formatPkts(long pkts) {
+    static String formatPkts(long pkts) {
         long divisor;
         String suffix;
         if(pkts < 1000) return Long.toString(pkts);
@@ -43,7 +50,7 @@ public class Utils {
         return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
     }
 
-    public static String formatDuration(long seconds) {
+    static String formatDuration(long seconds) {
         if(seconds == 0)
             return "< 1 s";
         else if(seconds < 60)
@@ -54,7 +61,7 @@ public class Utils {
             return String.format("> %d h", seconds / 3600);
     }
 
-    public static List<AppDescriptor> getInstalledApps(Context context) {
+    static List<AppDescriptor> getInstalledApps(Context context) {
         PackageManager pm = context.getPackageManager();
         List<AppDescriptor> apps = new ArrayList<>();
         List<PackageInfo> packs = pm.getInstalledPackages(0);
@@ -81,7 +88,7 @@ public class Utils {
         return apps;
     }
 
-    public static String proto2str(int proto) {
+    static String proto2str(int proto) {
         switch(proto) {
             case 6:     return "TCP";
             case 17:    return "UDP";
@@ -90,17 +97,22 @@ public class Utils {
         }
     }
 
-    public static String getDnsServer(Context context) {
+    static String getDnsServer(Context context) {
         ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Service.CONNECTIVITY_SERVICE);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Network net = conn.getActiveNetwork();
+        if(conn != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Network net = conn.getActiveNetwork();
 
-            if(net != null) {
-                List<InetAddress> dns_server = conn.getLinkProperties(net).getDnsServers();
+                if (net != null) {
+                    LinkProperties props = conn.getLinkProperties(net);
 
-                for(InetAddress server : dns_server) {
-                    return server.getHostAddress();
+                    if(props != null) {
+                        List<InetAddress> dns_servers = props.getDnsServers();
+
+                        if (dns_servers.size() > 0)
+                            return dns_servers.get(0).getHostAddress();
+                    }
                 }
             }
         }
@@ -109,24 +121,77 @@ public class Utils {
         return "8.8.8.8";
     }
 
-    public static String getLocalIPAddress() {
+    // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
+    static String getLocalWifiIpAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo connInfo = wifiManager.getConnectionInfo();
+
+        if(connInfo != null) {
+            int ipAddress = connInfo.getIpAddress();
+
+            if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+                ipAddress = Integer.reverseBytes(ipAddress);
+            }
+
+            byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+
+            String ipAddressString;
+            try {
+                ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+            } catch (UnknownHostException ex) {
+                return(null);
+            }
+
+            return ipAddressString;
+        }
+
+        return(null);
+    }
+
+    static String getLocalIPAddress(Context context) {
+        InetAddress vpn_ip;
+
+        try {
+            vpn_ip = InetAddress.getByName(CaptureService.VPN_IP_ADDRESS);
+        } catch (UnknownHostException e) {
+            return "";
+        }
+
+        // try to get the WiFi IP address first
+        String wifi_ip = getLocalWifiIpAddress(context);
+
+        if(wifi_ip != null) {
+            Log.d("getLocalIPAddress", "Using WiFi IP: " + wifi_ip);
+            return wifi_ip;
+        }
+
+        // otherwise search for other network interfaces
         // https://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device-from-code
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface intf : interfaces) {
-                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
-                for (InetAddress addr : addrs) {
-                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress() /* Exclude public IPs */) {
-                        String sAddr = addr.getHostAddress();
-                        boolean isIPv4 = sAddr.indexOf(':')<0;
+                if(!intf.isVirtual()) {
+                    List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                    for (InetAddress addr : addrs) {
+                        if (!addr.isLoopbackAddress()
+                                && addr.isSiteLocalAddress() /* Exclude public IPs */
+                                && !addr.equals(vpn_ip)) {
+                            String sAddr = addr.getHostAddress();
+                            boolean isIPv4 = sAddr.indexOf(':') < 0;
 
-                        if(isIPv4)
-                            return sAddr;
+                            if (isIPv4) {
+                                Log.d("getLocalIPAddress", "Using interface '" + intf.getName() + "' IP: " + sAddr);
+                                return sAddr;
+                            }
+                        }
                     }
                 }
             }
         } catch (Exception ignored) { }
-        return "";
+
+        // Fallback
+        Log.d("getLocalIPAddress", "Using fallback IP");
+        return "127.0.0.1";
     }
 
     public static long now() {
@@ -134,7 +199,7 @@ public class Utils {
         return(calendar.getTimeInMillis() / 1000);
     }
 
-    public static byte[] hexStringToByteArray(String s) {
+    static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {

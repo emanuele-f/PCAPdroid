@@ -54,6 +54,14 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private HTTPServer mHttpServer;
 
+    /* The IP address of the virtual network interface */
+    public static final String VPN_IP_ADDRESS = "10.215.173.1";
+
+    /* The DNS server IP address to use to internally analyze the DNS requests.
+     * It must be in the same subnet of the VPN network interface.
+     * After the analysis, requests will be routed to the primary DNS server. */
+    public static final String VPN_VIRTUAL_DNS_SERVER = "10.215.173.2";
+
     public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
     public static final String ACTION_CONNECTIONS_DUMP = "connections_dump";
     public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
@@ -93,8 +101,8 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Retrieve Configuration
         public_dns = Utils.getDnsServer(getApplicationContext());
-        vpn_dns = "10.215.173.2";
-        vpn_ipv4 = "10.215.173.1";
+        vpn_dns = VPN_VIRTUAL_DNS_SERVER;
+        vpn_ipv4 = VPN_IP_ADDRESS;
         uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
 
         collector_address = Prefs.getCollectorIp(prefs);
