@@ -67,7 +67,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
             public boolean onTouch(View v, MotionEvent event) {
                 Drawable mCollectorInfoDrawable = mCollectorInfo.getCompoundDrawables()[2 /* Right */];
 
-                if(event.getAction() == MotionEvent.ACTION_UP) {
+                if((mCollectorInfoDrawable != null) && (event.getAction() == MotionEvent.ACTION_UP)) {
                     if(event.getRawX() >= (mCollectorInfo.getRight() - mCollectorInfoDrawable.getBounds().width())) {
                         Intent intent = new Intent(mActivity, SettingsActivity.class);
                         startActivity(intent);
