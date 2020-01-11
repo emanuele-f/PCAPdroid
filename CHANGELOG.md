@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.2] - 2020-01-11
+- Fix crash while clicking on the HTTP server URL
+- Improve local HTTP server IP detection
+
 ## [1.2.1] - 2020-01-06
 - New embedded HTTP server to easily download the PCAP from multiple devices
 - Choose how to dump packets: HTTP server, UDP exporter, none.
