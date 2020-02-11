@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PCAPdroid</string>
+    <string name="app_name" translatable="false">PCAPdroid</string>
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
@@ -14,8 +14,8 @@
     <string name="capture_not_started">Capture not running!</string>
 
     <!-- Defaults -->
-    <string name="default_collector_ip">127.0.0.1</string>
-    <string name="default_collector_port">1234</string>
+    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
+    <string name="default_collector_port" translatable="false">1234</string>
 
     <!-- Preferences -->
     <string name="collector_prefs_header">Remote Collector</string>
@@ -35,10 +35,10 @@
     <string name="connection_details">Connection Details</string>
     <string name="app">App</string>
     <string name="protocol">Protocol</string>
-    <string name="sni">SNI</string>
+    <string name="sni" translatable="false">SNI</string>
     <string name="source">Source</string>
     <string name="destination">Destination</string>
-    <string name="url">URL</string>
+    <string name="url" translatable="false">URL</string>
     <string name="bytes">Bytes</string>
     <string name="packets">Packets</string>
     <string name="duration">Duration</string>
