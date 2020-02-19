@@ -7,8 +7,8 @@ android {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 5
-        versionName "1.2.2"
+        versionCode 6
+        versionName "1.2.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

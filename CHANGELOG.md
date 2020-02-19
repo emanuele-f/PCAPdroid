@@ -2,6 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.3] - 2020-02-19
+- Add polish translation (Atrate <Atrate@protonmail.com>)
+- Add more compact layout for screens lower than 480dp
+- JNI crashes fixes
+
 ## [1.2.2] - 2020-01-11
 - Fix crash while clicking on the HTTP server URL
 - Improve local HTTP server IP detection
