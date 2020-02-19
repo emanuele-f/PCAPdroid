@@ -29,7 +29,7 @@
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
-#define JAVA_PCAP_BUFFER_SIZE (1*1024*1204)
+#define JAVA_PCAP_BUFFER_SIZE (512*1204) // 512K
 #define MAX_NUM_CONNECTIONS_DUMPED 64
 
 /* ******************************************************* */
@@ -312,6 +312,8 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
         return;
     }
 
+    __android_log_print(ANDROID_LOG_DEBUG, VPN_TAG, "Exporting a %dB PCAP buffer", proxy->java_dump.buffer_idx);
+
     jbyteArray barray = (*env)->NewByteArray(env, proxy->java_dump.buffer_idx);
     (*env)->SetByteArrayRegion(env, barray, 0, proxy->java_dump.buffer_idx, proxy->java_dump.buffer);
 
@@ -319,6 +321,8 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     proxy->java_dump.buffer_idx = 0;
     proxy->java_dump.last_dump_ms = proxy->now_ms;
+
+    (*env)->DeleteLocalRef(env, barray);
 }
 
 /* ******************************************************* */
@@ -790,6 +794,8 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* Send the dump */
     (*env)->CallVoidMethod(env, proxy->vpn_service, midMethod, dump_data.connections);
+
+    (*env)->DeleteLocalRef(env, dump_data.connections);
 }
 
 /* ******************************************************* */
