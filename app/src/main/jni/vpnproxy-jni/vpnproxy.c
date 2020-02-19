@@ -30,6 +30,7 @@
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
 #define JAVA_PCAP_BUFFER_SIZE (1*1024*1204)
+#define MAX_NUM_CONNECTIONS_DUMPED 64
 
 /* ******************************************************* */
 
@@ -681,7 +682,12 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
                         data->uid);
 #endif
 
-    if(dump_data->idx >= dump_data->num_connections) {
+    if(dump_data->idx >= MAX_NUM_CONNECTIONS_DUMPED) {
+        __android_log_print(ANDROID_LOG_INFO, VPN_TAG, "Max connections reached, %d skipped.", (dump_data->num_connections - dump_data->idx));
+
+        /* Abort */
+        return(1);
+    } else if(dump_data->idx >= dump_data->num_connections) {
         /* Cannot proceed as dump_data->connections would overflow */
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "Connections count is inconsistent! num_connections=%d",
                 dump_data->num_connections);
@@ -708,6 +714,15 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     /* Add the connection to the array */
     (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
     data->notified = true;
+
+    /* Free local references manually as we are running in a loop and java can't free them
+     * automatically until the native method returns. */
+    (*env)->DeleteLocalRef(env, info_string);
+    (*env)->DeleteLocalRef(env, url_string);
+    (*env)->DeleteLocalRef(env, proto_string);
+    (*env)->DeleteLocalRef(env, src_string);
+    (*env)->DeleteLocalRef(env, dst_string);
+    (*env)->DeleteLocalRef(env, conn_descriptor);
 
     /* Continue */
     return(0);
