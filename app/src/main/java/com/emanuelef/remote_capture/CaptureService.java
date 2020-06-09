@@ -133,6 +133,7 @@ public class CaptureService extends VpnService implements Runnable {
         Builder builder = new Builder()
                 .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
                 .addRoute("0.0.0.0", 1)
+                .addRoute("128.0.0.0", 1)
                 .addDnsServer(vpn_dns);
 
         try {
