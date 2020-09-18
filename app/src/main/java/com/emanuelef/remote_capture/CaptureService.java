@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -88,19 +89,25 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Context app_ctx = getApplicationContext();
+
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
-            return super.onStartCommand(intent, flags, startId);
+            return super.onStartCommand(null, flags, startId);
         }
 
         Log.d(CaptureService.TAG, "onStartCommand");
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Bundle settings = intent.getBundleExtra("settings");
-        assert settings != null;
+
+        if (settings == null) {
+            Log.e(CaptureService.TAG, "NULL settings");
+            return super.onStartCommand(null, flags, startId);
+        }
 
         // Retrieve Configuration
-        public_dns = Utils.getDnsServer(getApplicationContext());
+        public_dns = Utils.getDnsServer(app_ctx);
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
         uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
@@ -114,7 +121,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)
-                mHttpServer = new HTTPServer(getApplicationContext(), http_server_port);
+                mHttpServer = new HTTPServer(app_ctx, http_server_port);
 
             try {
                 mHttpServer.startConnections();
