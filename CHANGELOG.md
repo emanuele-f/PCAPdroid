@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.4] - 2020-09-18
+- Traffic monitoring fix
+- JNI fixes and optimizations
+
 ## [1.2.3] - 2020-02-19
 - Add polish translation (Atrate <Atrate@protonmail.com>)
 - Add more compact layout for screens lower than 480dp
