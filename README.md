@@ -27,6 +27,19 @@ https://github.com/emanuele-f/PCAPdroid/releases
 
 https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture
 
+## Community
+
+You can help the PCAPdroid project in many ways:
+
+- Translate the app in your language
+- Improve the app theme and layout
+- Propose and discuss new features
+- Open bug reports with detailed information
+- Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
+- Of course provide code pull requests!
+
+You can reach the PCAPdroid developers and community on the [telegram channel](https://t.me/PCAPdroid).
+
 ## App filter and DNS Traffic
 
 Many applications rely on the Android DNS resolution service `netd` in order to resolve names. All the DNS requests sent via this service will come from `netd`, so it's not possible to which app made the request, so the app filter won't work. In order to circunvent this, PCAPdroid will dump all the DNS traffic from `netd` regardless of the app filter. This can be disabled by toggling off the "Capture Unknown Traffic" preference.
