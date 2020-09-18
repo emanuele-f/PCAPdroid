@@ -26,10 +26,10 @@
 #define REMOTE_CAPTURE_VPNPROXY_H
 
 typedef struct capture_stats {
-    u_int64_t sent_bytes;
-    u_int64_t rcvd_bytes;
-    u_int32_t sent_pkts;
-    u_int32_t rcvd_pkts;
+    jlong sent_bytes;
+    jlong rcvd_bytes;
+    jint sent_pkts;
+    jint rcvd_pkts;
 
     bool new_stats;
     u_int64_t last_update_ms;

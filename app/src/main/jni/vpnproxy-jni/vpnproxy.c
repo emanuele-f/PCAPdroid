@@ -52,22 +52,22 @@ typedef struct dns_packet {
 /* ******************************************************* */
 
 typedef struct conn_data {
-    int incr_id; /* an incremental identifier */
+    jint incr_id; /* an incremental identifier */
 
     /* nDPI */
     struct ndpi_flow_struct *ndpi_flow;
     struct ndpi_id_struct *src_id, *dst_id;
     ndpi_protocol l7proto;
 
-    time_t first_seen;
-    time_t last_seen;
-    u_int64_t sent_bytes;
-    u_int64_t rcvd_bytes;
-    u_int32_t sent_pkts;
-    u_int32_t rcvd_pkts;
+    jlong first_seen;
+    jlong last_seen;
+    jlong sent_bytes;
+    jlong rcvd_bytes;
+    jint sent_pkts;
+    jint rcvd_pkts;
     char *info;
     char *url;
-    int uid;
+    jint uid;
     bool notified;
 } conn_data_t;
 
@@ -184,7 +184,7 @@ static void protect_sock_callback(zdtun_t *tun, socket_t sock) {
 
 /* ******************************************************* */
 
-static char* getApplicationByUid(vpnproxy_data_t *proxy, int uid, char *buf, size_t bufsize) {
+static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, size_t bufsize) {
     JNIEnv *env = proxy->env;
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
     const char *value = NULL;
@@ -410,7 +410,7 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
 /* ******************************************************* */
 
 static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info) {
-    int uid;
+    jint uid;
     zdtun_conn_t unproxied_info = *conn_info;
 
     if(proxy->dns_changed) {
@@ -661,8 +661,8 @@ typedef struct dump_data {
     jmethodID conn_constructor;
     jmethodID conn_set_data;
     jobjectArray connections;
-    u_int32_t idx;
-    u_int32_t num_connections;
+    jint idx;
+    jint num_connections;
 } dump_data_t;
 
 static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *user_data) {
