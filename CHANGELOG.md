@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.5] - 2020-09-20
+- Fix crash on subsequent app runs
+
 ## [1.2.4] - 2020-09-18
 - Traffic monitoring fix
 - JNI fixes and optimizations
