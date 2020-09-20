@@ -22,6 +22,9 @@ android {
             path file('src/main/jni/vpnproxy-jni/CMakeLists.txt')
         }
     }
+    packagingOptions {
+        doNotStrip '**.so'
+    }
 }
 
 dependencies {
