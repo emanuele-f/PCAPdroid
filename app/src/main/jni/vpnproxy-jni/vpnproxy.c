@@ -90,7 +90,6 @@ typedef struct jni_classes {
     jclass conn;
 } jni_classes_t;
 
-static bool jni_resolved = false;
 static jni_classes_t cls;
 static jni_methods_t mids;
 
@@ -102,12 +101,11 @@ static bool send_header;
 
 /* ******************************************************* */
 
-static u_int32_t getIPv4Pref(vpnproxy_data_t *proxy, const char *key) {
-    JNIEnv *env = proxy->env;
+static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in_addr addr = {0};
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
-    jstring obj = (*env)->CallObjectMethod(env, proxy->vpn_service, midMethod);
+    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
 
     if(!jniCheckException(env)) {
         const char *value = (*env)->GetStringUTFChars(env, obj, 0);
@@ -126,12 +124,11 @@ static u_int32_t getIPv4Pref(vpnproxy_data_t *proxy, const char *key) {
 
 /* ******************************************************* */
 
-static jint getIntPref(vpnproxy_data_t *proxy, const char *key) {
-    JNIEnv *env = proxy->env;
+static jint getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
     jint value;
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()I");
 
-    value = (*env)->CallIntMethod(env, proxy->vpn_service, midMethod);
+    value = (*env)->CallIntMethod(env, vpn_inst, midMethod);
     jniCheckException(env);
 
     log_android(ANDROID_LOG_DEBUG, "getIntPref(%s) = %d", key, value);
@@ -787,48 +784,45 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
+    jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
-    if(!jni_resolved) {
-        jclass vpn_class = (*env)->GetObjectClass(env, vpn);
+    /* Classes */
+    cls.vpn_service = vpn_class;
+    cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/ConnDescriptor");
 
-        /* Classes */
-        cls.vpn_service = vpn_class;
-        cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/ConnDescriptor");
+    /* Methods */
+    mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
+    mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
+    mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
+    mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
+    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
+    mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
+    mids.connInit = jniGetMethodID(env, vpn_class, "<init>", "()V");
+    mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
+            /* NOTE: must match ConnDescriptor::setData */
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
 
-        /* Methods */
-        mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
-        mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
-        mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
-        mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
-        mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
-        mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
-        mids.connInit = jniGetMethodID(env, vpn_class, "<init>", "()V");
-        mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
-                /* NOTE: must match ConnDescriptor::setData */
-                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
-
-        jni_resolved = true;
-    }
+    log_android(ANDROID_LOG_ERROR, "CLASS: %u", cls.vpn_service);
 
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,
             .sdk = sdk,
             .env = env,
             .vpn_service = vpn,
-            .vpn_ipv4 = getIPv4Pref(&proxy, "getVpnIPv4"),
-            .vpn_dns = getIPv4Pref(&proxy, "getVpnDns"),
-            .public_dns = getIPv4Pref(&proxy, "getPublicDns"),
+            .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
+            .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
+            .public_dns = getIPv4Pref(env, vpn, "getPublicDns"),
             .incr_id = 0,
-            .uid_filter = getIntPref(&proxy, "getPcapUidFilter"),
-            .capture_unknown_app_traffic = getIntPref(&proxy, "getCaptureUnknownTraffic"),
+            .uid_filter = getIntPref(env, vpn, "getPcapUidFilter"),
+            .capture_unknown_app_traffic = (bool) getIntPref(env, vpn, "getCaptureUnknownTraffic"),
             .java_dump = {
-                .enabled = getIntPref(&proxy, "dumpPcapToJava"),
+                .enabled = (bool) getIntPref(env, vpn, "dumpPcapToJava"),
             },
             .pcap_dump = {
-                .collector_addr = getIPv4Pref(&proxy, "getPcapCollectorAddress"),
-                .collector_port = htons(getIntPref(&proxy, "getPcapCollectorPort")),
+                .collector_addr = getIPv4Pref(env, vpn, "getPcapCollectorAddress"),
+                .collector_port = htons(getIntPref(env, vpn, "getPcapCollectorPort")),
                 .tcp_socket = false,
-                .enabled = getIntPref(&proxy, "dumpPcapToUdp"),
+                .enabled = (bool) getIntPref(env, vpn, "dumpPcapToUdp"),
             },
     };
 
