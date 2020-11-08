@@ -52,25 +52,10 @@ typedef struct dns_packet {
 
 /* ******************************************************* */
 
-typedef struct conn_data {
-    jint incr_id; /* an incremental identifier */
-
-    /* nDPI */
-    struct ndpi_flow_struct *ndpi_flow;
-    struct ndpi_id_struct *src_id, *dst_id;
-    ndpi_protocol l7proto;
-
-    jlong first_seen;
-    jlong last_seen;
-    jlong sent_bytes;
-    jlong rcvd_bytes;
-    jint sent_pkts;
-    jint rcvd_pkts;
-    char *info;
-    char *url;
-    jint uid;
-    bool notified;
-} conn_data_t;
+typedef struct mitm_proxy_hdr {
+    uint32_t dst_ip;
+    uint16_t dst_port;
+} __attribute__((packed)) mitm_proxy_hdr_t;
 
 /* ******************************************************* */
 
@@ -92,6 +77,23 @@ typedef struct jni_classes {
 
 static jni_classes_t cls;
 static jni_methods_t mids;
+
+/* TCP/IP packet to hold the mitmproxy header */
+static char mitmproxy_pkt_buffer[] = {
+    "\x45\x00" \
+
+    /* Total length: 52 + 6 (sizeof mitm_proxy_hdr_t) */
+    "\x00\x3a" \
+
+    "\xb8\x9e\x40\x00\x40\x06\xf7\xe1\x00\x00\x00\x00\x00\x00" \
+    "\x00\x00\x00\x00\x00\x00\x65\xbf\xc2\xaf\x08\x93\x36\x09\x80\x18" \
+    "\x01\xf5\x00\x00\x00\x00\x01\x01\x08\x0a\x6c\xe2\x4f\x95\x4a\xe0" \
+    "\x92\x51" \
+
+    /* TCP payload */
+    "\x01\x02\x03\x04\x05\x06"
+};
+static zdtun_pkt_t mitm_pkt;
 
 /* ******************************************************* */
 
@@ -228,9 +230,10 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
         ssize_t size, uint8_t from_tap) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
 
-    data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, packet, size, data->last_seen,
-                                                  from_tap ? data->src_id : data->dst_id,
-                                                  from_tap ? data->dst_id : data->src_id);
+    data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
+            size, data->last_seen,
+            from_tap ? data->src_id : data->dst_id,
+            from_tap ? data->dst_id : data->src_id);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))) {
@@ -250,11 +253,11 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
         switch (data->l7proto.master_protocol) {
             case NDPI_PROTOCOL_DNS:
                 if(data->ndpi_flow->host_server_name[0])
-                    data->info = strdup(data->ndpi_flow->host_server_name);
+                    data->info = strdup((char*)data->ndpi_flow->host_server_name);
                 break;
             case NDPI_PROTOCOL_HTTP:
                 if(data->ndpi_flow->host_server_name[0])
-                    data->info = strdup(data->ndpi_flow->host_server_name);
+                    data->info = strdup((char*)data->ndpi_flow->host_server_name);
                 if(data->ndpi_flow->http.url)
                     data->url = strdup(data->ndpi_flow->http.url);
                 break;
@@ -296,7 +299,7 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
-    conn_data_t *data = (conn_data_t*)conn_info->user_data;
+    conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     vpnproxy_data_t *proxy;
     bool is_unknown_app;
     int uid;
@@ -356,7 +359,7 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
             javaPcapDump(tun, proxy);
         }
 
-        proxy->java_dump.buffer_idx += dump_pcap_rec(proxy->java_dump.buffer + proxy->java_dump.buffer_idx, packet, size);
+        proxy->java_dump.buffer_idx += dump_pcap_rec((u_char*)proxy->java_dump.buffer + proxy->java_dump.buffer_idx, (u_char*)packet, size);
     }
 
     if(dumper_socket > 0) {
@@ -376,17 +379,10 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
 
 /* ******************************************************* */
 
-static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info) {
+static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
     jint uid;
-    zdtun_conn_t unproxied_info = *conn_info;
 
-    if(proxy->dns_changed) {
-        /* The packet was changed by check_dns.
-         * Restore the original DNS request to be able to fetch connection UID. */
-        unproxied_info.dst_ip = proxy->vpn_dns;
-    }
-
-    uid = get_uid(proxy, &unproxied_info);
+    uid = get_uid(proxy, conn_info);
 
     if(uid >= 0) {
 #if 1
@@ -420,7 +416,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, void **conn_data) {
+static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     conn_data_t *data = calloc(1, sizeof(conn_data_t));
 
@@ -449,8 +445,9 @@ static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
 
     data->incr_id = proxy->incr_id++;
     data->first_seen = data->last_seen = time(NULL);
-    data->uid = resolve_uid(proxy, conn_info);
-    *conn_data = data;
+    data->uid = resolve_uid(proxy, zdtun_conn_get_5tuple(conn_info));
+
+    zdtun_conn_set_userdata(conn_info, data);
 
     /* accept connection */
     return(0);
@@ -476,7 +473,7 @@ static void free_connection_data(conn_data_t *data) {
 /* ******************************************************* */
 
 static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
-    conn_data_t *data = (conn_data_t*) conn_info->user_data;
+    conn_data_t *data = zdtun_conn_get_userdata(conn_info);
 
     if(!data) {
         log_android(ANDROID_LOG_ERROR, "Missing user_data in connection");
@@ -494,7 +491,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
             else
                 proxy->notif_pending_size *= 2;
 
-            proxy->notif_pending = realloc(proxy->notif_pending, proxy->notif_pending_size * sizeof(zdtun_conn_t));
+            proxy->notif_pending = realloc(proxy->notif_pending, proxy->notif_pending_size * sizeof(vpn_conn_t));
 
             if(proxy->notif_pending == NULL) {
                 log_android(ANDROID_LOG_FATAL, "realloc(notif_pending) failed");
@@ -502,7 +499,10 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
             }
         }
 
-        memcpy(&proxy->notif_pending[proxy->cur_notif_pending], conn_info, sizeof(zdtun_conn_t));
+        vpn_conn_t *conn = &proxy->notif_pending[proxy->cur_notif_pending];
+        conn->tuple = *zdtun_conn_get_5tuple(conn_info);
+        conn->data = data;
+
         proxy->cur_notif_pending++;
 
         log_android(ANDROID_LOG_DEBUG, "Pending conns: %u/%u", proxy->cur_notif_pending, proxy->notif_pending_size);
@@ -519,86 +519,88 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 /*
  * If the packet contains a DNS request then rewrite server address
  * with public DNS server.
- *
- *
- * Check if the packet contains a DNS response and rewrite destination address to let the packet
- * go into the VPN network stack. This assumes that the DNS request was modified by \_query.
  */
-static int check_dns(struct vpnproxy_data *proxy, char *packet, size_t size, bool query) {
-    struct ip *iphdr = (struct ip*) packet;
-    struct udphdr *udp;
+static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     struct dns_packet *dns_data;
-    int ip_size;
-    int udp_length;
     int dns_length;
 
-    if(size <= sizeof(struct ip))
-        return(0);
-
-    ip_size = 4 * iphdr->ip_hl;
-
     // TODO support TCP
-    if((size <= ip_size + sizeof(struct udphdr)) || (iphdr->ip_p != IPPROTO_UDP))
+    if(pkt->tuple.ipproto != IPPROTO_UDP)
         return(0);
 
-    udp = (struct udphdr*)(packet + ip_size);
-    udp_length = ntohs(udp->len);
-
-    if(size < ip_size + udp_length)
-        return(0);
-
-    dns_length = udp_length - sizeof(struct udphdr);
-    dns_data = (struct dns_packet*)(packet + ip_size + sizeof(struct udphdr));
+    dns_length = pkt->l7_len;
+    dns_data = (struct dns_packet*) pkt->l7;
 
     if(dns_length < sizeof(struct dns_packet))
         return(0);
 
-    if(query) {
-        if((ntohs(udp->uh_dport) != 53) ||
-            (iphdr->ip_dst.s_addr != proxy->vpn_dns) || (iphdr->ip_src.s_addr != proxy->vpn_ipv4))
-            // Not VPN DNS
-            return(0);
+    if((ntohs(pkt->udp->uh_dport) != 53) ||
+        (pkt->tuple.dst_ip != proxy->vpn_dns) || (pkt->tuple.src_ip != proxy->vpn_ipv4))
+        // Not VPN DNS
+        return(0);
 
-        if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
-            return(0);
-    } else {
-        if((ntohs(udp->uh_sport) != 53) ||
-            (iphdr->ip_dst.s_addr != proxy->vpn_ipv4))
-            return(0);
+    if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
+        return(0);
 
-        if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_RESPONSE)
-            return(0);
-    }
+    log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
 
-    log_android(ANDROID_LOG_DEBUG, "Detected DNS[%u] query=%u", dns_length, query);
-
-    if(query) {
-        /*
-         * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
-         * here as zdtun will proxy the connection, however since traffic will be dumped as PCAP, having a
-         * correct checksum is better.
-         */
-        iphdr->ip_dst.s_addr = proxy->public_dns;
-    } else {
-        /*
-         * Change the origin of the packet back to the virtual DNS server
-         */
-        iphdr->ip_src.s_addr = proxy->vpn_dns;
-    }
-
-    udp->check = 0; // UDP checksum is not mandatory
-    iphdr->ip_sum = 0;
-    iphdr->ip_sum = ip_checksum(iphdr, ip_size);
+    /*
+     * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
+     * here as zdtun will proxy the connection.
+     */
+    zdtun_conn_dnat(conn, proxy->public_dns, 0);
 
     return(1);
 }
 
 /* ******************************************************* */
 
+/*
+ * Check if the packet should be redirected to the mitmproxy
+ */
+static int check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+    conn_data_t *data = zdtun_conn_get_userdata(conn);
+
+    if(pkt->tuple.ipproto == IPPROTO_TCP) {
+        // TODO make configurable
+        uint32_t mitm_ip = inet_addr("192.168.1.10");
+        uint16_t mitm_port = htons(8080);
+
+        bool is_new = ((data->sent_pkts + data->rcvd_pkts) == 0);
+
+        if(is_new) {
+            uint16_t port = ntohs(pkt->tuple.dst_port);
+
+            if (port == 443) {
+                zdtun_conn_dnat(conn, mitm_ip, mitm_port);
+                data->mitm_header_needed = true;
+            }
+        } else if(data->mitm_header_needed && (pkt->l7_len > 0)) {
+            /* First L7 packet, send the mitmproxy header first */
+            mitm_proxy_hdr_t *mitm = mitm_pkt.l7;
+
+            /* Fix the packet with the correct peers */
+            mitm_pkt.tuple.src_ip = mitm_pkt.ip->saddr = pkt->ip->saddr;
+            mitm_pkt.tuple.dst_ip = mitm_pkt.ip->daddr = mitm_ip;
+            mitm_pkt.tuple.src_port = mitm_pkt.tcp->th_sport = pkt->tcp->th_sport;
+            mitm_pkt.tuple.dst_port = mitm_pkt.tcp->th_dport = mitm_port;
+
+            /* Send the original (pre-nat) IP and port */
+            mitm->dst_ip = pkt->tuple.dst_ip;
+            mitm->dst_port = pkt->tuple.dst_port;
+            zdtun_send_oob(tun, &mitm_pkt, conn);
+
+            data->mitm_header_needed = false;
+        }
+    }
+
+    return 0;
+}
+
+/* ******************************************************* */
+
 static int net2tap(zdtun_t *tun, char *pkt_buf, ssize_t pkt_size, const zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
-
-    check_dns(proxy, pkt_buf, pkt_size, 0 /* reply */);
 
     // TODO return value check
     write(proxy->tapfd, pkt_buf, pkt_size);
@@ -624,11 +626,9 @@ typedef struct dump_data {
     jint num_connections;
 } dump_data_t;
 
-static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *user_data) {
+static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn_data_t *data, dump_data_t *dump_data) {
     char srcip[64], dstip[64];
     struct in_addr addr;
-    dump_data_t *dump_data = (dump_data_t *)user_data;
-    conn_data_t *data = (conn_data_t *)conn_info->user_data;
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     JNIEnv *env = proxy->env;
 
@@ -691,6 +691,10 @@ static int connection_dumper(zdtun_t *tun, const zdtun_conn_t *conn_info, void *
     return(0);
 }
 
+static int connection_dumper_wrapper(zdtun_t *tun, const zdtun_conn_t *conn, void *user_data) {
+    return connection_dumper(tun, zdtun_conn_get_5tuple(conn), zdtun_conn_get_userdata(conn), user_data);
+}
+
 /* Perform a full dump of the active connections */
 static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
@@ -703,15 +707,16 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
         return;
 
     /* Add connections to the array */
-    zdtun_iter_connections(tun, connection_dumper, &dump_data);
+    zdtun_iter_connections(tun, connection_dumper_wrapper, &dump_data);
 
     /* Handle possibly pending data */
     if(proxy->cur_notif_pending > 0) {
         log_android(ANDROID_LOG_DEBUG, "Processing %u pending conns", proxy->cur_notif_pending);
 
         for(int i = 0; i < proxy->cur_notif_pending; i++) {
-            connection_dumper(tun, &proxy->notif_pending[i], &dump_data);
-            free_connection_data(proxy->notif_pending[i].user_data);
+            vpn_conn_t *conn = &proxy->notif_pending[i];
+            connection_dumper(tun, &conn->tuple, conn->data, &dump_data);
+            free_connection_data(proxy->notif_pending[i].data);
         }
 
         /* Empty the pending notifications list */
@@ -731,8 +736,6 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
 static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
     JNIEnv *env = proxy->env;
-    capture_stats_t *stats = &proxy->capture_stats;
-    const char *value = NULL;
     jstring status_str;
 
     status_str = (*env)->NewStringUTF(env, status);
@@ -785,6 +788,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     char buffer[32767];
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
+
+    zdtun_parse_pkt(mitmproxy_pkt_buffer, sizeof(mitmproxy_pkt_buffer)-1, &mitm_pkt);
 
     /* Classes */
     cls.vpn_service = vpn_class;
@@ -912,21 +917,39 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             /* Packet from VPN */
             size = read(tapfd, buffer, sizeof(buffer));
 
-            if(size > 0) {
-                zdtun_conn_t conn_info;
+            if (size > 0) {
+                zdtun_pkt_t pkt;
                 int rc;
 
-                proxy.dns_changed = check_dns(&proxy, buffer, size, 1 /* query */) != 0;
+                if (zdtun_parse_pkt(buffer, size, &pkt) != 0) {
+                    log_android(ANDROID_LOG_DEBUG, "zdtun_parse_pkt failed");
+                    goto housekeeping;
+                }
 
-                /* Forward the packet and retrieve connection information
-                 * The uid userdata will be set in on_connection_open. */
-                if((rc = zdtun_forward(tun, buffer, size, &conn_info)) != 0)
+                zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, 1 /* create if not exists */);
+
+                if (!conn) {
+                    log_android(ANDROID_LOG_DEBUG, "zdtun_lookup failed");
+                    goto housekeeping;
+                }
+
+                check_dns_req_dnat(&proxy, &pkt, conn);
+                check_tls_mitm(tun, &proxy, &pkt, conn);
+
+                if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
                     /* NOTE: rc -1 is currently returned for unhandled non-IPv4 flows */
                     log_android(ANDROID_LOG_DEBUG, "zdtun_forward failed with code %d", rc);
+
+                    zdtun_destroy_conn(tun, conn);
+                    goto housekeeping;
+                }
             } else if (size < 0)
-                log_android(ANDROID_LOG_ERROR, "recv(tapfd) returned error [%d]: %s", errno, strerror(errno));
+                log_android(ANDROID_LOG_ERROR, "recv(tapfd) returned error [%d]: %s", errno,
+                            strerror(errno));
         } else
             zdtun_handle_fd(tun, &fdset, &wrfds);
+
+housekeeping:
 
         if(proxy.capture_stats.new_stats
          && ((now_ms - proxy.capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS)) {
@@ -950,7 +973,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     /* Free possible pending data */
     if(proxy.cur_notif_pending > 0) {
         for(int i = 0; i < proxy.cur_notif_pending; i++) {
-            free_connection_data(proxy.notif_pending[i].user_data);
+            free_connection_data(proxy.notif_pending[i].data);
         }
 
         /* Empty the pending notifications list */

@@ -208,7 +208,7 @@ jint get_uid_sub(const int version, const int protocol,
 /* ******************************************************* */
 
 jint get_uid_slow(struct vpnproxy_data *proxy,
-                  const zdtun_conn_t *conn_info) {
+                  const zdtun_5tuple_t *conn_info) {
     jint uid = -1;
 
     // TODO IPv6 support
@@ -272,7 +272,7 @@ jint get_uid_slow(struct vpnproxy_data *proxy,
 /* ******************************************************* */
 
 static jint get_uid_q(struct vpnproxy_data *proxy,
-                      const zdtun_conn_t *conn_info) {
+                      const zdtun_5tuple_t *conn_info) {
     JNIEnv *env = proxy->env;
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
     struct in_addr addr;
@@ -300,7 +300,7 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
 
 /* ******************************************************* */
 
-jint get_uid(struct vpnproxy_data *proxy, const zdtun_conn_t *conn_info) {
+jint get_uid(struct vpnproxy_data *proxy, const zdtun_5tuple_t *conn_info) {
     // TODO test the get_uid_q
 #if 0
     if (proxy->sdk <= 28) // Android 9 Pie

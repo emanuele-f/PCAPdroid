@@ -35,6 +35,32 @@ typedef struct capture_stats {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
+typedef struct conn_data {
+    jint incr_id; /* an incremental identifier */
+
+    /* nDPI */
+    struct ndpi_flow_struct *ndpi_flow;
+    struct ndpi_id_struct *src_id, *dst_id;
+    ndpi_protocol l7proto;
+
+    jlong first_seen;
+    jlong last_seen;
+    jlong sent_bytes;
+    jlong rcvd_bytes;
+    jint sent_pkts;
+    jint rcvd_pkts;
+    char *info;
+    char *url;
+    jint uid;
+    bool notified;
+    bool mitm_header_needed;
+} conn_data_t;
+
+typedef struct vpn_conn {
+    zdtun_5tuple_t tuple;
+    conn_data_t *data;
+} vpn_conn_t;
+
 typedef struct vpnproxy_data {
     int tapfd;
     int incr_id;
@@ -44,9 +70,8 @@ typedef struct vpnproxy_data {
     u_int32_t vpn_dns;
     u_int32_t public_dns;
     u_int32_t vpn_ipv4;
-    bool dns_changed;
     struct ndpi_detection_module_struct *ndpi;
-    zdtun_conn_t *notif_pending;
+    vpn_conn_t *notif_pending;
     u_int32_t cur_notif_pending;
     u_int32_t notif_pending_size;
     int uid_filter;
@@ -62,7 +87,7 @@ typedef struct vpnproxy_data {
 
     struct {
         bool enabled;
-        u_char *buffer;
+        jbyte *buffer;
         int buffer_idx;
         u_int64_t last_dump_ms;
     } java_dump;
@@ -72,6 +97,6 @@ typedef struct vpnproxy_data {
 
 /* ******************************************************* */
 
-jint get_uid(struct vpnproxy_data *proxy, const zdtun_conn_t *conn_info);
+jint get_uid(struct vpnproxy_data *proxy, const zdtun_5tuple_t *conn_info);
 
 #endif //REMOTE_CAPTURE_H

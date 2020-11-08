@@ -97,7 +97,7 @@ void write_pcap_rec(int fd, const struct sockaddr *srv, size_t srv_size, const u
 
 /* ******************************************************* */
 
-size_t dump_pcap_rec(uint8_t *buffer, const uint8_t *pkt, size_t pkt_len) {
+size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, size_t pkt_len) {
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
 
     size_t incl_len = init_pcap_rec_hdr(pcap_rec, pkt_len);
