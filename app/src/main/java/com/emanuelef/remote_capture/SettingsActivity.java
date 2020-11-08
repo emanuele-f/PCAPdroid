@@ -33,6 +33,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreference;
 
 import java.util.regex.Matcher;
 
@@ -56,6 +57,9 @@ public class SettingsActivity extends AppCompatActivity {
         private EditTextPreference mRemoteCollectorPort;
         private EditTextPreference mHttpServerPort;
         private ListPreference mDumpModePref;
+        private SwitchPreference mTlsDecryptionEnabled;
+        private EditTextPreference mTlsProxyIp;
+        private EditTextPreference mTlsProxyPort;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -72,7 +76,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
+            setupTlsProxyPrefs();
 
+            tlsDecryptionHideShow(mTlsDecryptionEnabled.isChecked());
             dumpPrefsHideShow(mDumpModePref.getValue());
         }
 
@@ -123,6 +129,42 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
+        private void setupTlsProxyPrefs() {
+            mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
+            mTlsDecryptionEnabled.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    tlsDecryptionHideShow((Boolean) newValue);
+                    return true;
+                }
+            });
+
+            /* TLS Proxy IP validation */
+            mTlsProxyIp = findPreference(Prefs.PREF_TLS_PROXY_IP_KEY);
+            mTlsProxyIp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
+                    return(matcher.matches());
+                }
+            });
+
+            /* TLS Proxy port validation */
+            mTlsProxyPort = findPreference(Prefs.PREF_TLS_PROXY_PORT_KEY);
+            mTlsProxyPort.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                }
+            });
+            mTlsProxyPort.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    return validatePort(newValue.toString());
+                }
+            });
+        }
+
         /* This implements a radio-button like behaviour */
         private void dumpPrefsHideShow(String dumpMode) {
             Prefs.DumpMode mode = Prefs.getDumpMode(dumpMode);
@@ -153,6 +195,11 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             mDumpModePref.setSummary(summary_id);
+        }
+
+        private void tlsDecryptionHideShow(boolean decryptionEnabled) {
+            mTlsProxyIp.setVisible(decryptionEnabled);
+            mTlsProxyPort.setVisible(decryptionEnabled);
         }
     }
 }

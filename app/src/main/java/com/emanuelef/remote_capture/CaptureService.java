@@ -46,10 +46,13 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String public_dns;
     private String collector_address;
+    private String tls_proxy_address;
     private Prefs.DumpMode dump_mode;
+    private boolean tls_decryption_enabled;
     private boolean capture_unknown_app_traffic;
     private int collector_port;
     private int http_server_port;
+    private int tls_proxy_port;
     private int uid_filter;
     private long last_bytes;
     private static CaptureService INSTANCE;
@@ -115,6 +118,9 @@ public class CaptureService extends VpnService implements Runnable {
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
+        tls_decryption_enabled = Prefs.getTlsDecryptionEnabled(prefs);
+        tls_proxy_address = Prefs.getTlsProxyAddress(prefs);
+        tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         capture_unknown_app_traffic = Prefs.getCaptureUnknownAppTraffic(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
@@ -264,6 +270,12 @@ public class CaptureService extends VpnService implements Runnable {
     public int getPcapCollectorPort() {
         return(collector_port);
     }
+
+    public String getTlsProxyAddress() {  return(tls_proxy_address);  }
+
+    public int getTlsDecryptionEnabled() { return tls_decryption_enabled ? 1 : 0; }
+
+    public int getTlsProxyPort() {  return(tls_proxy_port);  }
 
     public int getPcapUidFilter() {
         return(uid_filter);

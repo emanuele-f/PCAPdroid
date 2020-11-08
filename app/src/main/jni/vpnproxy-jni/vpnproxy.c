@@ -416,7 +416,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
 /* ******************************************************* */
 
-static int handle_new_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
+static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     conn_data_t *data = calloc(1, sizeof(conn_data_t));
 
@@ -562,9 +562,8 @@ static int check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t
     conn_data_t *data = zdtun_conn_get_userdata(conn);
 
     if(pkt->tuple.ipproto == IPPROTO_TCP) {
-        // TODO make configurable
-        uint32_t mitm_ip = inet_addr("192.168.1.10");
-        uint16_t mitm_port = htons(8080);
+        uint32_t mitm_ip = proxy->tls_decryption.proxy_ip;
+        uint16_t mitm_port = proxy->tls_decryption.proxy_port;
 
         bool is_new = ((data->sent_pkts + data->rcvd_pkts) == 0);
 
@@ -577,7 +576,7 @@ static int check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t
             }
         } else if(data->mitm_header_needed && (pkt->l7_len > 0)) {
             /* First L7 packet, send the mitmproxy header first */
-            mitm_proxy_hdr_t *mitm = mitm_pkt.l7;
+            mitm_proxy_hdr_t *mitm = (mitm_proxy_hdr_t*) mitm_pkt.l7;
 
             /* Fix the packet with the correct peers */
             mitm_pkt.tuple.src_ip = mitm_pkt.ip->saddr = pkt->ip->saddr;
@@ -829,6 +828,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 .tcp_socket = false,
                 .enabled = (bool) getIntPref(env, vpn, "dumpPcapToUdp"),
             },
+            .tls_decryption = {
+                .enabled = (bool) getIntPref(env, vpn, "getTlsDecryptionEnabled"),
+                .proxy_ip = getIPv4Pref(env, vpn, "getTlsProxyAddress"),
+                .proxy_port = htons(getIntPref(env, vpn, "getTlsProxyPort")),
+            }
     };
 
     zdtun_callbacks_t callbacks = {
@@ -934,7 +938,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 }
 
                 check_dns_req_dnat(&proxy, &pkt, conn);
-                check_tls_mitm(tun, &proxy, &pkt, conn);
+
+                if(proxy.tls_decryption.enabled)
+                    check_tls_mitm(tun, &proxy, &pkt, conn);
 
                 if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
                     /* NOTE: rc -1 is currently returned for unhandled non-IPv4 flows */

@@ -92,6 +92,12 @@ typedef struct vpnproxy_data {
         u_int64_t last_dump_ms;
     } java_dump;
 
+    struct {
+        bool enabled;
+        u_int32_t proxy_ip;
+        u_int32_t proxy_port;
+    } tls_decryption;
+
     capture_stats_t capture_stats;
 } vpnproxy_data_t;
 

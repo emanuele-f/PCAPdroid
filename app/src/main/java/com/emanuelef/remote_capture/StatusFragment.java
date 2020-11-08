@@ -193,6 +193,10 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
         if(!CaptureService.isServiceActive()) {
             info = getResources().getString(R.string.dump_mode) + ": " + modeName;
+
+            if(Prefs.getTlsDecryptionEnabled(mPrefs))
+                info += " (" + getResources().getString(R.string.with_tls_decryption) + ")";
+
             mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.settins_icon, 0);
         } else
             mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);

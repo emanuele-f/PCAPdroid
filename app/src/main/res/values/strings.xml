@@ -52,5 +52,13 @@
     <string name="receiver_ip_address">Receiver IP Address</string>
     <string name="receiver_port">Receiver Port</string>
     <string name="dump_mode">Dump Mode</string>
+    <string name="tls_proxy_ip_address">mitmproxy IP Address</string>
+    <string name="tls_proxy_port">mitmproxy Port</string>
+    <string name="enable_tls_decryption">Enable TLS Decryption</string>
+    <string name="enable_tls_decryption_summary">When enabled, all the TLS traffic will be redirected to a remote mitmproxy instance for decryption.</string>
+    <string name="default_proxy_port">8080</string>
+    <string name="with_tls_decryption">+decryption</string>
+    <string name="pcap_dump">PCAP Dump</string>
+    <string name="tls_decryption">TLS Decryption</string>
 </resources>
 
