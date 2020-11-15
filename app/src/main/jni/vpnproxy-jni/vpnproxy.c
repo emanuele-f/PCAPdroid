@@ -644,15 +644,8 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
                         data->uid);
 #endif
 
-    if(dump_data->idx >= MAX_NUM_CONNECTIONS_DUMPED) {
-        log_android(ANDROID_LOG_INFO, "Max connections reached, %d skipped.", (dump_data->num_connections - dump_data->idx));
-
-        /* Abort */
-        return(1);
-    } else if(dump_data->idx >= dump_data->num_connections) {
-        /* Cannot proceed as dump_data->connections would overflow */
-        log_android(ANDROID_LOG_ERROR, "Connections count is inconsistent! num_connections=%d",
-                dump_data->num_connections);
+    if(dump_data->idx >= dump_data->num_connections) {
+        log_android(ANDROID_LOG_DEBUG, "Max connections to dump reached");
 
         /* Abort */
         return(1);
@@ -699,7 +692,7 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
     dump_data_t dump_data = {0};
 
-    dump_data.num_connections = zdtun_get_num_connections(tun) + proxy->cur_notif_pending;
+    dump_data.num_connections = min(zdtun_get_num_connections(tun) + proxy->cur_notif_pending, MAX_NUM_CONNECTIONS_DUMPED);
 
     dump_data.connections = (*env)->NewObjectArray(env, dump_data.num_connections, cls.conn, NULL);
     if(jniCheckException(env))
@@ -710,11 +703,14 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
     /* Handle possibly pending data */
     if(proxy->cur_notif_pending > 0) {
-        log_android(ANDROID_LOG_DEBUG, "Processing %u pending conns", proxy->cur_notif_pending);
+        log_android(ANDROID_LOG_DEBUG, "Processing %u pending connections", proxy->cur_notif_pending);
 
         for(int i = 0; i < proxy->cur_notif_pending; i++) {
             vpn_conn_t *conn = &proxy->notif_pending[i];
-            connection_dumper(tun, &conn->tuple, conn->data, &dump_data);
+
+            if(dump_data.idx < dump_data.num_connections)
+                connection_dumper(tun, &conn->tuple, conn->data, &dump_data);
+
             free_connection_data(proxy->notif_pending[i].data);
         }
 
