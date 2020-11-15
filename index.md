@@ -7,6 +7,7 @@ In order to setup the custom mitmproxy on a linux machine:
 
 ```
 git clone https://github.com/emanuele-f/mitmproxy
+cd mitmproxy
 sudo python3 setup.py install
 ```
 
