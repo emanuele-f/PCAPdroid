@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.6] - 2020-11-16
+- Add support for TLS decryption via mitmproxy
+- Fix occasional crash due to null ConnDescriptor in array
+- Connections view consistency fixed when app filter is in use
+- Update nDPI to 3.4 stable
+- Add links: rate app, telegram channel, user guide
+
 ## [1.2.5] - 2020-09-20
 - Fix crash on subsequent app runs
 
