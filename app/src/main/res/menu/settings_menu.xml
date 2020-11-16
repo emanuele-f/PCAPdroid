@@ -7,7 +7,7 @@
         android:title="@string/app_filter"
         android:orderInCategory="50"
         android:icon="@android:drawable/ic_menu_view"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         />
 
     <item
@@ -18,8 +18,29 @@
         />
 
     <item
-        android:id="@+id/action_about"
-        android:title="@string/about"
+        android:id="@+id/action_open_user_guide"
+        android:title="@string/user_guide"
+        android:orderInCategory="110"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_rate_app"
+        android:title="@string/rate_app"
+        android:orderInCategory="120"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_open_telegram"
+        android:title="@string/open_telegram"
+        android:orderInCategory="130"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_open_github"
+        android:title="@string/open_github"
         android:orderInCategory="150"
         app:showAsAction="never"
         />

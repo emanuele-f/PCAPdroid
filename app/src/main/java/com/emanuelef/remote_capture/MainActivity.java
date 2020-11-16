@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
+    public static final String TELEGRAM_CHANNEL_NAME = "PCAPdroid";
+    public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
+    public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
+
     /* App state handling: ready -> starting -> running -> stopping -> ready  */
     enum AppState {
         ready,
@@ -212,6 +216,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return true;
     }
 
+    private void openTelegramChannel() {
+        Intent intent = null;
+
+        try {
+            getPackageManager().getPackageInfo("org.telegram.messenger", 0);
+
+            // Open directly into the telegram app
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + TELEGRAM_CHANNEL_NAME));
+        } catch (Exception e) {
+            // Telegram not found, open in the browser
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_CHANNEL_NAME));
+        }
+
+        if(intent != null)
+            startActivity(intent);
+    }
+
+    private void rateApp() {
+        try {
+            /* If playstore is installed */
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + this.getPackageName())));
+        } catch (android.content.ActivityNotFoundException e) {
+            /* If playstore is not available */
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -222,11 +253,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         } else if (id == R.id.action_show_app_filter) {
             openAppSelector();
             return true;
-        } else if (id == R.id.action_about) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/emanuele-f/PCAPdroid"));
+        } else if (id == R.id.action_open_github) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
             startActivity(browserIntent);
             return true;
+        } else if (id == R.id.action_open_telegram) {
+            openTelegramChannel();
+            return true;
+        } else if (id == R.id.action_open_user_guide) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
+            startActivity(browserIntent);
+            return true;
+        } else if (id == R.id.action_rate_app) {
+            rateApp();
+            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

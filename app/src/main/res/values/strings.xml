@@ -60,5 +60,9 @@
     <string name="with_tls_decryption">+decryption</string>
     <string name="pcap_dump">PCAP Dump</string>
     <string name="tls_decryption">TLS Decryption</string>
+    <string name="user_guide">User Guide</string>
+    <string name="rate_app">Rate App</string>
+    <string name="open_telegram">Telegram Channel</string>
+    <string name="open_github">Github Project</string>
 </resources>
 
