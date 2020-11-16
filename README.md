@@ -20,6 +20,7 @@ Features:
 - Show captured traffic realtime statistics
 - Apply a filter to only capture traffic for the selected app
 - Get active connections details, including server name, DNS query and URL
+- Decrypt HTTPS/TLS traffic via a remote mitmproxy
 
 Download:
 
@@ -74,6 +75,10 @@ In order to run without root, the app takes advantage of the Android VPNService 
   <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/assets/handshake.png" width="250" />
   <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/assets/send_recv.png" width="250" />
 </p>
+
+## Decrypting HTTPS/TLS Traffic
+
+PCAPdroid supports decrypting TLS traffic by sending it to a customized version of mitmproxy. Check out the [User Guide](https://emanuele-f.github.io/PCAPdroid) for more details.
 
 ## Third Party
 
