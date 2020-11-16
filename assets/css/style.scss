@@ -2,3 +2,8 @@
 ---
 
 @import "{{ site.theme }}";
+
+#header_wrap .inner {
+  padding-top: 30px;
+  padding-bottom: 10px;
+}
