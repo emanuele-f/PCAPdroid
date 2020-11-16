@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -102,11 +103,18 @@ public class ConnectionsAdapter extends BaseAdapter {
         return mItems.get(pos);
     }
 
-    void updateConnections(ConnDescriptor[] connections) {
+    void updateConnections(ConnDescriptor[] conns) {
         long now = Utils.now();
+        ArrayList<ConnDescriptor> connections = new ArrayList<ConnDescriptor>();
+
+        /* The array may contain null values. Remove them before proceeding */
+        for(ConnDescriptor conn : conns) {
+            if(conn != null)
+                connections.add(conn);
+        }
 
         /* Sort connections by ascending ID */
-        Arrays.sort(connections, new Comparator<ConnDescriptor>() {
+        Collections.sort(connections, new Comparator<ConnDescriptor>() {
             @Override
             public int compare(ConnDescriptor connDescriptor, ConnDescriptor t1) {
                 return Integer.compare(connDescriptor.incr_id, t1.incr_id);

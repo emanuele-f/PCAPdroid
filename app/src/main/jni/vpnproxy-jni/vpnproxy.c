@@ -297,20 +297,28 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
+static bool shouldIgnoreApp(vpnproxy_data_t *proxy, int uid) {
+    bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
+
+    if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
+        && (!is_unknown_app || !proxy->capture_unknown_app_traffic))
+        return true;
+
+    return false;
+}
+
+/* ******************************************************* */
+
 static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     vpnproxy_data_t *proxy;
-    bool is_unknown_app;
-    int uid;
 
     if(!data) {
         log_android(ANDROID_LOG_ERROR, "Missing user_data in connection");
         return;
     }
 
-    uid = data->uid;
-    is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
     proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
 #if 0
@@ -334,9 +342,8 @@ static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8
     if(data->ndpi_flow)
         process_ndpi_packet(data, proxy, packet, size, from_tap);
 
-    if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
-        && (!is_unknown_app || !proxy->capture_unknown_app_traffic)) {
-        //log_android(ANDROID_LOG_DEBUG, "Discarding connection: UID=%d [filter=%d]", uid, proxy->uid_filter);
+    if(shouldIgnoreApp(proxy, data->uid)) {
+        //log_android(ANDROID_LOG_DEBUG, "Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
 
@@ -558,8 +565,11 @@ static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdt
 /*
  * Check if the packet should be redirected to the mitmproxy
  */
-static int check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     conn_data_t *data = zdtun_conn_get_userdata(conn);
+
+    if(shouldIgnoreApp(proxy, data->uid))
+        return;
 
     if(pkt->tuple.ipproto == IPPROTO_TCP) {
         uint32_t mitm_ip = proxy->tls_decryption.proxy_ip;
@@ -592,8 +602,6 @@ static int check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t
             data->mitm_header_needed = false;
         }
     }
-
-    return 0;
 }
 
 /* ******************************************************* */
@@ -630,6 +638,11 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
     struct in_addr addr;
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     JNIEnv *env = proxy->env;
+
+    if(shouldIgnoreApp(proxy, data->uid)) {
+        /* Continue */
+        return 0;
+    }
 
     addr.s_addr = conn_info->src_ip;
     strncpy(srcip, inet_ntoa(addr), sizeof(srcip));

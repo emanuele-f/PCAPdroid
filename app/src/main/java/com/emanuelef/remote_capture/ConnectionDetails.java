@@ -115,10 +115,12 @@ public class ConnectionDetails extends AppCompatActivity {
         ConnDescriptor connections[] = (ConnDescriptor[]) intent.getSerializableExtra("value");
 
         for (ConnDescriptor eval_conn : connections) {
-            if(eval_conn.incr_id == conn.incr_id) {
-                /* Connection found, update stats */
-                conn = eval_conn;
-                updateStats();
+            if(eval_conn != null) {
+                if (eval_conn.incr_id == conn.incr_id) {
+                    /* Connection found, update stats */
+                    conn = eval_conn;
+                    updateStats();
+                }
             }
         }
     }
