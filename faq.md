@@ -5,7 +5,7 @@ PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption a
 
 **Can I decrypt TLS without mitmproxy?**
 
-Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I have decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid.
+Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid. If you are a developer and want to implement this feature, your contribution is welcome!
 <br/><br/>
 
 **Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
