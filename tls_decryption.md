@@ -1,7 +1,3 @@
-layout: page
-title: "TLS Decryption"
-permalink: /tls_decryption
-
 ## 3.1 Decrypt HTTPS/TLS
 
 PCAPdroid supports decrypting TLS traffic (also TLS 1.3) by sending it to a [customized version of mitmproxy](https://github.com/emanuele-f/mitmproxy).
