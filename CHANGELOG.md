@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.7] - 2021-01-07
+- Fix app ID not resolved on android >= Q
+- Resolve system apps UIDs
+
 ## [1.2.6] - 2020-11-16
 - Add support for TLS decryption via mitmproxy
 - Fix occasional crash due to null ConnDescriptor in array
