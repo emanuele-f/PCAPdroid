@@ -277,11 +277,15 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
     jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
     struct in_addr addr;
     int version = 4; // TODO IPv6 support
+    u_int16_t sport = ntohs(conn_info->src_port);
+    u_int16_t dport = ntohs(conn_info->dst_port);
 
     // TODO cache
     jmethodID midGetUidQ = (*env)->GetMethodID(env, vpn_service_cls, "getUidQ", "(IILjava/lang/String;ILjava/lang/String;I)I");
-    if(!midGetUidQ)
-        __android_log_print(ANDROID_LOG_FATAL, VPN_TAG, "GetMethodID(getUidQ) failed");
+    if(!midGetUidQ) {
+        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(getUidQ) failed");
+        return -1;
+    }
 
     addr.s_addr = conn_info->src_ip;
     jstring jsource = (*env)->NewStringUTF(env, inet_ntoa(addr));
@@ -290,7 +294,15 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
 
     jint juid = (*env)->CallIntMethod(
             env, proxy->vpn_service, midGetUidQ,
-            version, conn_info->ipproto, jsource, ntohs(conn_info->src_port), jdest, ntohs(conn_info->dst_port));
+            version, conn_info->ipproto, jsource, sport, jdest, dport);
+
+    char source[INET6_ADDRSTRLEN + 1];
+    char dest[INET6_ADDRSTRLEN + 1];
+    inet_ntop(version == 4 ? AF_INET : AF_INET6, &conn_info->src_ip, source, sizeof(source));
+    inet_ntop(version == 4 ? AF_INET : AF_INET6, &conn_info->dst_ip, dest, sizeof(dest));
+
+    log_android(ANDROID_LOG_DEBUG, "uid [ipv%d][proto=%d] %s:%u -> %s:%u => %d",
+                version, conn_info->ipproto, source, sport, dest, dport, juid);
 
     (*env)->DeleteLocalRef(env, jsource);
     (*env)->DeleteLocalRef(env, jdest);
@@ -301,12 +313,8 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
 /* ******************************************************* */
 
 jint get_uid(struct vpnproxy_data *proxy, const zdtun_5tuple_t *conn_info) {
-    // TODO test the get_uid_q
-#if 0
     if (proxy->sdk <= 28) // Android 9 Pie
         return(get_uid_slow(proxy, conn_info));
     else
         return(get_uid_q(proxy, conn_info));
-#endif
-    return(get_uid_slow(proxy, conn_info));
 }
