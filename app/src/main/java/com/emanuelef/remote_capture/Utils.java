@@ -86,22 +86,24 @@ public class Utils {
         List<PackageInfo> packs = pm.getInstalledPackages(0);
 
         // Add the "No Filter" app
-        apps.add(new AppDescriptor("", context.getResources().getDrawable(android.R.drawable.ic_menu_view), context.getResources().getString(R.string.no_filter), -1));
+        Drawable icon = context.getResources().getDrawable(android.R.drawable.ic_menu_view);
+        apps.add(new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
+
+        Log.d("APPS", "num apps (system+user): " + packs.size());
 
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
+            boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
 
-            if((p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                String packages = p.applicationInfo.packageName;
+            String packages = p.applicationInfo.packageName;
 
-                if(!packages.equals("com.emanuelef.remote_capture")) {
-                    String appName = p.applicationInfo.loadLabel(pm).toString();
-                    Drawable icon = p.applicationInfo.loadIcon(pm);
-                    int uid = p.applicationInfo.uid;
-                    apps.add(new AppDescriptor(appName, icon, packages, uid));
+            if(!packages.equals("com.emanuelef.remote_capture")) {
+                String appName = p.applicationInfo.loadLabel(pm).toString();
+                icon = p.applicationInfo.loadIcon(pm);
+                int uid = p.applicationInfo.uid;
+                apps.add(new AppDescriptor(appName, icon, packages, uid, is_system));
 
-                    Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
-                }
+                Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
             }
         }
         return apps;

@@ -26,12 +26,14 @@ class AppDescriptor {
     private Drawable icon;
     private String packages;
     private int uid;
+    private boolean is_system;
 
-    AppDescriptor(String name, Drawable icon, String packages, int uid) {
+    AppDescriptor(String name, Drawable icon, String packages, int uid, boolean is_system) {
         this.name = name;
         this.icon = icon;
         this.packages = packages;
         this.uid = uid;
+        this.is_system = is_system;
     }
 
     String getName() {
@@ -49,4 +51,6 @@ class AppDescriptor {
     int getUid() {
         return uid;
     }
+
+    boolean isSystem() { return is_system; }
 }

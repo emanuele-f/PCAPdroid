@@ -46,6 +46,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
@@ -412,9 +414,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
 
+        // Filter non-system apps
+        List<AppDescriptor> user_apps = new ArrayList<>();
+
+        for(int i=0; i<mInstalledApps.size(); i++) {
+            AppDescriptor app = mInstalledApps.get(i);
+
+            if(!app.isSystem())
+                user_apps.add(app);
+        }
+
         mOpenAppsWhenDone = false;
 
-        AppsView apps = new AppsView(this, mInstalledApps);
+        AppsView apps = new AppsView(this, user_apps);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.app_filter);
         builder.setView(apps);
