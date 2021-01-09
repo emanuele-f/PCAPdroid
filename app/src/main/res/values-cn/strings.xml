@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name" translatable="false">PCAPdroid</string>
+    <string name="start_button">启动</string>
+    <string name="stop_button">停止</string>
+    <string name="title_activity_settings">设置</string>
+    <string name="no_filter">无过滤器</string>
+    <string name="collector_info">UDP 收集器： %1$s:%2$d</string>
+    <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
+    <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
+    <string name="up_and_down">%1$s 下行 — %2$s 上行</string>
+    <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
+    <string name="query">查询</string>
+    <string name="host">主机</string>
+    <string name="capture_not_started">流量捕获未在运行！</string>
+
+    <!-- Defaults -->
+    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
+    <string name="default_collector_port" translatable="false">1234</string>
+
+    <!-- Preferences -->
+    <string name="collector_prefs_header">远程收集器</string>
+    <string name="ip_address">IP 地址</string>
+    <string name="port">端口</string>
+    <string name="app_filter">应用过滤器</string>
+    <string name="ready">就绪</string>
+    <string name="stopping">停止中...</string>
+    <string name="starting">启动中...</string>
+    <string name="about">关于</string>
+    <string name="capture_unknown_app">捕获未知流量</string>
+    <string name="capture_unknown_app_summary">设置应用过滤器后，还捕获无法被关联到特定应用的通用流量。要正确地捕获 DNS 流量，通常需要这样做。</string>
+    <string name="misc_prefs">杂项</string>
+    <string name="status_view">状态</string>
+    <string name="connections_view">连接</string>
+    <string name="no_connections">无连接</string>
+    <string name="connection_details">连接详情</string>
+    <string name="app">应用程序</string>
+    <string name="protocol">协议</string>
+    <string name="sni" translatable="false">SNI</string>
+    <string name="source">源</string>
+    <string name="destination">目的地</string>
+    <string name="url" translatable="false">URL</string>
+    <string name="bytes">字节</string>
+    <string name="packets">流量包</string>
+    <string name="duration">持续时间</string>
+    <string name="http_server">HTTP 服务器</string>
+    <string name="udp_exporter">UDP 导出器</string>
+    <string name="no_dump">无</string>
+    <string name="no_dump_info">PCAP 不会被转储</string>
+    <string name="http_server_info">启动一个 HTTP 服务器下载 PCAP</string>
+    <string name="udp_exporter_info">发送 PCAP 到远程 UDP 接收器</string>
+    <string name="http_server_port">HTTP 服务器端口</string>
+    <string name="receiver_ip_address">接收器 IP 地址</string>
+    <string name="receiver_port">接收器端口</string>
+    <string name="dump_mode">转储模式</string>
+    <string name="tls_proxy_ip_address">mitmproxy IP 地址</string>
+    <string name="tls_proxy_port">mitmproxy 端口</string>
+    <string name="enable_tls_decryption">启用 TLS 解密</string>
+    <string name="enable_tls_decryption_summary">启用后，所有 TLS 通信都将被重定向到远程 mitmproxy 实例进行解密。</string>
+    <string name="default_proxy_port">8080</string>
+    <string name="with_tls_decryption">+解密</string>
+    <string name="pcap_dump">PCAP 转储</string>
+    <string name="tls_decryption">TLS 解密</string>
+    <string name="user_guide">用户指南</string>
+    <string name="rate_app">评价本应用</string>
+    <string name="open_telegram">Telegram 频道</string>
+    <string name="open_github">Github 项目</string>
+</resources>
