@@ -32,6 +32,7 @@
 #define MAX_DPI_PACKETS 12
 #define JAVA_PCAP_BUFFER_SIZE (512*1204) // 512K
 #define MAX_NUM_CONNECTIONS_DUMPED 64
+#define PERIODIC_PURGE_TIMEOUT_MS 5000
 
 /* ******************************************************* */
 
@@ -794,6 +795,9 @@ static int running = 0;
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
+    struct timeval now_tv;
+    u_int64_t now_ms;
+    u_int64_t next_purge_ms;
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
@@ -903,13 +907,15 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         }
     }
 
+    gettimeofday(&now_tv, NULL);
+    now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+    next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+
     while(running) {
         int max_fd;
         fd_set fdset;
         fd_set wrfds;
         ssize_t size;
-        u_int64_t now_ms;
-        struct timeval now_tv;
         struct timeval timeout = {.tv_sec = 0, .tv_usec = 500*1000}; // wake every 500 ms
 
         zdtun_fds(tun, &max_fd, &fdset, &wrfds);
@@ -977,6 +983,17 @@ housekeeping:
         } else if((proxy.java_dump.buffer_idx > 0)
          && (now_ms - proxy.java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
             javaPcapDump(tun, &proxy);
+        } else if(now_ms >= next_purge_ms) {
+            zdtun_statistics_t stats;
+
+            zdtun_purge_expired(tun, now_ms/1000);
+            next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+
+            zdtun_get_stats(tun, &stats);
+            log_android(ANDROID_LOG_INFO, "open sockets: %u, open connections: %u, tot connections: %u",
+                    stats.num_open_sockets,
+                    stats.num_icmp_conn + stats.num_tcp_conn + stats.num_udp_conn,
+                    stats.num_icmp_opened + stats.num_tcp_opened + stats.num_udp_opened);
         }
     }
 
