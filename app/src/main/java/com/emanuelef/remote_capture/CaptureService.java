@@ -246,7 +246,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public void run() {
-        runPacketLoop(mParcelFileDescriptor.detachFd(), this, Build.VERSION.SDK_INT);
+        if(mParcelFileDescriptor != null)
+            runPacketLoop(mParcelFileDescriptor.detachFd(), this, Build.VERSION.SDK_INT);
     }
 
     /* The following methods are called from native code */
