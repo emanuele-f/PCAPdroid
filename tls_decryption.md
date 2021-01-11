@@ -40,7 +40,7 @@ After android Nougat, android apps do not trust user certificates anymore. This 
 There is also a much simpler but unreliable approach which does not require messing with the app configuration. By using the [VirtualXposed](https://github.com/android-hacker/VirtualXposed) app in conjuction with PCAPdroid it's possible to trick android into using the old security policy of pre-nougat, thus making the app accept the mitmproxy certificate. VirtualXposed is an open source virtualization app and is also available [from F-Droid](https://f-droid.org/en/packages/io.va.exposed/). Beware that both VirusTotal and the android system report the app as a potentially dangerous app, check out the [provided explanation](https://github.com/android-hacker/VirtualXposed#virustotal). In order to use VirtualXposed with PCAPdroid:
 
 1. Setup PCAPdroid for the TLS decryption as explained above
-2. Possibly set the app filter in PCAPdroid to onyl capture the VirtualXposed traffic
+2. Possibly set the app filter in PCAPdroid to only capture the VirtualXposed traffic
 3. Open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method).
 4. Run the target application via VirtualXposed.
 
