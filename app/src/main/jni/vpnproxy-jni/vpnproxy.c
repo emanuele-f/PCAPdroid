@@ -78,6 +78,7 @@ typedef struct jni_classes {
 
 static jni_classes_t cls;
 static jni_methods_t mids;
+static bool running = false;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -608,14 +609,21 @@ static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_
 /* ******************************************************* */
 
 static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t *conn_info) {
+    if(!running)
+        return 0;
+
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
 
     int rv = write(proxy->tapfd, pkt_buf, pkt_size);
 
-    if(rv < 0)
-        log_android(ANDROID_LOG_ERROR,
+    if(rv < 0) {
+        if(errno == EIO) {
+            log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
+            running = false;
+        } else
+            log_android(ANDROID_LOG_ERROR,
                     "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
-    else if(rv != pkt_size)
+    } else if(rv != pkt_size)
         log_android(ANDROID_LOG_WARN,
                     "partial tap write (%d / %d)", rv, pkt_size);
     else
@@ -799,8 +807,6 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-static int running = 0;
-
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
@@ -866,7 +872,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     /* Important: init global state every time. Android may reuse the service. */
     dumper_socket = -1;
     send_header = true;
-    running = 1;
+    running = true;
 
     /* nDPI */
     proxy.ndpi = init_ndpi();
@@ -1043,7 +1049,8 @@ housekeeping:
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jclass type) {
     /* NOTE: the select on the packets loop uses a timeout to wake up periodically */
-    running = 0;
+    log_android(ANDROID_LOG_INFO, "stopPacketLoop called");
+    running = false;
 }
 
 JNIEXPORT void JNICALL

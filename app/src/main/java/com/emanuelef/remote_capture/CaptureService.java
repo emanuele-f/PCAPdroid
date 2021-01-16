@@ -192,6 +192,8 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void stop() {
+        stopPacketLoop();
+
         if(mParcelFileDescriptor != null) {
             try {
                 mParcelFileDescriptor.close();
@@ -238,10 +240,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     /* Stop a running VPN service */
     public static void stopService() {
-        if (INSTANCE != null) {
-            stopPacketLoop();
+        if (INSTANCE != null)
             INSTANCE.stop();
-        }
     }
 
     @Override
