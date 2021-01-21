@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
-    public static final String TELEGRAM_CHANNEL_NAME = "PCAPdroid";
+    public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
 
@@ -219,17 +219,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return true;
     }
 
-    private void openTelegramChannel() {
+    private void openTelegram() {
         Intent intent = null;
 
         try {
             getPackageManager().getPackageInfo("org.telegram.messenger", 0);
 
             // Open directly into the telegram app
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + TELEGRAM_CHANNEL_NAME));
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + TELEGRAM_GROUP_NAME));
         } catch (Exception e) {
             // Telegram not found, open in the browser
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_CHANNEL_NAME));
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_GROUP_NAME));
         }
 
         if(intent != null)
@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             startActivity(browserIntent);
             return true;
         } else if (id == R.id.action_open_telegram) {
-            openTelegramChannel();
+            openTelegram();
             return true;
         } else if (id == R.id.action_open_user_guide) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
