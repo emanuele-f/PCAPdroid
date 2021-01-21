@@ -28,18 +28,17 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(path: ':zdtun')
+    implementation project(path: ':ndpi')
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
     implementation 'com.google.android.material:material:1.2.1'
-    testImplementation 'junit:junit:4.12'
+    implementation 'cat.ereza:customactivityoncrash:2.2.0'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation project(path: ':zdtun')
-    implementation 'cat.ereza:customactivityoncrash:2.2.0'
-    implementation project(path: ':ndpi')
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    testImplementation 'junit:junit:4.12'
 }

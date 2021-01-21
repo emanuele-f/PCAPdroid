@@ -68,10 +68,7 @@ PCAPdroid integrates [nDPI](https://github.com/ntop/nDPI) to detect the applicat
 
 ## Building
 
-1. Clone this repo locally
-2. Clone https://github.com/emanuele-f/zdtun beside this repository
-3. Clone https://github.com/ntop/nDPI beside this repository
-4. Link the cmake file into nDPI: from this repo execute: `ln -s $(readlink -f nDPI/CMakeLists.txt) ../nDPI`
-4. Inside the nDPI directory, run `git checkout 3.4-stable; ./autogen.sh; ./configure --disable-gcrypt`
-6. Build the `zdtun` and `ndpi` modules first
-7. Then build the `app` module
+1. Clone this repo
+2. Run `git submodule update --init`
+3. Build the `zdtun` and `ndpi` modules first
+4. Then build the `app` module
