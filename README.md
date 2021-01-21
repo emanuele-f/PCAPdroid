@@ -1,6 +1,6 @@
 # PCAPdroid
 
-PCAPdroid is an android app to capture the phone traffic and analyze it remotely (e.g. via Wireshark). The traffic can be easily downloaded from a remote device thanks to the integrated HTTP server, or streamed to a remote UDP receiver.
+PCAPdroid is an android network tool to capture the device traffic and export it remotely for further analysis (e.g. via Wireshark). The traffic can be easily downloaded from a remote device thanks to the integrated HTTP server, or streamed to a remote UDP receiver.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/assets/screenshots/main_screen.jpg" width="200" />
@@ -43,7 +43,7 @@ You can help the PCAPdroid project in many ways:
 - Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
-You can reach the PCAPdroid developers and community on the [telegram channel](https://t.me/PCAPdroid).
+You can reach the PCAPdroid developers and community on the [telegram group](https://t.me/PCAPdroid).
 
 ## App filter and DNS Traffic
 
