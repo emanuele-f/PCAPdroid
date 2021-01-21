@@ -246,8 +246,14 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public void run() {
-        if(mParcelFileDescriptor != null)
-            runPacketLoop(mParcelFileDescriptor.detachFd(), this, Build.VERSION.SDK_INT);
+        if(mParcelFileDescriptor != null) {
+            int fd = mParcelFileDescriptor.detachFd();
+
+            if(fd > 0)
+                runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+            else
+                Log.e(TAG, "Invalid VPN fd: " + fd);
+        }
     }
 
     /* The following methods are called from native code */

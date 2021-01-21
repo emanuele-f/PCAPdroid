@@ -28,6 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -228,5 +229,27 @@ public class Utils {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    static boolean hasVPNRunning(Context context) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
+            return false;
+
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if(cm != null) {
+            Network[] networks = cm.getAllNetworks();
+
+            for(Network net : networks) {
+                NetworkCapabilities cap = cm.getNetworkCapabilities(net);
+
+                if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                    Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

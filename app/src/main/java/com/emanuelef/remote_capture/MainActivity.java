@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -351,18 +352,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             appStateRunning();
     }
 
+    private void startService() {
+        Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
+        if (vpnPrepareIntent != null)
+            startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
+        else
+            onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
+
+        appStateStarting();
+    }
+
     public void toggleService() {
         if (CaptureService.isServiceActive()) {
             CaptureService.stopService();
             appStateStopping();
         } else {
-            Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
-            if (vpnPrepareIntent != null)
-                startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
-            else
-                onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
-
-            appStateStarting();
+            if(Utils.hasVPNRunning(this)) {
+                new AlertDialog.Builder(this)
+                        .setMessage(R.string.existing_vpn_confirm)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                startService();
+                            }})
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton){}})
+                        .show();
+            } else
+                startService();
         }
     }
 
