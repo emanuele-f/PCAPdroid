@@ -279,16 +279,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
-            Intent intent = new Intent(MainActivity.this, CaptureService.class);
-            Bundle bundle = new Bundle();
+        if (requestCode == REQUEST_CODE_VPN) {
+            if(resultCode == RESULT_OK) {
+                Intent intent = new Intent(MainActivity.this, CaptureService.class);
+                Bundle bundle = new Bundle();
 
-            bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
-            intent.putExtra("settings", bundle);
+                bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
+                intent.putExtra("settings", bundle);
 
-            Log.d("Main", "onActivityResult -> start CaptureService");
+                Log.d("Main", "onActivityResult -> start CaptureService");
 
-            startService(intent);
+                startService(intent);
+            } else {
+                Log.w("Main", "VPN request failed");
+                appStateReady();
+            }
         }
     }
 
