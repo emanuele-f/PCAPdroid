@@ -32,6 +32,7 @@
 #define MAX_DPI_PACKETS 12
 #define JAVA_PCAP_BUFFER_SIZE (512*1204) // 512K
 #define MAX_NUM_CONNECTIONS_DUMPED 64
+#define PERIODIC_PURGE_TIMEOUT_MS 5000
 
 /* ******************************************************* */
 
@@ -77,6 +78,7 @@ typedef struct jni_classes {
 
 static jni_classes_t cls;
 static jni_methods_t mids;
+static bool running = false;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -159,7 +161,7 @@ static void protectSocketCallback(zdtun_t *tun, socket_t sock) {
 
 /* ******************************************************* */
 
-static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, size_t bufsize) {
+static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, int bufsize) {
     JNIEnv *env = proxy->env;
     const char *value = NULL;
 
@@ -227,7 +229,7 @@ const char *getL7ProtoName(struct ndpi_detection_module_struct *mod, ndpi_protoc
 /* ******************************************************* */
 
 static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const char *packet,
-        ssize_t size, uint8_t from_tap) {
+        int size, uint8_t from_tap) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
@@ -309,7 +311,7 @@ static bool shouldIgnoreApp(vpnproxy_data_t *proxy, int uid) {
 
 /* ******************************************************* */
 
-static void account_packet(zdtun_t *tun, const char *packet, ssize_t size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
+static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     vpnproxy_data_t *proxy;
@@ -606,12 +608,28 @@ static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_
 
 /* ******************************************************* */
 
-static int net2tap(zdtun_t *tun, char *pkt_buf, ssize_t pkt_size, const zdtun_conn_t *conn_info) {
+static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t *conn_info) {
+    if(!running)
+        return 0;
+
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
 
-    // TODO return value check
-    write(proxy->tapfd, pkt_buf, pkt_size);
-    return 0;
+    int rv = write(proxy->tapfd, pkt_buf, pkt_size);
+
+    if(rv < 0) {
+        if(errno == EIO) {
+            log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
+            running = false;
+        } else
+            log_android(ANDROID_LOG_ERROR,
+                    "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+    } else if(rv != pkt_size)
+        log_android(ANDROID_LOG_WARN,
+                    "partial tap write (%d / %d)", rv, pkt_size);
+    else
+        rv = 0;
+
+    return rv;
 }
 
 /* ******************************************************* */
@@ -789,11 +807,12 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-static int running = 0;
-
 static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
+    struct timeval now_tv;
+    u_int64_t now_ms;
+    u_int64_t next_purge_ms;
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
@@ -814,8 +833,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
             /* NOTE: must match ConnDescriptor::setData */
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
-
-    log_android(ANDROID_LOG_ERROR, "CLASS: %u", cls.vpn_service);
 
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,
@@ -855,7 +872,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     /* Important: init global state every time. Android may reuse the service. */
     dumper_socket = -1;
     send_header = true;
-    running = 1;
+    running = true;
 
     /* nDPI */
     proxy.ndpi = init_ndpi();
@@ -883,6 +900,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         return(-2);
     }
 
+    // Limit the segments size for two reasons:
+    // 1. to be able to encapsulate the packets for the UDP export
+    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets).
+    zdtun_set_max_window_size(tun, 32768);
+
     log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tapfd=%d]", tapfd);
 
     notifyServiceStatus(&proxy, "started");
@@ -903,13 +925,15 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         }
     }
 
+    gettimeofday(&now_tv, NULL);
+    now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+    next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+
     while(running) {
         int max_fd;
         fd_set fdset;
         fd_set wrfds;
-        ssize_t size;
-        u_int64_t now_ms;
-        struct timeval now_tv;
+        int size;
         struct timeval timeout = {.tv_sec = 0, .tv_usec = 500*1000}; // wake every 500 ms
 
         zdtun_fds(tun, &max_fd, &fdset, &wrfds);
@@ -977,6 +1001,17 @@ housekeeping:
         } else if((proxy.java_dump.buffer_idx > 0)
          && (now_ms - proxy.java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
             javaPcapDump(tun, &proxy);
+        } else if(now_ms >= next_purge_ms) {
+            zdtun_statistics_t stats;
+
+            zdtun_purge_expired(tun, now_ms/1000);
+            next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+
+            zdtun_get_stats(tun, &stats);
+            log_android(ANDROID_LOG_INFO, "open sockets: %u, open connections: %u, tot connections: %u",
+                    stats.num_open_sockets,
+                    stats.num_icmp_conn + stats.num_tcp_conn + stats.num_udp_conn,
+                    stats.num_icmp_opened + stats.num_tcp_opened + stats.num_udp_opened);
         }
     }
 
@@ -1014,7 +1049,8 @@ housekeeping:
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jclass type) {
     /* NOTE: the select on the packets loop uses a timeout to wake up periodically */
-    running = 0;
+    log_android(ANDROID_LOG_INFO, "stopPacketLoop called");
+    running = false;
 }
 
 JNIEXPORT void JNICALL

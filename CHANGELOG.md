@@ -2,6 +2,15 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.9] - 2021-01-17
+- Fix crash when app is stopped from the system VPN settings
+
+## [1.2.8] - 2021-01-11
+- Improve TCP connections stability with big packets
+- Add chinese translation (credits: sr093906)
+- Update nDPI and gradle dependencies
+- Fix some crashes
+
 ## [1.2.7] - 2021-01-07
 - Fix app ID not resolved on android >= Q
 - Resolve system apps UIDs

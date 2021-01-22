@@ -62,7 +62,10 @@
     <string name="tls_decryption">TLS Decryption</string>
     <string name="user_guide">User Guide</string>
     <string name="rate_app">Rate App</string>
-    <string name="open_telegram">Telegram Channel</string>
+    <string name="open_telegram_group">Telegram Group</string>
     <string name="open_github">Github Project</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="existing_vpn_confirm">The currently active VPN app will be disconnected. Do you want to proceed?</string>
 </resources>
 

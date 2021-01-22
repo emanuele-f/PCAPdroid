@@ -192,6 +192,8 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void stop() {
+        stopPacketLoop();
+
         if(mParcelFileDescriptor != null) {
             try {
                 mParcelFileDescriptor.close();
@@ -238,15 +240,20 @@ public class CaptureService extends VpnService implements Runnable {
 
     /* Stop a running VPN service */
     public static void stopService() {
-        if (INSTANCE != null) {
-            stopPacketLoop();
+        if (INSTANCE != null)
             INSTANCE.stop();
-        }
     }
 
     @Override
     public void run() {
-        runPacketLoop(mParcelFileDescriptor.detachFd(), this, Build.VERSION.SDK_INT);
+        if(mParcelFileDescriptor != null) {
+            int fd = mParcelFileDescriptor.detachFd();
+
+            if(fd > 0)
+                runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+            else
+                Log.e(TAG, "Invalid VPN fd: " + fd);
+        }
     }
 
     /* The following methods are called from native code */

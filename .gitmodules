@@ -1,0 +1,6 @@
+[submodule "submodules/nDPI"]
+	path = submodules/nDPI
+  url = https://github.com/ntop/nDPI
+[submodule "submodules/zdtun"]
+	path = submodules/zdtun
+	url = https://github.com/emanuele-f/zdtun

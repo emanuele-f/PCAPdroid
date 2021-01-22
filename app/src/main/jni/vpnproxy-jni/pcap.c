@@ -40,7 +40,7 @@ static uint8_t pcap_buffer[sizeof(struct pcaprec_hdr_s) + SNAPLEN];
 
 static void write_pcap(int fd, const struct sockaddr *srv, size_t srv_size, const void *ptr, size_t len) {
   if(sendto(fd, ptr, len, 0, srv, srv_size) < 0)
-      __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "sendto error[%d]: %s", errno, strerror(errno));
+      __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "sendto(%u) error[%d]: %s", len, errno, strerror(errno));
 }
 
 /* ******************************************************* */
