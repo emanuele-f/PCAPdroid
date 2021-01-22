@@ -22,7 +22,10 @@ import socket
 import sys
 import argparse
 
+# The buffer to hold the received UDP data
 BUFSIZE = 65535
+
+# Standard PCAP header. Must be sent before any other PCAP record.
 PCAP_HDR_BYTES = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000065000000")
 
 pcap_header_sent = False
@@ -38,12 +41,14 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(("0.0.0.0", args.port))
 
 # Send the initial PCAP header
+# By sending this manually at startup we can be sure that consumer application (e.g. wireshark)
+# reads the header before anything else.
 if(args.verbose):
 	sys.stderr.write("Sending PCAP header\n");
-
 sys.stdout.buffer.write(PCAP_HDR_BYTES)
 sys.stdout.flush()
 
+# Send the individual records
 while True:
 	data, addr = sock.recvfrom(BUFSIZE)
 
@@ -51,9 +56,11 @@ while True:
 		sys.stderr.write("Got a {}B packet\n".format(len(data)))
 
 	if(data == PCAP_HDR_BYTES):
+		# Ignore the PCAP header as we already sent it above
 		if(args.verbose):
 			sys.stderr.write("PCAP header detected, skipping\n");
 		continue
 
+	# this is a PCAP record, send it
 	sys.stdout.buffer.write(data)
 	sys.stdout.flush()
