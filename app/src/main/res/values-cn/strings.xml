@@ -64,7 +64,7 @@
     <string name="rate_app">评价本应用</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="open_github">Github 项目</string>
-	<string name="yes">是</string>
+    <string name="yes">是</string>
     <string name="no">否</string>
     <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
 </resources>
