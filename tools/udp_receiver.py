@@ -25,7 +25,7 @@ import argparse
 # The buffer to hold the received UDP data
 BUFSIZE = 65535
 
-# Standard PCAP header. Must be sent before any other PCAP record.
+# Standard PCAP header (struct pcap_hdr_s). Must be sent before any other PCAP record (struct pcaprec_hdr_s).
 PCAP_HDR_BYTES = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000065000000")
 
 pcap_header_sent = False
@@ -48,7 +48,7 @@ if(args.verbose):
 sys.stdout.buffer.write(PCAP_HDR_BYTES)
 sys.stdout.flush()
 
-# Send the individual records
+# Send the individual records (struct pcaprec_hdr_s)
 while True:
 	data, addr = sock.recvfrom(BUFSIZE)
 
