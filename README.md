@@ -3,7 +3,7 @@
 PCAPdroid is an android network tool to capture the device traffic and export it remotely for further analysis (e.g. via Wireshark). The traffic can be easily downloaded from a remote device thanks to the integrated HTTP server, or streamed to a remote UDP receiver.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/assets/screenshots/main_screen.jpg" width="200" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" />
 </p>
 
 Realtime Traffic Analysis:
