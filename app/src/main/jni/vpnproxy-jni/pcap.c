@@ -38,7 +38,7 @@ static uint8_t pcap_buffer[sizeof(struct pcaprec_hdr_s) + SNAPLEN];
 
 /* ******************************************************* */
 
-static void write_pcap(int fd, const struct sockaddr *srv, size_t srv_size, const void *ptr, size_t len) {
+static void write_pcap(int fd, const struct sockaddr *srv, int srv_size, const void *ptr, int len) {
   if(sendto(fd, ptr, len, 0, srv, srv_size) < 0)
       __android_log_print(ANDROID_LOG_ERROR, PCAP_TAG, "sendto(%u) error[%d]: %s", len, errno, strerror(errno));
 }
@@ -69,7 +69,7 @@ static size_t init_pcap_rec_hdr(struct pcaprec_hdr_s *pcap_rec, int length) {
 
 /* ******************************************************* */
 
-void write_pcap_hdr(int fd, const struct sockaddr *srv, size_t srv_size) {
+void write_pcap_hdr(int fd, const struct sockaddr *srv, int srv_size) {
     struct pcap_hdr_s pcap_hdr;
     pcap_hdr.magic_number = 0xa1b2c3d4;
     pcap_hdr.version_major = 2;
@@ -83,7 +83,7 @@ void write_pcap_hdr(int fd, const struct sockaddr *srv, size_t srv_size) {
 
 /* ******************************************************* */
 
-void write_pcap_rec(int fd, const struct sockaddr *srv, size_t srv_size, const uint8_t *buffer, size_t length) {
+void write_pcap_rec(int fd, const struct sockaddr *srv, int srv_size, const uint8_t *buffer, int length) {
     struct pcaprec_hdr_s *pcap_rec = (struct pcaprec_hdr_s *) pcap_buffer;
 
     size_t incl_len = init_pcap_rec_hdr(pcap_rec, length);
@@ -97,7 +97,7 @@ void write_pcap_rec(int fd, const struct sockaddr *srv, size_t srv_size, const u
 
 /* ******************************************************* */
 
-size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, size_t pkt_len) {
+size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, int pkt_len) {
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
 
     size_t incl_len = init_pcap_rec_hdr(pcap_rec, pkt_len);

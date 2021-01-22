@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 19
@@ -28,8 +28,6 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':zdtun')
-    implementation project(path: ':ndpi')
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference:1.1.1'
