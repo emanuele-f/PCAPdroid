@@ -1,0 +1,12 @@
+<i>Remote Capture</i> lets you capture the phone traffic and analyze it remotely (e.g. via Wireshark). The traffic can be easily captured on a remote PC via an UDP socket.
+
+<b>Features:</b>
+
+* Capture apps traffic without root
+* Send captured traffic via UDP
+* Show captured traffic real time statistics
+* Apply a filter to only capture traffic for the selected app
+
+In order to run without root, the app takes advantage of the Android VPNService API to collect the packets on the device (they are not sent to an external VPN server). The zdtun connections proxy library is used to route the packets back to their original destination.
+
+Visit <a href='https://github.com/emanuele-f/PCAPdroid'>the project’s Github repo</a> for instructions.
