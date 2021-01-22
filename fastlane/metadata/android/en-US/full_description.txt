@@ -1,0 +1,14 @@
+<i>PCAPdroid</i> lets you capture the Android traffic and analyze it remotely (e.g. via Wireshark). The traffic can be easily captured on a remote PC via an UDP socket.
+
+<b>Features:</b>
+
+* Capture apps traffic without root privileges
+* Send captured traffic via UDP
+* Download the traffic PCAP via the integrated HTTP server
+* Show captured traffic real time statistics
+* Apply a filter to only capture traffic for the selected app
+* Decrypt HTTPS/TLS traffic via a remote mitmproxy
+
+In order to run without root, the app takes advantage of the Android VPNService API to collect the packets on the device (they are not sent to an external VPN server).
+
+Visit <a href='https://github.com/emanuele-f/PCAPdroid'>the project’s Github repo</a> for instructions.
