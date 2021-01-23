@@ -24,7 +24,7 @@
 #include "utils.c"
 #include "vpnproxy.h"
 #include "pcap.h"
-#include "../../../../../../nDPI/src/include/ndpi_protocol_ids.h"
+#include "ndpi_protocol_ids.h"
 
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
