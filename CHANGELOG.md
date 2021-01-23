@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.10] - 2021-01-23
+- Ask confirmation when another VPNService is running
+- Rework modules dependencies
+
 ## [1.2.9] - 2021-01-17
 - Fix crash when app is stopped from the system VPN settings
 
