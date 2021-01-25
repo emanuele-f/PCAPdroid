@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.11] - 2021-01-25
+- Fix empty apps list in Android 11
+
 ## [1.2.10] - 2021-01-23
 - Ask confirmation when another VPNService is running
 - Rework modules dependencies
