@@ -104,7 +104,7 @@ public class Utils {
                 int uid = p.applicationInfo.uid;
                 apps.add(new AppDescriptor(appName, icon, packages, uid, is_system));
 
-                Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
+                Log.d("APPS", appName + " - " + packages + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
         return apps;
