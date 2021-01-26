@@ -299,14 +299,19 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-static bool shouldIgnoreApp(vpnproxy_data_t *proxy, int uid) {
+static bool shouldIgnoreConn(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, const conn_data_t *data) {
 #if 0
+    int uid = data.uid;
     bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
 
     if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
         && (!is_unknown_app || !proxy->capture_unknown_app_traffic))
         return true;
 #endif
+
+    // ignore some internal communications, e.g. DNS-over-TLS check on port 853
+    if((tuple->dst_ip == proxy->vpn_dns) && (ntohs(tuple->dst_port) != 53))
+        return true;
 
     return false;
 }
@@ -346,7 +351,7 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     if(data->ndpi_flow)
         process_ndpi_packet(data, proxy, packet, size, from_tap);
 
-    if(shouldIgnoreApp(proxy, data->uid)) {
+    if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
         //log_android(ANDROID_LOG_DEBUG, "Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
@@ -572,7 +577,7 @@ static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdt
 static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     conn_data_t *data = zdtun_conn_get_userdata(conn);
 
-    if(shouldIgnoreApp(proxy, data->uid))
+    if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn), data))
         return;
 
     if(pkt->tuple.ipproto == IPPROTO_TCP) {
@@ -659,7 +664,7 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     JNIEnv *env = proxy->env;
 
-    if(shouldIgnoreApp(proxy, data->uid)) {
+    if(shouldIgnoreConn(proxy, conn_info, data)) {
         /* Continue */
         return 0;
     }
