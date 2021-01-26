@@ -471,7 +471,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
             @Override
             public void onSelectedApp(AppDescriptor app) {
-                mFilterApp = app.getPackageName();
+                // Ignore the "no filter" app
+                if(app.getUid() != -1)
+                    mFilterApp = app.getPackageName();
+
                 setSelectedAppIcon(app);
 
                 // dismiss the dialog
