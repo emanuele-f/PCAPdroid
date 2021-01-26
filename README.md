@@ -69,5 +69,6 @@ PCAPdroid integrates [nDPI](https://github.com/ntop/nDPI) to detect the applicat
 ## Building
 
 1. Clone this repo
-2. Run `git submodule update --init`
-3. Build the app
+2. Install nDPI dependencies: `autogen libpcap-dev libjson-c-dev`
+3. Run `git submodule update --init`
+4. Build the app
