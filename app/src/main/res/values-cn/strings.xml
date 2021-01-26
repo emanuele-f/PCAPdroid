@@ -26,8 +26,6 @@
     <string name="stopping">停止中...</string>
     <string name="starting">启动中...</string>
     <string name="about">关于</string>
-    <string name="capture_unknown_app">捕获未知流量</string>
-    <string name="capture_unknown_app_summary">设置应用过滤器后，还捕获无法被关联到特定应用的通用流量。要正确地捕获 DNS 流量，通常需要这样做。</string>
     <string name="misc_prefs">杂项</string>
     <string name="status_view">状态</string>
     <string name="connections_view">连接</string>

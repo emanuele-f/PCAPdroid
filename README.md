@@ -45,9 +45,9 @@ You can help the PCAPdroid project in many ways:
 
 You can reach the PCAPdroid developers and community on the [telegram group](https://t.me/PCAPdroid).
 
-## App filter and DNS Traffic
+## DNS Traffic has unknown app
 
-Many applications rely on the Android DNS resolution service `netd` in order to resolve names. All the DNS requests sent via this service will come from `netd`, so it's not possible to which app made the request, so the app filter won't work. In order to circunvent this, PCAPdroid will dump all the DNS traffic from `netd` regardless of the app filter. This can be disabled by toggling off the "Capture Unknown Traffic" preference.
+Many applications rely on the Android DNS resolution service `netd` in order to resolve names. In such cases PCAPdroid will be unable to determine the originating app and will instead mark the connection with a question mark. Nevertheless, it will properly capture the selected app DNS traffic when an app filter is set.
 
 ## How it Works
 

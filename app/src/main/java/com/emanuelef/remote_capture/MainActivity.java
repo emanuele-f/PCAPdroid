@@ -56,7 +56,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>>, AppStateListener {
     SharedPreferences mPrefs;
     Menu mMenu;
-    int mFilterUid;
+    String mFilterApp;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
     AppState mState;
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFilterUid = CaptureService.getUidFilter();
+        mFilterApp = CaptureService.getAppFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
         mStatusFragment = null;
@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Intent intent = new Intent(MainActivity.this, CaptureService.class);
                 Bundle bundle = new Bundle();
 
-                bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
+                bundle.putString(Prefs.PREF_APP_FILTER, mFilterApp);
                 intent.putExtra("settings", bundle);
 
                 Log.d("Main", "onActivityResult -> start CaptureService");
@@ -316,9 +316,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.d("AppsLoader", data.size() + " APPs loaded");
         mInstalledApps = data;
 
-        if (mFilterUid != -1) {
+        if (mFilterApp != null) {
             /* An filter is active, try to set the corresponding app image */
-            AppDescriptor app = findAppByUid(mFilterUid);
+            AppDescriptor app = findAppByPackage(mFilterApp);
 
             if (app != null)
                 setSelectedAppIcon(app);
@@ -340,6 +340,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             AppDescriptor app = mInstalledApps.get(i);
 
             if (app.getUid() == uid) {
+                return (app);
+            }
+        }
+
+        return (null);
+    }
+
+    AppDescriptor findAppByPackage(String package_name) {
+        if (mInstalledApps == null)
+            return (null);
+
+        for (int i = 0; i < mInstalledApps.size(); i++) {
+            AppDescriptor app = mInstalledApps.get(i);
+
+            if (app.getPackageName().equals(package_name)) {
                 return (app);
             }
         }
@@ -456,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
             @Override
             public void onSelectedApp(AppDescriptor app) {
-                mFilterUid = app.getUid();
+                mFilterApp = app.getPackageName();
                 setSelectedAppIcon(app);
 
                 // dismiss the dialog

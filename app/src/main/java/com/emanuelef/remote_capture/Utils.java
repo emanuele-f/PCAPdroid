@@ -96,15 +96,15 @@ public class Utils {
             PackageInfo p = packs.get(i);
             boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
 
-            String packages = p.applicationInfo.packageName;
+            String package_name = p.applicationInfo.packageName;
 
-            if(!packages.equals("com.emanuelef.remote_capture")) {
+            if(!package_name.equals("com.emanuelef.remote_capture")) {
                 String appName = p.applicationInfo.loadLabel(pm).toString();
                 icon = p.applicationInfo.loadIcon(pm);
                 int uid = p.applicationInfo.uid;
-                apps.add(new AppDescriptor(appName, icon, packages, uid, is_system));
+                apps.add(new AppDescriptor(appName, icon, package_name, uid, is_system));
 
-                Log.d("APPS", appName + " - " + packages + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
+                Log.d("APPS", appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
         return apps;

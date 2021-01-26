@@ -24,14 +24,14 @@ import android.graphics.drawable.Drawable;
 class AppDescriptor {
     private String name;
     private Drawable icon;
-    private String packages;
+    private String package_name;
     private int uid;
     private boolean is_system;
 
-    AppDescriptor(String name, Drawable icon, String packages, int uid, boolean is_system) {
+    AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
         this.name = name;
         this.icon = icon;
-        this.packages = packages;
+        this.package_name = package_name;
         this.uid = uid;
         this.is_system = is_system;
     }
@@ -44,8 +44,8 @@ class AppDescriptor {
         return icon;
     }
 
-    String getPackages() {
-        return packages;
+    String getPackageName() {
+        return package_name;
     }
 
     int getUid() {

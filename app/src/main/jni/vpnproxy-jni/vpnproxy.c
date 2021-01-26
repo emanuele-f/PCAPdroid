@@ -300,11 +300,13 @@ static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
 /* ******************************************************* */
 
 static bool shouldIgnoreApp(vpnproxy_data_t *proxy, int uid) {
+#if 0
     bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
 
     if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
         && (!is_unknown_app || !proxy->capture_unknown_app_traffic))
         return true;
+#endif
 
     return false;
 }
@@ -843,8 +845,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
             .public_dns = getIPv4Pref(env, vpn, "getPublicDns"),
             .incr_id = 0,
-            .uid_filter = getIntPref(env, vpn, "getPcapUidFilter"),
-            .capture_unknown_app_traffic = (bool) getIntPref(env, vpn, "getCaptureUnknownTraffic"),
             .java_dump = {
                 .enabled = (bool) getIntPref(env, vpn, "dumpPcapToJava"),
             },
