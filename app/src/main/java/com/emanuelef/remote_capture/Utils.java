@@ -232,9 +232,6 @@ public class Utils {
     }
 
     static boolean hasVPNRunning(Context context) {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
-            return false;
-
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if(cm != null) {

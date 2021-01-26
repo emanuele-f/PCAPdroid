@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 14
         versionName "1.2.11"
