@@ -22,11 +22,13 @@ Features:
 - Get active connections details, including server name, DNS query and URL
 - Decrypt HTTPS/TLS traffic via a remote mitmproxy
 
-Download:
+## Download:
 
-https://github.com/emanuele-f/PCAPdroid/releases
+[Latest release](https://github.com/emanuele-f/PCAPdroid/releases)
 
-https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture
+[F-Droid](https://f-droid.org/en/packages/com.emanuelef.remote_capture)
+
+[Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 
 ## User Guide
 
@@ -69,6 +71,6 @@ PCAPdroid integrates [nDPI](https://github.com/ntop/nDPI) to detect the applicat
 ## Building
 
 1. Clone this repo
-2. Install nDPI dependencies: `autogen libpcap-dev libjson-c-dev`
+2. Install the native dependencies: `autogen autoconf libtool pkg-config libpcap-dev libjson-c-dev`
 3. Run `git submodule update --init`
 4. Build the app
