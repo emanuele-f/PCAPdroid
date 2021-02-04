@@ -33,20 +33,23 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +65,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     AppState mState;
     StatusFragment mStatusFragment;
     ConnectionsFragment mConnectionsFragment;
+    ViewPager2 viewPager2;
+    TabLayout tabLayout;
+    private final static int POS_STATUS = 0;
+    private final static int POS_CONNECTIONS = 1;
+    private final static int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
     private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
@@ -79,34 +87,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         stopping
     }
 
-    public class MainPagerAdapter extends FragmentPagerAdapter {
-        public MainPagerAdapter(FragmentManager fm) {
-            super(fm);
+    private static class MainStateAdapter extends FragmentStateAdapter {
+        MainStateAdapter(final FragmentActivity fa) {
+            super(fa);
         }
 
         @NonNull
         @Override
-        public Fragment getItem(int position) {
-            if (position == 0) {
-                return new StatusFragment();
-            } else {
-                return new ConnectionsFragment();
+        public Fragment createFragment(int position) {
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    return new StatusFragment();
+                case POS_CONNECTIONS:
+                    return new ConnectionsFragment();
             }
         }
 
         @Override
-        public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return getResources().getString(R.string.status_view);
-            } else {
-                return getResources().getString(R.string.connections_view);
-            }
-        }
-
-
-        @Override
-        public int getCount() {
-            return 2;
+        public int getItemCount() {
+            return TOTAL_COUNT;
         }
     }
 
@@ -126,9 +126,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         setContentView(R.layout.main_activity);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.main_viewpager);
-        MainPagerAdapter pagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
+        tabLayout = findViewById(R.id.main_tablayout);
+
+        viewPager2 = findViewById(R.id.main_viewpager2);
+        final MainStateAdapter stateAdapter = new MainStateAdapter(this);
+        viewPager2.setAdapter(stateAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    tab.setText(R.string.status_view);
+                    break;
+                case POS_CONNECTIONS:
+                    tab.setText(R.string.connections_view);
+                    break;
+                }
+        }).attach();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
