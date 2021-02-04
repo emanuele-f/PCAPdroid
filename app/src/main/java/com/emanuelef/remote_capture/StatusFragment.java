@@ -197,7 +197,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
             if(Prefs.getTlsDecryptionEnabled(mPrefs))
                 info += " (" + getResources().getString(R.string.with_tls_decryption) + ")";
 
-            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.settins_icon, 0);
+            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_settings, 0);
         } else
             mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 

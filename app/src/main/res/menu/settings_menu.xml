@@ -6,7 +6,7 @@
         android:id="@+id/action_show_app_filter"
         android:title="@string/app_filter"
         android:orderInCategory="50"
-        android:icon="@android:drawable/ic_menu_view"
+        android:icon="@drawable/ic_filter_alt"
         app:showAsAction="ifRoom"
         />
 
