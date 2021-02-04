@@ -1,47 +1,19 @@
 # https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 
-
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
 # Generated files
-.idea/**/contentModel.xml
-
-# Sensitive or high-churn files
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-
-# Gradle
-.idea/**/gradle.xml
-.idea/**/libraries
+.idea/
 .gradle
 
 # Gradle and Maven with auto-import
-.idea/artifacts
-.idea/compiler.xml
-.idea/jarRepositories.xml
-.idea/modules.xml
-.idea/*.iml
-.idea/modules
 *.iml
 *.ipr
 
 # Other
-/local.properties
-.idea/caches
-.idea/misc.xml
+local.properties
 .DS_Store
-/build
-/captures
+build/
+captures/
 .externalNativeBuild
 .cxx
-/app/release
+app/release/
+app/debug/
