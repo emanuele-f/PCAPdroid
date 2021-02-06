@@ -87,7 +87,7 @@ public class Utils {
         List<PackageInfo> packs = pm.getInstalledPackages(0);
 
         // Add the "No Filter" app
-        Drawable icon = context.getResources().getDrawable(android.R.drawable.ic_menu_view);
+        Drawable icon = context.getResources().getDrawable(android.R.color.transparent);
         apps.add(new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
 
         Log.d("APPS", "num apps (system+user): " + packs.size());

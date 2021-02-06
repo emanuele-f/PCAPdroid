@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 
@@ -59,6 +60,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>>, AppStateListener {
     SharedPreferences mPrefs;
     Menu mMenu;
+    Drawable mFilterIcon;
     String mFilterApp;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
@@ -227,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.settings_menu, menu);
         mMenu = menu;
+        mFilterIcon = mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).getIcon();
 
         recheckFragments();
 
@@ -347,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppDescriptor findAppByUid(int uid) {
-        if (mInstalledApps == null)
+        if((mInstalledApps == null) || (uid == -1))
             return (null);
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
@@ -485,11 +488,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
             @Override
             public void onSelectedApp(AppDescriptor app) {
-                // Ignore the "no filter" app
-                if(app.getUid() != -1)
+                if(app.getUid() != -1) {
+                    // an app has been selected
                     mFilterApp = app.getPackageName();
-
-                setSelectedAppIcon(app);
+                    setSelectedAppIcon(app);
+                } else {
+                    // no filter
+                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
+                }
 
                 // dismiss the dialog
                 alert.cancel();
