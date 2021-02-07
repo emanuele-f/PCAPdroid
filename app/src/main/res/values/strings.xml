@@ -65,5 +65,8 @@
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="existing_vpn_confirm">The currently active VPN app will be disconnected. Do you want to proceed?</string>
+    <string name="vpn_setup_failed">VPN setup failed</string>
+    <string name="app_not_found">App "%1$s" not found</string>
+    <string name="apps_loading_please_wait">Apps loading in progress, please wait</string>
 </resources>
 

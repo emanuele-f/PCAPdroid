@@ -154,7 +154,8 @@ public class CaptureService extends VpnService implements Runnable {
             try {
                 builder.addAllowedApplication(app_filter);
             } catch (PackageManager.NameNotFoundException e) {
-                Toast.makeText(this, "Could not find the specified app: " + app_filter, Toast.LENGTH_SHORT).show();
+                String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 return super.onStartCommand(intent, flags, startId);
             }
         }
@@ -162,7 +163,7 @@ public class CaptureService extends VpnService implements Runnable {
         try {
             mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            Toast.makeText(this, "VPN setup failed", Toast.LENGTH_SHORT).show();
+            Utils.showToast(this, R.string.vpn_setup_failed);
             return super.onStartCommand(intent, flags, startId);
         }
 

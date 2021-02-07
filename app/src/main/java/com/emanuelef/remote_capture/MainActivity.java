@@ -48,6 +48,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -441,6 +442,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if(mInstalledApps == null) {
             /* The applications loader has not finished yet. */
             mOpenAppsWhenDone = true;
+            Utils.showToast(this, R.string.apps_loading_please_wait);
             return;
         }
 
