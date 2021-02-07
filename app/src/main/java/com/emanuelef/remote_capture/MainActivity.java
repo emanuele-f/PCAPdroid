@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -33,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
@@ -54,6 +54,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private final static int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
-    private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
+    private static final int MENU_ITEM_START_BTN = 0;
+    private static final int MENU_ITEM_APP_SELECTOR_IDX = 1;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
@@ -113,7 +115,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mInstalledApps = null;
         mStateListeners = new ArrayList<>();
 
-        mAndroidApp = new AppDescriptor("Android", getResources().getDrawable((android.R.drawable.sym_def_app_icon)), "", 1000, true);
+        mAndroidApp = new AppDescriptor("Android",
+                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
+                "", 1000, true);
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -171,6 +175,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.ready;
         notifyAppState();
 
+        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+                ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
+        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.start_button);
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
     }
 
@@ -178,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.starting;
         notifyAppState();
 
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
 
@@ -185,6 +194,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.running;
         notifyAppState();
 
+        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+                ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
+        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.stop_button);
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
 
@@ -192,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.stopping;
         notifyAppState();
 
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
 
@@ -208,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void openTelegram() {
-        Intent intent = null;
+        Intent intent;
 
         try {
             getPackageManager().getPackageInfo("org.telegram.messenger", 0);
@@ -220,8 +234,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_GROUP_NAME));
         }
 
-        if(intent != null)
-            startActivity(intent);
+        startActivity(intent);
     }
 
     private void rateApp() {
@@ -237,7 +250,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+
+        if(id == R.id.action_start) {
+            toggleService();
+            return true;
+        } else if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
@@ -290,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
         return new AsyncTaskLoader<List<AppDescriptor>>(this) {
 
-            @Nullable
+            @NonNull
             @Override
             public List<AppDescriptor> loadInBackground() {
                 Log.d("AppsLoader", "Loading APPs...");
@@ -380,12 +397,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if(Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                startService();
-                            }})
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton){}})
+                        .setPositiveButton(R.string.yes, (dialog, whichButton) -> startService())
+                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
                         .show();
             } else
                 startService();
@@ -408,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LoaderManager lm = LoaderManager.getInstance(this);
         Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
 
-        Log.d("startLoadingApps", "Loader? " + Boolean.toString(loader != null));
+        Log.d("startLoadingApps", "Loader? " + (loader != null));
 
         if(loader==null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
@@ -420,7 +433,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setSelectedAppIcon(AppDescriptor app) {
         // clone the drawable to avoid a "zoom-in" effect when clicked
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(app.getIcon().getConstantState().newDrawable());
+        Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(drawable);
     }
 
     private void openAppSelector() {
@@ -448,22 +462,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.setView(apps);
         final AlertDialog alert = builder.create();
 
-        apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
-            @Override
-            public void onSelectedApp(AppDescriptor app) {
-                if(app.getUid() != -1) {
-                    // an app has been selected
-                    mFilterApp = app.getPackageName();
-                    setSelectedAppIcon(app);
-                } else {
-                    // no filter
-                    mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
-                    mFilterApp = null;
-                }
-
-                // dismiss the dialog
-                alert.cancel();
+        apps.setSelectedAppListener(app -> {
+            if(app.getUid() != -1) {
+                // an app has been selected
+                mFilterApp = app.getPackageName();
+                setSelectedAppIcon(app);
+            } else {
+                // no filter
+                mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
+                mFilterApp = null;
             }
+
+            // dismiss the dialog
+            alert.cancel();
         });
 
         alert.show();

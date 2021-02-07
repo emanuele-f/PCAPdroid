@@ -35,6 +35,8 @@ import android.os.Build;
 import android.text.format.Formatter;
 import android.util.Log;
 
+import androidx.core.content.ContextCompat;
+
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -87,7 +89,7 @@ public class Utils {
         List<PackageInfo> packs = pm.getInstalledPackages(0);
 
         // Add the "No Filter" app
-        Drawable icon = context.getResources().getDrawable(android.R.color.transparent);
+        Drawable icon = ContextCompat.getDrawable(context, android.R.color.transparent);
         apps.add(new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
 
         Log.d("APPS", "num apps (system+user): " + packs.size());

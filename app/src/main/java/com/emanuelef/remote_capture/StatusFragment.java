@@ -43,7 +43,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 public class StatusFragment extends Fragment implements AppStateListener {
-    private Button mStartButton;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
     private MainActivity mActivity;
@@ -72,7 +71,6 @@ public class StatusFragment extends Fragment implements AppStateListener {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mStartButton = view.findViewById(R.id.button_start);
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
@@ -103,14 +101,6 @@ public class StatusFragment extends Fragment implements AppStateListener {
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
                 if((mActivity != null) && (mActivity.getState() == AppState.ready))
                     refreshPcapDumpInfo();
-            }
-        });
-
-        mStartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("Main", "Clicked");
-                mActivity.toggleService();
             }
         });
 
@@ -179,25 +169,15 @@ public class StatusFragment extends Fragment implements AppStateListener {
     @Override
     public void appStateChanged(AppState state) {
         switch(state) {
-            case starting:
-                mStartButton.setEnabled(false);
-                break;
-            case stopping:
-                mStartButton.setEnabled(false);
-                break;
             case ready:
-                mStartButton.setText(R.string.start_button);
-                mStartButton.setEnabled(true);
                 mCaptureStatus.setText(R.string.ready);
-
                 refreshPcapDumpInfo();
                 break;
             case running:
-                mStartButton.setText(R.string.stop_button);
-                mStartButton.setEnabled(true);
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-
                 refreshPcapDumpInfo();
+                break;
+            default:
                 break;
         }
     }
