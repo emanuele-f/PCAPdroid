@@ -8,14 +8,15 @@ PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption a
 Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid. If you are a developer and want to implement this feature, your contribution is welcome!
 <br/><br/>
 
-**Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
+**Why I see connections originating from the IP 10.215.173.1?**
 
-PCAPdroid uses the android [VpnService](https://developer.android.com/reference/android/net/VpnService) to be able to capture the packets without root. PCAPdroid processes the traffic locally so your data is in your hands.
+`10.215.173.1` is the IP address of the virtual interface created by PCAPdroid. As PCAPdroid acts like a proxy, all the connections have this source address.
 <br/><br/>
 
-**Does PCAPdroid expose me to data leakage?**
+**Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
 
-You should only run PCAPdroid on a trusted local network as PCAPdroid does not encrypt your traffic. When using the HTTP server mode, any device in your local network can connect to PCAPdroid to download the PCAP of the traffic! PCAPdroid can also be configured to send your traffic over the internet (by enabling the UDP Exporter mode and using a public IP address), however doing this is discouraged.
+In order to run without root, the app takes advantage of the Android [VpnService](https://developer.android.com/reference/android/net/VpnService) API to collect the packets on the device. They are not sent to an external VPN server.
+
 <br/><br/>
 
 **Can I constantly monitor my device traffic?**
@@ -28,7 +29,12 @@ PCAPdroid is not optimized to reduce the battery consumtion. Do it at your own r
 While tecnically possible, PCAPdroid is not a firewall app. For this kind of stuff you can check out the wonderful [NetGuard](https://github.com/M66B/NetGuard) project.
 <br/><br/>
 
-**Can I switch network connection while running PCAPdroid?**
+**Can I capture the hotspot/tethering traffic?**
 
-PCAPdroid currently does not support this. The connections will break if your main IP address changes, e.g. if you switch from the mobile network to the WiFi network.
+This is not possible without root. A detailed explanation is provided at https://github.com/emanuele-f/PCAPdroid/issues/20. There is a workaround to capture only the HTTP/S traffic, which is to install an HTTP proxy on the android phone and configure the client device to use this proxy.
+<br/><br/>
+
+**Does PCAPdroid expose me to data leakage?**
+
+You should only run PCAPdroid on a trusted local network as PCAPdroid does not encrypt your traffic. When using the HTTP server mode, any device in your local network can connect to PCAPdroid to download the PCAP of the traffic! PCAPdroid can also be configured to send your traffic over the internet (by enabling the UDP Exporter mode and using a public IP address), however doing this is discouraged.
 <br/><br/>
