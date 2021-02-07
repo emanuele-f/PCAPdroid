@@ -24,7 +24,7 @@ Features:
 
 ## Download:
 
-[Latest release](https://github.com/emanuele-f/PCAPdroid/releases)
+[Releases](https://github.com/emanuele-f/PCAPdroid/releases)
 
 [F-Droid](https://f-droid.org/en/packages/com.emanuelef.remote_capture)
 
