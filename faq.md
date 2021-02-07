@@ -16,7 +16,6 @@ Currently no. Doing TLS decryption right takes a lot of effort and I don't known
 **Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
 
 In order to run without root, the app takes advantage of the Android [VpnService](https://developer.android.com/reference/android/net/VpnService) API to collect the packets on the device. They are not sent to an external VPN server.
-
 <br/><br/>
 
 **Can I constantly monitor my device traffic?**
