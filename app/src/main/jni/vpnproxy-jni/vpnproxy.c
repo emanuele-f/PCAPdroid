@@ -79,6 +79,7 @@ typedef struct jni_classes {
 static jni_classes_t cls;
 static jni_methods_t mids;
 static bool running = false;
+static bool dump_connections_now = false;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -1000,7 +1001,8 @@ housekeeping:
             sendCaptureStats(&proxy);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
-        } else if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
+        } else if(((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) || dump_connections_now) {
+            dump_connections_now = false;
             sendConnectionsDump(tun, &proxy);
             last_connections_dump = now_ms;
         } else if((proxy.java_dump.buffer_idx > 0)
@@ -1064,4 +1066,10 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
 
     run_tun(env, vpn, tapfd, sdk);
     close(tapfd);
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_askConnectionsDump(JNIEnv *env, jclass clazz) {
+    if(running)
+        dump_connections_now = true;
 }

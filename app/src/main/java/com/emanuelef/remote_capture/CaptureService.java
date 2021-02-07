@@ -364,4 +364,5 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     public static native void stopPacketLoop();
+    public static native void askConnectionsDump();
 }

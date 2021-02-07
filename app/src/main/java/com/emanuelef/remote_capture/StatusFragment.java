@@ -58,7 +58,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
     @Override
     public void onDestroy() {
-        mActivity.setStatusFragment(null);
+        mActivity.setAppStateListener(null);
         mActivity = null;
         super.onDestroy();
     }
@@ -101,7 +101,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if((mActivity != null) && (mActivity.getState() == MainActivity.AppState.ready))
+                if((mActivity != null) && (mActivity.getState() == AppState.ready))
                     refreshPcapDumpInfo();
             }
         });
@@ -125,35 +125,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
         /* Important: call this after all the fields have been initialized */
-        mActivity.setStatusFragment(this);
-    }
-
-    @Override
-    public void appStateReady() {
-        mStartButton.setText(R.string.start_button);
-        mStartButton.setEnabled(true);
-        mCaptureStatus.setText(R.string.ready);
-
-        refreshPcapDumpInfo();
-    }
-
-    @Override
-    public void appStateStarting() {
-        mStartButton.setEnabled(false);
-    }
-
-    @Override
-    public void appStateRunning() {
-        mStartButton.setText(R.string.stop_button);
-        mStartButton.setEnabled(true);
-        mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-
-        refreshPcapDumpInfo();
-    }
-
-    @Override
-    public void appStateStopping() {
-        mStartButton.setEnabled(false);
+        mActivity.setAppStateListener(this);
     }
 
     private void processStatsUpdateIntent(Intent intent) {
@@ -202,5 +174,31 @@ public class StatusFragment extends Fragment implements AppStateListener {
             mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 
         mCollectorInfo.setText(info);
+    }
+
+    @Override
+    public void appStateChanged(AppState state) {
+        switch(state) {
+            case starting:
+                mStartButton.setEnabled(false);
+                break;
+            case stopping:
+                mStartButton.setEnabled(false);
+                break;
+            case ready:
+                mStartButton.setText(R.string.start_button);
+                mStartButton.setEnabled(true);
+                mCaptureStatus.setText(R.string.ready);
+
+                refreshPcapDumpInfo();
+                break;
+            case running:
+                mStartButton.setText(R.string.stop_button);
+                mStartButton.setEnabled(true);
+                mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+
+                refreshPcapDumpInfo();
+                break;
+        }
     }
 }

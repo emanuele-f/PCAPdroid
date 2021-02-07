@@ -19,9 +19,14 @@
 
 package com.emanuelef.remote_capture;
 
+/* App state handling: ready -> starting -> running -> stopping -> ready  */
+enum AppState {
+    ready,
+    starting,
+    running,
+    stopping
+}
+
 interface AppStateListener {
-    void appStateReady();
-    void appStateStarting();
-    void appStateRunning();
-    void appStateStopping();
+    void appStateChanged(AppState state);
 }
