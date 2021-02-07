@@ -37,7 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-public class ConnectionsFragment extends Fragment {
+public class ConnectionsFragment extends Fragment implements AppStateListener {
     private static final String TAG = "ConnectionsFragment";
     private MainActivity mActivity;
     private ConnectionsAdapter mAdapter;
@@ -52,6 +52,7 @@ public class ConnectionsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mActivity.removeAppStateListener(this);
 
         mActivity = null;
     }
@@ -106,6 +107,8 @@ public class ConnectionsFragment extends Fragment {
                 processConnectionsDump(intent);
             }
         }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
+
+        mActivity.addAppStateListener(this);
     }
 
     @Override
@@ -126,8 +129,14 @@ public class ConnectionsFragment extends Fragment {
         }
     }
 
-    void reset() {
+    private void reset() {
         mAdapter.clear();
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void appStateChanged(AppState state) {
+        if(state == AppState.starting)
+            reset();
     }
 }

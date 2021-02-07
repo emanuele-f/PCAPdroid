@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     AppState mState;
     ViewPager2 viewPager2;
     TabLayout tabLayout;
-    AppStateListener mStateListener;
+    List<AppStateListener> mStateListeners;
+    AppDescriptor mAndroidApp;
     private final static int POS_STATUS = 0;
     private final static int POS_CONNECTIONS = 1;
     private final static int TOTAL_COUNT = 2;
@@ -110,7 +111,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mFilterApp = CaptureService.getAppFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
-        mStateListener = null;
+        mStateListeners = new ArrayList<>();
+
+        mAndroidApp = new AppDescriptor("Android", getResources().getDrawable((android.R.drawable.sym_def_app_icon)), "", 1000, true);
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -159,38 +162,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
+    private void notifyAppState() {
+        for(AppStateListener listener: mStateListeners)
+            listener.appStateChanged(mState);
+    }
+
     public void appStateReady() {
         mState = AppState.ready;
+        notifyAppState();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
-
-        if(mStateListener != null)
-            mStateListener.appStateChanged(AppState.ready);
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
+        notifyAppState();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-
-        if(mStateListener != null)
-            mStateListener.appStateChanged(AppState.starting);
     }
 
     public void appStateRunning() {
         mState = AppState.running;
+        notifyAppState();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-
-        if(mStateListener != null)
-            mStateListener.appStateChanged(AppState.running);
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
-
-        if(mStateListener != null)
-            mStateListener.appStateChanged(AppState.stopping);
+        notifyAppState();
 
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
@@ -324,6 +324,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if((mInstalledApps == null) || (uid == -1))
             return (null);
 
+        if(uid == 1000) // android system
+            return mAndroidApp;
+
         for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
 
@@ -389,8 +392,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    void setAppStateListener(AppStateListener listener) {
-        mStateListener = listener;
+    void addAppStateListener(AppStateListener listener) {
+        mStateListeners.add(listener);
+    }
+
+    void removeAppStateListener(AppStateListener listener) {
+        mStateListeners.remove(listener);
     }
 
     AppState getState() {
@@ -451,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } else {
                     // no filter
                     mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
+                    mFilterApp = null;
                 }
 
                 // dismiss the dialog

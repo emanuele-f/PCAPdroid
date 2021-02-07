@@ -58,7 +58,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
     @Override
     public void onDestroy() {
-        mActivity.setAppStateListener(null);
+        mActivity.removeAppStateListener(this);
         mActivity = null;
         super.onDestroy();
     }
@@ -125,7 +125,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
         /* Important: call this after all the fields have been initialized */
-        mActivity.setAppStateListener(this);
+        mActivity.addAppStateListener(this);
     }
 
     private void processStatsUpdateIntent(Intent intent) {
