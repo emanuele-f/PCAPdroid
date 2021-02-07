@@ -976,7 +976,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     goto housekeeping;
                 }
 
-                check_dns_req_dnat(&proxy, &pkt, conn);
+                if((check_dns_req_dnat(&proxy, &pkt, conn) == 0)
+                        && (pkt.tuple.dst_ip == proxy.vpn_dns)) {
+                    log_android(ANDROID_LOG_DEBUG, "ignoring packet directed to the virtual DNS server");
+                    goto housekeeping;
+                }
 
                 if(proxy.tls_decryption.enabled)
                     check_tls_mitm(tun, &proxy, &pkt, conn);
@@ -1065,7 +1069,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                                                               jobject vpn, jint sdk) {
 
     run_tun(env, vpn, tapfd, sdk);
-    close(tapfd);
 }
 
 JNIEXPORT void JNICALL

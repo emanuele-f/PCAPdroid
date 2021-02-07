@@ -205,6 +205,17 @@ public class CaptureService extends VpnService implements Runnable {
     private void stop() {
         stopPacketLoop();
 
+        while((mThread != null) && (mThread.isAlive())) {
+            try {
+                Log.d(TAG, "Joining native thread...");
+                mThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Joining native thread failed");
+            }
+        }
+
+        mThread = null;
+
         if(mParcelFileDescriptor != null) {
             try {
                 mParcelFileDescriptor.close();
@@ -258,7 +269,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void run() {
         if(mParcelFileDescriptor != null) {
-            int fd = mParcelFileDescriptor.detachFd();
+            int fd = mParcelFileDescriptor.getFd();
 
             if(fd > 0)
                 runPacketLoop(fd, this, Build.VERSION.SDK_INT);
