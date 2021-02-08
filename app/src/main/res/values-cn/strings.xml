@@ -26,6 +26,8 @@
     <string name="stopping">停止中...</string>
     <string name="starting">启动中...</string>
     <string name="about">关于</string>
+    <string name="capture_unknown_app">捕获未知流量</string>
+    <string name="capture_unknown_app_summary">设置应用过滤器后，还捕获无法被关联到特定应用的通用流量。要正确地捕获 DNS 流量，通常需要这样做。</string>
     <string name="misc_prefs">杂项</string>
     <string name="status_view">状态</string>
     <string name="connections_view">连接</string>
@@ -62,7 +64,10 @@
     <string name="rate_app">评价本应用</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="open_github">Github 项目</string>
-    <string name="yes">是</string>
+	<string name="yes">是</string>
     <string name="no">否</string>
     <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
+	<string name="vpn_setup_failed">VPN 设置失败</string>
+    <string name="app_not_found">未找到应用 "%1$s"</string>
+    <string name="apps_loading_please_wait">应用加载正在进行，请等待</string>
 </resources>
