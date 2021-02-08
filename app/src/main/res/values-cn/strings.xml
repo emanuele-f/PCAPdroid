@@ -65,4 +65,8 @@
     <string name="yes">是</string>
     <string name="no">否</string>
     <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
+    <string name="vpn_setup_failed">VPN 设置失败</string>
+    <string name="app_not_found">未找到应用 "%1$s"</string>
+    <string name="apps_loading_please_wait">应用加载正在进行，请等待</string>
 </resources>
+
