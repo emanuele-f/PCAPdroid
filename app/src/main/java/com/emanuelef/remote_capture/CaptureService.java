@@ -23,6 +23,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.VpnService;
 import android.os.Build;
@@ -49,13 +50,12 @@ public class CaptureService extends VpnService implements Runnable {
     private String tls_proxy_address;
     private Prefs.DumpMode dump_mode;
     private boolean tls_decryption_enabled;
-    private boolean capture_unknown_app_traffic;
     private int collector_port;
     private int http_server_port;
     private int tls_proxy_port;
-    private int uid_filter;
     private long last_bytes;
     private static CaptureService INSTANCE;
+    private String app_filter;
     private HTTPServer mHttpServer;
 
     /* The IP address of the virtual network interface */
@@ -113,7 +113,7 @@ public class CaptureService extends VpnService implements Runnable {
         public_dns = Utils.getDnsServer(app_ctx);
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
-        uid_filter = settings.getInt(Prefs.PREF_UID_FILTER);
+        app_filter = settings.getString(Prefs.PREF_APP_FILTER);
 
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
@@ -121,7 +121,6 @@ public class CaptureService extends VpnService implements Runnable {
         tls_decryption_enabled = Prefs.getTlsDecryptionEnabled(prefs);
         tls_proxy_address = Prefs.getTlsProxyAddress(prefs);
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
-        capture_unknown_app_traffic = Prefs.getCaptureUnknownAppTraffic(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
 
@@ -138,7 +137,7 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             mHttpServer = null;
 
-        Log.i("Main", "Using DNS server " + public_dns);
+        Log.i(TAG, "Using DNS server " + public_dns);
 
         // VPN
         /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
@@ -149,10 +148,22 @@ public class CaptureService extends VpnService implements Runnable {
                 .addRoute("128.0.0.0", 1)
                 .addDnsServer(vpn_dns);
 
+        if(app_filter != null) {
+            Log.d(TAG, "Setting app filter: " + app_filter);
+
+            try {
+                builder.addAllowedApplication(app_filter);
+            } catch (PackageManager.NameNotFoundException e) {
+                String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                return super.onStartCommand(intent, flags, startId);
+            }
+        }
+
         try {
             mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            Toast.makeText(this, "VPN setup failed", Toast.LENGTH_SHORT).show();
+            Utils.showToast(this, R.string.vpn_setup_failed);
             return super.onStartCommand(intent, flags, startId);
         }
 
@@ -194,6 +205,17 @@ public class CaptureService extends VpnService implements Runnable {
     private void stop() {
         stopPacketLoop();
 
+        while((mThread != null) && (mThread.isAlive())) {
+            try {
+                Log.d(TAG, "Joining native thread...");
+                mThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Joining native thread failed");
+            }
+        }
+
+        mThread = null;
+
         if(mParcelFileDescriptor != null) {
             try {
                 mParcelFileDescriptor.close();
@@ -214,8 +236,8 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.mParcelFileDescriptor != null));
     }
 
-    public static int getUidFilter() {
-        return((INSTANCE != null) ? INSTANCE.uid_filter : -1);
+    public static String getAppFilter() {
+        return((INSTANCE != null) ? INSTANCE.app_filter : null);
     }
 
     public static long getBytes() {
@@ -247,7 +269,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void run() {
         if(mParcelFileDescriptor != null) {
-            int fd = mParcelFileDescriptor.detachFd();
+            int fd = mParcelFileDescriptor.getFd();
 
             if(fd > 0)
                 runPacketLoop(fd, this, Build.VERSION.SDK_INT);
@@ -283,14 +305,6 @@ public class CaptureService extends VpnService implements Runnable {
     public int getTlsDecryptionEnabled() { return tls_decryption_enabled ? 1 : 0; }
 
     public int getTlsProxyPort() {  return(tls_proxy_port);  }
-
-    public int getPcapUidFilter() {
-        return(uid_filter);
-    }
-
-    public int getCaptureUnknownTraffic() {
-        return(capture_unknown_app_traffic ? 1 : 0);
-    }
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {
@@ -362,4 +376,5 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     public static native void stopPacketLoop();
+    public static native void askConnectionsDump();
 }

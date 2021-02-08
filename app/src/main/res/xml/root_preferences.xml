@@ -70,15 +70,4 @@
             app:defaultValue="@string/default_proxy_port"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/misc_prefs" app:iconSpaceReserved="false">
-
-        <SwitchPreference
-            app:key="capture_unknown_app"
-            app:title="@string/capture_unknown_app"
-            app:iconSpaceReserved="false"
-            app:summary="@string/capture_unknown_app_summary"
-            app:defaultValue="true" />
-
-    </PreferenceCategory>
 </PreferenceScreen>

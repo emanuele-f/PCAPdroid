@@ -56,7 +56,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
     public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {
         holder.textInListView.setText(listStorage.get(position).getName());
         holder.imageInListView.setImageDrawable(listStorage.get(position).getIcon());
-        holder.packageInListView.setText(listStorage.get(position).getPackages());
+        holder.packageInListView.setText(listStorage.get(position).getPackageName());
     }
 
     @Override

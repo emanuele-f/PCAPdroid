@@ -26,8 +26,6 @@
     <string name="stopping">Stopping...</string>
     <string name="starting">Starting...</string>
     <string name="about">About</string>
-    <string name="capture_unknown_app">Capture Unknown Traffic</string>
-    <string name="capture_unknown_app_summary">When an app filter is set, also capture general purpose traffic which cannot be associated to a specific app. This is usually needed to properly capture DNS traffic.</string>
     <string name="misc_prefs">Misc</string>
     <string name="status_view">Status</string>
     <string name="connections_view">Connections</string>
@@ -67,5 +65,8 @@
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="existing_vpn_confirm">The currently active VPN app will be disconnected. Do you want to proceed?</string>
+    <string name="vpn_setup_failed">VPN setup failed</string>
+    <string name="app_not_found">App "%1$s" not found</string>
+    <string name="apps_loading_please_wait">Apps loading in progress, please wait</string>
 </resources>
 

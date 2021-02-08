@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class ConnectionsAdapter extends BaseAdapter {
     ConnectionsAdapter(MainActivity context) {
         mActivity = context;
         mItems = new ArrayList<>();
-        mUnknownIcon = mActivity.getResources().getDrawable(android.R.drawable.ic_menu_help);
+        mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
     }
 
     @NonNull

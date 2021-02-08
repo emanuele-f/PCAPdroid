@@ -21,10 +21,10 @@ package com.emanuelef.remote_capture;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 
@@ -32,81 +32,78 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>>, AppStateListener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
     SharedPreferences mPrefs;
     Menu mMenu;
-    int mFilterUid;
+    Drawable mFilterIcon;
+    String mFilterApp;
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
     AppState mState;
-    StatusFragment mStatusFragment;
-    ConnectionsFragment mConnectionsFragment;
+    ViewPager2 viewPager2;
+    TabLayout tabLayout;
+    List<AppStateListener> mStateListeners;
+    AppDescriptor mAndroidApp;
+    private final static int POS_STATUS = 0;
+    private final static int POS_CONNECTIONS = 1;
+    private final static int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
-    private static final int MENU_ITEM_APP_SELECTOR_IDX = 0;
+    private static final int MENU_ITEM_START_BTN = 0;
+    private static final int MENU_ITEM_APP_SELECTOR_IDX = 1;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
 
-    /* App state handling: ready -> starting -> running -> stopping -> ready  */
-    enum AppState {
-        ready,
-        starting,
-        running,
-        stopping
-    }
-
-    public class MainPagerAdapter extends FragmentPagerAdapter {
-        public MainPagerAdapter(FragmentManager fm) {
-            super(fm);
+    private static class MainStateAdapter extends FragmentStateAdapter {
+        MainStateAdapter(final FragmentActivity fa) {
+            super(fa);
         }
 
         @NonNull
         @Override
-        public Fragment getItem(int position) {
-            if (position == 0) {
-                return new StatusFragment();
-            } else {
-                return new ConnectionsFragment();
+        public Fragment createFragment(int position) {
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    return new StatusFragment();
+                case POS_CONNECTIONS:
+                    return new ConnectionsFragment();
             }
         }
 
         @Override
-        public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return getResources().getString(R.string.status_view);
-            } else {
-                return getResources().getString(R.string.connections_view);
-            }
-        }
-
-
-        @Override
-        public int getCount() {
-            return 2;
+        public int getItemCount() {
+            return TOTAL_COUNT;
         }
     }
 
@@ -114,11 +111,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFilterUid = CaptureService.getUidFilter();
+        mFilterApp = CaptureService.getAppFilter();
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
-        mStatusFragment = null;
-        mConnectionsFragment = null;
+        mStateListeners = new ArrayList<>();
+
+        mAndroidApp = new AppDescriptor("Android",
+                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
+                "", 1000, true);
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -126,15 +126,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         setContentView(R.layout.main_activity);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.main_viewpager);
-        MainPagerAdapter pagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
+        tabLayout = findViewById(R.id.main_tablayout);
+
+        viewPager2 = findViewById(R.id.main_viewpager2);
+        final MainStateAdapter stateAdapter = new MainStateAdapter(this);
+        viewPager2.setAdapter(stateAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    tab.setText(R.string.status_view);
+                    break;
+                case POS_CONNECTIONS:
+                    tab.setText(R.string.connections_view);
+                    break;
+                }
+        }).attach();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        if (savedInstanceState != null) {
-            mConnectionsFragment = (ConnectionsFragment) getSupportFragmentManager().getFragment(savedInstanceState, "ConnectionsFragment");
-        }
 
         startLoadingApps();
 
@@ -157,54 +167,46 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        if(mConnectionsFragment != null)
-            getSupportFragmentManager().putFragment(outState, "ConnectionsFragment", mConnectionsFragment);
+    private void notifyAppState() {
+        for(AppStateListener listener: mStateListeners)
+            listener.appStateChanged(mState);
     }
 
-    @Override
     public void appStateReady() {
         mState = AppState.ready;
+        notifyAppState();
 
-        if (mStatusFragment != null)
-            mStatusFragment.appStateReady();
-
+        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+                ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
+        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.start_button);
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
     }
 
-    @Override
     public void appStateStarting() {
         mState = AppState.starting;
+        notifyAppState();
 
-        if (mStatusFragment != null)
-            mStatusFragment.appStateStarting();
-
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
 
-    @Override
     public void appStateRunning() {
         mState = AppState.running;
+        notifyAppState();
 
+        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+                ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
+        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.stop_button);
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
-
-        if (mStatusFragment != null)
-            mStatusFragment.appStateRunning();
-
-        if (mConnectionsFragment != null)
-            mConnectionsFragment.reset();
     }
 
-    @Override
     public void appStateStopping() {
         mState = AppState.stopping;
+        notifyAppState();
 
-        if (mStatusFragment != null)
-            mStatusFragment.appStateStopping();
-
+        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
         mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
     }
 
@@ -213,14 +215,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.settings_menu, menu);
         mMenu = menu;
+        mFilterIcon = mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).getIcon();
 
-        recheckFragments();
+        initAppState();
 
         return true;
     }
 
     private void openTelegram() {
-        Intent intent = null;
+        Intent intent;
 
         try {
             getPackageManager().getPackageInfo("org.telegram.messenger", 0);
@@ -232,8 +235,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_GROUP_NAME));
         }
 
-        if(intent != null)
-            startActivity(intent);
+        startActivity(intent);
     }
 
     private void rateApp() {
@@ -249,7 +251,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+
+        if(id == R.id.action_start) {
+            toggleService();
+            return true;
+        } else if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
@@ -279,16 +285,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE_VPN && resultCode == RESULT_OK) {
-            Intent intent = new Intent(MainActivity.this, CaptureService.class);
-            Bundle bundle = new Bundle();
+        if (requestCode == REQUEST_CODE_VPN) {
+            if(resultCode == RESULT_OK) {
+                Intent intent = new Intent(MainActivity.this, CaptureService.class);
+                Bundle bundle = new Bundle();
 
-            bundle.putInt(Prefs.PREF_UID_FILTER, mFilterUid);
-            intent.putExtra("settings", bundle);
+                bundle.putString(Prefs.PREF_APP_FILTER, mFilterApp);
+                intent.putExtra("settings", bundle);
 
-            Log.d("Main", "onActivityResult -> start CaptureService");
+                Log.d("Main", "onActivityResult -> start CaptureService");
 
-            startService(intent);
+                startService(intent);
+            } else {
+                Log.w("Main", "VPN request failed");
+                appStateReady();
+            }
         }
     }
 
@@ -297,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
         return new AsyncTaskLoader<List<AppDescriptor>>(this) {
 
-            @Nullable
+            @NonNull
             @Override
             public List<AppDescriptor> loadInBackground() {
                 Log.d("AppsLoader", "Loading APPs...");
@@ -311,9 +322,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.d("AppsLoader", data.size() + " APPs loaded");
         mInstalledApps = data;
 
-        if (mFilterUid != -1) {
+        if (mFilterApp != null) {
             /* An filter is active, try to set the corresponding app image */
-            AppDescriptor app = findAppByUid(mFilterUid);
+            AppDescriptor app = findAppByPackage(mFilterApp);
 
             if (app != null)
                 setSelectedAppIcon(app);
@@ -328,8 +339,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppDescriptor findAppByUid(int uid) {
-        if (mInstalledApps == null)
+        if((mInstalledApps == null) || (uid == -1))
             return (null);
+
+        if(uid == 1000) // android system
+            return mAndroidApp;
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
@@ -342,8 +356,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return (null);
     }
 
-    /* Try to determine the current app state */
-    private void setAppState() {
+    AppDescriptor findAppByPackage(String package_name) {
+        if (mInstalledApps == null)
+            return (null);
+
+        for (int i = 0; i < mInstalledApps.size(); i++) {
+            AppDescriptor app = mInstalledApps.get(i);
+
+            if (app.getPackageName().equals(package_name)) {
+                return (app);
+            }
+        }
+
+        return (null);
+    }
+
+    private void initAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
         if (!is_active)
@@ -370,34 +398,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if(Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                startService();
-                            }})
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton){}})
+                        .setPositiveButton(R.string.yes, (dialog, whichButton) -> startService())
+                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
                         .show();
             } else
                 startService();
         }
     }
 
-    void setStatusFragment(StatusFragment screen) {
-        mStatusFragment = screen;
-        recheckFragments();
+    void addAppStateListener(AppStateListener listener) {
+        mStateListeners.add(listener);
     }
 
-    void setConnectionsFragment(ConnectionsFragment view) {
-        mConnectionsFragment = view;
-        recheckFragments();
-    }
-
-    private void recheckFragments() {
-        /* Must wait for the fragments to properly update them */
-        if((mStatusFragment != null) && (mConnectionsFragment != null) && (mMenu != null)) {
-            // Possibly set an initial app state
-            setAppState();
-        }
+    void removeAppStateListener(AppStateListener listener) {
+        mStateListeners.remove(listener);
     }
 
     AppState getState() {
@@ -408,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LoaderManager lm = LoaderManager.getInstance(this);
         Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
 
-        Log.d("startLoadingApps", "Loader? " + Boolean.toString(loader != null));
+        Log.d("startLoadingApps", "Loader? " + (loader != null));
 
         if(loader==null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
@@ -420,13 +434,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setSelectedAppIcon(AppDescriptor app) {
         // clone the drawable to avoid a "zoom-in" effect when clicked
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(app.getIcon().getConstantState().newDrawable());
+        Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
+        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(drawable);
     }
 
     private void openAppSelector() {
         if(mInstalledApps == null) {
             /* The applications loader has not finished yet. */
             mOpenAppsWhenDone = true;
+            Utils.showToast(this, R.string.apps_loading_please_wait);
             return;
         }
 
@@ -448,15 +464,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.setView(apps);
         final AlertDialog alert = builder.create();
 
-        apps.setSelectedAppListener(new AppsView.OnSelectedAppListener() {
-            @Override
-            public void onSelectedApp(AppDescriptor app) {
-                mFilterUid = app.getUid();
+        apps.setSelectedAppListener(app -> {
+            if(app.getUid() != -1) {
+                // an app has been selected
+                mFilterApp = app.getPackageName();
                 setSelectedAppIcon(app);
-
-                // dismiss the dialog
-                alert.cancel();
+            } else {
+                // no filter
+                mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
+                mFilterApp = null;
             }
+
+            // dismiss the dialog
+            alert.cancel();
         });
 
         alert.show();

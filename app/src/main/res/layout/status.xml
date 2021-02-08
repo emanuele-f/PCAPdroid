@@ -7,24 +7,12 @@
     android:layout_height="match_parent"
     tools:context="com.emanuelef.remote_capture.MainActivity">
 
-    <Button
-        android:id="@+id/button_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
-        android:text="@string/start_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/collector_info" />
-
     <TextView
         android:id="@+id/collector_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="92dp"
+        android:layout_marginTop="82dp"
         android:gravity="center"
-        android:text="TextView"
         android:autoLink="web"
         android:drawablePadding="5dp"
         app:layout_constraintEnd_toEndOf="parent"

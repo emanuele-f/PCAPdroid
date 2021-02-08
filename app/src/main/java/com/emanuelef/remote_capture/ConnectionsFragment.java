@@ -37,22 +37,24 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-public class ConnectionsFragment extends Fragment {
+public class ConnectionsFragment extends Fragment implements AppStateListener {
     private static final String TAG = "ConnectionsFragment";
-    private MainActivity activity;
+    private MainActivity mActivity;
     private ConnectionsAdapter mAdapter;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        activity = (MainActivity) context;
+        mActivity = (MainActivity) context;
     }
 
     @Override
     public void onDestroy() {
-        activity.setConnectionsFragment(null);
         super.onDestroy();
+        mActivity.removeAppStateListener(this);
+
+        mActivity = null;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class ConnectionsFragment extends Fragment {
         TextView emptyText = view.findViewById(R.id.no_connections);
         connList.setEmptyView(emptyText);
 
-        mAdapter = new ConnectionsAdapter(activity);
+        mAdapter = new ConnectionsAdapter(mActivity);
         connList.setAdapter(mAdapter);
         connList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -76,7 +78,7 @@ public class ConnectionsFragment extends Fragment {
 
                 if(item != null) {
                     Intent intent = new Intent(getContext(), ConnectionDetails.class);
-                    AppDescriptor app = activity.findAppByUid(item.uid);
+                    AppDescriptor app = mActivity.findAppByUid(item.uid);
                     String app_name = null;//;1051
 
                     if(app != null)
@@ -96,7 +98,7 @@ public class ConnectionsFragment extends Fragment {
             }
         });
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(activity);
+        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(mActivity);
 
         /* Register for connections update */
         bcast_man.registerReceiver(new BroadcastReceiver() {
@@ -106,33 +108,14 @@ public class ConnectionsFragment extends Fragment {
             }
         }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
 
-        if(savedInstanceState != null) {
-            ConnDescriptor connections[] = (ConnDescriptor[]) savedInstanceState.getSerializable("connections");
-
-            if(connections != null) {
-                mAdapter.updateConnections(connections);
-                Log.d(TAG, "Restored " + connections.length + " connections");
-            }
-        }
-
-        /* Important: call this after all the fields have been initialized */
-        activity.setConnectionsFragment(this);
+        mActivity.addAppStateListener(this);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        ConnDescriptor items[] = new ConnDescriptor[mAdapter.getCount()];
+    public void onResume() {
+        super.onResume();
 
-        for(int i = 0; i<items.length; i++) {
-            ConnDescriptor conn = mAdapter.getItem(i);
-
-            if(conn != null)
-                items[i] = conn;
-        }
-
-        outState.putSerializable("connections", items);
-        Log.d(TAG, "Saved " + items.length + " connections");
+        CaptureService.askConnectionsDump();
     }
 
     private void processConnectionsDump(Intent intent) {
@@ -146,8 +129,14 @@ public class ConnectionsFragment extends Fragment {
         }
     }
 
-    void reset() {
+    private void reset() {
         mAdapter.clear();
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void appStateChanged(AppState state) {
+        if(state == AppState.starting)
+            reset();
     }
 }

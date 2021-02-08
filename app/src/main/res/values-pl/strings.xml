@@ -21,8 +21,6 @@
     <string name="stopping">Wyłączanie...</string>
     <string name="starting">Włączanie...</string>
     <string name="about">O aplikacji</string>
-    <string name="capture_unknown_app">Przechwytuj nieznany ruch sieciowy</string>
-    <string name="capture_unknown_app_summary">Gdy ustawiony jest filtr aplikacji, zbieraj także ruch sieciowy, który nie może być przypisany żadnej aplikacji. To jest zwykle wymagane, by przechwytywać ruch DNS.</string>
     <string name="misc_prefs">Różne</string>
     <string name="status_view">Status</string>
     <string name="connections_view">Połączenia</string>

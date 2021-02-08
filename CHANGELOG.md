@@ -2,6 +2,17 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.12] - 2021-01-26
+- minSdkVersion is now 21 (Lollipop)
+- Improve DNS traffic capture when an app filter is set
+
+## [1.2.11] - 2021-01-25
+- Fix empty apps list in Android 11
+
+## [1.2.10] - 2021-01-23
+- Ask confirmation when another VPNService is running
+- Rework modules dependencies
+
 ## [1.2.9] - 2021-01-17
 - Fix crash when app is stopped from the system VPN settings
 

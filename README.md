@@ -3,7 +3,7 @@
 PCAPdroid is an android network tool to capture the device traffic and export it remotely for further analysis (e.g. via Wireshark). The traffic can be easily downloaded from a remote device thanks to the integrated HTTP server, or streamed to a remote UDP receiver.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/assets/screenshots/main_screen.jpg" width="200" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" />
 </p>
 
 Realtime Traffic Analysis:
@@ -22,11 +22,13 @@ Features:
 - Get active connections details, including server name, DNS query and URL
 - Decrypt HTTPS/TLS traffic via a remote mitmproxy
 
-Download:
+## Download:
 
-https://github.com/emanuele-f/PCAPdroid/releases
+[Releases](https://github.com/emanuele-f/PCAPdroid/releases)
 
-https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture
+[F-Droid](https://f-droid.org/en/packages/com.emanuelef.remote_capture)
+
+[Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 
 ## User Guide
 
@@ -45,9 +47,9 @@ You can help the PCAPdroid project in many ways:
 
 You can reach the PCAPdroid developers and community on the [telegram group](https://t.me/PCAPdroid).
 
-## App filter and DNS Traffic
+## DNS Traffic has unknown app
 
-Many applications rely on the Android DNS resolution service `netd` in order to resolve names. All the DNS requests sent via this service will come from `netd`, so it's not possible to which app made the request, so the app filter won't work. In order to circunvent this, PCAPdroid will dump all the DNS traffic from `netd` regardless of the app filter. This can be disabled by toggling off the "Capture Unknown Traffic" preference.
+Many applications rely on the Android DNS resolution service `netd` in order to resolve names. In such cases PCAPdroid will be unable to determine the originating app and will instead mark the connection with a question mark. Nevertheless, it will properly capture the selected app DNS traffic when an app filter is set.
 
 ## How it Works
 
@@ -69,6 +71,6 @@ PCAPdroid integrates [nDPI](https://github.com/ntop/nDPI) to detect the applicat
 ## Building
 
 1. Clone this repo
-2. Run `git submodule update --init`
-3. Build the `zdtun` and `ndpi` modules first
-4. Then build the `app` module
+2. Install the native dependencies: `autogen autoconf libtool pkg-config libpcap-dev libjson-c-dev`
+3. Run `git submodule update --init`
+4. Build the app

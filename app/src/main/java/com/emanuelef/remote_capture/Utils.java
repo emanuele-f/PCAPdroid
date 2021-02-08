@@ -34,6 +34,9 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -87,26 +90,32 @@ public class Utils {
         List<PackageInfo> packs = pm.getInstalledPackages(0);
 
         // Add the "No Filter" app
-        Drawable icon = context.getResources().getDrawable(android.R.drawable.ic_menu_view);
+        Drawable icon = ContextCompat.getDrawable(context, android.R.color.transparent);
         apps.add(new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
 
         Log.d("APPS", "num apps (system+user): " + packs.size());
+        long tstart = now();
 
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
 
-            String packages = p.applicationInfo.packageName;
+            String package_name = p.applicationInfo.packageName;
 
-            if(!packages.equals("com.emanuelef.remote_capture")) {
+            if(!package_name.equals("com.emanuelef.remote_capture")) {
                 String appName = p.applicationInfo.loadLabel(pm).toString();
-                icon = p.applicationInfo.loadIcon(pm);
-                int uid = p.applicationInfo.uid;
-                apps.add(new AppDescriptor(appName, icon, packages, uid, is_system));
 
-                Log.d("APPS", appName + " - " + packages + " [" + uid + "]");
+                // NOTE: this call is expensive
+                icon = p.applicationInfo.loadIcon(pm);
+
+                int uid = p.applicationInfo.uid;
+                apps.add(new AppDescriptor(appName, icon, package_name, uid, is_system));
+
+                Log.d("APPS", appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
+
+        Log.d("APPS", packs.size() + " apps loaded in " + (now() - tstart) +" seconds");
         return apps;
     }
 
@@ -216,6 +225,7 @@ public class Utils {
         return "127.0.0.1";
     }
 
+    // returns current timestamp in seconds
     public static long now() {
         Calendar calendar = Calendar.getInstance();
         return(calendar.getTimeInMillis() / 1000);
@@ -232,9 +242,6 @@ public class Utils {
     }
 
     static boolean hasVPNRunning(Context context) {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP)
-            return false;
-
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if(cm != null) {
@@ -251,5 +258,10 @@ public class Utils {
         }
 
         return false;
+    }
+
+    static void showToast(Context context, int id) {
+        String msg = context.getResources().getString(id);
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 }

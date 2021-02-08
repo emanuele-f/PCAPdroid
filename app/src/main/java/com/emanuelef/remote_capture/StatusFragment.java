@@ -43,7 +43,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 public class StatusFragment extends Fragment implements AppStateListener {
-    private Button mStartButton;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
     private MainActivity mActivity;
@@ -58,7 +57,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
     @Override
     public void onDestroy() {
-        mActivity.setStatusFragment(null);
+        mActivity.removeAppStateListener(this);
         mActivity = null;
         super.onDestroy();
     }
@@ -72,7 +71,6 @@ public class StatusFragment extends Fragment implements AppStateListener {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mStartButton = view.findViewById(R.id.button_start);
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
@@ -101,16 +99,8 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if((mActivity != null) && (mActivity.getState() == MainActivity.AppState.ready))
+                if((mActivity != null) && (mActivity.getState() == AppState.ready))
                     refreshPcapDumpInfo();
-            }
-        });
-
-        mStartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("Main", "Clicked");
-                mActivity.toggleService();
             }
         });
 
@@ -125,35 +115,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
         }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
         /* Important: call this after all the fields have been initialized */
-        mActivity.setStatusFragment(this);
-    }
-
-    @Override
-    public void appStateReady() {
-        mStartButton.setText(R.string.start_button);
-        mStartButton.setEnabled(true);
-        mCaptureStatus.setText(R.string.ready);
-
-        refreshPcapDumpInfo();
-    }
-
-    @Override
-    public void appStateStarting() {
-        mStartButton.setEnabled(false);
-    }
-
-    @Override
-    public void appStateRunning() {
-        mStartButton.setText(R.string.stop_button);
-        mStartButton.setEnabled(true);
-        mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-
-        refreshPcapDumpInfo();
-    }
-
-    @Override
-    public void appStateStopping() {
-        mStartButton.setEnabled(false);
+        mActivity.addAppStateListener(this);
     }
 
     private void processStatsUpdateIntent(Intent intent) {
@@ -197,10 +159,26 @@ public class StatusFragment extends Fragment implements AppStateListener {
             if(Prefs.getTlsDecryptionEnabled(mPrefs))
                 info += " (" + getResources().getString(R.string.with_tls_decryption) + ")";
 
-            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.settins_icon, 0);
+            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_settings, 0);
         } else
             mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 
         mCollectorInfo.setText(info);
+    }
+
+    @Override
+    public void appStateChanged(AppState state) {
+        switch(state) {
+            case ready:
+                mCaptureStatus.setText(R.string.ready);
+                refreshPcapDumpInfo();
+                break;
+            case running:
+                mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+                refreshPcapDumpInfo();
+                break;
+            default:
+                break;
+        }
     }
 }
