@@ -13,6 +13,9 @@ Currently no. Doing TLS decryption right takes a lot of effort and I don't known
 `10.215.173.1` is the IP address of the virtual interface created by PCAPdroid. As PCAPdroid acts like a proxy, all the connections have this source address.
 <br/><br/>
 
+**Why I see DNS requests to 10.215.173.2?**
+`10.215.173.2` is virtual IP address used by PCAPdroid to capture the DNS traffic. During startup, PCAPdroid detects the DNS server in use by the device and proxies all the DNS requests to such address. Only UDP DNS queries as currently supported. TCP DNS queries are dropped.
+
 **Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
 
 In order to run without root, the app takes advantage of the Android [VpnService](https://developer.android.com/reference/android/net/VpnService) API to collect the packets on the device. They are not sent to an external VPN server.
