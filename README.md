@@ -22,13 +22,13 @@ Features:
 - Get active connections details, including server name, DNS query and URL
 - Decrypt HTTPS/TLS traffic via a remote mitmproxy
 
-## Download:
+<a href="https://f-droid.org/packages/com.emanuelef.remote_capture">
+    <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">
+</a> <a href='https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture'><img height="80" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
-[Releases](https://github.com/emanuele-f/PCAPdroid/releases)
-
-[F-Droid](https://f-droid.org/en/packages/com.emanuelef.remote_capture)
-
-[Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
+<sub>Google Play and the Google Play logo are trademarks of Google LLC.</sub>
 
 ## User Guide
 
