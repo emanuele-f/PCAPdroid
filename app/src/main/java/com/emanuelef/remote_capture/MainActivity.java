@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     MenuItem mMenuItemStats;
     MenuItem mMenuItemStartBtn;
     MenuItem mMenuItemAppSel;
+    MenuItem mMenuSettings;
     Drawable mFilterIcon;
     String mFilterApp;
     boolean mOpenAppsWhenDone;
@@ -182,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMenuItemStartBtn.setEnabled(true);
         mMenuItemAppSel.setEnabled(true);
         mMenuItemStats.setVisible(false);
+        mMenuSettings.setVisible(true);
     }
 
     public void appStateStarting() {
@@ -190,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mMenuItemStartBtn.setEnabled(false);
         mMenuItemAppSel.setEnabled(false);
+        mMenuSettings.setVisible(false);
     }
 
     public void appStateRunning() {
@@ -201,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMenuItemStartBtn.setTitle(R.string.stop_button);
         mMenuItemStartBtn.setEnabled(true);
         mMenuItemAppSel.setEnabled(false);
+        mMenuSettings.setVisible(false);
         mMenuItemStats.setVisible(true);
     }
 
@@ -221,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMenuItemStats = mMenu.findItem(R.id.action_stats);
         mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
         mMenuItemAppSel = mMenu.findItem(R.id.action_show_app_filter);
+        mMenuSettings = mMenu.findItem(R.id.action_settings);
 
         mFilterIcon = mMenuItemAppSel.getIcon();
 
