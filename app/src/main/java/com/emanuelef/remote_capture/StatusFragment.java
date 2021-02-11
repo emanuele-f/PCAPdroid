@@ -75,6 +75,13 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mCaptureStatus = view.findViewById(R.id.status_view);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
 
+        mCaptureStatus.setOnClickListener(v -> {
+            if(mActivity.getState() == AppState.running) {
+                Intent intent = new Intent(getActivity(), StatsActivity.class);
+                startActivity(intent);
+            }
+        });
+
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 

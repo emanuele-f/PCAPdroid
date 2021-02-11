@@ -68,5 +68,16 @@
     <string name="vpn_setup_failed">VPN setup failed</string>
     <string name="app_not_found">App "%1$s" not found</string>
     <string name="apps_loading_please_wait">Apps loading in progress, please wait</string>
+    <string name="stats">Stats</string>
+    <string name="active_connections">Active Connections</string>
+    <string name="dropped_connections">Dropped Connections</string>
+    <string name="tot_connections">Total Connections</string>
+    <string name="open_sockets">Open Sockets</string>
+    <string name="max_file_descriptor">Max FD</string>
+    <string name="bytes_sent">Bytes Sent</string>
+    <string name="bytes_rcvd">Bytes Received</string>
+    <string name="packets_sent">Packets Sent</string>
+    <string name="packets_rcvd">Packets Received</string>
+    <string name="dns_queries">DNS Queries</string>
 </resources>
 

@@ -48,7 +48,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -62,6 +61,9 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
     SharedPreferences mPrefs;
     Menu mMenu;
+    MenuItem mMenuItemStats;
+    MenuItem mMenuItemStartBtn;
+    MenuItem mMenuItemAppSel;
     Drawable mFilterIcon;
     String mFilterApp;
     boolean mOpenAppsWhenDone;
@@ -76,8 +78,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private final static int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
-    private static final int MENU_ITEM_START_BTN = 0;
-    private static final int MENU_ITEM_APP_SELECTOR_IDX = 1;
     public static final int OPERATION_SEARCH_LOADER = 23;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
@@ -176,46 +176,53 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.ready;
         notifyAppState();
 
-        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+        mMenuItemStartBtn.setIcon(
                 ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
-        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.start_button);
-        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(true);
+        mMenuItemStartBtn.setTitle(R.string.start_button);
+        mMenuItemStartBtn.setEnabled(true);
+        mMenuItemAppSel.setEnabled(true);
+        mMenuItemStats.setVisible(false);
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
         notifyAppState();
 
-        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+        mMenuItemStartBtn.setEnabled(false);
+        mMenuItemAppSel.setEnabled(false);
     }
 
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
 
-        mMenu.getItem(MENU_ITEM_START_BTN).setIcon(
+        mMenuItemStartBtn.setIcon(
                 ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
-        mMenu.getItem(MENU_ITEM_START_BTN).setTitle(R.string.stop_button);
-        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(true);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+        mMenuItemStartBtn.setTitle(R.string.stop_button);
+        mMenuItemStartBtn.setEnabled(true);
+        mMenuItemAppSel.setEnabled(false);
+        mMenuItemStats.setVisible(true);
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
 
-        mMenu.getItem(MENU_ITEM_START_BTN).setEnabled(false);
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setEnabled(false);
+        mMenuItemStartBtn.setEnabled(false);
+        mMenuItemAppSel.setEnabled(false);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.settings_menu, menu);
+
         mMenu = menu;
-        mFilterIcon = mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).getIcon();
+        mMenuItemStats = mMenu.findItem(R.id.action_stats);
+        mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
+        mMenuItemAppSel = mMenu.findItem(R.id.action_show_app_filter);
+
+        mFilterIcon = mMenuItemAppSel.getIcon();
 
         initAppState();
 
@@ -275,6 +282,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         } else if (id == R.id.action_rate_app) {
             rateApp();
+            return true;
+        } else if (id == R.id.action_stats) {
+            Intent intent = new Intent(MainActivity.this, StatsActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -435,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void setSelectedAppIcon(AppDescriptor app) {
         // clone the drawable to avoid a "zoom-in" effect when clicked
         Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
-        mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(drawable);
+        mMenuItemAppSel.setIcon(drawable);
     }
 
     private void openAppSelector() {
@@ -471,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 setSelectedAppIcon(app);
             } else {
                 // no filter
-                mMenu.getItem(MENU_ITEM_APP_SELECTOR_IDX).setIcon(mFilterIcon);
+                mMenuItemAppSel.setIcon(mFilterIcon);
                 mFilterApp = null;
             }
 

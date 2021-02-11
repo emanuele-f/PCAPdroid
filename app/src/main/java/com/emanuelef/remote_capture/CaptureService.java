@@ -68,6 +68,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
     public static final String ACTION_CONNECTIONS_DUMP = "connections_dump";
+    public static final String ACTION_STATS_DUMP = "stats_dump";
     public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
     public static final String TRAFFIC_STATS_UPDATE_RCVD_BYTES = "rcvd_bytes";
     public static final String TRAFFIC_STATS_UPDATE_SENT_PKTS = "sent_pkts";
@@ -358,6 +359,17 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    public void sendStatsDump(VPNStats stats) {
+        Log.d(TAG, "sendStatsDump");
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("value", stats);
+        Intent intent = new Intent(ACTION_STATS_DUMP);
+        intent.putExtras(bundle);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
     private void sendServiceStatus(String cur_status) {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);
@@ -377,4 +389,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     public static native void stopPacketLoop();
     public static native void askConnectionsDump();
+    public static native void askStatsDump();
 }

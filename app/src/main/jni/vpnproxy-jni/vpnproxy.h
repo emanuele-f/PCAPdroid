@@ -75,6 +75,8 @@ typedef struct vpnproxy_data {
     u_int32_t cur_notif_pending;
     u_int32_t notif_pending_size;
     uint64_t now_ms;
+    u_int32_t num_failed_connections;
+    u_int32_t num_dns_requests;
 
     struct {
         u_int32_t collector_addr;

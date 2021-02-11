@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class Utils {
     static String formatBytes(long bytes) {
@@ -71,6 +72,11 @@ public class Utils {
         else                               { divisor = 1000*1000*1000; suffix = "G"; }
 
         return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
+    }
+
+    static String formatNumber(Context context, long num) {
+        Locale locale = context.getResources().getConfiguration().locale;
+        return String.format(locale, "%,d", num);
     }
 
     static String formatDuration(long seconds) {
