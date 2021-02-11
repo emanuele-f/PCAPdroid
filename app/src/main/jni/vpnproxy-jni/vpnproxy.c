@@ -30,7 +30,7 @@
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
-#define JAVA_PCAP_BUFFER_SIZE (512*1204) // 512K
+#define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define MAX_NUM_CONNECTIONS_DUMPED 64
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 
@@ -282,7 +282,7 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
 
-    log_android(ANDROID_LOG_DEBUG, "Exporting a %dB PCAP buffer", proxy->java_dump.buffer_idx);
+    log_android(ANDROID_LOG_DEBUG, "Exporting a %d B PCAP buffer", proxy->java_dump.buffer_idx);
 
     jbyteArray barray = (*env)->NewByteArray(env, proxy->java_dump.buffer_idx);
     if(jniCheckException(env))
@@ -369,14 +369,17 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     proxy->capture_stats.new_stats = true;
 
     if(proxy->java_dump.buffer) {
-        int rem_size = JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx;
+        int tot_size = size + sizeof(pcaprec_hdr_s);
 
-        if((size + sizeof(pcaprec_hdr_s)) > rem_size) {
+        if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
             // Flush the buffer
             javaPcapDump(tun, proxy);
         }
 
-        proxy->java_dump.buffer_idx += dump_pcap_rec((u_char*)proxy->java_dump.buffer + proxy->java_dump.buffer_idx, (u_char*)packet, size);
+        if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size)
+            log_android(ANDROID_LOG_ERROR, "Invalid buffer size [size=%d, idx=%d, tot_size=%d]", JAVA_PCAP_BUFFER_SIZE, proxy->java_dump.buffer_idx, tot_size);
+        else
+            proxy->java_dump.buffer_idx += dump_pcap_rec((u_char*)proxy->java_dump.buffer + proxy->java_dump.buffer_idx, (u_char*)packet, size);
     }
 
     if(dumper_socket > 0) {
