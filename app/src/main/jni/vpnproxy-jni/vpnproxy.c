@@ -1019,10 +1019,11 @@ housekeeping:
             next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
             zdtun_get_stats(tun, &stats);
-            log_android(ANDROID_LOG_INFO, "open sockets: %u, open connections: %u, tot connections: %u",
+            log_android(ANDROID_LOG_INFO, "open sockets: %u, open connections: %u, tot connections: %u, all_max_fd: %d",
                     stats.num_open_sockets,
                     stats.num_icmp_conn + stats.num_tcp_conn + stats.num_udp_conn,
-                    stats.num_icmp_opened + stats.num_tcp_opened + stats.num_udp_opened);
+                    stats.num_icmp_opened + stats.num_tcp_opened + stats.num_udp_opened,
+                    stats.all_max_fd);
         }
     }
 
