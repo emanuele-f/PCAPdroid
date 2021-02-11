@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -88,6 +89,9 @@ public class StatsActivity extends AppCompatActivity {
         mMaxFd.setText(Utils.formatNumber(this, stats.max_fd));
         mOpenSocks.setText(Utils.formatNumber(this, stats.num_open_sockets));
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
+
+        if(stats.num_dropped_conns > 0)
+            mDroppedConns.setTextColor(Color.RED);
     }
 
     private void updateTrafficStats(Intent intent) {

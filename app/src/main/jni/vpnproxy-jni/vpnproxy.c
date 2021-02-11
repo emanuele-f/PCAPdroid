@@ -798,7 +798,7 @@ static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t 
         return;
     }
 
-    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData, proxy->num_failed_connections,
+    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData, proxy->num_dropped_connections,
             stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns, proxy->num_dns_requests);
 
     if(!jniCheckException(env)) {
@@ -1019,7 +1019,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, 1 /* create if not exists */);
 
                 if (!conn) {
-                    proxy.num_failed_connections++;
+                    proxy.num_dropped_connections++;
                     log_android(ANDROID_LOG_ERROR, "zdtun_lookup failed");
                     goto housekeeping;
                 }
@@ -1035,7 +1035,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
                 if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
                     log_android(ANDROID_LOG_ERROR, "zdtun_forward failed with code %d", rc);
-                    proxy.num_failed_connections++;
+                    proxy.num_dropped_connections++;
 
                     zdtun_destroy_conn(tun, conn);
                     goto housekeeping;
