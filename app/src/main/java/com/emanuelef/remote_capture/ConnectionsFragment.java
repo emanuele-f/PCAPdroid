@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,12 +33,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener {
     private static final String TAG = "ConnectionsFragment";
     private MainActivity mActivity;
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
+    private View mFabDown;
+    private EmptyRecyclerView mRecyclerView;
+    private boolean autoScroll;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -66,17 +71,18 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        EmptyRecyclerView connList = view.findViewById(R.id.connections_view);
-        connList.setLayoutManager(new LinearLayoutManager(mActivity));
+        mRecyclerView = view.findViewById(R.id.connections_view);
+        LinearLayoutManager layoutMan = new LinearLayoutManager(mActivity);
+        mRecyclerView.setLayoutManager(layoutMan);
 
         TextView emptyText = view.findViewById(R.id.no_connections);
-        connList.setEmptyView(emptyText);
+        mRecyclerView.setEmptyView(emptyText);
 
         mAdapter = new ConnectionsAdapter(mActivity);
-        connList.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mAdapter);
 
         mAdapter.setClickListener(v -> {
-            int pos = connList.getChildLayoutPosition(v);
+            int pos = mRecyclerView.getChildLayoutPosition(v);
             ConnDescriptor item = mAdapter.getItem(pos);
 
             if(item != null) {
@@ -100,12 +106,54 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             }
         });
 
+        mFabDown = view.findViewById(R.id.fabDown);
+        autoScroll = true;
+        showFabDown(false);
+
+        mFabDown.setOnClickListener(v -> scrollToBottom());
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            //public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
+                int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
+                int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
+                int last_pos = mAdapter.getItemCount() - 1;
+                boolean reached_bottom = (last_visible_pos >= last_pos);
+                boolean is_scrolling = (first_visibile_pos != 0) || (!reached_bottom);
+
+                if(is_scrolling) {
+                    if(reached_bottom) {
+                        autoScroll = true;
+                        showFabDown(false);
+                    } else {
+                        autoScroll = false;
+                        showFabDown(true);
+                    }
+                }
+            }
+        });
+
         mHandler = new Handler();
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         if(reg != null)
             reg.setListener(this);
 
         mActivity.addAppStateListener(this);
+    }
+
+    private void showFabDown(boolean visible) {
+        if(visible)
+            mFabDown.setVisibility(View.VISIBLE);
+        else
+            mFabDown.setVisibility(View.INVISIBLE);
+    }
+
+    private void scrollToBottom() {
+        int last_pos = mAdapter.getItemCount() - 1;
+        mRecyclerView.scrollToPosition(last_pos);
+
+        showFabDown(false);
     }
 
     @Override
@@ -122,6 +170,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
             if(reg != null)
                 reg.setListener(this);
+
+            autoScroll = true;
+            showFabDown(false);
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -133,6 +185,12 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void connectionsChanges() {
-        mHandler.post(() -> mAdapter.notifyDataSetChanged());
+        mHandler.post(() -> {
+            mAdapter.notifyDataSetChanged();
+
+            if(autoScroll)
+                scrollToBottom();
+        });
+
     }
 }
