@@ -57,6 +57,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private String app_filter;
     private HTTPServer mHttpServer;
+    private ConnectionsRegister conn_reg;
 
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
@@ -67,7 +68,6 @@ public class CaptureService extends VpnService implements Runnable {
     public static final String VPN_VIRTUAL_DNS_SERVER = "10.215.173.2";
 
     public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
-    public static final String ACTION_CONNECTIONS_DUMP = "connections_dump";
     public static final String ACTION_STATS_DUMP = "stats_dump";
     public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
     public static final String TRAFFIC_STATS_UPDATE_RCVD_BYTES = "rcvd_bytes";
@@ -124,6 +124,7 @@ public class CaptureService extends VpnService implements Runnable {
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
+        conn_reg = new ConnectionsRegister(1024); // TODO make configurable
 
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)
@@ -267,6 +268,10 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.stop();
     }
 
+    public static ConnectionsRegister getConnsRegister() {
+        return((INSTANCE != null) ? INSTANCE.conn_reg : null);
+    }
+
     @Override
     public void run() {
         if(mParcelFileDescriptor != null) {
@@ -348,15 +353,8 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public void sendConnectionsDump(ConnDescriptor connections[]) {
-        Log.d(TAG, "sendConnectionsDump(" + connections.length + " connections)");
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("value", connections);
-        Intent intent = new Intent(ACTION_CONNECTIONS_DUMP);
-        intent.putExtras(bundle);
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    public void sendConnectionsDump(ConnDescriptor[] new_conns, ConnDescriptor[] conns_updates) {
+        conn_reg.updateConnections(new_conns, conns_updates);
     }
 
     public void sendStatsDump(VPNStats stats) {

@@ -89,13 +89,7 @@ public class ConnectionDetails extends AppCompatActivity {
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
 
-        /* Register for connections update */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateConnectionStats(intent);
-            }
-        }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
+        // TODO update the details if the connection is updated
     }
 
     @Override
@@ -109,20 +103,6 @@ public class ConnectionDetails extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void updateConnectionStats(Intent intent) {
-        ConnDescriptor connections[] = (ConnDescriptor[]) intent.getSerializableExtra("value");
-
-        for (ConnDescriptor eval_conn : connections) {
-            if(eval_conn != null) {
-                if (eval_conn.incr_id == conn.incr_id) {
-                    /* Connection found, update stats */
-                    conn = eval_conn;
-                    updateStats();
-                }
-            }
-        }
     }
 
     private void updateStats() {

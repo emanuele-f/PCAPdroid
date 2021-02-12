@@ -19,12 +19,10 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,11 +33,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-public class ConnectionsFragment extends Fragment implements AppStateListener {
+public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener {
     private static final String TAG = "ConnectionsFragment";
     private MainActivity mActivity;
+    private Handler mHandler;
     private ConnectionsAdapter mAdapter;
 
     @Override
@@ -53,6 +51,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener {
     public void onDestroy() {
         super.onDestroy();
         mActivity.removeAppStateListener(this);
+
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg != null)
+            reg.setListener(null);
 
         mActivity = null;
     }
@@ -98,15 +100,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener {
             }
         });
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(mActivity);
-
-        /* Register for connections update */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                processConnectionsDump(intent);
-            }
-        }, new IntentFilter(CaptureService.ACTION_CONNECTIONS_DUMP));
+        mHandler = new Handler();
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg != null)
+            reg.setListener(this);
 
         mActivity.addAppStateListener(this);
     }
@@ -118,25 +115,29 @@ public class ConnectionsFragment extends Fragment implements AppStateListener {
         CaptureService.askConnectionsDump();
     }
 
-    private void processConnectionsDump(Intent intent) {
-        Bundle bundle = intent.getExtras();
+    @Override
+    public void appStateChanged(AppState state) {
+        if(state == AppState.running) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
 
-        if(bundle != null) {
-            ConnDescriptor connections[] = (ConnDescriptor[]) bundle.getSerializable("value");
-
-            Log.d("ConnectionsDump", "Got " + connections.length + " connections");
-            mAdapter.updateConnections(connections);
+            if(reg != null)
+                reg.setListener(this);
         }
     }
 
-    private void reset() {
-        mAdapter.clear();
+    @Override
+    public void appsLoaded() {
+        // Refresh the adapter to load the apps
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void appStateChanged(AppState state) {
-        if(state == AppState.starting)
-            reset();
+    public void connectionsChanges() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }

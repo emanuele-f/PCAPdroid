@@ -31,7 +31,6 @@
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
-#define MAX_NUM_CONNECTIONS_DUMPED 64
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 
 /* ******************************************************* */
@@ -109,6 +108,78 @@ static zdtun_pkt_t mitm_pkt;
 /* NOTE: these must be reset during each run, as android may reuse the service */
 static int dumper_socket;
 static bool send_header;
+
+/* ******************************************************* */
+
+void free_ndpi(conn_data_t *data) {
+    if(data->ndpi_flow) {
+        ndpi_free_flow(data->ndpi_flow);
+        data->ndpi_flow = NULL;
+    }
+    if(data->src_id) {
+        ndpi_free(data->src_id);
+        data->src_id = NULL;
+    }
+    if(data->dst_id) {
+        ndpi_free(data->dst_id);
+        data->dst_id = NULL;
+    }
+}
+
+/* ******************************************************* */
+
+static void free_connection_data(conn_data_t *data) {
+    if(!data)
+        return;
+
+    free_ndpi(data);
+
+    if(data->info)
+        free(data->info);
+
+    if(data->url)
+        free(data->url);
+
+    free(data);
+}
+
+/* ******************************************************* */
+
+static void conns_add(conn_array_t *arr, const zdtun_conn_t *conn) {
+    if(arr->cur_items >= arr->size) {
+        /* Extend array */
+        arr->size = (arr->size == 0) ? 8 : (arr->size * 2);
+        arr->items = realloc(arr->items, arr->size * sizeof(vpn_conn_t));
+
+        if(arr->items == NULL) {
+            log_android(ANDROID_LOG_FATAL, "realloc(conn_array_t) (%d items) failed", arr->size);
+            return;
+        }
+    }
+
+    vpn_conn_t *slot = &arr->items[arr->cur_items++];
+    slot->tuple = *zdtun_conn_get_5tuple(conn);
+    slot->data = zdtun_conn_get_userdata(conn);
+}
+
+/* ******************************************************* */
+
+static void conns_clear(conn_array_t *arr, bool free_all) {
+    if(arr->items) {
+        for(int i=0; i < arr->cur_items; i++) {
+            vpn_conn_t *slot = &arr->items[i];
+
+            if(slot->data && (slot->data->terminated || free_all))
+                free_connection_data(slot->data);
+        }
+
+        free(arr->items);
+        arr->items = NULL;
+    }
+
+    arr->size = 0;
+    arr->cur_items = 0;
+}
 
 /* ******************************************************* */
 
@@ -208,23 +279,6 @@ struct ndpi_detection_module_struct* init_ndpi() {
     ndpi_finalize_initalization(ndpi);
 
     return(ndpi);
-}
-
-/* ******************************************************* */
-
-void free_ndpi(conn_data_t *data) {
-    if(data->ndpi_flow) {
-        ndpi_free_flow(data->ndpi_flow);
-        data->ndpi_flow = NULL;
-    }
-    if(data->src_id) {
-        ndpi_free(data->src_id);
-        data->src_id = NULL;
-    }
-    if(data->dst_id) {
-        ndpi_free(data->dst_id);
-        data->dst_id = NULL;
-    }
 }
 
 /* ******************************************************* */
@@ -374,6 +428,11 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
+    if(!data->pending_notification) {
+        conns_add(&proxy->conns_updates, conn_info);
+        data->pending_notification = true;
+    }
+
     if(proxy->java_dump.buffer) {
         int tot_size = size + sizeof(pcaprec_hdr_s);
 
@@ -469,31 +528,22 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
         free_ndpi(data);
     }
 
-    data->incr_id = proxy->incr_id++;
     data->first_seen = data->last_seen = time(NULL);
     data->uid = resolve_uid(proxy, zdtun_conn_get_5tuple(conn_info));
 
     zdtun_conn_set_userdata(conn_info, data);
 
+    if(!shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
+        // Important: only set the incr_id on registered connections since
+        // ConnectionsRegister::connectionsUpdates does not allow gaps
+        data->incr_id = proxy->incr_id++;
+
+        conns_add(&proxy->new_conns, conn_info);
+        data->pending_notification = true;
+    }
+
     /* accept connection */
     return(0);
-}
-
-/* ******************************************************* */
-
-static void free_connection_data(conn_data_t *data) {
-    if(!data)
-        return;
-
-    free_ndpi(data);
-
-    if(data->info)
-        free(data->info);
-
-    if(data->url)
-        free(data->url);
-
-    free(data);
 }
 
 /* ******************************************************* */
@@ -506,38 +556,9 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         return;
     }
 
-    if(!data->notified) {
-        /* Connection was not notified to java. Copy it to a special list of pending connections */
-        vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
-
-        if(proxy->cur_notif_pending >= proxy->notif_pending_size) {
-            /* Extend array */
-            if(proxy->notif_pending_size == 0)
-                proxy->notif_pending_size = 8;
-            else
-                proxy->notif_pending_size *= 2;
-
-            proxy->notif_pending = realloc(proxy->notif_pending, proxy->notif_pending_size * sizeof(vpn_conn_t));
-
-            if(proxy->notif_pending == NULL) {
-                log_android(ANDROID_LOG_FATAL, "realloc(notif_pending) failed");
-                return;
-            }
-        }
-
-        vpn_conn_t *conn = &proxy->notif_pending[proxy->cur_notif_pending];
-        conn->tuple = *zdtun_conn_get_5tuple(conn_info);
-        conn->data = data;
-
-        proxy->cur_notif_pending++;
-
-        log_android(ANDROID_LOG_DEBUG, "Pending conns: %u/%u", proxy->cur_notif_pending, proxy->notif_pending_size);
-
-        /* Will free the data in sendConnectionsDump */
-        return;
-    }
-
-    free_connection_data(data);
+    /* Will free the other data in sendConnectionsDump */
+    free_ndpi(data);
+    data->terminated = true;
 }
 
 /* ******************************************************* */
@@ -663,22 +684,13 @@ static void sendCaptureStats(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-typedef struct dump_data {
-    jobjectArray connections;
-    jint idx;
-    jint num_connections;
-} dump_data_t;
-
-static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn_data_t *data, dump_data_t *dump_data) {
+static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
     char srcip[64], dstip[64];
     struct in_addr addr;
-    vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     JNIEnv *env = proxy->env;
-
-    if(shouldIgnoreConn(proxy, conn_info, data)) {
-        /* Continue */
-        return 0;
-    }
+    const zdtun_5tuple_t *conn_info = &conn->tuple;
+    const conn_data_t *data = conn->data;
+    int rv = 0;
 
     addr.s_addr = conn_info->src_ip;
     strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
@@ -692,13 +704,6 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
                         dstip, ntohs(conn_info->dst_port),
                         data->uid);
 #endif
-
-    if(dump_data->idx >= dump_data->num_connections) {
-        log_android(ANDROID_LOG_DEBUG, "Max connections to dump reached");
-
-        /* Abort */
-        return(1);
-    }
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
     jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
@@ -717,18 +722,21 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
                                data->first_seen, data->last_seen, data->sent_bytes,
                                data->rcvd_bytes,
                                data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
-        jniCheckException(env);
+        if(jniCheckException(env))
+            rv = -1;
+        else {
+            /* Add the connection to the array */
+            (*env)->SetObjectArrayElement(env, arr, idx, conn_descriptor);
 
-        /* Add the connection to the array */
-        (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++,
-                                      conn_descriptor);
-        jniCheckException(env);
+            if(jniCheckException(env))
+                rv = -1;
+        }
 
         DeleteLocalRef(env, conn_descriptor);
-    } else
+    } else {
         log_android(ANDROID_LOG_ERROR, "NewObject(ConnDescriptor) failed");
-
-    data->notified = true;
+        rv = -1;
+    }
 
     DeleteLocalRef(env, info_string);
     DeleteLocalRef(env, url_string);
@@ -736,52 +744,53 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
     DeleteLocalRef(env, src_string);
     DeleteLocalRef(env, dst_string);
 
-    /* Continue */
-    return(0);
-}
-
-static int connection_dumper_wrapper(zdtun_t *tun, const zdtun_conn_t *conn, void *user_data) {
-    return connection_dumper(tun, zdtun_conn_get_5tuple(conn), zdtun_conn_get_userdata(conn), user_data);
+    return rv;
 }
 
 /* Perform a full dump of the active connections */
 static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
-    JNIEnv *env = proxy->env;
-    dump_data_t dump_data = {0};
-
-    dump_data.num_connections = min(zdtun_get_num_connections(tun) + proxy->cur_notif_pending, MAX_NUM_CONNECTIONS_DUMPED);
-
-    dump_data.connections = (*env)->NewObjectArray(env, dump_data.num_connections, cls.conn, NULL);
-    if(jniCheckException(env))
+    if((proxy->new_conns.cur_items == 0) && (proxy->conns_updates.cur_items == 0))
         return;
 
-    /* Add connections to the array */
-    zdtun_iter_connections(tun, connection_dumper_wrapper, &dump_data);
+    log_android(ANDROID_LOG_DEBUG, "sendConnectionsDump: new=%d, updates=%d", proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
 
-    /* Handle possibly pending data */
-    if(proxy->cur_notif_pending > 0) {
-        log_android(ANDROID_LOG_DEBUG, "Processing %u pending connections", proxy->cur_notif_pending);
+    JNIEnv *env = proxy->env;
+    jobject new_conns = (*env)->NewObjectArray(env, proxy->new_conns.cur_items, cls.conn, NULL);
+    jobject conns_updates = (*env)->NewObjectArray(env, proxy->conns_updates.cur_items, cls.conn, NULL);
 
-        for(int i = 0; i < proxy->cur_notif_pending; i++) {
-            vpn_conn_t *conn = &proxy->notif_pending[i];
+    if((new_conns == NULL) || (conns_updates == NULL) || jniCheckException(env)) {
+        log_android(ANDROID_LOG_ERROR, "NewObjectArray() failed");
+        goto cleanup;
+    }
 
-            if(dump_data.idx < dump_data.num_connections)
-                connection_dumper(tun, &conn->tuple, conn->data, &dump_data);
+    // New connections
+    for(int i=0; i<proxy->new_conns.cur_items; i++) {
+        vpn_conn_t *conn = &proxy->new_conns.items[i];
+        conn->data->pending_notification = false;
 
-            free_connection_data(proxy->notif_pending[i].data);
-        }
+        if(dumpConnection(proxy, conn, new_conns, i) < 0)
+            goto cleanup;
+    }
 
-        /* Empty the pending notifications list */
-        free(proxy->notif_pending);
-        proxy->notif_pending = NULL;
-        proxy->cur_notif_pending = proxy->notif_pending_size = 0;
+    // Updated connections
+    for(int i=0; i<proxy->conns_updates.cur_items; i++) {
+        vpn_conn_t *conn = &proxy->conns_updates.items[i];
+        conn->data->pending_notification = false;
+
+        if(dumpConnection(proxy, conn, conns_updates, i) < 0)
+            goto cleanup;
     }
 
     /* Send the dump */
-    (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendConnectionsDump, dump_data.connections);
+    (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendConnectionsDump, new_conns, conns_updates);
     jniCheckException(env);
 
-    DeleteLocalRef(env, dump_data.connections);
+cleanup:
+    conns_clear(&proxy->new_conns, false);
+    conns_clear(&proxy->conns_updates, false);
+
+    DeleteLocalRef(env, new_conns);
+    DeleteLocalRef(env, conns_updates);
 }
 
 /* ******************************************************* */
@@ -879,7 +888,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
     mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
-    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
+    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;[Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
@@ -1076,17 +1085,10 @@ housekeeping:
     log_android(ANDROID_LOG_DEBUG, "Stopped packet loop");
 
     ztdun_finalize(tun);
+    conns_clear(&proxy.new_conns, true);
+    conns_clear(&proxy.conns_updates, true);
+
     ndpi_exit_detection_module(proxy.ndpi);
-
-    /* Free possible pending data */
-    if(proxy.cur_notif_pending > 0) {
-        for(int i = 0; i < proxy.cur_notif_pending; i++) {
-            free_connection_data(proxy.notif_pending[i].data);
-        }
-
-        /* Empty the pending notifications list */
-        free(proxy.notif_pending);
-    }
 
     if(dumper_socket > 0) {
         close(dumper_socket);

@@ -346,6 +346,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 setSelectedAppIcon(app);
         }
 
+        for(AppStateListener listener: mStateListeners)
+            listener.appsLoaded();
+
         if (mOpenAppsWhenDone)
             openAppSelector();
     }

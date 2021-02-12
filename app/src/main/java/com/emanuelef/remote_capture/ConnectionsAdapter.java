@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.telecom.ConnectionRequest;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,14 +42,11 @@ import java.util.Objects;
 
 public class ConnectionsAdapter extends BaseAdapter {
     private static final String TAG = "ConnectionsAdapter";
-    private static final int MIN_CONNECTION_DISPLAY_SECONDS = 10;
-    private MainActivity mActivity;
-    private ArrayList<ConnDescriptor> mItems;
-    private Drawable mUnknownIcon;
+    private final MainActivity mActivity;
+    private final Drawable mUnknownIcon;
 
     ConnectionsAdapter(MainActivity context) {
         mActivity = context;
-        mItems = new ArrayList<>();
         mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
     }
 
@@ -87,82 +86,31 @@ public class ConnectionsAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mItems.size();
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        return (reg != null) ? reg.getConnCount() : 0;
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int pos) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if((pos < 0) || (pos >= getCount()) || (reg == null))
+            return -1;
+
+        ConnDescriptor conn = reg.getConn(pos);
+
+        return ((conn != null) ? conn.incr_id : -1);
     }
 
     @Override
     public ConnDescriptor getItem(int pos) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
         /* Prevent indexOutOfBounds exception in updateView() */
-        if((pos < 0) || (pos >= getCount()))
+        if((pos < 0) || (pos >= getCount()) || (reg == null))
             return null;
 
-        return mItems.get(pos);
-    }
-
-    void updateConnections(ConnDescriptor[] conns) {
-        long now = Utils.now();
-        ArrayList<ConnDescriptor> connections = new ArrayList<ConnDescriptor>();
-
-        /* The array may contain null values. Remove them before proceeding */
-        for(ConnDescriptor conn : conns) {
-            if(conn != null)
-                connections.add(conn);
-        }
-
-        /* Sort connections by ascending ID */
-        Collections.sort(connections, new Comparator<ConnDescriptor>() {
-            @Override
-            public int compare(ConnDescriptor connDescriptor, ConnDescriptor t1) {
-                return Integer.compare(connDescriptor.incr_id, t1.incr_id);
-            }
-        });
-
-        int adapter_pos = 0;
-
-        for (ConnDescriptor eval_conn : connections) {
-            ConnDescriptor adapter_conn = getItem(adapter_pos);
-
-            /* Check the closed connections */
-            while ((adapter_conn != null) && (eval_conn.incr_id > adapter_conn.incr_id)) {
-                if((now - adapter_conn.first_seen) >= MIN_CONNECTION_DISPLAY_SECONDS)
-                    mItems.remove(adapter_pos);
-                else
-                    /* Too early, let the connection displayed for a while */
-                    adapter_pos++;
-                adapter_conn = getItem(adapter_pos);
-            }
-
-            if (adapter_conn == null)
-                /* New untracked connection */
-                mItems.add(eval_conn);
-            else {
-                /* Existing connection */
-                if (eval_conn.incr_id == adapter_conn.incr_id) {
-                    /* Update data */
-                    mItems.set(adapter_pos, eval_conn);
-                } else {
-                    /* This should never happen as it would mean that a connection ID has been
-                     * reused. */
-                    Log.w(TAG, "Logic error? Missing item #" + eval_conn.incr_id +
-                            " (adapter item: #" + adapter_conn.incr_id + ")");
-
-                    /* Try to recover */
-                    clear();
-                }
-            }
-
-            adapter_pos++;
-        }
-
-        notifyDataSetChanged();
-    }
-
-    void clear() {
-        mItems.clear();
+        return reg.getConn(pos);
     }
 }

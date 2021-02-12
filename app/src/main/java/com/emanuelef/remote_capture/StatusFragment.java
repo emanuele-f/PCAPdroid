@@ -188,4 +188,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
                 break;
         }
     }
+
+    @Override
+    public void appsLoaded() {}
 }

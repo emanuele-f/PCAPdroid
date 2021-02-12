@@ -29,4 +29,5 @@ enum AppState {
 
 interface AppStateListener {
     void appStateChanged(AppState state);
+    void appsLoaded();
 }
