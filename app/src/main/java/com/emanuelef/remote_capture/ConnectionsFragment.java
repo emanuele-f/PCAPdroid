@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,8 +113,8 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            //public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            //public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
                 int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
                 int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
                 int last_pos = mAdapter.getItemCount() - 1;
@@ -191,6 +190,29 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             if(autoScroll)
                 scrollToBottom();
         });
+    }
 
+    @Override
+    public void connectionsAdded(int start, int count) {
+        mHandler.post(() -> {
+            mAdapter.notifyItemRangeInserted(start, count);
+
+            if(autoScroll)
+                scrollToBottom();
+        });
+    }
+
+    @Override
+    public void connectionsRemoved(int start, int count) {
+        mHandler.post(() -> mAdapter.notifyItemRangeRemoved(start, count));
+    }
+
+    @Override
+    public void connectionsUpdated(int[] positions) {
+        mHandler.post(() -> {
+            for(int pos : positions) {
+                mAdapter.notifyItemChanged(pos);
+            }
+        });
     }
 }

@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture;
 
 import android.util.Log;
 
+import java.util.Arrays;
+
 public class ConnectionsRegister {
     private final ConnDescriptor[] items_ring;
     private int tail;
@@ -47,9 +49,10 @@ public class ConnectionsRegister {
         return (tail - 1 + size) % size;
     }
 
-    private void newConnections(ConnDescriptor[] conns) {
+    public synchronized void newConnections(ConnDescriptor[] conns) {
         int in_items = Math.min((size - num_items), conns.length);
         int out_items = conns.length - in_items;
+        int insert_pos = num_items;
 
         for(ConnDescriptor conn: conns) {
             items_ring[tail] = conn;
@@ -58,12 +61,22 @@ public class ConnectionsRegister {
         }
 
         untracked_items += out_items;
+
+        if(mListener != null) {
+            if(out_items > 0)
+                mListener.connectionsRemoved(0, out_items);
+
+            if(conns.length > 0)
+                mListener.connectionsAdded(insert_pos - out_items, conns.length);
+        }
     }
 
-    private void connectionsUpdates(ConnDescriptor[] conns) {
+    public synchronized void connectionsUpdates(ConnDescriptor[] conns) {
         int first_pos = firstPos();
         int first_id = items_ring[first_pos].incr_id;
         int last_id = items_ring[lastPos()].incr_id;
+        int []changed_pos = new int[conns.length];
+        int k = 0;
 
         Log.d(TAG, "connectionsUpdates: items=" + num_items + ", first_id=" + first_id + ", last_id=" + last_id);
 
@@ -76,7 +89,18 @@ public class ConnectionsRegister {
 
                 assert(items_ring[pos].incr_id == id);
                 items_ring[pos] = conn;
+
+                changed_pos[k++] = (pos + size - first_pos) % size;
             }
+        }
+
+        if(mListener != null) {
+            if(k != conns.length) {
+                // some untracked items where skipped, shrink the array
+                changed_pos = Arrays.copyOf(changed_pos, k);
+            }
+
+            mListener.connectionsUpdated(changed_pos);
         }
     }
 
@@ -87,14 +111,6 @@ public class ConnectionsRegister {
         num_items = 0;
         untracked_items = 0;
         tail = 0;
-
-        if(mListener != null)
-            mListener.connectionsChanges();
-    }
-
-    public synchronized void updateConnections(ConnDescriptor[] new_conns, ConnDescriptor[] conns_updates) {
-        newConnections(new_conns);
-        connectionsUpdates(conns_updates);
 
         if(mListener != null)
             mListener.connectionsChanges();

@@ -21,4 +21,7 @@ package com.emanuelef.remote_capture;
 
 public interface ConnectionsListener {
     void connectionsChanges();
+    void connectionsAdded(int start, int count);
+    void connectionsRemoved(int start, int count);
+    void connectionsUpdated(int[] positions);
 }
