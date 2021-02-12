@@ -68,5 +68,16 @@
     <string name="vpn_setup_failed">VPN 设置失败</string>
     <string name="app_not_found">未找到应用 "%1$s"</string>
     <string name="apps_loading_please_wait">应用加载正在进行，请等待</string>
+    <string name="stats">统计数据</string>
+    <string name="active_connections">活动连接</string>
+    <string name="dropped_connections">丢失连接</string>
+    <string name="tot_connections">总连接</string>
+    <string name="open_sockets">开放套接字</string>
+    <string name="max_file_descriptor">最大 FD</string>
+    <string name="bytes_sent">发送字节数</string>
+    <string name="bytes_rcvd">接收字节数</string>
+    <string name="packets_sent">发送数据包</string>
+    <string name="packets_rcvd">接收数据包</string>
+    <string name="dns_queries">DNS 查询</string>
 </resources>
 
