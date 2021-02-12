@@ -4,11 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ListView
+    <com.emanuelef.remote_capture.EmptyRecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/connections_view"
-        ></ListView>
+        ></com.emanuelef.remote_capture.EmptyRecyclerView>
 
     <TextView
         android:id="@+id/no_connections"

@@ -26,13 +26,12 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener {
     private static final String TAG = "ConnectionsFragment";
@@ -67,36 +66,37 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        ListView connList = view.findViewById(R.id.connections_view);
+        EmptyRecyclerView connList = view.findViewById(R.id.connections_view);
+        connList.setLayoutManager(new LinearLayoutManager(mActivity));
+
         TextView emptyText = view.findViewById(R.id.no_connections);
         connList.setEmptyView(emptyText);
 
         mAdapter = new ConnectionsAdapter(mActivity);
         connList.setAdapter(mAdapter);
-        connList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
-                ConnDescriptor item = (ConnDescriptor) adapterView.getItemAtPosition(pos);
 
-                if(item != null) {
-                    Intent intent = new Intent(getContext(), ConnectionDetails.class);
-                    AppDescriptor app = mActivity.findAppByUid(item.uid);
-                    String app_name = null;//;1051
+        mAdapter.setClickListener(v -> {
+            int pos = connList.getChildLayoutPosition(v);
+            ConnDescriptor item = mAdapter.getItem(pos);
 
-                    if(app != null)
-                        app_name = app.getName();
-                    else if(item.uid == 1000)
-                        app_name = "system";
-                    else if(item.uid == 1051)
-                        app_name = "netd";
+            if(item != null) {
+                Intent intent = new Intent(getContext(), ConnectionDetails.class);
+                AppDescriptor app = mActivity.findAppByUid(item.uid);
+                String app_name = null;//;1051
 
-                    intent.putExtra(ConnectionDetails.CONN_EXTRA_KEY, item);
+                if(app != null)
+                    app_name = app.getName();
+                else if(item.uid == 1000)
+                    app_name = "system";
+                else if(item.uid == 1051)
+                    app_name = "netd";
 
-                    if(app_name != null)
-                        intent.putExtra(ConnectionDetails.APP_NAME_EXTRA_KEY, app_name);
+                intent.putExtra(ConnectionDetails.CONN_EXTRA_KEY, item);
 
-                    startActivity(intent);
-                }
+                if(app_name != null)
+                    intent.putExtra(ConnectionDetails.APP_NAME_EXTRA_KEY, app_name);
+
+                startActivity(intent);
             }
         });
 
@@ -127,17 +127,12 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void appsLoaded() {
-        // Refresh the adapter to load the apps
+        // Refresh the adapter to load the apps icons
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void connectionsChanges() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.notifyDataSetChanged();
-            }
-        });
+        mHandler.post(() -> mAdapter.notifyDataSetChanged());
     }
 }
