@@ -30,7 +30,7 @@
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
-#define JAVA_PCAP_BUFFER_SIZE (512*1204) // 512K
+#define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define MAX_NUM_CONNECTIONS_DUMPED 64
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 
@@ -69,17 +69,23 @@ typedef struct jni_methods {
     jmethodID connInit;
     jmethodID connSetData;
     jmethodID sendServiceStatus;
+    jmethodID sendStatsDump;
+    jmethodID statsInit;
+    jmethodID statsSetData;
 } jni_methods_t;
 
 typedef struct jni_classes {
     jclass vpn_service;
     jclass conn;
+    jclass stats;
 } jni_classes_t;
 
 static jni_classes_t cls;
 static jni_methods_t mids;
 static bool running = false;
 static bool dump_connections_now = false;
+static bool dump_vpn_stats_now = false;
+static bool dump_capture_stats_now = false;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -282,7 +288,7 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
 
-    log_android(ANDROID_LOG_DEBUG, "Exporting a %dB PCAP buffer", proxy->java_dump.buffer_idx);
+    log_android(ANDROID_LOG_DEBUG, "Exporting a %d B PCAP buffer", proxy->java_dump.buffer_idx);
 
     jbyteArray barray = (*env)->NewByteArray(env, proxy->java_dump.buffer_idx);
     if(jniCheckException(env))
@@ -369,14 +375,17 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     proxy->capture_stats.new_stats = true;
 
     if(proxy->java_dump.buffer) {
-        int rem_size = JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx;
+        int tot_size = size + sizeof(pcaprec_hdr_s);
 
-        if((size + sizeof(pcaprec_hdr_s)) > rem_size) {
+        if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
             // Flush the buffer
             javaPcapDump(tun, proxy);
         }
 
-        proxy->java_dump.buffer_idx += dump_pcap_rec((u_char*)proxy->java_dump.buffer + proxy->java_dump.buffer_idx, (u_char*)packet, size);
+        if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size)
+            log_android(ANDROID_LOG_ERROR, "Invalid buffer size [size=%d, idx=%d, tot_size=%d]", JAVA_PCAP_BUFFER_SIZE, proxy->java_dump.buffer_idx, tot_size);
+        else
+            proxy->java_dump.buffer_idx += dump_pcap_rec((u_char*)proxy->java_dump.buffer + proxy->java_dump.buffer_idx, (u_char*)packet, size);
     }
 
     if(dumper_socket > 0) {
@@ -566,6 +575,7 @@ static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdt
      * here as zdtun will proxy the connection.
      */
     zdtun_conn_dnat(conn, proxy->public_dns, 0);
+    proxy->num_dns_requests++;
 
     return(1);
 }
@@ -697,18 +707,27 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit);
 
-    /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
-     * SetIntField like methods could be used. */
-    (*env)->CallVoidMethod(env, conn_descriptor, mids.connSetData,
-            src_string, dst_string, info_string, url_string, proto_string,
-            conn_info->ipproto, ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
-            data->first_seen, data->last_seen, data->sent_bytes, data->rcvd_bytes,
-            data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
-    jniCheckException(env);
+    if((conn_descriptor != NULL) && !jniCheckException(env)) {
+        /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
+         * SetIntField like methods could be used. */
+        (*env)->CallVoidMethod(env, conn_descriptor, mids.connSetData,
+                               src_string, dst_string, info_string, url_string, proto_string,
+                               conn_info->ipproto, ntohs(conn_info->src_port),
+                               ntohs(conn_info->dst_port),
+                               data->first_seen, data->last_seen, data->sent_bytes,
+                               data->rcvd_bytes,
+                               data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
+        jniCheckException(env);
 
-    /* Add the connection to the array */
-    (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++, conn_descriptor);
-    jniCheckException(env);
+        /* Add the connection to the array */
+        (*env)->SetObjectArrayElement(env, dump_data->connections, dump_data->idx++,
+                                      conn_descriptor);
+        jniCheckException(env);
+
+        DeleteLocalRef(env, conn_descriptor);
+    } else
+        log_android(ANDROID_LOG_ERROR, "NewObject(ConnDescriptor) failed");
+
     data->notified = true;
 
     DeleteLocalRef(env, info_string);
@@ -716,7 +735,6 @@ static int connection_dumper(zdtun_t *tun, const zdtun_5tuple_t *conn_info, conn
     DeleteLocalRef(env, proto_string);
     DeleteLocalRef(env, src_string);
     DeleteLocalRef(env, dst_string);
-    DeleteLocalRef(env, conn_descriptor);
 
     /* Continue */
     return(0);
@@ -764,6 +782,31 @@ static void sendConnectionsDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
     jniCheckException(env);
 
     DeleteLocalRef(env, dump_data.connections);
+}
+
+/* ******************************************************* */
+
+static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t *stats) {
+    JNIEnv *env = proxy->env;
+    int active_conns = stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn;
+    int tot_conns = stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened;
+
+    jobject stats_obj = (*env)->NewObject(env, cls.stats, mids.statsInit);
+
+    if((stats_obj == NULL) || jniCheckException(env)) {
+        log_android(ANDROID_LOG_ERROR, "NewObject(VPNStats) failed");
+        return;
+    }
+
+    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData, proxy->num_dropped_connections,
+            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns, proxy->num_dns_requests);
+
+    if(!jniCheckException(env)) {
+        (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendStatsDump, stats_obj);
+        jniCheckException(env);
+    }
+
+    DeleteLocalRef(env, stats_obj);
 }
 
 /* ******************************************************* */
@@ -829,6 +872,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     /* Classes */
     cls.vpn_service = vpn_class;
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/ConnDescriptor");
+    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/VPNStats");
 
     /* Methods */
     mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
@@ -836,11 +880,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
     mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
     mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
+    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
-    mids.connInit = jniGetMethodID(env, vpn_class, "<init>", "()V");
+    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
             /* NOTE: must match ConnDescriptor::setData */
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
+    mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(IIIIII)V");
 
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,
@@ -972,7 +1019,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, 1 /* create if not exists */);
 
                 if (!conn) {
-                    log_android(ANDROID_LOG_DEBUG, "zdtun_lookup failed");
+                    proxy.num_dropped_connections++;
+                    log_android(ANDROID_LOG_ERROR, "zdtun_lookup failed");
                     goto housekeeping;
                 }
 
@@ -986,8 +1034,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     check_tls_mitm(tun, &proxy, &pkt, conn);
 
                 if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
-                    /* NOTE: rc -1 is currently returned for unhandled non-IPv4 flows */
-                    log_android(ANDROID_LOG_DEBUG, "zdtun_forward failed with code %d", rc);
+                    log_android(ANDROID_LOG_ERROR, "zdtun_forward failed with code %d", rc);
+                    proxy.num_dropped_connections++;
 
                     zdtun_destroy_conn(tun, conn);
                     goto housekeeping;
@@ -1001,7 +1049,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 housekeeping:
 
         if(proxy.capture_stats.new_stats
-         && ((now_ms - proxy.capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS)) {
+         && ((now_ms - proxy.capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) || dump_capture_stats_now) {
+            dump_capture_stats_now = false;
             sendCaptureStats(&proxy);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
@@ -1012,17 +1061,15 @@ housekeeping:
         } else if((proxy.java_dump.buffer_idx > 0)
          && (now_ms - proxy.java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
             javaPcapDump(tun, &proxy);
-        } else if(now_ms >= next_purge_ms) {
+        } else if((now_ms >= next_purge_ms) || dump_vpn_stats_now) {
+            dump_vpn_stats_now = false;
             zdtun_statistics_t stats;
 
             zdtun_purge_expired(tun, now_ms/1000);
             next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
             zdtun_get_stats(tun, &stats);
-            log_android(ANDROID_LOG_INFO, "open sockets: %u, open connections: %u, tot connections: %u",
-                    stats.num_open_sockets,
-                    stats.num_icmp_conn + stats.num_tcp_conn + stats.num_udp_conn,
-                    stats.num_icmp_opened + stats.num_tcp_opened + stats.num_udp_opened);
+            sendVPNStats(&proxy, &stats);
         }
     }
 
@@ -1075,4 +1122,12 @@ JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_askConnectionsDump(JNIEnv *env, jclass clazz) {
     if(running)
         dump_connections_now = true;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jclass clazz) {
+    if(running) {
+        dump_vpn_stats_now = true;
+        dump_capture_stats_now = true;
+    }
 }

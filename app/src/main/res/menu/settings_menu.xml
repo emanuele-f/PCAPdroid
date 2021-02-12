@@ -26,6 +26,13 @@
         />
 
     <item
+        android:id="@+id/action_stats"
+        android:title="@string/stats"
+        android:orderInCategory="105"
+        app:showAsAction="never"
+        />
+
+    <item
         android:id="@+id/action_open_user_guide"
         android:title="@string/user_guide"
         android:orderInCategory="110"
