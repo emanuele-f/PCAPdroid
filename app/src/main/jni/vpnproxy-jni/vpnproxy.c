@@ -27,7 +27,7 @@
 #include "ndpi_protocol_ids.h"
 
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
-#define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 3000
+#define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
@@ -82,7 +82,6 @@ typedef struct jni_classes {
 static jni_classes_t cls;
 static jni_methods_t mids;
 static bool running = false;
-static bool dump_connections_now = false;
 static bool dump_vpn_stats_now = false;
 static bool dump_capture_stats_now = false;
 
@@ -563,6 +562,7 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
 /* ******************************************************* */
 
 static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
+    vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
 
     if(!data) {
@@ -573,6 +573,12 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     /* Will free the other data in sendConnectionsDump */
     free_ndpi(data);
     data->closed = true;
+
+    if(!data->pending_notification && !shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
+        // Send last notification
+        conns_add(&proxy->conns_updates, conn_info);
+        data->pending_notification = true;
+    }
 }
 
 /* ******************************************************* */
@@ -1077,8 +1083,7 @@ housekeeping:
             sendCaptureStats(&proxy);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
-        } else if(((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) || dump_connections_now) {
-            dump_connections_now = false;
+        } else if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
             sendConnectionsDump(tun, &proxy);
             last_connections_dump = now_ms;
         } else if((proxy.java_dump.buffer_idx > 0)
@@ -1132,12 +1137,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                                                               jobject vpn, jint sdk) {
 
     run_tun(env, vpn, tapfd, sdk);
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_askConnectionsDump(JNIEnv *env, jclass clazz) {
-    if(running)
-        dump_connections_now = true;
 }
 
 JNIEXPORT void JNICALL

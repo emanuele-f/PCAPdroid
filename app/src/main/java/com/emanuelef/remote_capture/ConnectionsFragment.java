@@ -163,8 +163,6 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void onResume() {
         super.onResume();
-
-        CaptureService.askConnectionsDump();
     }
 
     @Override
@@ -177,7 +175,6 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
             autoScroll = true;
             showFabDown(false);
-            mAdapter.notifyDataSetChanged();
         }
     }
 

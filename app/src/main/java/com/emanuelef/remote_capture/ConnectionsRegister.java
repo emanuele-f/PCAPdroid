@@ -118,6 +118,10 @@ public class ConnectionsRegister {
 
     public synchronized void setListener(ConnectionsListener listener) {
         mListener = listener;
+
+        // Send the first update to sync it
+        if(mListener != null)
+            mListener.connectionsChanges();
     }
 
     public int getConnCount() {

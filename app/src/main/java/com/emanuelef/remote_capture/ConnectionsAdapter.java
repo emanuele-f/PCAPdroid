@@ -68,6 +68,8 @@ class ViewHolder extends RecyclerView.ViewHolder {
 
         if(conn.closed)
             statusInd.setVisibility(View.INVISIBLE);
+        else
+            statusInd.setVisibility(View.VISIBLE);
     }
 }
 
