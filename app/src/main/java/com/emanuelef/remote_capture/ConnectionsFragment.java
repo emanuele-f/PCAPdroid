@@ -31,6 +31,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -79,6 +80,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
         mAdapter = new ConnectionsAdapter(mActivity);
         mRecyclerView.setAdapter(mAdapter);
+
+        /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+                layoutMan.getOrientation());
+        mRecyclerView.addItemDecoration(dividerItemDecoration);*/
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);

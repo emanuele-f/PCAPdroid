@@ -52,7 +52,7 @@ typedef struct conn_data {
     char *info;
     char *url;
     jint uid;
-    bool terminated;
+    bool closed;
     bool pending_notification;
     bool mitm_header_needed;
 } conn_data_t;

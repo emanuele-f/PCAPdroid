@@ -2,37 +2,59 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:background="?attr/selectableItemBackground"
-    android:paddingHorizontal="5dp"
-    android:layout_height="40dp">
+    android:orientation="horizontal"
+    android:paddingHorizontal="4dp"
+    android:layout_height="42dp">
 
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="40dp"
+        android:layout_width="30dp"
         android:layout_height="match_parent"
         android:layout_margin="4dp" />
 
     <TextView
-        android:layout_width="0dp"
+        android:layout_width="2sp"
         android:layout_height="fill_parent"
         android:layout_weight="0.2"
-        android:text="HTTP"
+        android:layout_marginStart="2dp"
+        android:text="Unknown"
+        android:textSize="10sp"
+        android:maxLines="2"
         android:gravity="center_vertical"
-        android:layout_marginEnd="5dp"
+        android:layout_marginEnd="8dp"
         android:id="@+id/l7proto"/>
+
+    <ImageView
+        android:gravity="center"
+        android:id="@+id/status_ind"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="2dp"
+        android:src="@drawable/ic_active_connection" />
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.05" />
 
     <TextView
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.5"
+        android:layout_weight="0.75"
+        android:layout_marginEnd="4dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:text="example.org:80"
+        android:textSize="12sp"
         android:gravity="center_vertical"
         android:id="@+id/remote"/>
 
     <TextView
-        android:layout_width="0dp"
+        android:layout_width="8sp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.3"
+        android:layout_weight="0.2"
         android:text="1.05 MB"
+        android:textSize="12sp"
         android:gravity="center_vertical|end"
         android:id="@+id/traffic"/>
 </LinearLayout>

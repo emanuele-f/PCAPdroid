@@ -35,6 +35,7 @@ import java.util.Objects;
 
 class ViewHolder extends RecyclerView.ViewHolder {
     ImageView icon;
+    ImageView statusInd;
     TextView remote;
     TextView l7proto;
     TextView traffic;
@@ -46,6 +47,7 @@ class ViewHolder extends RecyclerView.ViewHolder {
         remote = itemView.findViewById(R.id.remote);
         l7proto = itemView.findViewById(R.id.l7proto);
         traffic = itemView.findViewById(R.id.traffic);
+        statusInd = itemView.findViewById(R.id.status_ind);
     }
 
     public void bindConn(MainActivity activity, ConnDescriptor conn, Drawable unknownIcon) {
@@ -63,6 +65,9 @@ class ViewHolder extends RecyclerView.ViewHolder {
 
         l7proto.setText(conn.l7proto);
         traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
+
+        if(conn.closed)
+            statusInd.setVisibility(View.INVISIBLE);
     }
 }
 

@@ -169,7 +169,7 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
         for(int i=0; i < arr->cur_items; i++) {
             vpn_conn_t *slot = &arr->items[i];
 
-            if(slot->data && (slot->data->terminated || free_all))
+            if(slot->data && (slot->data->closed || free_all))
                 free_connection_data(slot->data);
         }
 
@@ -283,7 +283,21 @@ struct ndpi_detection_module_struct* init_ndpi() {
 
 /* ******************************************************* */
 
-const char *getL7ProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol l7proto) {
+const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol l7proto, int ipproto) {
+    if(l7proto.master_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        // Return the L3 protocol
+        switch (ipproto) {
+            case IPPROTO_TCP:
+                return "TCP";
+            case IPPROTO_UDP:
+                return "UDP";
+            case IPPROTO_ICMP:
+                return "ICMP";
+            default:
+                return "Unknown";
+        }
+    }
+
     return ndpi_get_proto_name(mod, l7proto.master_protocol);
 }
 
@@ -558,7 +572,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
     /* Will free the other data in sendConnectionsDump */
     free_ndpi(data);
-    data->terminated = true;
+    data->closed = true;
 }
 
 /* ******************************************************* */
@@ -707,7 +721,7 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
     jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
-    jobject proto_string = (*env)->NewStringUTF(env, getL7ProtoName(proxy->ndpi, data->l7proto));
+    jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit);
@@ -720,8 +734,8 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                                conn_info->ipproto, ntohs(conn_info->src_port),
                                ntohs(conn_info->dst_port),
                                data->first_seen, data->last_seen, data->sent_bytes,
-                               data->rcvd_bytes,
-                               data->sent_pkts, data->rcvd_pkts, data->uid, data->incr_id);
+                               data->rcvd_bytes, data->sent_pkts,
+                               data->rcvd_pkts, data->uid, data->incr_id, data->closed);
         if(jniCheckException(env))
             rv = -1;
         else {
@@ -894,7 +908,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
             /* NOTE: must match ConnDescriptor::setData */
-            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIII)V");
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIIIZ)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(IIIIII)V");
 
