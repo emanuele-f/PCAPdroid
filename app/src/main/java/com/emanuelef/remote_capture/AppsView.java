@@ -117,8 +117,11 @@ class AppsView extends EmptyRecyclerView implements SearchView.OnQueryTextListen
     public void setSelectedAppListener(final OnSelectedAppListener listener) {
         mAdapter.setOnClickListener(view -> {
             int itemPosition = getChildLayoutPosition(view);
-            AppDescriptor app = mInstalledApps.get(itemPosition);
-            listener.onSelectedApp(app);
+
+            AppDescriptor app = mAdapter.getItem(itemPosition);
+
+            if(app != null)
+                listener.onSelectedApp(app);
         });
     }
 }

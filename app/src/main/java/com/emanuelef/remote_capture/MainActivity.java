@@ -77,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TabLayout tabLayout;
     List<AppStateListener> mStateListeners;
     AppDescriptor mAndroidApp;
+
+    private final static String TAG = "Main";
+    private final static String APPS_LOADER_TAG = "AppsLoader";
+
     private final static int POS_STATUS = 0;
     private final static int POS_CONNECTIONS = 1;
     private final static int TOTAL_COUNT = 2;
@@ -312,11 +316,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 bundle.putString(Prefs.PREF_APP_FILTER, mFilterApp);
                 intent.putExtra("settings", bundle);
 
-                Log.d("Main", "onActivityResult -> start CaptureService");
+                Log.d(TAG, "onActivityResult -> start CaptureService");
 
                 startService(intent);
             } else {
-                Log.w("Main", "VPN request failed");
+                Log.w(TAG, "VPN request failed");
                 appStateReady();
             }
         }
@@ -330,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @NonNull
             @Override
             public List<AppDescriptor> loadInBackground() {
-                Log.d("AppsLoader", "Loading APPs...");
+                Log.d(APPS_LOADER_TAG, "Loading APPs...");
                 return Utils.getInstalledApps(getContext());
             }
         };
@@ -338,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
-        Log.d("AppsLoader", data.size() + " APPs loaded");
+        Log.d(APPS_LOADER_TAG, data.size() + " APPs loaded");
         mInstalledApps = data;
 
         if (mFilterApp != null) {
@@ -444,7 +448,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LoaderManager lm = LoaderManager.getInstance(this);
         Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
 
-        Log.d("startLoadingApps", "Loader? " + (loader != null));
+        Log.d(APPS_LOADER_TAG, "Loader? " + (loader != null));
 
         if(loader==null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
@@ -486,6 +490,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(app -> {
+            Log.d(TAG, "Selected app: " + app.getUid());
+
             if(app.getUid() != -1) {
                 // an app has been selected
                 mFilterApp = app.getPackageName();

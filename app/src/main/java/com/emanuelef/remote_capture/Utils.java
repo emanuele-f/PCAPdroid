@@ -94,6 +94,7 @@ public class Utils {
         PackageManager pm = context.getPackageManager();
         List<AppDescriptor> apps = new ArrayList<>();
         List<PackageInfo> packs = pm.getInstalledPackages(0);
+        String app_package = context.getApplicationContext().getPackageName();
 
         Log.d("APPS", "num apps (system+user): " + packs.size());
         long tstart = now();
@@ -104,7 +105,7 @@ public class Utils {
 
             String package_name = p.applicationInfo.packageName;
 
-            if(!package_name.equals("com.emanuelef.remote_capture")) {
+            if(!package_name.equals(app_package)) {
                 String appName = p.applicationInfo.loadLabel(pm).toString();
 
                 // NOTE: this call is expensive

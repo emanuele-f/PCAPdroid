@@ -56,14 +56,23 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {
-        holder.textInListView.setText(listStorage.get(position).getName());
-        holder.imageInListView.setImageDrawable(listStorage.get(position).getIcon());
-        holder.packageInListView.setText(listStorage.get(position).getPackageName());
+        AppDescriptor app = getItem(position);
+
+        holder.textInListView.setText(app.getName());
+        holder.imageInListView.setImageDrawable(app.getIcon());
+        holder.packageInListView.setText(app.getPackageName());
     }
 
     @Override
     public int getItemCount() {
         return listStorage.size();
+    }
+
+    public AppDescriptor getItem(int pos) {
+        if((pos < 0) || (pos > listStorage.size()))
+            return null;
+
+        return listStorage.get(pos);
     }
 
     public static class AppViewHolder extends RecyclerView.ViewHolder {
