@@ -95,10 +95,6 @@ public class Utils {
         List<AppDescriptor> apps = new ArrayList<>();
         List<PackageInfo> packs = pm.getInstalledPackages(0);
 
-        // Add the "No Filter" app
-        Drawable icon = ContextCompat.getDrawable(context, android.R.color.transparent);
-        apps.add(new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
-
         Log.d("APPS", "num apps (system+user): " + packs.size());
         long tstart = now();
 
@@ -112,7 +108,7 @@ public class Utils {
                 String appName = p.applicationInfo.loadLabel(pm).toString();
 
                 // NOTE: this call is expensive
-                icon = p.applicationInfo.loadIcon(pm);
+                Drawable icon = p.applicationInfo.loadIcon(pm);
 
                 int uid = p.applicationInfo.uid;
                 apps.add(new AppDescriptor(appName, icon, package_name, uid, is_system));
@@ -120,6 +116,12 @@ public class Utils {
                 Log.d("APPS", appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
+
+        Collections.sort(apps);
+
+        // Add the "No Filter" app
+        Drawable icon = ContextCompat.getDrawable(context, android.R.color.transparent);
+        apps.add(0, new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
 
         Log.d("APPS", packs.size() + " apps loaded in " + (now() - tstart) +" seconds");
         return apps;

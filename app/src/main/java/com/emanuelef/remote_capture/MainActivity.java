@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -48,6 +49,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -465,22 +468,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return;
         }
 
-        // Filter non-system apps
-        List<AppDescriptor> user_apps = new ArrayList<>();
-
-        for(int i=0; i<mInstalledApps.size(); i++) {
-            AppDescriptor app = mInstalledApps.get(i);
-
-            if(!app.isSystem())
-                user_apps.add(app);
-        }
-
         mOpenAppsWhenDone = false;
 
-        AppsView apps = new AppsView(this, user_apps);
+        View dialogLayout = getLayoutInflater().inflate(R.layout.apps_selector, null);
+        SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
+        AppsView apps = (AppsView) dialogLayout.findViewById(R.id.apps_list);
+        TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
+
+        apps.setApps(mInstalledApps);
+        apps.setEmptyView(emptyText);
+        searchView.setOnQueryTextListener(apps);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.app_filter);
-        builder.setView(apps);
+        builder.setView(dialogLayout);
+
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(app -> {

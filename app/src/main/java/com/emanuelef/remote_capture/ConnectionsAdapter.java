@@ -76,11 +76,13 @@ class ViewHolder extends RecyclerView.ViewHolder {
 public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
     private static final String TAG = "ConnectionsAdapter";
     private final MainActivity mActivity;
+    private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private View.OnClickListener mListener;
 
     ConnectionsAdapter(MainActivity context) {
         mActivity = context;
+        mLayoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
         mListener = null;
     }
@@ -95,10 +97,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        assert inflater != null;
-
-        View view = inflater.inflate(R.layout.connection_item, parent, false);
+        View view = mLayoutInflater.inflate(R.layout.connection_item, parent, false);
 
         if(mListener != null)
             view.setOnClickListener(mListener);

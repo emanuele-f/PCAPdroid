@@ -21,12 +21,12 @@ package com.emanuelef.remote_capture;
 
 import android.graphics.drawable.Drawable;
 
-class AppDescriptor {
-    private String name;
-    private Drawable icon;
-    private String package_name;
-    private int uid;
-    private boolean is_system;
+class AppDescriptor implements Comparable<AppDescriptor> {
+    final private String name;
+    final private Drawable icon;
+    final private String package_name;
+    final private int uid;
+    final private boolean is_system;
 
     AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
         this.name = name;
@@ -53,4 +53,14 @@ class AppDescriptor {
     }
 
     boolean isSystem() { return is_system; }
+
+    @Override
+    public int compareTo(AppDescriptor o) {
+        int rv = getName().toLowerCase().compareTo(o.getName().toLowerCase());
+
+        if(rv == 0)
+            rv = getPackageName().compareTo(o.getPackageName());
+
+        return rv;
+    }
 }

@@ -79,5 +79,8 @@
     <string name="packets_sent">Packets Sent</string>
     <string name="packets_rcvd">Packets Received</string>
     <string name="dns_queries">DNS Queries</string>
+    <string name="search_apps">Search Apps</string>
+    <string name="no_apps">No apps available</string>
+    <string name="show_system_apps">Show system apps</string>
 </resources>
 

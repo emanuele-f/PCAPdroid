@@ -20,41 +20,105 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.view.View;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.widget.Filter;
+import android.widget.Filterable;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-// TODO add searchbar
-// https://stackoverflow.com/questions/31085086/how-to-implement-floating-searchwidget-android
+class AppsView extends EmptyRecyclerView implements SearchView.OnQueryTextListener, Filterable {
+    private List<AppDescriptor> mInstalledApps;
+    private AppAdapter mAdapter;
 
-class AppsView extends RecyclerView {
-    List<AppDescriptor> mInstalledApps;
+    public AppsView(@NonNull Context context) {
+        super(context);
+        initialize(context);
+    }
+
+    public AppsView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        initialize(context);
+    }
+
+    public AppsView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        initialize(context);
+    }
+
+    private void initialize(Context context) {
+        mInstalledApps = null;
+        setLayoutManager(new LinearLayoutManager(context));
+        setHasFixedSize(true);
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String charString = constraint.toString().toLowerCase();
+                List<AppDescriptor> appsFiltered;
+
+                if(charString.isEmpty())
+                    appsFiltered = mInstalledApps;
+                else {
+                    appsFiltered = new ArrayList<>();
+
+                    for(AppDescriptor app : mInstalledApps) {
+                        if(app.getPackageName().toLowerCase().contains(charString)
+                                || app.getName().toLowerCase().contains(charString)) {
+                            appsFiltered.add(app);
+                        }
+                    }
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = appsFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                List<AppDescriptor> appsFiltered = (List<AppDescriptor>) results.values;
+                mAdapter.setApps(appsFiltered);
+            }
+        };
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        getFilter().filter(newText);
+        return true;
+    }
 
     public interface OnSelectedAppListener {
         void onSelectedApp(AppDescriptor app);
     }
 
-    public AppsView(Context context, List<AppDescriptor> installedApps) {
-        super(context);
-
+    public void setApps(List<AppDescriptor> installedApps) {
         mInstalledApps = installedApps;
-        setLayoutManager(new LinearLayoutManager(context));
-        setHasFixedSize(true);
+        mAdapter = new AppAdapter(getContext(), mInstalledApps);
+        setAdapter(mAdapter);
     }
 
     public void setSelectedAppListener(final OnSelectedAppListener listener) {
-        AppAdapter installedAppAdapter = new AppAdapter(getContext(), mInstalledApps, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int itemPosition = getChildLayoutPosition(view);
-                AppDescriptor app = mInstalledApps.get(itemPosition);
-                listener.onSelectedApp(app);
-            }
+        mAdapter.setOnClickListener(view -> {
+            int itemPosition = getChildLayoutPosition(view);
+            AppDescriptor app = mInstalledApps.get(itemPosition);
+            listener.onSelectedApp(app);
         });
-
-        setAdapter(installedAppAdapter);
     }
 }

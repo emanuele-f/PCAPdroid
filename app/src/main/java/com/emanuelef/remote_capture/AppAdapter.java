@@ -32,22 +32,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
-    private LayoutInflater layoutInflater;
-    private List<AppDescriptor> listStorage;
+    private final LayoutInflater mLayoutInflater;
     private View.OnClickListener mListener;
+    private List<AppDescriptor> listStorage;
 
-    AppAdapter(Context context, List<AppDescriptor> customizedListView, final View.OnClickListener listener) {
-        layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    AppAdapter(Context context, List<AppDescriptor> customizedListView) {
+        mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         listStorage = customizedListView;
-        mListener = listener;
+        mListener = null;
     }
 
     @NonNull
     @Override
     public AppAdapter.AppViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.installed_app_list, parent, false);
+        View view = mLayoutInflater.inflate(R.layout.installed_app_list, parent, false);
         AppViewHolder recyclerViewHolder = new AppViewHolder(view);
-        view.setOnClickListener(mListener);
+
+        if(mListener != null)
+            view.setOnClickListener(mListener);
 
         return(recyclerViewHolder);
     }
@@ -76,5 +78,14 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
             imageInListView = view.findViewById(R.id.app_icon);
             packageInListView= view.findViewById(R.id.app_package);
         }
+    }
+
+    public void setApps(List<AppDescriptor> apps) {
+        listStorage = apps;
+        notifyDataSetChanged();
+    }
+
+    public void setOnClickListener(final View.OnClickListener listener) {
+        mListener = listener;
     }
 }
