@@ -17,32 +17,32 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.model;
 
 import java.io.Serializable;
 
 /* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
-class ConnDescriptor implements Serializable {
+public class ConnectionDescriptor implements Serializable {
     /* Metadata */
-    int ipproto;
-    String src_ip;
-    String dst_ip;
-    int src_port;
-    int dst_port;
+    public int ipproto;
+    public String src_ip;
+    public String dst_ip;
+    public int src_port;
+    public int dst_port;
 
     /* Data */
-    long first_seen;
-    long last_seen;
-    long sent_bytes;
-    long rcvd_bytes;
-    int sent_pkts;
-    int rcvd_pkts;
-    String info;
-    String url;
-    String l7proto;
-    int uid;
-    int incr_id;
-    boolean closed;
+    public long first_seen;
+    public long last_seen;
+    public long sent_bytes;
+    public long rcvd_bytes;
+    public int sent_pkts;
+    public int rcvd_pkts;
+    public String info;
+    public String url;
+    public String l7proto;
+    public int uid;
+    public int incr_id;
+    public boolean closed;
 
     /* Invoked by native code
     * NOTE: interleaving String and int in the parameters is not good as it makes the app crash

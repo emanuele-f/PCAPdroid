@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
 import android.content.Intent;
@@ -32,9 +32,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.AppState;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
+import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
+import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.views.EmptyRecyclerView;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 
 public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener {
     private static final String TAG = "ConnectionsFragment";
@@ -88,10 +100,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
-            ConnDescriptor item = mAdapter.getItem(pos);
+            ConnectionDescriptor item = mAdapter.getItem(pos);
 
             if(item != null) {
-                Intent intent = new Intent(getContext(), ConnectionDetails.class);
+                Intent intent = new Intent(getContext(), ConnectionDetailsActivity.class);
                 AppDescriptor app = mActivity.findAppByUid(item.uid);
                 String app_name = null;//;1051
 
@@ -102,10 +114,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
                 else if(item.uid == 1051)
                     app_name = "netd";
 
-                intent.putExtra(ConnectionDetails.CONN_EXTRA_KEY, item);
+                intent.putExtra(ConnectionDetailsActivity.CONN_EXTRA_KEY, item);
 
                 if(app_name != null)
-                    intent.putExtra(ConnectionDetails.APP_NAME_EXTRA_KEY, app_name);
+                    intent.putExtra(ConnectionDetailsActivity.APP_NAME_EXTRA_KEY, app_name);
 
                 startActivity(intent);
             }

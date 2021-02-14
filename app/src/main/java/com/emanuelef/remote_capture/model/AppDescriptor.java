@@ -17,18 +17,18 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.model;
 
 import android.graphics.drawable.Drawable;
 
-class AppDescriptor implements Comparable<AppDescriptor> {
-    final private String name;
-    final private Drawable icon;
-    final private String package_name;
-    final private int uid;
-    final private boolean is_system;
+public class AppDescriptor implements Comparable<AppDescriptor> {
+    private final String name;
+    private final Drawable icon;
+    private final String package_name;
+    private final int uid;
+    private final boolean is_system;
 
-    AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
+    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
         this.name = name;
         this.icon = icon;
         this.package_name = package_name;
@@ -36,23 +36,23 @@ class AppDescriptor implements Comparable<AppDescriptor> {
         this.is_system = is_system;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    Drawable getIcon() {
+    public Drawable getIcon() {
         return icon;
     }
 
-    String getPackageName() {
+    public String getPackageName() {
         return package_name;
     }
 
-    int getUid() {
+    public int getUid() {
         return uid;
     }
 
-    boolean isSystem() { return is_system; }
+    public boolean isSystem() { return is_system; }
 
     @Override
     public int compareTo(AppDescriptor o) {

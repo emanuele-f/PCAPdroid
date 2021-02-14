@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.emanuelef.remote_capture.AppsView
+        <com.emanuelef.remote_capture.views.AppsListView
             android:id="@+id/apps_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

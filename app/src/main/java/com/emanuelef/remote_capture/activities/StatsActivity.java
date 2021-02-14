@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.activities;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +31,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
+
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.VPNStats;
 
 public class StatsActivity extends AppCompatActivity {
     TextView mBytesSent;
@@ -90,13 +95,10 @@ public class StatsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                /* Make the back button in the action bar behave like the back button */
-                onBackPressed();
-                return true;
-            default:
-                break;
+        if(item.getItemId() == android.R.id.home) {
+            /* Make the back button in the action bar behave like the back button */
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

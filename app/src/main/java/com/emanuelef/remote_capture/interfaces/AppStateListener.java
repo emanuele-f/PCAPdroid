@@ -17,11 +17,11 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.interfaces;
 
-public interface ConnectionsListener {
-    void connectionsChanges();
-    void connectionsAdded(int start, int count);
-    void connectionsRemoved(int start, int count);
-    void connectionsUpdated(int[] positions);
+import com.emanuelef.remote_capture.model.AppState;
+
+public interface AppStateListener {
+    void appStateChanged(AppState state);
+    void appsLoaded();
 }

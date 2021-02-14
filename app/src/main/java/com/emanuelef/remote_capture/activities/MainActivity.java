@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -52,6 +52,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.AppState;
+import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.views.AppsListView;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.fragments.StatusFragment;
+import com.emanuelef.remote_capture.Utils;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -78,12 +88,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     List<AppStateListener> mStateListeners;
     AppDescriptor mAndroidApp;
 
-    private final static String TAG = "Main";
-    private final static String APPS_LOADER_TAG = "AppsLoader";
+    private static final String TAG = "Main";
+    private static final String APPS_LOADER_TAG = "AppsLoader";
 
-    private final static int POS_STATUS = 0;
-    private final static int POS_CONNECTIONS = 1;
-    private final static int TOTAL_COUNT = 2;
+    private static final int POS_STATUS = 0;
+    private static final int POS_CONNECTIONS = 1;
+    private static final int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
     public static final int OPERATION_SEARCH_LOADER = 23;
@@ -364,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {
     }
 
-    AppDescriptor findAppByUid(int uid) {
+    public AppDescriptor findAppByUid(int uid) {
         if((mInstalledApps == null) || (uid == -1))
             return (null);
 
@@ -382,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return (null);
     }
 
-    AppDescriptor findAppByPackage(String package_name) {
+    public AppDescriptor findAppByPackage(String package_name) {
         if (mInstalledApps == null)
             return (null);
 
@@ -432,15 +442,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    void addAppStateListener(AppStateListener listener) {
+    public void addAppStateListener(AppStateListener listener) {
         mStateListeners.add(listener);
     }
 
-    void removeAppStateListener(AppStateListener listener) {
+    public void removeAppStateListener(AppStateListener listener) {
         mStateListeners.remove(listener);
     }
 
-    AppState getState() {
+    public AppState getState() {
         return(mState);
     }
 
@@ -476,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         View dialogLayout = getLayoutInflater().inflate(R.layout.apps_selector, null);
         SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
-        AppsView apps = (AppsView) dialogLayout.findViewById(R.id.apps_list);
+        AppsListView apps = (AppsListView) dialogLayout.findViewById(R.id.apps_list);
         TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
 
         apps.setApps(mInstalledApps);

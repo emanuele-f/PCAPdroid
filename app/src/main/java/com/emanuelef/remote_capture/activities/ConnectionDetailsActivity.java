@@ -17,34 +17,33 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-public class ConnectionDetails extends AppCompatActivity {
-    static final String CONN_EXTRA_KEY = "conn_descriptor";
-    static final String APP_NAME_EXTRA_KEY = "app_name";
-    TextView mBytesView;
-    TextView mPacketsView;
-    TextView mDurationView;
-    ConnDescriptor conn;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+
+public class ConnectionDetailsActivity extends AppCompatActivity {
+    public static final String CONN_EXTRA_KEY = "conn_descriptor";
+    public static final String APP_NAME_EXTRA_KEY = "app_name";
+    private TextView mBytesView;
+    private TextView mPacketsView;
+    private TextView mDurationView;
+    private ConnectionDescriptor conn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection_details);
 
-        conn = (ConnDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
+        conn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
         String app_name = getIntent().getStringExtra(APP_NAME_EXTRA_KEY);
 
         TextView app = findViewById(R.id.detail_app);
@@ -80,27 +79,22 @@ public class ConnectionDetails extends AppCompatActivity {
         if(app_name != null)
             app.setText(String.format(getResources().getString(R.string.app_and_proto), app_name, Integer.toString(conn.uid)));
         else
-            app.setText(Integer.toString(conn.uid));
+            app.setText( Integer.toString(conn.uid));
 
         if(!conn.url.isEmpty())
             url.setText(conn.url);
         else
             url_row.setVisibility(View.GONE);
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
-
         // TODO update the details if the connection is updated
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                /* Make the back button in the action bar behave like the back button */
-                onBackPressed();
-                return true;
-            default:
-                break;
+        if(item.getItemId() == android.R.id.home) {
+            /* Make the back button in the action bar behave like the back button */
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

@@ -17,23 +17,21 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.util.Patterns;
-import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
+
+import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.R;
 
 import java.util.regex.Matcher;
 
@@ -66,12 +64,9 @@ public class SettingsActivity extends AppCompatActivity {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
             mDumpModePref = findPreference(Prefs.PREF_PCAP_DUMP_MODE);
-            mDumpModePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    dumpPrefsHideShow((String) newValue);
-                    return true;
-                }
+            mDumpModePref.setOnPreferenceChangeListener((preference, newValue) -> {
+                dumpPrefsHideShow((String) newValue);
+                return true;
             });
 
             setupUdpExporterPrefs();
@@ -94,75 +89,41 @@ public class SettingsActivity extends AppCompatActivity {
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
             mRemoteCollectorIp = findPreference(Prefs.PREF_COLLECTOR_IP_KEY);
-            mRemoteCollectorIp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                    return(matcher.matches());
-                }
+            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> {
+                Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
+                return(matcher.matches());
             });
 
             /* Collector port validation */
             mRemoteCollectorPort = findPreference(Prefs.PREF_COLLECTOR_PORT_KEY);
-            mRemoteCollectorPort.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
-                @Override
-                public void onBindEditText(@NonNull EditText editText) {
-                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
-                }
-            });
-            mRemoteCollectorPort.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    return validatePort(newValue.toString());
-                }
-            });
+            mRemoteCollectorPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
+            mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
         private void setupHttpServerPrefs() {
             /* HTTP Server port validation */
             mHttpServerPort = findPreference(Prefs.PREF_HTTP_SERVER_PORT);
-            mHttpServerPort.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    return validatePort(newValue.toString());
-                }
-            });
+            mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
         private void setupTlsProxyPrefs() {
             mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
-            mTlsDecryptionEnabled.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    tlsDecryptionHideShow((Boolean) newValue);
-                    return true;
-                }
+            mTlsDecryptionEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                tlsDecryptionHideShow((Boolean) newValue);
+                return true;
             });
 
             /* TLS Proxy IP validation */
             mTlsProxyIp = findPreference(Prefs.PREF_TLS_PROXY_IP_KEY);
-            mTlsProxyIp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                    return(matcher.matches());
-                }
+            mTlsProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
+                Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
+                return(matcher.matches());
             });
 
             /* TLS Proxy port validation */
             mTlsProxyPort = findPreference(Prefs.PREF_TLS_PROXY_PORT_KEY);
-            mTlsProxyPort.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
-                @Override
-                public void onBindEditText(@NonNull EditText editText) {
-                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
-                }
-            });
-            mTlsProxyPort.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    return validatePort(newValue.toString());
-                }
-            });
+            mTlsProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
+            mTlsProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
         /* This implements a radio-button like behaviour */

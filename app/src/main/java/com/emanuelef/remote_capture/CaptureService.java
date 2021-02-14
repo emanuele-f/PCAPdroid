@@ -35,6 +35,10 @@ import android.widget.Toast;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.model.VPNStats;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -359,7 +363,7 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public void sendConnectionsDump(ConnDescriptor[] new_conns, ConnDescriptor[] conns_updates) {
+    public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {
         if(new_conns.length > 0)
             conn_reg.newConnections(new_conns);
 

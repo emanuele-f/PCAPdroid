@@ -447,7 +447,7 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     }
 
     if(proxy->java_dump.buffer) {
-        int tot_size = size + sizeof(pcaprec_hdr_s);
+        int tot_size = size + (int) sizeof(pcaprec_hdr_s);
 
         if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
             // Flush the buffer
@@ -754,7 +754,7 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
 
         DeleteLocalRef(env, conn_descriptor);
     } else {
-        log_android(ANDROID_LOG_ERROR, "NewObject(ConnDescriptor) failed");
+        log_android(ANDROID_LOG_ERROR, "NewObject(ConnectionDescriptor) failed");
         rv = -1;
     }
 
@@ -817,8 +817,8 @@ cleanup:
 
 static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t *stats) {
     JNIEnv *env = proxy->env;
-    int active_conns = stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn;
-    int tot_conns = stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened;
+    int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
+    int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);
 
     jobject stats_obj = (*env)->NewObject(env, cls.stats, mids.statsInit);
 
@@ -900,20 +900,20 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     /* Classes */
     cls.vpn_service = vpn_class;
-    cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/ConnDescriptor");
-    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/VPNStats");
+    cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
+    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
 
     /* Methods */
     mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
     mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
     mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
-    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/ConnDescriptor;[Lcom/emanuelef/remote_capture/ConnDescriptor;)V");
-    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/VPNStats;)V");
+    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;)V");
+    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
-            /* NOTE: must match ConnDescriptor::setData */
+            /* NOTE: must match ConnectionDescriptor::setData */
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIIIZ)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(IIIIII)V");

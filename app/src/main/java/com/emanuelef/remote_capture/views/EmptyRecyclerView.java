@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

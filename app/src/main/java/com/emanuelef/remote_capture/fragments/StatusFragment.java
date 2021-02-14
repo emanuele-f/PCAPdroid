@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -40,6 +40,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
+
+import com.emanuelef.remote_capture.model.AppState;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.activities.SettingsActivity;
+import com.emanuelef.remote_capture.activities.StatsActivity;
+import com.emanuelef.remote_capture.interfaces.AppStateListener;
 
 public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mCollectorInfo;
@@ -85,29 +95,23 @@ public class StatusFragment extends Fragment implements AppStateListener {
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Add settings icon click
-        mCollectorInfo.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Drawable mCollectorInfoDrawable = mCollectorInfo.getCompoundDrawables()[2 /* Right */];
+        mCollectorInfo.setOnTouchListener((v, event) -> {
+            Drawable mCollectorInfoDrawable = mCollectorInfo.getCompoundDrawables()[2 /* Right */];
 
-                if((mCollectorInfoDrawable != null) && (event.getAction() == MotionEvent.ACTION_UP)) {
-                    if(event.getRawX() >= (mCollectorInfo.getRight() - mCollectorInfoDrawable.getBounds().width())) {
-                        Intent intent = new Intent(mActivity, SettingsActivity.class);
-                        startActivity(intent);
+            if((mCollectorInfoDrawable != null) && (event.getAction() == MotionEvent.ACTION_UP)) {
+                if(event.getRawX() >= (mCollectorInfo.getRight() - mCollectorInfoDrawable.getBounds().width())) {
+                    Intent intent = new Intent(mActivity, SettingsActivity.class);
+                    startActivity(intent);
 
-                        return true;
-                    }
+                    return true;
                 }
-                return false;
             }
+            return false;
         });
 
-        mPrefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if((mActivity != null) && (mActivity.getState() == AppState.ready))
-                    refreshPcapDumpInfo();
-            }
+        mPrefs.registerOnSharedPreferenceChangeListener((sharedPreferences, s) -> {
+            if((mActivity != null) && (mActivity.getState() == AppState.ready))
+                refreshPcapDumpInfo();
         });
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(mActivity);

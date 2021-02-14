@@ -21,10 +21,13 @@ package com.emanuelef.remote_capture;
 
 import android.util.Log;
 
+import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+
 import java.util.Arrays;
 
 public class ConnectionsRegister {
-    private final ConnDescriptor[] items_ring;
+    private final ConnectionDescriptor[] items_ring;
     private int tail;
     private final int size;
     private int num_items;
@@ -37,7 +40,7 @@ public class ConnectionsRegister {
         num_items = 0;
         untracked_items = 0;
         size = _size;
-        items_ring = new ConnDescriptor[size];
+        items_ring = new ConnectionDescriptor[size];
         mListener = null;
     }
 
@@ -49,12 +52,12 @@ public class ConnectionsRegister {
         return (tail - 1 + size) % size;
     }
 
-    public synchronized void newConnections(ConnDescriptor[] conns) {
+    public synchronized void newConnections(ConnectionDescriptor[] conns) {
         int in_items = Math.min((size - num_items), conns.length);
         int out_items = conns.length - in_items;
         int insert_pos = num_items;
 
-        for(ConnDescriptor conn: conns) {
+        for(ConnectionDescriptor conn: conns) {
             items_ring[tail] = conn;
             tail = (tail + 1) % size;
             num_items = Math.min(num_items + 1, size);
@@ -71,7 +74,7 @@ public class ConnectionsRegister {
         }
     }
 
-    public synchronized void connectionsUpdates(ConnDescriptor[] conns) {
+    public synchronized void connectionsUpdates(ConnectionDescriptor[] conns) {
         int first_pos = firstPos();
         int first_id = items_ring[first_pos].incr_id;
         int last_id = items_ring[lastPos()].incr_id;
@@ -80,7 +83,7 @@ public class ConnectionsRegister {
 
         Log.d(TAG, "connectionsUpdates: items=" + num_items + ", first_id=" + first_id + ", last_id=" + last_id);
 
-        for(ConnDescriptor conn: conns) {
+        for(ConnectionDescriptor conn: conns) {
             int id = conn.incr_id;
 
             // ignore updates for untracked items
@@ -132,7 +135,7 @@ public class ConnectionsRegister {
         return untracked_items;
     }
 
-    public synchronized ConnDescriptor getConn(int i) {
+    public synchronized ConnectionDescriptor getConn(int i) {
         if(i >= num_items)
             return null;
 

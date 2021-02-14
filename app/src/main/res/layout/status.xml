@@ -5,7 +5,7 @@
     android:id="@+id/main_screen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.emanuelef.remote_capture.MainActivity">
+    tools:context="com.emanuelef.remote_capture.activities.MainActivity">
 
     <TextView
         android:id="@+id/collector_info"

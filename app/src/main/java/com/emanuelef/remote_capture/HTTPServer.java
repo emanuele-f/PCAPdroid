@@ -36,10 +36,10 @@ public class HTTPServer extends NanoHTTPD {
     private final DateFormat mFmt = new SimpleDateFormat("HH_mm_ss");
     private boolean firstStart = true;
     private boolean mAcceptConnections = false;
-    private Context mContext;
+    private final Context mContext;
 
     /* NOTE: access to mActiveResponses must be synchronized */
-    private ArrayList<Response> mActiveResponses = new ArrayList<>();
+    private final ArrayList<Response> mActiveResponses = new ArrayList<>();
 
     public HTTPServer(Context context, int port) {
         super(port);

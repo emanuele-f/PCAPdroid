@@ -32,11 +32,12 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+
+import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import java.math.BigInteger;
 import java.net.Inet4Address;
@@ -51,7 +52,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class Utils {
-    static String formatBytes(long bytes) {
+    public static String formatBytes(long bytes) {
         long divisor;
         String suffix;
         if(bytes < 1024) return bytes + " B";
@@ -63,7 +64,7 @@ public class Utils {
         return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
     }
 
-    static String formatPkts(long pkts) {
+    public static String formatPkts(long pkts) {
         long divisor;
         String suffix;
         if(pkts < 1000) return Long.toString(pkts);
@@ -75,12 +76,12 @@ public class Utils {
         return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
     }
 
-    static String formatNumber(Context context, long num) {
+    public static String formatNumber(Context context, long num) {
         Locale locale = context.getResources().getConfiguration().locale;
         return String.format(locale, "%,d", num);
     }
 
-    static String formatDuration(long seconds) {
+    public static String formatDuration(long seconds) {
         if(seconds == 0)
             return "< 1 s";
         else if(seconds < 60)
@@ -91,7 +92,7 @@ public class Utils {
             return String.format("> %d h", seconds / 3600);
     }
 
-    static List<AppDescriptor> getInstalledApps(Context context) {
+    public static List<AppDescriptor> getInstalledApps(Context context) {
         PackageManager pm = context.getPackageManager();
         List<AppDescriptor> apps = new ArrayList<>();
         List<PackageInfo> packs = pm.getInstalledPackages(0);
@@ -129,7 +130,7 @@ public class Utils {
         return apps;
     }
 
-    static String proto2str(int proto) {
+    public static String proto2str(int proto) {
         switch(proto) {
             case 6:     return "TCP";
             case 17:    return "UDP";
@@ -138,7 +139,7 @@ public class Utils {
         }
     }
 
-    static String getDnsServer(Context context) {
+    public static String getDnsServer(Context context) {
         ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Service.CONNECTIVITY_SERVICE);
 
         if(conn != null) {
@@ -167,7 +168,7 @@ public class Utils {
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
-    static String getLocalWifiIpAddress(Context context) {
+    public static String getLocalWifiIpAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo connInfo = wifiManager.getConnectionInfo();
 
@@ -193,7 +194,7 @@ public class Utils {
         return(null);
     }
 
-    static String getLocalIPAddress(Context context) {
+    public static String getLocalIPAddress(Context context) {
         InetAddress vpn_ip;
 
         try {
@@ -245,7 +246,7 @@ public class Utils {
         return(calendar.getTimeInMillis() / 1000);
     }
 
-    static byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
@@ -255,7 +256,7 @@ public class Utils {
         return data;
     }
 
-    static boolean hasVPNRunning(Context context) {
+    public static boolean hasVPNRunning(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if(cm != null) {
@@ -274,7 +275,7 @@ public class Utils {
         return false;
     }
 
-    static void showToast(Context context, int id) {
+    public static void showToast(Context context, int id) {
         String msg = context.getResources().getString(id);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }

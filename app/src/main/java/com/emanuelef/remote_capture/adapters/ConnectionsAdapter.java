@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -31,49 +31,17 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.MainActivity;
+
 import java.util.Objects;
 
-class ViewHolder extends RecyclerView.ViewHolder {
-    ImageView icon;
-    ImageView statusInd;
-    TextView remote;
-    TextView l7proto;
-    TextView traffic;
-
-    ViewHolder(View itemView) {
-        super(itemView);
-
-        icon = itemView.findViewById(R.id.icon);
-        remote = itemView.findViewById(R.id.remote);
-        l7proto = itemView.findViewById(R.id.l7proto);
-        traffic = itemView.findViewById(R.id.traffic);
-        statusInd = itemView.findViewById(R.id.status_ind);
-    }
-
-    public void bindConn(MainActivity activity, ConnDescriptor conn, Drawable unknownIcon) {
-        AppDescriptor app = activity.findAppByUid(conn.uid);
-        Drawable appIcon;
-
-        appIcon = (app != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
-        icon.setImageDrawable(appIcon);
-
-        if(conn.info.length() > 0)
-            remote.setText(conn.info);
-        else
-            remote.setText(String.format(activity.getResources().getString(R.string.ip_and_port),
-                    conn.dst_ip, conn.dst_port));
-
-        l7proto.setText(conn.l7proto);
-        traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
-
-        if(conn.closed)
-            statusInd.setVisibility(View.INVISIBLE);
-        else
-            statusInd.setVisibility(View.VISIBLE);
-    }
-}
-
-public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder> {
     private static final String TAG = "ConnectionsAdapter";
     private final MainActivity mActivity;
     private final LayoutInflater mLayoutInflater;
@@ -81,7 +49,47 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
     private int mItemCount;
     private View.OnClickListener mListener;
 
-    ConnectionsAdapter(MainActivity context) {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView icon;
+        ImageView statusInd;
+        TextView remote;
+        TextView l7proto;
+        TextView traffic;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+
+            icon = itemView.findViewById(R.id.icon);
+            remote = itemView.findViewById(R.id.remote);
+            l7proto = itemView.findViewById(R.id.l7proto);
+            traffic = itemView.findViewById(R.id.traffic);
+            statusInd = itemView.findViewById(R.id.status_ind);
+        }
+
+        public void bindConn(MainActivity activity, ConnectionDescriptor conn, Drawable unknownIcon) {
+            AppDescriptor app = activity.findAppByUid(conn.uid);
+            Drawable appIcon;
+
+            appIcon = (app != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
+            icon.setImageDrawable(appIcon);
+
+            if(conn.info.length() > 0)
+                remote.setText(conn.info);
+            else
+                remote.setText(String.format(activity.getResources().getString(R.string.ip_and_port),
+                        conn.dst_ip, conn.dst_port));
+
+            l7proto.setText(conn.l7proto);
+            traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
+
+            if(conn.closed)
+                statusInd.setVisibility(View.INVISIBLE);
+            else
+                statusInd.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public ConnectionsAdapter(MainActivity context) {
         mActivity = context;
         mLayoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
@@ -111,7 +119,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ConnDescriptor conn = getItem(position);
+        ConnectionDescriptor conn = getItem(position);
 
         if(conn == null)
             return;
@@ -126,12 +134,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))
             return -1;
 
-        ConnDescriptor conn = reg.getConn(pos);
+        ConnectionDescriptor conn = reg.getConn(pos);
 
         return ((conn != null) ? conn.incr_id : -1);
     }
 
-    public ConnDescriptor getItem(int pos) {
+    public ConnectionDescriptor getItem(int pos) {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))

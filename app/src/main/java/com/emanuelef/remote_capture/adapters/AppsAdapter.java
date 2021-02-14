@@ -17,7 +17,7 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -29,22 +29,39 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.R;
+
 import java.util.List;
 
-public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
+public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder> {
     private final LayoutInflater mLayoutInflater;
     private View.OnClickListener mListener;
     private List<AppDescriptor> listStorage;
 
-    AppAdapter(Context context, List<AppDescriptor> customizedListView) {
+    public AppsAdapter(Context context, List<AppDescriptor> customizedListView) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         listStorage = customizedListView;
         mListener = null;
     }
 
+    public static class AppViewHolder extends RecyclerView.ViewHolder {
+        TextView textInListView;
+        ImageView imageInListView;
+        TextView packageInListView;
+
+        public AppViewHolder(View view) {
+            super(view);
+
+            textInListView = view.findViewById(R.id.list_app_name);
+            imageInListView = view.findViewById(R.id.app_icon);
+            packageInListView= view.findViewById(R.id.app_package);
+        }
+    }
+
     @NonNull
     @Override
-    public AppAdapter.AppViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public AppsAdapter.AppViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.installed_app_list, parent, false);
         AppViewHolder recyclerViewHolder = new AppViewHolder(view);
 
@@ -73,20 +90,6 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.AppViewHolder> {
             return null;
 
         return listStorage.get(pos);
-    }
-
-    public static class AppViewHolder extends RecyclerView.ViewHolder {
-        TextView textInListView;
-        ImageView imageInListView;
-        TextView packageInListView;
-
-        public AppViewHolder(View view) {
-            super(view);
-
-            textInListView = view.findViewById(R.id.list_app_name);
-            imageInListView = view.findViewById(R.id.app_icon);
-            packageInListView= view.findViewById(R.id.app_package);
-        }
     }
 
     public void setApps(List<AppDescriptor> apps) {

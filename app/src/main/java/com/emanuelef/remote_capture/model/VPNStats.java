@@ -17,17 +17,17 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.model;
 
 import java.io.Serializable;
 
 public class VPNStats implements Serializable {
-    int num_dropped_conns;
-    int num_open_sockets;
-    int max_fd;
-    int active_conns;
-    int tot_conns;
-    int num_dns_queries;
+    public int num_dropped_conns;
+    public int num_open_sockets;
+    public int max_fd;
+    public int active_conns;
+    public int tot_conns;
+    public int num_dns_queries;
 
     /* Invoked by native code */
     public void setData(int _num_dropped_conns, int _num_open_sockets, int _max_fd,

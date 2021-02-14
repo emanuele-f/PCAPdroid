@@ -17,11 +17,10 @@
  * Copyright 2020 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Filter;
 import android.widget.Filterable;
 
@@ -30,24 +29,27 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.emanuelef.remote_capture.adapters.AppsAdapter;
+import com.emanuelef.remote_capture.model.AppDescriptor;
+
 import java.util.ArrayList;
 import java.util.List;
 
-class AppsView extends EmptyRecyclerView implements SearchView.OnQueryTextListener, Filterable {
+public class AppsListView extends EmptyRecyclerView implements SearchView.OnQueryTextListener, Filterable {
     private List<AppDescriptor> mInstalledApps;
-    private AppAdapter mAdapter;
+    private AppsAdapter mAdapter;
 
-    public AppsView(@NonNull Context context) {
+    public AppsListView(@NonNull Context context) {
         super(context);
         initialize(context);
     }
 
-    public AppsView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public AppsListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initialize(context);
     }
 
-    public AppsView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public AppsListView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initialize(context);
     }
@@ -110,7 +112,7 @@ class AppsView extends EmptyRecyclerView implements SearchView.OnQueryTextListen
 
     public void setApps(List<AppDescriptor> installedApps) {
         mInstalledApps = installedApps;
-        mAdapter = new AppAdapter(getContext(), mInstalledApps);
+        mAdapter = new AppsAdapter(getContext(), mInstalledApps);
         setAdapter(mAdapter);
     }
 
