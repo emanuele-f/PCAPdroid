@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.13] - 2021-02-14
+- Fix DNS resolution not working when an IPv6 DNS server is configured
+
 ## [1.2.13] - 2021-02-12
 - More sockets checks to prevent crashes
 - Add stats view with traffic and debug information
