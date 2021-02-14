@@ -145,6 +145,24 @@ android:layout_height="fill_parent">
             android:layout_height="wrap_content"
             android:layout_weight="0.60"
             android:textStyle="bold"
+            android:text="@string/dns_server" />
+        <TextView
+            android:id="@+id/dns_server"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.40"
+            android:textIsSelectable="true" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.60"
+            android:textStyle="bold"
             android:text="@string/dns_queries" />
         <TextView
             android:id="@+id/dns_queries"

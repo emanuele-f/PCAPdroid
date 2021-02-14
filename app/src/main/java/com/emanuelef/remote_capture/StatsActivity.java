@@ -42,6 +42,7 @@ public class StatsActivity extends AppCompatActivity {
     TextView mTotConns;
     TextView mMaxFd;
     TextView mOpenSocks;
+    TextView mDnsServer;
     TextView mDnsQueries;
 
     @Override
@@ -61,6 +62,7 @@ public class StatsActivity extends AppCompatActivity {
         mMaxFd = findViewById(R.id.max_fd);
         mOpenSocks = findViewById(R.id.open_sockets);
         mDnsQueries = findViewById(R.id.dns_queries);
+        mDnsServer = findViewById(R.id.dns_server);
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
 
@@ -108,6 +110,7 @@ public class StatsActivity extends AppCompatActivity {
         mMaxFd.setText(Utils.formatNumber(this, stats.max_fd));
         mOpenSocks.setText(Utils.formatNumber(this, stats.num_open_sockets));
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
+        mDnsServer.setText(CaptureService.getDNSServer());
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);

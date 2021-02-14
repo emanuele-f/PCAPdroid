@@ -82,5 +82,6 @@
     <string name="search_apps">Search Apps</string>
     <string name="no_apps">No apps available</string>
     <string name="show_system_apps">Show system apps</string>
+    <string name="dns_server">DNS Server</string>
 </resources>
 
