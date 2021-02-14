@@ -124,7 +124,9 @@ public class CaptureService extends VpnService implements Runnable {
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
-        conn_reg = new ConnectionsRegister(1024); // TODO make configurable
+
+        // Estimated max memory usage: less than 1 MB
+        conn_reg = new ConnectionsRegister(2048);
 
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)
