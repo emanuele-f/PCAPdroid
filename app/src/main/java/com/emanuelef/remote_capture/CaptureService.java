@@ -261,6 +261,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.dump_mode : Prefs.DumpMode.NONE);
     }
 
+    public static String getDNSServer() {
+        return((INSTANCE != null) ? INSTANCE.getPublicDns() : "");
+    }
+
     /* Stop a running VPN service */
     public static void stopService() {
         if (INSTANCE != null)
