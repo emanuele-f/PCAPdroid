@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -181,12 +182,25 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void appsLoaded() {
         // Refresh the adapter to load the apps icons
-        mAdapter.notifyDataSetChanged();
+        // Don't use notifyDataSetChanged as connectionsAdded/connectionsRemoved may be pending
+        mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount());
     }
 
     @Override
     public void connectionsChanges() {
         mHandler.post(() -> {
+            // The dataset has changed
+            int item_count;
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if(reg != null) {
+                item_count = reg.getConnCount();
+            } else
+                item_count = mAdapter.getItemCount();
+
+            Log.d(TAG, "New dataset size: " + item_count);
+            mAdapter.setItemCount(item_count);
+
             mAdapter.notifyDataSetChanged();
 
             if(autoScroll)
@@ -197,6 +211,9 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void connectionsAdded(int start, int count) {
         mHandler.post(() -> {
+            Log.d(TAG, "Add " + count + " items at " + start);
+
+            mAdapter.setItemCount(mAdapter.getItemCount() + count);
             mAdapter.notifyItemRangeInserted(start, count);
 
             if(autoScroll)
@@ -206,14 +223,22 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void connectionsRemoved(int start, int count) {
+        Log.d(TAG, "Remove " + count + " items at " + start);
+
+        mAdapter.setItemCount(mAdapter.getItemCount() - count);
         mHandler.post(() -> mAdapter.notifyItemRangeRemoved(start, count));
     }
 
     @Override
     public void connectionsUpdated(int[] positions) {
         mHandler.post(() -> {
+            int item_count = mAdapter.getItemCount();
+
             for(int pos : positions) {
-                mAdapter.notifyItemChanged(pos);
+                if(pos < item_count) {
+                    Log.d(TAG, "Changed item " + pos + ", dataset size: " + mAdapter.getItemCount());
+                    mAdapter.notifyItemChanged(pos);
+                }
             }
         });
     }

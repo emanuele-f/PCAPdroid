@@ -78,6 +78,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
     private final MainActivity mActivity;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
+    private int mItemCount;
     private View.OnClickListener mListener;
 
     ConnectionsAdapter(MainActivity context) {
@@ -85,13 +86,16 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
         mLayoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
         mListener = null;
+        mItemCount = 0;
+    }
+
+    public void setItemCount(int count) {
+        mItemCount = count;
     }
 
     @Override
     public int getItemCount() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        return (reg != null) ? reg.getConnCount() : 0;
+        return mItemCount;
     }
 
     @NonNull
@@ -130,7 +134,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ViewHolder> {
     public ConnDescriptor getItem(int pos) {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
-        /* Prevent indexOutOfBounds exception in updateView() */
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))
             return null;
 
