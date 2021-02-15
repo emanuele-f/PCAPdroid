@@ -39,6 +39,7 @@ import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 
 import java.math.BigInteger;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
@@ -147,8 +148,12 @@ public class Utils {
                     if(props != null) {
                         List<InetAddress> dns_servers = props.getDnsServers();
 
-                        if (dns_servers.size() > 0)
-                            return dns_servers.get(0).getHostAddress();
+                        for(InetAddress addr : dns_servers) {
+                            // Get the first IPv4 DNS server
+                            if(addr instanceof Inet4Address) {
+                                return addr.getHostAddress();
+                            }
+                        }
                     }
                 }
             }

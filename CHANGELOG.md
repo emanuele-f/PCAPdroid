@@ -2,6 +2,15 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.2.13] - 2021-02-14
+- Fix DNS resolution not working when an IPv6 DNS server is configured
+
+## [1.2.13] - 2021-02-12
+- More sockets checks to prevent crashes
+- Add stats view with traffic and debug information
+- UI improvements: apps loading toast, start button position
+- ViewPager2 migration (credits: TacoTheDank <SkytkRSfan3895@gmail.com>)
+
 ## [1.2.12] - 2021-01-26
 - minSdkVersion is now 21 (Lollipop)
 - Improve DNS traffic capture when an app filter is set
