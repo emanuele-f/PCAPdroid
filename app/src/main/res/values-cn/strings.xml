@@ -79,5 +79,6 @@
     <string name="packets_sent">发送数据包</string>
     <string name="packets_rcvd">接收数据包</string>
     <string name="dns_queries">DNS 查询</string>
+    <string name="dns_server">DNS 服务器</string>
 </resources>
 
