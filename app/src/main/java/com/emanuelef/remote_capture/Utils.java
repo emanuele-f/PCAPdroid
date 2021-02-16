@@ -171,6 +171,9 @@ public class Utils {
         if(connInfo != null) {
             int ipAddress = connInfo.getIpAddress();
 
+            if(ipAddress == 0)
+                return(null);
+
             if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
                 ipAddress = Integer.reverseBytes(ipAddress);
             }
@@ -202,7 +205,7 @@ public class Utils {
         // try to get the WiFi IP address first
         String wifi_ip = getLocalWifiIpAddress(context);
 
-        if(wifi_ip != null) {
+        if((wifi_ip != null) && (!wifi_ip.equals("0.0.0.0"))) {
             Log.d("getLocalIPAddress", "Using WiFi IP: " + wifi_ip);
             return wifi_ip;
         }
@@ -219,9 +222,8 @@ public class Utils {
                                 && addr.isSiteLocalAddress() /* Exclude public IPs */
                                 && !addr.equals(vpn_ip)) {
                             String sAddr = addr.getHostAddress();
-                            boolean isIPv4 = sAddr.indexOf(':') < 0;
 
-                            if (isIPv4) {
+                            if ((addr instanceof Inet4Address) && !sAddr.equals("0.0.0.0")) {
                                 Log.d("getLocalIPAddress", "Using interface '" + intf.getName() + "' IP: " + sAddr);
                                 return sAddr;
                             }
