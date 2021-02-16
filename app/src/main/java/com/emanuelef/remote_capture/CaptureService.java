@@ -275,10 +275,12 @@ public class CaptureService extends VpnService implements Runnable {
     public void run() {
         if(mParcelFileDescriptor != null) {
             int fd = mParcelFileDescriptor.getFd();
+            int fd_setsize = getFdSetSize();
 
-            if(fd > 0)
+            if((fd > 0) && (fd < fd_setsize)) {
+                Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                 runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-            else
+            } else
                 Log.e(TAG, "Invalid VPN fd: " + fd);
         }
     }
@@ -394,4 +396,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void stopPacketLoop();
     public static native void askConnectionsDump();
     public static native void askStatsDump();
+    public static native int getFdSetSize();
 }

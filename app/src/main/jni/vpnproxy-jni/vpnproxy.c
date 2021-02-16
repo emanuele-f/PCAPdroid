@@ -1131,3 +1131,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jcla
         dump_capture_stats_now = true;
     }
 }
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jclass clazz) {
+    return FD_SETSIZE;
+}
