@@ -1,11 +1,6 @@
-**Does PCAPdroid support decrypting TLS 1.3?**
+**Can I capture the traffic of other devices in the network?**
 
-PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption and it supports TLS 1.3.
-<br/><br/>
-
-**Can I decrypt TLS without mitmproxy?**
-
-Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid. If you are a developer and want to implement this feature, your contribution is welcome!
+No. PCAPdroid only captures the traffic originated/destined to the android device where it is running.
 <br/><br/>
 
 **Why I see connections originating from the IP 10.215.173.1?**
@@ -16,6 +11,16 @@ Currently no. Doing TLS decryption right takes a lot of effort and I don't known
 **Why I see DNS requests to 10.215.173.2?**
 
 `10.215.173.2` is virtual IP address used by PCAPdroid to capture the DNS traffic. During startup, PCAPdroid detects the DNS server in use by the device and proxies all the DNS requests to such address. Only UDP DNS queries as currently supported. TCP DNS queries are dropped.
+<br/><br/>
+
+**Does PCAPdroid support decrypting TLS 1.3?**
+
+PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption and it supports TLS 1.3.
+<br/><br/>
+
+**Can I decrypt TLS without mitmproxy?**
+
+Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid. If you are a developer and want to implement this feature, your contribution is welcome!
 <br/><br/>
 
 **Why is PCAPdroid asking me to create a VPN? Will it steal my data?**
