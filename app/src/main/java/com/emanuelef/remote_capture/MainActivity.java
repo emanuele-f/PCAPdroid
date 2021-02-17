@@ -27,6 +27,11 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,12 +47,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -74,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TabLayout tabLayout;
     List<AppStateListener> mStateListeners;
     AppDescriptor mAndroidApp;
+    Intent mRestartWithIntent;
     private final static int POS_STATUS = 0;
     private final static int POS_CONNECTIONS = 1;
     private final static int TOTAL_COUNT = 2;
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 case POS_CONNECTIONS:
                     tab.setText(R.string.connections_view);
                     break;
-                }
+            }
         }).attach();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -165,7 +165,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         if (CaptureService.isServiceActive())
                             CaptureService.stopService();
 
-                        appStateReady();
+                        if(mRestartWithIntent != null) {
+                            autoStartService(mRestartWithIntent);
+                            mRestartWithIntent = null;
+                        } else
+                            appStateReady();
                     }
                 }
             }
@@ -180,8 +184,47 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             initAppState();
     }
 
+    private void checkAutoStart(Intent intent) {
+        if ((intent == null) || !intent.hasExtra("autostart"))
+            return;
+
+        if (CaptureService.isServiceActive()) {
+            mRestartWithIntent = intent;
+            toggleService();
+        } else
+            autoStartService(intent);
+    }
+
+    private void autoStartService(Intent intent) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        if (intent.hasExtra("collectorIp")) {
+            editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_UDP_EXPORTER);
+            editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, intent.getStringExtra("collectorIp"));
+            if (intent.hasExtra("collectorPort")) {
+                editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, intent.getStringExtra("collectorPort"));
+            }
+        } else if (intent.hasExtra("httpServerPort")) {
+            editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_HTTP_SERVER);
+            editor.putString(Prefs.PREF_HTTP_SERVER_PORT, intent.getStringExtra("httpServerPort"));
+        }
+
+        if (intent.hasExtra("proxyIp")) {
+            editor.putBoolean(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, true);
+            editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, intent.getStringExtra("proxyIp"));
+            if (intent.hasExtra("proxyPort")) {
+                editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, intent.getStringExtra("proxyPort"));
+            }
+        }
+        editor.apply();
+        if (intent.hasExtra("filterPackage")) {
+            mFilterApp = intent.getStringExtra("filterPackage");
+        }
+        toggleService();
+    }
+
     private void notifyAppState() {
-        for(AppStateListener listener: mStateListeners)
+        for (AppStateListener listener : mStateListeners)
             listener.appStateChanged(mState);
     }
 
@@ -276,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_start) {
+        if (id == R.id.action_start) {
             toggleService();
             return true;
         } else if (id == R.id.action_settings) {
@@ -314,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_VPN) {
-            if(resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 Intent intent = new Intent(MainActivity.this, CaptureService.class);
                 Bundle bundle = new Bundle();
 
@@ -367,10 +410,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppDescriptor findAppByUid(int uid) {
-        if((mInstalledApps == null) || (uid == -1))
+        if ((mInstalledApps == null) || (uid == -1))
             return (null);
 
-        if(uid == 1000) // android system
+        if (uid == 1000) // android system
             return mAndroidApp;
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
@@ -406,6 +449,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             appStateReady();
         else
             appStateRunning();
+
+        checkAutoStart(getIntent());
     }
 
     private void startService() {
@@ -423,11 +468,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             CaptureService.stopService();
             appStateStopping();
         } else {
-            if(Utils.hasVPNRunning(this)) {
+            if (Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
                         .setPositiveButton(R.string.yes, (dialog, whichButton) -> startService())
-                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {
+                        })
                         .show();
             } else
                 startService();
@@ -443,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppState getState() {
-        return(mState);
+        return (mState);
     }
 
     private void startLoadingApps() {
@@ -452,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         Log.d("startLoadingApps", "Loader? " + (loader != null));
 
-        if(loader==null)
+        if (loader == null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
         else
             loader = lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
@@ -467,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void openAppSelector() {
-        if(mInstalledApps == null) {
+        if (mInstalledApps == null) {
             /* The applications loader has not finished yet. */
             mOpenAppsWhenDone = true;
             Utils.showToast(this, R.string.apps_loading_please_wait);
@@ -477,10 +523,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Filter non-system apps
         List<AppDescriptor> user_apps = new ArrayList<>();
 
-        for(int i=0; i<mInstalledApps.size(); i++) {
+        for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
 
-            if(!app.isSystem())
+            if (!app.isSystem())
                 user_apps.add(app);
         }
 
@@ -493,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(app -> {
-            if(app.getUid() != -1) {
+            if (app.getUid() != -1) {
                 // an app has been selected
                 mFilterApp = app.getPackageName();
                 setSelectedAppIcon(app);
