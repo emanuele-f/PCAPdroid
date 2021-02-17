@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TabLayout tabLayout;
     List<AppStateListener> mStateListeners;
     AppDescriptor mAndroidApp;
+    boolean started;
     private final static int POS_STATUS = 0;
     private final static int POS_CONNECTIONS = 1;
     private final static int TOTAL_COUNT = 2;
@@ -166,6 +167,38 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+        @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (!hasFocus || started) {
+            return;
+        }
+        if (getIntent().hasExtra("autostart")) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = prefs.edit();
+            if (getIntent().hasExtra("collectorIp")) {
+                editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_UDP_EXPORTER);
+                editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, getIntent().getStringExtra("collectorIp"));
+                if (getIntent().hasExtra("collectorPort")) {
+                    editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, getIntent().getStringExtra("collectorPort"));
+                }
+            }
+            if (getIntent().hasExtra("proxyIp")) {
+                editor.putBoolean(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, true);
+                editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, getIntent().getStringExtra("proxyIp"));
+                if (getIntent().hasExtra("proxyPort")) {
+                    editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, getIntent().getStringExtra("proxyPort"));
+                }
+            }
+            editor.apply();
+            if (getIntent().hasExtra("filterPackage")) {
+                mFilterApp = getIntent().getStringExtra("filterPackage");
+            }
+            startService();
+        }
+        started = true;
     }
 
     private void notifyAppState() {
