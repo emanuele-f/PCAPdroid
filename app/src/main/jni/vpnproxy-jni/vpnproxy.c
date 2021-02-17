@@ -638,9 +638,11 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
         if(errno == EIO) {
             log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
             running = false;
-        } else
-            log_android(ANDROID_LOG_ERROR,
-                    "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+        } else {
+            log_android(ANDROID_LOG_FATAL,
+                        "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+            running = false;
+        }
     } else if(rv != pkt_size)
         log_android(ANDROID_LOG_WARN,
                     "partial tap write (%d / %d)", rv, pkt_size);
@@ -830,7 +832,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
         dumper_socket = socket(AF_INET, proxy->pcap_dump.tcp_socket ? SOCK_STREAM : SOCK_DGRAM, 0);
 
         if (!dumper_socket) {
-            log_android(ANDROID_LOG_ERROR,
+            log_android(ANDROID_LOG_FATAL,
                                 "could not open UDP pcap dump socket [%d]: %s", errno,
                                 strerror(errno));
             return(-1);
@@ -845,7 +847,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
             servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
 
             if(connect(dumper_socket, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-                log_android(ANDROID_LOG_ERROR,
+                log_android(ANDROID_LOG_FATAL,
                                     "connection to the PCAP receiver failed [%d]: %s", errno,
                                     strerror(errno));
                 return(-2);
@@ -866,6 +868,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     u_int64_t next_purge_ms;
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
+
+    init_log(ANDROID_LOG_DEBUG, env, vpn_class, vpn);
 
     zdtun_parse_pkt(mitmproxy_pkt_buffer, sizeof(mitmproxy_pkt_buffer)-1, &mitm_pkt);
 
@@ -972,7 +976,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         proxy.java_dump.buffer_idx = 0;
 
         if(!proxy.java_dump.buffer) {
-            log_android(ANDROID_LOG_ERROR, "malloc(java_dump.buffer) failed with code %d/%s",
+            log_android(ANDROID_LOG_FATAL, "malloc(java_dump.buffer) failed with code %d/%s",
                                 errno, strerror(errno));
             running = false;
         }
@@ -1099,6 +1103,8 @@ housekeeping:
     }
 
     notifyServiceStatus(&proxy, "stopped");
+
+    finish_log();
     return(0);
 }
 
