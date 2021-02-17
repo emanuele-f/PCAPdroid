@@ -63,6 +63,10 @@ public class CaptureService extends VpnService implements Runnable {
     private HTTPServer mHttpServer;
     private ConnectionsRegister conn_reg;
 
+    /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
+     * Max Estimated max memory usage: less than 2 MB. */
+    public static final int CONNECTIONS_LOG_SIZE = 4192;
+
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
 
@@ -129,8 +133,7 @@ public class CaptureService extends VpnService implements Runnable {
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
 
-        // Estimated max memory usage: less than 1 MB
-        conn_reg = new ConnectionsRegister(2048);
+        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
 
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)

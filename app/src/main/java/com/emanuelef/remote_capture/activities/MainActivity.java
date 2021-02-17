@@ -52,6 +52,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -93,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private static final int POS_STATUS = 0;
     private static final int POS_CONNECTIONS = 1;
-    private static final int TOTAL_COUNT = 2;
+    private static final int POS_APPS = 2;
+    private static final int TOTAL_COUNT = 3;
 
     private static final int REQUEST_CODE_VPN = 2;
     public static final int OPERATION_SEARCH_LOADER = 23;
@@ -116,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     return new StatusFragment();
                 case POS_CONNECTIONS:
                     return new ConnectionsFragment();
+                case POS_APPS:
+                    return new AppsFragment();
             }
         }
 
@@ -159,6 +163,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 case POS_CONNECTIONS:
                     tab.setText(R.string.connections_view);
                     break;
+                case POS_APPS:
+                    tab.setText(R.string.apps);
                 }
         }).attach();
 
@@ -405,6 +411,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         return (null);
+    }
+
+    public boolean appsLoaded() {
+        return(mInstalledApps != null);
     }
 
     private void initAppState() {

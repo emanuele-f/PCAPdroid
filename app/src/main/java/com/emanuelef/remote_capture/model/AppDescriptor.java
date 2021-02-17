@@ -21,7 +21,9 @@ package com.emanuelef.remote_capture.model;
 
 import android.graphics.drawable.Drawable;
 
-public class AppDescriptor implements Comparable<AppDescriptor> {
+import java.io.Serializable;
+
+public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final String name;
     private final Drawable icon;
     private final String package_name;

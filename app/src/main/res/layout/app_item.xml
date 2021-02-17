@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingHorizontal="4dp"
+    android:layout_height="42dp">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.5"
+        android:layout_marginStart="2dp"
+        android:text="Example app"
+        android:maxLines="2"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+        android:id="@+id/app_info"/>
+
+    <TextView
+        android:layout_width="8sp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.2"
+        android:text="1.05 MB"
+        android:gravity="center_vertical|end"
+        android:id="@+id/traffic"/>
+</LinearLayout>

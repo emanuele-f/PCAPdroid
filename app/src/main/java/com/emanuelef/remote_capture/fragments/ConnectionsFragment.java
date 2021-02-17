@@ -56,6 +56,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     private View mFabDown;
     private EmptyRecyclerView mRecyclerView;
     private boolean autoScroll;
+    private boolean listenerSet;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -67,11 +68,9 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mActivity.removeAppStateListener(this);
 
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg != null)
-            reg.setListener(null);
+        mActivity.removeAppStateListener(this);
+        unregisterListener();
 
         mActivity = null;
     }
@@ -80,6 +79,27 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.connections, container, false);
+    }
+
+    private void registerListener() {
+        if (!listenerSet) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if (reg != null) {
+                reg.addListener(this);
+                listenerSet = true;
+            }
+        }
+    }
+
+    private void unregisterListener() {
+        if(listenerSet) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if (reg != null)
+                reg.removeListener(this);
+
+            listenerSet = false;
+        }
     }
 
     @Override
@@ -93,6 +113,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
         mAdapter = new ConnectionsAdapter(mActivity);
         mRecyclerView.setAdapter(mAdapter);
+        listenerSet = false;
 
         /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
@@ -152,9 +173,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         });
 
         mHandler = new Handler();
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg != null)
-            reg.setListener(this);
+        registerListener();
 
         mActivity.addAppStateListener(this);
     }
@@ -181,10 +200,8 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void appStateChanged(AppState state) {
         if(state == AppState.running) {
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-            if(reg != null)
-                reg.setListener(this);
+            unregisterListener();
+            registerListener();
 
             autoScroll = true;
             showFabDown(false);
