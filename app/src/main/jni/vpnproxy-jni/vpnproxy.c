@@ -112,6 +112,25 @@ static bool send_header;
 
 /* ******************************************************* */
 
+static char* tuple2str(const zdtun_5tuple_t *tuple, char *buf, size_t bufsize) {
+    char srcip[64], dstip[64];
+    struct in_addr addr;
+
+    addr.s_addr = tuple->src_ip;
+    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
+    addr.s_addr = tuple->dst_ip;
+    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
+
+    snprintf(buf, bufsize, "[proto %d]: %s:%u -> %s:%u",
+             tuple->ipproto,
+             srcip, ntohs(tuple->src_port),
+             dstip, ntohs(tuple->dst_port));
+
+    return buf;
+}
+
+/* ******************************************************* */
+
 static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in_addr addr = {0};
 
@@ -412,9 +431,8 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
     if(uid >= 0) {
 #if 1
-        char appbuf[256];
-        char srcip[64], dstip[64];
-        struct in_addr addr;
+        char buf[256];
+        char appbuf[128];
 
         if(uid == 0)
             strncpy(appbuf, "ROOT", sizeof(appbuf));
@@ -423,16 +441,8 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
 
-        addr.s_addr = conn_info->src_ip;
-        strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
-        addr.s_addr = conn_info->dst_ip;
-        strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
-
-        log_android(ANDROID_LOG_INFO, "[proto=%d]: %s:%u -> %s:%u [%d/%s]",
-                            conn_info->ipproto,
-                            srcip, ntohs(conn_info->src_port),
-                            dstip, ntohs(conn_info->dst_port),
-                            uid, appbuf);
+        log_android(ANDROID_LOG_INFO, "%s [%d/%s]",
+                tuple2str(conn_info, buf, sizeof(buf)), uid, appbuf);
 #endif
     } else
         uid = -1;
@@ -635,7 +645,12 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
     int rv = write(proxy->tapfd, pkt_buf, pkt_size);
 
     if(rv < 0) {
-        if(errno == EIO) {
+        if(errno == ENOBUFS) {
+            char buf[256];
+
+            // Do not abort, the connection will be terminated
+            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
+        } else if(errno == EIO) {
             log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
             running = false;
         } else {
@@ -643,10 +658,11 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
                         "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
             running = false;
         }
-    } else if(rv != pkt_size)
-        log_android(ANDROID_LOG_WARN,
+    } else if(rv != pkt_size) {
+        log_android(ANDROID_LOG_FATAL,
                     "partial tap write (%d / %d)", rv, pkt_size);
-    else
+        rv = -1;
+    } else
         rv = 0;
 
     return rv;
@@ -959,8 +975,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     // Limit the segments size for two reasons:
     // 1. to be able to encapsulate the packets for the UDP export
-    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets).
-    zdtun_set_max_window_size(tun, 32768);
+    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets, e.g. speedtest).
+    zdtun_set_max_window_size(tun, 8192);
 
     log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tapfd=%d]", tapfd);
 
@@ -1038,7 +1054,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     check_tls_mitm(tun, &proxy, &pkt, conn);
 
                 if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
-                    log_android(ANDROID_LOG_ERROR, "zdtun_forward failed with code %d", rc);
+                    log_android(ANDROID_LOG_ERROR, "zdtun_forward (proto=%d) failed with code %d", pkt.tuple.ipproto, rc);
                     proxy.num_dropped_connections++;
 
                     zdtun_destroy_conn(tun, conn);
