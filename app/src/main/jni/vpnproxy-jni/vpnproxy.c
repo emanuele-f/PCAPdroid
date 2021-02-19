@@ -110,6 +110,25 @@ static bool send_header;
 
 /* ******************************************************* */
 
+static char* tuple2str(const zdtun_5tuple_t *tuple, char *buf, size_t bufsize) {
+    char srcip[64], dstip[64];
+    struct in_addr addr;
+
+    addr.s_addr = tuple->src_ip;
+    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
+    addr.s_addr = tuple->dst_ip;
+    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
+
+    snprintf(buf, bufsize, "[proto %d]: %s:%u -> %s:%u",
+             tuple->ipproto,
+             srcip, ntohs(tuple->src_port),
+             dstip, ntohs(tuple->dst_port));
+
+    return buf;
+}
+
+/* ******************************************************* */
+
 void free_ndpi(conn_data_t *data) {
     if(data->ndpi_flow) {
         ndpi_free_flow(data->ndpi_flow);
@@ -484,9 +503,8 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
     if(uid >= 0) {
 #if 1
-        char appbuf[256];
-        char srcip[64], dstip[64];
-        struct in_addr addr;
+        char buf[256];
+        char appbuf[128];
 
         if(uid == 0)
             strncpy(appbuf, "ROOT", sizeof(appbuf));
@@ -495,16 +513,8 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
 
-        addr.s_addr = conn_info->src_ip;
-        strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
-        addr.s_addr = conn_info->dst_ip;
-        strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
-
-        log_android(ANDROID_LOG_INFO, "[proto=%d]: %s:%u -> %s:%u [%d/%s]",
-                            conn_info->ipproto,
-                            srcip, ntohs(conn_info->src_port),
-                            dstip, ntohs(conn_info->dst_port),
-                            uid, appbuf);
+        log_android(ANDROID_LOG_INFO, "%s [%d/%s]",
+                tuple2str(conn_info, buf, sizeof(buf)), uid, appbuf);
 #endif
     } else
         uid = -1;
@@ -676,16 +686,24 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
     int rv = write(proxy->tapfd, pkt_buf, pkt_size);
 
     if(rv < 0) {
-        if(errno == EIO) {
+        if(errno == ENOBUFS) {
+            char buf[256];
+
+            // Do not abort, the connection will be terminated
+            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
+        } else if(errno == EIO) {
             log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
             running = false;
-        } else
-            log_android(ANDROID_LOG_ERROR,
-                    "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
-    } else if(rv != pkt_size)
-        log_android(ANDROID_LOG_WARN,
+        } else {
+            log_android(ANDROID_LOG_FATAL,
+                        "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+            running = false;
+        }
+    } else if(rv != pkt_size) {
+        log_android(ANDROID_LOG_FATAL,
                     "partial tap write (%d / %d)", rv, pkt_size);
-    else
+        rv = -1;
+    } else
         rv = 0;
 
     return rv;
@@ -859,7 +877,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
         dumper_socket = socket(AF_INET, proxy->pcap_dump.tcp_socket ? SOCK_STREAM : SOCK_DGRAM, 0);
 
         if (!dumper_socket) {
-            log_android(ANDROID_LOG_ERROR,
+            log_android(ANDROID_LOG_FATAL,
                                 "could not open UDP pcap dump socket [%d]: %s", errno,
                                 strerror(errno));
             return(-1);
@@ -874,7 +892,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
             servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
 
             if(connect(dumper_socket, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-                log_android(ANDROID_LOG_ERROR,
+                log_android(ANDROID_LOG_FATAL,
                                     "connection to the PCAP receiver failed [%d]: %s", errno,
                                     strerror(errno));
                 return(-2);
@@ -895,6 +913,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     u_int64_t next_purge_ms;
     time_t last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
+
+    init_log(ANDROID_LOG_DEBUG, env, vpn_class, vpn);
 
     zdtun_parse_pkt(mitmproxy_pkt_buffer, sizeof(mitmproxy_pkt_buffer)-1, &mitm_pkt);
 
@@ -984,8 +1004,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     // Limit the segments size for two reasons:
     // 1. to be able to encapsulate the packets for the UDP export
-    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets).
-    zdtun_set_max_window_size(tun, 32768);
+    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets, e.g. speedtest).
+    zdtun_set_max_window_size(tun, 8192);
 
     log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tapfd=%d]", tapfd);
 
@@ -1001,7 +1021,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         proxy.java_dump.buffer_idx = 0;
 
         if(!proxy.java_dump.buffer) {
-            log_android(ANDROID_LOG_ERROR, "malloc(java_dump.buffer) failed with code %d/%s",
+            log_android(ANDROID_LOG_FATAL, "malloc(java_dump.buffer) failed with code %d/%s",
                                 errno, strerror(errno));
             running = false;
         }
@@ -1063,7 +1083,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     check_tls_mitm(tun, &proxy, &pkt, conn);
 
                 if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
-                    log_android(ANDROID_LOG_ERROR, "zdtun_forward failed with code %d", rc);
+                    log_android(ANDROID_LOG_ERROR, "zdtun_forward (proto=%d) failed with code %d", pkt.tuple.ipproto, rc);
                     proxy.num_dropped_connections++;
 
                     zdtun_destroy_conn(tun, conn);
@@ -1120,6 +1140,8 @@ housekeeping:
     }
 
     notifyServiceStatus(&proxy, "stopped");
+
+    finish_log();
     return(0);
 }
 
@@ -1145,4 +1167,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jcla
         dump_vpn_stats_now = true;
         dump_capture_stats_now = true;
     }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jclass clazz) {
+    return FD_SETSIZE;
 }

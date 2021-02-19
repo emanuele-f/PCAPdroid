@@ -184,11 +184,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     if (status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
+                        // The service may still be active (on premature native termination)
+                        if (CaptureService.isServiceActive())
+                            CaptureService.stopService();
+
                         appStateReady();
                     }
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(mMenu != null)
+            initAppState();
     }
 
     private void notifyAppState() {

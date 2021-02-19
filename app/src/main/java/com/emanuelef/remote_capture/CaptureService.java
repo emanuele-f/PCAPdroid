@@ -28,6 +28,7 @@ import android.net.ConnectivityManager;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
@@ -46,6 +47,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
     private ParcelFileDescriptor mParcelFileDescriptor = null;
+    private Handler mHandler;
     private Thread mThread;
     private String vpn_ipv4;
     private String vpn_dns;
@@ -102,6 +104,8 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Context app_ctx = getApplicationContext();
+
+        mHandler = new Handler();
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
@@ -289,10 +293,12 @@ public class CaptureService extends VpnService implements Runnable {
     public void run() {
         if(mParcelFileDescriptor != null) {
             int fd = mParcelFileDescriptor.getFd();
+            int fd_setsize = getFdSetSize();
 
-            if(fd > 0)
+            if((fd > 0) && (fd < fd_setsize)) {
+                Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                 runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-            else
+            } else
                 Log.e(TAG, "Invalid VPN fd: " + fd);
         }
     }
@@ -401,7 +407,14 @@ public class CaptureService extends VpnService implements Runnable {
             mHttpServer.pushData(data);
     }
 
+    public void reportError(String msg) {
+        mHandler.post(() -> {
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        });
+    }
+
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     public static native void stopPacketLoop();
     public static native void askStatsDump();
+    public static native int getFdSetSize();
 }
