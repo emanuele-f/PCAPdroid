@@ -20,7 +20,7 @@
 package com.emanuelef.remote_capture.interfaces;
 
 public interface ConnectionsListener {
-    void connectionsChanges();
+    void connectionsChanges(int num_connetions);
     void connectionsAdded(int start, int count);
     void connectionsRemoved(int start, int count);
     void connectionsUpdated(int[] positions);

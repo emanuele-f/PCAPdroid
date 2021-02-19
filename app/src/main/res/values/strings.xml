@@ -84,5 +84,7 @@
     <string name="show_system_apps">Show system apps</string>
     <string name="dns_server">DNS Server</string>
     <string name="apps">Apps</string>
+    <string name="remove_app_filter">Remove the app filter</string>
+    <string name="set_app_filter">Set the app filter</string>
 </resources>
 

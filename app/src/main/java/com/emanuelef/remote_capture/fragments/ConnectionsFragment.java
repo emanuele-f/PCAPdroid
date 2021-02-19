@@ -42,13 +42,14 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 
-public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener {
+public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener, AppsListView.OnSelectedAppListener {
     private static final String TAG = "ConnectionsFragment";
     private MainActivity mActivity;
     private Handler mHandler;
@@ -70,6 +71,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         super.onDestroy();
 
         mActivity.removeAppStateListener(this);
+        mActivity.setTmpAppFilterListener(null);
         unregisterListener();
 
         mActivity = null;
@@ -104,6 +106,8 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mHandler = new Handler();
+        mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
         LinearLayoutManager layoutMan = new LinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(layoutMan);
@@ -119,6 +123,8 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
                 layoutMan.getOrientation());
         mRecyclerView.addItemDecoration(dividerItemDecoration);*/
 
+        onSelectedApp(mActivity.getTmpFilter());
+
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
             ConnectionDescriptor item = mAdapter.getItem(pos);
@@ -126,14 +132,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             if(item != null) {
                 Intent intent = new Intent(getContext(), ConnectionDetailsActivity.class);
                 AppDescriptor app = mActivity.findAppByUid(item.uid);
-                String app_name = null;//;1051
+                String app_name = null;
 
                 if(app != null)
                     app_name = app.getName();
-                else if(item.uid == 1000)
-                    app_name = "system";
-                else if(item.uid == 1051)
-                    app_name = "netd";
 
                 intent.putExtra(ConnectionDetailsActivity.CONN_EXTRA_KEY, item);
 
@@ -144,7 +146,6 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             }
         });
 
-        mFabDown = view.findViewById(R.id.fabDown);
         autoScroll = true;
         showFabDown(false);
 
@@ -154,28 +155,35 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             //public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
-                int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
-                int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
-                int last_pos = mAdapter.getItemCount() - 1;
-                boolean reached_bottom = (last_visible_pos >= last_pos);
-                boolean is_scrolling = (first_visibile_pos != 0) || (!reached_bottom);
-
-                if(is_scrolling) {
-                    if(reached_bottom) {
-                        autoScroll = true;
-                        showFabDown(false);
-                    } else {
-                        autoScroll = false;
-                        showFabDown(true);
-                    }
-                }
+                recheckScroll();
             }
         });
 
-        mHandler = new Handler();
         registerListener();
 
         mActivity.addAppStateListener(this);
+        mActivity.setTmpAppFilterListener(this);
+    }
+
+    private void recheckScroll() {
+        final LinearLayoutManager layoutMan = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        assert layoutMan != null;
+        int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
+        int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
+        int last_pos = mAdapter.getItemCount() - 1;
+        boolean reached_bottom = (last_visible_pos >= last_pos);
+        boolean is_scrolling = (first_visibile_pos != 0) || (!reached_bottom);
+
+        if(is_scrolling) {
+            if(reached_bottom) {
+                autoScroll = true;
+                showFabDown(false);
+            } else {
+                autoScroll = false;
+                showFabDown(true);
+            }
+        } else
+            showFabDown(false);
     }
 
     private void showFabDown(boolean visible) {
@@ -215,22 +223,40 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount());
     }
 
+    // This performs an unoptimized adapter refresh
+    private void refreshUidConnections() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        int item_count;
+        int uid = mAdapter.getUidFilter();
+
+        if(reg != null)
+            item_count = reg.getUidConnCount(uid);
+        else
+            item_count = mAdapter.getItemCount();
+
+        Log.d(TAG, "New dataset size (uid=" +uid + "): " + item_count);
+
+        mAdapter.setItemCount(item_count);
+        mAdapter.notifyDataSetChanged();
+        recheckScroll();
+    }
+
     @Override
-    public void connectionsChanges() {
+    public void connectionsChanges(int num_connetions) {
+        // Important: must use the provided num_connections rather than accessing the register
+        // in order to avoid desyncs
+
         mHandler.post(() -> {
-            // The dataset has changed
-            int item_count;
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if(mAdapter.getUidFilter() != -1) {
+                refreshUidConnections();
+                return;
+            }
 
-            if(reg != null) {
-                item_count = reg.getConnCount();
-            } else
-                item_count = mAdapter.getItemCount();
+            Log.d(TAG, "New dataset size: " + num_connetions);
 
-            Log.d(TAG, "New dataset size: " + item_count);
-            mAdapter.setItemCount(item_count);
-
+            mAdapter.setItemCount(num_connetions);
             mAdapter.notifyDataSetChanged();
+            recheckScroll();
 
             if(autoScroll)
                 scrollToBottom();
@@ -242,8 +268,11 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         mHandler.post(() -> {
             Log.d(TAG, "Add " + count + " items at " + start);
 
-            mAdapter.setItemCount(mAdapter.getItemCount() + count);
-            mAdapter.notifyItemRangeInserted(start, count);
+            if(mAdapter.getUidFilter() == -1) {
+                mAdapter.setItemCount(mAdapter.getItemCount() + count);
+                mAdapter.notifyItemRangeInserted(start, count);
+            } else
+                refreshUidConnections();
 
             if(autoScroll)
                 scrollToBottom();
@@ -252,15 +281,25 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void connectionsRemoved(int start, int count) {
-        Log.d(TAG, "Remove " + count + " items at " + start);
+        mHandler.post(() -> {
+            Log.d(TAG, "Remove " + count + " items at " + start);
 
-        mAdapter.setItemCount(mAdapter.getItemCount() - count);
-        mHandler.post(() -> mAdapter.notifyItemRangeRemoved(start, count));
+            if (mAdapter.getUidFilter() == -1) {
+                mAdapter.setItemCount(mAdapter.getItemCount() - count);
+                mAdapter.notifyItemRangeRemoved(start, count);
+            } else
+                refreshUidConnections();
+        });
     }
 
     @Override
     public void connectionsUpdated(int[] positions) {
         mHandler.post(() -> {
+            if (mAdapter.getUidFilter() != -1) {
+                refreshUidConnections();
+                return;
+            }
+
             int item_count = mAdapter.getItemCount();
 
             for(int pos : positions) {
@@ -270,5 +309,18 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
                 }
             }
         });
+    }
+
+    @Override
+    public void onSelectedApp(AppDescriptor app) {
+        int uid = (app != null) ? app.getUid() : -1;
+
+        if(mAdapter.getUidFilter() != uid) {
+            // rather than calling refreshAllTheConnections, its better to let the register to the
+            // job by properly scheduling the ConnectionsListener callbacks
+            unregisterListener();
+            mAdapter.setUidFilter(uid);
+            registerListener();
+        }
     }
 }

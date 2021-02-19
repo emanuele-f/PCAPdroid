@@ -20,6 +20,7 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
@@ -72,11 +73,19 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
         mRefreshApps = false;
 
         mAdapter.setClickListener(v -> {
+            if(!mActivity.canApplyTmpFilter())
+                return;
+
             int pos = mRecyclerView.getChildLayoutPosition(v);
             AppStats item = mAdapter.getItem(pos);
 
             if(item != null) {
-                // TODO filter by app
+                AppDescriptor app = mActivity.findAppByUid(item.getUid());
+
+                if(app != null) {
+                    mActivity.setSelectedApp(app);
+                    mActivity.setActivePage(MainActivity.POS_CONNECTIONS);
+                }
             }
         });
 
@@ -140,7 +149,7 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
     }
 
     @Override
-    public void connectionsChanges() {
+    public void connectionsChanges(int num_connections) {
         refreshAppsAsync();
     }
 

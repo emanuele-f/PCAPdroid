@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Drawable mUnknownIcon;
     private int mItemCount;
     private View.OnClickListener mListener;
+    int mUidFilter;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -95,6 +97,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
         mListener = null;
         mItemCount = 0;
+        mUidFilter = -1;
     }
 
     public void setItemCount(int count) {
@@ -129,12 +132,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public long getItemId(int pos) {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        if((pos < 0) || (pos >= getItemCount()) || (reg == null))
-            return -1;
-
-        ConnectionDescriptor conn = reg.getConn(pos);
+        ConnectionDescriptor conn = getItem(pos);
 
         return ((conn != null) ? conn.incr_id : -1);
     }
@@ -145,10 +143,21 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))
             return null;
 
-        return reg.getConn(pos);
+        if(mUidFilter == -1)
+            return reg.getConn(pos);
+        else
+            return reg.getUidConn(mUidFilter, pos);
     }
 
     public void setClickListener(View.OnClickListener listener) {
         mListener = listener;
+    }
+
+    public void setUidFilter(int uid) {
+        mUidFilter = uid;
+    }
+
+    public int getUidFilter() {
+        return mUidFilter;
     }
 }

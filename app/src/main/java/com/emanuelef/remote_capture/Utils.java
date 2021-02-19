@@ -48,6 +48,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -97,17 +98,19 @@ public class Utils {
         List<AppDescriptor> apps = new ArrayList<>();
         List<PackageInfo> packs = pm.getInstalledPackages(0);
         String app_package = context.getApplicationContext().getPackageName();
+        HashSet<Integer> uids = new HashSet<>();
 
         Log.d("APPS", "num apps (system+user): " + packs.size());
         long tstart = now();
 
+        // NOTE: a single uid can correspond to multiple apps, only take the first one
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
 
             String package_name = p.applicationInfo.packageName;
 
-            if(!package_name.equals(app_package)) {
+            if(!uids.contains(p.applicationInfo.uid) && !package_name.equals(app_package)) {
                 String appName = p.applicationInfo.loadLabel(pm).toString();
 
                 // NOTE: this call is expensive
@@ -115,16 +118,13 @@ public class Utils {
 
                 int uid = p.applicationInfo.uid;
                 apps.add(new AppDescriptor(appName, icon, package_name, uid, is_system));
+                uids.add(uid);
 
                 Log.d("APPS", appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
 
         Collections.sort(apps);
-
-        // Add the "No Filter" app
-        Drawable icon = ContextCompat.getDrawable(context, android.R.color.transparent);
-        apps.add(0, new AppDescriptor("", icon, context.getResources().getString(R.string.no_filter), -1, false));
 
         Log.d("APPS", packs.size() + " apps loaded in " + (now() - tstart) +" seconds");
         return apps;

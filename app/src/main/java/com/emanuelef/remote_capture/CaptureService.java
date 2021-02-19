@@ -373,11 +373,15 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {
-        if(new_conns.length > 0)
-            conn_reg.newConnections(new_conns);
+        // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
+        // thus preventing the ConnectionsAdapter from interleaving other operations
+        synchronized (conn_reg) {
+            if(new_conns.length > 0)
+                conn_reg.newConnections(new_conns);
 
-        if(conns_updates.length > 0)
-            conn_reg.connectionsUpdates(conns_updates);
+            if(conns_updates.length > 0)
+                conn_reg.connectionsUpdates(conns_updates);
+            }
     }
 
     public void sendStatsDump(VPNStats stats) {

@@ -28,8 +28,10 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ConnectionsRegister {
     private final ConnectionDescriptor[] items_ring;
@@ -170,14 +172,14 @@ public class ConnectionsRegister {
         mAppsStats.clear();
 
         for(ConnectionsListener listener: mListeners)
-            listener.connectionsChanges();
+            listener.connectionsChanges(num_items);
     }
 
     public synchronized void addListener(ConnectionsListener listener) {
         mListeners.add(listener);
 
         // Send the first update to sync it
-        listener.connectionsChanges();
+        listener.connectionsChanges(num_items);
     }
 
     public synchronized void removeListener(ConnectionsListener listener) {
@@ -200,6 +202,26 @@ public class ConnectionsRegister {
         return items_ring[pos];
     }
 
+    public synchronized ConnectionDescriptor getUidConn(int uid, int target_pos) {
+        // pos is relative to the connections matching the provided uid
+        int first = firstPos();
+        int virt_pos = 0;
+
+        for(int i = 0; i < num_items; i++) {
+            int pos = (first + i) % size;
+            ConnectionDescriptor item = items_ring[pos];
+
+            if((item != null) && (item.uid == uid)) {
+                if(virt_pos == target_pos)
+                    return item;
+
+                virt_pos++;
+            }
+        }
+
+        return null;
+    }
+
     public synchronized List<AppStats> getAppsStats() {
         ArrayList<AppStats> rv = new ArrayList<>(mAppsStats.size());
 
@@ -211,5 +233,23 @@ public class ConnectionsRegister {
         }
 
         return rv;
+    }
+
+    public synchronized Set<Integer> getSeenUids() {
+        HashSet<Integer> rv = new HashSet<>();
+
+        for (Map.Entry<Integer, AppStats> pair : mAppsStats.entrySet()) {
+            rv.add(pair.getKey());
+        }
+
+        return rv;
+    }
+
+    public synchronized int getUidConnCount(int uid) {
+        AppStats stats = mAppsStats.get(uid);
+
+        if(stats == null)
+            return 0;
+        return stats.num_connections;
     }
 }

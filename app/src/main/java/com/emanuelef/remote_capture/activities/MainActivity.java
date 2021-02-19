@@ -52,6 +52,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -69,6 +70,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -87,18 +89,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ViewPager2 viewPager2;
     TabLayout tabLayout;
     List<AppStateListener> mStateListeners;
+    AppsListView.OnSelectedAppListener mTmpAppFilterListener;
+    AppDescriptor mNoFilterApp;
+    AppDescriptor mRootApp;
     AppDescriptor mAndroidApp;
+    AppDescriptor mNetdApp;
 
     private static final String TAG = "Main";
     private static final String APPS_LOADER_TAG = "AppsLoader";
 
-    private static final int POS_STATUS = 0;
-    private static final int POS_CONNECTIONS = 1;
-    private static final int POS_APPS = 2;
+    public static final int POS_STATUS = 0;
+    public static final int POS_APPS = 1;
+    public static final int POS_CONNECTIONS = 2;
     private static final int TOTAL_COUNT = 3;
 
     private static final int REQUEST_CODE_VPN = 2;
     public static final int OPERATION_SEARCH_LOADER = 23;
+
+    private static final String virtual_root_package = "root";
+    private static final String virtual_android_package = "android";
+    private static final String virtual_netd_package = "netd";
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -133,14 +143,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Drawable icon = ContextCompat.getDrawable(this, android.R.color.transparent);
+        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false);
+
         mFilterApp = CaptureService.getAppFilter();
+
+        if((mFilterApp == null) && (savedInstanceState != null)) {
+            // Possibly get the temporary filter
+            mFilterApp = savedInstanceState.getString("FilterApp");
+        }
+
         mOpenAppsWhenDone = false;
         mInstalledApps = null;
+        mTmpAppFilterListener = null;
         mStateListeners = new ArrayList<>();
+
+        // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
+        // as they miss a valid package name
+        mRootApp = new AppDescriptor("Root",
+                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
+                virtual_root_package, 0, true);
 
         mAndroidApp = new AppDescriptor("Android",
                 ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
-                "", 1000, true);
+                virtual_android_package, 1000, true);
+
+        mNetdApp = new AppDescriptor("netd",
+                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
+                virtual_netd_package, 1051, true);
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -196,6 +226,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putString("FilterApp", mFilterApp);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -226,8 +268,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         notifyAppState();
 
         mMenuItemStartBtn.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
         mMenuSettings.setVisible(false);
+
+        if(mTmpAppFilterListener != null)
+            mTmpAppFilterListener.onSelectedApp(null);
     }
 
     public void appStateRunning() {
@@ -238,9 +282,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
         mMenuItemStartBtn.setTitle(R.string.stop_button);
         mMenuItemStartBtn.setEnabled(true);
-        mMenuItemAppSel.setEnabled(false);
         mMenuSettings.setVisible(false);
         mMenuItemStats.setVisible(true);
+        mMenuItemAppSel.setEnabled(canApplyTmpFilter());
     }
 
     public void appStateStopping() {
@@ -249,6 +293,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mMenuItemStartBtn.setEnabled(false);
         mMenuItemAppSel.setEnabled(false);
+    }
+
+    public boolean canApplyTmpFilter() {
+        // the tmp filter can only be applied when a filter is not set before starting the app
+        return (CaptureService.getAppFilter() == null);
     }
 
     @Override
@@ -307,7 +356,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             startActivity(intent);
             return true;
         } else if (id == R.id.action_show_app_filter) {
-            openAppSelector();
+            if(mFilterApp != null)
+                setSelectedApp(null);
+            else
+                openAppSelector();
+
             return true;
         } else if (id == R.id.action_open_github) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
@@ -377,8 +430,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             /* An filter is active, try to set the corresponding app image */
             AppDescriptor app = findAppByPackage(mFilterApp);
 
-            if (app != null)
-                setSelectedAppIcon(app);
+            setSelectedApp(app);
         }
 
         for(AppStateListener listener: mStateListeners)
@@ -396,8 +448,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if((mInstalledApps == null) || (uid == -1))
             return (null);
 
-        if(uid == 1000) // android system
+        if(uid == 0) // root
+            return mRootApp;
+        else if(uid == 1000) // android system
             return mAndroidApp;
+        else if(uid == 1051) // netd
+            return mNetdApp;
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
@@ -413,6 +469,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public AppDescriptor findAppByPackage(String package_name) {
         if (mInstalledApps == null)
             return (null);
+
+        if(package_name.equals(virtual_root_package))
+            return mRootApp;
+        if(package_name.equals(virtual_android_package))
+            return mAndroidApp;
+        else if(package_name.equals(virtual_netd_package))
+            return mNetdApp;
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
@@ -490,10 +553,41 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         loader.forceLoad();
     }
 
-    private void setSelectedAppIcon(AppDescriptor app) {
-        // clone the drawable to avoid a "zoom-in" effect when clicked
-        Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
-        mMenuItemAppSel.setIcon(drawable);
+    public void setTmpAppFilterListener(AppsListView.OnSelectedAppListener listener) {
+        mTmpAppFilterListener = listener;
+    }
+
+    // get the temporary filter, which can be set by the user *after* the capture has started
+    public AppDescriptor getTmpFilter() {
+        if((mFilterApp == null) || !canApplyTmpFilter())
+            return null;
+
+        return findAppByPackage(mFilterApp);
+    }
+
+    public void setSelectedApp(AppDescriptor app) {
+        if(app == null)
+            app = mNoFilterApp;
+
+        Log.d(TAG, "Selected app: " + app.getUid());
+
+        if(app.getUid() != -1) {
+            // an app has been selected
+            mFilterApp = app.getPackageName();
+
+            // clone the drawable to avoid a "zoom-in" effect when clicked
+            Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
+            mMenuItemAppSel.setIcon(drawable);
+            mMenuItemAppSel.setTitle(R.string.remove_app_filter);
+        } else {
+            // no filter
+            mFilterApp = null;
+            mMenuItemAppSel.setIcon(mFilterIcon);
+            mMenuItemAppSel.setTitle(R.string.set_app_filter);
+        }
+
+        if(mTmpAppFilterListener != null)
+            mTmpAppFilterListener.onSelectedApp(getTmpFilter());
     }
 
     private void openAppSelector() {
@@ -505,13 +599,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         mOpenAppsWhenDone = false;
+        List<AppDescriptor> appsData = mInstalledApps;
+
+        if(mState == AppState.running) {
+            // Only show the seen apps
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if(reg != null) {
+                Set<Integer> seen_uids = reg.getSeenUids();
+                appsData = new ArrayList<>();
+
+                for(AppDescriptor app : mInstalledApps) {
+                    int uid = app.getUid();
+
+                    if((uid == -1) || seen_uids.contains(uid))
+                        appsData.add(app);
+                }
+            }
+        }
 
         View dialogLayout = getLayoutInflater().inflate(R.layout.apps_selector, null);
         SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
         AppsListView apps = (AppsListView) dialogLayout.findViewById(R.id.apps_list);
         TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
 
-        apps.setApps(mInstalledApps);
+        apps.setApps(appsData);
         apps.setEmptyView(emptyText);
         searchView.setOnQueryTextListener(apps);
 
@@ -522,22 +634,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(app -> {
-            Log.d(TAG, "Selected app: " + app.getUid());
-
-            if(app.getUid() != -1) {
-                // an app has been selected
-                mFilterApp = app.getPackageName();
-                setSelectedAppIcon(app);
-            } else {
-                // no filter
-                mMenuItemAppSel.setIcon(mFilterIcon);
-                mFilterApp = null;
-            }
+            setSelectedApp(app);
 
             // dismiss the dialog
             alert.cancel();
         });
 
         alert.show();
+    }
+
+    public void setActivePage(int pos) {
+        if((pos >= 0) && (pos < TOTAL_COUNT))
+            viewPager2.setCurrentItem(pos);
     }
 }
