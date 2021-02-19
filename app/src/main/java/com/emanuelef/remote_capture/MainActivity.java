@@ -27,6 +27,11 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,12 +47,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 case POS_CONNECTIONS:
                     tab.setText(R.string.connections_view);
                     break;
-                }
+            }
         }).attach();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -167,42 +166,61 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+
+        checkAutoStart(getIntent());
     }
 
-        @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (!hasFocus || started) {
-            return;
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        checkAutoStart(intent);
+    }
+
+    private void checkAutoStart(Intent intent) {
+        if (CaptureService.isServiceActive()) {
+            addAppStateListener(new AppStateListener() {
+                @Override
+                public void appStateChanged(AppState state) {
+                    if (state == AppState.ready) {
+                        removeAppStateListener(this);
+                        autoStartService(intent);
+                    }
+                }
+            });
+            toggleService();
+        } else {
+            autoStartService(intent);
         }
-        if (getIntent().hasExtra("autostart")) {
+    }
+
+    private void autoStartService(Intent intent) {
+        if (intent.hasExtra("autostart")) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = prefs.edit();
-            if (getIntent().hasExtra("collectorIp")) {
+            if (intent.hasExtra("collectorIp")) {
                 editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_UDP_EXPORTER);
-                editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, getIntent().getStringExtra("collectorIp"));
-                if (getIntent().hasExtra("collectorPort")) {
-                    editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, getIntent().getStringExtra("collectorPort"));
+                editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, intent.getStringExtra("collectorIp"));
+                if (intent.hasExtra("collectorPort")) {
+                    editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, intent.getStringExtra("collectorPort"));
                 }
             }
-            if (getIntent().hasExtra("proxyIp")) {
+            if (intent.hasExtra("proxyIp")) {
                 editor.putBoolean(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, true);
-                editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, getIntent().getStringExtra("proxyIp"));
-                if (getIntent().hasExtra("proxyPort")) {
-                    editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, getIntent().getStringExtra("proxyPort"));
+                editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, intent.getStringExtra("proxyIp"));
+                if (intent.hasExtra("proxyPort")) {
+                    editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, intent.getStringExtra("proxyPort"));
                 }
             }
             editor.apply();
-            if (getIntent().hasExtra("filterPackage")) {
-                mFilterApp = getIntent().getStringExtra("filterPackage");
+            if (intent.hasExtra("filterPackage")) {
+                mFilterApp = intent.getStringExtra("filterPackage");
             }
-            startService();
+            toggleService();
         }
-        started = true;
     }
 
     private void notifyAppState() {
-        for(AppStateListener listener: mStateListeners)
+        for (AppStateListener listener : mStateListeners)
             listener.appStateChanged(mState);
     }
 
@@ -210,43 +228,69 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.ready;
         notifyAppState();
 
-        mMenuItemStartBtn.setIcon(
-                ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
-        mMenuItemStartBtn.setTitle(R.string.start_button);
-        mMenuItemStartBtn.setEnabled(true);
-        mMenuItemAppSel.setEnabled(true);
-        mMenuItemStats.setVisible(false);
-        mMenuSettings.setVisible(true);
+        if (mMenuItemStartBtn != null) {
+            mMenuItemStartBtn.setIcon(
+                    ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
+            mMenuItemStartBtn.setTitle(R.string.start_button);
+            mMenuItemStartBtn.setEnabled(true);
+        }
+        if (mMenuItemAppSel != null) {
+            mMenuItemAppSel.setEnabled(true);
+        }
+        if (mMenuItemStats != null) {
+            mMenuItemStats.setVisible(false);
+        }
+        if (mMenuSettings != null) {
+            mMenuSettings.setVisible(true);
+        }
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
         notifyAppState();
 
-        mMenuItemStartBtn.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
-        mMenuSettings.setVisible(false);
+        if (mMenuItemStartBtn != null) {
+            mMenuItemStartBtn.setEnabled(false);
+        }
+        if (mMenuItemAppSel != null) {
+            mMenuItemAppSel.setEnabled(false);
+        }
+        if (mMenuSettings != null) {
+            mMenuSettings.setVisible(false);
+        }
     }
 
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
 
-        mMenuItemStartBtn.setIcon(
-                ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
-        mMenuItemStartBtn.setTitle(R.string.stop_button);
-        mMenuItemStartBtn.setEnabled(true);
-        mMenuItemAppSel.setEnabled(false);
-        mMenuSettings.setVisible(false);
-        mMenuItemStats.setVisible(true);
+        if (mMenuItemStartBtn != null) {
+            mMenuItemStartBtn.setIcon(
+                    ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
+            mMenuItemStartBtn.setTitle(R.string.stop_button);
+            mMenuItemStartBtn.setEnabled(true);
+        }
+        if (mMenuItemAppSel != null) {
+            mMenuItemAppSel.setEnabled(false);
+        }
+        if (mMenuSettings != null) {
+            mMenuSettings.setVisible(false);
+        }
+        if (mMenuItemStats != null) {
+            mMenuItemStats.setVisible(true);
+        }
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
 
-        mMenuItemStartBtn.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
+        if (mMenuItemStartBtn != null) {
+            mMenuItemStartBtn.setEnabled(false);
+        }
+        if (mMenuItemAppSel != null) {
+            mMenuItemAppSel.setEnabled(false);
+        }
     }
 
     @Override
@@ -297,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_start) {
+        if (id == R.id.action_start) {
             toggleService();
             return true;
         } else if (id == R.id.action_settings) {
@@ -335,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_VPN) {
-            if(resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 Intent intent = new Intent(MainActivity.this, CaptureService.class);
                 Bundle bundle = new Bundle();
 
@@ -388,10 +432,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppDescriptor findAppByUid(int uid) {
-        if((mInstalledApps == null) || (uid == -1))
+        if ((mInstalledApps == null) || (uid == -1))
             return (null);
 
-        if(uid == 1000) // android system
+        if (uid == 1000) // android system
             return mAndroidApp;
 
         for (int i = 0; i < mInstalledApps.size(); i++) {
@@ -444,11 +488,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             CaptureService.stopService();
             appStateStopping();
         } else {
-            if(Utils.hasVPNRunning(this)) {
+            if (Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
                         .setPositiveButton(R.string.yes, (dialog, whichButton) -> startService())
-                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {
+                        })
                         .show();
             } else
                 startService();
@@ -464,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     AppState getState() {
-        return(mState);
+        return (mState);
     }
 
     private void startLoadingApps() {
@@ -473,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         Log.d("startLoadingApps", "Loader? " + (loader != null));
 
-        if(loader==null)
+        if (loader == null)
             loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
         else
             loader = lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
@@ -484,11 +529,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void setSelectedAppIcon(AppDescriptor app) {
         // clone the drawable to avoid a "zoom-in" effect when clicked
         Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
-        mMenuItemAppSel.setIcon(drawable);
+        if (mMenuItemAppSel != null) {
+            mMenuItemAppSel.setIcon(drawable);
+        }
     }
 
     private void openAppSelector() {
-        if(mInstalledApps == null) {
+        if (mInstalledApps == null) {
             /* The applications loader has not finished yet. */
             mOpenAppsWhenDone = true;
             Utils.showToast(this, R.string.apps_loading_please_wait);
@@ -498,10 +545,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Filter non-system apps
         List<AppDescriptor> user_apps = new ArrayList<>();
 
-        for(int i=0; i<mInstalledApps.size(); i++) {
+        for (int i = 0; i < mInstalledApps.size(); i++) {
             AppDescriptor app = mInstalledApps.get(i);
 
-            if(!app.isSystem())
+            if (!app.isSystem())
                 user_apps.add(app);
         }
 
@@ -514,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final AlertDialog alert = builder.create();
 
         apps.setSelectedAppListener(app -> {
-            if(app.getUid() != -1) {
+            if (app.getUid() != -1) {
                 // an app has been selected
                 mFilterApp = app.getPackageName();
                 setSelectedAppIcon(app);
