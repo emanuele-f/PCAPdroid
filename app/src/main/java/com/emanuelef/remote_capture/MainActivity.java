@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TabLayout tabLayout;
     List<AppStateListener> mStateListeners;
     AppDescriptor mAndroidApp;
-    boolean started;
+    Intent mRestartWithIntent;
     private final static int POS_STATUS = 0;
     private final static int POS_CONNECTIONS = 1;
     private final static int TOTAL_COUNT = 2;
@@ -161,62 +161,54 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     if (status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
-                        appStateReady();
+                        if(mRestartWithIntent != null) {
+                            autoStartService(mRestartWithIntent);
+                            mRestartWithIntent = null;
+                        } else
+                            appStateReady();
                     }
                 }
             }
         }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-
-        checkAutoStart(getIntent());
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        checkAutoStart(intent);
     }
 
     private void checkAutoStart(Intent intent) {
+        if ((intent == null) || !intent.hasExtra("autostart"))
+            return;
+
         if (CaptureService.isServiceActive()) {
-            addAppStateListener(new AppStateListener() {
-                @Override
-                public void appStateChanged(AppState state) {
-                    if (state == AppState.ready) {
-                        removeAppStateListener(this);
-                        autoStartService(intent);
-                    }
-                }
-            });
+            mRestartWithIntent = intent;
             toggleService();
-        } else {
+        } else
             autoStartService(intent);
-        }
     }
 
     private void autoStartService(Intent intent) {
-        if (intent.hasExtra("autostart")) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = prefs.edit();
-            if (intent.hasExtra("collectorIp")) {
-                editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_UDP_EXPORTER);
-                editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, intent.getStringExtra("collectorIp"));
-                if (intent.hasExtra("collectorPort")) {
-                    editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, intent.getStringExtra("collectorPort"));
-                }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        if (intent.hasExtra("collectorIp")) {
+            editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_UDP_EXPORTER);
+            editor.putString(Prefs.PREF_COLLECTOR_IP_KEY, intent.getStringExtra("collectorIp"));
+            if (intent.hasExtra("collectorPort")) {
+                editor.putString(Prefs.PREF_COLLECTOR_PORT_KEY, intent.getStringExtra("collectorPort"));
             }
-            if (intent.hasExtra("proxyIp")) {
-                editor.putBoolean(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, true);
-                editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, intent.getStringExtra("proxyIp"));
-                if (intent.hasExtra("proxyPort")) {
-                    editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, intent.getStringExtra("proxyPort"));
-                }
-            }
-            editor.apply();
-            if (intent.hasExtra("filterPackage")) {
-                mFilterApp = intent.getStringExtra("filterPackage");
-            }
-            toggleService();
+        } else if (intent.hasExtra("httpServerPort")) {
+            editor.putString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DUMP_HTTP_SERVER);
+            editor.putString(Prefs.PREF_HTTP_SERVER_PORT, intent.getStringExtra("httpServerPort"));
         }
+
+        if (intent.hasExtra("proxyIp")) {
+            editor.putBoolean(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, true);
+            editor.putString(Prefs.PREF_TLS_PROXY_IP_KEY, intent.getStringExtra("proxyIp"));
+            if (intent.hasExtra("proxyPort")) {
+                editor.putString(Prefs.PREF_TLS_PROXY_PORT_KEY, intent.getStringExtra("proxyPort"));
+            }
+        }
+        editor.apply();
+        if (intent.hasExtra("filterPackage")) {
+            mFilterApp = intent.getStringExtra("filterPackage");
+        }
+        toggleService();
     }
 
     private void notifyAppState() {
@@ -228,69 +220,43 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mState = AppState.ready;
         notifyAppState();
 
-        if (mMenuItemStartBtn != null) {
-            mMenuItemStartBtn.setIcon(
-                    ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
-            mMenuItemStartBtn.setTitle(R.string.start_button);
-            mMenuItemStartBtn.setEnabled(true);
-        }
-        if (mMenuItemAppSel != null) {
-            mMenuItemAppSel.setEnabled(true);
-        }
-        if (mMenuItemStats != null) {
-            mMenuItemStats.setVisible(false);
-        }
-        if (mMenuSettings != null) {
-            mMenuSettings.setVisible(true);
-        }
+        mMenuItemStartBtn.setIcon(
+                ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
+        mMenuItemStartBtn.setTitle(R.string.start_button);
+        mMenuItemStartBtn.setEnabled(true);
+        mMenuItemAppSel.setEnabled(true);
+        mMenuItemStats.setVisible(false);
+        mMenuSettings.setVisible(true);
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
         notifyAppState();
 
-        if (mMenuItemStartBtn != null) {
-            mMenuItemStartBtn.setEnabled(false);
-        }
-        if (mMenuItemAppSel != null) {
-            mMenuItemAppSel.setEnabled(false);
-        }
-        if (mMenuSettings != null) {
-            mMenuSettings.setVisible(false);
-        }
+        mMenuItemStartBtn.setEnabled(false);
+        mMenuItemAppSel.setEnabled(false);
+        mMenuSettings.setVisible(false);
     }
 
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
 
-        if (mMenuItemStartBtn != null) {
-            mMenuItemStartBtn.setIcon(
-                    ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
-            mMenuItemStartBtn.setTitle(R.string.stop_button);
-            mMenuItemStartBtn.setEnabled(true);
-        }
-        if (mMenuItemAppSel != null) {
-            mMenuItemAppSel.setEnabled(false);
-        }
-        if (mMenuSettings != null) {
-            mMenuSettings.setVisible(false);
-        }
-        if (mMenuItemStats != null) {
-            mMenuItemStats.setVisible(true);
-        }
+        mMenuItemStartBtn.setIcon(
+                ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
+        mMenuItemStartBtn.setTitle(R.string.stop_button);
+        mMenuItemStartBtn.setEnabled(true);
+        mMenuItemAppSel.setEnabled(false);
+        mMenuSettings.setVisible(false);
+        mMenuItemStats.setVisible(true);
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
 
-        if (mMenuItemStartBtn != null) {
-            mMenuItemStartBtn.setEnabled(false);
-        }
-        if (mMenuItemAppSel != null) {
-            mMenuItemAppSel.setEnabled(false);
-        }
+        mMenuItemStartBtn.setEnabled(false);
+        mMenuItemAppSel.setEnabled(false);
     }
 
     @Override
@@ -471,6 +437,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             appStateReady();
         else
             appStateRunning();
+
+        checkAutoStart(getIntent());
     }
 
     private void startService() {
