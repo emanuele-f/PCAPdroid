@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
                 if (status != null) {
-                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED) && (mState == AppState.starting)) {
+                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                         // The service may still be active (on premature native termination)
@@ -502,19 +502,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void startService() {
+        appStateStarting();
+
         Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
+
         if (vpnPrepareIntent != null)
             startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
         else
             onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
-
-        appStateStarting();
     }
 
     public void toggleService() {
         if (CaptureService.isServiceActive()) {
-            CaptureService.stopService();
             appStateStopping();
+            CaptureService.stopService();
         } else {
             if(Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
