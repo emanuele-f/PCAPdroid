@@ -2,11 +2,15 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
-## [1.2.14] - 2021-02-20
+## [1.2.16] - 2021-02-23
+- Fix non-selectable text in connections details
+- Fix start button not working on first app run
+
+## [1.2.15] - 2021-02-20
 - Improve connections stability
 - Report fatal native errors to the user
 
-## [1.2.13] - 2021-02-14
+## [1.2.14] - 2021-02-14
 - Fix DNS resolution not working when an IPv6 DNS server is configured
 
 ## [1.2.13] - 2021-02-12
