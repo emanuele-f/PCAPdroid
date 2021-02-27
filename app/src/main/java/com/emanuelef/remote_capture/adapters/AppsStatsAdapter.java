@@ -33,7 +33,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 
@@ -45,7 +44,7 @@ import java.util.Objects;
 
 public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.ViewHolder> {
     private static final String TAG = "ConnectionsAdapter";
-    private final MainActivity mActivity;
+    private final Context mContext;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private View.OnClickListener mListener;
@@ -65,7 +64,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             traffic = itemView.findViewById(R.id.traffic);
         }
 
-        public void bindAppStats(MainActivity activity, AppStats stats, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
+        public void bindAppStats(Context context, AppStats stats, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
             Drawable appIcon;
 
             // NOTE: can be null
@@ -77,7 +76,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             String info_txt = (app != null) ? app.getName() : Integer.toString(stats.getUid());
 
             if(stats.num_connections > 1)
-                info_txt += " (" + Utils.formatNumber(activity, stats.num_connections) + ")";
+                info_txt += " (" + Utils.formatNumber(context, stats.num_connections) + ")";
 
             info.setText(info_txt);
 
@@ -85,10 +84,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         }
     }
 
-    public AppsStatsAdapter(MainActivity context) {
-        mActivity = context;
-        mLayoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
+    public AppsStatsAdapter(Context context) {
+        mContext = context;
+        mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
         mListener = null;
         mStats = new ArrayList<>();
     }
@@ -116,7 +115,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         if(stats == null)
             return;
 
-        holder.bindAppStats(mActivity, stats, mApps, mUnknownIcon);
+        holder.bindAppStats(mContext, stats, mApps, mUnknownIcon);
     }
 
     @Override

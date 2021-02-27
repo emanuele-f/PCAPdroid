@@ -51,10 +51,10 @@ import android.widget.TextView;
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
+import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
-import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
     AppState mState;
     ViewPager2 viewPager2;
     TabLayout tabLayout;
-    List<AppStateListener> mStateListeners;
+    AppStateListener mListener;
     AppsListView.OnSelectedAppListener mTmpAppFilterListener;
     AppDescriptor mNoFilterApp;
 
@@ -145,9 +145,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         }
 
         mOpenAppsWhenDone = false;
-        mInstalledApps = null;
-        mTmpAppFilterListener = null;
-        mStateListeners = new ArrayList<>();
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -256,9 +253,13 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
             openAppSelector();
     }
 
+    public void setAppStateListener(AppStateListener listener) {
+        mListener = listener;
+    }
+
     private void notifyAppState() {
-        for(AppStateListener listener: mStateListeners)
-            listener.appStateChanged(mState);
+        if(mListener != null)
+            mListener.appStateChanged(mState);
     }
 
     public void appStateReady() {
@@ -452,14 +453,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
             } else
                 startService();
         }
-    }
-
-    public void addAppStateListener(AppStateListener listener) {
-        mStateListeners.add(listener);
-    }
-
-    public void removeAppStateListener(AppStateListener listener) {
-        mStateListeners.remove(listener);
     }
 
     public AppState getState() {

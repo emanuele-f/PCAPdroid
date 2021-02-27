@@ -1,6 +1,9 @@
 package com.emanuelef.remote_capture.fragments;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,50 +14,38 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
-import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 import java.util.Map;
 
-public class AppsFragment extends Fragment implements AppStateListener, ConnectionsListener, AppsLoadListener {
+public class AppsFragment extends Fragment implements ConnectionsListener, AppsLoadListener {
     private EmptyRecyclerView mRecyclerView;
     private AppsStatsAdapter mAdapter;
     private static final String TAG = "AppsFragment";
-    private MainActivity mActivity;
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
     private Map<Integer, AppDescriptor> mApps;
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        mActivity = (MainActivity) context;
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        mActivity.removeAppStateListener(this);
-        unregisterListener();
-
-        mActivity = null;
+        unregisterConnsListener();
     }
 
     @Override
@@ -66,22 +57,19 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = view.findViewById(R.id.apps_stats_view);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(mActivity);
+        LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
         TextView emptyText = view.findViewById(R.id.no_apps);
         mRecyclerView.setEmptyView(emptyText);
 
-        mAdapter = new AppsStatsAdapter(mActivity);
+        mAdapter = new AppsStatsAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
 
         mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;
 
         mAdapter.setClickListener(v -> {
-            if(!mActivity.canApplyTmpFilter())
-                return;
-
             int pos = mRecyclerView.getChildLayoutPosition(v);
             AppStats item = mAdapter.getItem(pos);
 
@@ -89,21 +77,37 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
                 AppDescriptor app = mApps.get(item.getUid());
 
                 if(app != null) {
-                    mActivity.setSelectedApp(app);
-                    mActivity.setActivePage(MainActivity.POS_CONNECTIONS);
+                    // TODO
+                    //mActivity.setSelectedApp(app);
+                    //mActivity.setActivePage(MainActivity.POS_CONNECTIONS);
                 }
             }
         });
 
-        registerListener();
-        mActivity.addAppStateListener(this);
+        registerConnsListener();
 
-        (new AppsLoader(mActivity))
+        (new AppsLoader((AppCompatActivity) getActivity()))
                 .setAppsLoadListener(this)
                 .loadAllApps();
+
+        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
+
+        /* Register for service status */
+        bcast_man.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
+
+                if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
+                    // register the new connection register
+                    unregisterConnsListener();
+                    registerConnsListener();
+                }
+            }
+        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
-    private void registerListener() {
+    private void registerConnsListener() {
         if (!listenerSet) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
 
@@ -114,21 +118,13 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
         }
     }
 
-    private void unregisterListener() {
+    private void unregisterConnsListener() {
         if(listenerSet) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if (reg != null)
                 reg.removeListener(this);
 
             listenerSet = false;
-        }
-    }
-
-    @Override
-    public void appStateChanged(AppState state) {
-        if(state == AppState.running) {
-            unregisterListener();
-            registerListener();
         }
     }
 

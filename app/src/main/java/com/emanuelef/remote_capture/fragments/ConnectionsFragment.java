@@ -19,8 +19,10 @@
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,31 +34,28 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.ConnectionsRegister;
-import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 
 import java.util.Map;
 
-public class ConnectionsFragment extends Fragment implements AppStateListener, ConnectionsListener, AppsListView.OnSelectedAppListener, AppsLoadListener {
+public class ConnectionsFragment extends Fragment implements ConnectionsListener, AppsLoadListener {
     private static final String TAG = "ConnectionsFragment";
-    private MainActivity mActivity;
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
     private View mFabDown;
@@ -66,21 +65,10 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     private Map<Integer, AppDescriptor> mApps;
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        mActivity = (MainActivity) context;
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        mActivity.removeAppStateListener(this);
-        mActivity.setTmpAppFilterListener(null);
-        unregisterListener();
-
-        mActivity = null;
+        unregisterConnsListener();
     }
 
     @Override
@@ -89,7 +77,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         return inflater.inflate(R.layout.connections, container, false);
     }
 
-    private void registerListener() {
+    private void registerConnsListener() {
         if (!listenerSet) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
 
@@ -100,7 +88,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         }
     }
 
-    private void unregisterListener() {
+    private void unregisterConnsListener() {
         if(listenerSet) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if (reg != null)
@@ -115,21 +103,19 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         mHandler = new Handler(Looper.getMainLooper());
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(mActivity);
+        LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
         TextView emptyText = view.findViewById(R.id.no_connections);
         mRecyclerView.setEmptyView(emptyText);
 
-        mAdapter = new ConnectionsAdapter(mActivity);
+        mAdapter = new ConnectionsAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
 
         /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
         mRecyclerView.addItemDecoration(dividerItemDecoration);*/
-
-        onSelectedApp(mActivity.getTmpFilter());
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
@@ -165,14 +151,30 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
             }
         });
 
-        registerListener();
+        registerConnsListener();
 
-        mActivity.addAppStateListener(this);
-        mActivity.setTmpAppFilterListener(this);
-
-        (new AppsLoader(mActivity))
+        (new AppsLoader((AppCompatActivity) getActivity()))
                 .setAppsLoadListener(this)
                 .loadAllApps();
+
+        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
+
+        /* Register for service status */
+        bcast_man.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
+
+                if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
+                    // register the new connection register
+                    unregisterConnsListener();
+                    registerConnsListener();
+
+                    autoScroll = true;
+                    showFabDown(false);
+                }
+            }
+        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
     private void recheckScroll() {
@@ -213,17 +215,6 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
     @Override
     public void onResume() {
         super.onResume();
-    }
-
-    @Override
-    public void appStateChanged(AppState state) {
-        if(state == AppState.running) {
-            unregisterListener();
-            registerListener();
-
-            autoScroll = true;
-            showFabDown(false);
-        }
     }
 
     // This performs an unoptimized adapter refresh
@@ -314,18 +305,19 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
         });
     }
 
-    @Override
+    // TODO
+    /*
     public void onSelectedApp(AppDescriptor app) {
         int uid = (app != null) ? app.getUid() : -1;
 
         if(mAdapter.getUidFilter() != uid) {
             // rather than calling refreshAllTheConnections, its better to let the register to the
             // job by properly scheduling the ConnectionsListener callbacks
-            unregisterListener();
+            unregisterConnsListener();
             mAdapter.setUidFilter(uid);
-            registerListener();
+            registerConnsListener();
         }
-    }
+    }*/
 
     @Override
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {

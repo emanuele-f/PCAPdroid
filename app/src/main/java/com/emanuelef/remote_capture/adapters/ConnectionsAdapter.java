@@ -37,19 +37,18 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.MainActivity;
 
 import java.util.Map;
 import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder> {
     private static final String TAG = "ConnectionsAdapter";
-    private final MainActivity mActivity;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private int mItemCount;
     private View.OnClickListener mListener;
     private Map<Integer, AppDescriptor> mApps;
+    private final Context mContext;
     int mUidFilter;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -69,7 +68,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             statusInd = itemView.findViewById(R.id.status_ind);
         }
 
-        public void bindConn(MainActivity activity, ConnectionDescriptor conn, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
+        public void bindConn(Context context, ConnectionDescriptor conn, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
             AppDescriptor app = (apps != null) ? apps.get(conn.uid) : null;
             Drawable appIcon;
 
@@ -79,7 +78,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             if(conn.info.length() > 0)
                 remote.setText(conn.info);
             else
-                remote.setText(String.format(activity.getResources().getString(R.string.ip_and_port),
+                remote.setText(String.format(context.getResources().getString(R.string.ip_and_port),
                         conn.dst_ip, conn.dst_port));
 
             l7proto.setText(conn.l7proto);
@@ -92,10 +91,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
     }
 
-    public ConnectionsAdapter(MainActivity context) {
-        mActivity = context;
-        mLayoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mUnknownIcon = ContextCompat.getDrawable(mActivity, android.R.drawable.ic_menu_help);
+    public ConnectionsAdapter(Context context) {
+        mContext = context;
+        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mUnknownIcon = ContextCompat.getDrawable(context, android.R.drawable.ic_menu_help);
         mListener = null;
         mItemCount = 0;
         mUidFilter = -1;
@@ -128,7 +127,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         if(conn == null)
             return;
 
-        holder.bindConn(mActivity, conn, mApps, mUnknownIcon);
+        holder.bindConn(mContext, conn, mApps, mUnknownIcon);
     }
 
     @Override
