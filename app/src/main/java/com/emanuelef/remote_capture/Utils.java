@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -29,7 +30,15 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
+
+import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.math.BigInteger;
 import java.net.Inet4Address;
@@ -233,5 +242,31 @@ public class Utils {
     public static void showToast(Context context, int id) {
         String msg = context.getResources().getString(id);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void showAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
+        View dialogLayout = activity.getLayoutInflater().inflate(R.layout.apps_selector, null);
+        SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
+        AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
+        TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
+
+        apps.setApps(appsData);
+        apps.setEmptyView(emptyText);
+        searchView.setOnQueryTextListener(apps);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(R.string.app_filter);
+        builder.setView(dialogLayout);
+
+        final AlertDialog alert = builder.create();
+
+        apps.setSelectedAppListener(app -> {
+            listener.onSelectedApp(app);
+
+            // dismiss the dialog
+            alert.cancel();
+        });
+
+        alert.show();
     }
 }

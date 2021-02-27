@@ -23,11 +23,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -35,12 +39,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsLoader;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
@@ -52,7 +58,11 @@ import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, AppsLoadListener {
     private static final String TAG = "ConnectionsFragment";
@@ -62,7 +72,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private EmptyRecyclerView mRecyclerView;
     private boolean autoScroll;
     private boolean listenerSet;
+    private MenuItem mMenuItemAppSel;
     private Map<Integer, AppDescriptor> mApps;
+    private Drawable mFilterIcon;
+    private AppDescriptor mNoFilterApp;
+    private boolean mOpenAppsWhenDone;
 
     @Override
     public void onDestroy() {
@@ -74,6 +88,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.connections, container, false);
     }
 
@@ -112,6 +127,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mAdapter = new ConnectionsAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
+
+        Drawable icon = ContextCompat.getDrawable(getContext(), android.R.color.transparent);
+        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
 
         /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
@@ -157,9 +175,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setAppsLoadListener(this)
                 .loadAllApps();
 
+        // Register for uid selectio via AppsFragment
+        getParentFragmentManager().setFragmentResultListener("appFilter", this, (requestKey, bundle) -> {
+            int uid = bundle.getInt("uid", -2);
+
+            Log.d(TAG, "appFilter: " + uid);
+
+            if(uid != -2)
+                setUidFilter(uid);
+        });
+
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
 
-        /* Register for service status */
+        // Register for service status
         bcast_man.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -305,11 +333,65 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         });
     }
 
-    // TODO
-    /*
-    public void onSelectedApp(AppDescriptor app) {
-        int uid = (app != null) ? app.getUid() : -1;
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.monitoring_menu, menu);
 
+        mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
+        mFilterIcon = mMenuItemAppSel.getIcon();
+
+        refreshFilterIcon();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_show_app_filter) {
+            if(mAdapter.getUidFilter() != -1)
+                setUidFilter(-1);
+            else
+                openAppSelector();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void openAppSelector() {
+        if(mApps == null) {
+            /* The applications loader has not finished yet. */
+            mOpenAppsWhenDone = true;
+            Utils.showToast(getContext(), R.string.apps_loading_please_wait);
+            return;
+        }
+
+        mOpenAppsWhenDone = false;
+
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg == null)
+            return;
+
+        // Only show the seen apps
+        Set<Integer> seen_uids = reg.getSeenUids();
+        ArrayList<AppDescriptor> appsData = new ArrayList<>();
+
+        for(Integer uid: seen_uids) {
+            AppDescriptor app = mApps.get(uid);
+
+            if(app != null)
+                appsData.add(app);
+        }
+
+        Collections.sort(appsData);
+
+        Utils.showAppSelectionDialog(getActivity(), appsData, app -> {
+            setUidFilter(app.getUid());
+        });
+    }
+
+    private void setUidFilter(int uid) {
         if(mAdapter.getUidFilter() != uid) {
             // rather than calling refreshAllTheConnections, its better to let the register to the
             // job by properly scheduling the ConnectionsListener callbacks
@@ -317,7 +399,36 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mAdapter.setUidFilter(uid);
             registerConnsListener();
         }
-    }*/
+
+        refreshFilterIcon();
+    }
+
+    private void refreshFilterIcon() {
+        if(mMenuItemAppSel == null)
+            return;
+
+        int uid = mAdapter.getUidFilter();
+        AppDescriptor app = (mApps != null) ? mApps.get(uid) : null;
+
+        if(app == null)
+            app = mNoFilterApp;
+
+        if(app.getUid() != -1) {
+            Drawable drawable = (app.getIcon() != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : null;
+
+            if(drawable != null) {
+                mMenuItemAppSel.setIcon(drawable);
+                mMenuItemAppSel.setTitle(R.string.remove_app_filter);
+            }
+        } else {
+            // no filter
+            mMenuItemAppSel.setIcon(mFilterIcon);
+            mMenuItemAppSel.setTitle(R.string.set_app_filter);
+        }
+
+        if (mOpenAppsWhenDone)
+            openAppSelector();
+    }
 
     @Override
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
@@ -331,5 +442,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mApps = apps;
         mAdapter.setApps(apps);
         mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount());
+
+        refreshFilterIcon();
     }
 }

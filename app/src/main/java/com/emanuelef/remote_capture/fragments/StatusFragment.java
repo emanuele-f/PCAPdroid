@@ -25,12 +25,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -47,7 +45,6 @@ import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.activities.SettingsActivity;
 import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 
@@ -93,21 +90,6 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
-
-        // Add settings icon click
-        mCollectorInfo.setOnTouchListener((v, event) -> {
-            Drawable mCollectorInfoDrawable = mCollectorInfo.getCompoundDrawables()[2 /* Right */];
-
-            if((mCollectorInfoDrawable != null) && (event.getAction() == MotionEvent.ACTION_UP)) {
-                if(event.getRawX() >= (mCollectorInfo.getRight() - mCollectorInfoDrawable.getBounds().width())) {
-                    Intent intent = new Intent(mActivity, SettingsActivity.class);
-                    startActivity(intent);
-
-                    return true;
-                }
-            }
-            return false;
-        });
 
         mPrefs.registerOnSharedPreferenceChangeListener((sharedPreferences, s) -> {
             if((mActivity != null) && (mActivity.getState() == AppState.ready))
@@ -168,10 +150,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
             if(Prefs.getTlsDecryptionEnabled(mPrefs))
                 info += " (" + getResources().getString(R.string.with_tls_decryption) + ")";
-
-            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_settings, 0);
-        } else
-            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+        }
 
         mCollectorInfo.setText(info);
     }

@@ -89,16 +89,6 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
         // TODO update the details if the connection is updated
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == android.R.id.home) {
-            /* Make the back button in the action bar behave like the back button */
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void updateStats() {
         if(conn != null) {
             mBytesView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));

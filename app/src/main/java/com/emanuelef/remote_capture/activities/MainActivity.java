@@ -24,21 +24,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -49,35 +49,27 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.AppsLoader;
-import com.emanuelef.remote_capture.ConnectionsRegister;
-import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
-import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.Utils;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements AppsLoadListener {
+public class MainActivity extends AppCompatActivity implements AppsLoadListener, NavigationView.OnNavigationItemSelectedListener {
     SharedPreferences mPrefs;
     Menu mMenu;
-    MenuItem mMenuItemStats;
     MenuItem mMenuItemStartBtn;
     MenuItem mMenuItemAppSel;
     MenuItem mMenuSettings;
@@ -86,49 +78,16 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
     boolean mOpenAppsWhenDone;
     List<AppDescriptor> mInstalledApps;
     AppState mState;
-    ViewPager2 viewPager2;
-    TabLayout tabLayout;
     AppStateListener mListener;
-    AppsListView.OnSelectedAppListener mTmpAppFilterListener;
     AppDescriptor mNoFilterApp;
 
     private static final String TAG = "Main";
-
-    public static final int POS_STATUS = 0;
-    public static final int POS_APPS = 1;
-    public static final int POS_CONNECTIONS = 2;
-    private static final int TOTAL_COUNT = 3;
 
     private static final int REQUEST_CODE_VPN = 2;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
-
-    private static class MainStateAdapter extends FragmentStateAdapter {
-        MainStateAdapter(final FragmentActivity fa) {
-            super(fa);
-        }
-
-        @NonNull
-        @Override
-        public Fragment createFragment(int position) {
-            switch (position) {
-                default: // Deliberate fall-through to status tab
-                case POS_STATUS:
-                    return new StatusFragment();
-                case POS_CONNECTIONS:
-                    return new ConnectionsFragment();
-                case POS_APPS:
-                    return new AppsFragment();
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return TOTAL_COUNT;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,26 +110,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
                 .apply();
 
         setContentView(R.layout.main_activity);
-
-        tabLayout = findViewById(R.id.main_tablayout);
-
-        viewPager2 = findViewById(R.id.main_viewpager2);
-        final MainStateAdapter stateAdapter = new MainStateAdapter(this);
-        viewPager2.setAdapter(stateAdapter);
-
-        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
-            switch (position) {
-                default: // Deliberate fall-through to status tab
-                case POS_STATUS:
-                    tab.setText(R.string.status_view);
-                    break;
-                case POS_CONNECTIONS:
-                    tab.setText(R.string.connections_view);
-                    break;
-                case POS_APPS:
-                    tab.setText(R.string.apps);
-                }
-        }).attach();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -202,15 +141,44 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        setupNavigationDrawer();
+    }
 
-        savedInstanceState.putString("FilterApp", mFilterApp);
+    private void setupNavigationDrawer() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navView = findViewById(R.id.nav_view);
+        navView.setNavigationItemSelectedListener(this);
+        View header = navView.getHeaderView(0);
+
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            String version = pInfo.versionName;
+            String name = pInfo.applicationInfo.loadLabel(getPackageManager()).toString();
+
+            TextView appName = header.findViewById(R.id.app_name);
+            appName.setText(name);
+
+            TextView appVer = header.findViewById(R.id.app_version);
+            appVer.setText("v" + version);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Could not retrieve package version");
+        }
     }
 
     @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
 
+        savedInstanceState.putString("FilterApp", mFilterApp);
     }
 
     @Override
@@ -253,6 +221,39 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
             openAppSelector();
     }
 
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.item_monitoring) {
+            Intent intent = new Intent(MainActivity.this, MonitoringActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.action_open_github) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
+            startActivity(browserIntent);
+            return true;
+        } else if (id == R.id.action_open_telegram) {
+            openTelegram();
+            return true;
+        } else if (id == R.id.action_open_user_guide) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
+            startActivity(browserIntent);
+            return true;
+        } else if (id == R.id.action_rate_app) {
+            rateApp();
+            return true;
+        } else if (id == R.id.action_stats) {
+            if(mState == AppState.running) {
+                Intent intent = new Intent(MainActivity.this, StatsActivity.class);
+                startActivity(intent);
+            } else
+                Utils.showToast(this, R.string.capture_not_started);
+
+            return true;
+        }
+
+        return true;
+    }
+
     public void setAppStateListener(AppStateListener listener) {
         mListener = listener;
     }
@@ -271,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         mMenuItemStartBtn.setTitle(R.string.start_button);
         mMenuItemStartBtn.setEnabled(true);
         mMenuItemAppSel.setEnabled(true);
-        mMenuItemStats.setVisible(false);
         mMenuSettings.setVisible(true);
     }
 
@@ -281,9 +281,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
 
         mMenuItemStartBtn.setEnabled(false);
         mMenuSettings.setVisible(false);
-
-        if(mTmpAppFilterListener != null)
-            mTmpAppFilterListener.onSelectedApp(null);
     }
 
     public void appStateRunning() {
@@ -295,8 +292,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         mMenuItemStartBtn.setTitle(R.string.stop_button);
         mMenuItemStartBtn.setEnabled(true);
         mMenuSettings.setVisible(false);
-        mMenuItemStats.setVisible(true);
-        mMenuItemAppSel.setEnabled(canApplyTmpFilter());
+        mMenuItemAppSel.setEnabled(false);
     }
 
     public void appStateStopping() {
@@ -307,18 +303,12 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         mMenuItemAppSel.setEnabled(false);
     }
 
-    public boolean canApplyTmpFilter() {
-        // the tmp filter can only be applied when a filter is not set before starting the app
-        return (CaptureService.getAppFilter() == null);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.settings_menu, menu);
+        menuInflater.inflate(R.menu.main_menu, menu);
 
         mMenu = menu;
-        mMenuItemStats = mMenu.findItem(R.id.action_stats);
         mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
         mMenuItemAppSel = mMenu.findItem(R.id.action_show_app_filter);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
@@ -373,24 +363,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
             else
                 openAppSelector();
 
-            return true;
-        } else if (id == R.id.action_open_github) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
-            startActivity(browserIntent);
-            return true;
-        } else if (id == R.id.action_open_telegram) {
-            openTelegram();
-            return true;
-        } else if (id == R.id.action_open_user_guide) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
-            startActivity(browserIntent);
-            return true;
-        } else if (id == R.id.action_rate_app) {
-            rateApp();
-            return true;
-        } else if (id == R.id.action_stats) {
-            Intent intent = new Intent(MainActivity.this, StatsActivity.class);
-            startActivity(intent);
             return true;
         }
 
@@ -459,20 +431,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         return(mState);
     }
 
-    public void setTmpAppFilterListener(AppsListView.OnSelectedAppListener listener) {
-        mTmpAppFilterListener = listener;
-    }
-
-    // get the temporary filter, which can be set by the user *after* the capture has started
-    public AppDescriptor getTmpFilter() {
-        if((mFilterApp == null) || !canApplyTmpFilter())
-            return null;
-
-        // TODO: fixme
-        return null;
-        //return findAppByPackage(mFilterApp);
-    }
-
     public void setSelectedApp(AppDescriptor app) {
         if(app == null)
             app = mNoFilterApp;
@@ -496,9 +454,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
             mMenuItemAppSel.setIcon(mFilterIcon);
             mMenuItemAppSel.setTitle(R.string.set_app_filter);
         }
-
-        if(mTmpAppFilterListener != null)
-            mTmpAppFilterListener.onSelectedApp(getTmpFilter());
     }
 
     private void openAppSelector() {
@@ -510,52 +465,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener 
         }
 
         mOpenAppsWhenDone = false;
-        List<AppDescriptor> appsData = mInstalledApps;
-
-        if(mState == AppState.running) {
-            // Only show the seen apps
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-            if(reg != null) {
-                Set<Integer> seen_uids = reg.getSeenUids();
-                appsData = new ArrayList<>();
-
-                for(AppDescriptor app : mInstalledApps) {
-                    int uid = app.getUid();
-
-                    if((uid == -1) || seen_uids.contains(uid))
-                        appsData.add(app);
-                }
-            }
-        }
-
-        View dialogLayout = getLayoutInflater().inflate(R.layout.apps_selector, null);
-        SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
-        AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
-        TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
-
-        apps.setApps(appsData);
-        apps.setEmptyView(emptyText);
-        searchView.setOnQueryTextListener(apps);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.app_filter);
-        builder.setView(dialogLayout);
-
-        final AlertDialog alert = builder.create();
-
-        apps.setSelectedAppListener(app -> {
-            setSelectedApp(app);
-
-            // dismiss the dialog
-            alert.cancel();
-        });
-
-        alert.show();
-    }
-
-    public void setActivePage(int pos) {
-        if((pos >= 0) && (pos < TOTAL_COUNT))
-            viewPager2.setCurrentItem(pos);
+        Utils.showAppSelectionDialog(this, mInstalledApps, this::setSelectedApp);
     }
 }

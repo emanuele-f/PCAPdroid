@@ -55,8 +55,6 @@ public class StatsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
 
-        setTitle(R.string.stats);
-
         mBytesSent = findViewById(R.id.bytes_sent);
         mBytesRcvd = findViewById(R.id.bytes_rcvd);
         mPacketsSent = findViewById(R.id.packets_sent);
@@ -91,16 +89,6 @@ public class StatsActivity extends AppCompatActivity {
         }
 
         CaptureService.askStatsDump();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == android.R.id.home) {
-            /* Make the back button in the action bar behave like the back button */
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void updateVPNStats(Intent intent) {
