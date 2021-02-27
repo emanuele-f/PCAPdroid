@@ -87,6 +87,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
                 return filterResults;
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 List<AppDescriptor> appsFiltered = (List<AppDescriptor>) results.values;

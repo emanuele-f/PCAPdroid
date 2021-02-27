@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -106,7 +107,7 @@ public class ConnectionsFragment extends Fragment implements AppStateListener, C
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
         LinearLayoutManager layoutMan = new LinearLayoutManager(mActivity);

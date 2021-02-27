@@ -3,6 +3,7 @@ package com.emanuelef.remote_capture.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +70,7 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
         mAdapter = new AppsStatsAdapter(mActivity);
         mRecyclerView.setAdapter(mAdapter);
 
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;
 
         mAdapter.setClickListener(v -> {

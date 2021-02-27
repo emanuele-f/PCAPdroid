@@ -29,6 +29,7 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
@@ -105,7 +106,7 @@ public class CaptureService extends VpnService implements Runnable {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Context app_ctx = getApplicationContext();
 
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");

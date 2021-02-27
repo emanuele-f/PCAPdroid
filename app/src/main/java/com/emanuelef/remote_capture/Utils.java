@@ -35,8 +35,6 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
-
 import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import java.math.BigInteger;
