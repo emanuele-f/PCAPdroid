@@ -29,16 +29,12 @@ import android.net.Uri;
 import android.net.VpnService;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.AsyncTaskLoader;
-import androidx.loader.content.Loader;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -52,8 +48,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
+import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -68,13 +66,15 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<AppDescriptor>> {
+public class MainActivity extends AppCompatActivity implements AppsLoadListener {
     SharedPreferences mPrefs;
     Menu mMenu;
     MenuItem mMenuItemStats;
@@ -91,12 +91,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     List<AppStateListener> mStateListeners;
     AppsListView.OnSelectedAppListener mTmpAppFilterListener;
     AppDescriptor mNoFilterApp;
-    AppDescriptor mRootApp;
-    AppDescriptor mAndroidApp;
-    AppDescriptor mNetdApp;
 
     private static final String TAG = "Main";
-    private static final String APPS_LOADER_TAG = "AppsLoader";
 
     public static final int POS_STATUS = 0;
     public static final int POS_APPS = 1;
@@ -104,11 +100,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int TOTAL_COUNT = 3;
 
     private static final int REQUEST_CODE_VPN = 2;
-    public static final int OPERATION_SEARCH_LOADER = 23;
-
-    private static final String virtual_root_package = "root";
-    private static final String virtual_android_package = "android";
-    private static final String virtual_netd_package = "netd";
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -144,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
 
         Drawable icon = ContextCompat.getDrawable(this, android.R.color.transparent);
-        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false);
+        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
 
         mFilterApp = CaptureService.getAppFilter();
 
@@ -157,20 +148,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mInstalledApps = null;
         mTmpAppFilterListener = null;
         mStateListeners = new ArrayList<>();
-
-        // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
-        // as they miss a valid package name
-        mRootApp = new AppDescriptor("Root",
-                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
-                virtual_root_package, 0, true);
-
-        mAndroidApp = new AppDescriptor("Android",
-                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
-                virtual_android_package, 1000, true);
-
-        mNetdApp = new AppDescriptor("netd",
-                ContextCompat.getDrawable(this, android.R.drawable.sym_def_app_icon),
-                virtual_netd_package, 1051, true);
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -200,7 +177,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        startLoadingApps();
+        (new AppsLoader(this))
+                .setAppsLoadListener(this)
+                .loadAllApps();
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
 
@@ -243,6 +222,38 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if(mMenu != null)
             initAppState();
+    }
+
+    @Override
+    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
+        // TODO optimize: show the apps even when icon not loaded
+    }
+
+    @Override
+    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
+        mInstalledApps = new ArrayList<>();
+        AppDescriptor filterApp = null;
+
+        for (Map.Entry<Integer, AppDescriptor> pair : apps.entrySet()) {
+            AppDescriptor app = pair.getValue();
+
+            if(!app.isVirtual()) {
+                mInstalledApps.add(app);
+
+                if (app.getPackageName().equals(mFilterApp))
+                    filterApp = app;
+            }
+        }
+
+        Collections.sort(mInstalledApps);
+
+        if (filterApp != null) {
+            /* An filter is active, try to set the corresponding app image */
+            setSelectedApp(filterApp);
+        }
+
+        if (mOpenAppsWhenDone)
+            openAppSelector();
     }
 
     private void notifyAppState() {
@@ -407,91 +418,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    @NonNull
-    @Override
-    public Loader<List<AppDescriptor>> onCreateLoader(int id, @Nullable Bundle args) {
-        return new AsyncTaskLoader<List<AppDescriptor>>(this) {
-
-            @NonNull
-            @Override
-            public List<AppDescriptor> loadInBackground() {
-                Log.d(APPS_LOADER_TAG, "Loading APPs...");
-                return Utils.getInstalledApps(getContext());
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<List<AppDescriptor>> loader, List<AppDescriptor> data) {
-        Log.d(APPS_LOADER_TAG, data.size() + " APPs loaded");
-        mInstalledApps = data;
-
-        if (mFilterApp != null) {
-            /* An filter is active, try to set the corresponding app image */
-            AppDescriptor app = findAppByPackage(mFilterApp);
-
-            setSelectedApp(app);
-        }
-
-        for(AppStateListener listener: mStateListeners)
-            listener.appsLoaded();
-
-        if (mOpenAppsWhenDone)
-            openAppSelector();
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<List<AppDescriptor>> loader) {
-    }
-
-    public AppDescriptor findAppByUid(int uid) {
-        if((mInstalledApps == null) || (uid == -1))
-            return (null);
-
-        if(uid == 0) // root
-            return mRootApp;
-        else if(uid == 1000) // android system
-            return mAndroidApp;
-        else if(uid == 1051) // netd
-            return mNetdApp;
-
-        for (int i = 0; i < mInstalledApps.size(); i++) {
-            AppDescriptor app = mInstalledApps.get(i);
-
-            if (app.getUid() == uid) {
-                return (app);
-            }
-        }
-
-        return (null);
-    }
-
-    public AppDescriptor findAppByPackage(String package_name) {
-        if (mInstalledApps == null)
-            return (null);
-
-        if(package_name.equals(virtual_root_package))
-            return mRootApp;
-        if(package_name.equals(virtual_android_package))
-            return mAndroidApp;
-        else if(package_name.equals(virtual_netd_package))
-            return mNetdApp;
-
-        for (int i = 0; i < mInstalledApps.size(); i++) {
-            AppDescriptor app = mInstalledApps.get(i);
-
-            if (app.getPackageName().equals(package_name)) {
-                return (app);
-            }
-        }
-
-        return (null);
-    }
-
-    public boolean appsLoaded() {
-        return(mInstalledApps != null);
-    }
-
     private void initAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
@@ -540,20 +466,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return(mState);
     }
 
-    private void startLoadingApps() {
-        LoaderManager lm = LoaderManager.getInstance(this);
-        Loader<List<AppDescriptor>> loader = lm.getLoader(OPERATION_SEARCH_LOADER);
-
-        Log.d(APPS_LOADER_TAG, "Loader? " + (loader != null));
-
-        if(loader==null)
-            loader = lm.initLoader(OPERATION_SEARCH_LOADER, null, this);
-        else
-            loader = lm.restartLoader(OPERATION_SEARCH_LOADER, null, this);
-
-        loader.forceLoad();
-    }
-
     public void setTmpAppFilterListener(AppsListView.OnSelectedAppListener listener) {
         mTmpAppFilterListener = listener;
     }
@@ -563,7 +475,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if((mFilterApp == null) || !canApplyTmpFilter())
             return null;
 
-        return findAppByPackage(mFilterApp);
+        // TODO: fixme
+        return null;
+        //return findAppByPackage(mFilterApp);
     }
 
     public void setSelectedApp(AppDescriptor app) {
@@ -577,9 +491,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             mFilterApp = app.getPackageName();
 
             // clone the drawable to avoid a "zoom-in" effect when clicked
-            Drawable drawable = Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable();
-            mMenuItemAppSel.setIcon(drawable);
-            mMenuItemAppSel.setTitle(R.string.remove_app_filter);
+            Drawable drawable = (app.getIcon() != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : null;
+
+            if(drawable != null) {
+                mMenuItemAppSel.setIcon(drawable);
+                mMenuItemAppSel.setTitle(R.string.remove_app_filter);
+            }
         } else {
             // no filter
             mFilterApp = null;
@@ -621,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         View dialogLayout = getLayoutInflater().inflate(R.layout.apps_selector, null);
         SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
-        AppsListView apps = (AppsListView) dialogLayout.findViewById(R.id.apps_list);
+        AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
         TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
 
         apps.setApps(appsData);

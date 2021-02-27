@@ -21,28 +21,36 @@ package com.emanuelef.remote_capture.model;
 
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 
 public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final String name;
-    private final Drawable icon;
     private final String package_name;
     private final int uid;
     private final boolean is_system;
+    private final boolean is_virtual;   // the app does not have a package name (e.g. uid 0 is android system)
+    private Drawable icon;
 
-    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
+    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system, boolean is_virtual) {
         this.name = name;
         this.icon = icon;
         this.package_name = package_name;
         this.uid = uid;
         this.is_system = is_system;
+        this.is_virtual = is_virtual;
     }
 
     public String getName() {
         return name;
     }
 
-    public Drawable getIcon() {
+    public void setIcon(Drawable _icon) {
+        icon = _icon;
+    }
+
+    public @Nullable Drawable getIcon() {
         return icon;
     }
 
@@ -55,6 +63,8 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     }
 
     public boolean isSystem() { return is_system; }
+
+    public boolean isVirtual() { return is_virtual; }
 
     @Override
     public int compareTo(AppDescriptor o) {

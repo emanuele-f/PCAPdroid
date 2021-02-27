@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +39,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder> {
@@ -49,6 +49,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Drawable mUnknownIcon;
     private int mItemCount;
     private View.OnClickListener mListener;
+    private Map<Integer, AppDescriptor> mApps;
     int mUidFilter;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -68,11 +69,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             statusInd = itemView.findViewById(R.id.status_ind);
         }
 
-        public void bindConn(MainActivity activity, ConnectionDescriptor conn, Drawable unknownIcon) {
-            AppDescriptor app = activity.findAppByUid(conn.uid);
+        public void bindConn(MainActivity activity, ConnectionDescriptor conn, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
+            AppDescriptor app = (apps != null) ? apps.get(conn.uid) : null;
             Drawable appIcon;
 
-            appIcon = (app != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
+            appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
             icon.setImageDrawable(appIcon);
 
             if(conn.info.length() > 0)
@@ -127,7 +128,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         if(conn == null)
             return;
 
-        holder.bindConn(mActivity, conn, mUnknownIcon);
+        holder.bindConn(mActivity, conn, mApps, mUnknownIcon);
     }
 
     @Override
@@ -159,5 +160,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public int getUidFilter() {
         return mUidFilter;
+    }
+
+    public void setApps(Map<Integer, AppDescriptor> apps) {
+        mApps = apps;
     }
 }

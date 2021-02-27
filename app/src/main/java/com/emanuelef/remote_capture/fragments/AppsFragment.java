@@ -14,19 +14,23 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class AppsFragment extends Fragment implements AppStateListener, ConnectionsListener {
+import java.util.Map;
+
+public class AppsFragment extends Fragment implements AppStateListener, ConnectionsListener, AppsLoadListener {
     private EmptyRecyclerView mRecyclerView;
     private AppsStatsAdapter mAdapter;
     private static final String TAG = "AppsFragment";
@@ -34,6 +38,7 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
+    private Map<Integer, AppDescriptor> mApps;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -81,7 +86,7 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
             AppStats item = mAdapter.getItem(pos);
 
             if(item != null) {
-                AppDescriptor app = mActivity.findAppByUid(item.getUid());
+                AppDescriptor app = mApps.get(item.getUid());
 
                 if(app != null) {
                     mActivity.setSelectedApp(app);
@@ -92,6 +97,10 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
 
         registerListener();
         mActivity.addAppStateListener(this);
+
+        (new AppsLoader(mActivity))
+                .setAppsLoadListener(this)
+                .loadAllApps();
     }
 
     private void registerListener() {
@@ -121,12 +130,6 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
             unregisterListener();
             registerListener();
         }
-    }
-
-    @Override
-    public void appsLoaded() {
-        // refresh the icons
-        mAdapter.notifyDataSetChanged();
     }
 
     // NOTE: do not use synchronized as it could cause a deadlock with the ConnectionsRegister lock
@@ -167,5 +170,19 @@ public class AppsFragment extends Fragment implements AppStateListener, Connecti
     @Override
     public void connectionsUpdated(int[] positions) {
         refreshAppsAsync();
+    }
+
+    @Override
+    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
+        // refresh the names
+        mApps = apps;
+        mAdapter.setApps(apps);
+    }
+
+    @Override
+    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
+        // refresh the icons
+        mApps = apps;
+        mAdapter.setApps(apps);
     }
 }

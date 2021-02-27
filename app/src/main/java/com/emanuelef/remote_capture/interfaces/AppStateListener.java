@@ -23,5 +23,4 @@ import com.emanuelef.remote_capture.model.AppState;
 
 public interface AppStateListener {
     void appStateChanged(AppState state);
-    void appsLoaded();
 }
