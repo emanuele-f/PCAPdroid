@@ -38,15 +38,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.InspectorActivity;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
@@ -83,6 +82,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onDestroy();
 
         unregisterConnsListener();
+        ((InspectorActivity) getActivity()).removeAppLoadListener(this);
     }
 
     @Override
@@ -171,9 +171,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         registerConnsListener();
 
-        (new AppsLoader((AppCompatActivity) getActivity()))
-                .setAppsLoadListener(this)
-                .loadAllApps();
+        InspectorActivity activity = (InspectorActivity) getActivity();
+        if(activity.getApps() != null)
+            onAppsIconsLoaded(activity.getApps());
+        activity.addAppLoadListener(this);
 
         // Register for uid selectio via AppsFragment
         getParentFragmentManager().setFragmentResultListener("appFilter", this, (requestKey, bundle) -> {
@@ -334,7 +335,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.connections_menu, menu);
 
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
@@ -386,9 +387,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         Collections.sort(appsData);
 
-        Utils.showAppSelectionDialog(getActivity(), appsData, app -> {
-            setUidFilter(app.getUid());
-        });
+        Utils.showAppSelectionDialog(getActivity(), appsData, app -> setUidFilter(app.getUid()));
     }
 
     private void setUidFilter(int uid) {

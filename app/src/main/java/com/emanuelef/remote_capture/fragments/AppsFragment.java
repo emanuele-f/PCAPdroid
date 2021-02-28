@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +14,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
@@ -42,13 +39,13 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private boolean mRefreshApps;
     private boolean listenerSet;
     private InspectorActivity mActivity;
-    private Map<Integer, AppDescriptor> mApps;
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
         unregisterConnsListener();
+        ((InspectorActivity) getActivity()).removeAppLoadListener(this);
     }
 
     @Override
@@ -83,9 +80,10 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
 
         registerConnsListener();
 
-        (new AppsLoader((AppCompatActivity) getActivity()))
-                .setAppsLoadListener(this)
-                .loadAllApps();
+        InspectorActivity activity = (InspectorActivity) getActivity();
+        if(activity.getApps() != null)
+            onAppsIconsLoaded(activity.getApps());
+        activity.addAppLoadListener(this);
 
         LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
 
@@ -168,14 +166,12 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     @Override
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
         // refresh the names
-        mApps = apps;
         mAdapter.setApps(apps);
     }
 
     @Override
     public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
         // refresh the icons
-        mApps = apps;
         mAdapter.setApps(apps);
     }
 }

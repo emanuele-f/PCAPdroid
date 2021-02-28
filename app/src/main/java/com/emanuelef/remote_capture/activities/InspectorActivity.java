@@ -10,16 +10,25 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class InspectorActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class InspectorActivity extends AppCompatActivity implements AppsLoadListener {
     private static final String TAG = "InspectorActivity";
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
+    private Map<Integer, AppDescriptor> mInstalledApps;
+    private List<AppsLoadListener> mAppsListeners;
 
     private static final int POS_APPS = 0;
     private static final int POS_CONNECTIONS = 1;
@@ -33,8 +42,29 @@ public class InspectorActivity extends AppCompatActivity {
 
         mTabLayout = findViewById(R.id.inspector_tablayout);
         mPager = findViewById(R.id.inspector_pager);
+        mAppsListeners = new ArrayList<>();
 
         setupTabs();
+
+        new AppsLoader(this)
+                .setAppsLoadListener(this)
+                .loadAllApps();
+    }
+
+    @Override
+    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
+        mInstalledApps = apps;
+
+        for(AppsLoadListener listener: mAppsListeners)
+            listener.onAppsInfoLoaded(apps);
+    }
+
+    @Override
+    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
+        mInstalledApps = apps;
+
+        for(AppsLoadListener listener: mAppsListeners)
+            listener.onAppsIconsLoaded(apps);
     }
 
     private static class MyStateAdapter extends FragmentStateAdapter {
@@ -82,5 +112,17 @@ public class InspectorActivity extends AppCompatActivity {
 
         // Switch to the connections view
         mPager.setCurrentItem(POS_CONNECTIONS);
+    }
+
+    public void addAppLoadListener(AppsLoadListener l) {
+        mAppsListeners.add(l);
+    }
+
+    public void removeAppLoadListener(AppsLoadListener l) {
+        mAppsListeners.remove(l);
+    }
+
+    public Map<Integer, AppDescriptor> getApps() {
+        return mInstalledApps;
     }
 }
