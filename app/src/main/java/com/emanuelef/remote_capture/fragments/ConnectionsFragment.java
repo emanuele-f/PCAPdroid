@@ -86,6 +86,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt("uidFilter", mAdapter.getUidFilter());
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
@@ -175,6 +182,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(activity.getApps() != null)
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);
+
+        if(savedInstanceState != null) {
+            int uidFilter = savedInstanceState.getInt("uidFilter", -2);
+
+            if(uidFilter != -2)
+                setUidFilter(uidFilter);
+        }
 
         // Register for uid selectio via AppsFragment
         getParentFragmentManager().setFragmentResultListener("appFilter", this, (requestKey, bundle) -> {
