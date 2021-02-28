@@ -8,8 +8,8 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="170dp"
-        android:src="@mipmap/drawer_background"
+        android:layout_height="@dimen/drawer_header_height"
+        android:src="@drawable/drawer_background"
         android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
-        android:text="PCAPdroid"
+        android:text="@string/app_name"
         android:textSize="12sp"
         android:textColor="@android:color/primary_text_dark"
         app:layout_constraintBottom_toBottomOf="parent"

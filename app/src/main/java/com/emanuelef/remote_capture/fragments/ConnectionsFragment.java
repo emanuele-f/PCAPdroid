@@ -335,7 +335,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.monitoring_menu, menu);
+        menuInflater.inflate(R.menu.connections_menu, menu);
 
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
         mFilterIcon = mMenuItemAppSel.getIcon();

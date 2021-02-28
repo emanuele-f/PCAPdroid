@@ -13,12 +13,11 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class MonitoringActivity extends AppCompatActivity {
-    private static final String TAG = "MonitoringActivity";
+public class InspectorActivity extends AppCompatActivity {
+    private static final String TAG = "InspectorActivity";
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
 
@@ -30,10 +29,10 @@ public class MonitoringActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.monitoring_activity);
+        setContentView(R.layout.inspector_activity);
 
-        mTabLayout = findViewById(R.id.monitoring_tablayout);
-        mPager = findViewById(R.id.monitoring_pager);
+        mTabLayout = findViewById(R.id.inspector_tablayout);
+        mPager = findViewById(R.id.inspector_pager);
 
         setupTabs();
     }

@@ -162,13 +162,15 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         try {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             String version = pInfo.versionName;
-            String name = pInfo.applicationInfo.loadLabel(getPackageManager()).toString();
-
-            TextView appName = header.findViewById(R.id.app_name);
-            appName.setText(name);
-
+            boolean isRelease = version.contains(".");
+            final String verStr = isRelease ? ("v" + version) : version;
             TextView appVer = header.findViewById(R.id.app_version);
-            appVer.setText("v" + version);
+
+            appVer.setText(verStr);
+            appVer.setOnClickListener((ev) -> {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
+                startActivity(browserIntent);
+            });
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not retrieve package version");
         }
@@ -224,9 +226,12 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.item_monitoring) {
-            Intent intent = new Intent(MainActivity.this, MonitoringActivity.class);
-            startActivity(intent);
+        if(id == R.id.item_inspector) {
+            if(CaptureService.getConnsRegister() != null) {
+                Intent intent = new Intent(MainActivity.this, InspectorActivity.class);
+                startActivity(intent);
+            } else
+                Utils.showToast(this, R.string.capture_not_started);
         } else if (id == R.id.action_open_github) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
             startActivity(browserIntent);
@@ -272,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         mMenuItemStartBtn.setTitle(R.string.start_button);
         mMenuItemStartBtn.setEnabled(true);
         mMenuItemAppSel.setEnabled(true);
-        mMenuSettings.setVisible(true);
+        mMenuSettings.setEnabled(true);
     }
 
     public void appStateStarting() {
@@ -280,7 +285,8 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         notifyAppState();
 
         mMenuItemStartBtn.setEnabled(false);
-        mMenuSettings.setVisible(false);
+        mMenuSettings.setEnabled(false);
+        mMenuItemAppSel.setEnabled(false);
     }
 
     public void appStateRunning() {
@@ -291,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
         mMenuItemStartBtn.setTitle(R.string.stop_button);
         mMenuItemStartBtn.setEnabled(true);
-        mMenuSettings.setVisible(false);
+        mMenuSettings.setEnabled(false);
         mMenuItemAppSel.setEnabled(false);
     }
 
@@ -300,7 +306,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         notifyAppState();
 
         mMenuItemStartBtn.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
     }
 
     @Override

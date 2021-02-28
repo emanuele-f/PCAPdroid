@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/group_app">
         <item
-            android:id="@+id/item_monitoring"
-            android:title="@string/monitoring"
+            android:id="@+id/item_inspector"
+            android:title="@string/inspector"
             android:icon="@drawable/ic_search" />
         <item
             android:id="@+id/action_stats"

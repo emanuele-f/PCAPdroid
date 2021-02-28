@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.MonitoringActivity;
+import com.emanuelef.remote_capture.activities.InspectorActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -40,7 +41,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
-    private MonitoringActivity mActivity;
+    private InspectorActivity mActivity;
     private Map<Integer, AppDescriptor> mApps;
 
     @Override
@@ -53,7 +54,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (MonitoringActivity) getActivity();
+        mActivity = (InspectorActivity) getActivity();
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
