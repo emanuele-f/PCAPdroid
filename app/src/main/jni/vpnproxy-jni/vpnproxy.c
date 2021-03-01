@@ -823,7 +823,7 @@ cleanup:
 
 static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t *stats) {
     JNIEnv *env = proxy->env;
-    capture_stats_t *capstats = &proxy->capture_stats;
+    const capture_stats_t *capstats = &proxy->capture_stats;
 
     int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
     int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);

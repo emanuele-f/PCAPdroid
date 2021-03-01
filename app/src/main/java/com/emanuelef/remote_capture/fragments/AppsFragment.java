@@ -39,6 +39,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private boolean mRefreshApps;
     private boolean listenerSet;
     private InspectorActivity mActivity;
+    private BroadcastReceiver mReceiver;
 
     @Override
     public void onDestroy() {
@@ -85,10 +86,8 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
-
         /* Register for service status */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
+        mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
@@ -99,7 +98,20 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
                     registerConnsListener();
                 }
             }
-        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+        };
+
+        LocalBroadcastManager.getInstance(getContext())
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if(mReceiver != null) {
+            LocalBroadcastManager.getInstance(getContext())
+                    .unregisterReceiver(mReceiver);
+        }
     }
 
     private void registerConnsListener() {

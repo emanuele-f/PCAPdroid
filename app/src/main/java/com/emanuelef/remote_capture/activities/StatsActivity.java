@@ -37,17 +37,18 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.VPNStats;
 
 public class StatsActivity extends AppCompatActivity {
-    TextView mBytesSent;
-    TextView mBytesRcvd;
-    TextView mPacketsSent;
-    TextView mPacketsRcvd;
-    TextView mActiveConns;
-    TextView mDroppedConns;
-    TextView mTotConns;
-    TextView mMaxFd;
-    TextView mOpenSocks;
-    TextView mDnsServer;
-    TextView mDnsQueries;
+    private BroadcastReceiver mReceiver;
+    private TextView mBytesSent;
+    private TextView mBytesRcvd;
+    private TextView mPacketsSent;
+    private TextView mPacketsRcvd;
+    private TextView mActiveConns;
+    private TextView mDroppedConns;
+    private TextView mTotConns;
+    private TextView mMaxFd;
+    private TextView mOpenSocks;
+    private TextView mDnsServer;
+    private TextView mDnsQueries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,15 +67,16 @@ public class StatsActivity extends AppCompatActivity {
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
-
-        /* Register for updates */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
+        mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateVPNStats(intent);
             }
-        }, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+        };
+
+        /* Register for updates */
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -82,6 +84,15 @@ public class StatsActivity extends AppCompatActivity {
         }
 
         CaptureService.askStatsDump();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(mReceiver != null)
+            LocalBroadcastManager.getInstance(this)
+                    .unregisterReceiver(mReceiver);
     }
 
     private void updateVPNStats(Intent intent) {

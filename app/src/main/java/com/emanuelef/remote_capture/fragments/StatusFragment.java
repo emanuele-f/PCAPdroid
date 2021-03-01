@@ -59,6 +59,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mInspectorLink;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
+    private BroadcastReceiver mReceiver;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -105,18 +106,29 @@ public class StatusFragment extends Fragment implements AppStateListener {
                 refreshPcapDumpInfo();
         });
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(mActivity);
-
         /* Register for stats update */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
+        mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 processStatsUpdateIntent(intent);
             }
-        }, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+        };
+
+        LocalBroadcastManager.getInstance(getContext())
+            .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if(mReceiver != null) {
+            LocalBroadcastManager.getInstance(getContext())
+                    .unregisterReceiver(mReceiver);
+        }
     }
 
     private void setupInspectorLinK() {

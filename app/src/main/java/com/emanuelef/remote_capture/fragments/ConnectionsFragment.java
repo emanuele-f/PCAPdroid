@@ -76,6 +76,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
     private boolean mOpenAppsWhenDone;
+    private BroadcastReceiver mReceiver;
 
     @Override
     public void onDestroy() {
@@ -200,10 +201,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 setUidFilter(uid);
         });
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(getContext());
-
         // Register for service status
-        bcast_man.registerReceiver(new BroadcastReceiver() {
+        mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
@@ -217,7 +216,20 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     showFabDown(false);
                 }
             }
-        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+        };
+
+        LocalBroadcastManager.getInstance(getContext())
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if(mReceiver != null) {
+            LocalBroadcastManager.getInstance(getContext())
+                    .unregisterReceiver(mReceiver);
+        }
     }
 
     private void recheckScroll() {

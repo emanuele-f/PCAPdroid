@@ -151,7 +151,8 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             }
         };
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
     @Override
@@ -159,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         super.onDestroy();
 
         if(mReceiver != null)
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+            LocalBroadcastManager.getInstance(this)
+                    .unregisterReceiver(mReceiver);
     }
 
     @Override
