@@ -26,6 +26,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
@@ -41,6 +42,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,6 +62,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,22 +72,25 @@ import java.util.Objects;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends AppCompatActivity implements AppsLoadListener, NavigationView.OnNavigationItemSelectedListener {
-    SharedPreferences mPrefs;
-    Menu mMenu;
-    MenuItem mMenuItemStartBtn;
-    MenuItem mMenuItemAppSel;
-    MenuItem mMenuSettings;
-    Drawable mFilterIcon;
-    String mFilterApp;
-    boolean mOpenAppsWhenDone;
-    List<AppDescriptor> mInstalledApps;
-    AppState mState;
-    AppStateListener mListener;
-    AppDescriptor mNoFilterApp;
+    private SharedPreferences mPrefs;
+    private Menu mMenu;
+    private MenuItem mMenuItemStartBtn;
+    private MenuItem mMenuItemAppSel;
+    private MenuItem mMenuSettings;
+    private Drawable mFilterIcon;
+    private String mFilterApp;
+    private boolean mOpenAppsWhenDone;
+    private List<AppDescriptor> mInstalledApps;
+    private AppState mState;
+    private AppStateListener mListener;
+    private AppDescriptor mNoFilterApp;
+    private Uri mPcapUri;
+    private BroadcastReceiver mReceiver;
 
     private static final String TAG = "Main";
 
     private static final int REQUEST_CODE_VPN = 2;
+    private static final int REQUEST_CODE_PCAP_FILE = 3;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -97,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
 
         mFilterApp = CaptureService.getAppFilter();
+        mPcapUri = CaptureService.getPcapUri();
 
         if((mFilterApp == null) && (savedInstanceState != null)) {
             // Possibly get the temporary filter
@@ -117,10 +125,8 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 .setAppsLoadListener(this)
                 .loadAllApps();
 
-        LocalBroadcastManager bcast_man = LocalBroadcastManager.getInstance(this);
-
         /* Register for service status */
-        bcast_man.registerReceiver(new BroadcastReceiver() {
+        mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
@@ -133,11 +139,26 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                         if (CaptureService.isServiceActive())
                             CaptureService.stopService();
 
+                        if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                            showPcapActionDialog(mPcapUri);
+                            mPcapUri = null;
+                        }
+
                         appStateReady();
                     }
                 }
             }
-        }, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(mReceiver != null)
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -383,6 +404,9 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 Intent intent = new Intent(MainActivity.this, CaptureService.class);
                 Bundle bundle = new Bundle();
 
+                if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
+                    bundle.putString(Prefs.PREF_PCAP_URI, mPcapUri.toString());
+
                 bundle.putString(Prefs.PREF_APP_FILTER, mFilterApp);
                 intent.putExtra("settings", bundle);
 
@@ -393,6 +417,14 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 Log.w(TAG, "VPN request failed");
                 appStateReady();
             }
+        } else if(requestCode == REQUEST_CODE_PCAP_FILE) {
+            if(resultCode == RESULT_OK) {
+                mPcapUri = data.getData();
+                Log.d(TAG, "PCAP to write: " + mPcapUri.toString());
+
+                toggleService();
+            } else
+                mPcapUri = null;
         }
     }
 
@@ -421,6 +453,11 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             appStateStopping();
             CaptureService.stopService();
         } else {
+            if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                openFileSelector();
+                return;
+            }
+
             if(Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
@@ -430,6 +467,77 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             } else
                 startService();
         }
+    }
+
+    public void openFileSelector() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/cap");
+        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniquePcapFileName(this));
+
+        startActivityForResult(intent, REQUEST_CODE_PCAP_FILE);
+    }
+
+    public void showPcapActionDialog(Uri pcapUri) {
+        Cursor cursor;
+
+        try {
+            cursor = getContentResolver().query(pcapUri, null, null, null, null);
+        } catch (Exception e) {
+            return;
+        }
+
+        if((cursor == null) || !cursor.moveToFirst())
+            return;
+
+        // If file is empty, delete it
+        long file_size = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+        String fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        cursor.close();
+
+        if(file_size == 0) {
+            Log.d(TAG, "PCAP file is empty, deleting");
+
+            try {
+               DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
+
+        String message = String.format(getResources().getString(R.string.pcap_file_action), fname, Utils.formatBytes(file_size));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(message);
+
+        builder.setPositiveButton(R.string.share, (dialog, which) -> {
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType("application/cap");
+            sendIntent.putExtra(Intent.EXTRA_STREAM, pcapUri);
+            startActivity(Intent.createChooser(sendIntent, getResources().getString(R.string.share)));
+        });
+        builder.setNegativeButton(R.string.delete, (dialog, which) -> {
+            Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());
+            boolean deleted = false;
+
+            try {
+                deleted = DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            if(!deleted)
+                Utils.showToast(MainActivity.this, R.string.delete_error);
+
+            dialog.cancel();
+        });
+        builder.setNeutralButton(R.string.ok, (dialog, which) -> {
+            dialog.cancel();
+        });
+
+        builder.create().show();
     }
 
     public AppState getState() {

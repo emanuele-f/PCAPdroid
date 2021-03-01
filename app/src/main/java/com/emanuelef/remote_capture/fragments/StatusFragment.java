@@ -37,6 +37,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
@@ -50,8 +51,6 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
-
-import org.w3c.dom.Text;
 
 public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mCollectorInfo;
@@ -120,10 +119,10 @@ public class StatusFragment extends Fragment implements AppStateListener {
     }
 
     private void setupInspectorLinK() {
-        int color = getResources().getColor(android.R.color.tab_indicator_text);
+        int color = ContextCompat.getColor(mActivity, android.R.color.tab_indicator_text);
 
         mInspectorLink.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0);
-        Drawable drawables[] = mInspectorLink.getCompoundDrawables();
+        Drawable []drawables = mInspectorLink.getCompoundDrawables();
         drawables[0].setColorFilter(color, PorterDuff.Mode.SRC_IN);
 
         mInspectorLink.setOnClickListener(v -> {
@@ -155,6 +154,10 @@ public class StatusFragment extends Fragment implements AppStateListener {
             modeName = getResources().getString(R.string.http_server);
             info = String.format(getResources().getString(R.string.http_server_status),
                     Utils.getLocalIPAddress(mActivity), CaptureService.getHTTPServerPort());
+            break;
+        case PCAP_FILE:
+            modeName = getResources().getString(R.string.pcap_file);
+            info = "";
             break;
         case UDP_EXPORTER:
             modeName = getResources().getString(R.string.udp_exporter);

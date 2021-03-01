@@ -371,7 +371,7 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 
 /* ******************************************************* */
 
-static void javaPcapDump(zdtun_t *tun, vpnproxy_data_t *proxy) {
+static void javaPcapDump(vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
 
     log_android(ANDROID_LOG_DEBUG, "Exporting a %d B PCAP buffer", proxy->java_dump.buffer_idx);
@@ -470,7 +470,7 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
 
         if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
             // Flush the buffer
-            javaPcapDump(tun, proxy);
+            javaPcapDump(proxy);
         }
 
         if((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size)
@@ -1108,7 +1108,7 @@ housekeeping:
             last_connections_dump = now_ms;
         } else if((proxy.java_dump.buffer_idx > 0)
          && (now_ms - proxy.java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
-            javaPcapDump(tun, &proxy);
+            javaPcapDump(&proxy);
         } else if((now_ms >= next_purge_ms) || dump_vpn_stats_now) {
             dump_vpn_stats_now = false;
             zdtun_statistics_t stats;
@@ -1135,6 +1135,9 @@ housekeeping:
     }
 
     if(proxy.java_dump.buffer) {
+        if(proxy.java_dump.buffer_idx > 0)
+            javaPcapDump(&proxy);
+
         free(proxy.java_dump.buffer);
         proxy.java_dump.buffer = NULL;
     }

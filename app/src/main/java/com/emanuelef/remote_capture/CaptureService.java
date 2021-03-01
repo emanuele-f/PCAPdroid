@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,7 +42,9 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 public class CaptureService extends VpnService implements Runnable {
@@ -64,7 +67,10 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private String app_filter;
     private HTTPServer mHttpServer;
+    private OutputStream mOutputStream;
     private ConnectionsRegister conn_reg;
+    private Uri mPcapUri;
+    private boolean mFirstStreamWrite;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 2 MB. */
@@ -140,6 +146,11 @@ public class CaptureService extends VpnService implements Runnable {
 
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
 
+        if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
+            mHttpServer = null;
+        mOutputStream = null;
+        mPcapUri = null;
+
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)
                 mHttpServer = new HTTPServer(app_ctx, http_server_port);
@@ -150,8 +161,25 @@ public class CaptureService extends VpnService implements Runnable {
                 Log.e(CaptureService.TAG, "Could not start the HTTP server");
                 e.printStackTrace();
             }
-        } else
-            mHttpServer = null;
+        } else if(dump_mode == Prefs.DumpMode.PCAP_FILE) {
+            String path = settings.getString(Prefs.PREF_PCAP_URI);
+
+            if(path != null) {
+                mPcapUri = Uri.parse(path);
+
+                try {
+                    mOutputStream = getContentResolver().openOutputStream(mPcapUri);
+                    mFirstStreamWrite = true;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(mOutputStream == null) {
+                Utils.showToast(this, R.string.cannot_write_pcap_file);
+                return super.onStartCommand(intent, flags, startId);
+            }
+        }
 
         Log.i(TAG, "Using DNS server " + public_dns);
 
@@ -244,6 +272,16 @@ public class CaptureService extends VpnService implements Runnable {
         if(mHttpServer != null)
             mHttpServer.endConnections();
         // NOTE: do not destroy the mHttpServer, let it terminate the active connections
+
+        if(mOutputStream != null) {
+            try {
+                mOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        mPcapUri = null;
     }
 
     /* Check if the VPN service was launched */
@@ -254,6 +292,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static String getAppFilter() {
         return((INSTANCE != null) ? INSTANCE.app_filter : null);
+    }
+
+    public static Uri getPcapUri() {
+        return ((INSTANCE != null) ? INSTANCE.mPcapUri : null);
     }
 
     public static long getBytes() {
@@ -334,7 +376,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {
-        return((mHttpServer != null) ? 1 : 0);
+        return(((dump_mode == Prefs.DumpMode.HTTP_SERVER) || (dump_mode == Prefs.DumpMode.PCAP_FILE)) ? 1 : 0);
     }
 
     public int dumpPcapToUdp() {
@@ -410,6 +452,20 @@ public class CaptureService extends VpnService implements Runnable {
     public void dumpPcapData(byte[] data) {
         if(mHttpServer != null)
             mHttpServer.pushData(data);
+        else if(mOutputStream != null) {
+            try {
+                if(mFirstStreamWrite) {
+                    mOutputStream.write(Utils.hexStringToByteArray(Utils.PCAP_HEADER));
+                    mFirstStreamWrite = false;
+                }
+
+                mOutputStream.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+                reportError(e.getLocalizedMessage());
+                stopPacketLoop();
+            }
+        }
     }
 
     public void reportError(String msg) {

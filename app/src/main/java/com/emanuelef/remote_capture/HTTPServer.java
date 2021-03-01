@@ -20,20 +20,15 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
 
 public class HTTPServer extends NanoHTTPD {
     private static final String PCAP_MIME = "application/vnd.tcpdump.pcap";
-    private final DateFormat mFmt = new SimpleDateFormat("HH_mm_ss");
     private boolean firstStart = true;
     private boolean mAcceptConnections = false;
     private final Context mContext;
@@ -47,7 +42,7 @@ public class HTTPServer extends NanoHTTPD {
     }
 
     private Response redirectToPcap() {
-        String fname = "PCAPdroid_" + mFmt.format(new Date()) + ".pcap";
+        String fname = Utils.getUniquePcapFileName(mContext);
         Response r = newFixedLengthResponse(Status.TEMPORARY_REDIRECT, MIME_HTML, "");
         r.addHeader("Location", "/" + fname);
         return(r);

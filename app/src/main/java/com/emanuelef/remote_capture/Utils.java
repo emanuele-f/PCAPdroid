@@ -46,12 +46,17 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class Utils {
+    public static final String PCAP_HEADER = "d4c3b2a1020004000000000000000000ffff000065000000";
+
     public static String formatBytes(long bytes) {
         long divisor;
         String suffix;
@@ -268,5 +273,11 @@ public class Utils {
         });
 
         alert.show();
+    }
+
+    public static String getUniquePcapFileName(Context context) {
+        Locale locale = context.getResources().getConfiguration().locale;
+        final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
+        return  "PCAPdroid_" + fmt.format(new Date()) + ".pcap";
     }
 }

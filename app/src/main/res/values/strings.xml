@@ -89,5 +89,13 @@
     <string name="navigation_drawer_open">Drawer Open</string>
     <string name="navigation_drawer_close">Drawer Close</string>
     <string name="inspector">Inspector</string>
+    <string name="pcap_file">PCAP File</string>
+    <string name="pcap_file_info">Create a PCAP file into the device storage</string>
+    <string name="cannot_write_pcap_file">Cannot write PCAP file</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="ok">Ok</string>
+    <string name="pcap_file_action">Traffic saved to file %1$s (%2$s).</string>
+    <string name="delete_error">Could not delete file</string>
 </resources>
 

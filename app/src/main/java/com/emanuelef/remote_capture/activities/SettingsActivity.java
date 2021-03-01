@@ -146,6 +146,9 @@ public class SettingsActivity extends AppCompatActivity {
                 case HTTP_SERVER:
                     summary_id = R.string.http_server_info;
                     break;
+                case PCAP_FILE:
+                    summary_id = R.string.pcap_file_info;
+                    break;
                 case UDP_EXPORTER:
                     summary_id = R.string.udp_exporter_info;
                     break;

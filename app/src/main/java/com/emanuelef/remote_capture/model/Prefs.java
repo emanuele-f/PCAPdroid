@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 public class Prefs {
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
+    public static final String DUMP_PCAP_FILE = "pcap_file";
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_TLS_PROXY_IP_KEY = "tls_proxy_ip_address";
@@ -32,16 +33,20 @@ public class Prefs {
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
+    public static final String PREF_PCAP_URI = "pcap_path";
 
     public enum DumpMode {
         NONE,
         HTTP_SERVER,
+        PCAP_FILE,
         UDP_EXPORTER
     }
 
     public static DumpMode getDumpMode(String pref) {
         if(pref.equals(DUMP_HTTP_SERVER))
             return(DumpMode.HTTP_SERVER);
+        else if(pref.equals(DUMP_PCAP_FILE))
+            return(DumpMode.PCAP_FILE);
         else if(pref.equals(DUMP_UDP_EXPORTER))
             return(DumpMode.UDP_EXPORTER);
         else
