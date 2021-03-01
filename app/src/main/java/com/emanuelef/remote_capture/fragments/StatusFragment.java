@@ -51,6 +51,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.model.VPNStats;
 
 public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mCollectorInfo;
@@ -112,7 +113,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
             public void onReceive(Context context, Intent intent) {
                 processStatsUpdateIntent(intent);
             }
-        }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
+        }, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
@@ -132,15 +133,12 @@ public class StatusFragment extends Fragment implements AppStateListener {
     }
 
     private void processStatsUpdateIntent(Intent intent) {
-        long bytes_sent = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
-        long bytes_rcvd = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
-        int pkts_sent = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_PKTS, 0);
-        int pkts_rcvd = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_PKTS, 0);
+        VPNStats stats = (VPNStats) intent.getSerializableExtra("value");
 
-        Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + bytes_sent + ", bytes_rcvd=" +
-                bytes_rcvd + ", pkts_sent=" + pkts_sent + ", pkts_rcvd=" + pkts_rcvd);
+        Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
+                stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
 
-        mCaptureStatus.setText(Utils.formatBytes(bytes_sent + bytes_rcvd));
+        mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
     private void refreshPcapDumpInfo() {

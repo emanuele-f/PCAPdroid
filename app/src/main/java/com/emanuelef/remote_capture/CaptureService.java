@@ -94,13 +94,7 @@ public class CaptureService extends VpnService implements Runnable {
      * After the analysis, requests will be routed to the primary DNS server. */
     public static final String VPN_VIRTUAL_DNS_SERVER = "10.215.173.2";
 
-    public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
     public static final String ACTION_STATS_DUMP = "stats_dump";
-    public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
-    public static final String TRAFFIC_STATS_UPDATE_RCVD_BYTES = "rcvd_bytes";
-    public static final String TRAFFIC_STATS_UPDATE_SENT_PKTS = "sent_pkts";
-    public static final String TRAFFIC_STATS_UPDATE_RCVD_PKTS = "rcvd_pkts";
-
     public static final String ACTION_SERVICE_STATUS = "service_status";
     public static final String SERVICE_STATUS_KEY = "status";
     public static final String SERVICE_STATUS_STARTED = "started";
@@ -456,19 +450,6 @@ public class CaptureService extends VpnService implements Runnable {
         return uid;
     }
 
-    public void sendCaptureStats(long sent_bytes, long rcvd_bytes, int sent_pkts, int rcvd_pkts) {
-        Intent intent = new Intent(ACTION_TRAFFIC_STATS_UPDATE);
-
-        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_BYTES, sent_bytes);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_BYTES, rcvd_bytes);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_PKTS, sent_pkts);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_PKTS, rcvd_pkts);
-
-        last_bytes = sent_bytes + rcvd_bytes;
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
     public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {
         // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
         // thus preventing the ConnectionsAdapter from interleaving other operations
@@ -489,6 +470,7 @@ public class CaptureService extends VpnService implements Runnable {
         Intent intent = new Intent(ACTION_STATS_DUMP);
         intent.putExtras(bundle);
 
+        last_bytes = stats.bytes_sent + stats.bytes_rcvd;
         last_connections = stats.tot_conns;
         mHandler.post(this::updateNotification);
 

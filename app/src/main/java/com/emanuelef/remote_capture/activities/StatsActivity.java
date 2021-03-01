@@ -29,7 +29,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -76,12 +75,6 @@ public class StatsActivity extends AppCompatActivity {
                 updateVPNStats(intent);
             }
         }, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
-        bcast_man.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateTrafficStats(intent);
-            }
-        }, new IntentFilter(CaptureService.ACTION_TRAFFIC_STATS_UPDATE));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -94,6 +87,10 @@ public class StatsActivity extends AppCompatActivity {
     private void updateVPNStats(Intent intent) {
         VPNStats stats = (VPNStats) intent.getSerializableExtra("value");
 
+        mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
+        mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
+        mPacketsSent.setText(Utils.formatPkts(stats.pkts_sent));
+        mPacketsRcvd.setText(Utils.formatPkts(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));
         mDroppedConns.setText(Utils.formatNumber(this, stats.num_dropped_conns));
         mTotConns.setText(Utils.formatNumber(this, stats.tot_conns));
@@ -104,17 +101,5 @@ public class StatsActivity extends AppCompatActivity {
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
-    }
-
-    private void updateTrafficStats(Intent intent) {
-        long bytes_sent = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_BYTES, 0);
-        long bytes_rcvd = intent.getLongExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_BYTES, 0);
-        int pkts_sent = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_SENT_PKTS, 0);
-        int pkts_rcvd = intent.getIntExtra(CaptureService.TRAFFIC_STATS_UPDATE_RCVD_PKTS, 0);
-
-        mBytesSent.setText(Utils.formatBytes(bytes_sent));
-        mBytesRcvd.setText(Utils.formatBytes(bytes_rcvd));
-        mPacketsSent.setText(Utils.formatPkts(pkts_sent));
-        mPacketsRcvd.setText(Utils.formatPkts(pkts_rcvd));
     }
 }

@@ -63,7 +63,6 @@ typedef struct jni_methods {
     jmethodID getApplicationByUid;
     jmethodID protect;
     jmethodID dumpPcapData;
-    jmethodID sendCaptureStats;
     jmethodID sendConnectionsDump;
     jmethodID connInit;
     jmethodID connSetData;
@@ -711,17 +710,6 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
 
 /* ******************************************************* */
 
-static void sendCaptureStats(vpnproxy_data_t *proxy) {
-    JNIEnv *env = proxy->env;
-    capture_stats_t *stats = &proxy->capture_stats;
-
-    (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendCaptureStats, stats->sent_bytes, stats->rcvd_bytes,
-            stats->sent_pkts, stats->rcvd_pkts);
-    jniCheckException(env);
-}
-
-/* ******************************************************* */
-
 static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
     char srcip[64], dstip[64];
     struct in_addr addr;
@@ -835,6 +823,8 @@ cleanup:
 
 static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t *stats) {
     JNIEnv *env = proxy->env;
+    capture_stats_t *capstats = &proxy->capture_stats;
+
     int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
     int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);
 
@@ -845,7 +835,10 @@ static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t 
         return;
     }
 
-    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData, proxy->num_dropped_connections,
+    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
+            capstats->sent_bytes, capstats->rcvd_bytes,
+            capstats->sent_pkts, capstats->rcvd_pkts,
+            proxy->num_dropped_connections,
             stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns, proxy->num_dns_requests);
 
     if(!jniCheckException(env)) {
@@ -927,7 +920,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
     mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
-    mids.sendCaptureStats = jniGetMethodID(env, vpn_class, "sendCaptureStats", "(JJII)V");
     mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;)V");
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
@@ -936,7 +928,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             /* NOTE: must match ConnectionDescriptor::setData */
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIIIZ)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(IIIIII)V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIII)V");
 
     vpnproxy_data_t proxy = {
             .tapfd = tapfd,
@@ -1099,8 +1091,11 @@ housekeeping:
 
         if(proxy.capture_stats.new_stats
          && ((now_ms - proxy.capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) || dump_capture_stats_now) {
+            zdtun_statistics_t stats;
             dump_capture_stats_now = false;
-            sendCaptureStats(&proxy);
+
+            zdtun_get_stats(tun, &stats);
+            sendVPNStats(&proxy, &stats);
             proxy.capture_stats.new_stats = false;
             proxy.capture_stats.last_update_ms = now_ms;
         } else if((now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
@@ -1111,13 +1106,9 @@ housekeeping:
             javaPcapDump(&proxy);
         } else if((now_ms >= next_purge_ms) || dump_vpn_stats_now) {
             dump_vpn_stats_now = false;
-            zdtun_statistics_t stats;
 
             zdtun_purge_expired(tun, now_ms/1000);
             next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
-
-            zdtun_get_stats(tun, &stats);
-            sendVPNStats(&proxy, &stats);
         }
     }
 
