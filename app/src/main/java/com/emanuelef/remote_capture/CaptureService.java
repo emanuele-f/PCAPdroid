@@ -267,7 +267,8 @@ public class CaptureService extends VpnService implements Runnable {
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE, NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
+                NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
         nm.createNotificationChannel(chan);
     }
 
@@ -287,7 +288,7 @@ public class CaptureService extends VpnService implements Runnable {
                 .setContentText(msg)
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
         return builder.build();
     }
@@ -334,7 +335,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         mPcapUri = null;
 
-        NotificationManagerCompat.from(this).cancel(NOTIFY_ID_VPNSERVICE);
+        stopForeground(true /* remove notification */);
     }
 
     /* Check if the VPN service was launched */
