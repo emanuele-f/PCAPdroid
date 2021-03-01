@@ -41,6 +41,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
@@ -412,7 +413,10 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
 
                 Log.d(TAG, "onActivityResult -> start CaptureService");
 
-                startService(intent);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    startForegroundService(intent);
+                else
+                    startService(intent);
             } else {
                 Log.w(TAG, "VPN request failed");
                 appStateReady();
@@ -437,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             appStateRunning();
     }
 
-    private void startService() {
+    private void startCaptureService() {
         appStateStarting();
 
         Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
@@ -461,11 +465,11 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             if(Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
-                        .setPositiveButton(R.string.yes, (dialog, whichButton) -> startService())
+                        .setPositiveButton(R.string.yes, (dialog, whichButton) -> startCaptureService())
                         .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
                         .show();
             } else
-                startService();
+                startCaptureService();
         }
     }
 

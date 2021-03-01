@@ -20,6 +20,10 @@
 package com.emanuelef.remote_capture;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,9 +39,12 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
@@ -50,6 +57,8 @@ import java.net.InetSocketAddress;
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
+    private static final String NOTIFY_CHAN_VPNSERVICE = "vpnservice";
+    private static final int NOTIFY_ID_VPNSERVICE = 1;
     private ParcelFileDescriptor mParcelFileDescriptor = null;
     private Handler mHandler;
     private Thread mThread;
@@ -64,6 +73,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int http_server_port;
     private int tls_proxy_port;
     private long last_bytes;
+    private int last_connections;
     private static CaptureService INSTANCE;
     private String app_filter;
     private HTTPServer mHttpServer;
@@ -143,6 +153,7 @@ public class CaptureService extends VpnService implements Runnable {
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
+        last_connections = 0;
 
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
 
@@ -219,6 +230,10 @@ public class CaptureService extends VpnService implements Runnable {
         // Start a new session by creating a new thread.
         mThread = new Thread(this, "CaptureService Thread");
         mThread.start();
+
+        setupNotifications();
+        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+
         return START_STICKY;
         //return super.onStartCommand(intent, flags, startId);
     }
@@ -244,6 +259,42 @@ public class CaptureService extends VpnService implements Runnable {
             mHttpServer.stop();
 
         super.onDestroy();
+    }
+
+    private void setupNotifications() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+            return;
+
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE, NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_HIGH);
+        nm.createNotificationChannel(chan);
+    }
+
+    private Notification getNotification() {
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        String msg = String.format(getString(R.string.notification_msg),
+                Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentIntent(pi)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setContentTitle(getResources().getString(R.string.capture_running))
+                .setContentText(msg)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        return builder.build();
+    }
+
+    private void updateNotification() {
+        Notification notification = getNotification();
+        NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
     }
 
     private void stop() {
@@ -282,6 +333,8 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         mPcapUri = null;
+
+        NotificationManagerCompat.from(this).cancel(NOTIFY_ID_VPNSERVICE);
     }
 
     /* Check if the VPN service was launched */
@@ -434,6 +487,9 @@ public class CaptureService extends VpnService implements Runnable {
         bundle.putSerializable("value", stats);
         Intent intent = new Intent(ACTION_STATS_DUMP);
         intent.putExtras(bundle);
+
+        last_connections = stats.tot_conns;
+        mHandler.post(this::updateNotification);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
