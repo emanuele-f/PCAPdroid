@@ -25,6 +25,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -39,6 +41,7 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.InspectorActivity;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -48,9 +51,12 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 
+import org.w3c.dom.Text;
+
 public class StatusFragment extends Fragment implements AppStateListener {
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
+    private TextView mInspectorLink;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
 
@@ -79,6 +85,7 @@ public class StatusFragment extends Fragment implements AppStateListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
+        mInspectorLink = view.findViewById(R.id.inspector_link);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
 
         mCaptureStatus.setOnClickListener(v -> {
@@ -90,6 +97,8 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
+
+        setupInspectorLinK();
 
         mPrefs.registerOnSharedPreferenceChangeListener((sharedPreferences, s) -> {
             if((mActivity != null) && (mActivity.getState() == AppState.ready))
@@ -108,6 +117,19 @@ public class StatusFragment extends Fragment implements AppStateListener {
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
+    }
+
+    private void setupInspectorLinK() {
+        int color = getResources().getColor(android.R.color.tab_indicator_text);
+
+        mInspectorLink.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0);
+        Drawable drawables[] = mInspectorLink.getCompoundDrawables();
+        drawables[0].setColorFilter(color, PorterDuff.Mode.SRC_IN);
+
+        mInspectorLink.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), InspectorActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void processStatsUpdateIntent(Intent intent) {
@@ -160,10 +182,12 @@ public class StatusFragment extends Fragment implements AppStateListener {
         switch(state) {
             case ready:
                 mCaptureStatus.setText(R.string.ready);
+                mInspectorLink.setVisibility(View.GONE);
                 refreshPcapDumpInfo();
                 break;
             case running:
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+                mInspectorLink.setVisibility(View.VISIBLE);
                 refreshPcapDumpInfo();
                 break;
             default:

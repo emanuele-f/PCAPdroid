@@ -11,7 +11,7 @@
         android:id="@+id/collector_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="82dp"
+        android:layout_marginTop="60dp"
         android:gravity="center"
         android:autoLink="web"
         android:drawablePadding="5dp"
@@ -21,6 +21,20 @@
         app:layout_constraintTop_toBottomOf="@id/status_view" />
 
     <TextView
+        android:id="@+id/inspector_link"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="@string/inspector"
+        android:drawablePadding="5dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collector_info" />
+
+    <TextView
         android:id="@+id/status_view"
         android:layout_width="240dp"
         android:layout_height="240dp"
@@ -28,7 +42,7 @@
         android:background="@drawable/rounded_bg"
         android:gravity="center"
         android:text="@string/ready"
-        android:textSize="30dp"
+        android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
