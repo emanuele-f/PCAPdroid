@@ -22,6 +22,7 @@
 #include <ndpi_typedefs.h>
 #include "jni_helpers.c"
 #include "utils.c"
+#include "ndpi_master_protos.h"
 #include "vpnproxy.h"
 #include "pcap.h"
 #include "ndpi_protocol_ids.h"
@@ -83,6 +84,7 @@ static jni_methods_t mids;
 static bool running = false;
 static bool dump_vpn_stats_now = false;
 static bool dump_capture_stats_now = false;
+static ndpi_protocol_bitmask_struct_t masterProtos;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -301,7 +303,9 @@ struct ndpi_detection_module_struct* init_ndpi() {
 /* ******************************************************* */
 
 const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol l7proto, int ipproto) {
-    if(l7proto.master_protocol == NDPI_PROTOCOL_UNKNOWN) {
+    int proto = l7proto.master_protocol;
+
+    if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
         // Return the L3 protocol
         switch (ipproto) {
             case IPPROTO_TCP:
@@ -315,7 +319,7 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
         }
     }
 
-    return ndpi_get_proto_name(mod, l7proto.master_protocol);
+    return ndpi_get_proto_name(mod, proto);
 }
 
 /* ******************************************************* */
@@ -970,6 +974,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     /* nDPI */
     proxy.ndpi = init_ndpi();
+    initMasterProtocolsBitmap(&masterProtos);
 
     if(proxy.ndpi == NULL) {
         log_android(ANDROID_LOG_FATAL, "nDPI initialization failed");
