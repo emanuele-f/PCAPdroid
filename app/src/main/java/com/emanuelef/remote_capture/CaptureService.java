@@ -274,7 +274,8 @@ public class CaptureService extends VpnService implements Runnable {
                 Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.drawable.ic_logo)
+                .setColor(getResources().getColor(R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)
