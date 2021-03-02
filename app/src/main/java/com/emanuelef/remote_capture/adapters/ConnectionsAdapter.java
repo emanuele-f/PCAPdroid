@@ -53,10 +53,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
-        ImageView statusInd;
+        View statusInd;
         TextView remote;
         TextView l7proto;
         TextView traffic;
+        TextView appName;
+        TextView eta;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -66,6 +68,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             l7proto = itemView.findViewById(R.id.l7proto);
             traffic = itemView.findViewById(R.id.traffic);
             statusInd = itemView.findViewById(R.id.status_ind);
+            appName = itemView.findViewById(R.id.app_name);
+            eta = itemView.findViewById(R.id.eta);
         }
 
         public void bindConn(Context context, ConnectionDescriptor conn, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
@@ -78,16 +82,24 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             if(conn.info.length() > 0)
                 remote.setText(conn.info);
             else
-                remote.setText(String.format(context.getResources().getString(R.string.ip_and_port),
-                        conn.dst_ip, conn.dst_port));
+                remote.setText(conn.dst_ip);
 
-            l7proto.setText(conn.l7proto);
+            String l7Text = String.format(context.getResources().getString(R.string.proto_and_port), conn.l7proto, conn.dst_port);
+            l7proto.setText(l7Text);
+
+            String info_txt = (app != null) ? app.getName() : Integer.toString(conn.uid);
+            appName.setText(info_txt);
             traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
 
-            if(conn.closed)
-                statusInd.setVisibility(View.INVISIBLE);
-            else
+            if(conn.closed) {
+                eta.setText(Utils.formatEpochShort(context, conn.first_seen));
+
+                eta.setVisibility(View.VISIBLE);
+                statusInd.setVisibility(View.GONE);
+            } else {
+                eta.setVisibility(View.GONE);
                 statusInd.setVisibility(View.VISIBLE);
+            }
         }
     }
 

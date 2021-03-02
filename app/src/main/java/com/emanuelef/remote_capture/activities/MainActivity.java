@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switch (position) {
                 default: // Deliberate fall-through to status tab
                 case POS_STATUS:
-                    tab.setText(R.string.status_view);
+                    tab.setText(R.string.status);
                     break;
                 case POS_CONNECTIONS:
                     tab.setText(R.string.connections_view);
@@ -250,28 +250,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.action_open_github) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
             startActivity(browserIntent);
-            return true;
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
-            return true;
         } else if (id == R.id.action_open_user_guide) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
             startActivity(browserIntent);
-            return true;
         } else if (id == R.id.action_rate_app) {
             rateApp();
-            return true;
         } else if (id == R.id.action_stats) {
             if(mState == AppState.running) {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
-
-            return true;
         }
 
-        return true;
+        return false;
     }
 
     public void setAppStateListener(AppStateListener listener) {

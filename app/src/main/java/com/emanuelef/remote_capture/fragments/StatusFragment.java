@@ -197,7 +197,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.main_menu, menu);
 
         mMenu = menu;
@@ -250,10 +250,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 int height = mFilterDescription.getMeasuredHeight();
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                if(drawable != null)
-                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-                else
-                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             }
         }
 
@@ -317,10 +314,7 @@ private void refreshPcapDumpInfo() {
                 int height = mCollectorInfo.getMeasuredHeight();
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                if(drawable != null)
-                    mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-                else
-                    mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
             } else
                 mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
         } else
@@ -344,6 +338,7 @@ private void refreshPcapDumpInfo() {
                 mQuickSettings.setVisibility(View.VISIBLE);
                 break;
             case starting:
+            case stopping:
                 if(mMenu != null)
                     mMenuItemStartBtn.setEnabled(false);
                 break;
@@ -361,16 +356,12 @@ private void refreshPcapDumpInfo() {
                 mQuickSettings.setVisibility(View.GONE);
                 refreshPcapDumpInfo();
                 break;
-            case stopping:
-                if(mMenu != null)
-                    mMenuItemStartBtn.setEnabled(false);
-                break;
             default:
                 break;
         }
     }
 
-    private void loadInstalledApps(Map<Integer, AppDescriptor> apps, boolean with_icons) {
+    private void loadInstalledApps(Map<Integer, AppDescriptor> apps) {
         mInstalledApps = new ArrayList<>();
 
         for(Map.Entry<Integer, AppDescriptor> pair : apps.entrySet()) {
@@ -398,12 +389,8 @@ private void refreshPcapDumpInfo() {
         mOpenAppsWhenDone = false;
 
         Dialog dialog = Utils.getAppSelectionDialog(mActivity, mInstalledApps, this::setAppFilter);
-        dialog.setOnCancelListener(dialog1 -> {
-            setAppFilter(null);
-        });
-        dialog.setOnDismissListener(dialog1 -> {
-            mOpenAppsList = null;
-        });
+        dialog.setOnCancelListener(dialog1 -> setAppFilter(null));
+        dialog.setOnDismissListener(dialog1 -> mOpenAppsList = null);
 
         dialog.show();
 
@@ -413,12 +400,12 @@ private void refreshPcapDumpInfo() {
 
     @Override
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        loadInstalledApps(apps, false);
+        loadInstalledApps(apps);
     }
 
     @Override
     public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        loadInstalledApps(apps, true);
+        loadInstalledApps(apps);
 
         // Possibly update the icons
         if(mOpenAppsList != null) {

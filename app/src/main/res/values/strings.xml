@@ -27,7 +27,7 @@
     <string name="starting">Starting...</string>
     <string name="about">About</string>
     <string name="misc_prefs">Misc</string>
-    <string name="status_view">Status</string>
+    <string name="status">Status</string>
     <string name="connections_view">Connections</string>
     <string name="no_connections">No connections</string>
     <string name="connection_details">Connection Details</string>
@@ -99,5 +99,11 @@
     <string name="capture_running">Capture running</string>
     <string name="notification_msg">%1$s captured, %2$s connections</string>
     <string name="no_app_filter">No app filter set</string>
+    <string name="ip_x">IP: %1$s</string>
+    <string name="proto_and_port">%1$s, %2$d</string>
+    <string name="conn_status_open">Open</string>
+    <string name="first_seen">First Seen</string>
+    <string name="last_seen">Last Seen</string>
+    <string name="conn_status_closed">Closed</string>
 </resources>
 

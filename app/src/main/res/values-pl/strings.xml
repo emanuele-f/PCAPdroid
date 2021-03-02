@@ -22,7 +22,7 @@
     <string name="starting">Włączanie...</string>
     <string name="about">O aplikacji</string>
     <string name="misc_prefs">Różne</string>
-    <string name="status_view">Status</string>
+    <string name="status">Status</string>
     <string name="connections_view">Połączenia</string>
     <string name="no_connections">Brak połączeń</string>
     <string name="connection_details">Informacje o połączeniu</string>

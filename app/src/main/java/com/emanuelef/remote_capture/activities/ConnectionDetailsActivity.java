@@ -37,6 +37,9 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
     private TextView mPacketsView;
     private TextView mDurationView;
     private ConnectionDescriptor conn;
+    private TextView mStatus;
+    private TextView mFirstSeen;
+    private TextView mLastSeen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +61,18 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
         mDurationView = findViewById(R.id.detail_duration);
+        mStatus = findViewById(R.id.detail_status);
+        mFirstSeen = findViewById(R.id.first_seen);
+        mLastSeen = findViewById(R.id.last_seen);
+
+        String l4proto = Utils.proto2str(conn.ipproto);
 
         if(conn != null) {
-            proto.setText(String.format(getResources().getString(R.string.app_and_proto), conn.l7proto, Utils.proto2str(conn.ipproto)));
+            if(!conn.l7proto.equals(l4proto))
+                proto.setText(String.format(getResources().getString(R.string.app_and_proto), conn.l7proto, l4proto));
+            else
+                proto.setText(conn.l7proto);
+
             source.setText(String.format(getResources().getString(R.string.ip_and_port), conn.src_ip, conn.src_port));
             destination.setText(String.format(getResources().getString(R.string.ip_and_port), conn.dst_ip, conn.dst_port));
 
@@ -79,14 +91,12 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
         if(app_name != null)
             app.setText(String.format(getResources().getString(R.string.app_and_proto), app_name, Integer.toString(conn.uid)));
         else
-            app.setText( Integer.toString(conn.uid));
+            app.setText(Integer.toString(conn.uid));
 
         if(!conn.url.isEmpty())
             url.setText(conn.url);
         else
             url_row.setVisibility(View.GONE);
-
-        // TODO update the details if the connection is updated
     }
 
     private void updateStats() {
@@ -94,6 +104,13 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
             mBytesView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
             mPacketsView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
             mDurationView.setText(Utils.formatDuration(conn.last_seen - conn.first_seen));
+            mFirstSeen.setText(Utils.formatEpochFull(this, conn.first_seen));
+            mLastSeen.setText(Utils.formatEpochFull(this, conn.last_seen));
+
+            if(conn.closed)
+                mStatus.setText(R.string.conn_status_closed);
+            else
+                mStatus.setText(R.string.conn_status_open);
         }
     }
 }

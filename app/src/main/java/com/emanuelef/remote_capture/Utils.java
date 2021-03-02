@@ -105,6 +105,27 @@ public class Utils {
             return String.format("> %d h", seconds / 3600);
     }
 
+    public static String formatEpochShort(Context context, long epoch) {
+        long now = Utils.now();
+        Locale locale = context.getResources().getConfiguration().locale;
+
+        if((epoch - now) < (23 * 3600)) {
+            final DateFormat fmt = new SimpleDateFormat("HH:mm:ss", locale);
+            return fmt.format(new Date(epoch * 1000));
+        }
+
+        DateFormat fmt = new SimpleDateFormat("dd MMM", locale);
+        return fmt.format(new Date(epoch * 1000));
+    }
+
+    public static String formatEpochFull(Context context, long epoch) {
+        long now = Utils.now();
+        Locale locale = context.getResources().getConfiguration().locale;
+        DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
+
+        return fmt.format(new Date(epoch * 1000));
+    }
+
     public static String proto2str(int proto) {
         switch(proto) {
             case 6:     return "TCP";

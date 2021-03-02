@@ -27,7 +27,7 @@
     <string name="starting">启动中...</string>
     <string name="about">关于</string>
     <string name="misc_prefs">杂项</string>
-    <string name="status_view">状态</string>
+    <string name="status">状态</string>
     <string name="connections_view">连接</string>
     <string name="no_connections">无连接</string>
     <string name="connection_details">连接详情</string>

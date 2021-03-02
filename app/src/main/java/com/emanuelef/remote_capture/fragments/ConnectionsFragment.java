@@ -41,6 +41,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -144,9 +145,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Drawable icon = ContextCompat.getDrawable(getContext(), android.R.color.transparent);
         mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
 
-        /*DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
-        mRecyclerView.addItemDecoration(dividerItemDecoration);*/
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);

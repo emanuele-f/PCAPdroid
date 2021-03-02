@@ -26,7 +26,6 @@ import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 import java.util.Map;

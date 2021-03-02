@@ -108,6 +108,25 @@
     </TableRow>
 
     <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/status" />
+        <TextView
+            android:id="@+id/detail_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            android:text="Open" />
+    </TableRow>
+
+    <TableRow
         android:id="@+id/detail_url_row"
         android:layout_width="match_parent"
         android:layout_height="0dp">
@@ -184,7 +203,44 @@
             android:layout_weight="0.75"
             android:textIsSelectable="true"
             android:text="2 min" />
+    </TableRow>
 
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/first_seen" />
+        <TextView
+            android:id="@+id/first_seen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            android:text="01/02/20 00:45:01" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/last_seen" />
+        <TextView
+            android:id="@+id/last_seen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            android:text="01/02/20 00:47:01" />
     </TableRow>
 </TableLayout>
 
