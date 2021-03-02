@@ -20,8 +20,15 @@
 package com.emanuelef.remote_capture;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -30,6 +37,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -249,7 +257,7 @@ public class Utils {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 
-    public static void showAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
+    public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
         View dialogLayout = activity.getLayoutInflater().inflate(R.layout.apps_selector, null);
         SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
         AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
@@ -264,20 +272,31 @@ public class Utils {
         builder.setView(dialogLayout);
 
         final AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(true);
 
         apps.setSelectedAppListener(app -> {
             listener.onSelectedApp(app);
 
             // dismiss the dialog
-            alert.cancel();
+            alert.dismiss();
         });
 
-        alert.show();
+        return alert;
     }
 
     public static String getUniquePcapFileName(Context context) {
         Locale locale = context.getResources().getConfiguration().locale;
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
         return  "PCAPdroid_" + fmt.format(new Date()) + ".pcap";
+    }
+
+    public static Drawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+        Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return new BitmapDrawable(res, bitmap);
     }
 }

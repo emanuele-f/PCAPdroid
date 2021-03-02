@@ -27,7 +27,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 
@@ -52,10 +51,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
-import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -64,29 +60,19 @@ import com.emanuelef.remote_capture.Utils;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements AppsLoadListener, NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences mPrefs;
     private Menu mMenu;
     private MenuItem mMenuItemStartBtn;
-    private MenuItem mMenuItemAppSel;
     private MenuItem mMenuSettings;
-    private Drawable mFilterIcon;
-    private String mFilterApp;
-    private boolean mOpenAppsWhenDone;
-    private List<AppDescriptor> mInstalledApps;
     private AppState mState;
     private AppStateListener mListener;
-    private AppDescriptor mNoFilterApp;
     private Uri mPcapUri;
     private BroadcastReceiver mReceiver;
+    private String mPcapFname;
 
     private static final String TAG = "Main";
 
@@ -101,18 +87,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Drawable icon = ContextCompat.getDrawable(this, android.R.color.transparent);
-        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
-
-        mFilterApp = CaptureService.getAppFilter();
         mPcapUri = CaptureService.getPcapUri();
-
-        if((mFilterApp == null) && (savedInstanceState != null)) {
-            // Possibly get the temporary filter
-            mFilterApp = savedInstanceState.getString("FilterApp");
-        }
-
-        mOpenAppsWhenDone = false;
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -121,10 +96,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         setContentView(R.layout.main_activity);
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        (new AppsLoader(this))
-                .setAppsLoadListener(this)
-                .loadAllApps();
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
@@ -143,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                         if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
                             showPcapActionDialog(mPcapUri);
                             mPcapUri = null;
+                            mPcapFname = null;
                         }
 
                         appStateReady();
@@ -201,50 +173,11 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-
-        savedInstanceState.putString("FilterApp", mFilterApp);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
         if(mMenu != null)
             initAppState();
-    }
-
-    @Override
-    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        // TODO optimize: show the apps even when icon not loaded
-    }
-
-    @Override
-    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        mInstalledApps = new ArrayList<>();
-        AppDescriptor filterApp = null;
-
-        for (Map.Entry<Integer, AppDescriptor> pair : apps.entrySet()) {
-            AppDescriptor app = pair.getValue();
-
-            if(!app.isVirtual()) {
-                mInstalledApps.add(app);
-
-                if (app.getPackageName().equals(mFilterApp))
-                    filterApp = app;
-            }
-        }
-
-        Collections.sort(mInstalledApps);
-
-        if (filterApp != null) {
-            /* An filter is active, try to set the corresponding app image */
-            setSelectedApp(filterApp);
-        }
-
-        if (mOpenAppsWhenDone)
-            openAppSelector();
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -300,7 +233,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
         mMenuItemStartBtn.setTitle(R.string.start_button);
         mMenuItemStartBtn.setEnabled(true);
-        mMenuItemAppSel.setEnabled(true);
         mMenuSettings.setEnabled(true);
     }
 
@@ -310,7 +242,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
 
         mMenuItemStartBtn.setEnabled(false);
         mMenuSettings.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
     }
 
     public void appStateRunning() {
@@ -322,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         mMenuItemStartBtn.setTitle(R.string.stop_button);
         mMenuItemStartBtn.setEnabled(true);
         mMenuSettings.setEnabled(false);
-        mMenuItemAppSel.setEnabled(false);
     }
 
     public void appStateStopping() {
@@ -339,11 +269,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
 
         mMenu = menu;
         mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
-        mMenuItemAppSel = mMenu.findItem(R.id.action_show_app_filter);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
-
-        mFilterIcon = mMenuItemAppSel.getIcon();
-
         initAppState();
 
         return true;
@@ -386,13 +312,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        } else if (id == R.id.action_show_app_filter) {
-            if(mFilterApp != null)
-                setSelectedApp(null);
-            else
-                openAppSelector();
-
-            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -410,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
                 if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
                     bundle.putString(Prefs.PREF_PCAP_URI, mPcapUri.toString());
 
-                bundle.putString(Prefs.PREF_APP_FILTER, mFilterApp);
                 intent.putExtra("settings", bundle);
 
                 Log.d(TAG, "onActivityResult -> start CaptureService");
@@ -426,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         } else if(requestCode == REQUEST_CODE_PCAP_FILE) {
             if(resultCode == RESULT_OK) {
                 mPcapUri = data.getData();
+                mPcapFname = null;
                 Log.d(TAG, "PCAP to write: " + mPcapUri.toString());
 
                 toggleService();
@@ -496,11 +415,11 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         if((cursor == null) || !cursor.moveToFirst())
             return;
 
-        // If file is empty, delete it
         long file_size = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
         String fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
         cursor.close();
 
+        // If file is empty, delete it
         if(file_size == 0) {
             Log.d(TAG, "PCAP file is empty, deleting");
 
@@ -550,40 +469,29 @@ public class MainActivity extends AppCompatActivity implements AppsLoadListener,
         return(mState);
     }
 
-    public void setSelectedApp(AppDescriptor app) {
-        if(app == null)
-            app = mNoFilterApp;
+    public String getPcapFname() {
+        if((mState == AppState.running) && (mPcapUri != null)) {
+            if(mPcapFname != null)
+                return mPcapFname;
 
-        Log.d(TAG, "Selected app: " + app.getUid());
+            Cursor cursor;
 
-        if(app.getUid() != -1) {
-            // an app has been selected
-            mFilterApp = app.getPackageName();
-
-            // clone the drawable to avoid a "zoom-in" effect when clicked
-            Drawable drawable = (app.getIcon() != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : null;
-
-            if(drawable != null) {
-                mMenuItemAppSel.setIcon(drawable);
-                mMenuItemAppSel.setTitle(R.string.remove_app_filter);
+            try {
+                cursor = getContentResolver().query(mPcapUri, null, null, null, null);
+            } catch (Exception e) {
+                return null;
             }
-        } else {
-            // no filter
-            mFilterApp = null;
-            mMenuItemAppSel.setIcon(mFilterIcon);
-            mMenuItemAppSel.setTitle(R.string.set_app_filter);
-        }
-    }
 
-    private void openAppSelector() {
-        if(mInstalledApps == null) {
-            /* The applications loader has not finished yet. */
-            mOpenAppsWhenDone = true;
-            Utils.showToast(this, R.string.apps_loading_please_wait);
-            return;
+            if((cursor == null) || !cursor.moveToFirst())
+                return null;
+
+            String fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            cursor.close();
+
+            mPcapFname = fname;
+            return fname;
         }
 
-        mOpenAppsWhenDone = false;
-        Utils.showAppSelectionDialog(this, mInstalledApps, this::setSelectedApp);
+        return null;
     }
 }

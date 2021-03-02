@@ -113,8 +113,12 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
 
     public void setApps(List<AppDescriptor> installedApps) {
         mInstalledApps = installedApps;
-        mAdapter = new AppsAdapter(getContext(), mInstalledApps);
-        setAdapter(mAdapter);
+
+        if(mAdapter == null) {
+            mAdapter = new AppsAdapter(getContext(), mInstalledApps);
+            setAdapter(mAdapter);
+        } else
+            mAdapter.notifyDataSetChanged();
     }
 
     public void setSelectedAppListener(final OnSelectedAppListener listener) {

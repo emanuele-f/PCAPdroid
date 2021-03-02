@@ -34,6 +34,7 @@ public class Prefs {
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
     public static final String PREF_PCAP_URI = "pcap_path";
+    public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
 
     public enum DumpMode {
         NONE,
@@ -56,9 +57,10 @@ public class Prefs {
     /* Prefs with defaults */
     public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
-    public static DumpMode getDumpMode(SharedPreferences p)  { return(getDumpMode(p.getString(PREF_PCAP_DUMP_MODE, DUMP_HTTP_SERVER))); }
+    public static DumpMode getDumpMode(SharedPreferences p)  { return(getDumpMode(p.getString(PREF_PCAP_DUMP_MODE, DEFAULT_DUMP_MODE))); }
     public static int getHttpServerPort(SharedPreferences p) { return(Integer.parseInt(p.getString(Prefs.PREF_HTTP_SERVER_PORT, "8080"))); }
     public static boolean getTlsDecryptionEnabled(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_ENABLED_KEY, false)); }
     public static String getTlsProxyAddress(SharedPreferences p) { return(p.getString(PREF_TLS_PROXY_IP_KEY, "0.0.0.0")); }
     public static int getTlsProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_TLS_PROXY_PORT_KEY, "8080"))); }
+    public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
 }

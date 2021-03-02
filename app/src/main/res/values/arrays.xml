@@ -13,4 +13,11 @@
         <item>@string/pcap_file</item>
         <item>@string/udp_exporter</item>
     </string-array>
+
+    <string-array name="pcap_dump_modes_descriptions">
+        <item>@string/no_dump_info</item>
+        <item>@string/http_server_info</item>
+        <item>@string/pcap_file_info</item>
+        <item>@string/udp_exporter_info</item>
+    </string-array>
 </resources>

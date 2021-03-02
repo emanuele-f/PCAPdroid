@@ -51,10 +51,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private EditTextPreference mRemoteCollectorIp;
-        private EditTextPreference mRemoteCollectorPort;
-        private EditTextPreference mHttpServerPort;
-        private ListPreference mDumpModePref;
         private SwitchPreference mTlsDecryptionEnabled;
         private EditTextPreference mTlsProxyIp;
         private EditTextPreference mTlsProxyPort;
@@ -63,18 +59,11 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            mDumpModePref = findPreference(Prefs.PREF_PCAP_DUMP_MODE);
-            mDumpModePref.setOnPreferenceChangeListener((preference, newValue) -> {
-                dumpPrefsHideShow((String) newValue);
-                return true;
-            });
-
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
             setupTlsProxyPrefs();
 
             tlsDecryptionHideShow(mTlsDecryptionEnabled.isChecked());
-            dumpPrefsHideShow(mDumpModePref.getValue());
         }
 
         private boolean validatePort(String value) {
@@ -88,21 +77,21 @@ public class SettingsActivity extends AppCompatActivity {
 
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
-            mRemoteCollectorIp = findPreference(Prefs.PREF_COLLECTOR_IP_KEY);
+            EditTextPreference mRemoteCollectorIp = findPreference(Prefs.PREF_COLLECTOR_IP_KEY);
             mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> {
                 Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
                 return(matcher.matches());
             });
 
             /* Collector port validation */
-            mRemoteCollectorPort = findPreference(Prefs.PREF_COLLECTOR_PORT_KEY);
+            EditTextPreference mRemoteCollectorPort = findPreference(Prefs.PREF_COLLECTOR_PORT_KEY);
             mRemoteCollectorPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
         private void setupHttpServerPrefs() {
             /* HTTP Server port validation */
-            mHttpServerPort = findPreference(Prefs.PREF_HTTP_SERVER_PORT);
+            EditTextPreference mHttpServerPort = findPreference(Prefs.PREF_HTTP_SERVER_PORT);
             mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
@@ -124,41 +113,6 @@ public class SettingsActivity extends AppCompatActivity {
             mTlsProxyPort = findPreference(Prefs.PREF_TLS_PROXY_PORT_KEY);
             mTlsProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mTlsProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
-        }
-
-        /* This implements a radio-button like behaviour */
-        private void dumpPrefsHideShow(String dumpMode) {
-            Prefs.DumpMode mode = Prefs.getDumpMode(dumpMode);
-            boolean show_http_prefs = (mode == Prefs.DumpMode.HTTP_SERVER);
-            boolean show_udp_prefs = (mode == Prefs.DumpMode.UDP_EXPORTER);
-
-            /* HTTP Server */
-            mHttpServerPort.setVisible(show_http_prefs);
-
-            /* UDP Receiver */
-            mRemoteCollectorIp.setVisible(show_udp_prefs);
-            mRemoteCollectorPort.setVisible(show_udp_prefs);
-
-            /* Adjust label */
-            int summary_id;
-
-            switch(mode) {
-                case HTTP_SERVER:
-                    summary_id = R.string.http_server_info;
-                    break;
-                case PCAP_FILE:
-                    summary_id = R.string.pcap_file_info;
-                    break;
-                case UDP_EXPORTER:
-                    summary_id = R.string.udp_exporter_info;
-                    break;
-                case NONE:
-                default:
-                    summary_id = R.string.no_dump_info;
-                    break;
-            }
-
-            mDumpModePref.setSummary(summary_id);
         }
 
         private void tlsDecryptionHideShow(boolean decryptionEnabled) {

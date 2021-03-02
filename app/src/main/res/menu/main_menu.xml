@@ -10,13 +10,6 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_show_app_filter"
-        android:title="@string/set_app_filter"
-        android:orderInCategory="50"
-        android:icon="@drawable/ic_filter_alt"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_settings"
         android:title="@string/title_activity_settings"
         android:orderInCategory="100"

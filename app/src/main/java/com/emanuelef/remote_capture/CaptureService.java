@@ -137,8 +137,8 @@ public class CaptureService extends VpnService implements Runnable {
         public_dns = Utils.getDnsServer(app_ctx);
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
-        app_filter = settings.getString(Prefs.PREF_APP_FILTER);
 
+        app_filter = Prefs.getAppFilter(prefs);
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
@@ -197,7 +197,7 @@ public class CaptureService extends VpnService implements Runnable {
                 .addRoute("128.0.0.0", 1)
                 .addDnsServer(vpn_dns);
 
-        if(app_filter != null) {
+        if((app_filter != null) && (!app_filter.isEmpty())) {
             Log.d(TAG, "Setting app filter: " + app_filter);
 
             try {

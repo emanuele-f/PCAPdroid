@@ -23,12 +23,17 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <fragment
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:id="@+id/status_fragment"
-        android:name="com.emanuelef.remote_capture.fragments.StatusFragment"
+    <ScrollView
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        tools:layout="@layout/status"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <fragment
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:id="@+id/status_fragment"
+            android:name="com.emanuelef.remote_capture.fragments.StatusFragment"
+            tools:layout="@layout/status"/>
+    </ScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

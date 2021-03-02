@@ -14,7 +14,8 @@
         android:layout_marginTop="60dp"
         android:gravity="center"
         android:autoLink="web"
-        android:drawablePadding="5dp"
+        android:drawablePadding="10dp"
+        tools:text="Collector Info"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,11 +25,12 @@
         android:id="@+id/inspector_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="@string/inspector"
         android:drawablePadding="5dp"
         android:visibility="gone"
+        tools:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,8 +38,8 @@
 
     <TextView
         android:id="@+id/status_view"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
         android:layout_marginTop="50dp"
         android:background="@drawable/rounded_bg"
         android:gravity="center"
@@ -47,5 +49,43 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/quick_settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="32dp"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/status_view"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/dump_mode_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog"
+            android:prompt="@string/dump_mode"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:paddingEnd="0dp">
+
+            <include layout="@layout/quick_settings_item"
+                android:id="@+id/app_filter_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="50dp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/app_filter_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" />
+        </RelativeLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

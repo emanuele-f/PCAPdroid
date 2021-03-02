@@ -76,8 +76,10 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder>
         AppDescriptor app = getItem(position);
 
         holder.textInListView.setText(app.getName());
-        holder.imageInListView.setImageDrawable(app.getIcon());
         holder.packageInListView.setText(app.getPackageName());
+
+        if(app.getIcon() != null)
+            holder.imageInListView.setImageDrawable(app.getIcon());
     }
 
     @Override
