@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.InspectorActivity;
+import com.emanuelef.remote_capture.activities.AppsActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -38,7 +38,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
-    private InspectorActivity mActivity;
+    private AppsActivity mActivity;
     private BroadcastReceiver mReceiver;
 
     @Override
@@ -46,13 +46,13 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
         super.onDestroy();
 
         unregisterConnsListener();
-        ((InspectorActivity) getActivity()).removeAppLoadListener(this);
+        ((AppsActivity) getActivity()).removeAppLoadListener(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (InspectorActivity) getActivity();
+        mActivity = (AppsActivity) getActivity();
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
@@ -71,17 +71,17 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
         mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;
 
-        mAdapter.setClickListener(v -> {
+        /*mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
             AppStats item = mAdapter.getItem(pos);
 
             if(item != null)
                 mActivity.filterByUid(item.getUid());
-        });
+        });*/
 
         registerConnsListener();
 
-        InspectorActivity activity = (InspectorActivity) getActivity();
+        AppsActivity activity = (AppsActivity) getActivity();
         if(activity.getApps() != null)
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);

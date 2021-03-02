@@ -88,7 +88,6 @@
     <string name="set_app_filter">Set the app filter</string>
     <string name="navigation_drawer_open">Drawer Open</string>
     <string name="navigation_drawer_close">Drawer Close</string>
-    <string name="inspector">Inspector</string>
     <string name="pcap_file">PCAP File</string>
     <string name="pcap_file_info">Create a PCAP file into the device storage</string>
     <string name="cannot_write_pcap_file">Cannot write PCAP file</string>

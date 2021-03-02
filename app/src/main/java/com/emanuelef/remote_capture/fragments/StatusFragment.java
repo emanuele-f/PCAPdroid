@@ -26,12 +26,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -46,8 +48,6 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
-import com.emanuelef.remote_capture.AppsLoader;
-import com.emanuelef.remote_capture.activities.InspectorActivity;
 import com.emanuelef.remote_capture.adapters.DumpModesAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -69,9 +69,11 @@ import java.util.Map;
 
 public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
     private static final String TAG = "StatusFragment";
+    private Menu mMenu;
+    private MenuItem mMenuItemStartBtn;
+    private MenuItem mMenuSettings;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
-    private TextView mInspectorLink;
     private View mQuickSettings;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
@@ -92,6 +94,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
     @Override
     public void onDestroy() {
+        mActivity.removeAppLoadListener(this);
         mActivity.setAppStateListener(null);
         mActivity = null;
         super.onDestroy();
@@ -100,6 +103,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.status, container, false);
     }
 
@@ -108,7 +112,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
-        mInspectorLink = view.findViewById(R.id.inspector_link);
         mQuickSettings = view.findViewById(R.id.quick_settings);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
@@ -161,8 +164,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
-        setupInspectorLinK();
-
         /* Register for stats update */
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -177,9 +178,12 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
 
-        (new AppsLoader(mActivity))
-                .setAppsLoadListener(this)
-                .loadAllApps();
+        if(mActivity.getApps() != null)
+            onAppsIconsLoaded(mActivity.getApps());
+        mActivity.addAppLoadListener(this);
+
+        if((mMenu != null) && (mActivity != null))
+            appStateChanged(mActivity.getState());
     }
 
     @Override
@@ -190,6 +194,26 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             LocalBroadcastManager.getInstance(getContext())
                     .unregisterReceiver(mReceiver);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.main_menu, menu);
+
+        mMenu = menu;
+        mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
+        mMenuSettings = mMenu.findItem(R.id.action_settings);
+
+        if(mActivity != null)
+            appStateChanged(mActivity.getState());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if((mMenu != null) && (mActivity != null))
+            appStateChanged(mActivity.getState());
     }
 
     private AppDescriptor findAppByPackage(String pkgname) {
@@ -243,19 +267,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         editor.putString(Prefs.PREF_APP_FILTER, mAppFilter);
         editor.apply();
         refreshFilterInfo();
-    }
-
-    private void setupInspectorLinK() {
-        int color = ContextCompat.getColor(mActivity, android.R.color.tab_indicator_text);
-
-        mInspectorLink.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0);
-        Drawable []drawables = mInspectorLink.getCompoundDrawables();
-        drawables[0].setColorFilter(color, PorterDuff.Mode.SRC_IN);
-
-        mInspectorLink.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), InspectorActivity.class);
-            startActivity(intent);
-        });
     }
 
     private void processStatsUpdateIntent(Intent intent) {
@@ -320,17 +331,39 @@ private void refreshPcapDumpInfo() {
     public void appStateChanged(AppState state) {
         switch(state) {
             case ready:
+                if(mMenu != null) {
+                    mMenuItemStartBtn.setIcon(
+                            ContextCompat.getDrawable(getContext(), android.R.drawable.ic_media_play));
+                    mMenuItemStartBtn.setTitle(R.string.start_button);
+                    mMenuItemStartBtn.setEnabled(true);
+                    mMenuSettings.setEnabled(true);
+                }
+
                 mCaptureStatus.setText(R.string.ready);
-                mInspectorLink.setVisibility(View.GONE);
                 mCollectorInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
                 break;
+            case starting:
+                if(mMenu != null)
+                    mMenuItemStartBtn.setEnabled(false);
+                break;
             case running:
+                if(mMenu != null) {
+                    mMenuItemStartBtn.setIcon(
+                            ContextCompat.getDrawable(getContext(), R.drawable.ic_media_stop));
+                    mMenuItemStartBtn.setTitle(R.string.stop_button);
+                    mMenuItemStartBtn.setEnabled(true);
+                    mMenuSettings.setEnabled(false);
+                }
+
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-                mInspectorLink.setVisibility(View.VISIBLE);
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
                 refreshPcapDumpInfo();
+                break;
+            case stopping:
+                if(mMenu != null)
+                    mMenuItemStartBtn.setEnabled(false);
                 break;
             default:
                 break;

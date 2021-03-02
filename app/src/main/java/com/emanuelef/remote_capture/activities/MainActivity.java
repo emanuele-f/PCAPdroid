@@ -35,46 +35,62 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.AppsLoader;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, AppsLoadListener {
     private SharedPreferences mPrefs;
-    private Menu mMenu;
-    private MenuItem mMenuItemStartBtn;
-    private MenuItem mMenuSettings;
+    private ViewPager2 mPager;
+    private TabLayout mTabLayout;
     private AppState mState;
     private AppStateListener mListener;
     private Uri mPcapUri;
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
+    private Map<Integer, AppDescriptor> mInstalledApps;
+    private List<AppsLoadListener> mAppsListeners;
 
     private static final String TAG = "Main";
+
+    private static final int POS_STATUS = 0;
+    private static final int POS_CONNECTIONS = 1;
+    private static final int TOTAL_COUNT = 2;
 
     private static final int REQUEST_CODE_VPN = 2;
     private static final int REQUEST_CODE_PCAP_FILE = 3;
@@ -87,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initAppState();
+
         mPcapUri = CaptureService.getPcapUri();
 
         CaocConfig.Builder.create()
@@ -95,7 +113,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.main_activity);
 
+        mTabLayout = findViewById(R.id.tablayout);
+        mPager = findViewById(R.id.pager);
+        mAppsListeners = new ArrayList<>();
+
+        setupTabs();
+
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        (new AppsLoader(this))
+                .setAppsLoadListener(this)
+                .loadAllApps();
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
@@ -172,20 +200,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    private static class MyStateAdapter extends FragmentStateAdapter {
+        MyStateAdapter(final FragmentActivity fa) { super(fa); }
 
-        if(mMenu != null)
-            initAppState();
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            Log.d(TAG, "createFragment");
+
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    return new StatusFragment();
+                case POS_CONNECTIONS:
+                    return new ConnectionsFragment();
+            }
+        }
+
+        @Override
+        public int getItemCount() {  return TOTAL_COUNT;  }
+    }
+
+    private void setupTabs() {
+        final MyStateAdapter stateAdapter = new MyStateAdapter(this);
+        mPager.setAdapter(stateAdapter);
+
+        new TabLayoutMediator(mTabLayout, mPager, (tab, position) -> {
+            switch (position) {
+                default: // Deliberate fall-through to status tab
+                case POS_STATUS:
+                    tab.setText(R.string.status_view);
+                    break;
+                case POS_CONNECTIONS:
+                    tab.setText(R.string.connections_view);
+                    break;
+            }
+        }).attach();
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.item_inspector) {
+        if(id == R.id.item_apps) {
             if(CaptureService.getConnsRegister() != null) {
-                Intent intent = new Intent(MainActivity.this, InspectorActivity.class);
+                Intent intent = new Intent(MainActivity.this, AppsActivity.class);
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
@@ -228,51 +286,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void appStateReady() {
         mState = AppState.ready;
         notifyAppState();
-
-        mMenuItemStartBtn.setIcon(
-                ContextCompat.getDrawable(this, android.R.drawable.ic_media_play));
-        mMenuItemStartBtn.setTitle(R.string.start_button);
-        mMenuItemStartBtn.setEnabled(true);
-        mMenuSettings.setEnabled(true);
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
         notifyAppState();
-
-        mMenuItemStartBtn.setEnabled(false);
-        mMenuSettings.setEnabled(false);
     }
 
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
-
-        mMenuItemStartBtn.setIcon(
-                ContextCompat.getDrawable(this, R.drawable.ic_media_stop));
-        mMenuItemStartBtn.setTitle(R.string.stop_button);
-        mMenuItemStartBtn.setEnabled(true);
-        mMenuSettings.setEnabled(false);
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
-
-        mMenuItemStartBtn.setEnabled(false);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main_menu, menu);
-
-        mMenu = menu;
-        mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
-        mMenuSettings = mMenu.findItem(R.id.action_settings);
-        initAppState();
-
-        return true;
     }
 
     private void openTelegram() {
@@ -493,5 +521,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return null;
+    }
+
+    public Map<Integer, AppDescriptor> getApps() {
+        return mInstalledApps;
+    }
+
+    @Override
+    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
+        mInstalledApps = apps;
+
+        for(AppsLoadListener listener: mAppsListeners)
+            listener.onAppsInfoLoaded(apps);
+    }
+
+    @Override
+    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
+        mInstalledApps = apps;
+
+        for(AppsLoadListener listener: mAppsListeners)
+            listener.onAppsIconsLoaded(apps);
+    }
+
+    public void addAppLoadListener(AppsLoadListener l) {
+        mAppsListeners.add(l);
+    }
+
+    public void removeAppLoadListener(AppsLoadListener l) {
+        mAppsListeners.remove(l);
     }
 }

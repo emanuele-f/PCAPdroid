@@ -45,10 +45,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.InspectorActivity;
+import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
@@ -69,6 +70,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private ConnectionsAdapter mAdapter;
     private View mFabDown;
     private EmptyRecyclerView mRecyclerView;
+    private TextView mEmptyText;
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
@@ -83,7 +85,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onDestroy();
 
         unregisterConnsListener();
-        ((InspectorActivity) getActivity()).removeAppLoadListener(this);
+        ((MainActivity) getActivity()).removeAppLoadListener(this);
     }
 
     @Override
@@ -129,8 +131,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
-        TextView emptyText = view.findViewById(R.id.no_connections);
-        mRecyclerView.setEmptyView(emptyText);
+        mEmptyText = view.findViewById(R.id.no_connections);
+        mRecyclerView.setEmptyView(mEmptyText);
+
+        if(((MainActivity) getActivity()).getState() == AppState.running)
+            mEmptyText.setText(R.string.no_connections);
 
         mAdapter = new ConnectionsAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
@@ -179,7 +184,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         registerConnsListener();
 
-        InspectorActivity activity = (InspectorActivity) getActivity();
+        MainActivity activity = (MainActivity) getActivity();
         if(activity.getApps() != null)
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);
@@ -190,16 +195,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(uidFilter != -2)
                 setUidFilter(uidFilter);
         }
-
-        // Register for uid selectio via AppsFragment
-        getParentFragmentManager().setFragmentResultListener("appFilter", this, (requestKey, bundle) -> {
-            int uid = bundle.getInt("uid", -2);
-
-            Log.d(TAG, "appFilter: " + uid);
-
-            if(uid != -2)
-                setUidFilter(uid);
-        });
 
         // Register for service status
         mReceiver = new BroadcastReceiver() {
@@ -214,6 +209,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                     autoScroll = true;
                     showFabDown(false);
+                    mEmptyText.setText(R.string.no_connections);
                 }
             }
         };
