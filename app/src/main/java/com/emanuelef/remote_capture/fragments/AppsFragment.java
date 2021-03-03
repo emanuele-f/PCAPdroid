@@ -22,10 +22,12 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.AppsActivity;
+import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 import java.util.Map;
@@ -37,7 +39,6 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
-    private AppsActivity mActivity;
     private BroadcastReceiver mReceiver;
 
     @Override
@@ -51,7 +52,6 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (AppsActivity) getActivity();
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
@@ -70,13 +70,17 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
         mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;
 
-        /*mAdapter.setClickListener(v -> {
+        mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
             AppStats item = mAdapter.getItem(pos);
 
-            if(item != null)
-                mActivity.filterByUid(item.getUid());
-        });*/
+            if(item != null) {
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.putExtra(MainActivity.UID_FILTER_EXTRA, item.getUid());
+
+                startActivity(intent);
+            }
+        });
 
         registerConnsListener();
 

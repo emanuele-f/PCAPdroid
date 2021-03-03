@@ -203,12 +203,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);
 
-        if(savedInstanceState != null) {
-            int uidFilter = savedInstanceState.getInt("uidFilter", -2);
+        int uidFilter = -2;
+        Intent intent = activity.getIntent();
 
-            if(uidFilter != -2)
-                setUidFilter(uidFilter);
+        if(intent != null) {
+            uidFilter = intent.getIntExtra(MainActivity.UID_FILTER_EXTRA, -2);
+
+            if(uidFilter != -2) {
+                // "consume" it
+                intent.removeExtra(MainActivity.UID_FILTER_EXTRA);
+            }
         }
+
+        if ((uidFilter == -2) && (savedInstanceState != null)) {
+            uidFilter = savedInstanceState.getInt("uidFilter", -2);
+        }
+
+        if(uidFilter != -2)
+            setUidFilter(uidFilter);
 
         // Register for service status
         mReceiver = new BroadcastReceiver() {

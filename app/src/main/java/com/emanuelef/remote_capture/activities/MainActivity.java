@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int POS_CONNECTIONS = 1;
     private static final int TOTAL_COUNT = 2;
 
+    public static final String UID_FILTER_EXTRA = "uidFilter";
     public static final int REQUEST_CODE_VPN = 2;
     public static final int REQUEST_CODE_PCAP_FILE = 3;
     public static final int REQUEST_CODE_CSV_FILE = 4;
@@ -237,6 +238,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         }).attach();
+
+        checkUidFilterIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        checkUidFilterIntent(intent);
+    }
+
+    private void checkUidFilterIntent(Intent intent) {
+        if(intent != null) {
+            int uid = intent.getIntExtra(UID_FILTER_EXTRA, -2);
+
+            if(uid != -2) {
+                // Move to the connections tab
+                Log.d(TAG, "UID_FILTER_EXTRA " + uid);
+
+                mPager.setCurrentItem(POS_CONNECTIONS, false);
+            }
+        }
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
