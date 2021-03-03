@@ -307,10 +307,14 @@ public class Utils {
         return alert;
     }
 
-    public static String getUniquePcapFileName(Context context) {
+    public static String getUniqueFileName(Context context, String ext) {
         Locale locale = context.getResources().getConfiguration().locale;
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
-        return  "PCAPdroid_" + fmt.format(new Date()) + ".pcap";
+        return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
+    }
+
+    public static String getUniquePcapFileName(Context context) {
+        return(Utils.getUniqueFileName(context, "pcap"));
     }
 
     public static Drawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {

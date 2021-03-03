@@ -91,6 +91,7 @@
     <string name="pcap_file">PCAP File</string>
     <string name="pcap_file_info">Create a PCAP file into the device storage</string>
     <string name="cannot_write_pcap_file">Cannot write PCAP file</string>
+    <string name="cannot_write_file">Cannot write file</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="ok">Ok</string>
@@ -107,5 +108,8 @@
     <string name="conn_status_closed">Closed</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard!</string>
+    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
+    <string name="save_to_file">Save to file</string>
+    <string name="file_saved">File successfully saved</string>
 </resources>
 

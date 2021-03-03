@@ -19,11 +19,13 @@
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -59,6 +61,8 @@ import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -75,11 +79,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
+    private MenuItem mSave;
+    private MenuItem mShare;
     private Map<Integer, AppDescriptor> mApps;
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
+    private CsvDumpMode mDumpWhenDone;
     private boolean mOpenAppsWhenDone;
     private BroadcastReceiver mReceiver;
+    private Uri mCsvFname;
+
+    private enum CsvDumpMode {
+        DUMP_CSV_SHARE, DUMP_CSV_FILE;
+    };
 
     @Override
     public void onDestroy() {
@@ -184,6 +196,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         });
 
         registerConnsListener();
+        refreshMenuIcons();
 
         MainActivity activity = (MainActivity) getActivity();
         if(activity.getApps() != null)
@@ -212,6 +225,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     showFabDown(false);
                     mEmptyText.setText(R.string.no_connections);
                 }
+
+                refreshMenuIcons();
             }
         };
 
@@ -361,22 +376,31 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.connections_menu, menu);
 
+        mSave = menu.findItem(R.id.save);
+        mShare = menu.findItem(R.id.share);
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
         mFilterIcon = mMenuItemAppSel.getIcon();
 
         refreshFilterIcon();
+        refreshMenuIcons();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_show_app_filter) {
+        if(id == R.id.action_show_app_filter) {
             if(mAdapter.getUidFilter() != -1)
                 setUidFilter(-1);
             else
                 openAppSelector();
 
+            return true;
+        } else if(id == R.id.share) {
+            dumpCsv(CsvDumpMode.DUMP_CSV_SHARE);
+            return true;
+        } else if(id == R.id.save) {
+            openFileSelector();
             return true;
         }
 
@@ -455,6 +479,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
         mApps = apps;
+
+        if(mDumpWhenDone != null)
+            dumpCsv(mDumpWhenDone);
     }
 
     @Override
@@ -466,5 +493,78 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount());
 
         refreshFilterIcon();
+    }
+
+    private void refreshMenuIcons() {
+        if(mShare == null)
+            return;
+
+        boolean is_enabled = (CaptureService.getConnsRegister() != null);
+
+        mMenuItemAppSel.setEnabled(is_enabled);
+        mShare.setEnabled(is_enabled);
+        mSave.setEnabled(is_enabled);
+    }
+
+    private void dumpCsv(CsvDumpMode mode) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if(reg == null)
+            return;
+
+        if(mApps == null) {
+            mDumpWhenDone = mode;
+            Utils.showToast(getContext(), R.string.apps_loading_please_wait);
+            return;
+        }
+
+        String dump = reg.dumpConnectionsCsv(getContext(), mApps);
+
+        if(mode == CsvDumpMode.DUMP_CSV_SHARE) {
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain"); // gives more options than text/csv
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connections_view));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, dump);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+        } else if((mode == CsvDumpMode.DUMP_CSV_FILE) && (mCsvFname != null)) {
+            Log.d(TAG, "Writing CSV file: " + mCsvFname);
+
+            try {
+                OutputStream stream = getActivity().getContentResolver().openOutputStream(mCsvFname);
+                stream.write(dump.getBytes());
+                stream.close();
+
+                Utils.showToast(getContext(), R.string.file_saved);
+            } catch (IOException e) {
+                Utils.showToast(getContext(), R.string.cannot_write_file);
+                e.printStackTrace();
+            }
+        }
+
+        mDumpWhenDone = null;
+        mCsvFname = null;
+    }
+
+    public void openFileSelector() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(getContext(), "csv"));
+
+        startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == MainActivity.REQUEST_CODE_CSV_FILE) {
+            if(resultCode == Activity.RESULT_OK) {
+                mCsvFname = data.getData();
+                dumpCsv(CsvDumpMode.DUMP_CSV_FILE);
+            } else
+                mCsvFname = null;
+        }
     }
 }

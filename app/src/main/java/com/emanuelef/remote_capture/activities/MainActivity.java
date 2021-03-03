@@ -92,8 +92,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int POS_CONNECTIONS = 1;
     private static final int TOTAL_COUNT = 2;
 
-    private static final int REQUEST_CODE_VPN = 2;
-    private static final int REQUEST_CODE_PCAP_FILE = 3;
+    public static final int REQUEST_CODE_VPN = 2;
+    public static final int REQUEST_CODE_PCAP_FILE = 3;
+    public static final int REQUEST_CODE_CSV_FILE = 4;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";

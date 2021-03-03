@@ -19,9 +19,11 @@
 
 package com.emanuelef.remote_capture;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
@@ -251,5 +253,42 @@ public class ConnectionsRegister {
         if(stats == null)
             return 0;
         return stats.num_connections;
+    }
+
+    public synchronized String dumpConnectionsCsv(Context context, Map<Integer, AppDescriptor> apps) {
+        StringBuilder builder = new StringBuilder();
+        String statusOpen = context.getString(R.string.conn_status_open);
+        String statusClosed = context.getString(R.string.conn_status_closed);
+
+        // Header
+        builder.append(context.getString(R.string.connections_csv_fields_v1));
+        builder.append("\n");
+
+        // Contents
+        for(int i=0; i<getConnCount(); i++) {
+            ConnectionDescriptor conn = getConn(i);
+            AppDescriptor app = apps.get(conn.uid);
+
+            if(conn != null) {
+                builder.append(conn.ipproto);                               builder.append(",");
+                builder.append(conn.src_ip);                                builder.append(",");
+                builder.append(conn.src_port);                              builder.append(",");
+                builder.append(conn.dst_ip);                                builder.append(",");
+                builder.append(conn.dst_port);                              builder.append(",");
+                builder.append(conn.uid);                                   builder.append(",");
+                builder.append((app != null) ? app.getName() : "");         builder.append(",");
+                builder.append(conn.l7proto);                               builder.append(",");
+                builder.append(conn.closed ? statusClosed : statusOpen);    builder.append(",");
+                builder.append((conn.info != null) ? conn.info : "");       builder.append(",");
+                builder.append(conn.sent_bytes);                            builder.append(",");
+                builder.append(conn.rcvd_bytes);                            builder.append(",");
+                builder.append(conn.sent_pkts);                             builder.append(",");
+                builder.append(conn.rcvd_pkts);                             builder.append(",");
+                builder.append(conn.first_seen);                            builder.append(",");
+                builder.append(conn.last_seen);                             builder.append("\n");
+            }
+        }
+
+        return builder.toString();
     }
 }
