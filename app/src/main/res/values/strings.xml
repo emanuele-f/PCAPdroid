@@ -105,5 +105,7 @@
     <string name="first_seen">First Seen</string>
     <string name="last_seen">Last Seen</string>
     <string name="conn_status_closed">Closed</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copied_to_clipboard">Copied to clipboard!</string>
 </resources>
 

@@ -39,6 +39,8 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -319,5 +321,29 @@ public class Utils {
         drawable.draw(canvas);
 
         return new BitmapDrawable(res, bitmap);
+    }
+
+    // Converts a TableLayout (two columns, label and value) to a string which can be copied
+    public static String table2Text(TableLayout table) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < table.getChildCount(); i++) {
+            View v = table.getChildAt(i);
+
+            if ((v instanceof TableRow) && (v.getVisibility() == View.VISIBLE)
+                    && (((TableRow) v).getChildCount() == 2)) {
+                View label = ((TableRow) v).getChildAt(0);
+                View value = ((TableRow) v).getChildAt(1);
+
+                if((label instanceof TextView) && (value instanceof TextView)) {
+                    builder.append(((TextView) label).getText());
+                    builder.append(": ");
+                    builder.append(((TextView) value).getText());
+                    builder.append("\n");
+                }
+            }
+        }
+
+        return builder.toString();
     }
 }

@@ -19,16 +19,23 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -49,12 +56,14 @@ public class StatsActivity extends AppCompatActivity {
     private TextView mOpenSocks;
     private TextView mDnsServer;
     private TextView mDnsQueries;
+    private TableLayout mTable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
 
+        mTable = findViewById(R.id.table);
         mBytesSent = findViewById(R.id.bytes_sent);
         mBytesRcvd = findViewById(R.id.bytes_rcvd);
         mPacketsSent = findViewById(R.id.packets_sent);
@@ -112,5 +121,42 @@ public class StatsActivity extends AppCompatActivity {
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.copy_share_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.copy_to_clipboard) {
+            String contents = Utils.table2Text(mTable);
+
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(getString(R.string.stats), contents);
+            clipboard.setPrimaryClip(clip);
+
+            Utils.showToast(this, R.string.copied_to_clipboard);
+            return true;
+        } else if(id == R.id.share) {
+            String contents = Utils.table2Text(mTable);
+
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.stats));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

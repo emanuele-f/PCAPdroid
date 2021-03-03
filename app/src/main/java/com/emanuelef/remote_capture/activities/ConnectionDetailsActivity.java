@@ -19,11 +19,18 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.R;
@@ -31,8 +38,10 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
 public class ConnectionDetailsActivity extends AppCompatActivity {
+    private static final String TAG = "ConnectionDetails";
     public static final String CONN_EXTRA_KEY = "conn_descriptor";
     public static final String APP_NAME_EXTRA_KEY = "app_name";
+    private TableLayout mTable;
     private TextView mBytesView;
     private TextView mPacketsView;
     private TextView mDurationView;
@@ -58,6 +67,7 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
         View info_row = findViewById(R.id.detail_info_row);
         TextView source = findViewById(R.id.detail_source);
         TextView destination = findViewById(R.id.detail_destination);
+        mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
         mDurationView = findViewById(R.id.detail_duration);
@@ -76,7 +86,7 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
             source.setText(String.format(getResources().getString(R.string.ip_and_port), conn.src_ip, conn.src_port));
             destination.setText(String.format(getResources().getString(R.string.ip_and_port), conn.dst_ip, conn.dst_port));
 
-            if(conn.info != null) {
+            if((conn.info != null) && (!conn.info.isEmpty())) {
                 if(conn.l7proto.equals("DNS"))
                     info_label.setText(R.string.query);
                 else if(conn.l7proto.equals("HTTP"))
@@ -112,5 +122,42 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
             else
                 mStatus.setText(R.string.conn_status_open);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.copy_share_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.copy_to_clipboard) {
+            String contents = Utils.table2Text(mTable);
+
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(getString(R.string.connection_details), contents);
+            clipboard.setPrimaryClip(clip);
+
+            Utils.showToast(this, R.string.copied_to_clipboard);
+            return true;
+        } else if(id == R.id.share) {
+            String contents = Utils.table2Text(mTable);
+
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connection_details));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
