@@ -35,6 +35,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -48,6 +49,7 @@ import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String mPcapFname;
     private Map<Integer, AppDescriptor> mInstalledApps;
     private List<AppsLoadListener> mAppsListeners;
+    private DrawerLayout mDrawer;
 
     private static final String TAG = "Main";
 
@@ -176,9 +179,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
+        mDrawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navView = findViewById(R.id.nav_view);
@@ -200,6 +203,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not retrieve package version");
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mDrawer.isDrawerOpen(GravityCompat.START))
+            mDrawer.closeDrawer(GravityCompat.START, true);
+        else
+            super.onBackPressed();
     }
 
     private static class MyStateAdapter extends FragmentStateAdapter {
@@ -240,6 +251,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }).attach();
 
         checkUidFilterIntent(getIntent());
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // This is required to properly handle the DPAD down press on Android TV, to properly
+        // focus the tab content
+        if(keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            View view = getCurrentFocus();
+
+            Log.d(TAG, "onKeyDown focus " + view.getClass().getName());
+
+            if(view instanceof TabLayout.TabView) {
+                int pos = mPager.getCurrentItem();
+                View focusOverride = null;
+
+                Log.d(TAG, "TabLayout.TabView focus pos " + pos);
+
+                if(pos == POS_STATUS)
+                    focusOverride = findViewById(R.id.main_screen);
+                else if(pos == POS_CONNECTIONS)
+                    focusOverride = findViewById(R.id.connections_view);
+
+                if(focusOverride != null) {
+                    focusOverride.requestFocus();
+                    return true;
+                }
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

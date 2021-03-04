@@ -110,6 +110,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mListener = null;
         mItemCount = 0;
         mUidFilter = -1;
+        setHasStableIds(true);
     }
 
     public void setItemCount(int count) {

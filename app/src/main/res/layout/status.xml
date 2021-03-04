@@ -11,7 +11,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main_screen"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context="com.emanuelef.remote_capture.activities.MainActivity">
 
         <TextView
@@ -30,13 +30,14 @@
 
         <TextView
             android:id="@+id/status_view"
-            android:layout_width="220dp"
-            android:layout_height="220dp"
+            android:layout_width="210dp"
+            android:layout_height="210dp"
             android:layout_marginTop="50dp"
             android:background="@drawable/rounded_bg"
             android:gravity="center"
             android:text="@string/ready"
             android:textSize="30sp"
+            android:focusable="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"

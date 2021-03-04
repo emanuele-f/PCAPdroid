@@ -28,6 +28,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.VpnService;
@@ -41,6 +43,7 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
@@ -81,6 +84,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
     private boolean mFirstStreamWrite;
+    private NotificationCompat.Builder mNotificationBuilder;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 2 MB. */
@@ -264,28 +268,41 @@ public class CaptureService extends VpnService implements Runnable {
         NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
                 NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
         nm.createNotificationChannel(chan);
-    }
 
-    private Notification getNotification() {
+        // Notification builder
         PendingIntent pi = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        String msg = String.format(getString(R.string.notification_msg),
-                Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
+        mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
                 .setColor(getResources().getColor(R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentTitle(getResources().getString(R.string.capture_running))
-                .setContentText(msg)
-                .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
-        return builder.build();
+        if(Utils.isTv(this)) {
+            // This is the icon which is visualized
+            Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
+            Bitmap mLargeIcon = Utils.scaleDrawable(getResources(), banner,
+                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight()).getBitmap();
+            mNotificationBuilder.setLargeIcon(mLargeIcon);
+
+            // On Android TV it must be shown as a recommendation
+            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
+        } else
+            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
+    }
+
+    private Notification getNotification() {
+        String msg = String.format(getString(R.string.notification_msg),
+                Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
+
+        mNotificationBuilder.setContentText(msg);
+
+        return mNotificationBuilder.build();
     }
 
     private void updateNotification() {

@@ -90,6 +90,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
         mListener = null;
         mStats = new ArrayList<>();
+        setHasStableIds(true);
     }
 
     @Override

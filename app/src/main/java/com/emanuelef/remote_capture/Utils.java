@@ -22,7 +22,9 @@ package com.emanuelef.remote_capture;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Service;
+import android.app.UiModeManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -317,7 +319,7 @@ public class Utils {
         return(Utils.getUniqueFileName(context, "pcap"));
     }
 
-    public static Drawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+    public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
         Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
@@ -349,5 +351,17 @@ public class Utils {
         }
 
         return builder.toString();
+    }
+
+    public static boolean isTv(Context context) {
+        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
+
+        if(uiModeManager == null)
+            return false;
+
+        if(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION)
+            return true;
+
+        return false;
     }
 }

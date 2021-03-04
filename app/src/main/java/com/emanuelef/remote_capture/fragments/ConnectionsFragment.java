@@ -544,7 +544,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void openFileSelector() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/csv");
+        intent.setType("text/plain"); // gives more options than text/csv
         intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(getContext(), "csv"));
 
         startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);

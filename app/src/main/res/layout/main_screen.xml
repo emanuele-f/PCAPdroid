@@ -32,7 +32,9 @@
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tablayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            app:tabMaxWidth="0dp"
+            app:tabGravity="fill" />
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/pager"
