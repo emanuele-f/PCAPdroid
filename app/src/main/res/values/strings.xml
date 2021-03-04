@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">PCAPdroid</string>
     <string name="about_copyright" translatable="false">Copyright (C) 2020-21 - Emanuele Faranda black.silver@hotmail.it</string>
+    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
+    <string name="default_collector_port" translatable="false">1234</string>
+
+    <!-- Localized -->
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
@@ -12,22 +16,11 @@
     <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
-    <string name="capture_not_started">Capture not running!</string>
-
-    <!-- Defaults -->
-    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
-    <string name="default_collector_port" translatable="false">1234</string>
-
-    <!-- Preferences -->
-    <string name="collector_prefs_header">Remote Collector</string>
-    <string name="ip_address">IP Address</string>
-    <string name="port">Port</string>
+    <string name="capture_not_running">Capture not running!</string>
+    <string name="capture_not_started">Capture not started!</string>
     <string name="app_filter">App Filter</string>
     <string name="ready">Ready</string>
-    <string name="stopping">Stopping...</string>
-    <string name="starting">Starting...</string>
     <string name="about">About</string>
-    <string name="misc_prefs">Misc</string>
     <string name="status">Status</string>
     <string name="connections_view">Connections</string>
     <string name="no_connections">No connections</string>
@@ -56,13 +49,11 @@
     <string name="enable_tls_decryption">Enable TLS Decryption</string>
     <string name="enable_tls_decryption_summary">When enabled, all the TLS traffic will be redirected to a remote mitmproxy instance for decryption.</string>
     <string name="default_proxy_port">8080</string>
-    <string name="with_tls_decryption">+decryption</string>
-    <string name="pcap_dump">PCAP Dump</string>
     <string name="tls_decryption">TLS Decryption</string>
     <string name="user_guide">User Guide</string>
     <string name="rate_app">Rate</string>
     <string name="open_telegram_group">Telegram Group</string>
-    <string name="open_github">Source Code</string>
+    <string name="source_code">Source Code</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="existing_vpn_confirm">The currently active VPN app will be disconnected. Do you want to proceed?</string>
@@ -82,7 +73,6 @@
     <string name="dns_queries">DNS Queries</string>
     <string name="search_apps">Search Apps</string>
     <string name="no_apps">No apps</string>
-    <string name="show_system_apps">Show system apps</string>
     <string name="dns_server">DNS Server</string>
     <string name="apps">Apps</string>
     <string name="remove_app_filter">Remove the app filter</string>
@@ -101,7 +91,6 @@
     <string name="capture_running">Capture running</string>
     <string name="notification_msg">%1$s captured, %2$s connections</string>
     <string name="no_app_filter">No app filter set</string>
-    <string name="ip_x">IP: %1$s</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">Open</string>
     <string name="first_seen">First Seen</string>
@@ -117,5 +106,6 @@
     <string name="app_no_warranty">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</string>
     <string name="gpl_license_link">GPLv3 License</string>
     <string name="get_app">Get it:</string>
+    <string name="tls_how_to">How to setup TLS Decryption</string>
 </resources>
 

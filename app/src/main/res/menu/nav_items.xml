@@ -29,7 +29,7 @@
             android:icon="@drawable/ic_telegram" />
         <item
             android:id="@+id/action_open_github"
-            android:title="@string/open_github"
+            android:title="@string/source_code"
             android:icon="@drawable/ic_github" />
 
         <item

@@ -14,7 +14,9 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory app:title="@string/http_server" app:iconSpaceReserved="false">
         <EditTextPreference
@@ -48,6 +50,14 @@
             app:iconSpaceReserved="false"
             app:summary="@string/enable_tls_decryption_summary"
             app:defaultValue="false" />
+
+        <Preference
+            app:key="tls_how_to"
+            app:title="@string/tls_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/tls_decryption" />
+        </Preference>
 
         <EditTextPreference
             app:key="tls_proxy_ip_address"

@@ -110,7 +110,7 @@ public class HTTPServer extends NanoHTTPD {
     public Response serve(IHTTPSession session) {
         if(!mAcceptConnections)
             return newFixedLengthResponse(Status.FORBIDDEN, MIME_PLAINTEXT,
-                    mContext.getString(R.string.capture_not_started));
+                    mContext.getString(R.string.capture_not_running));
 
         if(session.getUri().endsWith("/")) {
             /* Use a redirect to provide a file name */

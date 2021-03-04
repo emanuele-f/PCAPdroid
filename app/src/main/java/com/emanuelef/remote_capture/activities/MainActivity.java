@@ -316,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 startActivity(intent);
             } else
-                Utils.showToast(this, R.string.capture_not_started);
+                Utils.showToast(this, R.string.capture_not_running);
         } else if (id == R.id.action_about) {
             Intent intent = new Intent(MainActivity.this, AboutActivity.class);
             startActivity(intent);

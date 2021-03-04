@@ -27,6 +27,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
 
@@ -54,6 +55,7 @@ public class SettingsActivity extends AppCompatActivity {
         private SwitchPreference mTlsDecryptionEnabled;
         private EditTextPreference mTlsProxyIp;
         private EditTextPreference mTlsProxyPort;
+        private Preference mTlsHelp;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -96,6 +98,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setupTlsProxyPrefs() {
+            mTlsHelp = findPreference("tls_how_to");
+
             mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
             mTlsDecryptionEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 tlsDecryptionHideShow((Boolean) newValue);
@@ -118,6 +122,7 @@ public class SettingsActivity extends AppCompatActivity {
         private void tlsDecryptionHideShow(boolean decryptionEnabled) {
             mTlsProxyIp.setVisible(decryptionEnabled);
             mTlsProxyPort.setVisible(decryptionEnabled);
+            mTlsHelp.setVisible(decryptionEnabled);
         }
     }
 }
