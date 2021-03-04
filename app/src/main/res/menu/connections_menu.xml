@@ -17,11 +17,4 @@
         android:icon="@drawable/ic_save"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/share"
-        android:title="@string/share"
-        android:orderInCategory="30"
-        android:icon="@drawable/ic_share"
-        app:showAsAction="ifRoom" />
-
 </menu>

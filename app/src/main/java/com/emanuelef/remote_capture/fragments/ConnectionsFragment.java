@@ -80,18 +80,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
     private MenuItem mSave;
-    private MenuItem mShare;
     private Map<Integer, AppDescriptor> mApps;
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
-    private CsvDumpMode mDumpWhenDone;
+    private boolean mDumpWhenDone;
     private boolean mOpenAppsWhenDone;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
-
-    private enum CsvDumpMode {
-        DUMP_CSV_SHARE, DUMP_CSV_FILE;
-    };
 
     @Override
     public void onDestroy() {
@@ -389,7 +384,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menuInflater.inflate(R.menu.connections_menu, menu);
 
         mSave = menu.findItem(R.id.save);
-        mShare = menu.findItem(R.id.share);
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
         mFilterIcon = mMenuItemAppSel.getIcon();
 
@@ -407,9 +401,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             else
                 openAppSelector();
 
-            return true;
-        } else if(id == R.id.share) {
-            dumpCsv(CsvDumpMode.DUMP_CSV_SHARE);
             return true;
         } else if(id == R.id.save) {
             openFileSelector();
@@ -492,8 +483,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
         mApps = apps;
 
-        if(mDumpWhenDone != null)
-            dumpCsv(mDumpWhenDone);
+        if(mDumpWhenDone)
+            dumpCsv();
     }
 
     @Override
@@ -508,38 +499,30 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void refreshMenuIcons() {
-        if(mShare == null)
+        if(mSave == null)
             return;
 
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
 
         mMenuItemAppSel.setEnabled(is_enabled);
-        mShare.setEnabled(is_enabled);
         mSave.setEnabled(is_enabled);
     }
 
-    private void dumpCsv(CsvDumpMode mode) {
+    private void dumpCsv() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if(reg == null)
             return;
 
         if(mApps == null) {
-            mDumpWhenDone = mode;
+            mDumpWhenDone = true;
             Utils.showToast(getContext(), R.string.apps_loading_please_wait);
             return;
         }
 
         String dump = reg.dumpConnectionsCsv(getContext(), mApps);
 
-        if(mode == CsvDumpMode.DUMP_CSV_SHARE) {
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain"); // gives more options than text/csv
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connections_view));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, dump);
-
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
-        } else if((mode == CsvDumpMode.DUMP_CSV_FILE) && (mCsvFname != null)) {
+        if(mCsvFname != null) {
             Log.d(TAG, "Writing CSV file: " + mCsvFname);
 
             try {
@@ -554,8 +537,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         }
 
-        mDumpWhenDone = null;
         mCsvFname = null;
+        mDumpWhenDone = false;
     }
 
     public void openFileSelector() {
@@ -574,7 +557,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(requestCode == MainActivity.REQUEST_CODE_CSV_FILE) {
             if(resultCode == Activity.RESULT_OK) {
                 mCsvFname = data.getData();
-                dumpCsv(CsvDumpMode.DUMP_CSV_FILE);
+                dumpCsv();
             } else
                 mCsvFname = null;
         }
