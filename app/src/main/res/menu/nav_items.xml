@@ -20,6 +20,10 @@
             android:title="@string/rate_app"
             android:icon="@drawable/ic_star" />
         <item
+            android:id="@+id/action_share_app"
+            android:title="@string/share"
+            android:icon="@drawable/ic_share" />
+        <item
             android:id="@+id/action_open_telegram"
             android:title="@string/open_telegram_group"
             android:icon="@drawable/ic_telegram" />
@@ -27,5 +31,10 @@
             android:id="@+id/action_open_github"
             android:title="@string/open_github"
             android:icon="@drawable/ic_github" />
+
+        <item
+            android:id="@+id/action_about"
+            android:title="@string/about"
+            android:icon="@drawable/ic_copyright" />
     </group>
 </menu>

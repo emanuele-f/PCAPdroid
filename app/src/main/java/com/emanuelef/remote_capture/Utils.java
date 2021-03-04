@@ -24,6 +24,8 @@ import android.app.Dialog;
 import android.app.Service;
 import android.app.UiModeManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -363,5 +365,22 @@ public class Utils {
             return true;
 
         return false;
+    }
+
+    public static String getAppVersion(Context context) {
+        String appver;
+
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            String version = pInfo.versionName;
+            boolean isRelease = version.contains(".");
+
+            appver = isRelease ? ("v" + version) : version;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("Utils", "Could not retrieve package version");
+            appver = "";
+        }
+
+        return appver;
     }
 }

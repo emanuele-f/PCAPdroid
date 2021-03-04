@@ -52,6 +52,11 @@
             android:label="@string/title_activity_settings"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
+        <activity
+            android:name=".activities.AboutActivity"
+            android:label="@string/about"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
 
         <service
             android:name=".CaptureService"

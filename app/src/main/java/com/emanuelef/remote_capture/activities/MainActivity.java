@@ -24,8 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.net.VpnService;
@@ -188,21 +186,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navView.setNavigationItemSelectedListener(this);
         View header = navView.getHeaderView(0);
 
-        try {
-            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            String version = pInfo.versionName;
-            boolean isRelease = version.contains(".");
-            final String verStr = isRelease ? ("v" + version) : version;
-            TextView appVer = header.findViewById(R.id.app_version);
-
-            appVer.setText(verStr);
-            appVer.setOnClickListener((ev) -> {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
-                startActivity(browserIntent);
-            });
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Could not retrieve package version");
-        }
+        TextView appVer = header.findViewById(R.id.app_version);
+        String verStr = Utils.getAppVersion(this);
+        appVer.setText(verStr);
+        appVer.setOnClickListener((ev) -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
+            startActivity(browserIntent);
+        });
     }
 
     @Override
@@ -327,6 +317,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
+        } else if (id == R.id.action_about) {
+            Intent intent = new Intent(MainActivity.this, AboutActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.action_share_app) {
+            String description = getString(R.string.about_text);
+            String getApp = getString(R.string.get_app);
+            String url = "http://play.google.com/store/apps/details?id=" + this.getPackageName();
+
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, description + "\n" + getApp + "\n" + url);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
         }
 
         return false;
