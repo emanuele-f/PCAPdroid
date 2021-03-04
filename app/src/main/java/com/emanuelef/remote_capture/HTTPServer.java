@@ -14,32 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
 
 public class HTTPServer extends NanoHTTPD {
     private static final String PCAP_MIME = "application/vnd.tcpdump.pcap";
-    private final DateFormat mFmt = new SimpleDateFormat("HH_mm_ss");
     private boolean firstStart = true;
     private boolean mAcceptConnections = false;
-    private Context mContext;
+    private final Context mContext;
 
     /* NOTE: access to mActiveResponses must be synchronized */
-    private ArrayList<Response> mActiveResponses = new ArrayList<>();
+    private final ArrayList<Response> mActiveResponses = new ArrayList<>();
 
     public HTTPServer(Context context, int port) {
         super(port);
@@ -47,7 +42,7 @@ public class HTTPServer extends NanoHTTPD {
     }
 
     private Response redirectToPcap() {
-        String fname = "PCAPdroid_" + mFmt.format(new Date()) + ".pcap";
+        String fname = Utils.getUniquePcapFileName(mContext);
         Response r = newFixedLengthResponse(Status.TEMPORARY_REDIRECT, MIME_HTML, "");
         r.addHeader("Location", "/" + fname);
         return(r);
@@ -115,7 +110,7 @@ public class HTTPServer extends NanoHTTPD {
     public Response serve(IHTTPSession session) {
         if(!mAcceptConnections)
             return newFixedLengthResponse(Status.FORBIDDEN, MIME_PLAINTEXT,
-                    mContext.getString(R.string.capture_not_started));
+                    mContext.getString(R.string.capture_not_running));
 
         if(session.getUri().endsWith("/")) {
             /* Use a redirect to provide a file name */

@@ -14,34 +14,54 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.model.VPNStats;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
+    private static final String NOTIFY_CHAN_VPNSERVICE = "vpnservice";
+    private static final int NOTIFY_ID_VPNSERVICE = 1;
     private ParcelFileDescriptor mParcelFileDescriptor = null;
     private Handler mHandler;
     private Thread mThread;
@@ -56,9 +76,19 @@ public class CaptureService extends VpnService implements Runnable {
     private int http_server_port;
     private int tls_proxy_port;
     private long last_bytes;
+    private int last_connections;
     private static CaptureService INSTANCE;
     private String app_filter;
     private HTTPServer mHttpServer;
+    private OutputStream mOutputStream;
+    private ConnectionsRegister conn_reg;
+    private Uri mPcapUri;
+    private boolean mFirstStreamWrite;
+    private NotificationCompat.Builder mNotificationBuilder;
+
+    /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
+     * Max Estimated max memory usage: less than 4 MB. */
+    public static final int CONNECTIONS_LOG_SIZE = 8192;
 
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
@@ -68,14 +98,7 @@ public class CaptureService extends VpnService implements Runnable {
      * After the analysis, requests will be routed to the primary DNS server. */
     public static final String VPN_VIRTUAL_DNS_SERVER = "10.215.173.2";
 
-    public static final String ACTION_TRAFFIC_STATS_UPDATE = "traffic_stats_update";
-    public static final String ACTION_CONNECTIONS_DUMP = "connections_dump";
     public static final String ACTION_STATS_DUMP = "stats_dump";
-    public static final String TRAFFIC_STATS_UPDATE_SENT_BYTES = "sent_bytes";
-    public static final String TRAFFIC_STATS_UPDATE_RCVD_BYTES = "rcvd_bytes";
-    public static final String TRAFFIC_STATS_UPDATE_SENT_PKTS = "sent_pkts";
-    public static final String TRAFFIC_STATS_UPDATE_RCVD_PKTS = "rcvd_pkts";
-
     public static final String ACTION_SERVICE_STATUS = "service_status";
     public static final String SERVICE_STATUS_KEY = "status";
     public static final String SERVICE_STATUS_STARTED = "started";
@@ -97,7 +120,7 @@ public class CaptureService extends VpnService implements Runnable {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Context app_ctx = getApplicationContext();
 
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
@@ -118,8 +141,8 @@ public class CaptureService extends VpnService implements Runnable {
         public_dns = Utils.getDnsServer(app_ctx);
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
-        app_filter = settings.getString(Prefs.PREF_APP_FILTER);
 
+        app_filter = Prefs.getAppFilter(prefs);
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
@@ -128,6 +151,14 @@ public class CaptureService extends VpnService implements Runnable {
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         last_bytes = 0;
+        last_connections = 0;
+
+        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
+
+        if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
+            mHttpServer = null;
+        mOutputStream = null;
+        mPcapUri = null;
 
         if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
             if (mHttpServer == null)
@@ -139,8 +170,25 @@ public class CaptureService extends VpnService implements Runnable {
                 Log.e(CaptureService.TAG, "Could not start the HTTP server");
                 e.printStackTrace();
             }
-        } else
-            mHttpServer = null;
+        } else if(dump_mode == Prefs.DumpMode.PCAP_FILE) {
+            String path = settings.getString(Prefs.PREF_PCAP_URI);
+
+            if(path != null) {
+                mPcapUri = Uri.parse(path);
+
+                try {
+                    mOutputStream = getContentResolver().openOutputStream(mPcapUri);
+                    mFirstStreamWrite = true;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(mOutputStream == null) {
+                Utils.showToast(this, R.string.cannot_write_pcap_file);
+                return super.onStartCommand(intent, flags, startId);
+            }
+        }
 
         Log.i(TAG, "Using DNS server " + public_dns);
 
@@ -153,7 +201,7 @@ public class CaptureService extends VpnService implements Runnable {
                 .addRoute("128.0.0.0", 1)
                 .addDnsServer(vpn_dns);
 
-        if(app_filter != null) {
+        if((app_filter != null) && (!app_filter.isEmpty())) {
             Log.d(TAG, "Setting app filter: " + app_filter);
 
             try {
@@ -180,6 +228,10 @@ public class CaptureService extends VpnService implements Runnable {
         // Start a new session by creating a new thread.
         mThread = new Thread(this, "CaptureService Thread");
         mThread.start();
+
+        setupNotifications();
+        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+
         return START_STICKY;
         //return super.onStartCommand(intent, flags, startId);
     }
@@ -205,6 +257,57 @@ public class CaptureService extends VpnService implements Runnable {
             mHttpServer.stop();
 
         super.onDestroy();
+    }
+
+    private void setupNotifications() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+            return;
+
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
+                NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
+        nm.createNotificationChannel(chan);
+
+        // Notification builder
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
+                .setSmallIcon(R.drawable.ic_logo)
+                .setColor(getColor(R.color.colorPrimary))
+                .setContentIntent(pi)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setContentTitle(getResources().getString(R.string.capture_running))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
+
+        if(Utils.isTv(this)) {
+            // This is the icon which is visualized
+            Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
+            Bitmap mLargeIcon = Utils.scaleDrawable(getResources(), banner,
+                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight()).getBitmap();
+            mNotificationBuilder.setLargeIcon(mLargeIcon);
+
+            // On Android TV it must be shown as a recommendation
+            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
+        } else
+            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
+    }
+
+    private Notification getNotification() {
+        String msg = String.format(getString(R.string.notification_msg),
+                Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
+
+        mNotificationBuilder.setContentText(msg);
+
+        return mNotificationBuilder.build();
+    }
+
+    private void updateNotification() {
+        Notification notification = getNotification();
+        NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
     }
 
     private void stop() {
@@ -233,6 +336,18 @@ public class CaptureService extends VpnService implements Runnable {
         if(mHttpServer != null)
             mHttpServer.endConnections();
         // NOTE: do not destroy the mHttpServer, let it terminate the active connections
+
+        if(mOutputStream != null) {
+            try {
+                mOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        mPcapUri = null;
+
+        stopForeground(true /* remove notification */);
     }
 
     /* Check if the VPN service was launched */
@@ -243,6 +358,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static String getAppFilter() {
         return((INSTANCE != null) ? INSTANCE.app_filter : null);
+    }
+
+    public static Uri getPcapUri() {
+        return ((INSTANCE != null) ? INSTANCE.mPcapUri : null);
     }
 
     public static long getBytes() {
@@ -273,6 +392,10 @@ public class CaptureService extends VpnService implements Runnable {
     public static void stopService() {
         if (INSTANCE != null)
             INSTANCE.stop();
+    }
+
+    public static ConnectionsRegister getConnsRegister() {
+        return((INSTANCE != null) ? INSTANCE.conn_reg : null);
     }
 
     @Override
@@ -319,7 +442,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {
-        return((mHttpServer != null) ? 1 : 0);
+        return(((dump_mode == Prefs.DumpMode.HTTP_SERVER) || (dump_mode == Prefs.DumpMode.PCAP_FILE)) ? 1 : 0);
     }
 
     public int dumpPcapToUdp() {
@@ -345,28 +468,16 @@ public class CaptureService extends VpnService implements Runnable {
         return uid;
     }
 
-    public void sendCaptureStats(long sent_bytes, long rcvd_bytes, int sent_pkts, int rcvd_pkts) {
-        Intent intent = new Intent(ACTION_TRAFFIC_STATS_UPDATE);
+    public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {
+        // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
+        // thus preventing the ConnectionsAdapter from interleaving other operations
+        synchronized (conn_reg) {
+            if(new_conns.length > 0)
+                conn_reg.newConnections(new_conns);
 
-        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_BYTES, sent_bytes);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_BYTES, rcvd_bytes);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_SENT_PKTS, sent_pkts);
-        intent.putExtra(TRAFFIC_STATS_UPDATE_RCVD_PKTS, rcvd_pkts);
-
-        last_bytes = sent_bytes + rcvd_bytes;
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-    public void sendConnectionsDump(ConnDescriptor connections[]) {
-        Log.d(TAG, "sendConnectionsDump(" + connections.length + " connections)");
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("value", connections);
-        Intent intent = new Intent(ACTION_CONNECTIONS_DUMP);
-        intent.putExtras(bundle);
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            if(conns_updates.length > 0)
+                conn_reg.connectionsUpdates(conns_updates);
+            }
     }
 
     public void sendStatsDump(VPNStats stats) {
@@ -376,6 +487,10 @@ public class CaptureService extends VpnService implements Runnable {
         bundle.putSerializable("value", stats);
         Intent intent = new Intent(ACTION_STATS_DUMP);
         intent.putExtras(bundle);
+
+        last_bytes = stats.bytes_sent + stats.bytes_rcvd;
+        last_connections = stats.tot_conns;
+        mHandler.post(this::updateNotification);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -394,6 +509,20 @@ public class CaptureService extends VpnService implements Runnable {
     public void dumpPcapData(byte[] data) {
         if(mHttpServer != null)
             mHttpServer.pushData(data);
+        else if(mOutputStream != null) {
+            try {
+                if(mFirstStreamWrite) {
+                    mOutputStream.write(Utils.hexStringToByteArray(Utils.PCAP_HEADER));
+                    mFirstStreamWrite = false;
+                }
+
+                mOutputStream.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+                reportError(e.getLocalizedMessage());
+                stopPacketLoop();
+            }
+        }
     }
 
     public void reportError(String msg) {
@@ -404,7 +533,6 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     public static native void stopPacketLoop();
-    public static native void askConnectionsDump();
     public static native void askStatsDump();
     public static native int getFdSetSize();
 }

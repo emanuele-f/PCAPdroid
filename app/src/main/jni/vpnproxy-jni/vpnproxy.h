@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 #include <jni.h>
@@ -52,7 +52,8 @@ typedef struct conn_data {
     char *info;
     char *url;
     jint uid;
-    bool notified;
+    bool closed;
+    bool pending_notification;
     bool mitm_header_needed;
 } conn_data_t;
 
@@ -60,6 +61,12 @@ typedef struct vpn_conn {
     zdtun_5tuple_t tuple;
     conn_data_t *data;
 } vpn_conn_t;
+
+typedef struct conn_array {
+    vpn_conn_t *items;
+    int size;
+    int cur_items;
+} conn_array_t;
 
 typedef struct vpnproxy_data {
     int tapfd;
@@ -71,12 +78,11 @@ typedef struct vpnproxy_data {
     u_int32_t public_dns;
     u_int32_t vpn_ipv4;
     struct ndpi_detection_module_struct *ndpi;
-    vpn_conn_t *notif_pending;
-    u_int32_t cur_notif_pending;
-    u_int32_t notif_pending_size;
     uint64_t now_ms;
     u_int32_t num_dropped_connections;
     u_int32_t num_dns_requests;
+    conn_array_t new_conns;
+    conn_array_t conns_updates;
 
     struct {
         u_int32_t collector_addr;

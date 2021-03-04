@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout
+    android:id="@+id/table"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
@@ -25,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="com.emanuelef.remote_capture (14503)" />
+            tools:text="com.emanuelef.remote_capture (14503)" />
     </TableRow>
 
     <TableRow
@@ -44,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="TLS (TCP)" />
+            tools:text="TLS (TCP)" />
     </TableRow>
 
     <TableRow
@@ -65,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="ssl.example.com" />
+            tools:text="ssl.example.com" />
     </TableRow>
 
     <TableRow
@@ -85,7 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="1.2.3.4:14631" />
+            tools:text="1.2.3.4:14631" />
     </TableRow>
 
     <TableRow
@@ -104,7 +106,26 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="5.6.7.8:443" />
+            tools:text="5.6.7.8:443" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/status" />
+        <TextView
+            android:id="@+id/detail_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            tools:text="Open" />
     </TableRow>
 
     <TableRow
@@ -123,7 +144,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="example.com/test" />
+            tools:text="example.com/test" />
     </TableRow>
 
     <TableRow
@@ -143,8 +164,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="1.5 MB down - 0.1 up" />
-
+            tools:text="1.5 MB down - 0.1 up" />
     </TableRow>
 
     <TableRow
@@ -163,8 +183,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="1.1 K down - 98 down" />
-
+            tools:text="1.1 K down - 98 down" />
     </TableRow>
 
     <TableRow
@@ -183,8 +202,45 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.75"
             android:textIsSelectable="true"
-            android:text="2 min" />
+            tools:text="2 min" />
+    </TableRow>
 
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/first_seen" />
+        <TextView
+            android:id="@+id/first_seen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            tools:text="01/02/20 00:45:01" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:textStyle="bold"
+            android:text="@string/last_seen" />
+        <TextView
+            android:id="@+id/last_seen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.75"
+            android:textIsSelectable="true"
+            tools:text="01/02/20 00:47:01" />
     </TableRow>
 </TableLayout>
 

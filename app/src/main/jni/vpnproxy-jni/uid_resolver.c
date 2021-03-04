@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 //
@@ -256,14 +256,6 @@ jint get_uid_slow(struct vpnproxy_data *proxy,
         uid = get_uid_sub(version, conn_info->ipproto, &saddr, sport, &daddr, dport, source, dest, now);
         //log_android(ANDROID_LOG_DEBUG, "uid v%d p%d %s/%u > %s/%u => %d fallback",
                     //version, conn_info->ipproto, source, sport, dest, dport, uid);
-    }
-
-    if (uid == -1)
-        log_android(ANDROID_LOG_WARN, "uid [ipv%d][proto=%d] %s:%u -> %s:%u => not found",
-                    version, conn_info->ipproto, source, sport, dest, dport);
-    else if (uid >= 0) {
-     //   log_android(ANDROID_LOG_INFO, "uid v%d p%d %s/%u > %s/%u => %d",
-       //             version, conn_info->ipproto, source, sport, dest, dport, uid);
     }
 
     return uid;
