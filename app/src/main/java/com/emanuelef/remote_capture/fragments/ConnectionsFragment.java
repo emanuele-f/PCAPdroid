@@ -76,6 +76,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private View mFabDown;
     private EmptyRecyclerView mRecyclerView;
     private TextView mEmptyText;
+    private TextView mOldConnectionsText;
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
@@ -87,6 +88,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean mOpenAppsWhenDone;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
+    private boolean hasUntrackedConnections;
 
     @Override
     public void onDestroy() {
@@ -136,6 +138,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mHandler = new Handler(Looper.getMainLooper());
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
+        mOldConnectionsText = view.findViewById(R.id.old_connections_notice);
         LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
@@ -179,6 +182,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         autoScroll = true;
         showFabDown(false);
+        mOldConnectionsText.setVisibility(View.GONE);
 
         mFabDown.setOnClickListener(v -> scrollToBottom());
 
@@ -230,6 +234,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                     autoScroll = true;
                     showFabDown(false);
+                    mOldConnectionsText.setVisibility(View.GONE);
+                    hasUntrackedConnections = false;
                     mEmptyText.setText(R.string.no_connections);
                 }
 
@@ -270,6 +276,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         } else
             showFabDown(false);
+
+        if((first_visibile_pos == 0) && hasUntrackedConnections)
+            mOldConnectionsText.setVisibility(View.VISIBLE);
+        else
+            mOldConnectionsText.setVisibility(View.GONE);
     }
 
     private void showFabDown(boolean visible) {
@@ -284,6 +295,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.scrollToPosition(last_pos);
 
         showFabDown(false);
+        mOldConnectionsText.setVisibility(View.GONE);
     }
 
     @Override
@@ -344,6 +356,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(autoScroll)
                 scrollToBottom();
+
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if((reg != null) && (reg.getUntrackedConnCount() > 0)) {
+                String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
+                mOldConnectionsText.setText(info);
+
+                if(!hasUntrackedConnections) {
+                    hasUntrackedConnections = true;
+                    recheckScroll();
+                }
+            }
         });
     }
 

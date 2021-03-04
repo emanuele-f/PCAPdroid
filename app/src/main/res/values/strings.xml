@@ -111,5 +111,6 @@
     <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">Save to file</string>
     <string name="file_saved">File successfully saved</string>
+    <string name="older_connections_notice">%1$d older connections not shown</string>
 </resources>
 

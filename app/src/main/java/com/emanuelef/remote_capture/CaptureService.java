@@ -87,8 +87,8 @@ public class CaptureService extends VpnService implements Runnable {
     private NotificationCompat.Builder mNotificationBuilder;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
-     * Max Estimated max memory usage: less than 2 MB. */
-    public static final int CONNECTIONS_LOG_SIZE = 4192;
+     * Max Estimated max memory usage: less than 4 MB. */
+    public static final int CONNECTIONS_LOG_SIZE = 8192;
 
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
