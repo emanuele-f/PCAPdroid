@@ -51,14 +51,23 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
         Log.d(TAG, "num apps (system+user): " + packs.size());
         long tstart = Utils.now();
 
+        // https://android.googlesource.com/platform/system/core/+/master/libcutils/include/private/android_filesystem_config.h
         // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
         // as they miss a valid package name
         apps.put(0, new AppDescriptor("Root",
                 mVirtualAppIcon,"root", 0, true, true));
         apps.put(1000, new AppDescriptor("Android",
                 mVirtualAppIcon,"android", 1000, true, true));
+        apps.put(1013, new AppDescriptor("MediaServer",
+                mVirtualAppIcon,"mediaserver", 1013, true, true));
+        apps.put(1020, new AppDescriptor("MulticastDNSResponder",
+                mVirtualAppIcon,"multicastdnsresponder", 1020, true, true));
+        apps.put(1021, new AppDescriptor("GPS",
+                mVirtualAppIcon,"gps", 1021, true, true));
         apps.put(1051, new AppDescriptor("netd",
                 mVirtualAppIcon,"netd", 1051, true, true));
+        apps.put(9999, new AppDescriptor("Nobody",
+                mVirtualAppIcon,"nobody", 9999, true, true));
 
         // NOTE: a single uid can correspond to multiple apps, only take the first one
         for (int i = 0; i < packs.size(); i++) {

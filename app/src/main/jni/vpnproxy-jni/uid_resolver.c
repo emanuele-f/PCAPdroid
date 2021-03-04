@@ -258,14 +258,6 @@ jint get_uid_slow(struct vpnproxy_data *proxy,
                     //version, conn_info->ipproto, source, sport, dest, dport, uid);
     }
 
-    if (uid == -1)
-        log_android(ANDROID_LOG_WARN, "uid [ipv%d][proto=%d] %s:%u -> %s:%u => not found",
-                    version, conn_info->ipproto, source, sport, dest, dport);
-    else if (uid >= 0) {
-     //   log_android(ANDROID_LOG_INFO, "uid v%d p%d %s/%u > %s/%u => %d",
-       //             version, conn_info->ipproto, source, sport, dest, dport, uid);
-    }
-
     return uid;
 }
 

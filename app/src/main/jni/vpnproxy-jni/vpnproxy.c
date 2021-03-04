@@ -500,13 +500,13 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
 /* ******************************************************* */
 
 static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
+    char buf[256];
     jint uid;
 
+    tuple2str(conn_info, buf, sizeof(buf));
     uid = get_uid(proxy, conn_info);
 
     if(uid >= 0) {
-#if 1
-        char buf[256];
         char appbuf[128];
 
         if(uid == 0)
@@ -516,11 +516,11 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
 
-        log_android(ANDROID_LOG_INFO, "%s [%d/%s]",
-                tuple2str(conn_info, buf, sizeof(buf)), uid, appbuf);
-#endif
-    } else
+        log_android(ANDROID_LOG_INFO, "%s [%d/%s]", buf, uid, appbuf);
+    } else {
         uid = -1;
+        log_android(ANDROID_LOG_WARN, "%s => UID not found!", buf);
+    }
 
     return(uid);
 }
