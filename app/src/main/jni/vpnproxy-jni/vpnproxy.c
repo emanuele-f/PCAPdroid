@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 #include <netinet/udp.h>
@@ -22,7 +22,7 @@
 #include <ndpi_typedefs.h>
 #include "jni_helpers.c"
 #include "utils.c"
-#include "ndpi_master_protos.h"
+#include "ndpi_master_protos.c"
 #include "vpnproxy.h"
 #include "pcap.h"
 #include "ndpi_protocol_ids.h"
