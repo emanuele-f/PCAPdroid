@@ -49,6 +49,8 @@ During the capture, PCAPdroid logs all the connections in memory. After a limit 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" />
 </p>
 
+By tapping on an app it's possible to show its individual connections.
+
 ## 1.3 App Filter
 
 By default PCAPdroid captures the packets of all the android apps. You can limit the capture to a specific app by specifying an "App Filter". The capture will now affect only the specified applications. This is expecially useful when using the [TLS decryption](tls_decryption) to ensure that only the target app traffic will be affected by the TLS decoding.
