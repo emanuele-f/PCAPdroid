@@ -1,37 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:paddingHorizontal="5dp"
-    android:layout_height="40dp">
+    android:layout_height="wrap_content"
+    tools:layout_height="60dp"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingHorizontal="4dp"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
 
     <ImageView
         android:id="@+id/icon"
+        android:adjustViewBounds="false"
+        android:gravity="center"
         android:layout_width="40dp"
         android:layout_height="match_parent"
-        android:layout_margin="4dp" />
+        android:layout_margin="2dp"
+        tools:src="@drawable/ic_apps"
+        tools:tint="@color/colorAccent" />
 
-    <TextView
+    <RelativeLayout
         android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="0.2"
-        android:text="HTTP"
-        android:gravity="center_vertical"
-        android:layout_marginEnd="5dp"
-        android:id="@+id/l7proto"/>
+        android:orientation="vertical"
+        android:paddingHorizontal="4dp"
+        android:layout_marginStart="5dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="0.5"
-        android:text="example.org:80"
-        android:gravity="center_vertical"
-        android:id="@+id/remote"/>
+        <TextView
+            android:id="@+id/app_name"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            tools:text="Android" />
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:layout_weight="0.3"
-        android:text="1.05 MB"
-        android:gravity="center_vertical|end"
-        android:id="@+id/traffic"/>
+        <TextView
+            android:id="@+id/status_ind"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:textColor="#28BC36"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:text="@string/conn_status_open" />
+
+        <TextView
+            android:id="@+id/eta"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:id="@+id/l7proto"
+            android:textSize="13sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/app_name"
+            android:layout_alignParentStart="true"
+            tools:text="HTTP, 80" />
+
+        <TextView
+            android:id="@+id/remote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="example.org"
+            android:textSize="12sp"
+            android:layout_below="@id/l7proto"/>
+
+        <TextView
+            android:id="@+id/traffic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="105.4 MB"
+            android:textSize="14sp"
+            android:gravity="end"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true" />
+    </RelativeLayout>
 </LinearLayout>

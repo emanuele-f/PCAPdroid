@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020 - Emanuele Faranda
+ * Copyright 2020-21 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
    single bytes[] in order to avoid excessive data copies.
  */
 class ChunkedInputStream extends InputStream {
-    private static final byte[] pcapHeader = Utils.hexStringToByteArray("d4c3b2a1020004000000000000000000ffff000065000000");
+    private static final byte[] pcapHeader = Utils.hexStringToByteArray(Utils.PCAP_HEADER);
     final Lock mLock = new ReentrantLock();
     final Condition newData = mLock.newCondition();
     ArrayList<byte[]> mChunks = new ArrayList<byte[]>();

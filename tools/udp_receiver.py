@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
 #
-#  Copyright 2020 by Emanuele Faranda
+#  Copyright 2020-21 - Emanuele Faranda
 #
 
 import socket

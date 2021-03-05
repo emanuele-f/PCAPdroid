@@ -8,21 +8,11 @@
     <string name="up_and_down">%1$s pobrane — %2$s wysłane</string>
     <string name="query">Zapytanie</string>
     <string name="host">Host</string>
-    <string name="capture_not_started">Przechwytywanie nie jest włączone!</string>
-
-    <!-- Defaults -->
-
-    <!-- Preferences -->
-    <string name="collector_prefs_header">Zdalna usługa zbierająca</string>
-    <string name="ip_address">Adres IP</string>
-    <string name="port">Port</string>
+    <string name="capture_not_running">Przechwytywanie nie jest włączone!</string>
     <string name="app_filter">Filtr aplikacji</string>
     <string name="ready">Gotowy</string>
-    <string name="stopping">Wyłączanie...</string>
-    <string name="starting">Włączanie...</string>
     <string name="about">O aplikacji</string>
-    <string name="misc_prefs">Różne</string>
-    <string name="status_view">Status</string>
+    <string name="status">Status</string>
     <string name="connections_view">Połączenia</string>
     <string name="no_connections">Brak połączeń</string>
     <string name="connection_details">Informacje o połączeniu</string>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_show_app_filter"
+        android:title="@string/set_app_filter"
+        android:orderInCategory="10"
+        android:icon="@drawable/ic_filter_alt"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/save"
+        android:title="@string/save_to_file"
+        android:orderInCategory="20"
+        android:icon="@drawable/ic_save"
+        app:showAsAction="ifRoom" />
+
+</menu>

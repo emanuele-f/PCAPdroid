@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">PCAPdroid</string>
     <string name="start_button">启动</string>
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
@@ -11,23 +10,11 @@
     <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
     <string name="query">查询</string>
     <string name="host">主机</string>
-    <string name="capture_not_started">流量捕获未在运行！</string>
-
-    <!-- Defaults -->
-    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
-    <string name="default_collector_port" translatable="false">1234</string>
-
-    <!-- Preferences -->
-    <string name="collector_prefs_header">远程收集器</string>
-    <string name="ip_address">IP 地址</string>
-    <string name="port">端口</string>
+    <string name="capture_not_running">流量捕获未在运行！</string>
     <string name="app_filter">应用过滤器</string>
     <string name="ready">就绪</string>
-    <string name="stopping">停止中...</string>
-    <string name="starting">启动中...</string>
     <string name="about">关于</string>
-    <string name="misc_prefs">杂项</string>
-    <string name="status_view">状态</string>
+    <string name="status">状态</string>
     <string name="connections_view">连接</string>
     <string name="no_connections">无连接</string>
     <string name="connection_details">连接详情</string>
@@ -55,13 +42,10 @@
     <string name="enable_tls_decryption">启用 TLS 解密</string>
     <string name="enable_tls_decryption_summary">启用后，所有 TLS 通信都将被重定向到远程 mitmproxy 实例进行解密。</string>
     <string name="default_proxy_port">8080</string>
-    <string name="with_tls_decryption">+解密</string>
-    <string name="pcap_dump">PCAP 转储</string>
     <string name="tls_decryption">TLS 解密</string>
     <string name="user_guide">用户指南</string>
     <string name="rate_app">评价本应用</string>
     <string name="open_telegram_group">Telegram 群组</string>
-    <string name="open_github">Github 项目</string>
     <string name="yes">是</string>
     <string name="no">否</string>
     <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
