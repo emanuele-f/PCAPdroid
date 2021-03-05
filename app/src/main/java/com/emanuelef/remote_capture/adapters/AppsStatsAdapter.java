@@ -123,7 +123,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     public long getItemId(int pos) {
         AppStats stats = getItem(pos);
 
-        return((stats != null) ? stats.getUid() : -1);
+        return((stats != null) ? stats.getUid() : Utils.UID_UNKNOWN);
     }
 
     public AppStats getItem(int pos) {

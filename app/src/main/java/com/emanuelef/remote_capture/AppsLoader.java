@@ -48,10 +48,12 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
     private AppsLoadListener mListener;
     private final AppCompatActivity mContext;
     private final Drawable mVirtualAppIcon;
+    private final Drawable mUnknownAppIcon;
 
     public AppsLoader(AppCompatActivity context) {
         mContext = context;
         mVirtualAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.sym_def_app_icon);
+        mUnknownAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
     }
 
     public AppsLoader setAppsLoadListener(AppsLoadListener listener) {
@@ -73,6 +75,8 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
         // https://android.googlesource.com/platform/system/core/+/master/libcutils/include/private/android_filesystem_config.h
         // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
         // as they miss a valid package name
+        apps.put(Utils.UID_UNKNOWN, new AppDescriptor(mContext.getString(R.string.unknown_app),
+                mUnknownAppIcon,"unknown", Utils.UID_UNKNOWN, true, true));
         apps.put(0, new AppDescriptor("Root",
                 mVirtualAppIcon,"root", 0, true, true));
         apps.put(1000, new AppDescriptor("Android",
@@ -88,7 +92,8 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
         apps.put(9999, new AppDescriptor("Nobody",
                 mVirtualAppIcon,"nobody", 9999, true, true));
 
-        // NOTE: a single uid can correspond to multiple apps, only take the first one
+        // NOTE: a single uid can correspond to multiple packages, only take the first package found.
+        // The VPNService in android works with UID, so this choice is not restrictive.
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;

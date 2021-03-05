@@ -269,7 +269,7 @@ public class ConnectionsRegister {
             ConnectionDescriptor conn = getConn(i);
             AppDescriptor app = apps.get(conn.uid);
 
-            if((conn != null) && ((uidFilter == -1) || (conn.uid == uidFilter))) {
+            if((conn != null) && ((uidFilter == Utils.UID_NO_FILTER) || (conn.uid == uidFilter))) {
                 builder.append(conn.ipproto);                               builder.append(",");
                 builder.append(conn.src_ip);                                builder.append(",");
                 builder.append(conn.src_port);                              builder.append(",");

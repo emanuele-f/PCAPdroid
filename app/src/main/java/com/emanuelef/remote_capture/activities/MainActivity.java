@@ -281,9 +281,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void checkUidFilterIntent(Intent intent) {
         if(intent != null) {
-            int uid = intent.getIntExtra(UID_FILTER_EXTRA, -2);
+            int uid = intent.getIntExtra(UID_FILTER_EXTRA, Utils.UID_NO_FILTER);
 
-            if(uid != -2) {
+            if(uid != Utils.UID_NO_FILTER) {
                 // Move to the connections tab
                 Log.d(TAG, "UID_FILTER_EXTRA " + uid);
 

@@ -107,5 +107,6 @@
     <string name="gpl_license_link">GPLv3 License</string>
     <string name="get_app">Get it:</string>
     <string name="tls_how_to">How to setup TLS Decryption</string>
+    <string name="unknown_app">Unknown</string>
 </resources>
 

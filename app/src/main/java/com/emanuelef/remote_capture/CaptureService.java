@@ -205,6 +205,9 @@ public class CaptureService extends VpnService implements Runnable {
             Log.d(TAG, "Setting app filter: " + app_filter);
 
             try {
+                // NOTE: the API requires a package name, however it is converted to a UID
+                // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
+                // not on a package-name basis!
                 builder.addAllowedApplication(app_filter);
             } catch (PackageManager.NameNotFoundException e) {
                 String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
@@ -453,11 +456,11 @@ public class CaptureService extends VpnService implements Runnable {
     @TargetApi(Build.VERSION_CODES.Q)
     public int getUidQ(int version, int protocol, String saddr, int sport, String daddr, int dport) {
         if (protocol != 6 /* TCP */ && protocol != 17 /* UDP */)
-            return -1;
+            return Utils.UID_UNKNOWN;
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         if (cm == null)
-            return -1;
+            return Utils.UID_UNKNOWN;
 
         InetSocketAddress local = new InetSocketAddress(saddr, sport);
         InetSocketAddress remote = new InetSocketAddress(daddr, dport);
