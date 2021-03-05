@@ -2,7 +2,7 @@ PCAPdroid offers different ways to export the captured traffic. This is called *
 
 ## 2.1 None
 
-This mode does not export the traffic in any way. This is suitable to perform traffic analysis directly from the *connections* view of PCAPdroid.
+This mode does not export the traffic in any way. This is suitable to only perform traffic analysis directly from the *connections* view of PCAPdroid.
 
 ## 2.2 HTTP Server
 
@@ -10,7 +10,12 @@ This mode starts an HTTP server which can be accessed by any PC in the local net
 
 This is the default mode of PCAPdroid as it does not require any further setup or specific OS.
 
-## 2.3 UDP Exporter
+## 2.3 PCAP File
+
+This mode can be used to save a PCAP file into the device storage. The file name can be selected after clicking the start button.
+After the capture is stopped, a dialog is displayed which offers the option to share the PCAP file, delete it or just keep it.
+
+## 2.4 UDP Exporter
 
 This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a linux PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream, sent to the remote UDP collector. The collector IP and port must be configured through the settings.
 
