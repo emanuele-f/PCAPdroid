@@ -2,6 +2,17 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.0] - 2021-03-05
+- Retain the connections log during the whole capture
+- Add Android TV support
+- New app layout for easier interaction
+- Export the connections log to a CSV file
+- Filter the connections log by app
+- New Apps view to review the total traffic and connections by app
+- Clipboard copy and export of the connection details
+- Add persistent notification while capture is running
+- Apps can now conveniently searched via the searchbar
+
 ## [1.2.16] - 2021-02-23
 - Fix non-selectable text in connections details
 - Fix start button not working on first app run
