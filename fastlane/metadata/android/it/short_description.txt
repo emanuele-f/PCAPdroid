@@ -1,1 +1,1 @@
-Cattura il traffico di rete e invia il PCAP via UDP senza root
+Monitora e cattura il traffico di dispositivi Android senza root
