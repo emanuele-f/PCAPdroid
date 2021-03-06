@@ -107,4 +107,5 @@
     <string name="gpl_license_link">GPLv3 许可</string>
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
+    <string name="unknown_app">未知</string>
 </resources>
