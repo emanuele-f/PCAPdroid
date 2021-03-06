@@ -106,10 +106,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public ConnectionsAdapter(Context context) {
         mContext = context;
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mUnknownIcon = ContextCompat.getDrawable(context, android.R.drawable.ic_menu_help);
+        mUnknownIcon = ContextCompat.getDrawable(context, R.drawable.ic_image);
         mListener = null;
         mItemCount = 0;
-        mUidFilter = -1;
+        mUidFilter = Utils.UID_NO_FILTER;
         setHasStableIds(true);
     }
 
@@ -147,7 +147,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public long getItemId(int pos) {
         ConnectionDescriptor conn = getItem(pos);
 
-        return ((conn != null) ? conn.incr_id : -1);
+        return ((conn != null) ? conn.incr_id : Utils.UID_UNKNOWN);
     }
 
     public ConnectionDescriptor getItem(int pos) {
@@ -156,7 +156,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))
             return null;
 
-        if(mUidFilter == -1)
+        if(mUidFilter == Utils.UID_NO_FILTER)
             return reg.getConn(pos);
         else
             return reg.getUidConn(mUidFilter, pos);

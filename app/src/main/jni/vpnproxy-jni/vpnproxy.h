@@ -25,6 +25,8 @@
 #ifndef REMOTE_CAPTURE_VPNPROXY_H
 #define REMOTE_CAPTURE_VPNPROXY_H
 
+#define UID_UNKNOWN -1
+
 typedef struct capture_stats {
     jlong sent_bytes;
     jlong rcvd_bytes;

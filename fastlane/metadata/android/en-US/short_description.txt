@@ -1,1 +1,1 @@
-Capture traffic on Android devices and send the PCAP via UDP without root
+No-root network monitor and traffic dump tool for Android devices

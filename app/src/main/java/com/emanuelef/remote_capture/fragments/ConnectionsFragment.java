@@ -153,7 +153,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         listenerSet = false;
 
         Drawable icon = ContextCompat.getDrawable(getContext(), android.R.color.transparent);
-        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), -1, false, true);
+        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), Utils.UID_NO_FILTER, false, true);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
@@ -202,23 +202,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             onAppsIconsLoaded(activity.getApps());
         activity.addAppLoadListener(this);
 
-        int uidFilter = -2;
+        int uidFilter = Utils.UID_NO_FILTER;
         Intent intent = activity.getIntent();
 
         if(intent != null) {
-            uidFilter = intent.getIntExtra(MainActivity.UID_FILTER_EXTRA, -2);
+            uidFilter = intent.getIntExtra(MainActivity.UID_FILTER_EXTRA, Utils.UID_NO_FILTER);
 
-            if(uidFilter != -2) {
+            if(uidFilter != Utils.UID_NO_FILTER) {
                 // "consume" it
                 intent.removeExtra(MainActivity.UID_FILTER_EXTRA);
             }
         }
 
-        if ((uidFilter == -2) && (savedInstanceState != null)) {
-            uidFilter = savedInstanceState.getInt("uidFilter", -2);
+        if ((uidFilter == Utils.UID_NO_FILTER) && (savedInstanceState != null)) {
+            uidFilter = savedInstanceState.getInt("uidFilter", Utils.UID_NO_FILTER);
         }
 
-        if(uidFilter != -2)
+        if(uidFilter != Utils.UID_NO_FILTER)
             setUidFilter(uidFilter);
 
         // Register for service status
@@ -327,7 +327,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         // in order to avoid desyncs
 
         mHandler.post(() -> {
-            if(mAdapter.getUidFilter() != -1) {
+            if(mAdapter.getUidFilter() != Utils.UID_NO_FILTER) {
                 refreshUidConnections();
                 return;
             }
@@ -348,7 +348,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mHandler.post(() -> {
             Log.d(TAG, "Add " + count + " items at " + start);
 
-            if(mAdapter.getUidFilter() == -1) {
+            if(mAdapter.getUidFilter() == Utils.UID_NO_FILTER) {
                 mAdapter.setItemCount(mAdapter.getItemCount() + count);
                 mAdapter.notifyItemRangeInserted(start, count);
             } else
@@ -376,7 +376,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mHandler.post(() -> {
             Log.d(TAG, "Remove " + count + " items at " + start);
 
-            if (mAdapter.getUidFilter() == -1) {
+            if (mAdapter.getUidFilter() == Utils.UID_NO_FILTER) {
                 mAdapter.setItemCount(mAdapter.getItemCount() - count);
                 mAdapter.notifyItemRangeRemoved(start, count);
             } else
@@ -387,7 +387,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public void connectionsUpdated(int[] positions) {
         mHandler.post(() -> {
-            if (mAdapter.getUidFilter() != -1) {
+            if (mAdapter.getUidFilter() != Utils.UID_NO_FILTER) {
                 refreshUidConnections();
                 return;
             }
@@ -420,8 +420,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int id = item.getItemId();
 
         if(id == R.id.action_show_app_filter) {
-            if(mAdapter.getUidFilter() != -1)
-                setUidFilter(-1);
+            if(mAdapter.getUidFilter() != Utils.UID_NO_FILTER)
+                setUidFilter(Utils.UID_NO_FILTER);
             else
                 openAppSelector();
 
@@ -486,7 +486,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(app == null)
             app = mNoFilterApp;
 
-        if(app.getUid() != -1) {
+        if(app.getUid() != Utils.UID_NO_FILTER) {
             Drawable drawable = (app.getIcon() != null) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : null;
 
             if(drawable != null) {

@@ -116,7 +116,7 @@ jint get_uid_sub(const int version, const int protocol,
     else if (protocol == IPPROTO_UDP)
         fn = (version == 4 ? "/proc/net/udp" : "/proc/net/udp6");
     else
-        return -1;
+        return UID_UNKNOWN;
 
     // Open proc file
     FILE *fd = fopen(fn, "r");
@@ -125,7 +125,7 @@ jint get_uid_sub(const int version, const int protocol,
         return -2;
     }
 
-    jint uid = -1;
+    jint uid = UID_UNKNOWN;
 
     char line[250];
     int fields;
@@ -209,7 +209,7 @@ jint get_uid_sub(const int version, const int protocol,
 
 jint get_uid_slow(struct vpnproxy_data *proxy,
                   const zdtun_5tuple_t *conn_info) {
-    jint uid = -1;
+    jint uid = UID_UNKNOWN;
 
     // TODO IPv6 support
     /* This snippet is only needed to put together netguard and vpnproxy */
@@ -252,7 +252,7 @@ jint get_uid_slow(struct vpnproxy_data *proxy,
         //            version, conn_info->ipproto, source, sport, dest, dport, uid);
     }
 
-    if (uid == -1) {
+    if (uid == UID_UNKNOWN) {
         uid = get_uid_sub(version, conn_info->ipproto, &saddr, sport, &daddr, dport, source, dest, now);
         //log_android(ANDROID_LOG_DEBUG, "uid v%d p%d %s/%u > %s/%u => %d fallback",
                     //version, conn_info->ipproto, source, sport, dest, dport, uid);
@@ -276,7 +276,7 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
     jmethodID midGetUidQ = (*env)->GetMethodID(env, vpn_service_cls, "getUidQ", "(IILjava/lang/String;ILjava/lang/String;I)I");
     if(!midGetUidQ) {
         __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(getUidQ) failed");
-        return -1;
+        return UID_UNKNOWN;
     }
 
     addr.s_addr = conn_info->src_ip;

@@ -398,9 +398,9 @@ static void javaPcapDump(vpnproxy_data_t *proxy) {
 static bool shouldIgnoreConn(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, const conn_data_t *data) {
 #if 0
     int uid = data.uid;
-    bool is_unknown_app = ((uid == -1) || (uid == 1051 /* netd DNS resolver */));
+    bool is_unknown_app = ((uid == UID_UNKNOWN) || (uid == 1051 /* netd DNS resolver */));
 
-    if(((proxy->uid_filter != -1) && (proxy->uid_filter != uid))
+    if(((proxy->uid_filter != UID_UNKNOWN) && (proxy->uid_filter != uid))
         && (!is_unknown_app || !proxy->capture_unknown_app_traffic))
         return true;
 #endif
@@ -518,7 +518,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
         log_android(ANDROID_LOG_INFO, "%s [%d/%s]", buf, uid, appbuf);
     } else {
-        uid = -1;
+        uid = UID_UNKNOWN;
         log_android(ANDROID_LOG_WARN, "%s => UID not found!", buf);
     }
 
