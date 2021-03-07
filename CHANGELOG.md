@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.1] - 2021-03-07
+- Fix startup crash before Oreo
+
 ## [1.3.0] - 2021-03-05
 - Retain the connections log during the whole capture
 - Add Android TV support
