@@ -277,15 +277,13 @@ public class CaptureService extends VpnService implements Runnable {
 
         mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
+                .setColor(getResources().getColor(R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentTitle(getResources().getString(R.string.capture_running))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            mNotificationBuilder.setColor(getColor(R.color.colorPrimary));
 
         if(Utils.isTv(this)) {
             // This is the icon which is visualized
