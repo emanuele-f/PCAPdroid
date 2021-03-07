@@ -263,14 +263,13 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void setupNotifications() {
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
-            return;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
-                NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
-        nm.createNotificationChannel(chan);
+            NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
+                    NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
+            nm.createNotificationChannel(chan);
+        }
 
         // Notification builder
         PendingIntent pi = PendingIntent.getActivity(this, 0,
@@ -278,13 +277,15 @@ public class CaptureService extends VpnService implements Runnable {
 
         mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
-                .setColor(getColor(R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentTitle(getResources().getString(R.string.capture_running))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            mNotificationBuilder.setColor(getColor(R.color.colorPrimary));
 
         if(Utils.isTv(this)) {
             // This is the icon which is visualized
