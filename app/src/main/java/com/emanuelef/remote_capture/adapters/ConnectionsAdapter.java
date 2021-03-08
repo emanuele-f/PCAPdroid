@@ -33,12 +33,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder> {
@@ -47,7 +47,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Drawable mUnknownIcon;
     private int mItemCount;
     private View.OnClickListener mListener;
-    private Map<Integer, AppDescriptor> mApps;
+    private final AppsResolver mApps;
     private final Context mContext;
     int mUidFilter;
 
@@ -72,8 +72,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             eta = itemView.findViewById(R.id.eta);
         }
 
-        public void bindConn(Context context, ConnectionDescriptor conn, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
-            AppDescriptor app = (apps != null) ? apps.get(conn.uid) : null;
+        public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
+            AppDescriptor app = apps.get(conn.uid);
             Drawable appIcon;
 
             appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
@@ -103,8 +103,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
     }
 
-    public ConnectionsAdapter(Context context) {
+    public ConnectionsAdapter(Context context, AppsResolver resolver) {
         mContext = context;
+        mApps = resolver;
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(context, R.drawable.ic_image);
         mListener = null;
@@ -172,9 +173,5 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public int getUidFilter() {
         return mUidFilter;
-    }
-
-    public void setApps(Map<Integer, AppDescriptor> apps) {
-        mApps = apps;
     }
 }

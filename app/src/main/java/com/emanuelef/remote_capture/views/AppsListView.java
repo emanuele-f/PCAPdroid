@@ -36,8 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AppsListView extends EmptyRecyclerView implements SearchView.OnQueryTextListener, Filterable {
-    private List<AppDescriptor> mInstalledApps;
+    private List<AppDescriptor> mAllApps;
     private AppsAdapter mAdapter;
+    private String mLastFilter;
 
     public AppsListView(@NonNull Context context) {
         super(context);
@@ -55,7 +56,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
     }
 
     private void initialize(Context context) {
-        mInstalledApps = null;
+        mAllApps = null;
         setLayoutManager(new LinearLayoutManager(context));
         setHasFixedSize(true);
     }
@@ -70,11 +71,11 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
                 List<AppDescriptor> appsFiltered;
 
                 if(charString.isEmpty())
-                    appsFiltered = mInstalledApps;
+                    appsFiltered = mAllApps;
                 else {
                     appsFiltered = new ArrayList<>();
 
-                    for(AppDescriptor app : mInstalledApps) {
+                    for(AppDescriptor app : mAllApps) {
                         if(app.getPackageName().toLowerCase().contains(charString)
                                 || app.getName().toLowerCase().contains(charString)) {
                             appsFiltered.add(app);
@@ -103,6 +104,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        mLastFilter = newText;
         getFilter().filter(newText);
         return true;
     }
@@ -112,13 +114,16 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
     }
 
     public void setApps(List<AppDescriptor> installedApps) {
-        mInstalledApps = installedApps;
+        mAllApps = installedApps;
 
         if(mAdapter == null) {
-            mAdapter = new AppsAdapter(getContext(), mInstalledApps);
+            mAdapter = new AppsAdapter(getContext(), mAllApps);
             setAdapter(mAdapter);
         } else
-            mAdapter.notifyDataSetChanged();
+            mAdapter.setApps(mAllApps);
+
+        if(mLastFilter != null)
+            getFilter().filter(mLastFilter);
     }
 
     public void setSelectedAppListener(final OnSelectedAppListener listener) {

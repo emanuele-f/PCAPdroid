@@ -127,7 +127,6 @@ public class Utils {
     }
 
     public static String formatEpochFull(Context context, long epoch) {
-        long now = Utils.now();
         Locale locale = context.getResources().getConfiguration().locale;
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
 
@@ -173,7 +172,7 @@ public class Utils {
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
     public static String getLocalWifiIpAddress(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo connInfo = wifiManager.getConnectionInfo();
 
         if(connInfo != null) {
@@ -366,10 +365,7 @@ public class Utils {
         if(uiModeManager == null)
             return false;
 
-        if(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION)
-            return true;
-
-        return false;
+        return(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
     }
 
     public static String getAppVersion(Context context) {

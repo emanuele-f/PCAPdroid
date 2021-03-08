@@ -255,10 +255,11 @@ public class ConnectionsRegister {
         return stats.num_connections;
     }
 
-    public synchronized String dumpConnectionsCsv(Context context, Map<Integer, AppDescriptor> apps, int uidFilter) {
+    public synchronized String dumpConnectionsCsv(Context context, int uidFilter) {
         StringBuilder builder = new StringBuilder();
         String statusOpen = context.getString(R.string.conn_status_open);
         String statusClosed = context.getString(R.string.conn_status_closed);
+        AppsResolver resolver = new AppsResolver(context);
 
         // Header
         builder.append(context.getString(R.string.connections_csv_fields_v1));
@@ -267,7 +268,7 @@ public class ConnectionsRegister {
         // Contents
         for(int i=0; i<getConnCount(); i++) {
             ConnectionDescriptor conn = getConn(i);
-            AppDescriptor app = apps.get(conn.uid);
+            AppDescriptor app = resolver.get(conn.uid);
 
             if((conn != null) && ((uidFilter == Utils.UID_NO_FILTER) || (conn.uid == uidFilter))) {
                 builder.append(conn.ipproto);                               builder.append(",");
