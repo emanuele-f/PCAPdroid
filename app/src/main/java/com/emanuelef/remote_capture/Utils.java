@@ -324,6 +324,9 @@ public class Utils {
     }
 
     public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+        if((new_x == 0) || (new_y == 0))
+            return null;
+
         Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 

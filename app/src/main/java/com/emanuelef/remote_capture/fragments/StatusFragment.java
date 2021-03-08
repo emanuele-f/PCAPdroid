@@ -250,7 +250,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 int height = mFilterDescription.getMeasuredHeight();
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+                if(drawable != null)
+                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             }
         }
 
@@ -314,7 +315,8 @@ private void refreshPcapDumpInfo() {
                 int height = mCollectorInfo.getMeasuredHeight();
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+                if(drawable != null)
+                    mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
             } else
                 mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
         } else

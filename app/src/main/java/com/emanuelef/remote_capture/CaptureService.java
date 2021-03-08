@@ -28,7 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -288,9 +288,11 @@ public class CaptureService extends VpnService implements Runnable {
         if(Utils.isTv(this)) {
             // This is the icon which is visualized
             Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
-            Bitmap mLargeIcon = Utils.scaleDrawable(getResources(), banner,
-                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight()).getBitmap();
-            mNotificationBuilder.setLargeIcon(mLargeIcon);
+            BitmapDrawable largeIcon = Utils.scaleDrawable(getResources(), banner,
+                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight());
+
+            if(largeIcon != null)
+                mNotificationBuilder.setLargeIcon(largeIcon.getBitmap());
 
             // On Android TV it must be shown as a recommendation
             mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
