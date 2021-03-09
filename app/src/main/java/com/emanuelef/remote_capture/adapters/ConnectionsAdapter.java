@@ -75,6 +75,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
             AppDescriptor app = apps.get(conn.uid);
             Drawable appIcon;
+            String l7Text;
 
             appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
             icon.setImageDrawable(appIcon);
@@ -84,7 +85,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             else
                 remote.setText(conn.dst_ip);
 
-            String l7Text = String.format(context.getResources().getString(R.string.proto_and_port), conn.l7proto, conn.dst_port);
+            if(conn.dst_port != 0)
+                l7Text = String.format(context.getResources().getString(R.string.proto_and_port), conn.l7proto, conn.dst_port);
+            else
+                l7Text = conn.l7proto;
+
             l7proto.setText(l7Text);
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(conn.uid);
