@@ -2,6 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.2] - 2021-03-09
+- Add ICMP connections support
+- Reduce app icons load time and RAM usage
+- Fix crash in Bitmap.createBitmap
+
 ## [1.3.1] - 2021-03-07
 - Fix startup crash before Oreo
 
