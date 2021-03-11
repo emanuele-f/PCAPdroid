@@ -111,25 +111,6 @@ static bool send_header;
 
 /* ******************************************************* */
 
-static char* tuple2str(const zdtun_5tuple_t *tuple, char *buf, size_t bufsize) {
-    char srcip[64], dstip[64];
-    struct in_addr addr;
-
-    addr.s_addr = tuple->src_ip;
-    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
-    addr.s_addr = tuple->dst_ip;
-    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
-
-    snprintf(buf, bufsize, "[proto %d]: %s:%u -> %s:%u",
-             tuple->ipproto,
-             srcip, ntohs(tuple->src_port),
-             dstip, ntohs(tuple->dst_port));
-
-    return buf;
-}
-
-/* ******************************************************* */
-
 void free_ndpi(conn_data_t *data) {
     if(data->ndpi_flow) {
         ndpi_free_flow(data->ndpi_flow);
@@ -307,16 +288,7 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 
     if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
         // Return the L3 protocol
-        switch (ipproto) {
-            case IPPROTO_TCP:
-                return "TCP";
-            case IPPROTO_UDP:
-                return "UDP";
-            case IPPROTO_ICMP:
-                return "ICMP";
-            default:
-                return "Unknown";
-        }
+        return zdtun_proto2str(ipproto);
     }
 
     return ndpi_get_proto_name(mod, proto);
@@ -503,7 +475,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
     char buf[256];
     jint uid;
 
-    tuple2str(conn_info, buf, sizeof(buf));
+    zdtun_5tuple2str(conn_info, buf, sizeof(buf));
     uid = get_uid(proxy, conn_info);
 
     if(uid >= 0) {
@@ -693,7 +665,7 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
             char buf[256];
 
             // Do not abort, the connection will be terminated
-            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
+            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", zdtun_5tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
         } else if(errno == EIO) {
             log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
             running = false;
