@@ -81,11 +81,12 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
+        mAdapter = new AppsStatsAdapter(getContext());
+        doRefreshApps();
+        mRecyclerView.setAdapter(mAdapter);
+
         TextView emptyText = view.findViewById(R.id.no_apps);
         mRecyclerView.setEmptyView(emptyText);
-
-        mAdapter = new AppsStatsAdapter(getContext());
-        mRecyclerView.setAdapter(mAdapter);
 
         mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;

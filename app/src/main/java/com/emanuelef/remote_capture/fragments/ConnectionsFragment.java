@@ -145,9 +145,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
         mApps = new AppsResolver(requireContext());
-
         mEmptyText = view.findViewById(R.id.no_connections);
-        mRecyclerView.setEmptyView(mEmptyText);
 
         if(((MainActivity) requireActivity()).getState() == AppState.running)
             mEmptyText.setText(R.string.no_connections);
@@ -155,6 +153,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
+        mRecyclerView.setEmptyView(mEmptyText);
 
         Drawable icon = ContextCompat.getDrawable(requireContext(), android.R.color.transparent);
         mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), Utils.UID_NO_FILTER, false);
