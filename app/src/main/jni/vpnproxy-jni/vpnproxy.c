@@ -85,6 +85,7 @@ static bool running = false;
 static bool dump_vpn_stats_now = false;
 static bool dump_capture_stats_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
+static uint32_t new_dns_server = 0;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -596,11 +597,19 @@ static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdt
 
     log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
 
+    if(new_dns_server != 0) {
+        // Reload DNS server
+        proxy->dns_server = new_dns_server;
+        new_dns_server = 0;
+
+        log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
+    }
+
     /*
      * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
      * here as zdtun will proxy the connection.
      */
-    zdtun_conn_dnat(conn, proxy->public_dns, 0);
+    zdtun_conn_dnat(conn, proxy->dns_server, 0);
     proxy->num_dns_requests++;
 
     return(1);
@@ -913,7 +922,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .vpn_service = vpn,
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
-            .public_dns = getIPv4Pref(env, vpn, "getPublicDns"),
+            .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
             .incr_id = 0,
             .java_dump = {
                 .enabled = (bool) getIntPref(env, vpn, "dumpPcapToJava"),
@@ -996,6 +1005,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         }
     }
 
+    new_dns_server = 0;
     gettimeofday(&now_tv, NULL);
     now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
     next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -1143,4 +1153,14 @@ Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jcla
 JNIEXPORT jint JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jclass clazz) {
     return FD_SETSIZE;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jclass clazz,
+                                                               jstring server) {
+    struct in_addr addr = {0};
+    const char *value = (*env)->GetStringUTFChars(env, server, 0);
+
+    if(inet_aton(value, &addr) != 0)
+        new_dns_server = addr.s_addr;
 }

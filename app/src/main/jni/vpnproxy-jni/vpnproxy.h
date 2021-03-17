@@ -77,7 +77,7 @@ typedef struct vpnproxy_data {
     JNIEnv *env;
     jobject vpn_service;
     u_int32_t vpn_dns;
-    u_int32_t public_dns;
+    u_int32_t dns_server;
     u_int32_t vpn_ipv4;
     struct ndpi_detection_module_struct *ndpi;
     uint64_t now_ms;

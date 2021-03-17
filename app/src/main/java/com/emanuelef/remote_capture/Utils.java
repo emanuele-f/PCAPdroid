@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Service;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -32,16 +31,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ScaleDrawable;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -142,32 +138,21 @@ public class Utils {
         }
     }
 
-    public static String getDnsServer(Context context) {
-        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Service.CONNECTIVITY_SERVICE);
+    public static String getDnsServer(ConnectivityManager cm, Network net) {
+        LinkProperties props = cm.getLinkProperties(net);
 
-        if(conn != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Network net = conn.getActiveNetwork();
+        if(props != null) {
+            List<InetAddress> dns_servers = props.getDnsServers();
 
-                if (net != null) {
-                    LinkProperties props = conn.getLinkProperties(net);
-
-                    if(props != null) {
-                        List<InetAddress> dns_servers = props.getDnsServers();
-
-                        for(InetAddress addr : dns_servers) {
-                            // Get the first IPv4 DNS server
-                            if(addr instanceof Inet4Address) {
-                                return addr.getHostAddress();
-                            }
-                        }
-                    }
+            for(InetAddress addr : dns_servers) {
+                // Get the first IPv4 DNS server
+                if(addr instanceof Inet4Address) {
+                    return addr.getHostAddress();
                 }
             }
         }
 
-        // Fallback
-        return "8.8.8.8";
+        return null;
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1

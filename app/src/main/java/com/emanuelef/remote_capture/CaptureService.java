@@ -24,6 +24,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,6 +32,9 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
@@ -41,6 +45,8 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -67,7 +73,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mThread;
     private String vpn_ipv4;
     private String vpn_dns;
-    private String public_dns;
+    private String dns_server;
     private String collector_address;
     private String tls_proxy_address;
     private Prefs.DumpMode dump_mode;
@@ -85,10 +91,14 @@ public class CaptureService extends VpnService implements Runnable {
     private Uri mPcapUri;
     private boolean mFirstStreamWrite;
     private NotificationCompat.Builder mNotificationBuilder;
+    private long mMonitoredNetwork;
+    private ConnectivityManager.NetworkCallback mNetworkCallback;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
     public static final int CONNECTIONS_LOG_SIZE = 8192;
+
+    public static final String FALLBACK_DNS_SERVER = "8.8.8.8";
 
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
@@ -137,8 +147,28 @@ public class CaptureService extends VpnService implements Runnable {
             return super.onStartCommand(null, flags, startId);
         }
 
+        // Retrieve DNS server
+        dns_server = FALLBACK_DNS_SERVER;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+            Network net = cm.getActiveNetwork();
+
+            if(net != null) {
+                dns_server = Utils.getDnsServer(cm, net);
+
+                if(dns_server == null)
+                    dns_server = FALLBACK_DNS_SERVER;
+                else {
+                    // If the network goes offline we roll back to the fallback DNS server to
+                    // avoid possibly using a private IP DNS server not reachable anymore
+                    mMonitoredNetwork = net.getNetworkHandle();
+                    registerNetworkCallbacks();
+                }
+            }
+        }
+
         // Retrieve Configuration
-        public_dns = Utils.getDnsServer(app_ctx);
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
 
@@ -190,7 +220,7 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        Log.i(TAG, "Using DNS server " + public_dns);
+        Log.i(TAG, "Using DNS server " + dns_server);
 
         // VPN
         /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
@@ -314,6 +344,43 @@ public class CaptureService extends VpnService implements Runnable {
         NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void registerNetworkCallbacks() {
+        if(mNetworkCallback != null)
+            return;
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+        mNetworkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onLost(@NonNull Network network) {
+                Log.d(TAG, "onLost " + network);
+
+                if(network.getNetworkHandle() == mMonitoredNetwork) {
+                    Log.d(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
+                    dns_server = FALLBACK_DNS_SERVER;
+                    mMonitoredNetwork = 0;
+                    unregisterNetworkCallbacks();
+
+                    // change native
+                    setDnsServer(dns_server);
+                }
+            }
+        };
+
+        cm.registerNetworkCallback(
+                new NetworkRequest.Builder()
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
+                mNetworkCallback);
+    }
+
+    private void unregisterNetworkCallbacks() {
+        if(mNetworkCallback != null) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+            cm.unregisterNetworkCallback(mNetworkCallback);
+            mNetworkCallback = null;
+        }
+    }
+
     private void stop() {
         stopPacketLoop();
 
@@ -350,6 +417,7 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         mPcapUri = null;
+        unregisterNetworkCallbacks();
 
         stopForeground(true /* remove notification */);
     }
@@ -389,7 +457,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public static String getDNSServer() {
-        return((INSTANCE != null) ? INSTANCE.getPublicDns() : "");
+        return((INSTANCE != null) ? INSTANCE.getDnsServer() : "");
     }
 
     /* Stop a running VPN service */
@@ -426,8 +494,8 @@ public class CaptureService extends VpnService implements Runnable {
         return(vpn_dns);
     }
 
-    public String getPublicDns() {
-        return(public_dns);
+    public String getDnsServer() {
+        return(dns_server);
     }
 
     public String getPcapCollectorAddress() {
@@ -539,4 +607,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void stopPacketLoop();
     public static native void askStatsDump();
     public static native int getFdSetSize();
+    public static native int setDnsServer(String server);
 }
