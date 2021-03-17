@@ -101,6 +101,36 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        if((mMenu != null) && (mActivity != null))
+            appStateChanged(mActivity.getState());
+
+        /* Register for stats update */
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                processStatsUpdateIntent(intent);
+            }
+        };
+
+        LocalBroadcastManager.getInstance(requireContext())
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(mReceiver != null) {
+            LocalBroadcastManager.getInstance(requireContext())
+                    .unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
@@ -181,32 +211,11 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
-        /* Register for stats update */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                processStatsUpdateIntent(intent);
-            }
-        };
-
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
-
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
 
         if((mMenu != null) && (mActivity != null))
             appStateChanged(mActivity.getState());
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-        }
     }
 
     @Override
@@ -218,14 +227,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mMenuSettings = mMenu.findItem(R.id.action_settings);
 
         if(mActivity != null)
-            appStateChanged(mActivity.getState());
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if((mMenu != null) && (mActivity != null))
             appStateChanged(mActivity.getState());
     }
 
@@ -309,7 +310,7 @@ private void refreshPcapDumpInfo() {
         mCollectorInfo.setText(info);
 
         // Check if a filter is set
-        if(mAppFilter != null) {
+        if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
             AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter);
 
             if((app != null) && (app.getIcon() != null)) {

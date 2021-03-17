@@ -56,10 +56,17 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     private BroadcastReceiver mReceiver;
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
 
         unregisterConnsListener();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        registerConnsListener();
     }
 
     @Override
@@ -95,8 +102,6 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
             }
         });
 
-        registerConnsListener();
-
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -104,9 +109,11 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
                 if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
-                    // register the new connection register
-                    unregisterConnsListener();
-                    registerConnsListener();
+                    if(listenerSet) {
+                        // register the new connection register
+                        unregisterConnsListener();
+                        registerConnsListener();
+                    }
                 }
             }
         };
@@ -122,6 +129,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         if(mReceiver != null) {
             LocalBroadcastManager.getInstance(requireContext())
                     .unregisterReceiver(mReceiver);
+            mReceiver = null;
         }
     }
 

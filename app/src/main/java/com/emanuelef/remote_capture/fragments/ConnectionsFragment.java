@@ -88,8 +88,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private AppsResolver mApps;
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onResume() {
+        super.onResume();
+
+        registerConnsListener();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
 
         unregisterConnsListener();
     }
@@ -191,7 +198,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         });
 
-        registerConnsListener();
         refreshMenuIcons();
 
         int uidFilter = Utils.UID_NO_FILTER;
@@ -221,8 +227,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                 if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
                     // register the new connection register
-                    unregisterConnsListener();
-                    registerConnsListener();
+                    if(listenerSet) {
+                        unregisterConnsListener();
+                        registerConnsListener();
+                    }
 
                     autoScroll = true;
                     showFabDown(false);
@@ -291,11 +299,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
     // This performs an unoptimized adapter refresh
     private void refreshUidConnections() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
@@ -315,7 +318,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void connectionsChanges(int num_connetions) {
+    public void connectionsChanges(int num_connections) {
         // Important: must use the provided num_connections rather than accessing the register
         // in order to avoid desyncs
 
@@ -325,9 +328,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 return;
             }
 
-            Log.d(TAG, "New dataset size: " + num_connetions);
+            Log.d(TAG, "New dataset size: " + num_connections);
 
-            mAdapter.setItemCount(num_connetions);
+            mAdapter.setItemCount(num_connections);
             mAdapter.notifyDataSetChanged();
             recheckScroll();
 
@@ -452,9 +455,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(mAdapter.getUidFilter() != uid) {
             // rather than calling refreshAllTheConnections, its better to let the register to the
             // job by properly scheduling the ConnectionsListener callbacks
+            boolean hasListener = listenerSet;
             unregisterConnsListener();
             mAdapter.setUidFilter(uid);
-            registerConnsListener();
+
+            if(hasListener)
+                registerConnsListener();
         }
 
         refreshFilterIcon();
@@ -465,7 +471,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         int uid = mAdapter.getUidFilter();
-        AppDescriptor app = mApps.get(uid);
+        AppDescriptor app = (uid != Utils.UID_NO_FILTER) ? mApps.get(uid) : null;
 
         if(app == null)
             app = mNoFilterApp;

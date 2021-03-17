@@ -553,7 +553,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void sendStatsDump(VPNStats stats) {
-        Log.d(TAG, "sendStatsDump");
+        //Log.d(TAG, "sendStatsDump");
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("value", stats);
