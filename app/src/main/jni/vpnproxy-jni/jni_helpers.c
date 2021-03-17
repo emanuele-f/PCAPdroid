@@ -17,24 +17,14 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-/* Utilities adapted from
- * https://github.com/M66B/NetGuard/blob/master/app/src/main/jni/netguard/netguard.c
- */
-
-#include <jni.h>
-#include <android/log.h>
-#include <stdio.h>
 #include <malloc.h>
+#include "jni_helpers.h"
 
 static int loglevel = 0;
 static JNIEnv *cur_env = NULL;
 static jclass vpnclass = 0;
 static jclass vpn_inst = 0;
 static jmethodID reportError = NULL;
-
-jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
-int jniCheckException(JNIEnv *env);
-void DeleteLocalRef(JNIEnv *env, jobject *jresource);
 
 /* ******************************************************* */
 
@@ -78,7 +68,7 @@ void log_android(int prio, const char *fmt, ...) {
             (*cur_env)->CallVoidMethod(cur_env, vpn_inst, reportError, info_string);
             jniCheckException(cur_env);
 
-            DeleteLocalRef(cur_env, info_string);
+            (*cur_env)->DeleteLocalRef(cur_env, info_string);
         }
     }
 }
@@ -118,16 +108,4 @@ jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *
     }
 
     return method;
-}
-
-/* ******************************************************* */
-
-void DeleteLocalRef(JNIEnv *env , jobject *jresource) {
-    (*env)->DeleteLocalRef(env, jresource);
-}
-
-/* ******************************************************* */
-
-void ReleaseStringUTFChars(JNIEnv *env , jobject *obj, const char *val) {
-    (*env)->ReleaseStringUTFChars(env, obj, val);
 }

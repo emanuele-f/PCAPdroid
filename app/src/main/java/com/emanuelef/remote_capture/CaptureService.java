@@ -607,5 +607,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void stopPacketLoop();
     public static native void askStatsDump();
     public static native int getFdSetSize();
-    public static native int setDnsServer(String server);
+    public static native void setDnsServer(String server);
 }

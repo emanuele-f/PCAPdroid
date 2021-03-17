@@ -18,8 +18,8 @@
  */
 
 #include <jni.h>
-#include <android/log.h>
 #include "zdtun.h"
+#include "uid_resolver.h"
 #include "ndpi_api.h"
 
 #ifndef REMOTE_CAPTURE_VPNPROXY_H
@@ -80,6 +80,7 @@ typedef struct vpnproxy_data {
     u_int32_t dns_server;
     u_int32_t vpn_ipv4;
     struct ndpi_detection_module_struct *ndpi;
+    uid_resolver_t *resolver;
     uint64_t now_ms;
     u_int32_t num_dropped_connections;
     u_int32_t num_dns_requests;
@@ -108,9 +109,5 @@ typedef struct vpnproxy_data {
 
     capture_stats_t capture_stats;
 } vpnproxy_data_t;
-
-/* ******************************************************* */
-
-jint get_uid(struct vpnproxy_data *proxy, const zdtun_5tuple_t *conn_info);
 
 #endif //REMOTE_CAPTURE_H

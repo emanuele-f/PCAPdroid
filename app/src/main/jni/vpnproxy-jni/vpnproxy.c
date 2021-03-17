@@ -20,10 +20,11 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>
 #include <ndpi_typedefs.h>
-#include "jni_helpers.c"
 #include "utils.c"
 #include "ndpi_master_protos.c"
+#include "jni_helpers.h"
 #include "vpnproxy.h"
+#include "uid_resolver.h"
 #include "pcap.h"
 #include "ndpi_protocol_ids.h"
 
@@ -197,10 +198,10 @@ static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
         if(inet_aton(value, &addr) == 0)
             log_android(ANDROID_LOG_ERROR, "%s() returned invalid address", key);
 
-        ReleaseStringUTFChars(env, obj, value);
+        (*env)->ReleaseStringUTFChars(env, obj, value);
     }
 
-    DeleteLocalRef(env, obj);
+    (*env)->DeleteLocalRef(env, obj);
 
     return(addr.s_addr);
 }
@@ -258,8 +259,8 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, in
         buf[bufsize - 1] = '\0';
     }
 
-    if(value) ReleaseStringUTFChars(env, obj, value);
-    if(obj) DeleteLocalRef(env, obj);
+    if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
+    if(obj) (*env)->DeleteLocalRef(env, obj);
 
     return(buf);
 }
@@ -363,7 +364,7 @@ static void javaPcapDump(vpnproxy_data_t *proxy) {
     proxy->java_dump.buffer_idx = 0;
     proxy->java_dump.last_dump_ms = proxy->now_ms;
 
-    DeleteLocalRef(env, barray);
+    (*env)->DeleteLocalRef(env, barray);
 }
 
 /* ******************************************************* */
@@ -477,7 +478,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
     jint uid;
 
     zdtun_5tuple2str(conn_info, buf, sizeof(buf));
-    uid = get_uid(proxy, conn_info);
+    uid = get_uid(proxy->resolver, conn_info);
 
     if(uid >= 0) {
         char appbuf[128];
@@ -743,17 +744,17 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                 rv = -1;
         }
 
-        DeleteLocalRef(env, conn_descriptor);
+        (*env)->DeleteLocalRef(env, conn_descriptor);
     } else {
         log_android(ANDROID_LOG_ERROR, "NewObject(ConnectionDescriptor) failed");
         rv = -1;
     }
 
-    DeleteLocalRef(env, info_string);
-    DeleteLocalRef(env, url_string);
-    DeleteLocalRef(env, proto_string);
-    DeleteLocalRef(env, src_string);
-    DeleteLocalRef(env, dst_string);
+    (*env)->DeleteLocalRef(env, info_string);
+    (*env)->DeleteLocalRef(env, url_string);
+    (*env)->DeleteLocalRef(env, proto_string);
+    (*env)->DeleteLocalRef(env, src_string);
+    (*env)->DeleteLocalRef(env, dst_string);
 
     return rv;
 }
@@ -800,8 +801,8 @@ cleanup:
     conns_clear(&proxy->new_conns, false);
     conns_clear(&proxy->conns_updates, false);
 
-    DeleteLocalRef(env, new_conns);
-    DeleteLocalRef(env, conns_updates);
+    (*env)->DeleteLocalRef(env, new_conns);
+    (*env)->DeleteLocalRef(env, conns_updates);
 }
 
 /* ******************************************************* */
@@ -831,7 +832,7 @@ static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t 
         jniCheckException(env);
     }
 
-    DeleteLocalRef(env, stats_obj);
+    (*env)->DeleteLocalRef(env, stats_obj);
 }
 
 /* ******************************************************* */
@@ -845,7 +846,7 @@ static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
     (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendServiceStatus, status_str);
     jniCheckException(env);
 
-    DeleteLocalRef(env, status_str);
+    (*env)->DeleteLocalRef(env, status_str);
 }
 
 /* ******************************************************* */
@@ -920,6 +921,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .sdk = sdk,
             .env = env,
             .vpn_service = vpn,
+            .resolver = init_uid_resolver(sdk, env, vpn),
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
             .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
@@ -1121,6 +1123,7 @@ housekeeping:
     }
 
     notifyServiceStatus(&proxy, "stopped");
+    destroy_uid_resolver(proxy.resolver);
 
     finish_log();
     return(0);
@@ -1155,7 +1158,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jcla
     return FD_SETSIZE;
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jclass clazz,
                                                                jstring server) {
     struct in_addr addr = {0};
