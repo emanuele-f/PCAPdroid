@@ -41,11 +41,11 @@
             android:id="@+id/status_ind"
             android:textSize="12sp"
             android:layout_width="wrap_content"
-            android:textColor="#28BC36"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:text="@string/conn_status_open" />
+            tools:textColor="#FF28BC36"
+            tools:text="@string/conn_status_open" />
 
         <TextView
             android:id="@+id/eta"

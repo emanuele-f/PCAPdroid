@@ -20,7 +20,7 @@
 #include <jni.h>
 #include "zdtun.h"
 #include "uid_resolver.h"
-#include "ndpi_api.h"
+#include <ndpi_api.h>
 
 #ifndef REMOTE_CAPTURE_VPNPROXY_H
 #define REMOTE_CAPTURE_VPNPROXY_H
@@ -51,10 +51,10 @@ typedef struct conn_data {
     jlong rcvd_bytes;
     jint sent_pkts;
     jint rcvd_pkts;
+    zdtun_conn_status_t status;
     char *info;
     char *url;
     jint uid;
-    bool closed;
     bool pending_notification;
     bool mitm_header_needed;
 } conn_data_t;
@@ -106,6 +106,11 @@ typedef struct vpnproxy_data {
         u_int32_t proxy_ip;
         u_int32_t proxy_port;
     } tls_decryption;
+
+    struct {
+        bool enabled;
+        struct in6_addr dns_server;
+    } ipv6;
 
     capture_stats_t capture_stats;
 } vpnproxy_data_t;

@@ -53,12 +53,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
-        View statusInd;
+        TextView statusInd;
         TextView remote;
         TextView l7proto;
         TextView traffic;
         TextView appName;
         TextView eta;
+        final String mStatusOpen;
+        final String mStatusError;
+        final String mProtoAndPort;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -70,6 +73,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             statusInd = itemView.findViewById(R.id.status_ind);
             appName = itemView.findViewById(R.id.app_name);
             eta = itemView.findViewById(R.id.eta);
+
+            Context context = itemView.getContext();
+            mStatusOpen = context.getString(R.string.conn_status_open);
+            mStatusError = context.getString(R.string.error);
+            mProtoAndPort = context.getString(R.string.proto_and_port);
         }
 
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
@@ -86,9 +94,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 remote.setText(conn.dst_ip);
 
             if(conn.dst_port != 0)
-                l7Text = String.format(context.getResources().getString(R.string.proto_and_port), conn.l7proto, conn.dst_port);
+                l7Text = String.format(mProtoAndPort, conn.l7proto, conn.dst_port);
             else
                 l7Text = conn.l7proto;
+
+            if(conn.ipver == 6)
+                l7Text = l7Text + ", IPv6";
 
             l7proto.setText(l7Text);
 
@@ -96,12 +107,20 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appName.setText(info_txt);
             traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
 
-            if(conn.closed) {
+            if(conn.status.equals("CLOSED")) {
                 eta.setText(Utils.formatEpochShort(context, conn.first_seen));
 
                 eta.setVisibility(View.VISIBLE);
                 statusInd.setVisibility(View.GONE);
             } else {
+                if(conn.status.equals("ERROR")) {
+                    statusInd.setText(mStatusError);
+                    statusInd.setTextColor(0xFFF20015);
+                } else {
+                    statusInd.setText(mStatusOpen);
+                    statusInd.setTextColor(0xFF28BC36);
+                }
+
                 eta.setVisibility(View.GONE);
                 statusInd.setVisibility(View.VISIBLE);
             }

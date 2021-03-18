@@ -75,7 +75,8 @@ static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
         if(!lines++)
             continue;
 
-        // Search string first, only then use slower scanf
+        //log_android(ANDROID_LOG_INFO, "[try] %s", line);
+
         if(sscanf(line, fmt, shex, &sport, dhex, &dport, &uid) == 5) {
             //log_android(ANDROID_LOG_DEBUG, "[try] %s:%d -> %s:%d [%d]", shex, sport, dhex, dport, uid);
 
@@ -96,7 +97,24 @@ static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
 
 /* ******************************************************* */
 
-// TODO support ipv6
+#if 0
+static char* tohex(const uint8_t *src, int srcsize, char *dst, int dstsize) {
+    static const char *hex = "0123456789ABCDEF";
+    int j = 0;
+
+    for(int i=0; (i < srcsize) && (j+2 < dstsize); i++) {
+        dst[j++] = hex[(src[i] >> 4)];
+        dst[j++] = hex[(src[i] & 0x0F)];
+    }
+
+    dst[j] = '\0';
+
+    return dst;
+}
+#endif
+
+/* ******************************************************* */
+
 static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
     char shex[33], dhex[33];
     jint rv;
@@ -106,16 +124,28 @@ static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
     u_int16_t sport = ntohs(conn_info->src_port);
     u_int16_t dport = ntohs(conn_info->dst_port);
 
-    sprintf(shex, "%08X", conn_info->src_ip);
-    sprintf(dhex, "%08X", conn_info->dst_ip);
+    if(conn_info->ipver == 4) {
+        sprintf(shex, "%08X", conn_info->src_ip.ip4);
+        sprintf(dhex, "%08X", conn_info->dst_ip.ip4);
 
-    rv = get_uid_proc(4, conn_info->ipproto, shex, dhex, sport, dport);
+        rv = get_uid_proc(4, conn_info->ipproto, shex, dhex, sport, dport);
 
-    if (rv == UID_UNKNOWN) {
-        // Search for IPv4-mapped IPv6 addresses
-        // https://tools.ietf.org/html/rfc3493#section-3.7
-        sprintf(shex, "0000000000000000FFFF0000%08X", conn_info->src_ip);
-        sprintf(dhex, "0000000000000000FFFF0000%08X", conn_info->dst_ip);
+        if (rv == UID_UNKNOWN) {
+            // Search for IPv4-mapped IPv6 addresses
+            // https://tools.ietf.org/html/rfc3493#section-3.7
+            sprintf(shex, "0000000000000000FFFF0000%08X", conn_info->src_ip.ip4);
+            sprintf(dhex, "0000000000000000FFFF0000%08X", conn_info->dst_ip.ip4);
+
+            rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
+        }
+    } else {
+        const uint32_t *src = conn_info->src_ip.ip6.in6_u.u6_addr32;
+        const uint32_t *dst = conn_info->dst_ip.ip6.in6_u.u6_addr32;
+
+        sprintf(shex, "%08X%08X%08X%08X", src[0], src[1], src[2], src[3]);
+        sprintf(dhex, "%08X%08X%08X%08X", dst[0], dst[1], dst[2], dst[3]);
+
+        //log_android(ANDROID_LOG_INFO, "HEX %s %s", shex, dhex);
 
         rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
     }
@@ -128,12 +158,14 @@ static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
 
 /* ******************************************************* */
 
-// TODO support IPv6
 static jint get_uid_q(uid_resolver_t *resolver,
                       const zdtun_5tuple_t *conn_info) {
     JNIEnv *env = resolver->env;
     jint juid = UID_UNKNOWN;
-    int version = 4;
+    int version = conn_info->ipver;
+    int family = (version == 4) ? AF_INET : AF_INET6;
+    char srcip[INET6_ADDRSTRLEN];
+    char dstip[INET6_ADDRSTRLEN];
 
     // getUidQ only works for TCP/UDP connections
     if((conn_info->ipproto != IPPROTO_TCP) && (conn_info->ipproto != IPPROTO_UDP))
@@ -151,12 +183,12 @@ static jint get_uid_q(uid_resolver_t *resolver,
 
     u_int16_t sport = ntohs(conn_info->src_port);
     u_int16_t dport = ntohs(conn_info->dst_port);
-    struct in_addr addr;
 
-    addr.s_addr = conn_info->src_ip;
-    jstring jsource = (*env)->NewStringUTF(env, inet_ntoa(addr));
-    addr.s_addr = conn_info->dst_ip;
-    jstring jdest = (*env)->NewStringUTF(env, inet_ntoa(addr));
+    inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip));
+    inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip));
+
+    jstring jsource = (*env)->NewStringUTF(env, srcip);
+    jstring jdest = (*env)->NewStringUTF(env, dstip);
 
     if((jsource != NULL) && (jdest != NULL)) {
         juid = (*env)->CallIntMethod(

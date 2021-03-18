@@ -61,7 +61,9 @@ import com.emanuelef.remote_capture.model.VPNStats;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
@@ -78,6 +80,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String tls_proxy_address;
     private Prefs.DumpMode dump_mode;
     private boolean tls_decryption_enabled;
+    private boolean ipv6_enabled;
     private int collector_port;
     private int http_server_port;
     private int tls_proxy_port;
@@ -99,9 +102,11 @@ public class CaptureService extends VpnService implements Runnable {
     public static final int CONNECTIONS_LOG_SIZE = 8192;
 
     public static final String FALLBACK_DNS_SERVER = "8.8.8.8";
+    public static final String IPV6_DNS_SERVER = "2001:4860:4860::8888";
 
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
+    public static final String VPN_IP6_ADDRESS = "fd00:2:fd00:1:fd00:1:fd00:1";
 
     /* The DNS server IP address to use to internally analyze the DNS requests.
      * It must be in the same subnet of the VPN network interface.
@@ -180,6 +185,7 @@ public class CaptureService extends VpnService implements Runnable {
         tls_proxy_address = Prefs.getTlsProxyAddress(prefs);
         tls_proxy_port = Prefs.getTlsProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
+        ipv6_enabled = Prefs.getIPv6Enabled(prefs);
         last_bytes = 0;
         last_connections = 0;
 
@@ -230,6 +236,19 @@ public class CaptureService extends VpnService implements Runnable {
                 .addRoute("0.0.0.0", 1)
                 .addRoute("128.0.0.0", 1)
                 .addDnsServer(vpn_dns);
+
+        if(ipv6_enabled) {
+            builder.addAddress(VPN_IP6_ADDRESS, 128);
+
+            // Route unicast IPv6 addresses
+            builder.addRoute("2000::", 3);
+
+            try {
+                builder.addDnsServer(InetAddress.getByName(IPV6_DNS_SERVER));
+            } catch (UnknownHostException e) {
+                Log.w(TAG, "Could not set IPv6 DNS server");
+            }
+        }
 
         if((app_filter != null) && (!app_filter.isEmpty())) {
             Log.d(TAG, "Setting app filter: " + app_filter);
@@ -498,6 +517,8 @@ public class CaptureService extends VpnService implements Runnable {
         return(dns_server);
     }
 
+    public String getIpv6DnsServer() { return(IPV6_DNS_SERVER); }
+
     public String getPcapCollectorAddress() {
         return(collector_address);
     }
@@ -511,6 +532,8 @@ public class CaptureService extends VpnService implements Runnable {
     public int getTlsDecryptionEnabled() { return tls_decryption_enabled ? 1 : 0; }
 
     public int getTlsProxyPort() {  return(tls_proxy_port);  }
+
+    public int getIPv6Enabled() { return(ipv6_enabled ? 1 : 0); }
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {
@@ -534,10 +557,8 @@ public class CaptureService extends VpnService implements Runnable {
         InetSocketAddress local = new InetSocketAddress(saddr, sport);
         InetSocketAddress remote = new InetSocketAddress(daddr, dport);
 
-        Log.i(TAG, "Get uid local=" + local + " remote=" + remote);
-        int uid = cm.getConnectionOwnerUid(protocol, local, remote);
-        Log.i(TAG, "Get uid=" + uid);
-        return uid;
+        Log.d(TAG, "Get uid local=" + local + " remote=" + remote);
+        return cm.getConnectionOwnerUid(protocol, local, remote);
     }
 
     public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {

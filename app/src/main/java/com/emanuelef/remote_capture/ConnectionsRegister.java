@@ -257,8 +257,6 @@ public class ConnectionsRegister {
 
     public synchronized String dumpConnectionsCsv(Context context, int uidFilter) {
         StringBuilder builder = new StringBuilder();
-        String statusOpen = context.getString(R.string.conn_status_open);
-        String statusClosed = context.getString(R.string.conn_status_closed);
         AppsResolver resolver = new AppsResolver(context);
 
         // Header
@@ -279,7 +277,7 @@ public class ConnectionsRegister {
                 builder.append(conn.uid);                                   builder.append(",");
                 builder.append((app != null) ? app.getName() : "");         builder.append(",");
                 builder.append(conn.l7proto);                               builder.append(",");
-                builder.append(conn.closed ? statusClosed : statusOpen);    builder.append(",");
+                builder.append(conn.status);                                builder.append(",");
                 builder.append((conn.info != null) ? conn.info : "");       builder.append(",");
                 builder.append(conn.sent_bytes);                            builder.append(",");
                 builder.append(conn.rcvd_bytes);                            builder.append(",");
