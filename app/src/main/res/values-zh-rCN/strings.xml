@@ -108,4 +108,8 @@
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
     <string name="unknown_app">未知</string>
+    <string name="vpn_prefs">VPN</string>
+    <string name="enable_ipv6">启用 IPv6</string>
+    <string name="enable_ipv6_summary">允许 IPv6 网络连接。这应该只在带有 IPv6 网关的网络上启用。</string>
+    <string name="error">错误</string>
 </resources>
