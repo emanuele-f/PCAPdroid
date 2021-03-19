@@ -52,12 +52,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
-import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -68,13 +65,10 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, AppsLoadListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences mPrefs;
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
@@ -83,8 +77,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Uri mPcapUri;
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
-    private Map<Integer, AppDescriptor> mInstalledApps;
-    private List<AppsLoadListener> mAppsListeners;
     private DrawerLayout mDrawer;
 
     private static final String TAG = "Main";
@@ -118,15 +110,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mTabLayout = findViewById(R.id.tablayout);
         mPager = findViewById(R.id.pager);
-        mAppsListeners = new ArrayList<>();
 
         setupTabs();
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        (new AppsLoader(this))
-                .setAppsLoadListener(this)
-                .loadAllApps();
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
@@ -547,9 +534,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             dialog.cancel();
         });
-        builder.setNeutralButton(R.string.ok, (dialog, which) -> {
-            dialog.cancel();
-        });
+        builder.setNeutralButton(R.string.ok, (dialog, which) -> dialog.cancel());
 
         builder.create().show();
     }
@@ -582,33 +567,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return null;
-    }
-
-    public Map<Integer, AppDescriptor> getApps() {
-        return mInstalledApps;
-    }
-
-    @Override
-    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        mInstalledApps = apps;
-
-        for(AppsLoadListener listener: mAppsListeners)
-            listener.onAppsInfoLoaded(apps);
-    }
-
-    @Override
-    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        mInstalledApps = apps;
-
-        for(AppsLoadListener listener: mAppsListeners)
-            listener.onAppsIconsLoaded(apps);
-    }
-
-    public void addAppLoadListener(AppsLoadListener l) {
-        mAppsListeners.add(l);
-    }
-
-    public void removeAppLoadListener(AppsLoadListener l) {
-        mAppsListeners.remove(l);
     }
 }

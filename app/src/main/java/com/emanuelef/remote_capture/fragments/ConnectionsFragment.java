@@ -49,10 +49,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.AppState;
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
@@ -65,11 +65,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class ConnectionsFragment extends Fragment implements ConnectionsListener, AppsLoadListener {
+public class ConnectionsFragment extends Fragment implements ConnectionsListener {
     private static final String TAG = "ConnectionsFragment";
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
@@ -81,21 +80,25 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
     private MenuItem mSave;
-    private Map<Integer, AppDescriptor> mApps;
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
-    private boolean mDumpWhenDone;
-    private boolean mOpenAppsWhenDone;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
     private boolean hasUntrackedConnections;
+    private AppsResolver mApps;
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onResume() {
+        super.onResume();
+
+        registerConnsListener();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
 
         unregisterConnsListener();
-        ((MainActivity) getActivity()).removeAppLoadListener(this);
     }
 
     @Override
@@ -139,21 +142,21 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
         mOldConnectionsText = view.findViewById(R.id.old_connections_notice);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
+        LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
-
+        mApps = new AppsResolver(requireContext());
         mEmptyText = view.findViewById(R.id.no_connections);
-        mRecyclerView.setEmptyView(mEmptyText);
 
-        if(((MainActivity) getActivity()).getState() == AppState.running)
+        if(((MainActivity) requireActivity()).getState() == AppState.running)
             mEmptyText.setText(R.string.no_connections);
 
-        mAdapter = new ConnectionsAdapter(getContext());
+        mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
+        mRecyclerView.setEmptyView(mEmptyText);
 
-        Drawable icon = ContextCompat.getDrawable(getContext(), android.R.color.transparent);
-        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), Utils.UID_NO_FILTER, false, true);
+        Drawable icon = ContextCompat.getDrawable(requireContext(), android.R.color.transparent);
+        mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), Utils.UID_NO_FILTER, false);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutMan.getOrientation());
@@ -164,8 +167,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             ConnectionDescriptor item = mAdapter.getItem(pos);
 
             if(item != null) {
-                Intent intent = new Intent(getContext(), ConnectionDetailsActivity.class);
-                AppDescriptor app = (mApps != null) ? mApps.get(item.uid) : null;
+                Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
+                AppDescriptor app = mApps.get(item.uid);
                 String app_name = null;
 
                 if(app != null)
@@ -194,16 +197,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         });
 
-        registerConnsListener();
         refreshMenuIcons();
 
-        MainActivity activity = (MainActivity) getActivity();
-        if(activity.getApps() != null)
-            onAppsIconsLoaded(activity.getApps());
-        activity.addAppLoadListener(this);
-
         int uidFilter = Utils.UID_NO_FILTER;
-        Intent intent = activity.getIntent();
+        Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
             uidFilter = intent.getIntExtra(MainActivity.UID_FILTER_EXTRA, Utils.UID_NO_FILTER);
@@ -229,21 +226,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                 if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
                     // register the new connection register
-                    unregisterConnsListener();
-                    registerConnsListener();
+                    if(listenerSet) {
+                        unregisterConnsListener();
+                        registerConnsListener();
+                    }
 
                     autoScroll = true;
                     showFabDown(false);
                     mOldConnectionsText.setVisibility(View.GONE);
                     hasUntrackedConnections = false;
                     mEmptyText.setText(R.string.no_connections);
+                    mApps.clear();
                 }
 
                 refreshMenuIcons();
             }
         };
 
-        LocalBroadcastManager.getInstance(getContext())
+        LocalBroadcastManager.getInstance(requireContext())
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
@@ -252,7 +252,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onDestroyView();
 
         if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(getContext())
+            LocalBroadcastManager.getInstance(requireContext())
                     .unregisterReceiver(mReceiver);
         }
     }
@@ -298,11 +298,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
     // This performs an unoptimized adapter refresh
     private void refreshUidConnections() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
@@ -322,7 +317,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void connectionsChanges(int num_connetions) {
+    public void connectionsChanges(int num_connections) {
         // Important: must use the provided num_connections rather than accessing the register
         // in order to avoid desyncs
 
@@ -332,9 +327,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 return;
             }
 
-            Log.d(TAG, "New dataset size: " + num_connetions);
+            Log.d(TAG, "New dataset size: " + num_connections);
 
-            mAdapter.setItemCount(num_connetions);
+            mAdapter.setItemCount(num_connections);
             mAdapter.notifyDataSetChanged();
             recheckScroll();
 
@@ -435,15 +430,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void openAppSelector() {
-        if(mApps == null) {
-            /* The applications loader has not finished yet. */
-            mOpenAppsWhenDone = true;
-            Utils.showToast(getContext(), R.string.apps_loading_please_wait);
-            return;
-        }
-
-        mOpenAppsWhenDone = false;
-
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         if(reg == null)
             return;
@@ -461,16 +447,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         Collections.sort(appsData);
 
-        Utils.getAppSelectionDialog(getActivity(), appsData, app -> setUidFilter(app.getUid())).show();
+        Utils.getAppSelectionDialog(requireActivity(), appsData, app -> setUidFilter(app.getUid())).show();
     }
 
     private void setUidFilter(int uid) {
         if(mAdapter.getUidFilter() != uid) {
             // rather than calling refreshAllTheConnections, its better to let the register to the
             // job by properly scheduling the ConnectionsListener callbacks
+            boolean hasListener = listenerSet;
             unregisterConnsListener();
             mAdapter.setUidFilter(uid);
-            registerConnsListener();
+
+            if(hasListener)
+                registerConnsListener();
         }
 
         refreshFilterIcon();
@@ -481,7 +470,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         int uid = mAdapter.getUidFilter();
-        AppDescriptor app = (mApps != null) ? mApps.get(uid) : null;
+        AppDescriptor app = (uid != Utils.UID_NO_FILTER) ? mApps.get(uid) : null;
 
         if(app == null)
             app = mNoFilterApp;
@@ -498,28 +487,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mMenuItemAppSel.setIcon(mFilterIcon);
             mMenuItemAppSel.setTitle(R.string.set_app_filter);
         }
-
-        if (mOpenAppsWhenDone)
-            openAppSelector();
-    }
-
-    @Override
-    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        mApps = apps;
-
-        if(mDumpWhenDone)
-            dumpCsv();
-    }
-
-    @Override
-    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        // Refresh the adapter to load the apps icons
-        // Don't use notifyDataSetChanged as connectionsAdded/connectionsRemoved may be pending
-        mApps = apps;
-        mAdapter.setApps(apps);
-        mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount());
-
-        refreshFilterIcon();
     }
 
     private void refreshMenuIcons() {
@@ -538,38 +505,31 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(reg == null)
             return;
 
-        if(mApps == null) {
-            mDumpWhenDone = true;
-            Utils.showToast(getContext(), R.string.apps_loading_please_wait);
-            return;
-        }
-
-        String dump = reg.dumpConnectionsCsv(getContext(), mApps, mAdapter.getUidFilter());
+        String dump = reg.dumpConnectionsCsv(requireContext(), mAdapter.getUidFilter());
 
         if(mCsvFname != null) {
             Log.d(TAG, "Writing CSV file: " + mCsvFname);
 
             try {
-                OutputStream stream = getActivity().getContentResolver().openOutputStream(mCsvFname);
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname);
                 stream.write(dump.getBytes());
                 stream.close();
 
-                Utils.showToast(getContext(), R.string.file_saved);
+                Utils.showToast(requireContext(), R.string.file_saved);
             } catch (IOException e) {
-                Utils.showToast(getContext(), R.string.cannot_write_file);
+                Utils.showToast(requireContext(), R.string.cannot_write_file);
                 e.printStackTrace();
             }
         }
 
         mCsvFname = null;
-        mDumpWhenDone = false;
     }
 
     public void openFileSelector() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(getContext(), "csv"));
+        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(requireContext(), "csv"));
 
         startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
     }

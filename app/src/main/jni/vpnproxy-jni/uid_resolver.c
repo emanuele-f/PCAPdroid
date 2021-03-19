@@ -17,284 +17,185 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-//
-// Code adapted from NetGuard
-// https://github.com/M66B/NetGuard/blob/master/app/src/main/jni/netguard/ip.c
-//
-
 #include "vpnproxy.h"
+#include "jni_helpers.h"
 
-#define VPN_TAG "UID_RESOLVER"
-#define UID_MAX_AGE 30000 // milliseconds
+/* ******************************************************* */
 
-static int uid_cache_size = 0;
-static struct uid_cache_entry *uid_cache = NULL;
-
-struct uid_cache_entry {
-    uint8_t version;
-    uint8_t protocol;
-    uint8_t saddr[16];
-    uint16_t sport;
-    uint8_t daddr[16];
-    uint16_t dport;
-    jint uid;
-    long time;
+struct uid_resolver {
+    jint sdk;
+    JNIEnv *env;
+    jobject vpn_service;
+    jmethodID getUidQ;
 };
 
-typedef  union {
-    __be32 ip4; // network notation
-    struct in6_addr ip6;
-} ng_addr;
-
 /* ******************************************************* */
 
-static uint8_t char2nible(const char c) {
-    if (c >= '0' && c <= '9') return (uint8_t) (c - '0');
-    if (c >= 'a' && c <= 'f') return (uint8_t) ((c - 'a') + 10);
-    if (c >= 'A' && c <= 'F') return (uint8_t) ((c - 'A') + 10);
-    return 255;
-}
-
-static void hex2bytes(const char *hex, uint8_t *buffer) {
-    size_t len = strlen(hex);
-    for (int i = 0; i < len; i += 2)
-        buffer[i / 2] = (char2nible(hex[i]) << 4) | char2nible(hex[i + 1]);
-}
-
-/* ******************************************************* */
-
-static void log_android(int prio, const char *fmt, ...) {
-    char line[1024];
-    va_list argptr;
-    va_start(argptr, fmt);
-    vsprintf(line, fmt, argptr);
-    __android_log_print(prio, VPN_TAG, "%s", line);
-    va_end(argptr);
-}
-
-/* ******************************************************* */
-
-jint get_uid_sub(const int version, const int protocol,
-                 const void *saddr, const uint16_t sport,
-                 const void *daddr, const uint16_t dport,
-                 const char *source, const char *dest,
-                 long now) {
-    // NETLINK is not available on Android due to SELinux policies :-(
-    // http://stackoverflow.com/questions/27148536/netlink-implementation-for-the-android-ndk
-    // https://android.googlesource.com/platform/system/sepolicy/+/master/private/app.te (netlink_tcpdiag_socket)
-
-    static uint8_t zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    int ws = (version == 4 ? 1 : 4);
-
-    // Check cache
-    for (int i = 0; i < uid_cache_size; i++)
-        if (now - uid_cache[i].time <= UID_MAX_AGE &&
-            uid_cache[i].version == version &&
-            uid_cache[i].protocol == protocol &&
-            uid_cache[i].sport == sport &&
-            (uid_cache[i].dport == dport || uid_cache[i].dport == 0) &&
-            (memcmp(uid_cache[i].saddr, saddr, (size_t) (ws * 4)) == 0 ||
-             memcmp(uid_cache[i].saddr, zero, (size_t) (ws * 4)) == 0) &&
-            (memcmp(uid_cache[i].daddr, daddr, (size_t) (ws * 4)) == 0 ||
-             memcmp(uid_cache[i].daddr, zero, (size_t) (ws * 4)) == 0)) {
-
-            //log_android(ANDROID_LOG_INFO, "uid v%d p%d %s/%u > %s/%u => %d (from cache)",
-                        //version, protocol, source, sport, dest, dport, uid_cache[i].uid);
-
-            return uid_cache[i].uid;
-        }
+// src_port and dst_port are in HBO.
+static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
+                         const char *conn_dhex, u_int16_t src_port, u_int16_t dst_port) {
+    char *proc;
 
     // Get proc file name
-    char *fn = NULL;
-    if (protocol == IPPROTO_ICMP && version == 4)
-        fn = "/proc/net/icmp";
-    else if (protocol == IPPROTO_ICMPV6 && version == 6)
-        fn = "/proc/net/icmp6";
-    else if (protocol == IPPROTO_TCP)
-        fn = (version == 4 ? "/proc/net/tcp" : "/proc/net/tcp6");
-    else if (protocol == IPPROTO_UDP)
-        fn = (version == 4 ? "/proc/net/udp" : "/proc/net/udp6");
-    else
-        return UID_UNKNOWN;
-
-    // Open proc file
-    FILE *fd = fopen(fn, "r");
-    if (fd == NULL) {
-        log_android(ANDROID_LOG_ERROR, "fopen %s error %d: %s", fn, errno, strerror(errno));
-        return -2;
+    switch(ipproto) {
+        case IPPROTO_TCP:
+            proc = (ipver == 4) ? "/proc/net/tcp" : "/proc/net/tcp6";
+            break;
+        case IPPROTO_UDP:
+            proc = (ipver == 4) ? "/proc/net/udp" : "/proc/net/udp6";
+            break;
+        case IPPROTO_ICMP:
+        case IPPROTO_ICMPV6:
+            proc = (ipver == 4) ? "/proc/net/icmp" : "/proc/net/icmp6";
+            break;
+        default:
+            return UID_UNKNOWN;
     }
 
-    jint uid = UID_UNKNOWN;
+    FILE *fd = fopen(proc, "r");
 
-    char line[250];
-    int fields;
+    if (fd == NULL) {
+        log_android(ANDROID_LOG_ERROR, "fopen(%s) failed[%d]: %s", proc, errno, strerror(errno));
+        return UID_UNKNOWN;
+    }
 
-    char shex[16 * 2 + 1];
-    uint8_t _saddr[16];
-    int _sport;
+    // Parse proc file
+    char line[256];
+    int lines = 0;
+    jint rv = UID_UNKNOWN;
+    int sport, dport, uid;
+    char shex[33], dhex[33];
+    const char *zero = (ipver == 4 ? "00000000" : "00000000000000000000000000000000");
+    const char *fmt = (ipver == 4
+                       ? "%*d: %8s:%X %8s:%X %*X %*X:%*X %*X:%*X %*X %d"
+                       : "%*d: %32s:%X %32s:%X %*X %*X:%*X %*X:%*X %*X %d");
 
-    char dhex[16 * 2 + 1];
-    uint8_t _daddr[16];
-    int _dport;
-
-    jint _uid;
-
-    // Scan proc file
-    int l = 0;
-    *line = 0;
-    int c = 0;
-    const char *fmt = (version == 4
-                       ? "%*d: %8s:%X %8s:%X %*X %*lX:%*lX %*X:%*X %*X %d %*d %*ld"
-                       : "%*d: %32s:%X %32s:%X %*X %*lX:%*lX %*X:%*X %*X %d %*d %*ld");
-    while (fgets(line, sizeof(line), fd) != NULL) {
-        if (!l++)
+    while(fgets(line, sizeof(line), fd) != NULL) {
+        // skip header
+        if(!lines++)
             continue;
 
-        fields = sscanf(line, fmt, shex, &_sport, dhex, &_dport, &_uid);
-        if (fields == 5 && strlen(shex) == ws * 8 && strlen(dhex) == ws * 8) {
-            hex2bytes(shex, _saddr);
-            hex2bytes(dhex, _daddr);
+        //log_android(ANDROID_LOG_INFO, "[try] %s", line);
 
-            for (int w = 0; w < ws; w++)
-                ((uint32_t *) _saddr)[w] = htonl(((uint32_t *) _saddr)[w]);
+        if(sscanf(line, fmt, shex, &sport, dhex, &dport, &uid) == 5) {
+            //log_android(ANDROID_LOG_DEBUG, "[try] %s:%d -> %s:%d [%d]", shex, sport, dhex, dport, uid);
 
-            for (int w = 0; w < ws; w++)
-                ((uint32_t *) _daddr)[w] = htonl(((uint32_t *) _daddr)[w]);
-
-            if (_sport == sport &&
-                (_dport == dport || _dport == 0) &&
-                (memcmp(_saddr, saddr, (size_t) (ws * 4)) == 0 ||
-                 memcmp(_saddr, zero, (size_t) (ws * 4)) == 0) &&
-                (memcmp(_daddr, daddr, (size_t) (ws * 4)) == 0 ||
-                 memcmp(_daddr, zero, (size_t) (ws * 4)) == 0))
-                uid = _uid;
-
-            for (; c < uid_cache_size; c++)
-                if (now - uid_cache[c].time > UID_MAX_AGE)
-                    break;
-
-            if (c >= uid_cache_size) {
-                if (uid_cache_size == 0)
-                    uid_cache = calloc(1, sizeof(struct uid_cache_entry));
-                else
-                    uid_cache = realloc(uid_cache,
-                                           sizeof(struct uid_cache_entry) *
-                                           (uid_cache_size + 1));
-                c = uid_cache_size;
-                uid_cache_size++;
+            if((sport == src_port) && (dport == dst_port)
+               && (!strcmp(conn_dhex, dhex) || !strcmp(dhex, zero))
+               && (!strcmp(conn_shex, shex) || !strcmp(shex, zero))) {
+                // found
+                rv = uid;
+                break;
             }
-
-            uid_cache[c].version = (uint8_t) version;
-            uid_cache[c].protocol = (uint8_t) protocol;
-            memcpy(uid_cache[c].saddr, _saddr, (size_t) (ws * 4));
-            uid_cache[c].sport = (uint16_t) _sport;
-            memcpy(uid_cache[c].daddr, _daddr, (size_t) (ws * 4));
-            uid_cache[c].dport = (uint16_t) _dport;
-            uid_cache[c].uid = _uid;
-            uid_cache[c].time = now;
-        } else {
-            log_android(ANDROID_LOG_ERROR, "Invalid field #%d: %s", fields, line);
-            return -2;
         }
     }
 
-    if (fclose(fd))
-        log_android(ANDROID_LOG_ERROR, "fclose %s error %d: %s", fn, errno, strerror(errno));
+    fclose(fd);
 
-    return uid;
+    return(rv);
 }
 
 /* ******************************************************* */
 
-jint get_uid_slow(struct vpnproxy_data *proxy,
-                  const zdtun_5tuple_t *conn_info) {
-    jint uid = UID_UNKNOWN;
+#if 0
+static char* tohex(const uint8_t *src, int srcsize, char *dst, int dstsize) {
+    static const char *hex = "0123456789ABCDEF";
+    int j = 0;
 
-    // TODO IPv6 support
-    /* This snippet is only needed to put together netguard and vpnproxy */
-    int version = 4;
-    ng_addr saddr;
-    ng_addr daddr;
-    memset(&saddr, 0, sizeof(saddr));
-    memset(&daddr, 0, sizeof(daddr));
-    saddr.ip4 = conn_info->src_ip;
-    daddr.ip4 = conn_info->dst_ip;
+    for(int i=0; (i < srcsize) && (j+2 < dstsize); i++) {
+        dst[j++] = hex[(src[i] >> 4)];
+        dst[j++] = hex[(src[i] & 0x0F)];
+    }
+
+    dst[j] = '\0';
+
+    return dst;
+}
+#endif
+
+/* ******************************************************* */
+
+static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
+    char shex[33], dhex[33];
+    jint rv;
+
+    //clock_t start = clock();
+
     u_int16_t sport = ntohs(conn_info->src_port);
     u_int16_t dport = ntohs(conn_info->dst_port);
-    /* end snippet */
 
-    char source[INET6_ADDRSTRLEN + 1];
-    char dest[INET6_ADDRSTRLEN + 1];
-    inet_ntop(version == 4 ? AF_INET : AF_INET6, &saddr, source, sizeof(source));
-    inet_ntop(version == 4 ? AF_INET : AF_INET6, &daddr, dest, sizeof(dest));
+    if(conn_info->ipver == 4) {
+        sprintf(shex, "%08X", conn_info->src_ip.ip4);
+        sprintf(dhex, "%08X", conn_info->dst_ip.ip4);
 
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    long now = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+        rv = get_uid_proc(4, conn_info->ipproto, shex, dhex, sport, dport);
 
-    // Check IPv6 table first
-    if (version == 4) {
-        int8_t saddr128[16];
-        memset(saddr128, 0, 10);
-        saddr128[10] = (uint8_t) 0xFF;
-        saddr128[11] = (uint8_t) 0xFF;
-        memcpy(saddr128 + 12, &saddr, 4);
+        if (rv == UID_UNKNOWN) {
+            // Search for IPv4-mapped IPv6 addresses
+            // https://tools.ietf.org/html/rfc3493#section-3.7
+            sprintf(shex, "0000000000000000FFFF0000%08X", conn_info->src_ip.ip4);
+            sprintf(dhex, "0000000000000000FFFF0000%08X", conn_info->dst_ip.ip4);
 
-        int8_t daddr128[16];
-        memset(daddr128, 0, 10);
-        daddr128[10] = (uint8_t) 0xFF;
-        daddr128[11] = (uint8_t) 0xFF;
-        memcpy(daddr128 + 12, &daddr, 4);
+            rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
+        }
+    } else {
+        const uint32_t *src = conn_info->src_ip.ip6.in6_u.u6_addr32;
+        const uint32_t *dst = conn_info->dst_ip.ip6.in6_u.u6_addr32;
 
-        uid = get_uid_sub(6, conn_info->ipproto, saddr128, sport, daddr128, dport, source, dest, now);
-        //log_android(ANDROID_LOG_DEBUG, "uid v%d p%d %s/%u > %s/%u => %d as inet6",
-        //            version, conn_info->ipproto, source, sport, dest, dport, uid);
+        sprintf(shex, "%08X%08X%08X%08X", src[0], src[1], src[2], src[3]);
+        sprintf(dhex, "%08X%08X%08X%08X", dst[0], dst[1], dst[2], dst[3]);
+
+        //log_android(ANDROID_LOG_INFO, "HEX %s %s", shex, dhex);
+
+        rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
     }
 
-    if (uid == UID_UNKNOWN) {
-        uid = get_uid_sub(version, conn_info->ipproto, &saddr, sport, &daddr, dport, source, dest, now);
-        //log_android(ANDROID_LOG_DEBUG, "uid v%d p%d %s/%u > %s/%u => %d fallback",
-                    //version, conn_info->ipproto, source, sport, dest, dport, uid);
-    }
+    //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
+    //log_android(ANDROID_LOG_DEBUG, "cpu_time_used %f", cpu_time_used);
 
-    return uid;
+    return rv;
 }
 
 /* ******************************************************* */
 
-static jint get_uid_q(struct vpnproxy_data *proxy,
+static jint get_uid_q(uid_resolver_t *resolver,
                       const zdtun_5tuple_t *conn_info) {
-    JNIEnv *env = proxy->env;
-    jclass vpn_service_cls = (*env)->GetObjectClass(env, proxy->vpn_service);
-    struct in_addr addr;
-    int version = 4; // TODO IPv6 support
+    JNIEnv *env = resolver->env;
+    jint juid = UID_UNKNOWN;
+    int version = conn_info->ipver;
+    int family = (version == 4) ? AF_INET : AF_INET6;
+    char srcip[INET6_ADDRSTRLEN];
+    char dstip[INET6_ADDRSTRLEN];
+
+    // getUidQ only works for TCP/UDP connections
+    if((conn_info->ipproto != IPPROTO_TCP) && (conn_info->ipproto != IPPROTO_UDP))
+        return UID_UNKNOWN;
+
+    if(resolver->getUidQ == NULL) {
+        // Resolve method
+        jclass vpn_service_cls = (*env)->GetObjectClass(env, resolver->vpn_service);
+        resolver->getUidQ = jniGetMethodID(env, vpn_service_cls, "getUidQ",
+                "(IILjava/lang/String;ILjava/lang/String;I)I");
+
+        if(!resolver->getUidQ)
+            return UID_UNKNOWN;
+    }
+
     u_int16_t sport = ntohs(conn_info->src_port);
     u_int16_t dport = ntohs(conn_info->dst_port);
 
-    // TODO cache
-    jmethodID midGetUidQ = (*env)->GetMethodID(env, vpn_service_cls, "getUidQ", "(IILjava/lang/String;ILjava/lang/String;I)I");
-    if(!midGetUidQ) {
-        __android_log_print(ANDROID_LOG_ERROR, VPN_TAG, "GetMethodID(getUidQ) failed");
-        return UID_UNKNOWN;
-    }
+    inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip));
+    inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip));
 
-    addr.s_addr = conn_info->src_ip;
-    jstring jsource = (*env)->NewStringUTF(env, inet_ntoa(addr));
-    addr.s_addr = conn_info->dst_ip;
-    jstring jdest = (*env)->NewStringUTF(env, inet_ntoa(addr));
+    jstring jsource = (*env)->NewStringUTF(env, srcip);
+    jstring jdest = (*env)->NewStringUTF(env, dstip);
 
-    jint juid = (*env)->CallIntMethod(
-            env, proxy->vpn_service, midGetUidQ,
+    if((jsource != NULL) && (jdest != NULL)) {
+        juid = (*env)->CallIntMethod(
+            env, resolver->vpn_service, resolver->getUidQ,
             version, conn_info->ipproto, jsource, sport, jdest, dport);
-
-    char source[INET6_ADDRSTRLEN + 1];
-    char dest[INET6_ADDRSTRLEN + 1];
-    inet_ntop(version == 4 ? AF_INET : AF_INET6, &conn_info->src_ip, source, sizeof(source));
-    inet_ntop(version == 4 ? AF_INET : AF_INET6, &conn_info->dst_ip, dest, sizeof(dest));
-
-    log_android(ANDROID_LOG_DEBUG, "uid [ipv%d][proto=%d] %s:%u -> %s:%u => %d",
-                version, conn_info->ipproto, source, sport, dest, dport, juid);
+        jniCheckException(env);
+    }
 
     (*env)->DeleteLocalRef(env, jsource);
     (*env)->DeleteLocalRef(env, jdest);
@@ -304,9 +205,32 @@ static jint get_uid_q(struct vpnproxy_data *proxy,
 
 /* ******************************************************* */
 
-jint get_uid(struct vpnproxy_data *proxy, const zdtun_5tuple_t *conn_info) {
-    if (proxy->sdk <= 28) // Android 9 Pie
-        return(get_uid_slow(proxy, conn_info));
+uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
+    uid_resolver_t *rv = calloc(1, sizeof(uid_resolver_t));
+
+    if(!rv) {
+        log_android(ANDROID_LOG_ERROR, "calloc uid_resolver_t failed");
+        return NULL;
+    }
+
+    rv->sdk = sdk_version;
+    rv->env = env;
+    rv->vpn_service = vpn;
+
+    return rv;
+}
+
+/* ******************************************************* */
+
+void destroy_uid_resolver(uid_resolver_t *resolver) {
+    free(resolver);
+}
+
+/* ******************************************************* */
+
+jint get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info) {
+    if(resolver->sdk <= 28) // Android 9 Pie
+        return(get_uid_slow(conn_info));
     else
-        return(get_uid_q(proxy, conn_info));
+        return(get_uid_q(resolver, conn_info));
 }

@@ -17,21 +17,19 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+#ifndef __JNI_HELPERS_H__
+#define __JNI_HELPERS_H__
 
-import android.os.Bundle;
+#include <jni.h>
+#include <android/log.h>
+#include <stdio.h>
 
-import androidx.appcompat.app.AppCompatActivity;
+void init_log(int lvl, JNIEnv *env, jclass _vpnclass, jclass _vpn_inst);
+void finish_log();
+void log_android(int prio, const char *fmt, ...);
 
-import com.emanuelef.remote_capture.R;
+jclass jniFindClass(JNIEnv *env, const char *name);
+jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
+int jniCheckException(JNIEnv *env);
 
-public class AppsActivity extends AppCompatActivity {
-    private static final String TAG = "AppsActivity";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.apps_activity);
-    }
-}
+#endif // __JNI_HELPERS_H__

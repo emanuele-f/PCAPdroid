@@ -19,6 +19,8 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
@@ -26,45 +28,61 @@ import androidx.annotation.Nullable;
 import java.io.Serializable;
 
 public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
-    private final String name;
-    private final String package_name;
-    private final int uid;
-    private final boolean is_system;
-    private final boolean is_virtual;   // the app does not have a package name (e.g. uid 0 is android system)
-    private Drawable icon;
+    private final String mName;
+    private final String mPackageName;
+    private final int mUid;
+    private final boolean mIsSystem;
+    private Drawable mIcon;
 
-    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system, boolean is_virtual) {
-        this.name = name;
-        this.icon = icon;
-        this.package_name = package_name;
-        this.uid = uid;
-        this.is_system = is_system;
-        this.is_virtual = is_virtual;
+    // NULL for virtual apps
+    PackageManager mPm;
+    ApplicationInfo mAppInfo;
+
+    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
+        this.mName = name;
+        this.mIcon = icon;
+        this.mPackageName = package_name;
+        this.mUid = uid;
+        this.mIsSystem = is_system;
+    }
+
+    public AppDescriptor(PackageManager pm, ApplicationInfo appInfo) {
+        this(appInfo.loadLabel(pm).toString(), null, appInfo.packageName, appInfo.uid,
+                (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+
+        mPm = pm;
+        mAppInfo = appInfo;
     }
 
     public String getName() {
-        return name;
-    }
-
-    public void setIcon(Drawable _icon) {
-        icon = _icon;
+        return mName;
     }
 
     public @Nullable Drawable getIcon() {
-        return icon;
+        if(mIcon != null)
+            return mIcon;
+
+        if((mAppInfo == null) || (mPm == null))
+            return null;
+
+        // NOTE: this call is expensive
+        mIcon = mAppInfo.loadIcon(mPm);
+
+        return mIcon;
     }
 
     public String getPackageName() {
-        return package_name;
+        return mPackageName;
     }
 
     public int getUid() {
-        return uid;
+        return mUid;
     }
 
-    public boolean isSystem() { return is_system; }
+    public boolean isSystem() { return mIsSystem; }
 
-    public boolean isVirtual() { return is_virtual; }
+    // the app does not have a package name (e.g. uid 0 is android system)
+    public boolean isVirtual() { return (mAppInfo == null); }
 
     @Override
     public int compareTo(AppDescriptor o) {

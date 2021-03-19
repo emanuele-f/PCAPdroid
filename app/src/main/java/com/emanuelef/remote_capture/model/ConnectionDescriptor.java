@@ -24,6 +24,7 @@ import java.io.Serializable;
 /* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
 public class ConnectionDescriptor implements Serializable {
     /* Metadata */
+    public int ipver;
     public int ipproto;
     public String src_ip;
     public String dst_ip;
@@ -42,16 +43,17 @@ public class ConnectionDescriptor implements Serializable {
     public String l7proto;
     public int uid;
     public int incr_id;
-    public boolean closed;
+    public String status;
 
     /* Invoked by native code
     * NOTE: interleaving String and int in the parameters is not good as it makes the app crash
     * nto the emulator! Better to put the strings first. */
-    public void setData(String _src_ip, String _dst_ip, String _info, String _url, String _l7proto,
-                        int _ipproto, int _src_port, int _dst_port, long _first_seen, long _last_seen,
+    public void setData(String _src_ip, String _dst_ip, String _status, String _info, String _url, String _l7proto,
+                        int _ipver, int _ipproto, int _src_port, int _dst_port, long _first_seen, long _last_seen,
                         long _sent_bytes, long _rcvd_bytes, int _sent_pkts, int _rcvd_pkts, int _uid,
-                        int _incr_id, boolean _closed) {
+                        int _incr_id) {
         /* Metadata */
+        ipver = _ipver;
         ipproto = _ipproto;
         src_ip = _src_ip;
         dst_ip = _dst_ip;
@@ -65,11 +67,11 @@ public class ConnectionDescriptor implements Serializable {
         rcvd_bytes = _rcvd_bytes;
         sent_pkts = _sent_pkts;
         rcvd_pkts = _rcvd_pkts;
+        status = _status;
         info = _info;
         url = _url;
         l7proto = _l7proto;
         uid = _uid;
         incr_id = _incr_id;
-        closed = _closed;
     }
 }

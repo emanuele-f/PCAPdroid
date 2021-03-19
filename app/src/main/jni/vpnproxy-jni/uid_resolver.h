@@ -17,21 +17,16 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+#ifndef __UID_RESOLVER_H__
+#define __UID_RESOLVER_H__
 
-import android.os.Bundle;
+#include <jni.h>
+#include "zdtun.h"
 
-import androidx.appcompat.app.AppCompatActivity;
+typedef struct uid_resolver uid_resolver_t;
 
-import com.emanuelef.remote_capture.R;
+uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn);
+void destroy_uid_resolver(uid_resolver_t *resolver);
+jint get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info);
 
-public class AppsActivity extends AppCompatActivity {
-    private static final String TAG = "AppsActivity";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.apps_activity);
-    }
-}
+#endif // __UID_RESOLVER_H__

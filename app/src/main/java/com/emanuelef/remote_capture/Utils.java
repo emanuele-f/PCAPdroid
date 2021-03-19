@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Service;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -32,16 +31,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ScaleDrawable;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -127,7 +123,6 @@ public class Utils {
     }
 
     public static String formatEpochFull(Context context, long epoch) {
-        long now = Utils.now();
         Locale locale = context.getResources().getConfiguration().locale;
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
 
@@ -143,37 +138,26 @@ public class Utils {
         }
     }
 
-    public static String getDnsServer(Context context) {
-        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Service.CONNECTIVITY_SERVICE);
+    public static String getDnsServer(ConnectivityManager cm, Network net) {
+        LinkProperties props = cm.getLinkProperties(net);
 
-        if(conn != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Network net = conn.getActiveNetwork();
+        if(props != null) {
+            List<InetAddress> dns_servers = props.getDnsServers();
 
-                if (net != null) {
-                    LinkProperties props = conn.getLinkProperties(net);
-
-                    if(props != null) {
-                        List<InetAddress> dns_servers = props.getDnsServers();
-
-                        for(InetAddress addr : dns_servers) {
-                            // Get the first IPv4 DNS server
-                            if(addr instanceof Inet4Address) {
-                                return addr.getHostAddress();
-                            }
-                        }
-                    }
+            for(InetAddress addr : dns_servers) {
+                // Get the first IPv4 DNS server
+                if(addr instanceof Inet4Address) {
+                    return addr.getHostAddress();
                 }
             }
         }
 
-        // Fallback
-        return "8.8.8.8";
+        return null;
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
     public static String getLocalWifiIpAddress(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo connInfo = wifiManager.getConnectionInfo();
 
         if(connInfo != null) {
@@ -324,6 +308,9 @@ public class Utils {
     }
 
     public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+        if((new_x == 0) || (new_y == 0))
+            return null;
+
         Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
@@ -363,10 +350,7 @@ public class Utils {
         if(uiModeManager == null)
             return false;
 
-        if(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION)
-            return true;
-
-        return false;
+        return(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
     }
 
     public static String getAppVersion(Context context) {

@@ -19,17 +19,14 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
@@ -37,23 +34,20 @@ import androidx.loader.content.Loader;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
-public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer, AppDescriptor>> {
+public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDescriptor>> {
     private static final String TAG = "AppsLoader";
     private static final int OPERATION_LOAD_APPS_INFO = 23;
     private static final int OPERATION_LOAD_APPS_ICONS = 24;
     private AppsLoadListener mListener;
     private final AppCompatActivity mContext;
-    private final Drawable mVirtualAppIcon;
-    private final Drawable mUnknownAppIcon;
 
     public AppsLoader(AppCompatActivity context) {
         mContext = context;
-        mVirtualAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.sym_def_app_icon);
-        mUnknownAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
     }
 
     public AppsLoader setAppsLoadListener(AppsLoadListener listener) {
@@ -61,9 +55,10 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
         return this;
     }
 
-    private HashMap<Integer, AppDescriptor> asyncLoadAppsInfo() {
+    private ArrayList<AppDescriptor> asyncLoadAppsInfo() {
         final PackageManager pm = mContext.getPackageManager();
-        HashMap<Integer, AppDescriptor> apps = new HashMap<>();
+        ArrayList<AppDescriptor> apps = new ArrayList<>();
+        HashSet<Integer> uids = new HashSet<>();
 
         Log.d(TAG, "Loading APPs...");
         List<PackageInfo> packs = pm.getInstalledPackages(0);
@@ -72,72 +67,38 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
         Log.d(TAG, "num apps (system+user): " + packs.size());
         long tstart = Utils.now();
 
-        // https://android.googlesource.com/platform/system/core/+/master/libcutils/include/private/android_filesystem_config.h
-        // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
-        // as they miss a valid package name
-        apps.put(Utils.UID_UNKNOWN, new AppDescriptor(mContext.getString(R.string.unknown_app),
-                mUnknownAppIcon,"unknown", Utils.UID_UNKNOWN, true, true));
-        apps.put(0, new AppDescriptor("Root",
-                mVirtualAppIcon,"root", 0, true, true));
-        apps.put(1000, new AppDescriptor("Android",
-                mVirtualAppIcon,"android", 1000, true, true));
-        apps.put(1013, new AppDescriptor("MediaServer",
-                mVirtualAppIcon,"mediaserver", 1013, true, true));
-        apps.put(1020, new AppDescriptor("MulticastDNSResponder",
-                mVirtualAppIcon,"multicastdnsresponder", 1020, true, true));
-        apps.put(1021, new AppDescriptor("GPS",
-                mVirtualAppIcon,"gps", 1021, true, true));
-        apps.put(1051, new AppDescriptor("netd",
-                mVirtualAppIcon,"netd", 1051, true, true));
-        apps.put(9999, new AppDescriptor("Nobody",
-                mVirtualAppIcon,"nobody", 9999, true, true));
-
         // NOTE: a single uid can correspond to multiple packages, only take the first package found.
         // The VPNService in android works with UID, so this choice is not restrictive.
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
-            boolean is_system = (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-
             String package_name = p.applicationInfo.packageName;
 
-            if(!apps.containsKey(p.applicationInfo.uid) && !package_name.equals(app_package)) {
-                String appName = p.applicationInfo.loadLabel(pm).toString();
-
+            if(!uids.contains(p.applicationInfo.uid) && !package_name.equals(app_package)) {
                 int uid = p.applicationInfo.uid;
-                apps.put(uid, new AppDescriptor(appName, null, package_name, uid, is_system, false));
+                AppDescriptor app = new AppDescriptor(pm, p.applicationInfo);
+
+                apps.add(app);
+                uids.add(uid);
 
                 //Log.d(TAG, appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
             }
         }
 
+        Collections.sort(apps);
+
         Log.d(TAG, packs.size() + " apps loaded in " + (Utils.now() - tstart) +" seconds");
         return apps;
     }
 
-    private void asyncLoadAppsIcons(HashMap<Integer, AppDescriptor> apps) {
+    private void asyncLoadAppsIcons(ArrayList<AppDescriptor> apps) {
         final PackageManager pm = mContext.getPackageManager();
         long tstart = Utils.now();
 
         Log.d(TAG, "Loading " + apps.size() + " app icons...");
 
-        for (Map.Entry<Integer, AppDescriptor> pair : apps.entrySet()) {
-            AppDescriptor app = pair.getValue();
-            PackageInfo p;
-
-            if(app.getIcon() != null)
-                continue;
-
-            try {
-                p = pm.getPackageInfo(app.getPackageName(), 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.w(TAG, "could no retrieve package: " + app.getPackageName());
-                continue;
-            }
-
-            // NOTE: this call is expensive
-            Drawable icon = p.applicationInfo.loadIcon(pm);
-
-            app.setIcon(icon);
+        for (AppDescriptor app : apps) {
+            // Force icon load
+            app.getIcon();
         }
 
         Log.d(TAG, apps.size() + " apps icons loaded in " + (Utils.now() - tstart) +" seconds");
@@ -145,24 +106,26 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
 
     @NonNull
     @Override
-    public Loader<HashMap<Integer, AppDescriptor>> onCreateLoader(int opid, @Nullable Bundle args) {
-        return new AsyncTaskLoader<HashMap<Integer, AppDescriptor>>(mContext) {
+    public Loader<ArrayList<AppDescriptor>> onCreateLoader(int opid, @Nullable Bundle args) {
+        return new AsyncTaskLoader<ArrayList<AppDescriptor>>(mContext) {
             @NonNull
             @Override
-            public HashMap<Integer, AppDescriptor> loadInBackground() {
+            public ArrayList<AppDescriptor> loadInBackground() {
+                ArrayList<AppDescriptor> empty_res = new ArrayList<>();
+
                 if(opid == OPERATION_LOAD_APPS_INFO)
                     return asyncLoadAppsInfo();
                 else if (opid == OPERATION_LOAD_APPS_ICONS) {
                     if(args == null) {
                         Log.e(TAG, "Bad bundle");
-                        return null;
+                        return empty_res;
                     }
 
-                    HashMap<Integer, AppDescriptor> apps = (HashMap<Integer, AppDescriptor>) args.getSerializable("apps");
+                    ArrayList<AppDescriptor> apps = (ArrayList<AppDescriptor>) args.getSerializable("apps");
 
                     if(apps == null) {
                         Log.e(TAG, "Bad apps");
-                        return null;
+                        return empty_res;
                     }
 
                     asyncLoadAppsIcons(apps);
@@ -170,18 +133,18 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
                 }
 
                 Log.e(TAG, "unknown loader op: " + opid);
-                return null;
+                return empty_res;
             }
         };
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<HashMap<Integer, AppDescriptor>> loader, HashMap<Integer, AppDescriptor> data) {
+    public void onLoadFinished(@NonNull Loader<ArrayList<AppDescriptor>> loader, ArrayList<AppDescriptor> data) {
         boolean load_finished = (loader.getId() == OPERATION_LOAD_APPS_ICONS);
 
         if(mListener != null) {
             if(load_finished)
-                mListener.onAppsIconsLoaded(data);
+                mListener.onAppsIconsLoaded();
             else
                 mListener.onAppsInfoLoaded(data);
         }
@@ -191,27 +154,26 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<HashMap<Integer
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<HashMap<Integer, AppDescriptor>> loader) {}
+    public void onLoaderReset(@NonNull Loader<ArrayList<AppDescriptor>> loader) {
+        Log.d(TAG, "onLoaderReset");
+    }
 
-    private void runLoader(int opid, HashMap<Integer, AppDescriptor> data) {
+    private void runLoader(int opid, ArrayList<AppDescriptor> data) {
         LoaderManager lm = LoaderManager.getInstance(mContext);
-        Loader<HashMap<Integer, AppDescriptor>> loader = lm.getLoader(opid);
+        Loader<ArrayList<AppDescriptor>> loader = lm.getLoader(opid);
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("apps", data);
 
         Log.d(TAG, "Existing loader " + opid + "? " + (loader != null));
 
-        if(loader==null)
-            loader = lm.initLoader(opid, bundle, this);
-        else
-            loader = lm.restartLoader(opid, bundle, this);
-
+        loader = lm.initLoader(opid, bundle, this);
         loader.forceLoad();
     }
 
-    public void loadAllApps() {
+    public AppsLoader loadAllApps() {
         // will run OPERATION_LOAD_APPS_ICONS when finished
         runLoader(OPERATION_LOAD_APPS_INFO, null);
+        return this;
     }
 }

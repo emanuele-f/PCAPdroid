@@ -35,11 +35,11 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
+import com.emanuelef.remote_capture.AppsResolver;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.ViewHolder> {
@@ -49,7 +49,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private final Drawable mUnknownIcon;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
-    private Map<Integer, AppDescriptor> mApps;
+    private final AppsResolver mApps;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -64,7 +64,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             traffic = itemView.findViewById(R.id.traffic);
         }
 
-        public void bindAppStats(Context context, AppStats stats, Map<Integer, AppDescriptor> apps, Drawable unknownIcon) {
+        public void bindAppStats(Context context, AppStats stats, AppsResolver apps, Drawable unknownIcon) {
             Drawable appIcon;
 
             // NOTE: can be null
@@ -86,6 +86,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
     public AppsStatsAdapter(Context context) {
         mContext = context;
+        mApps = new AppsResolver(context);
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
         mListener = null;
@@ -135,30 +136,23 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     }
 
     public void setStats(List<AppStats> stats) {
-        if(mApps != null) {
-            Collections.sort(stats, (o1, o2) -> {
-                AppDescriptor a1 = mApps.get(o1.getUid());
-                AppDescriptor a2 = mApps.get(o2.getUid());
+        Collections.sort(stats, (o1, o2) -> {
+            AppDescriptor a1 = mApps.get(o1.getUid());
+            AppDescriptor a2 = mApps.get(o2.getUid());
 
-                if((a1 == null) && (a2 == null))
-                    return 0;
+            if((a1 == null) && (a2 == null))
+                return 0;
 
-                if(a1 == null)
-                    return -1;
+            if(a1 == null)
+                return -1;
 
-                if(a2 == null)
-                    return 1;
+            if(a2 == null)
+                return 1;
 
-                return a1.compareTo(a2);
-            });
-        }
+            return a1.compareTo(a2);
+        });
 
         mStats = stats;
-        notifyDataSetChanged();
-    }
-
-    public void setApps(Map<Integer, AppDescriptor> apps) {
-        mApps = apps;
         notifyDataSetChanged();
     }
 }

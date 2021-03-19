@@ -36,18 +36,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.AppsLoader;
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.adapters.DumpModesAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -63,9 +67,7 @@ import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
     private static final String TAG = "StatusFragment";
@@ -81,8 +83,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
-    private boolean mOpenAppsWhenDone;
-    private List<AppDescriptor> mInstalledApps;
+    private TextView mEmptyAppsView;
     AppsListView mOpenAppsList;
 
     @Override
@@ -94,10 +95,39 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
     @Override
     public void onDestroy() {
-        mActivity.removeAppLoadListener(this);
         mActivity.setAppStateListener(null);
         mActivity = null;
         super.onDestroy();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if((mMenu != null) && (mActivity != null))
+            appStateChanged(mActivity.getState());
+
+        /* Register for stats update */
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                processStatsUpdateIntent(intent);
+            }
+        };
+
+        LocalBroadcastManager.getInstance(requireContext())
+                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(mReceiver != null) {
+            LocalBroadcastManager.getInstance(requireContext())
+                    .unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
     }
 
     @Override
@@ -115,9 +145,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mQuickSettings = view.findViewById(R.id.quick_settings);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
-        mOpenAppsWhenDone = false;
 
-        DumpModesAdapter dumpModeAdapter = new DumpModesAdapter(getContext());
+        DumpModesAdapter dumpModeAdapter = new DumpModesAdapter(requireContext());
         Spinner dumpMode = view.findViewById(R.id.dump_mode_spinner);
         dumpMode.setAdapter(dumpModeAdapter);
         int curSel = dumpModeAdapter.getModePos(mPrefs.getString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE));
@@ -142,6 +171,24 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         TextView filterTitle = filterRow.findViewById(R.id.title);
         mFilterDescription = filterRow.findViewById(R.id.description);
 
+        // Needed to update the filter icon after mFilterDescription is measured
+        final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
+        if(vto.isAlive()) {
+            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    refreshFilterInfo();
+
+                    final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
+
+                    if(vto.isAlive()) {
+                        vto.removeOnGlobalLayoutListener(this);
+                        Log.d(TAG, "removeOnGlobalLayoutListener called");
+                    }
+                }
+            });
+        }
+
         filterTitle.setText(R.string.app_filter);
 
         mAppFilterSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -164,36 +211,11 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
-        /* Register for stats update */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                processStatsUpdateIntent(intent);
-            }
-        };
-
-        LocalBroadcastManager.getInstance(getContext())
-            .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
-
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
 
-        if(mActivity.getApps() != null)
-            onAppsIconsLoaded(mActivity.getApps());
-        mActivity.addAppLoadListener(this);
-
         if((mMenu != null) && (mActivity != null))
             appStateChanged(mActivity.getState());
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(getContext())
-                    .unregisterReceiver(mReceiver);
-        }
     }
 
     @Override
@@ -208,26 +230,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             appStateChanged(mActivity.getState());
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if((mMenu != null) && (mActivity != null))
-            appStateChanged(mActivity.getState());
-    }
-
-    private AppDescriptor findAppByPackage(String pkgname) {
-        if(mInstalledApps == null)
-            return null;
-
-        for(AppDescriptor app : mInstalledApps) {
-            if(pkgname.equals(app.getPackageName()))
-                return app;
-        }
-
-        return null;
-    }
-
     private void refreshFilterInfo() {
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.no_app_filter);
@@ -238,19 +240,20 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = findAppByPackage(mAppFilter);
+        AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter);
         String description;
 
         if(app == null)
             description = mAppFilter;
         else {
             description = app.getName() + " (" + app.getPackageName() + ")";
+            int height = mFilterDescription.getMeasuredHeight();
 
-            if(app.getIcon() != null) {
-                int height = mFilterDescription.getMeasuredHeight();
+            if((height > 0) && (app.getIcon() != null)) {
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+                if(drawable != null)
+                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             }
         }
 
@@ -307,14 +310,15 @@ private void refreshPcapDumpInfo() {
         mCollectorInfo.setText(info);
 
         // Check if a filter is set
-        if(mAppFilter != null) {
-            AppDescriptor app = findAppByPackage(mAppFilter);
+        if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
+            AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter);
 
             if((app != null) && (app.getIcon() != null)) {
                 int height = mCollectorInfo.getMeasuredHeight();
                 Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+                if(drawable != null)
+                    mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
             } else
                 mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
         } else
@@ -327,7 +331,7 @@ private void refreshPcapDumpInfo() {
             case ready:
                 if(mMenu != null) {
                     mMenuItemStartBtn.setIcon(
-                            ContextCompat.getDrawable(getContext(), android.R.drawable.ic_media_play));
+                            ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_media_play));
                     mMenuItemStartBtn.setTitle(R.string.start_button);
                     mMenuItemStartBtn.setEnabled(true);
                     mMenuSettings.setEnabled(true);
@@ -345,7 +349,7 @@ private void refreshPcapDumpInfo() {
             case running:
                 if(mMenu != null) {
                     mMenuItemStartBtn.setIcon(
-                            ContextCompat.getDrawable(getContext(), R.drawable.ic_media_stop));
+                            ContextCompat.getDrawable(requireContext(), R.drawable.ic_media_stop));
                     mMenuItemStartBtn.setTitle(R.string.stop_button);
                     mMenuItemStartBtn.setEnabled(true);
                     mMenuSettings.setEnabled(false);
@@ -361,56 +365,41 @@ private void refreshPcapDumpInfo() {
         }
     }
 
-    private void loadInstalledApps(Map<Integer, AppDescriptor> apps) {
-        mInstalledApps = new ArrayList<>();
-
-        for(Map.Entry<Integer, AppDescriptor> pair : apps.entrySet()) {
-            AppDescriptor app = pair.getValue();
-
-            if(!app.isVirtual())
-                mInstalledApps.add(app);
-        }
-
-        Collections.sort(mInstalledApps);
-        refreshFilterInfo();
-
-        if(mOpenAppsWhenDone && mAppFilterSwitch.isChecked())
-            openAppFilterSelector();
-    }
-
     private void openAppFilterSelector() {
-        if(mInstalledApps == null) {
-            // Applications not loaded yet
-            mOpenAppsWhenDone = true;
-            Utils.showToast(getContext(), R.string.apps_loading_please_wait);
-            return;
-        }
-
-        mOpenAppsWhenDone = false;
-
-        Dialog dialog = Utils.getAppSelectionDialog(mActivity, mInstalledApps, this::setAppFilter);
+        Dialog dialog = Utils.getAppSelectionDialog(mActivity, new ArrayList<>(), this::setAppFilter);
         dialog.setOnCancelListener(dialog1 -> setAppFilter(null));
-        dialog.setOnDismissListener(dialog1 -> mOpenAppsList = null);
+        dialog.setOnDismissListener(dialog1 -> {
+            mOpenAppsList = null;
+            mEmptyAppsView = null;
+        });
 
         dialog.show();
 
         // NOTE: run this after dialog.show
         mOpenAppsList = (AppsListView) dialog.findViewById(R.id.apps_list);
+        mEmptyAppsView = dialog.findViewById(R.id.no_apps);
+        mEmptyAppsView.setText(R.string.apps_loading_please_wait);
+
+        (new AppsLoader((AppCompatActivity) requireActivity()))
+                .setAppsLoadListener(this)
+                .loadAllApps();
     }
 
     @Override
-    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        loadInstalledApps(apps);
+    public void onAppsInfoLoaded(List<AppDescriptor> installedApps) {
+        if(mOpenAppsList == null)
+            return;
+
+        mEmptyAppsView.setText(R.string.no_apps);
+
+        // Load the apps/icons
+        Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
+        mOpenAppsList.setApps(installedApps);
     }
 
     @Override
-    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        loadInstalledApps(apps);
-
-        // Possibly update the icons
-        if(mOpenAppsList != null) {
-            Log.d(TAG, "reloading app icons in dialog");
-            mOpenAppsList.setApps(mInstalledApps);
-        }
+    public void onAppsIconsLoaded() {
+        // Icons automatically loaded, no need to call loadInstalledApps again
+        Log.d(TAG, "apps icons loaded");
     }
 }

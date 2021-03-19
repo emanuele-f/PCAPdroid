@@ -73,4 +73,13 @@
             app:defaultValue="@string/default_proxy_port"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/vpn_prefs" app:iconSpaceReserved="false">
+        <SwitchPreference
+            app:key="ipv6_enabled"
+            app:title="@string/enable_ipv6"
+            app:iconSpaceReserved="false"
+            app:summary="@string/enable_ipv6_summary"
+            app:defaultValue="false" />
+    </PreferenceCategory>
 </PreferenceScreen>

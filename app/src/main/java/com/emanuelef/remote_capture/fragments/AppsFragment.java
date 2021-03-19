@@ -40,18 +40,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.AppsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
-import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-import java.util.Map;
-
-public class AppsFragment extends Fragment implements ConnectionsListener, AppsLoadListener {
+public class AppsFragment extends Fragment implements ConnectionsListener {
     private EmptyRecyclerView mRecyclerView;
     private AppsStatsAdapter mAdapter;
     private static final String TAG = "AppsFragment";
@@ -61,11 +56,17 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     private BroadcastReceiver mReceiver;
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
 
         unregisterConnsListener();
-        ((AppsActivity) getActivity()).removeAppLoadListener(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        registerConnsListener();
     }
 
     @Override
@@ -80,11 +81,12 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
         LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
+        mAdapter = new AppsStatsAdapter(getContext());
+        doRefreshApps();
+        mRecyclerView.setAdapter(mAdapter);
+
         TextView emptyText = view.findViewById(R.id.no_apps);
         mRecyclerView.setEmptyView(emptyText);
-
-        mAdapter = new AppsStatsAdapter(getContext());
-        mRecyclerView.setAdapter(mAdapter);
 
         mHandler = new Handler(Looper.getMainLooper());
         mRefreshApps = false;
@@ -101,13 +103,6 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
             }
         });
 
-        registerConnsListener();
-
-        AppsActivity activity = (AppsActivity) getActivity();
-        if(activity.getApps() != null)
-            onAppsIconsLoaded(activity.getApps());
-        activity.addAppLoadListener(this);
-
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -115,14 +110,16 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
                 if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
-                    // register the new connection register
-                    unregisterConnsListener();
-                    registerConnsListener();
+                    if(listenerSet) {
+                        // register the new connection register
+                        unregisterConnsListener();
+                        registerConnsListener();
+                    }
                 }
             }
         };
 
-        LocalBroadcastManager.getInstance(getContext())
+        LocalBroadcastManager.getInstance(requireContext())
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
@@ -131,8 +128,9 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
         super.onDestroyView();
 
         if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(getContext())
+            LocalBroadcastManager.getInstance(requireContext())
                     .unregisterReceiver(mReceiver);
+            mReceiver = null;
         }
     }
 
@@ -195,17 +193,5 @@ public class AppsFragment extends Fragment implements ConnectionsListener, AppsL
     @Override
     public void connectionsUpdated(int[] positions) {
         refreshAppsAsync();
-    }
-
-    @Override
-    public void onAppsInfoLoaded(Map<Integer, AppDescriptor> apps) {
-        // refresh the names
-        mAdapter.setApps(apps);
-    }
-
-    @Override
-    public void onAppsIconsLoaded(Map<Integer, AppDescriptor> apps) {
-        // refresh the icons
-        mAdapter.setApps(apps);
     }
 }

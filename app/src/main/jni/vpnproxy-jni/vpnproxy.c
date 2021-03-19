@@ -17,13 +17,13 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-#include <netinet/udp.h>
-#include <netinet/ip.h>
+#include <ndpi_api.h>
 #include <ndpi_typedefs.h>
-#include "jni_helpers.c"
 #include "utils.c"
 #include "ndpi_master_protos.c"
+#include "jni_helpers.h"
 #include "vpnproxy.h"
+#include "uid_resolver.h"
 #include "pcap.h"
 #include "ndpi_protocol_ids.h"
 
@@ -85,6 +85,7 @@ static bool running = false;
 static bool dump_vpn_stats_now = false;
 static bool dump_capture_stats_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
+static uint32_t new_dns_server = 0;
 
 /* TCP/IP packet to hold the mitmproxy header */
 static char mitmproxy_pkt_buffer[] = {
@@ -108,25 +109,6 @@ static zdtun_pkt_t mitm_pkt;
 /* NOTE: these must be reset during each run, as android may reuse the service */
 static int dumper_socket;
 static bool send_header;
-
-/* ******************************************************* */
-
-static char* tuple2str(const zdtun_5tuple_t *tuple, char *buf, size_t bufsize) {
-    char srcip[64], dstip[64];
-    struct in_addr addr;
-
-    addr.s_addr = tuple->src_ip;
-    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
-    addr.s_addr = tuple->dst_ip;
-    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
-
-    snprintf(buf, bufsize, "[proto %d]: %s:%u -> %s:%u",
-             tuple->ipproto,
-             srcip, ntohs(tuple->src_port),
-             dstip, ntohs(tuple->dst_port));
-
-    return buf;
-}
 
 /* ******************************************************* */
 
@@ -188,7 +170,7 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
         for(int i=0; i < arr->cur_items; i++) {
             vpn_conn_t *slot = &arr->items[i];
 
-            if(slot->data && (slot->data->closed || free_all))
+            if(slot->data && ((slot->data->status >= CONN_STATUS_CLOSED) || free_all))
                 free_connection_data(slot->data);
         }
 
@@ -213,14 +195,37 @@ static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
         log_android(ANDROID_LOG_DEBUG, "getIPv4Pref(%s) = %s", key, value);
 
         if(inet_aton(value, &addr) == 0)
-            log_android(ANDROID_LOG_ERROR, "%s() returned invalid address", key);
+            log_android(ANDROID_LOG_ERROR, "%s() returned invalid IPv4 address", key);
 
-        ReleaseStringUTFChars(env, obj, value);
+        (*env)->ReleaseStringUTFChars(env, obj, value);
     }
 
-    DeleteLocalRef(env, obj);
+    (*env)->DeleteLocalRef(env, obj);
 
     return(addr.s_addr);
+}
+
+/* ******************************************************* */
+
+static struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
+    struct in6_addr addr = {0};
+
+    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
+    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
+
+    if(!jniCheckException(env)) {
+        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+        log_android(ANDROID_LOG_DEBUG, "getIPv6Pref(%s) = %s", key, value);
+
+        if(inet_pton(AF_INET6, value, &addr) != 1)
+            log_android(ANDROID_LOG_ERROR, "%s() returned invalid IPv6 address", key);
+
+        (*env)->ReleaseStringUTFChars(env, obj, value);
+    }
+
+    (*env)->DeleteLocalRef(env, obj);
+
+    return(addr);
 }
 
 /* ******************************************************* */
@@ -276,8 +281,8 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, in
         buf[bufsize - 1] = '\0';
     }
 
-    if(value) ReleaseStringUTFChars(env, obj, value);
-    if(obj) DeleteLocalRef(env, obj);
+    if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
+    if(obj) (*env)->DeleteLocalRef(env, obj);
 
     return(buf);
 }
@@ -307,16 +312,7 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 
     if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
         // Return the L3 protocol
-        switch (ipproto) {
-            case IPPROTO_TCP:
-                return "TCP";
-            case IPPROTO_UDP:
-                return "UDP";
-            case IPPROTO_ICMP:
-                return "ICMP";
-            default:
-                return "Unknown";
-        }
+        return zdtun_proto2str(ipproto);
     }
 
     return ndpi_get_proto_name(mod, proto);
@@ -324,9 +320,11 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 
 /* ******************************************************* */
 
-static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const char *packet,
-        int size, uint8_t from_tap) {
+static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info,
+        const char *packet, int size, uint8_t from_tap) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
+    giveup = true; // todo fixme
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
             size, data->last_seen,
@@ -335,7 +333,7 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))) {
-        if (data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        if(data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
             uint8_t proto_guessed;
 
             data->l7proto = ndpi_detection_giveup(proxy->ndpi, data->ndpi_flow, 1 /* Guess */,
@@ -345,8 +343,8 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
         if(data->l7proto.master_protocol == 0)
             data->l7proto.master_protocol = data->l7proto.app_protocol;
 
-        log_android(ANDROID_LOG_DEBUG, "l7proto: app=%d, master=%d",
-                            data->l7proto.app_protocol, data->l7proto.master_protocol);
+        log_android(ANDROID_LOG_DEBUG, "nDPI completed[ipver=%d, proto=%d] -> l7proto: app=%d, master=%d",
+                    tuple->ipver, tuple->ipproto, data->l7proto.app_protocol, data->l7proto.master_protocol);
 
         switch (data->l7proto.master_protocol) {
             case NDPI_PROTOCOL_DNS:
@@ -390,7 +388,7 @@ static void javaPcapDump(vpnproxy_data_t *proxy) {
     proxy->java_dump.buffer_idx = 0;
     proxy->java_dump.last_dump_ms = proxy->now_ms;
 
-    DeleteLocalRef(env, barray);
+    (*env)->DeleteLocalRef(env, barray);
 }
 
 /* ******************************************************* */
@@ -406,7 +404,7 @@ static bool shouldIgnoreConn(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple
 #endif
 
     // ignore some internal communications, e.g. DNS-over-TLS check on port 853
-    if((tuple->dst_ip == proxy->vpn_dns) && (ntohs(tuple->dst_port) != 53))
+    if((tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns) && (ntohs(tuple->dst_port) != 53))
         return true;
 
     return false;
@@ -443,9 +441,10 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     }
 
     data->last_seen = time(NULL);
+    data->status = zdtun_conn_get_status(conn_info);
 
     if(data->ndpi_flow)
-        process_ndpi_packet(data, proxy, packet, size, from_tap);
+        process_ndpi_packet(data, proxy, conn_info, packet, size, from_tap);
 
     if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
         //log_android(ANDROID_LOG_DEBUG, "Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
@@ -503,8 +502,8 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
     char buf[256];
     jint uid;
 
-    tuple2str(conn_info, buf, sizeof(buf));
-    uid = get_uid(proxy, conn_info);
+    zdtun_5tuple2str(conn_info, buf, sizeof(buf));
+    uid = get_uid(proxy->resolver, conn_info);
 
     if(uid >= 0) {
         char appbuf[128];
@@ -585,7 +584,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
     /* Will free the other data in sendConnectionsDump */
     free_ndpi(data);
-    data->closed = true;
+    data->status = zdtun_conn_get_status(conn_info);
 
     if(!data->pending_notification && !shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
         // Send last notification
@@ -598,40 +597,54 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
 /*
  * If the packet contains a DNS request then rewrite server address
- * with public DNS server.
+ * with public DNS server. Non UDP DNS connections are dropped to block DoH queries which do not
+ * allow us to extract the requested domain name.
  */
-static int check_dns_req_dnat(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
-    struct dns_packet *dns_data;
-    int dns_length;
+static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+    if(new_dns_server != 0) {
+        // Reload DNS server
+        proxy->dns_server = new_dns_server;
+        new_dns_server = 0;
 
-    // TODO support TCP
-    if(pkt->tuple.ipproto != IPPROTO_UDP)
-        return(0);
+        log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
+    }
 
-    dns_length = pkt->l7_len;
-    dns_data = (struct dns_packet*) pkt->l7;
+    bool is_dns_server = ((pkt->tuple.ipver == 4) && (pkt->tuple.dst_ip.ip4 == proxy->vpn_dns))
+            || ((pkt->tuple.ipver == 6) && (memcmp(&pkt->tuple.dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
 
-    if(dns_length < sizeof(struct dns_packet))
-        return(0);
+    if(!is_dns_server)
+        return(true);
 
-    if((ntohs(pkt->udp->uh_dport) != 53) ||
-        (pkt->tuple.dst_ip != proxy->vpn_dns) || (pkt->tuple.src_ip != proxy->vpn_ipv4))
-        // Not VPN DNS
-        return(0);
+    if((pkt->tuple.ipproto == IPPROTO_UDP) && (ntohs(pkt->udp->uh_dport) == 53)) {
+        int dns_length = pkt->l7_len;
 
-    if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
-        return(0);
+        if(dns_length >= sizeof(struct dns_packet)) {
+            struct dns_packet *dns_data = (struct dns_packet*) pkt->l7;
 
-    log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
+            if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
+                return(true);
 
-    /*
-     * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
-     * here as zdtun will proxy the connection.
-     */
-    zdtun_conn_dnat(conn, proxy->public_dns, 0);
-    proxy->num_dns_requests++;
+            log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
+            proxy->num_dns_requests++;
 
-    return(1);
+            if(pkt->tuple.ipver == 4) {
+                /*
+                 * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
+                 * here as zdtun will proxy the connection.
+                 */
+                zdtun_ip_t dnatip = {0};
+                dnatip.ip4 = proxy->dns_server;
+                zdtun_conn_dnat(conn, &dnatip, pkt->udp->uh_dport);
+            }
+
+            return(true);
+        }
+    }
+
+    log_android(ANDROID_LOG_DEBUG, "blocking packet directed to the DNS server");
+
+    // block everything else (e.g. DoH)
+    return(false);
 }
 
 /* ******************************************************* */
@@ -655,21 +668,24 @@ static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_
             uint16_t port = ntohs(pkt->tuple.dst_port);
 
             if (port == 443) {
-                zdtun_conn_dnat(conn, mitm_ip, mitm_port);
+                zdtun_ip_t dnatip = {0};
+                dnatip.ip4 = mitm_ip;
+                zdtun_conn_dnat(conn, &dnatip, mitm_port);
                 data->mitm_header_needed = true;
             }
-        } else if(data->mitm_header_needed && (pkt->l7_len > 0)) {
+        } else if(data->mitm_header_needed && (pkt->l7_len > 0) && (pkt->tuple.ipver == 4)) {
+            // TODO allow IPv6 -> IPv4 redirection
             /* First L7 packet, send the mitmproxy header first */
             mitm_proxy_hdr_t *mitm = (mitm_proxy_hdr_t*) mitm_pkt.l7;
 
             /* Fix the packet with the correct peers */
-            mitm_pkt.tuple.src_ip = mitm_pkt.ip->saddr = pkt->ip->saddr;
-            mitm_pkt.tuple.dst_ip = mitm_pkt.ip->daddr = mitm_ip;
+            mitm_pkt.tuple.src_ip.ip4 = mitm_pkt.ip4->saddr = pkt->ip4->saddr;
+            mitm_pkt.tuple.dst_ip.ip4 = mitm_pkt.ip4->daddr = mitm_ip;
             mitm_pkt.tuple.src_port = mitm_pkt.tcp->th_sport = pkt->tcp->th_sport;
             mitm_pkt.tuple.dst_port = mitm_pkt.tcp->th_dport = mitm_port;
 
             /* Send the original (pre-nat) IP and port */
-            mitm->dst_ip = pkt->tuple.dst_ip;
+            mitm->dst_ip = pkt->tuple.dst_ip.ip4;
             mitm->dst_port = pkt->tuple.dst_port;
             zdtun_send_oob(tun, &mitm_pkt, conn);
 
@@ -693,7 +709,7 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
             char buf[256];
 
             // Do not abort, the connection will be terminated
-            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
+            log_android(ANDROID_LOG_ERROR, "Got ENOBUFS %s", zdtun_5tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
         } else if(errno == EIO) {
             log_android(ANDROID_LOG_INFO, "Got I/O error (terminating?)");
             running = false;
@@ -715,17 +731,16 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
 /* ******************************************************* */
 
 static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
-    char srcip[64], dstip[64];
+    char srcip[INET6_ADDRSTRLEN], dstip[INET6_ADDRSTRLEN];
     struct in_addr addr;
     JNIEnv *env = proxy->env;
     const zdtun_5tuple_t *conn_info = &conn->tuple;
     const conn_data_t *data = conn->data;
     int rv = 0;
+    int family = (conn->tuple.ipver == 4) ? AF_INET : AF_INET6;
 
-    addr.s_addr = conn_info->src_ip;
-    strncpy(srcip, inet_ntoa(addr), sizeof(srcip));
-    addr.s_addr = conn_info->dst_ip;
-    strncpy(dstip, inet_ntoa(addr), sizeof(dstip));
+    inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip));
+    inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip));
 
 #if 0
     log_android(ANDROID_LOG_INFO, "DUMP: [proto=%d]: %s:%u -> %s:%u [%d]",
@@ -735,6 +750,7 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                         data->uid);
 #endif
 
+    jobject status_string = (*env)->NewStringUTF(env, zdtun_conn_status2str(data->status));
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
     jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
     jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
@@ -746,12 +762,12 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
         /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
          * SetIntField like methods could be used. */
         (*env)->CallVoidMethod(env, conn_descriptor, mids.connSetData,
-                               src_string, dst_string, info_string, url_string, proto_string,
-                               conn_info->ipproto, ntohs(conn_info->src_port),
+                               src_string, dst_string, status_string, info_string, url_string, proto_string,
+                               conn_info->ipver, conn_info->ipproto, ntohs(conn_info->src_port),
                                ntohs(conn_info->dst_port),
                                data->first_seen, data->last_seen, data->sent_bytes,
                                data->rcvd_bytes, data->sent_pkts,
-                               data->rcvd_pkts, data->uid, data->incr_id, data->closed);
+                               data->rcvd_pkts, data->uid, data->incr_id);
         if(jniCheckException(env))
             rv = -1;
         else {
@@ -762,17 +778,18 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                 rv = -1;
         }
 
-        DeleteLocalRef(env, conn_descriptor);
+        (*env)->DeleteLocalRef(env, conn_descriptor);
     } else {
         log_android(ANDROID_LOG_ERROR, "NewObject(ConnectionDescriptor) failed");
         rv = -1;
     }
 
-    DeleteLocalRef(env, info_string);
-    DeleteLocalRef(env, url_string);
-    DeleteLocalRef(env, proto_string);
-    DeleteLocalRef(env, src_string);
-    DeleteLocalRef(env, dst_string);
+    (*env)->DeleteLocalRef(env, status_string);
+    (*env)->DeleteLocalRef(env, info_string);
+    (*env)->DeleteLocalRef(env, url_string);
+    (*env)->DeleteLocalRef(env, proto_string);
+    (*env)->DeleteLocalRef(env, src_string);
+    (*env)->DeleteLocalRef(env, dst_string);
 
     return rv;
 }
@@ -819,8 +836,8 @@ cleanup:
     conns_clear(&proxy->new_conns, false);
     conns_clear(&proxy->conns_updates, false);
 
-    DeleteLocalRef(env, new_conns);
-    DeleteLocalRef(env, conns_updates);
+    (*env)->DeleteLocalRef(env, new_conns);
+    (*env)->DeleteLocalRef(env, conns_updates);
 }
 
 /* ******************************************************* */
@@ -850,7 +867,7 @@ static void sendVPNStats(const vpnproxy_data_t *proxy, const zdtun_statistics_t 
         jniCheckException(env);
     }
 
-    DeleteLocalRef(env, stats_obj);
+    (*env)->DeleteLocalRef(env, stats_obj);
 }
 
 /* ******************************************************* */
@@ -864,7 +881,7 @@ static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
     (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendServiceStatus, status_str);
     jniCheckException(env);
 
-    DeleteLocalRef(env, status_str);
+    (*env)->DeleteLocalRef(env, status_str);
 }
 
 /* ******************************************************* */
@@ -930,7 +947,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
             /* NOTE: must match ConnectionDescriptor::setData */
-            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIJJJJIIIIZ)V");
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIJJJJIIII)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIII)V");
 
@@ -939,9 +956,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
             .sdk = sdk,
             .env = env,
             .vpn_service = vpn,
+            .resolver = init_uid_resolver(sdk, env, vpn),
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
-            .public_dns = getIPv4Pref(env, vpn, "getPublicDns"),
+            .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
             .incr_id = 0,
             .java_dump = {
                 .enabled = (bool) getIntPref(env, vpn, "dumpPcapToJava"),
@@ -956,6 +974,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                 .enabled = (bool) getIntPref(env, vpn, "getTlsDecryptionEnabled"),
                 .proxy_ip = getIPv4Pref(env, vpn, "getTlsProxyAddress"),
                 .proxy_port = htons(getIntPref(env, vpn, "getTlsProxyPort")),
+            },
+            .ipv6 = {
+                .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
+                .dns_server = getIPv6Pref(env, vpn, "getIpv6DnsServer"),
             }
     };
 
@@ -1024,6 +1046,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         }
     }
 
+    new_dns_server = 0;
     gettimeofday(&now_tv, NULL);
     now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
     next_purge_ms = now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -1062,27 +1085,49 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     goto housekeeping;
                 }
 
-                zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, 1 /* create if not exists */);
+                if((pkt.tuple.ipver == 6) && (!proxy.ipv6.enabled)) {
+                    char buf[512];
+
+                    log_android(ANDROID_LOG_DEBUG, "ignoring IPv6 packet: %s",
+                                zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+                    goto housekeeping;
+                }
+
+                // Skip established TCP connections
+                uint8_t is_tcp_established = ((pkt.tuple.ipproto == IPPROTO_TCP) &&
+                                              (!(pkt.tcp->th_flags & TH_SYN) || (pkt.tcp->th_flags & TH_ACK)));
+
+                zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, !is_tcp_established);
 
                 if (!conn) {
-                    proxy.num_dropped_connections++;
-                    log_android(ANDROID_LOG_ERROR, "zdtun_lookup failed");
+                    if(!is_tcp_established) {
+                        char buf[512];
+
+                        proxy.num_dropped_connections++;
+                        log_android(ANDROID_LOG_ERROR, "zdtun_lookup failed: %s",
+                                    zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+                    } else {
+                        char buf[512];
+
+                        log_android(ANDROID_LOG_DEBUG, "skipping established TCP: %s",
+                                zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+                    }
                     goto housekeeping;
                 }
 
-                if((check_dns_req_dnat(&proxy, &pkt, conn) == 0)
-                        && (pkt.tuple.dst_ip == proxy.vpn_dns)) {
-                    log_android(ANDROID_LOG_DEBUG, "ignoring packet directed to the virtual DNS server");
+                if(!check_dns_req_allowed(&proxy, &pkt, conn))
                     goto housekeeping;
-                }
 
                 if(proxy.tls_decryption.enabled)
                     check_tls_mitm(tun, &proxy, &pkt, conn);
 
-                if ((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
-                    log_android(ANDROID_LOG_ERROR, "zdtun_forward (proto=%d) failed with code %d", pkt.tuple.ipproto, rc);
-                    proxy.num_dropped_connections++;
+                if((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
+                    char buf[512];
 
+                    log_android(ANDROID_LOG_ERROR, "zdtun_forward failed: %s",
+                                zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+
+                    proxy.num_dropped_connections++;
                     zdtun_destroy_conn(tun, conn);
                     goto housekeeping;
                 }
@@ -1139,6 +1184,7 @@ housekeeping:
     }
 
     notifyServiceStatus(&proxy, "stopped");
+    destroy_uid_resolver(proxy.resolver);
 
     finish_log();
     return(0);
@@ -1171,4 +1217,14 @@ Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jcla
 JNIEXPORT jint JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jclass clazz) {
     return FD_SETSIZE;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jclass clazz,
+                                                               jstring server) {
+    struct in_addr addr = {0};
+    const char *value = (*env)->GetStringUTFChars(env, server, 0);
+
+    if(inet_aton(value, &addr) != 0)
+        new_dns_server = addr.s_addr;
 }
