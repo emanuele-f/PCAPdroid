@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">PCAPdroid</string>
-	<string name="about_copyright" translatable="false">Copyright (C) 2020-21 - Emanuele Faranda black.silver@hotmail.it</string>
+    <string name="about_copyright" translatable="false">Copyright (C) 2020-21 - Emanuele Faranda black.silver@hotmail.it</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
 
@@ -54,13 +54,13 @@
     <string name="rate_app">评分</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="source_code">源代码</string>
-	<string name="yes">是</string>
+    <string name="yes">是</string>
     <string name="no">否</string>
     <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
-	<string name="vpn_setup_failed">VPN 设置失败</string>
+    <string name="vpn_setup_failed">VPN 设置失败</string>
     <string name="app_not_found">未找到应用 "%1$s"</string>
     <string name="apps_loading_please_wait">应用加载正在进行，请等待</string>
-	<string name="stats">统计数据</string>
+    <string name="stats">统计数据</string>
     <string name="active_connections">活动连接</string>
     <string name="dropped_connections">丢失连接</string>
     <string name="tot_connections">总连接</string>
@@ -71,10 +71,10 @@
     <string name="packets_sent">发送数据包</string>
     <string name="packets_rcvd">接收数据包</string>
     <string name="dns_queries">DNS 查询</string>
-	<string name="search_apps">搜索应用</string>
+    <string name="search_apps">搜索应用</string>
     <string name="no_apps">无应用</string>
-	<string name="dns_server">DNS 服务器</string>
-	<string name="apps">应用程序</string>
+    <string name="dns_server">DNS 服务器</string>
+    <string name="apps">应用程序</string>
     <string name="remove_app_filter">移除应用过滤器</string>
     <string name="set_app_filter">设置应用过滤器</string>
     <string name="navigation_drawer_open">抽屉打开</string>
@@ -107,8 +107,8 @@
     <string name="gpl_license_link">GPLv3 许可</string>
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
-	<string name="unknown_app">未知</string>
-	<string name="vpn_prefs">VPN</string>
+    <string name="unknown_app">未知</string>
+    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">启用 IPv6</string>
     <string name="enable_ipv6_summary">允许 IPv6 网络连接。这应该只在带有 IPv6 网关的网络上启用。</string>
     <string name="error">错误</string>
