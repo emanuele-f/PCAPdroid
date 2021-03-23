@@ -34,10 +34,11 @@ Each row represents an outgoing connection made by an app or by the android syst
 
   - The app icon, or a question mark if the app is unknown
   - The app name
-  - The protocol of the connection and the port. This is determined by analyzing the raw packets of the connection by using [nDPI](https://github.com/ntop/nDPI).
+  - The protocol of the connection, its port and IP version (if not IPv4). This is determined by analyzing the raw packets of the connection by using [nDPI](https://github.com/ntop/nDPI).
   - The SNI (server name information) or DNS query, if available. Otherwise, the remote IP address.
-  - An "Open" indicator if the connection is currently open, or the time the connection was established for closed connections
-  - The total traffic volume of the connection
+  - The connection status indicator, which can be "Open", "Closed", "Error" or "Unreachable".
+  - The last seen time, which is the time of the most recent packet of the connection.
+  - The total traffic volume of the connection.
 
 By clicking on the connection it is possible to get more details about it.
 
