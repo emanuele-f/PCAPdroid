@@ -1,5 +1,5 @@
 All the PCAPdroid features are brought to you for free without any advertisements or personal data collection.
-If you like the app and want to foster future developments, you can donate via one of the methods below.
+If you like the app and want to foster future developments, you can donate via one of the methods below. Donations are fully voluntary and no refunds are allowed.
 
 You can get your name written into the [donators file](https://github.com/emanuele-f/PCAPdroid/DONATORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
 
