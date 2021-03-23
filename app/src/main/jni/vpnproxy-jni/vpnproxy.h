@@ -86,6 +86,8 @@ typedef struct vpnproxy_data {
     u_int32_t num_dns_requests;
     conn_array_t new_conns;
     conn_array_t conns_updates;
+    zdtun_pkt_t *last_pkt;
+    bool last_conn_blocked;
 
     struct {
         u_int32_t collector_addr;

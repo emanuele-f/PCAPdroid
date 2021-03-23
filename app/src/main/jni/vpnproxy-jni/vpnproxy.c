@@ -79,6 +79,8 @@ typedef struct jni_classes {
     jclass stats;
 } jni_classes_t;
 
+static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *conn);
+
 static jni_classes_t cls;
 static jni_methods_t mids;
 static bool running = false;
@@ -324,7 +326,6 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
         const char *packet, int size, uint8_t from_tun) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
-    giveup = true; // todo fixme
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
             size, data->last_seen,
@@ -528,6 +529,13 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
 static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
+
+    if(!check_dns_req_allowed(proxy, conn_info)) {
+        // block connection
+        proxy->last_conn_blocked = true;
+        return(1);
+    }
+
     conn_data_t *data = calloc(1, sizeof(conn_data_t));
 
     if(!data) {
@@ -600,7 +608,9 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
  * with public DNS server. Non UDP DNS connections are dropped to block DoH queries which do not
  * allow us to extract the requested domain name.
  */
-static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *conn) {
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
+
     if(new_dns_server != 0) {
         // Reload DNS server
         proxy->dns_server = new_dns_server;
@@ -609,13 +619,14 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt,
         log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
     }
 
-    bool is_dns_server = ((pkt->tuple.ipver == 4) && (pkt->tuple.dst_ip.ip4 == proxy->vpn_dns))
-            || ((pkt->tuple.ipver == 6) && (memcmp(&pkt->tuple.dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
+    bool is_dns_server = ((tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns))
+            || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
 
     if(!is_dns_server)
         return(true);
 
-    if((pkt->tuple.ipproto == IPPROTO_UDP) && (ntohs(pkt->udp->uh_dport) == 53)) {
+    if((tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53) && (proxy->last_pkt != NULL)) {
+        zdtun_pkt_t *pkt = proxy->last_pkt;
         int dns_length = pkt->l7_len;
 
         if(dns_length >= sizeof(struct dns_packet)) {
@@ -627,21 +638,21 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt,
             log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
             proxy->num_dns_requests++;
 
-            if(pkt->tuple.ipver == 4) {
+            if(tuple->ipver == 4) {
                 /*
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will proxy the connection.
                  */
                 zdtun_ip_t dnatip = {0};
                 dnatip.ip4 = proxy->dns_server;
-                zdtun_conn_dnat(conn, &dnatip, pkt->udp->uh_dport);
+                zdtun_conn_dnat(conn, &dnatip, tuple->dst_port);
             }
 
             return(true);
         }
     }
 
-    log_android(ANDROID_LOG_DEBUG, "blocking packet directed to the DNS server");
+    log_android(ANDROID_LOG_INFO, "blocking packet directed to the DNS server");
 
     // block everything else (e.g. DoH)
     return(false);
@@ -1013,7 +1024,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         return(-1);
     }
 
-    // TODO use EPOLL?
     tun = zdtun_init(&callbacks, &proxy);
 
     if(tun == NULL) {
@@ -1085,6 +1095,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                     goto housekeeping;
                 }
 
+                proxy.last_pkt = &pkt;
+                proxy.last_conn_blocked = false;
+
                 if((pkt.tuple.ipver == 6) && (!proxy.ipv6.enabled)) {
                     char buf[512];
 
@@ -1100,7 +1113,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                 zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, !is_tcp_established);
 
                 if (!conn) {
-                    if(!is_tcp_established) {
+                    if(proxy.last_conn_blocked) {
+                        ;
+                    } else if(!is_tcp_established) {
                         char buf[512];
 
                         proxy.num_dropped_connections++;
@@ -1114,9 +1129,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                     }
                     goto housekeeping;
                 }
-
-                if(!check_dns_req_allowed(&proxy, &pkt, conn))
-                    goto housekeeping;
 
                 if(proxy.tls_decryption.enabled)
                     check_tls_mitm(tun, &proxy, &pkt, conn);
