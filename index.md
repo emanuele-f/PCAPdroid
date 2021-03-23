@@ -17,5 +17,8 @@ Welcome to the PCAPdroid User Guide.
     - [3.2 Decryption after Android 7](tls_decryption#32-decryption-after-android-7)
     - [3.3 Troubleshooting](tls_decryption#33-troubleshooting)
 - [4. Advanced Features](advanced_features)
+    - [4.1 DNS Server](advanced_features#41-dns-server)
+    - [4.2 DoH Support](advanced_features#42-doh-support)
+    - [4.3 IPv6 Support](advanced_features#43-ipv6-support)
 - [5. FAQ](faq)
 - [6. Donate](donate)
