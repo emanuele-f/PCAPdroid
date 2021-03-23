@@ -71,7 +71,7 @@ typedef struct conn_array {
 } conn_array_t;
 
 typedef struct vpnproxy_data {
-    int tapfd;
+    int tunfd;
     int incr_id;
     jint sdk;
     JNIEnv *env;

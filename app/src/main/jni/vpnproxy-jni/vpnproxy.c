@@ -321,15 +321,15 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 /* ******************************************************* */
 
 static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info,
-        const char *packet, int size, uint8_t from_tap) {
+        const char *packet, int size, uint8_t from_tun) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
     giveup = true; // todo fixme
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
             size, data->last_seen,
-            from_tap ? data->src_id : data->dst_id,
-            from_tap ? data->dst_id : data->src_id);
+            from_tun ? data->src_id : data->dst_id,
+            from_tun ? data->dst_id : data->src_id);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))) {
@@ -412,7 +412,7 @@ static bool shouldIgnoreConn(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple
 
 /* ******************************************************* */
 
-static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_tap, const zdtun_conn_t *conn_info) {
+static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_tun, const zdtun_conn_t *conn_info) {
     struct sockaddr_in servaddr = {0};
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     vpnproxy_data_t *proxy;
@@ -425,14 +425,14 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
 
 #if 0
-    if(from_tap)
-        log_android(ANDROID_LOG_DEBUG, "tap2net: %ld B", size);
+    if(from_tun)
+        log_android(ANDROID_LOG_DEBUG, "tun2net: %ld B", size);
     else
-        log_android(ANDROID_LOG_DEBUG, "net2tap: %lu B", size);
+        log_android(ANDROID_LOG_DEBUG, "net2tun: %lu B", size);
 #endif
 
     /* NOTE: account connection stats also for non-matched connections */
-    if(from_tap) {
+    if(from_tun) {
         data->sent_pkts++;
         data->sent_bytes += size;
     } else {
@@ -444,14 +444,14 @@ static void account_packet(zdtun_t *tun, const char *packet, int size, uint8_t f
     data->status = zdtun_conn_get_status(conn_info);
 
     if(data->ndpi_flow)
-        process_ndpi_packet(data, proxy, conn_info, packet, size, from_tap);
+        process_ndpi_packet(data, proxy, conn_info, packet, size, from_tun);
 
     if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
         //log_android(ANDROID_LOG_DEBUG, "Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
 
-    if(from_tap) {
+    if(from_tun) {
         proxy->capture_stats.sent_pkts++;
         proxy->capture_stats.sent_bytes += size;
     } else {
@@ -696,13 +696,13 @@ static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_
 
 /* ******************************************************* */
 
-static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t *conn_info) {
+static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t *conn_info) {
     if(!running)
         return 0;
 
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
 
-    int rv = write(proxy->tapfd, pkt_buf, pkt_size);
+    int rv = write(proxy->tunfd, pkt_buf, pkt_size);
 
     if(rv < 0) {
         if(errno == ENOBUFS) {
@@ -715,12 +715,12 @@ static int net2tap(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
             running = false;
         } else {
             log_android(ANDROID_LOG_FATAL,
-                        "tap write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+                        "tun write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
             running = false;
         }
     } else if(rv != pkt_size) {
         log_android(ANDROID_LOG_FATAL,
-                    "partial tap write (%d / %d)", rv, pkt_size);
+                    "partial tun write (%d / %d)", rv, pkt_size);
         rv = -1;
     } else
         rv = 0;
@@ -919,7 +919,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
+static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
     struct timeval now_tv;
@@ -952,7 +952,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIII)V");
 
     vpnproxy_data_t proxy = {
-            .tapfd = tapfd,
+            .tunfd = tunfd,
             .sdk = sdk,
             .env = env,
             .vpn_service = vpn,
@@ -982,7 +982,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     };
 
     zdtun_callbacks_t callbacks = {
-            .send_client = net2tap,
+            .send_client = net2tun,
             .account_packet = account_packet,
             .on_socket_open = protectSocketCallback,
             .on_connection_open = handle_new_connection,
@@ -1006,8 +1006,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
     signal(SIGPIPE, SIG_IGN);
 
     // Set blocking
-    int flags = fcntl(tapfd, F_GETFL, 0);
-    if (flags < 0 || fcntl(tapfd, F_SETFL, flags & ~O_NONBLOCK) < 0) {
+    int flags = fcntl(tunfd, F_GETFL, 0);
+    if (flags < 0 || fcntl(tunfd, F_SETFL, flags & ~O_NONBLOCK) < 0) {
         log_android(ANDROID_LOG_FATAL, "fcntl ~O_NONBLOCK error [%d]: %s", errno,
                             strerror(errno));
         return(-1);
@@ -1023,10 +1023,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
     // Limit the segments size for two reasons:
     // 1. to be able to encapsulate the packets for the UDP export
-    // 2. to avoid ENOBUFS while writing to the tapfd (for big packets, e.g. speedtest).
+    // 2. to avoid ENOBUFS while writing to the tunfd (for big packets, e.g. speedtest).
     zdtun_set_max_window_size(tun, 8192);
 
-    log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tapfd=%d]", tapfd);
+    log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tunfd=%d]", tunfd);
 
     notifyServiceStatus(&proxy, "started");
 
@@ -1060,8 +1060,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
 
         zdtun_fds(tun, &max_fd, &fdset, &wrfds);
 
-        FD_SET(tapfd, &fdset);
-        max_fd = max(max_fd, tapfd);
+        FD_SET(tunfd, &fdset);
+        max_fd = max(max_fd, tunfd);
 
         select(max_fd + 1, &fdset, &wrfds, NULL, &timeout);
 
@@ -1072,9 +1072,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
         now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
         proxy.now_ms = now_ms;
 
-        if(FD_ISSET(tapfd, &fdset)) {
+        if(FD_ISSET(tunfd, &fdset)) {
             /* Packet from VPN */
-            size = read(tapfd, buffer, sizeof(buffer));
+            size = read(tunfd, buffer, sizeof(buffer));
 
             if (size > 0) {
                 zdtun_pkt_t pkt;
@@ -1132,7 +1132,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tapfd, jint sdk) {
                     goto housekeeping;
                 }
             } else if (size < 0)
-                log_android(ANDROID_LOG_ERROR, "recv(tapfd) returned error [%d]: %s", errno,
+                log_android(ANDROID_LOG_ERROR, "recv(tunfd) returned error [%d]: %s", errno,
                             strerror(errno));
         } else
             zdtun_handle_fd(tun, &fdset, &wrfds);
@@ -1200,10 +1200,10 @@ Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jc
 }
 
 JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tapfd,
+Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
                                                               jobject vpn, jint sdk) {
 
-    run_tun(env, vpn, tapfd, sdk);
+    run_tun(env, vpn, tunfd, sdk);
 }
 
 JNIEXPORT void JNICALL
