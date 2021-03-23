@@ -17,3 +17,4 @@ Welcome to the PCAPdroid User Guide.
     - [3.2 Decryption after Android 7](tls_decryption#32-decryption-after-android-7)
     - [3.3 Troubleshooting](tls_decryption#33-troubleshooting)
 - [4. FAQ](faq)
+- [5. Donate](donate)
