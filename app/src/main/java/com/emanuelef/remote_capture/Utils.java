@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.UiModeManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -46,8 +47,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.math.BigInteger;
@@ -129,14 +132,18 @@ public class Utils {
         return fmt.format(new Date(epoch * 1000));
     }
 
-    public static void setAppLanguage(Context context, String language) {
-        Locale locale = new Locale(language);
-        Configuration config = new Configuration();
+    public static Configuration getLocalizedConfig(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        Configuration config = context.getResources().getConfiguration();
 
+        if(!Prefs.useEnglishLanguage(prefs))
+            return config;
+
+        Locale locale = new Locale("en");
         Locale.setDefault(locale);
-        config.locale = locale;
-        context.getResources().updateConfiguration(config,
-                context.getResources().getDisplayMetrics());
+        config.setLocale(locale);
+
+        return config;
     }
 
     public static String proto2str(int proto) {

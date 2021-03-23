@@ -36,6 +36,7 @@ public class Prefs {
     public static final String PREF_PCAP_URI = "pcap_path";
     public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
+    public static final String PREF_APP_LANGUAGE = "app_language";
 
     public enum DumpMode {
         NONE,
@@ -65,5 +66,5 @@ public class Prefs {
     public static int getTlsProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_TLS_PROXY_PORT_KEY, "8080"))); }
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
     public static boolean getIPv6Enabled(SharedPreferences p)    { return(p.getBoolean(PREF_IPV6_ENABLED, false)); }
-    public static boolean useSystemLanguage(SharedPreferences p) { return("system".equals(p.getString("app_language", "system")));}
+    public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
 }

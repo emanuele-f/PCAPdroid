@@ -23,6 +23,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.net.VpnService;
@@ -36,6 +37,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -74,6 +76,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
+    private SharedPreferences mPrefs;
 
     private static final String TAG = "Main";
 
@@ -96,6 +99,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         initAppState();
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPcapUri = CaptureService.getPcapUri();
 
         CaocConfig.Builder.create()

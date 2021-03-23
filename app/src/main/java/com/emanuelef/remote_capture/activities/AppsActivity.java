@@ -30,6 +30,7 @@ public class AppsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setTitle(R.string.apps);
         setContentView(R.layout.apps_activity);
     }
 }

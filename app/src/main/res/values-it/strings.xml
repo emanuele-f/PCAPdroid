@@ -103,7 +103,7 @@
     <string name="error">Errore</string>
     <string name="conn_status_unreachable">Irraggiungibile</string>
     <string name="other_prefs">Altro</string>
-    <string name="app_language">Lingua dell\'App</string>
+    <string name="app_language">Lingua</string>
     <string name="lang_english">Inglese</string>
     <string name="lang_system_default">Predefinita del sistema</string>
 </resources>

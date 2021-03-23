@@ -33,6 +33,7 @@ public class AboutActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.about);
         setContentView(R.layout.about_activity);
 
         TextView appVersion = findViewById(R.id.app_version);

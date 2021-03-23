@@ -60,6 +60,7 @@ public class StatsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.stats);
         setContentView(R.layout.activity_stats);
 
         mTable = findViewById(R.id.table);

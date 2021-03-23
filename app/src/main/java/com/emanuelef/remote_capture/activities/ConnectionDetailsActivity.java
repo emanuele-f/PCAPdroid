@@ -52,6 +52,7 @@ public class ConnectionDetailsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.connection_details);
         setContentView(R.layout.activity_connection_details);
 
         conn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
