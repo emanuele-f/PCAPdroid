@@ -48,7 +48,6 @@
     <string name="tls_proxy_port">mitmproxy 端口</string>
     <string name="enable_tls_decryption">启用 TLS 解密</string>
     <string name="enable_tls_decryption_summary">启用后，所有 TLS 通信都将被重定向到远程 mitmproxy 实例进行解密。</string>
-    <string name="default_proxy_port">8080</string>
     <string name="tls_decryption">TLS 解密</string>
     <string name="user_guide">用户指南</string>
     <string name="rate_app">评分</string>

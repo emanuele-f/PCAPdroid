@@ -129,6 +129,16 @@ public class Utils {
         return fmt.format(new Date(epoch * 1000));
     }
 
+    public static void setAppLanguage(Context context, String language) {
+        Locale locale = new Locale(language);
+        Configuration config = new Configuration();
+
+        Locale.setDefault(locale);
+        config.locale = locale;
+        context.getResources().updateConfiguration(config,
+                context.getResources().getDisplayMetrics());
+    }
+
     public static String proto2str(int proto) {
         switch(proto) {
             case 6:     return "TCP";

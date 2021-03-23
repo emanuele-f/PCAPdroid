@@ -65,4 +65,5 @@ public class Prefs {
     public static int getTlsProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_TLS_PROXY_PORT_KEY, "8080"))); }
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
     public static boolean getIPv6Enabled(SharedPreferences p)    { return(p.getBoolean(PREF_IPV6_ENABLED, false)); }
+    public static boolean useSystemLanguage(SharedPreferences p) { return("system".equals(p.getString("app_language", "system")));}
 }

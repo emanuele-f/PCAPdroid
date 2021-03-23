@@ -23,7 +23,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.net.VpnService;
@@ -31,14 +30,12 @@ import android.net.VpnService;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -68,8 +65,7 @@ import java.io.FileNotFoundException;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private SharedPreferences mPrefs;
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
     private AppState mState;
@@ -112,8 +108,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mPager = findViewById(R.id.pager);
 
         setupTabs();
-
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {

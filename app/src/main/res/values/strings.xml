@@ -48,7 +48,6 @@
     <string name="tls_proxy_port">mitmproxy Port</string>
     <string name="enable_tls_decryption">Enable TLS Decryption</string>
     <string name="enable_tls_decryption_summary">When enabled, all the TLS traffic will be redirected to a remote mitmproxy instance for decryption.</string>
-    <string name="default_proxy_port">8080</string>
     <string name="tls_decryption">TLS Decryption</string>
     <string name="user_guide">User Guide</string>
     <string name="rate_app">Rate</string>
@@ -113,5 +112,9 @@
     <string name="enable_ipv6_summary">Allow IPv6 internet connections. This should only be enabled on networks with an IPv6 gateway.</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Unreachable</string>
+    <string name="other_prefs">Other</string>
+    <string name="app_language">App Language</string>
+    <string name="lang_english">English</string>
+    <string name="lang_system_default">System default</string>
 </resources>
 

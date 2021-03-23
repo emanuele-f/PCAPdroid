@@ -24,12 +24,10 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 
-public class AboutActivity extends AppCompatActivity {
+public class AboutActivity extends BaseActivity {
     private static final String TAG = "AboutActivity";
 
     @Override

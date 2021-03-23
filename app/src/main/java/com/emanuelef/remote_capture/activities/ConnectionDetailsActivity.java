@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -37,7 +36,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
-public class ConnectionDetailsActivity extends AppCompatActivity {
+public class ConnectionDetailsActivity extends BaseActivity {
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_EXTRA_KEY = "conn_descriptor";
     public static final String APP_NAME_EXTRA_KEY = "app_name";
