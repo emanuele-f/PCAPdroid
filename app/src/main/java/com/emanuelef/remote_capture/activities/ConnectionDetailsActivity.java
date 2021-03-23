@@ -116,7 +116,7 @@ public class ConnectionDetailsActivity extends AppCompatActivity {
             mDurationView.setText(Utils.formatDuration(conn.last_seen - conn.first_seen));
             mFirstSeen.setText(Utils.formatEpochFull(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochFull(this, conn.last_seen));
-            mStatus.setText(conn.status);
+            mStatus.setText(conn.getStatusLabel(this));
         }
     }
 

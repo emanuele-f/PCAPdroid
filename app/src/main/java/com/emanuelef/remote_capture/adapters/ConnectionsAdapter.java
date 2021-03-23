@@ -58,9 +58,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         TextView l7proto;
         TextView traffic;
         TextView appName;
-        TextView eta;
-        final String mStatusOpen;
-        final String mStatusError;
+        TextView lastSeen;
         final String mProtoAndPort;
 
         ViewHolder(View itemView) {
@@ -72,11 +70,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             traffic = itemView.findViewById(R.id.traffic);
             statusInd = itemView.findViewById(R.id.status_ind);
             appName = itemView.findViewById(R.id.app_name);
-            eta = itemView.findViewById(R.id.eta);
+            lastSeen = itemView.findViewById(R.id.last_seen);
 
             Context context = itemView.getContext();
-            mStatusOpen = context.getString(R.string.conn_status_open);
-            mStatusError = context.getString(R.string.error);
             mProtoAndPort = context.getString(R.string.proto_and_port);
         }
 
@@ -106,24 +102,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             String info_txt = (app != null) ? app.getName() : Integer.toString(conn.uid);
             appName.setText(info_txt);
             traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
+            lastSeen.setText(Utils.formatEpochShort(context, conn.last_seen));
+            statusInd.setText(conn.getStatusLabel(context));
 
-            if(conn.status.equals("CLOSED")) {
-                eta.setText(Utils.formatEpochShort(context, conn.first_seen));
-
-                eta.setVisibility(View.VISIBLE);
-                statusInd.setVisibility(View.GONE);
-            } else {
-                if(conn.status.equals("ERROR")) {
-                    statusInd.setText(mStatusError);
-                    statusInd.setTextColor(0xFFF20015);
-                } else {
-                    statusInd.setText(mStatusOpen);
-                    statusInd.setTextColor(0xFF28BC36);
-                }
-
-                eta.setVisibility(View.GONE);
-                statusInd.setVisibility(View.VISIBLE);
-            }
+            if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
+                statusInd.setTextColor(0xFF28BC36); // Open
+            else if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
+                statusInd.setTextColor(0xFFAAAAAA);
+            else
+                statusInd.setTextColor(0xFFF20015); // Error
         }
     }
 

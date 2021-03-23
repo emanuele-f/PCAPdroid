@@ -277,7 +277,7 @@ public class ConnectionsRegister {
                 builder.append(conn.uid);                                   builder.append(",");
                 builder.append((app != null) ? app.getName() : "");         builder.append(",");
                 builder.append(conn.l7proto);                               builder.append(",");
-                builder.append(conn.status);                                builder.append(",");
+                builder.append(conn.getStatusLabel(context));               builder.append(",");
                 builder.append((conn.info != null) ? conn.info : "");       builder.append(",");
                 builder.append(conn.sent_bytes);                            builder.append(",");
                 builder.append(conn.rcvd_bytes);                            builder.append(",");

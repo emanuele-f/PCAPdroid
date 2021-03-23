@@ -48,12 +48,13 @@
             tools:text="@string/conn_status_open" />
 
         <TextView
-            android:id="@+id/eta"
+            android:id="@+id/last_seen"
             android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_below="@id/app_name"
+            android:layout_alignParentEnd="true"
+            tools:text="17:15:00"/>
 
         <TextView
             android:id="@+id/l7proto"

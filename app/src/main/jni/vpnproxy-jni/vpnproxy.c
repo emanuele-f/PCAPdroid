@@ -761,7 +761,6 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                         data->uid);
 #endif
 
-    jobject status_string = (*env)->NewStringUTF(env, zdtun_conn_status2str(data->status));
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
     jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
     jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
@@ -773,9 +772,9 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
         /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
          * SetIntField like methods could be used. */
         (*env)->CallVoidMethod(env, conn_descriptor, mids.connSetData,
-                               src_string, dst_string, status_string, info_string, url_string, proto_string,
-                               conn_info->ipver, conn_info->ipproto, ntohs(conn_info->src_port),
-                               ntohs(conn_info->dst_port),
+                               src_string, dst_string, info_string, url_string, proto_string,
+                               data->status, conn_info->ipver, conn_info->ipproto,
+                               ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
                                data->first_seen, data->last_seen, data->sent_bytes,
                                data->rcvd_bytes, data->sent_pkts,
                                data->rcvd_pkts, data->uid, data->incr_id);
@@ -795,7 +794,6 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
         rv = -1;
     }
 
-    (*env)->DeleteLocalRef(env, status_string);
     (*env)->DeleteLocalRef(env, info_string);
     (*env)->DeleteLocalRef(env, url_string);
     (*env)->DeleteLocalRef(env, proto_string);
@@ -958,7 +956,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
     mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
             /* NOTE: must match ConnectionDescriptor::setData */
-            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIJJJJIIII)V");
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIJJJJIIII)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIII)V");
 
