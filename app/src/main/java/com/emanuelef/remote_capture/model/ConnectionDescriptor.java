@@ -97,6 +97,7 @@ public class ConnectionDescriptor implements Serializable {
         if(status >= CONN_STATUS_CLOSED) {
             switch(status) {
                 case CONN_STATUS_CLOSED:
+                case CONN_STATUS_RESET:
                     resid = R.string.conn_status_closed;
                     break;
                 case CONN_STATUS_UNREACHABLE:

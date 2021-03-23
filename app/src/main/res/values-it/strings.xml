@@ -81,10 +81,10 @@
     <string name="notification_msg">%1$s catturati, %2$s connessioni</string>
     <string name="no_app_filter">Nessun filtro app impostato</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Aperta</string>
+    <string name="conn_status_open">Attiva</string>
     <string name="first_seen">Inizio</string>
     <string name="last_seen">Fine</string>
-    <string name="conn_status_closed">Chiusa</string>
+    <string name="conn_status_closed">Terminata</string>
     <string name="copy_to_clipboard">Copia negli appunti</string>
     <string name="copied_to_clipboard">Copiato negli appunti!</string>
     <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>

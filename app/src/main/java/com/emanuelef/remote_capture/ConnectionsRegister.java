@@ -182,10 +182,14 @@ public class ConnectionsRegister {
 
         // Send the first update to sync it
         listener.connectionsChanges(num_items);
+
+        Log.d(TAG, "(add) new connections listeners size: " + mListeners.size());
     }
 
     public synchronized void removeListener(ConnectionsListener listener) {
         mListeners.remove(listener);
+
+        Log.d(TAG, "(remove) new connections listeners size: " + mListeners.size());
     }
 
     public int getConnCount() {
@@ -222,6 +226,21 @@ public class ConnectionsRegister {
         }
 
         return null;
+    }
+
+    public synchronized int getConnPositionByIncrId(int incr_id) {
+        int first = firstPos();
+
+        for(int i = 0; i < num_items; i++) {
+            int pos = (first + i) % size;
+            ConnectionDescriptor item = items_ring[pos];
+
+            if((item != null) && (item.incr_id == incr_id)) {
+                return pos;
+            }
+        }
+
+        return -1;
     }
 
     public synchronized List<AppStats> getAppsStats() {
