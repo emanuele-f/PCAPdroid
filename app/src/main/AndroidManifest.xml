@@ -35,26 +35,21 @@
 
         <activity
             android:name=".activities.AppsActivity"
-            android:label="@string/apps"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
             android:name=".activities.ConnectionDetailsActivity"
-            android:label="@string/connection_details"
             android:parentActivityName=".activities.MainActivity"/>
         <activity
             android:name=".activities.StatsActivity"
-            android:label="@string/stats"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity"/>
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
             android:name=".activities.AboutActivity"
-            android:label="@string/about"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
 

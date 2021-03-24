@@ -19,10 +19,26 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.content.Context;
+
+import com.emanuelef.remote_capture.R;
+
 import java.io.Serializable;
 
 /* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
 public class ConnectionDescriptor implements Serializable {
+    // sync with zdtun_conn_status_t
+
+    public static final int CONN_STATUS_NEW = 0,
+        CONN_STATUS_CONNECTING = 1,
+        CONN_STATUS_CONNECTED = 2,
+        CONN_STATUS_CLOSED = 3,
+        CONN_STATUS_ERROR = 4,
+        CONN_STATUS_SOCKET_ERROR = 5,
+        CONN_STATUS_CLIENT_ERROR = 6,
+        CONN_STATUS_RESET = 7,
+        CONN_STATUS_UNREACHABLE = 8;
+
     /* Metadata */
     public int ipver;
     public int ipproto;
@@ -43,15 +59,15 @@ public class ConnectionDescriptor implements Serializable {
     public String l7proto;
     public int uid;
     public int incr_id;
-    public String status;
+    public int status;
 
     /* Invoked by native code
     * NOTE: interleaving String and int in the parameters is not good as it makes the app crash
     * nto the emulator! Better to put the strings first. */
-    public void setData(String _src_ip, String _dst_ip, String _status, String _info, String _url, String _l7proto,
-                        int _ipver, int _ipproto, int _src_port, int _dst_port, long _first_seen, long _last_seen,
-                        long _sent_bytes, long _rcvd_bytes, int _sent_pkts, int _rcvd_pkts, int _uid,
-                        int _incr_id) {
+    public void setData(String _src_ip, String _dst_ip, String _info, String _url, String _l7proto,
+                        int _status, int _ipver, int _ipproto, int _src_port, int _dst_port,
+                        long _first_seen, long _last_seen, long _sent_bytes, long _rcvd_bytes,
+                        int _sent_pkts, int _rcvd_pkts, int _uid, int _incr_id) {
         /* Metadata */
         ipver = _ipver;
         ipproto = _ipproto;
@@ -73,5 +89,27 @@ public class ConnectionDescriptor implements Serializable {
         l7proto = _l7proto;
         uid = _uid;
         incr_id = _incr_id;
+    }
+
+    public String getStatusLabel(Context ctx) {
+        int resid;
+
+        if(status >= CONN_STATUS_CLOSED) {
+            switch(status) {
+                case CONN_STATUS_CLOSED:
+                case CONN_STATUS_RESET:
+                    resid = R.string.conn_status_closed;
+                    break;
+                case CONN_STATUS_UNREACHABLE:
+                    resid = R.string.conn_status_unreachable;
+                    break;
+                default:
+                    resid = R.string.error;
+                    break;
+            }
+        } else
+            resid = R.string.conn_status_open;
+
+        return(ctx.getString(resid));
     }
 }

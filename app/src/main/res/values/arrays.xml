@@ -20,4 +20,14 @@
         <item>@string/pcap_file_info</item>
         <item>@string/udp_exporter_info</item>
     </string-array>
+
+    <string-array name="app_languages">
+        <item>system</item>
+        <item>english</item>
+    </string-array>
+
+    <string-array name="app_languages_labels">
+        <item>@string/lang_system_default</item>
+        <item>@string/lang_english</item>
+    </string-array>
 </resources>

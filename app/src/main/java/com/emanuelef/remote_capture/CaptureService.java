@@ -125,6 +125,11 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base.createConfigurationContext(Utils.getLocalizedConfig(base)));
+    }
+
+    @Override
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
         INSTANCE = this;

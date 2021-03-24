@@ -39,10 +39,15 @@ You can help the PCAPdroid project in many ways:
 - Improve the app theme and layout
 - Propose and discuss new features
 - Open bug reports with detailed information
+- [Make a donation](https://emanuele-f.github.io/PCAPdroid/donate)
 - Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
-You can reach the PCAPdroid developers and community on the [telegram group](https://t.me/PCAPdroid).
+You can reach the PCAPdroid community on the [telegram group](https://t.me/PCAPdroid).
+
+## Donations
+
+Check out the [donate page](https://emanuele-f.github.io/PCAPdroid/donate) for details.
 
 ## What is the netd app
 

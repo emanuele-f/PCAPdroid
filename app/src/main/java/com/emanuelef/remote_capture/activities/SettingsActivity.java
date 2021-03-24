@@ -19,16 +19,19 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Patterns;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.model.Prefs;
@@ -36,11 +39,15 @@ import com.emanuelef.remote_capture.R;
 
 import java.util.regex.Matcher;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
+    private static final String ACTION_LANG_RESTART = "lang_restart";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.title_activity_settings); // note: setting via manifest does not honor custom locale
         setContentView(R.layout.settings_activity);
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.settings, new SettingsFragment())
@@ -49,6 +56,28 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            /* Make the back button in the action bar behave like the back button */
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -64,6 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
             setupTlsProxyPrefs();
+            setupOtherPrefs();
 
             tlsDecryptionHideShow(mTlsDecryptionEnabled.isChecked());
         }
@@ -123,6 +153,29 @@ public class SettingsActivity extends AppCompatActivity {
             mTlsProxyIp.setVisible(decryptionEnabled);
             mTlsProxyPort.setVisible(decryptionEnabled);
             mTlsHelp.setVisible(decryptionEnabled);
+        }
+
+        private void setupOtherPrefs() {
+            DropDownPreference appLang = findPreference(Prefs.PREF_APP_LANGUAGE);
+
+            if(SettingsActivity.ACTION_LANG_RESTART.equals(getActivity().getIntent().getAction()))
+                scrollToPreference(appLang);
+
+            appLang.setOnPreferenceChangeListener((preference, newValue) -> {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+                if(prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
+                    // Restart the activity to apply the language change
+                    Intent intent = new Intent(getContext(), SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intent.setAction(SettingsActivity.ACTION_LANG_RESTART);
+                    startActivity(intent);
+
+                    Runtime.getRuntime().exit(0);
+                }
+
+                return false;
+            });
         }
     }
 }

@@ -21,17 +21,16 @@ package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.emanuelef.remote_capture.R;
 
-public class AppsActivity extends AppCompatActivity {
+public class AppsActivity extends BaseActivity {
     private static final String TAG = "AppsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setTitle(R.string.apps);
         setContentView(R.layout.apps_activity);
     }
 }

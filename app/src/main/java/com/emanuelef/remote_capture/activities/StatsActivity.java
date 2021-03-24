@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.content.BroadcastReceiver;
@@ -43,7 +42,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.VPNStats;
 
-public class StatsActivity extends AppCompatActivity {
+public class StatsActivity extends BaseActivity {
     private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
     private TextView mBytesRcvd;
@@ -61,6 +60,7 @@ public class StatsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.stats);
         setContentView(R.layout.activity_stats);
 
         mTable = findViewById(R.id.table);

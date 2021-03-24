@@ -31,7 +31,6 @@ import android.net.VpnService;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -68,8 +67,7 @@ import java.io.FileNotFoundException;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private SharedPreferences mPrefs;
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
     private AppState mState;
@@ -78,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
+    private SharedPreferences mPrefs;
 
     private static final String TAG = "Main";
 
@@ -100,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initAppState();
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPcapUri = CaptureService.getPcapUri();
 
         CaocConfig.Builder.create()
@@ -112,8 +112,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mPager = findViewById(R.id.pager);
 
         setupTabs();
-
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
