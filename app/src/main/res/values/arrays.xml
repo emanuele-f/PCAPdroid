@@ -22,8 +22,8 @@
     </string-array>
 
     <string-array name="app_languages">
-        <item>系统</item>
-        <item>英语</item>
+        <item>system</item>
+        <item>english</item>
     </string-array>
 
     <string-array name="app_languages_labels">
