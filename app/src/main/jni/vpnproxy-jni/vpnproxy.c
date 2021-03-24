@@ -31,6 +31,7 @@
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
+#define MAX_HOST_LRU_SIZE 64
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 
@@ -349,8 +350,33 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
 
         switch (data->l7proto.master_protocol) {
             case NDPI_PROTOCOL_DNS:
-                if(data->ndpi_flow->host_server_name[0])
+                if(data->ndpi_flow->host_server_name[0]) {
+                    u_int16_t rsp_type = data->ndpi_flow->protos.dns.rsp_type;
+                    zdtun_ip_t rsp_addr = {0};
+                    int ipver = 0;
+
                     data->info = strdup((char*)data->ndpi_flow->host_server_name);
+
+                    if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
+                        rsp_addr.ip4 = data->ndpi_flow->protos.dns.rsp_addr.ipv4;
+                        ipver = 4;
+                    } else if((rsp_type == 0x1c)
+                            && ((data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr.u6_addr8[0] & 0xE0) == 0x20)) { /* AAAA unicast */
+                        memcpy(&rsp_addr.ip6, &data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr, 16);
+                        ipver = 6;
+                    }
+
+                    if(ipver != 0) {
+                        char rspip[INET6_ADDRSTRLEN];
+                        int family = (ipver == 4) ? AF_INET : AF_INET6;
+
+                        inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
+
+                        log_android(ANDROID_LOG_DEBUG, "Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
+
+                        ip_lru_add(proxy->ip_to_host, &rsp_addr, data->info);
+                    }
+                }
                 break;
             case NDPI_PROTOCOL_HTTP:
                 if(data->ndpi_flow->host_server_name[0])
@@ -362,6 +388,21 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
                 if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0])
                     data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
                 break;
+        }
+
+        if(!data->info) {
+            // Search the LRU cache
+            zdtun_ip_t ip = tuple->dst_ip;
+            data->info = ip_lru_find(proxy->ip_to_host, &ip);
+
+            if(data->info) {
+                char resip[INET6_ADDRSTRLEN];
+                int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+
+                inet_ntop(family, &ip, resip, sizeof(resip));
+
+                log_android(ANDROID_LOG_DEBUG, "Host LRU cache HIT: %s -> %s", resip, data->info);
+            }
         }
 
         if(data->info)
@@ -966,6 +1007,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .env = env,
             .vpn_service = vpn,
             .resolver = init_uid_resolver(sdk, env, vpn),
+            .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
             .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
@@ -1195,6 +1237,9 @@ housekeeping:
 
     notifyServiceStatus(&proxy, "stopped");
     destroy_uid_resolver(proxy.resolver);
+
+    log_android(ANDROID_LOG_DEBUG, "Host LRU cache size: %d", ip_lru_size(proxy.ip_to_host));
+    ip_lru_destroy(proxy.ip_to_host);
 
     finish_log();
     return(0);

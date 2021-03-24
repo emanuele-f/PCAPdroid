@@ -11,6 +11,7 @@ add_library(vpnproxy-jni SHARED
         vpnproxy.c
         uid_resolver.c
         jni_helpers.c
+        ip_lru.c
         pcap)
 
 # nDPI
