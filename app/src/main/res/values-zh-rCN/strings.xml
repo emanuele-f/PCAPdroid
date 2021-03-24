@@ -111,4 +111,9 @@
     <string name="enable_ipv6">启用 IPv6</string>
     <string name="enable_ipv6_summary">允许 IPv6 网络连接。这应该只在带有 IPv6 网关的网络上启用。</string>
     <string name="error">错误</string>
+    <string name="conn_status_unreachable">不可达</string>
+    <string name="other_prefs">其他</string>
+    <string name="app_language">程序语言</string>
+    <string name="lang_english">英语</string>
+    <string name="lang_system_default">系统默认</string>
 </resources>
