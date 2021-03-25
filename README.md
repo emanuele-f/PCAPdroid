@@ -3,6 +3,7 @@
 PCAPdroid is an open source network monitoring and capture tool. It can capture an Android device traffic without rooting the device. The traffic can be sent to a remote receiver.
 
 <p align="center">
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="190" />
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="190" />
 </p>
 
