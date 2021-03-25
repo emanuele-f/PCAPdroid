@@ -101,4 +101,9 @@
     <string name="enable_ipv6">Включить IPv6</string>
     <string name="enable_ipv6_summary">Разрешить IPv6 Интернет соединения. Это следует включать только в сетях со шлюзом IPv6.</string>
     <string name="error">Ошибка</string>
+    <string name="conn_status_unreachable">Недоступен</string>
+    <string name="other_prefs">Другое</string>
+    <string name="app_language">Язык приложения</string>
+    <string name="lang_english">Английский</string>
+    <string name="lang_system_default">Системный по-умолчанию</string>
 </resources>
