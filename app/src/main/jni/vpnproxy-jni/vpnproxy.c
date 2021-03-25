@@ -353,24 +353,26 @@ static void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const 
                     free(data->info);
                 data->info = strdup((char*)data->ndpi_flow->host_server_name);
 
-                if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
-                    rsp_addr.ip4 = data->ndpi_flow->protos.dns.rsp_addr.ipv4;
-                    ipver = 4;
-                } else if((rsp_type == 0x1c)
-                          && ((data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr.u6_addr8[0] & 0xE0) == 0x20)) { /* AAAA unicast */
-                    memcpy(&rsp_addr.ip6, &data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr, 16);
-                    ipver = 6;
-                }
+                if(data->info && strchr(data->info, '.')) { // ignore invalid domain names
+                    if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
+                        rsp_addr.ip4 = data->ndpi_flow->protos.dns.rsp_addr.ipv4;
+                        ipver = 4;
+                    } else if((rsp_type == 0x1c)
+                              && ((data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr.u6_addr8[0] & 0xE0) == 0x20)) { /* AAAA unicast */
+                        memcpy(&rsp_addr.ip6, &data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr, 16);
+                        ipver = 6;
+                    }
 
-                if(ipver != 0) {
-                    char rspip[INET6_ADDRSTRLEN];
-                    int family = (ipver == 4) ? AF_INET : AF_INET6;
+                    if(ipver != 0) {
+                        char rspip[INET6_ADDRSTRLEN];
+                        int family = (ipver == 4) ? AF_INET : AF_INET6;
 
-                    inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
+                        inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
 
-                    log_android(ANDROID_LOG_DEBUG, "Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
+                        log_android(ANDROID_LOG_DEBUG, "Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
 
-                    ip_lru_add(proxy->ip_to_host, &rsp_addr, data->info);
+                        ip_lru_add(proxy->ip_to_host, &rsp_addr, data->info);
+                    }
                 }
             }
             break;
@@ -675,8 +677,32 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
     }
 
-    bool is_dns_server = ((tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns))
+    bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns);
+    bool is_dns_server = is_internal_dns
             || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
+
+    if(!is_dns_server) {
+        // try with known DNS servers
+        u_int32_t matched = 0;
+        ndpi_ip_addr_t addr = {0};
+
+        if(tuple->ipver == 4)
+            addr.ipv4 = tuple->dst_ip.ip4;
+        else
+            memcpy(&addr.ipv6, &tuple->dst_ip.ip6, 16);
+
+        ndpi_ptree_match_addr(proxy->known_dns_servers, &addr, &matched);
+
+        if(matched) {
+            char ip[INET6_ADDRSTRLEN];
+            int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+
+            is_dns_server = true;
+            inet_ntop(family, &tuple->dst_ip, (char *)&ip, sizeof(ip));
+
+            log_android(ANDROID_LOG_DEBUG, "Matched known DNS server: %s", ip);
+        }
+    }
 
     if(!is_dns_server)
         return(true);
@@ -694,7 +720,7 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
             log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
             proxy->num_dns_requests++;
 
-            if(tuple->ipver == 4) {
+            if(is_internal_dns) {
                 /*
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will proxy the connection.
@@ -984,6 +1010,19 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
+static void add_known_dns_server(vpnproxy_data_t *proxy, const char *ip) {
+    ndpi_ip_addr_t parsed;
+
+    if(ndpi_parse_ip_string(ip, &parsed) < 0) {
+        log_android(ANDROID_LOG_ERROR, "ndpi_parse_ip_string(%s) failed", ip);
+        return;
+    }
+
+    ndpi_ptree_insert(proxy->known_dns_servers, &parsed, ndpi_is_ipv6(&parsed) ? 128 : 32, 1);
+}
+
+/* ******************************************************* */
+
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
@@ -1022,6 +1061,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .env = env,
             .vpn_service = vpn,
             .resolver = init_uid_resolver(sdk, env, vpn),
+            .known_dns_servers = ndpi_ptree_create(),
             .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
@@ -1068,6 +1108,16 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         log_android(ANDROID_LOG_FATAL, "nDPI initialization failed");
         return(-1);
     }
+
+    // List of known DNS servers
+    add_known_dns_server(&proxy, "8.8.8.8");
+    add_known_dns_server(&proxy, "8.8.4.4");
+    add_known_dns_server(&proxy, "1.1.1.1");
+    add_known_dns_server(&proxy, "1.0.0.1");
+    add_known_dns_server(&proxy, "2001:4860:4860::8888");
+    add_known_dns_server(&proxy, "2001:4860:4860::8844");
+    add_known_dns_server(&proxy, "2606:4700:4700::64");
+    add_known_dns_server(&proxy, "2606:4700:4700::6400");
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -1252,6 +1302,7 @@ housekeeping:
 
     notifyServiceStatus(&proxy, "stopped");
     destroy_uid_resolver(proxy.resolver);
+    ndpi_ptree_destroy(proxy.known_dns_servers);
 
     log_android(ANDROID_LOG_DEBUG, "Host LRU cache size: %d", ip_lru_size(proxy.ip_to_host));
     ip_lru_destroy(proxy.ip_to_host);

@@ -81,6 +81,7 @@ typedef struct vpnproxy_data {
     u_int32_t dns_server;
     u_int32_t vpn_ipv4;
     struct ndpi_detection_module_struct *ndpi;
+    ndpi_ptree_t *known_dns_servers;
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
     uint64_t now_ms;
