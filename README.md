@@ -3,7 +3,7 @@
 PCAPdroid is an open source network monitoring and capture tool. It can capture an Android device traffic without rooting the device. The traffic can be sent to a remote receiver.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="190" />
 </p>
 
 Features:
@@ -44,10 +44,6 @@ You can help the PCAPdroid project in many ways:
 - Of course provide code pull requests!
 
 You can reach the PCAPdroid community on the [telegram group](https://t.me/PCAPdroid).
-
-## Donations
-
-Check out the [donate page](https://emanuele-f.github.io/PCAPdroid/donate) for details.
 
 ## What is the netd app
 
