@@ -289,7 +289,7 @@ public class Utils {
 
     public static void showToastLong(Context context, int id) {
         String msg = context.getResources().getString(id);
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
     public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
