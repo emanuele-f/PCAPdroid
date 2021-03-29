@@ -116,5 +116,6 @@
     <string name="app_language">App Language</string>
     <string name="lang_english">English</string>
     <string name="lang_system_default">System default</string>
+    <string name="no_activity_file_selection">No app found to handle file selection</string>
 </resources>
 

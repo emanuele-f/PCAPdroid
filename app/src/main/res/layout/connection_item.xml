@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -20,7 +21,7 @@
         tools:src="@drawable/ic_apps"
         tools:tint="@color/colorAccent" />
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:orientation="vertical"
         android:paddingHorizontal="4dp"
@@ -34,7 +35,8 @@
             android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Android" />
 
         <TextView
@@ -42,8 +44,8 @@
             android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:textColor="#FF28BC36"
             tools:text="@string/conn_status_open" />
 
@@ -52,8 +54,8 @@
             android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/app_name"
-            android:layout_alignParentEnd="true"
+            app:layout_constraintTop_toBottomOf="@id/app_name"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:text="17:15:00"/>
 
         <TextView
@@ -61,19 +63,23 @@
             android:textSize="13sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/app_name"
-            android:layout_alignParentStart="true"
+            app:layout_constraintTop_toBottomOf="@id/app_name"
+            app:layout_constraintStart_toStartOf="parent"
             tools:text="HTTP, 80" />
 
         <TextView
             android:id="@+id/remote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:layout_constrainedWidth="true"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:singleLine="true"
             tools:text="example.org"
+            app:layout_constraintHorizontal_bias="0"
             android:textSize="12sp"
-            android:layout_below="@id/l7proto"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/traffic"
+            app:layout_constraintTop_toBottomOf="@id/l7proto"/>
 
         <TextView
             android:id="@+id/traffic"
@@ -82,7 +88,7 @@
             tools:text="105.4 MB"
             android:textSize="14sp"
             android:gravity="end"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true" />
-    </RelativeLayout>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

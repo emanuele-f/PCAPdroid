@@ -2,6 +2,17 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.3] - 2021-03-25
+- You can now donate! Check out the user guide for instructions
+- Add IPv6 support
+- Reduce background battery and RAM consumption
+- Add russian translation (credits: rikishi)
+- Add italian translation
+- Add ability to switch between system language and english
+- Improve TCP and DNS connections handling
+- Connection details stats now automatically refresh
+- Fix DNS resolution failures on main network change
+
 ## [1.3.2] - 2021-03-09
 - Add ICMP connections support
 - Reduce app icons load time and RAM usage

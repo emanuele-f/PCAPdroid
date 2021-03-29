@@ -31,6 +31,7 @@
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
 #define MAX_JAVA_DUMP_DELAY_MS 1000
 #define MAX_DPI_PACKETS 12
+#define MAX_HOST_LRU_SIZE 128
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 
@@ -322,10 +323,87 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 
 /* ******************************************************* */
 
+static void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info) {
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
+
+    if(!data->ndpi_flow)
+        return;
+
+    if(data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+        uint8_t proto_guessed;
+
+        data->l7proto = ndpi_detection_giveup(proxy->ndpi, data->ndpi_flow, 1 /* Guess */,
+                                              &proto_guessed);
+    }
+
+    if(data->l7proto.master_protocol == 0)
+        data->l7proto.master_protocol = data->l7proto.app_protocol;
+
+    log_android(ANDROID_LOG_DEBUG, "nDPI completed[ipver=%d, proto=%d] -> l7proto: app=%d, master=%d",
+                tuple->ipver, tuple->ipproto, data->l7proto.app_protocol, data->l7proto.master_protocol);
+
+    switch (data->l7proto.master_protocol) {
+        case NDPI_PROTOCOL_DNS:
+            if(data->ndpi_flow->host_server_name[0]) {
+                u_int16_t rsp_type = data->ndpi_flow->protos.dns.rsp_type;
+                zdtun_ip_t rsp_addr = {0};
+                int ipver = 0;
+
+                if(data->info)
+                    free(data->info);
+                data->info = strdup((char*)data->ndpi_flow->host_server_name);
+
+                if(data->info && strchr(data->info, '.')) { // ignore invalid domain names
+                    if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
+                        rsp_addr.ip4 = data->ndpi_flow->protos.dns.rsp_addr.ipv4;
+                        ipver = 4;
+                    } else if((rsp_type == 0x1c)
+                              && ((data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr.u6_addr8[0] & 0xE0) == 0x20)) { /* AAAA unicast */
+                        memcpy(&rsp_addr.ip6, &data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr, 16);
+                        ipver = 6;
+                    }
+
+                    if(ipver != 0) {
+                        char rspip[INET6_ADDRSTRLEN];
+                        int family = (ipver == 4) ? AF_INET : AF_INET6;
+
+                        inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
+
+                        log_android(ANDROID_LOG_DEBUG, "Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
+
+                        ip_lru_add(proxy->ip_to_host, &rsp_addr, data->info);
+                    }
+                }
+            }
+            break;
+        case NDPI_PROTOCOL_HTTP:
+            if(data->ndpi_flow->host_server_name[0]) {
+                if(data->info)
+                    free(data->info);
+                data->info = strdup((char*) data->ndpi_flow->host_server_name);
+            }
+
+            if(data->ndpi_flow->http.url)
+                data->url = strdup(data->ndpi_flow->http.url);
+            break;
+        case NDPI_PROTOCOL_TLS:
+            if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0]) {
+                if(data->info)
+                    free(data->info);
+
+                data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
+            }
+            break;
+    }
+
+    free_ndpi(data);
+}
+
+/* ******************************************************* */
+
 static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_conn_t *conn_info,
         const char *packet, int size, uint8_t from_tun) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
-    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)packet,
             size, data->last_seen,
@@ -333,42 +411,8 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy, const
             from_tun ? data->dst_id : data->src_id);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
-            (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))) {
-        if(data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
-            uint8_t proto_guessed;
-
-            data->l7proto = ndpi_detection_giveup(proxy->ndpi, data->ndpi_flow, 1 /* Guess */,
-                                                  &proto_guessed);
-        }
-
-        if(data->l7proto.master_protocol == 0)
-            data->l7proto.master_protocol = data->l7proto.app_protocol;
-
-        log_android(ANDROID_LOG_DEBUG, "nDPI completed[ipver=%d, proto=%d] -> l7proto: app=%d, master=%d",
-                    tuple->ipver, tuple->ipproto, data->l7proto.app_protocol, data->l7proto.master_protocol);
-
-        switch (data->l7proto.master_protocol) {
-            case NDPI_PROTOCOL_DNS:
-                if(data->ndpi_flow->host_server_name[0])
-                    data->info = strdup((char*)data->ndpi_flow->host_server_name);
-                break;
-            case NDPI_PROTOCOL_HTTP:
-                if(data->ndpi_flow->host_server_name[0])
-                    data->info = strdup((char*)data->ndpi_flow->host_server_name);
-                if(data->ndpi_flow->http.url)
-                    data->url = strdup(data->ndpi_flow->http.url);
-                break;
-            case NDPI_PROTOCOL_TLS:
-                if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0])
-                    data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
-                break;
-        }
-
-        if(data->info)
-            log_android(ANDROID_LOG_DEBUG, "info: %s", data->info);
-
-        free_ndpi(data);
-    }
+            (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
+        end_ndpi_detection(data, proxy, conn_info);
 }
 
 /* ******************************************************* */
@@ -529,6 +573,7 @@ static int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) 
 
 static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
     if(!check_dns_req_allowed(proxy, conn_info)) {
         // block connection
@@ -562,11 +607,24 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     }
 
     data->first_seen = data->last_seen = time(NULL);
-    data->uid = resolve_uid(proxy, zdtun_conn_get_5tuple(conn_info));
+    data->uid = resolve_uid(proxy, tuple);
+
+    // Try to resolve host name via the LRU cache
+    zdtun_ip_t ip = tuple->dst_ip;
+    data->info = ip_lru_find(proxy->ip_to_host, &ip);
+
+    if(data->info) {
+        char resip[INET6_ADDRSTRLEN];
+        int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+
+        inet_ntop(family, &ip, resip, sizeof(resip));
+
+        log_android(ANDROID_LOG_DEBUG, "Host LRU cache HIT: %s -> %s", resip, data->info);
+    }
 
     zdtun_conn_set_userdata(conn_info, data);
 
-    if(!shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
+    if(!shouldIgnoreConn(proxy, tuple, data)) {
         // Important: only set the incr_id on registered connections since
         // ConnectionsRegister::connectionsUpdates does not allow gaps
         data->incr_id = proxy->incr_id++;
@@ -591,7 +649,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     }
 
     /* Will free the other data in sendConnectionsDump */
-    free_ndpi(data);
+    end_ndpi_detection(data, proxy, conn_info);
     data->status = zdtun_conn_get_status(conn_info);
 
     if(!data->pending_notification && !shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn_info), data)) {
@@ -619,8 +677,32 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
     }
 
-    bool is_dns_server = ((tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns))
+    bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns);
+    bool is_dns_server = is_internal_dns
             || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
+
+    if(!is_dns_server) {
+        // try with known DNS servers
+        u_int32_t matched = 0;
+        ndpi_ip_addr_t addr = {0};
+
+        if(tuple->ipver == 4)
+            addr.ipv4 = tuple->dst_ip.ip4;
+        else
+            memcpy(&addr.ipv6, &tuple->dst_ip.ip6, 16);
+
+        ndpi_ptree_match_addr(proxy->known_dns_servers, &addr, &matched);
+
+        if(matched) {
+            char ip[INET6_ADDRSTRLEN];
+            int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+
+            is_dns_server = true;
+            inet_ntop(family, &tuple->dst_ip, (char *)&ip, sizeof(ip));
+
+            log_android(ANDROID_LOG_DEBUG, "Matched known DNS server: %s", ip);
+        }
+    }
 
     if(!is_dns_server)
         return(true);
@@ -638,7 +720,7 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
             log_android(ANDROID_LOG_DEBUG, "Detected DNS query[%u]", dns_length);
             proxy->num_dns_requests++;
 
-            if(tuple->ipver == 4) {
+            if(is_internal_dns) {
                 /*
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will proxy the connection.
@@ -928,6 +1010,19 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
+static void add_known_dns_server(vpnproxy_data_t *proxy, const char *ip) {
+    ndpi_ip_addr_t parsed;
+
+    if(ndpi_parse_ip_string(ip, &parsed) < 0) {
+        log_android(ANDROID_LOG_ERROR, "ndpi_parse_ip_string(%s) failed", ip);
+        return;
+    }
+
+    ndpi_ptree_insert(proxy->known_dns_servers, &parsed, ndpi_is_ipv6(&parsed) ? 128 : 32, 1);
+}
+
+/* ******************************************************* */
+
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     zdtun_t *tun;
     char buffer[32767];
@@ -966,6 +1061,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .env = env,
             .vpn_service = vpn,
             .resolver = init_uid_resolver(sdk, env, vpn),
+            .known_dns_servers = ndpi_ptree_create(),
+            .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
             .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
             .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
             .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
@@ -1011,6 +1108,16 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         log_android(ANDROID_LOG_FATAL, "nDPI initialization failed");
         return(-1);
     }
+
+    // List of known DNS servers
+    add_known_dns_server(&proxy, "8.8.8.8");
+    add_known_dns_server(&proxy, "8.8.4.4");
+    add_known_dns_server(&proxy, "1.1.1.1");
+    add_known_dns_server(&proxy, "1.0.0.1");
+    add_known_dns_server(&proxy, "2001:4860:4860::8888");
+    add_known_dns_server(&proxy, "2001:4860:4860::8844");
+    add_known_dns_server(&proxy, "2606:4700:4700::64");
+    add_known_dns_server(&proxy, "2606:4700:4700::6400");
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -1195,6 +1302,10 @@ housekeeping:
 
     notifyServiceStatus(&proxy, "stopped");
     destroy_uid_resolver(proxy.resolver);
+    ndpi_ptree_destroy(proxy.known_dns_servers);
+
+    log_android(ANDROID_LOG_DEBUG, "Host LRU cache size: %d", ip_lru_size(proxy.ip_to_host));
+    ip_lru_destroy(proxy.ip_to_host);
 
     finish_log();
     return(0);

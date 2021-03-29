@@ -400,7 +400,13 @@ public class CaptureService extends VpnService implements Runnable {
     private void unregisterNetworkCallbacks() {
         if(mNetworkCallback != null) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
-            cm.unregisterNetworkCallback(mNetworkCallback);
+
+            try {
+                cm.unregisterNetworkCallback(mNetworkCallback);
+            } catch(IllegalArgumentException e) {
+                Log.w(TAG, "unregisterNetworkCallback failed: " + e);
+            }
+
             mNetworkCallback = null;
         }
     }

@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -528,10 +529,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void openFileSelector() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/csv");
+        intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(requireContext(), "csv"));
 
-        startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
+        try {
+            startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
+        } catch(ActivityNotFoundException e) {
+            Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
+        }
     }
 
     @Override
