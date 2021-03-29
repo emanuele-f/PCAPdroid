@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -471,10 +472,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void openFileSelector() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/cap");
+        intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniquePcapFileName(this));
 
-        startActivityForResult(intent, REQUEST_CODE_PCAP_FILE);
+        try {
+            startActivityForResult(intent, REQUEST_CODE_PCAP_FILE);
+        } catch (ActivityNotFoundException e) {
+            Utils.showToastLong(this, R.string.no_activity_file_selection);
+        }
     }
 
     public void showPcapActionDialog(Uri pcapUri) {
