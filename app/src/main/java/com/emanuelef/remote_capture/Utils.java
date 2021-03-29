@@ -19,15 +19,20 @@
 
 package com.emanuelef.remote_capture;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.UiModeManager;
+import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -36,8 +41,13 @@ import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.TableLayout;
@@ -390,5 +400,60 @@ public class Utils {
         }
 
         return appver;
+    }
+
+    public static boolean supportsFileDialog(Context context, Intent intent) {
+        // https://commonsware.com/blog/2017/12/27/storage-access-framework-missing-action.html
+        ComponentName comp = intent.resolveActivity(context.getPackageManager());
+
+        return((comp != null) && (!"com.google.android.tv.frameworkpackagestubs".equals(comp.getPackageName())));
+    }
+
+    public static Uri getInternalStorageFile(Context context, String fname) {
+        ContentValues values = new ContentValues();
+
+        //values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid");
+            values.put(MediaStore.MediaColumns.IS_PENDING, true); // exclusive access for long operations
+        } else {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    Log.w("getInternalStorageFile", "external storage permission was denied");
+                    return(null);
+                }
+            }
+
+            Log.d("getInternalStorageFile", Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
+            values.put(MediaStore.MediaColumns.DATA, Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
+        }
+
+        return context.getContentResolver().insert(
+                MediaStore.Files.getContentUri("external"), values);
+    }
+
+    public static String getUriFname(Context context, Uri uri) {
+        Cursor cursor;
+        String fname;
+
+        try {
+            String []projection = {OpenableColumns.DISPLAY_NAME};
+            cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        } catch (Exception e) {
+            return null;
+        }
+
+        if((cursor == null) || !cursor.moveToFirst())
+            return null;
+
+        try {
+            fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        } finally {
+            cursor.close();
+        }
+
+        return fname;
     }
 }
