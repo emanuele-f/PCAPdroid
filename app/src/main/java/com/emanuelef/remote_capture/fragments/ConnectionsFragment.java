@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -510,32 +511,64 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(mCsvFname != null) {
             Log.d(TAG, "Writing CSV file: " + mCsvFname);
+            boolean error = true;
 
             try {
                 OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname);
-                stream.write(dump.getBytes());
-                stream.close();
 
-                Utils.showToast(requireContext(), R.string.file_saved);
+                if(stream != null) {
+                    stream.write(dump.getBytes());
+                    stream.close();
+                }
+
+                String fname = Utils.getUriFname(requireContext(), mCsvFname);
+
+                if(fname != null) {
+                    String msg = String.format(getString(R.string.file_saved_with_name), fname);
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                } else
+                    Utils.showToast(requireContext(), R.string.file_saved);
+
+                error = false;
             } catch (IOException e) {
-                Utils.showToast(requireContext(), R.string.cannot_write_file);
                 e.printStackTrace();
             }
+
+            if(error)
+                Utils.showToast(requireContext(), R.string.cannot_write_file);
         }
 
         mCsvFname = null;
     }
 
     public void openFileSelector() {
+        boolean noFileDialog = false;
+        String fname = Utils.getUniqueFileName(requireContext(), "csv");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(requireContext(), "csv"));
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
 
-        try {
-            startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
-        } catch(ActivityNotFoundException e) {
-            Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
+        if(Utils.supportsFileDialog(requireContext(), intent)) {
+            try {
+                startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
+            } catch (ActivityNotFoundException e) {
+                noFileDialog = true;
+            }
+        } else
+            noFileDialog = true;
+
+        if(noFileDialog) {
+            Log.w(TAG, "No app found to handle file selection");
+
+            // Pick default path
+            Uri uri = Utils.getInternalStorageFile(requireContext(), fname);
+
+            if(uri != null) {
+                mCsvFname = uri;
+                dumpCsv();
+            } else
+                Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
         }
     }
 

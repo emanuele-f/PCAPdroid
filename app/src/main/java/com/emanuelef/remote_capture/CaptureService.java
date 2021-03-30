@@ -68,7 +68,7 @@ import java.net.UnknownHostException;
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
-    private static final String NOTIFY_CHAN_VPNSERVICE = "vpnservice";
+    private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private ParcelFileDescriptor mParcelFileDescriptor = null;
     private Handler mHandler;
@@ -339,6 +339,9 @@ public class CaptureService extends VpnService implements Runnable {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
+        // CATEGORY_RECOMMENDATION makes the notification visible on the home screen of Android TVs.
+        // However this is not what CATEGORY_RECOMMENDATION is designed for, so it should be avoided.
+        /*
         if(Utils.isTv(this)) {
             // This is the icon which is visualized
             Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
@@ -350,8 +353,8 @@ public class CaptureService extends VpnService implements Runnable {
 
             // On Android TV it must be shown as a recommendation
             mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
-        } else
-            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
+        } else*/
+        mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
     }
 
     private Notification getNotification() {
