@@ -2,6 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.4] - 2021-03-30
+- Add dark theme
+- Android TV: fix file selection and other improvements
+- Fix UDP broadcast connections
+
 ## [1.3.3] - 2021-03-25
 - You can now donate! Check out the user guide for instructions
 - Add IPv6 support
