@@ -117,5 +117,6 @@
     <string name="lang_english">英语</string>
     <string name="lang_system_default">系统默认</string>
     <string name="no_activity_file_selection">没有找到应用来处理选中的文件</string>
+    <string name="file_saved_with_name">文件 %1$s 已成功保存</string>
 </resources>
 
