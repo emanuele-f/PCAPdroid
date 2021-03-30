@@ -12,7 +12,7 @@ This is the default mode of PCAPdroid as it does not require any further setup o
 
 ## 2.3 PCAP File
 
-This mode can be used to save a PCAP file into the device storage. The file name can be selected after clicking the start button.
+This mode can be used to save a PCAP file into the device storage. The file name and path can be selected after clicking the start button. Some android TV devices do not implement the file selection dialog; in such cases, a file name is automatically pick and file is saved to the Downloads directory.
 After the capture is stopped, a dialog is displayed which offers the option to share the PCAP file, delete it or just keep it.
 
 ## 2.4 UDP Exporter
