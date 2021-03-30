@@ -34,6 +34,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
@@ -175,6 +176,14 @@ public class SettingsActivity extends BaseActivity {
                 }
 
                 return false;
+            });
+
+            DropDownPreference appTheme = findPreference(Prefs.PREF_APP_THEME);
+
+            appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
+                Utils.setAppTheme(newValue.toString());
+
+                return true;
             });
         }
     }
