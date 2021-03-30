@@ -56,6 +56,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.preference.PreferenceManager;
 
@@ -154,6 +155,15 @@ public class Utils {
         config.setLocale(locale);
 
         return config;
+    }
+
+    public static void setAppTheme(String theme) {
+        if(theme.equals("light"))
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        else if(theme.equals("dark"))
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        else
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
     }
 
     public static String proto2str(int proto) {

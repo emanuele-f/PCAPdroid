@@ -83,6 +83,15 @@
             app:defaultValue="false" />
 
         <DropDownPreference
+            app:key="app_theme"
+            app:title="@string/app_theme"
+            android:entries="@array/app_theme_labels"
+            android:entryValues="@array/app_theme"
+            app:iconSpaceReserved="false"
+            app:defaultValue="system"
+            app:useSimpleSummaryProvider="true"/>
+
+        <DropDownPreference
             app:key="app_language"
             app:title="@string/app_language"
             android:entries="@array/app_languages_labels"

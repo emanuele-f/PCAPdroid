@@ -6,14 +6,12 @@
         <item>pcap_file</item>
         <item>udp_exporter</item>
     </string-array>
-
     <string-array name="pcap_dump_modes_labels">
         <item>@string/no_dump</item>
         <item>@string/http_server</item>
         <item>@string/pcap_file</item>
         <item>@string/udp_exporter</item>
     </string-array>
-
     <string-array name="pcap_dump_modes_descriptions">
         <item>@string/no_dump_info</item>
         <item>@string/http_server_info</item>
@@ -25,9 +23,19 @@
         <item>system</item>
         <item>english</item>
     </string-array>
-
     <string-array name="app_languages_labels">
         <item>@string/lang_system_default</item>
         <item>@string/lang_english</item>
+    </string-array>
+
+    <string-array name="app_theme">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="app_theme_labels">
+        <item>@string/lang_system_default</item>
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
     </string-array>
 </resources>

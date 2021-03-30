@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.SharedPreferences;
 
+import com.emanuelef.remote_capture.Utils;
+
 public class Prefs {
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
@@ -37,6 +39,7 @@ public class Prefs {
     public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";
+    public static final String PREF_APP_THEME = "app_theme";
 
     public enum DumpMode {
         NONE,
