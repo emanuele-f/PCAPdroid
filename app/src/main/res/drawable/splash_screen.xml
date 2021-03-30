@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:opacity="opaque">
+
+  <item android:drawable="@color/colorPrimary" />
+
+  <item
+      android:drawable="@drawable/ic_logo"
+      android:gravity="center"
+      tools:targetApi="m" />
+</layer-list>
