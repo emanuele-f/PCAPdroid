@@ -121,5 +121,10 @@
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
     <string name="app_theme">主题</string>
+    <string name="enable_socks5_proxy">启用 SOCKS5 代理</string>
+    <string name="enable_socks5_proxy_summary">启用后，所有 TCP 连接将被重定向到指定的 SOCKS5 代理。</string>
+    <string name="proxy">代理</string>
+    <string name="proxy_ip_address">代理 IP 地址</string>
+    <string name="proxy_port">代理端口</string>
 </resources>
 
