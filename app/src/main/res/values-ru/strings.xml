@@ -105,5 +105,5 @@
     <string name="other_prefs">Другое</string>
     <string name="app_language">Язык приложения</string>
     <string name="lang_english">Английский</string>
-    <string name="lang_system_default">Системный по-умолчанию</string>
+    <string name="system_default">Системный по-умолчанию</string>
 </resources>

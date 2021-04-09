@@ -54,13 +54,6 @@ typedef struct dns_packet {
 
 /* ******************************************************* */
 
-typedef struct mitm_proxy_hdr {
-    uint32_t dst_ip;
-    uint16_t dst_port;
-} __attribute__((packed)) mitm_proxy_hdr_t;
-
-/* ******************************************************* */
-
 typedef struct jni_methods {
     jmethodID getApplicationByUid;
     jmethodID protect;
@@ -89,23 +82,6 @@ static bool dump_vpn_stats_now = false;
 static bool dump_capture_stats_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
 static uint32_t new_dns_server = 0;
-
-/* TCP/IP packet to hold the mitmproxy header */
-static char mitmproxy_pkt_buffer[] = {
-    "\x45\x00" \
-
-    /* Total length: 52 + 6 (sizeof mitm_proxy_hdr_t) */
-    "\x00\x3a" \
-
-    "\xb8\x9e\x40\x00\x40\x06\xf7\xe1\x00\x00\x00\x00\x00\x00" \
-    "\x00\x00\x00\x00\x00\x00\x65\xbf\xc2\xaf\x08\x93\x36\x09\x80\x18" \
-    "\x01\xf5\x00\x00\x00\x00\x01\x01\x08\x0a\x6c\xe2\x4f\x95\x4a\xe0" \
-    "\x92\x51" \
-
-    /* TCP payload */
-    "\x01\x02\x03\x04\x05\x06"
-};
-static zdtun_pkt_t mitm_pkt;
 
 /* ******************************************************* */
 
@@ -742,49 +718,14 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
 
 /* ******************************************************* */
 
-/*
- * Check if the packet should be redirected to the mitmproxy
- */
-static void check_tls_mitm(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+static void check_socks5_redirection(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     conn_data_t *data = zdtun_conn_get_userdata(conn);
 
     if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn), data))
         return;
 
-    if(pkt->tuple.ipproto == IPPROTO_TCP) {
-        uint32_t mitm_ip = proxy->tls_decryption.proxy_ip;
-        uint16_t mitm_port = proxy->tls_decryption.proxy_port;
-
-        bool is_new = ((data->sent_pkts + data->rcvd_pkts) == 0);
-
-        if(is_new) {
-            uint16_t port = ntohs(pkt->tuple.dst_port);
-
-            if (port == 443) {
-                zdtun_ip_t dnatip = {0};
-                dnatip.ip4 = mitm_ip;
-                zdtun_conn_dnat(conn, &dnatip, mitm_port);
-                data->mitm_header_needed = true;
-            }
-        } else if(data->mitm_header_needed && (pkt->l7_len > 0) && (pkt->tuple.ipver == 4)) {
-            // TODO allow IPv6 -> IPv4 redirection
-            /* First L7 packet, send the mitmproxy header first */
-            mitm_proxy_hdr_t *mitm = (mitm_proxy_hdr_t*) mitm_pkt.l7;
-
-            /* Fix the packet with the correct peers */
-            mitm_pkt.tuple.src_ip.ip4 = mitm_pkt.ip4->saddr = pkt->ip4->saddr;
-            mitm_pkt.tuple.dst_ip.ip4 = mitm_pkt.ip4->daddr = mitm_ip;
-            mitm_pkt.tuple.src_port = mitm_pkt.tcp->th_sport = pkt->tcp->th_sport;
-            mitm_pkt.tuple.dst_port = mitm_pkt.tcp->th_dport = mitm_port;
-
-            /* Send the original (pre-nat) IP and port */
-            mitm->dst_ip = pkt->tuple.dst_ip.ip4;
-            mitm->dst_port = pkt->tuple.dst_port;
-            zdtun_send_oob(tun, &mitm_pkt, conn);
-
-            data->mitm_header_needed = false;
-        }
-    }
+    if((pkt->tuple.ipproto == IPPROTO_TCP) && (((data->sent_pkts + data->rcvd_pkts) == 0)))
+        zdtun_conn_proxy(conn);
 }
 
 /* ******************************************************* */
@@ -1034,8 +975,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
 
     init_log(ANDROID_LOG_DEBUG, env, vpn_class, vpn);
 
-    zdtun_parse_pkt(mitmproxy_pkt_buffer, sizeof(mitmproxy_pkt_buffer)-1, &mitm_pkt);
-
     /* Classes */
     cls.vpn_service = vpn_class;
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
@@ -1076,10 +1015,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                 .tcp_socket = false,
                 .enabled = (bool) getIntPref(env, vpn, "dumpPcapToUdp"),
             },
-            .tls_decryption = {
-                .enabled = (bool) getIntPref(env, vpn, "getTlsDecryptionEnabled"),
-                .proxy_ip = getIPv4Pref(env, vpn, "getTlsProxyAddress"),
-                .proxy_port = htons(getIntPref(env, vpn, "getTlsProxyPort")),
+            .socks5 = {
+                .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
+                .proxy_ip = getIPv4Pref(env, vpn, "getSocks5ProxyAddress"),
+                .proxy_port = htons(getIntPref(env, vpn, "getSocks5ProxyPort")),
             },
             .ipv6 = {
                 .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
@@ -1161,6 +1100,12 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         }
     }
 
+    if(proxy.socks5.enabled) {
+        zdtun_ip_t dnatip = {0};
+        dnatip.ip4 = proxy.socks5.proxy_ip;
+        zdtun_set_socks5_proxy(tun, &dnatip, proxy.socks5.proxy_port);
+    }
+
     new_dns_server = 0;
     gettimeofday(&now_tv, NULL);
     now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
@@ -1235,8 +1180,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                     goto housekeeping;
                 }
 
-                if(proxy.tls_decryption.enabled)
-                    check_tls_mitm(tun, &proxy, &pkt, conn);
+                if(proxy.socks5.enabled)
+                    check_socks5_redirection(tun, &proxy, &pkt, conn);
 
                 if((rc = zdtun_forward(tun, &pkt, conn)) != 0) {
                     char buf[512];

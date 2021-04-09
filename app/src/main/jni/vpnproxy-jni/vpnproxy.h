@@ -57,7 +57,6 @@ typedef struct conn_data {
     char *url;
     jint uid;
     bool pending_notification;
-    bool mitm_header_needed;
 } conn_data_t;
 
 typedef struct vpn_conn {
@@ -110,7 +109,7 @@ typedef struct vpnproxy_data {
         bool enabled;
         u_int32_t proxy_ip;
         u_int32_t proxy_port;
-    } tls_decryption;
+    } socks5;
 
     struct {
         bool enabled;

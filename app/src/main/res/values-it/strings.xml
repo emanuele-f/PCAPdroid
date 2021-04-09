@@ -105,6 +105,11 @@
     <string name="other_prefs">Altro</string>
     <string name="app_language">Lingua</string>
     <string name="lang_english">Inglese</string>
-    <string name="lang_system_default">Predefinita del sistema</string>
+    <string name="system_default">Predefinita del sistema</string>
+    <string name="no_activity_file_selection">App di selezione file mancante</string>
+    <string name="file_saved_with_name">Il file %1$s è stato salvato correttamente</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="app_theme">Tema</string>
 </resources>
 

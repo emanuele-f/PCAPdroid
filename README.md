@@ -56,7 +56,10 @@ PCAPdroid supports decrypting TLS traffic by sending it to a customized version 
 
 ## Third Party
 
-PCAPdroid integrates [nDPI](https://github.com/ntop/nDPI) to detect the application protocol of the network connections and extract the SNI from TLS connections.
+- [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
+- [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
+- [nanohttpd](https://github.com/NanoHttpd/nanohttpd): tiny HTTP server
+- [CustomActivityOnCrash](https://github.com/Ereza/CustomActivityOnCrash): handles app crashes gracefully and allows to copy the crash log
 
 ## Building
 
