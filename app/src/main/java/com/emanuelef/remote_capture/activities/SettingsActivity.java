@@ -82,9 +82,9 @@ public class SettingsActivity extends BaseActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private SwitchPreference mTlsDecryptionEnabled;
-        private EditTextPreference mTlsProxyIp;
-        private EditTextPreference mTlsProxyPort;
+        private SwitchPreference mTlsDecryptionEnabled; // TODO rename
+        private EditTextPreference mSocks5ProxyIp;
+        private EditTextPreference mSocks5ProxyPort;
         private Preference mTlsHelp;
 
         @Override
@@ -93,10 +93,10 @@ public class SettingsActivity extends BaseActivity {
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
-            setupTlsProxyPrefs();
+            setupSocks5ProxyPrefs();
             setupOtherPrefs();
 
-            tlsDecryptionHideShow(mTlsDecryptionEnabled.isChecked());
+            socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
         }
 
         private boolean validatePort(String value) {
@@ -128,32 +128,35 @@ public class SettingsActivity extends BaseActivity {
             mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
-        private void setupTlsProxyPrefs() {
+        private void setupSocks5ProxyPrefs() {
             mTlsHelp = findPreference("tls_how_to");
 
             mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
             mTlsDecryptionEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                tlsDecryptionHideShow((Boolean) newValue);
+                socks5ProxyHideShow((Boolean) newValue);
                 return true;
             });
 
             /* TLS Proxy IP validation */
-            mTlsProxyIp = findPreference(Prefs.PREF_TLS_PROXY_IP_KEY);
-            mTlsProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
+            mSocks5ProxyIp = findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
+            mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
                 Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
                 return(matcher.matches());
             });
 
             /* TLS Proxy port validation */
-            mTlsProxyPort = findPreference(Prefs.PREF_TLS_PROXY_PORT_KEY);
-            mTlsProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
-            mTlsProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mSocks5ProxyPort = findPreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
+            mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
+            mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
-        private void tlsDecryptionHideShow(boolean decryptionEnabled) {
-            mTlsProxyIp.setVisible(decryptionEnabled);
-            mTlsProxyPort.setVisible(decryptionEnabled);
-            mTlsHelp.setVisible(decryptionEnabled);
+        private void socks5ProxyHideShow(boolean decryptionEnabled) {
+            mSocks5ProxyIp.setVisible(decryptionEnabled);
+            mSocks5ProxyPort.setVisible(decryptionEnabled);
+
+            // TODO
+            //mTlsHelp.setVisible(decryptionEnabled);
+            mTlsHelp.setVisible(false);
         }
 
         private void setupOtherPrefs() {

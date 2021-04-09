@@ -29,8 +29,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -49,7 +47,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
@@ -77,13 +74,13 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String dns_server;
     private String collector_address;
-    private String tls_proxy_address;
+    private String socks5_proxy_address;
     private Prefs.DumpMode dump_mode;
-    private boolean tls_decryption_enabled;
+    private boolean socks5_enabled;
     private boolean ipv6_enabled;
     private int collector_port;
     private int http_server_port;
-    private int tls_proxy_port;
+    private int socks5_proxy_port;
     private long last_bytes;
     private int last_connections;
     private static CaptureService INSTANCE;
@@ -186,9 +183,9 @@ public class CaptureService extends VpnService implements Runnable {
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
-        tls_decryption_enabled = Prefs.getTlsDecryptionEnabled(prefs);
-        tls_proxy_address = Prefs.getTlsProxyAddress(prefs);
-        tls_proxy_port = Prefs.getTlsProxyPort(prefs);
+        socks5_enabled = Prefs.getTlsDecryptionEnabled(prefs); // TODO rename
+        socks5_proxy_address = Prefs.getSocks5ProxyAddress(prefs);
+        socks5_proxy_port = Prefs.getSocks5ProxyPort(prefs);
         dump_mode = Prefs.getDumpMode(prefs);
         ipv6_enabled = Prefs.getIPv6Enabled(prefs);
         last_bytes = 0;
@@ -541,11 +538,11 @@ public class CaptureService extends VpnService implements Runnable {
         return(collector_port);
     }
 
-    public String getTlsProxyAddress() {  return(tls_proxy_address);  }
+    public String getSocks5ProxyAddress() {  return(socks5_proxy_address);  }
 
-    public int getTlsDecryptionEnabled() { return tls_decryption_enabled ? 1 : 0; }
+    public int getSocks5Enabled() { return socks5_enabled ? 1 : 0; }
 
-    public int getTlsProxyPort() {  return(tls_proxy_port);  }
+    public int getSocks5ProxyPort() {  return(socks5_proxy_port);  }
 
     public int getIPv6Enabled() { return(ipv6_enabled ? 1 : 0); }
 

@@ -121,5 +121,10 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="app_theme">Theme</string>
+    <string name="enable_socks5_proxy">Enable SOCKS5 Proxy</string>
+    <string name="enable_socks5_proxy_summary">When enabled, all the TCP connections will be redirected to the specified SOCKS5 proxy.</string>
+    <string name="proxy">Proxy</string>
+    <string name="proxy_ip_address">Proxy IP Address</string>
+    <string name="proxy_port">Proxy Port</string>
 </resources>
 

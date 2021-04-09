@@ -43,12 +43,12 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/tls_decryption" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false">
         <SwitchPreference
             app:key="tls_decryption_enabled"
-            app:title="@string/enable_tls_decryption"
+            app:title="@string/enable_socks5_proxy"
             app:iconSpaceReserved="false"
-            app:summary="@string/enable_tls_decryption_summary"
+            app:summary="@string/enable_socks5_proxy_summary"
             app:defaultValue="false" />
 
         <Preference
@@ -60,15 +60,15 @@
         </Preference>
 
         <EditTextPreference
-            app:key="tls_proxy_ip_address"
-            app:title="@string/tls_proxy_ip_address"
+            app:key="socks5_proxy_ip_address"
+            app:title="@string/proxy_ip_address"
             app:defaultValue="0.0.0.0"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:key="tls_proxy_port"
-            app:title="@string/tls_proxy_port"
+            app:key="socks5_proxy_port"
+            app:title="@string/proxy_port"
             app:iconSpaceReserved="false"
             app:defaultValue="8080"
             app:useSimpleSummaryProvider="true" />
