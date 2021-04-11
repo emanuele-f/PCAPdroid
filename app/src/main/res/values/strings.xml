@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">PCAPdroid</string>
-    <string name="about_copyright" translatable="false">Copyright (C) 2020-21 - Emanuele Faranda black.silver@hotmail.it</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
 

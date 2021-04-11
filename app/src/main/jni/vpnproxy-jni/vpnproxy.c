@@ -1075,11 +1075,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         return(-2);
     }
 
-    // Limit the segments size for two reasons:
-    // 1. to be able to encapsulate the packets for the UDP export
-    // 2. to avoid ENOBUFS while writing to the tunfd (for big packets, e.g. speedtest).
-    zdtun_set_max_window_size(tun, 8192);
-
     log_android(ANDROID_LOG_DEBUG, "Starting packet loop [tunfd=%d]", tunfd);
 
     notifyServiceStatus(&proxy, "started");
