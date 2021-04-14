@@ -327,7 +327,7 @@ static void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const 
 
                 if(data->info)
                     free(data->info);
-                data->info = strdup((char*)data->ndpi_flow->host_server_name);
+                data->info = strndup((char*)data->ndpi_flow->host_server_name, 256);
 
                 if(data->info && strchr(data->info, '.')) { // ignore invalid domain names
                     if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
@@ -343,6 +343,7 @@ static void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const 
                         char rspip[INET6_ADDRSTRLEN];
                         int family = (ipver == 4) ? AF_INET : AF_INET6;
 
+                        rspip[0] = '\0';
                         inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
 
                         log_android(ANDROID_LOG_DEBUG, "Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
@@ -356,18 +357,18 @@ static void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const 
             if(data->ndpi_flow->host_server_name[0]) {
                 if(data->info)
                     free(data->info);
-                data->info = strdup((char*) data->ndpi_flow->host_server_name);
+                data->info = strndup((char*) data->ndpi_flow->host_server_name, 256);
             }
 
             if(data->ndpi_flow->http.url)
-                data->url = strdup(data->ndpi_flow->http.url);
+                data->url = strndup(data->ndpi_flow->http.url, 256);
             break;
         case NDPI_PROTOCOL_TLS:
             if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0]) {
                 if(data->info)
                     free(data->info);
 
-                data->info = strdup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name);
+                data->info = strndup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name, 256);
             }
             break;
     }
@@ -593,6 +594,7 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
         char resip[INET6_ADDRSTRLEN];
         int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
+        resip[0] = '\0';
         inet_ntop(family, &ip, resip, sizeof(resip));
 
         log_android(ANDROID_LOG_DEBUG, "Host LRU cache HIT: %s -> %s", resip, data->info);
@@ -678,6 +680,7 @@ static bool check_dns_req_allowed(zdtun_t *tun, struct vpnproxy_data *proxy, zdt
             int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
             is_dns_server = true;
+            ip[0] = '\0';
             inet_ntop(family, &tuple->dst_ip, (char *)&ip, sizeof(ip));
 
             log_android(ANDROID_LOG_DEBUG, "Matched known DNS server: %s", ip);
@@ -775,8 +778,11 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
     int rv = 0;
     int family = (conn->tuple.ipver == 4) ? AF_INET : AF_INET6;
 
-    inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip));
-    inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip));
+    if((inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip)) == NULL) ||
+       (inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip)) == NULL)) {
+        log_android(ANDROID_LOG_WARN, "inet_ntop failed: ipver=%d, dstport=%d", conn->tuple.ipver, ntohs(conn_info->dst_port));
+        return 0;
+    }
 
 #if 0
     log_android(ANDROID_LOG_INFO, "DUMP: [proto=%d]: %s:%u -> %s:%u [%d]",
