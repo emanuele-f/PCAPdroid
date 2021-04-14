@@ -2,15 +2,13 @@
 
 PCAPdroid has the ability to send all the TCP traffic via a SOCKS5 proxy. By connecting to [mitmproxy](https://github.com/emanuele-f/mitmproxy) in SOCKS5 mode it's possible to decrypt the TLS traffic on a remote machine. TLS decryption can be used, for example, to inspect the plain HTTP traffic in HTTPS requests.
 
-mitmproxy can be installed by following the [official installation guide](https://docs.mitmproxy.org/stable/overview-installation). mitmproxy can be run in SOCKS5 mode by using the following command:
+mitmproxy can be installed by following the [official installation guide](https://docs.mitmproxy.org/stable/overview-installation). It can be run in SOCKS5 mode by using the following command:
 
 ```
 mitmproxy --mode socks5 --listen-port 8050
 ```
 
-For a complete list of tools and options refer to the [mitmproxy documentation](https://docs.mitmproxy.org/stable).
-
-Please note that before v1.3.5 PCAPdroid required a [customized mitmproxy](https://github.com/emanuele-f/mitmproxy) to be installed and run with the `--mode tunnel` option.
+For a complete list of tools and options refer to the [mitmproxy documentation](https://docs.mitmproxy.org/stable). Please note that before v1.3.5 PCAPdroid required a [customized mitmproxy](https://github.com/emanuele-f/mitmproxy) to be installed and run with the `--mode tunnel` option.
 
 In order to enable the TLS decryption in PCAPdroid:
 
