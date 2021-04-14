@@ -23,9 +23,9 @@ No, as the android system only allows 1 VPN app running. In the future it could 
 PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption and it supports TLS 1.3.
 <br/><br/>
 
-**Can I decrypt TLS without mitmproxy?**
+**Can I decrypt TLS directly in the app?**
 
-Currently no. Doing TLS decryption right takes a lot of effort and I don't known any open source libraries to integrate in PCAPdroid. This is why I decided to modify mitmproxy rather than implementing the decryption directly into PCAPdroid. If you are a developer and want to implement this feature, your contribution is welcome!
+Currently no, but there is an an [open issue](https://github.com/emanuele-f/PCAPdroid/issues/57) to support built-in TLS decryption. If you are a developer and want to implement this feature, your contribution is welcome!
 <br/><br/>
 
 **Why is PCAPdroid asking me to create a VPN?**
