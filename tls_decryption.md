@@ -8,7 +8,7 @@ mitmproxy can be installed by following the [official installation guide](https:
 mitmproxy --mode socks5 --listen-port 8050
 ```
 
-For a complete list of tools and options refer to the [mitmproxy documentation](https://docs.mitmproxy.org/stable). Please note that before v1.3.5 PCAPdroid required a [customized mitmproxy](https://github.com/emanuele-f/mitmproxy) to be installed and run with the `--mode tunnel` option.
+For a complete list of tools and options refer to the [mitmproxy documentation](https://docs.mitmproxy.org/stable). Please note that, prior to v1.3.5, PCAPdroid required a [customized mitmproxy](https://github.com/emanuele-f/mitmproxy) to be installed and run with the `--mode tunnel` option.
 
 In order to enable the TLS decryption in PCAPdroid:
 
