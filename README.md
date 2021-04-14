@@ -52,7 +52,7 @@ Many applications rely on the Android DNS resolution service `netd` in order to 
 
 ## Decrypting HTTPS/TLS Traffic
 
-PCAPdroid supports decrypting TLS traffic by sending it to a customized version of mitmproxy. Check out the [User Guide](https://emanuele-f.github.io/PCAPdroid/tls_decryption) for more details.
+PCAPdroid supports decrypting TLS traffic by sending it to mitmproxy. Check out the [User Guide](https://emanuele-f.github.io/PCAPdroid/tls_decryption) for more details.
 
 ## Third Party
 
