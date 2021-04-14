@@ -154,9 +154,8 @@ public class SettingsActivity extends BaseActivity {
             mSocks5ProxyIp.setVisible(decryptionEnabled);
             mSocks5ProxyPort.setVisible(decryptionEnabled);
 
-            // TODO
             //mTlsHelp.setVisible(decryptionEnabled);
-            mTlsHelp.setVisible(false);
+            mTlsHelp.setVisible(true);
         }
 
         private void setupOtherPrefs() {

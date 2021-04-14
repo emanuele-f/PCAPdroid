@@ -18,6 +18,7 @@
  */
 
 #include <jni.h>
+#include <stdbool.h>
 #include "zdtun.h"
 #include "uid_resolver.h"
 #include "ip_lru.h"

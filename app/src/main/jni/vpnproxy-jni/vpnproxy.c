@@ -73,7 +73,7 @@ typedef struct jni_classes {
     jclass stats;
 } jni_classes_t;
 
-static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *conn);
+static bool check_dns_req_allowed(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_conn_t *conn);
 
 static jni_classes_t cls;
 static jni_methods_t mids;
@@ -551,7 +551,7 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
-    if(!check_dns_req_allowed(proxy, conn_info)) {
+    if(!check_dns_req_allowed(tun, proxy, conn_info)) {
         // block connection
         proxy->last_conn_blocked = true;
         return(1);
@@ -642,13 +642,17 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
  * with public DNS server. Non UDP DNS connections are dropped to block DoH queries which do not
  * allow us to extract the requested domain name.
  */
-static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *conn) {
+static bool check_dns_req_allowed(zdtun_t *tun, struct vpnproxy_data *proxy, zdtun_conn_t *conn) {
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
 
     if(new_dns_server != 0) {
         // Reload DNS server
         proxy->dns_server = new_dns_server;
         new_dns_server = 0;
+
+        zdtun_ip_t ip = {0};
+        ip.ip4 = proxy->dns_server;
+        zdtun_set_dnat_info(tun, &ip, htons(53), 4);
 
         log_android(ANDROID_LOG_DEBUG, "Using new DNS server");
     }
@@ -701,9 +705,7 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will proxy the connection.
                  */
-                zdtun_ip_t dnatip = {0};
-                dnatip.ip4 = proxy->dns_server;
-                zdtun_conn_dnat(conn, &dnatip, tuple->dst_port);
+                zdtun_conn_dnat(conn);
             }
 
             return(true);
@@ -1095,10 +1097,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         }
     }
 
+    zdtun_ip_t ip = {0};
+    ip.ip4 = proxy.dns_server;
+    zdtun_set_dnat_info(tun, &ip, ntohs(53), 4);
+
     if(proxy.socks5.enabled) {
         zdtun_ip_t dnatip = {0};
         dnatip.ip4 = proxy.socks5.proxy_ip;
-        zdtun_set_socks5_proxy(tun, &dnatip, proxy.socks5.proxy_port);
+        zdtun_set_socks5_proxy(tun, &dnatip, proxy.socks5.proxy_port, 4);
     }
 
     new_dns_server = 0;
