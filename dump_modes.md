@@ -6,9 +6,14 @@ This mode does not export the traffic in any way. This is suitable to only perfo
 
 ## 2.2 HTTP Server
 
-This mode starts an HTTP server which can be accessed by any PC in the local network to download the PCAP file containing the captured traffic. This mode actually streams the currently captured traffic as a PCAP file to the PC until PCAPdroid is stopped. The URL for the PCAP download is displayed once the start button is pressed. Multiple downloads can be started at the same time.
+This mode starts an HTTP server which can be accessed by any PC in the local network to download the PCAP file containing the captured traffic. This is the default mode of PCAPdroid as it does not require any further setup or specific OS.
 
-This is the default mode of PCAPdroid as it does not require any further setup or specific OS.
+In order to properly download the PCAP, you need to follow these steps:
+
+1. Ensure that the HTTP server mode is selected
+2. Start the capture from the app
+3. From another device, open the URL displayed in the app. This will start the PCAP download. It's ok IF no download progress is shown, as the browser does not know the actual PCAP size.
+4. Stop the capture from the app. This will terminate the active downloads and the PCAP file will be properly saved.
 
 ## 2.3 PCAP File
 
