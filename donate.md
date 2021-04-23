@@ -1,7 +1,11 @@
 All the PCAPdroid features are brought to you for free without any advertisements or personal data collection.
 If you like the app and want to foster future developments, you can donate via one of the methods below. Donations are fully voluntary and no refunds are allowed.
 
-You can get your name written into the [donators file](https://github.com/emanuele-f/PCAPdroid/DONATORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
+You can get your name written into the [donors file](https://github.com/emanuele-f/PCAPdroid/DONORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
+
+### PayPal
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?business=TFM9UN2ZVWDT6&currency_code=EUR)
 
 ### Bitcoin
 Address: [1KxBB9TovjbbnJSGz7oCf2RzWHjCF2JLNd](bitcoin:1KxBB9TovjbbnJSGz7oCf2RzWHjCF2JLNd?message=PCAPdroid)
