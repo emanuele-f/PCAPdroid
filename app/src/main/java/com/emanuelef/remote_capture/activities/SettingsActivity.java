@@ -83,9 +83,12 @@ public class SettingsActivity extends BaseActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private SwitchPreference mTlsDecryptionEnabled; // TODO rename
+        private SwitchPreference mRootCaptureEnabled;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
         private Preference mTlsHelp;
+        private Preference mProxyPrefs;
+        private Preference mIpv6Enabled;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -97,6 +100,7 @@ public class SettingsActivity extends BaseActivity {
             setupOtherPrefs();
 
             socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
+            rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
         }
 
         private boolean validatePort(String value) {
@@ -129,6 +133,7 @@ public class SettingsActivity extends BaseActivity {
         }
 
         private void setupSocks5ProxyPrefs() {
+            mProxyPrefs = findPreference("proxy_prefs");
             mTlsHelp = findPreference("tls_how_to");
 
             mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
@@ -187,6 +192,23 @@ public class SettingsActivity extends BaseActivity {
 
                 return true;
             });
+
+            mRootCaptureEnabled = findPreference(Prefs.PREF_ROOT_CAPTURE);
+
+            if(Utils.isRootAvailable()) {
+                mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                    rootCaptureHideShow((Boolean) newValue);
+                    return true;
+                });
+            } else
+                mRootCaptureEnabled.setVisible(false);
+
+            mIpv6Enabled = findPreference(Prefs.PREF_IPV6_ENABLED);
+        }
+
+        private void rootCaptureHideShow(boolean enabled) {
+            mProxyPrefs.setVisible(!enabled);
+            mIpv6Enabled.setVisible(!enabled);
         }
     }
 }

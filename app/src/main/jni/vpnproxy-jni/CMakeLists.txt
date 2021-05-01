@@ -1,18 +1,12 @@
-cmake_minimum_required(VERSION 3.10.2)
 project(vpnproxy-jni)
-include(ExternalProject)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(ROOTDIR ../../../../..)
-
-include_directories(../../../..)
 
 add_library(vpnproxy-jni SHARED
         vpnproxy.c
-        uid_resolver.c
-        jni_helpers.c
+        capture_proxy.c
+        capture_root.c
         ip_lru.c
-        pcap)
+        ndpi_master_protos.c
+        pcap_utils.c)
 
 # nDPI
 set(NDPI_ROOT ${ROOTDIR}/submodules/nDPI)
@@ -28,15 +22,10 @@ add_custom_command(OUTPUT ${NDPI_ROOT}/src/include/ndpi_api.h
 
 ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
 
-# zdtun
-set(ZDTUN_ROOT ${ROOTDIR}/submodules/zdtun)
-include_directories(${ZDTUN_ROOT})
-add_subdirectory(${ZDTUN_ROOT} build)
-
-# Link
 find_library(log-lib log)
 
 target_link_libraries(vpnproxy-jni
         zdtun
         ndpi
+        common
         ${log-lib})

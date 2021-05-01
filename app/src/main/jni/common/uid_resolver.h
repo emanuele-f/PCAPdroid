@@ -17,19 +17,19 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-#ifndef __JNI_HELPERS_H__
-#define __JNI_HELPERS_H__
+#ifndef __UID_RESOLVER_H__
+#define __UID_RESOLVER_H__
 
 #include <jni.h>
-#include <android/log.h>
-#include <stdio.h>
+#include "zdtun.h"
 
-void init_log(int lvl, JNIEnv *env, jclass _vpnclass, jclass _vpn_inst);
-void finish_log();
-void log_android(int prio, const char *fmt, ...);
+#define UID_UNKNOWN -1
 
-jclass jniFindClass(JNIEnv *env, const char *name);
-jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
-int jniCheckException(JNIEnv *env);
+typedef struct uid_resolver uid_resolver_t;
 
-#endif // __JNI_HELPERS_H__
+uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn);
+uid_resolver_t* init_uid_resolver_from_proc();
+void destroy_uid_resolver(uid_resolver_t *resolver);
+jint get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info);
+
+#endif // __UID_RESOLVER_H__

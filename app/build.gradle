@@ -22,7 +22,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            path file('src/main/jni/vpnproxy-jni/CMakeLists.txt')
+            path file('src/main/jni/CMakeLists.txt')
         }
     }
 

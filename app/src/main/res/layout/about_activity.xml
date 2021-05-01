@@ -68,5 +68,14 @@
             android:layout_alignParentStart="true"
             android:layout_marginTop="20dp"
             android:text="@string/gpl_license_link"/>
+
+        <TextView
+            android:id="@+id/app_source_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/app_license_link"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="20dp"
+            android:text="@string/source_code"/>
     </RelativeLayout>
 </ScrollView>

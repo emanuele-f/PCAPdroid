@@ -125,5 +125,8 @@
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Proxy IP Address</string>
     <string name="proxy_port">Proxy Port</string>
+    <string name="root_capture">Capture as Root</string>
+    <string name="root_capture_summary">Capturing packets as root allows PCAPdroid to run with other VPN apps.</string>
+    <string name="donate">Donate</string>
 </resources>
 

@@ -23,7 +23,7 @@
 #include <sys/socket.h>
 #include <android/log.h>
 #include <errno.h>
-#include "pcap.h"
+#include "pcap_utils.h"
 
 /* ******************************************************* */
 

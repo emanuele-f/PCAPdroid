@@ -40,6 +40,7 @@ public class Prefs {
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
+    public static final String PREF_ROOT_CAPTURE = "root_capture";
 
     public enum DumpMode {
         NONE,
@@ -70,4 +71,5 @@ public class Prefs {
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
     public static boolean getIPv6Enabled(SharedPreferences p)    { return(p.getBoolean(PREF_IPV6_ENABLED, false)); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
+    public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
 }

@@ -43,7 +43,7 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false"  app:key="proxy_prefs">
         <SwitchPreference
             app:key="tls_decryption_enabled"
             app:title="@string/enable_socks5_proxy"
@@ -74,14 +74,7 @@
         </Preference>
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false">
-        <SwitchPreference
-            app:key="ipv6_enabled"
-            app:title="@string/enable_ipv6"
-            app:iconSpaceReserved="false"
-            app:summary="@string/enable_ipv6_summary"
-            app:defaultValue="false" />
-
+    <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
         <DropDownPreference
             app:key="app_theme"
             app:title="@string/app_theme"
@@ -99,5 +92,19 @@
             app:iconSpaceReserved="false"
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
+
+        <SwitchPreference
+            app:key="root_capture"
+            app:title="@string/root_capture"
+            app:iconSpaceReserved="false"
+            app:summary="@string/root_capture_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="ipv6_enabled"
+            app:title="@string/enable_ipv6"
+            app:iconSpaceReserved="false"
+            app:summary="@string/enable_ipv6_summary"
+            app:defaultValue="false" />
     </PreferenceCategory>
 </PreferenceScreen>

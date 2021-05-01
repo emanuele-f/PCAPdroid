@@ -14,41 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2021 - Emanuele Faranda
  */
 
-#include <malloc.h>
-#include "jni_helpers.h"
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include "utils.h"
 
-static int loglevel = 0;
-static JNIEnv *cur_env = NULL;
-static jclass vpnclass = 0;
-static jclass vpn_inst = 0;
-static jmethodID reportError = NULL;
+int loglevel = 0;
+const char *logtag = "VPNProxy";
+void (*logcallback)(int lvl, const char *msg) = NULL;
 
 /* ******************************************************* */
 
-void init_log(int lvl, JNIEnv *env, jclass _vpnclass, jclass _vpn_inst) {
+void set_log_level(int lvl) {
     loglevel = lvl;
-    cur_env = env;
-    vpnclass = _vpnclass;
-    vpn_inst = _vpn_inst;
-    reportError = jniGetMethodID(cur_env, vpnclass, "reportError", "(Ljava/lang/String;)V");
-}
-
-/* ******************************************************* */
-
-void finish_log() {
-    cur_env = NULL;
-    vpnclass = 0;
-    vpn_inst = 0;
-    reportError = 0;
 }
 
 /* ******************************************************* */
 
 void log_android(int prio, const char *fmt, ...) {
-    if (prio >= loglevel) {
+    if(prio >= loglevel) {
         char line[1024];
         va_list argptr;
 
@@ -56,21 +43,60 @@ void log_android(int prio, const char *fmt, ...) {
         vsnprintf(line, sizeof(line), fmt, argptr);
         va_end(argptr);
 
-        __android_log_print(prio, "VPNProxy", "%s", line);
+        __android_log_print(prio, logtag, "%s", line);
 
-        if((prio >= ANDROID_LOG_FATAL) && (cur_env != NULL) && (reportError != NULL)) {
-            // This is a fatal error, report it to the gui
-            jobject info_string = (*cur_env)->NewStringUTF(cur_env, line);
-
-            if((jniCheckException(cur_env) != 0) || (info_string == NULL))
-                return;
-
-            (*cur_env)->CallVoidMethod(cur_env, vpn_inst, reportError, info_string);
-            jniCheckException(cur_env);
-
-            (*cur_env)->DeleteLocalRef(cur_env, info_string);
-        }
+        if(logcallback != NULL)
+            logcallback(prio, line);
     }
+}
+
+/* ******************************************************* */
+
+ssize_t xwrite(int fd, const void *buf, size_t count) {
+    size_t sofar = 0;
+    ssize_t ret;
+
+    do {
+        ret = write(fd, (u_char*)buf + sofar, count - sofar);
+
+        if(ret < 0) {
+            if(errno == EINTR)
+                continue;
+
+            return ret;
+        }
+
+        sofar += ret;
+    } while((sofar != count) && (ret != 0));
+
+    if(sofar != count)
+        return -1;
+
+    return 0;
+}
+
+/* ******************************************************* */
+
+ssize_t xread(int fd, void *buf, size_t count) {
+    size_t sofar = 0;
+    ssize_t rv;
+
+    do {
+        rv = read(fd, (char*)buf + sofar, count - sofar);
+
+        if(rv < 0) {
+            if(errno == EINTR)
+                continue;
+            return rv;
+        }
+
+        sofar += rv;
+    } while((sofar != count) && (rv != 0));
+
+    if(sofar != count)
+        return -1;
+
+    return 0;
 }
 
 /* ******************************************************* */
