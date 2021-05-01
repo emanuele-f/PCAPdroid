@@ -1,7 +1,8 @@
-All the PCAPdroid features are brought to you for free without any advertisements or personal data collection.
-If you like the app and want to foster future developments, you can donate via one of the methods below. Donations are fully voluntary and no refunds are allowed.
+PCAPdroid is brought to you free of charge, free of ads and, most importantly, open source. This means that you can learn from it, run it now and in the future, modify it for your needs. This is the beauty of open source and free software. Our phones contain our life, so it is very important that people can audit what a critical app like PCAPdroid does.
 
-You can get your name written into the [donors file](https://github.com/emanuele-f/PCAPdroid/DONORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
+If you like the app and want to foster future developments, you can donate via one of the methods below. Please note that donations are fully voluntary and no refunds are allowed.
+
+You can get your name into the [donors file](https://github.com/emanuele-f/PCAPdroid/DONORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
 
 ### PayPal
 
