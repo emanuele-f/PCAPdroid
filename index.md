@@ -20,5 +20,6 @@ Welcome to the PCAPdroid User Guide.
     - [4.1 DNS Server](advanced_features#41-dns-server)
     - [4.2 DoH Support](advanced_features#42-doh-support)
     - [4.3 IPv6 Support](advanced_features#43-ipv6-support)
+    - [4.4 Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture)
 - [5. FAQ](faq)
 - [6. Donate](donate)
