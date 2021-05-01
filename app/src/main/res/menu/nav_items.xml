@@ -28,9 +28,9 @@
             android:title="@string/open_telegram_group"
             android:icon="@drawable/ic_telegram" />
         <item
-            android:id="@+id/action_open_github"
-            android:title="@string/source_code"
-            android:icon="@drawable/ic_github" />
+            android:id="@+id/action_donate"
+            android:title="@string/donate"
+            android:icon="@drawable/ic_money" />
 
         <item
             android:id="@+id/action_about"

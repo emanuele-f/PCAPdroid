@@ -78,6 +78,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Prefs.DumpMode dump_mode;
     private boolean socks5_enabled;
     private boolean ipv6_enabled;
+    private boolean root_capture;
     private int collector_port;
     private int http_server_port;
     private int socks5_proxy_port;
@@ -85,6 +86,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int last_connections;
     private static CaptureService INSTANCE;
     private String app_filter;
+    private int app_filter_uid;
     private HTTPServer mHttpServer;
     private OutputStream mOutputStream;
     private ConnectionsRegister conn_reg;
@@ -190,6 +192,7 @@ public class CaptureService extends VpnService implements Runnable {
         ipv6_enabled = Prefs.getIPv6Enabled(prefs);
         last_bytes = 0;
         last_connections = 0;
+        root_capture = Prefs.isRootCaptureEnabled(prefs);
 
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
 
@@ -228,50 +231,62 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        Log.i(TAG, "Using DNS server " + dns_server);
-
-        // VPN
-        /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
-         * server. */
-        Builder builder = new Builder()
-                .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
-                .addRoute("0.0.0.0", 1)
-                .addRoute("128.0.0.0", 1)
-                .addDnsServer(vpn_dns);
-
-        if(ipv6_enabled) {
-            builder.addAddress(VPN_IP6_ADDRESS, 128);
-
-            // Route unicast IPv6 addresses
-            builder.addRoute("2000::", 3);
-
+        if ((app_filter != null) && (!app_filter.isEmpty())) {
             try {
-                builder.addDnsServer(InetAddress.getByName(IPV6_DNS_SERVER));
-            } catch (UnknownHostException e) {
-                Log.w(TAG, "Could not set IPv6 DNS server");
-            }
-        }
-
-        if((app_filter != null) && (!app_filter.isEmpty())) {
-            Log.d(TAG, "Setting app filter: " + app_filter);
-
-            try {
-                // NOTE: the API requires a package name, however it is converted to a UID
-                // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
-                // not on a package-name basis!
-                builder.addAllowedApplication(app_filter);
+                app_filter_uid = getPackageManager().getApplicationInfo(app_filter, 0).uid;
             } catch (PackageManager.NameNotFoundException e) {
-                String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
-                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+                app_filter_uid = -1;
+            }
+        } else
+            app_filter_uid = -1;
+
+        if(!root_capture) {
+            Log.i(TAG, "Using DNS server " + dns_server);
+
+            // VPN
+            /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
+             * server. */
+            Builder builder = new Builder()
+                    .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
+                    .addRoute("0.0.0.0", 1)
+                    .addRoute("128.0.0.0", 1)
+                    .addDnsServer(vpn_dns);
+
+            if (ipv6_enabled) {
+                builder.addAddress(VPN_IP6_ADDRESS, 128);
+
+                // Route unicast IPv6 addresses
+                builder.addRoute("2000::", 3);
+
+                try {
+                    builder.addDnsServer(InetAddress.getByName(IPV6_DNS_SERVER));
+                } catch (UnknownHostException e) {
+                    Log.w(TAG, "Could not set IPv6 DNS server");
+                }
+            }
+
+            if ((app_filter != null) && (!app_filter.isEmpty())) {
+                Log.d(TAG, "Setting app filter: " + app_filter);
+
+                try {
+                    // NOTE: the API requires a package name, however it is converted to a UID
+                    // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
+                    // not on a package-name basis!
+                    builder.addAllowedApplication(app_filter);
+                } catch (PackageManager.NameNotFoundException e) {
+                    String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                    return super.onStartCommand(intent, flags, startId);
+                }
+            }
+
+            try {
+                mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                Utils.showToast(this, R.string.vpn_setup_failed);
                 return super.onStartCommand(intent, flags, startId);
             }
-        }
-
-        try {
-            mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            Utils.showToast(this, R.string.vpn_setup_failed);
-            return super.onStartCommand(intent, flags, startId);
         }
 
         // Stop the previous session by interrupting the thread.
@@ -452,10 +467,15 @@ public class CaptureService extends VpnService implements Runnable {
         stopForeground(true /* remove notification */);
     }
 
+    private void stopThread() {
+        mThread = null;
+        stop();
+    }
+
     /* Check if the VPN service was launched */
     public static boolean isServiceActive() {
         return((INSTANCE != null) &&
-                (INSTANCE.mParcelFileDescriptor != null));
+                (INSTANCE.mThread != null));
     }
 
     public static String getAppFilter() {
@@ -500,8 +520,18 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
     }
 
+    public static boolean isCapturingAsRoot() {
+        return((INSTANCE != null) &&
+                (INSTANCE.isRootCapture() == 1));
+    }
+
     @Override
     public void run() {
+        if(root_capture) {
+            runPacketLoop(-1, this, Build.VERSION.SDK_INT);
+            return;
+        }
+
         if(mParcelFileDescriptor != null) {
             int fd = mParcelFileDescriptor.getFd();
             int fd_setsize = getFdSetSize();
@@ -509,8 +539,10 @@ public class CaptureService extends VpnService implements Runnable {
             if((fd > 0) && (fd < fd_setsize)) {
                 Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                 runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-            } else
+            } else {
                 Log.e(TAG, "Invalid VPN fd: " + fd);
+                stopThread();
+            }
         }
     }
 
@@ -545,6 +577,10 @@ public class CaptureService extends VpnService implements Runnable {
     public int getSocks5ProxyPort() {  return(socks5_proxy_port);  }
 
     public int getIPv6Enabled() { return(ipv6_enabled ? 1 : 0); }
+
+    public int isRootCapture() { return(root_capture ? 1 : 0); }
+
+    public int getAppFilterUid() { return(app_filter_uid); }
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {
@@ -633,6 +669,16 @@ public class CaptureService extends VpnService implements Runnable {
         mHandler.post(() -> {
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         });
+    }
+
+    public String getPcapdWorkingDir() {
+        return getCacheDir().getAbsolutePath();
+    }
+
+    public String getLibprogPath(String prog_name) {
+        // executable binaries are stored into the /lib folder of the app
+        String dir = getApplicationInfo().nativeLibraryDir;
+        return(dir + "/lib" + prog_name + ".so");
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

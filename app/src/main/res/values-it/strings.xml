@@ -111,5 +111,13 @@
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="app_theme">Tema</string>
+    <string name="enable_socks5_proxy">Abilita Proxy SOCKS5</string>
+    <string name="enable_socks5_proxy_summary">Se abilitato, tutte le connessioni TCP saranno redirette al proxy SOCKS5 configurato.</string>
+    <string name="proxy">Proxy</string>
+    <string name="proxy_ip_address">Indiritto IP del Proxy</string>
+    <string name="proxy_port">Porta del Proxy</string>
+    <string name="root_capture">Cattura come Root</string>
+    <string name="root_capture_summary">Catturare i pacchetti come root permette a PCAPdroid di funzionare assieme ad altre app VPN.</string>
+    <string name="donate">Donazioni</string>
 </resources>
 

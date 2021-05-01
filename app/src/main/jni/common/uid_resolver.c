@@ -17,8 +17,14 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-#include "vpnproxy.h"
-#include "jni_helpers.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <jni.h>
+#include <errno.h>
+#include <netinet/in.h>
+
+#include "uid_resolver.h"
+#include "utils.h"
 
 /* ******************************************************* */
 
@@ -55,7 +61,7 @@ static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
     FILE *fd = fopen(proc, "r");
 
     if (fd == NULL) {
-        log_android(ANDROID_LOG_ERROR, "fopen(%s) failed[%d]: %s", proc, errno, strerror(errno));
+        log_e("fopen(%s) failed[%d]: %s", proc, errno, strerror(errno));
         return UID_UNKNOWN;
     }
 
@@ -75,10 +81,10 @@ static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
         if(!lines++)
             continue;
 
-        //log_android(ANDROID_LOG_INFO, "[try] %s", line);
+        //log_i("[try] %s", line);
 
         if(sscanf(line, fmt, shex, &sport, dhex, &dport, &uid) == 5) {
-            //log_android(ANDROID_LOG_DEBUG, "[try] %s:%d -> %s:%d [%d]", shex, sport, dhex, dport, uid);
+            //log_d("[try] %s:%d -> %s:%d [%d]", shex, sport, dhex, dport, uid);
 
             if((sport == src_port) && (dport == dst_port)
                && (!strcmp(conn_dhex, dhex) || !strcmp(dhex, zero))
@@ -145,13 +151,13 @@ static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
         sprintf(shex, "%08X%08X%08X%08X", src[0], src[1], src[2], src[3]);
         sprintf(dhex, "%08X%08X%08X%08X", dst[0], dst[1], dst[2], dst[3]);
 
-        //log_android(ANDROID_LOG_INFO, "HEX %s %s", shex, dhex);
+        //log_i("HEX %s %s", shex, dhex);
 
         rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
     }
 
     //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-    //log_android(ANDROID_LOG_DEBUG, "cpu_time_used %f", cpu_time_used);
+    //log_d("cpu_time_used %f", cpu_time_used);
 
     return rv;
 }
@@ -209,7 +215,7 @@ uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
     uid_resolver_t *rv = calloc(1, sizeof(uid_resolver_t));
 
     if(!rv) {
-        log_android(ANDROID_LOG_ERROR, "calloc uid_resolver_t failed");
+        log_e("calloc uid_resolver_t failed");
         return NULL;
     }
 
@@ -218,6 +224,10 @@ uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
     rv->vpn_service = vpn;
 
     return rv;
+}
+
+uid_resolver_t* init_uid_resolver_from_proc() {
+    return(init_uid_resolver(0, NULL, 0));
 }
 
 /* ******************************************************* */

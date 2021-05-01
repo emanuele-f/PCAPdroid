@@ -43,5 +43,10 @@ public class AboutActivity extends BaseActivity {
         String localized = gplLicense.getText().toString();
         gplLicense.setText(Html.fromHtml("<a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>" + localized + "</a>"));
         gplLicense.setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView sourceLink = findViewById(R.id.app_source_link);
+        localized = sourceLink.getText().toString();
+        sourceLink.setText(Html.fromHtml("<a href='" + MainActivity.GITHUB_PROJECT_URL + "'>" + localized + "</a>"));
+        sourceLink.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

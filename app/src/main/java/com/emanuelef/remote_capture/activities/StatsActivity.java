@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -75,6 +76,13 @@ public class StatsActivity extends BaseActivity {
         mOpenSocks = findViewById(R.id.open_sockets);
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
+
+        if(CaptureService.isCapturingAsRoot()) {
+            findViewById(R.id.dns_server_row).setVisibility(View.GONE);
+            findViewById(R.id.dns_queries_row).setVisibility(View.GONE);
+            findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
+            findViewById(R.id.max_fd_row).setVisibility(View.GONE);
+        }
 
         mReceiver = new BroadcastReceiver() {
             @Override

@@ -1,6 +1,9 @@
 [submodule "submodules/nDPI"]
 	path = submodules/nDPI
-  url = https://github.com/ntop/nDPI
+	url = https://github.com/ntop/nDPI
 [submodule "submodules/zdtun"]
 	path = submodules/zdtun
 	url = https://github.com/emanuele-f/zdtun
+[submodule "submodules/libpcap"]
+	path = submodules/libpcap
+	url = https://github.com/the-tcpdump-group/libpcap

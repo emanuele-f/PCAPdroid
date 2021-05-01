@@ -17,16 +17,27 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
+#ifndef __PCAPDROID_H__
+#define __PCAPDROID_H__
+
 #include <jni.h>
+#include <stdbool.h>
 #include "zdtun.h"
-#include "uid_resolver.h"
 #include "ip_lru.h"
-#include <ndpi_api.h>
+#include "ndpi_api.h"
+#include "common/uid_resolver.h"
 
-#ifndef REMOTE_CAPTURE_VPNPROXY_H
-#define REMOTE_CAPTURE_VPNPROXY_H
+#define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
+#define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
+#define MAX_JAVA_DUMP_DELAY_MS 1000
+#define MAX_DPI_PACKETS 12
+#define MAX_HOST_LRU_SIZE 128
+#define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
+#define PERIODIC_PURGE_TIMEOUT_MS 5000
 
-#define UID_UNKNOWN -1
+#define DNS_FLAGS_MASK 0x8000
+#define DNS_TYPE_REQUEST 0x0000
+#define DNS_TYPE_RESPONSE 0x8000
 
 typedef struct capture_stats {
     jlong sent_bytes;
@@ -76,6 +87,7 @@ typedef struct vpnproxy_data {
     jint sdk;
     JNIEnv *env;
     jobject vpn_service;
+    jint app_filter;
     u_int32_t vpn_dns;
     u_int32_t dns_server;
     u_int32_t vpn_ipv4;
@@ -89,7 +101,10 @@ typedef struct vpnproxy_data {
     conn_array_t new_conns;
     conn_array_t conns_updates;
     zdtun_pkt_t *last_pkt;
+    zdtun_t *tun;
     bool last_conn_blocked;
+    bool root_capture;
+    zdtun_statistics_t stats;
 
     struct {
         u_int32_t collector_addr;
@@ -119,4 +134,64 @@ typedef struct vpnproxy_data {
     capture_stats_t capture_stats;
 } vpnproxy_data_t;
 
-#endif //REMOTE_CAPTURE_H
+/* ******************************************************* */
+
+typedef struct dns_packet {
+    uint16_t transaction_id;
+    uint16_t flags;
+    uint16_t questions;
+    uint16_t answ_rrs;
+    uint16_t auth_rrs;
+    uint16_t additional_rrs;
+    uint8_t initial_dot; // just skip
+    uint8_t queries[];
+} __attribute__((packed)) dns_packet_t;
+
+/* ******************************************************* */
+
+typedef struct jni_methods {
+    jmethodID reportError;
+    jmethodID getApplicationByUid;
+    jmethodID protect;
+    jmethodID dumpPcapData;
+    jmethodID sendConnectionsDump;
+    jmethodID connInit;
+    jmethodID connSetData;
+    jmethodID sendServiceStatus;
+    jmethodID sendStatsDump;
+    jmethodID statsInit;
+    jmethodID statsSetData;
+    jmethodID getLibprogPath;
+} jni_methods_t;
+
+typedef struct jni_classes {
+    jclass vpn_service;
+    jclass conn;
+    jclass stats;
+} jni_classes_t;
+
+/* ******************************************************* */
+
+extern jni_methods_t mids;
+extern jni_classes_t cls;
+extern bool running;
+extern uint32_t new_dns_server;
+extern bool dump_vpn_stats_now;
+
+void free_ndpi(conn_data_t *data);
+void conns_add(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
+void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
+void run_housekeeping(vpnproxy_data_t *proxy);
+void account_packet(vpnproxy_data_t *proxy, const char *packet, int size, uint8_t from_tun, const zdtun_5tuple_t *tuple, conn_data_t *data);
+int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
+void free_connection_data(conn_data_t *data);
+void protectSocket(vpnproxy_data_t *proxy, socket_t sock);
+char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
+void refreshTime(vpnproxy_data_t *proxy);
+void initMasterProtocolsBitmap(ndpi_protocol_bitmask_struct_t *b);
+conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
+
+int run_proxy(vpnproxy_data_t *proxy);
+int run_root(vpnproxy_data_t *proxy);
+
+#endif //__PCAPDROID_H__

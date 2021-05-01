@@ -43,21 +43,13 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false"  app:key="proxy_prefs">
         <SwitchPreference
             app:key="tls_decryption_enabled"
             app:title="@string/enable_socks5_proxy"
             app:iconSpaceReserved="false"
             app:summary="@string/enable_socks5_proxy_summary"
             app:defaultValue="false" />
-
-        <Preference
-            app:key="tls_how_to"
-            app:title="@string/tls_how_to"
-            app:iconSpaceReserved="false">
-            <intent android:action="android.intent.action.VIEW"
-                android:data="https://emanuele-f.github.io/PCAPdroid/tls_decryption" />
-        </Preference>
 
         <EditTextPreference
             app:key="socks5_proxy_ip_address"
@@ -70,18 +62,19 @@
             app:key="socks5_proxy_port"
             app:title="@string/proxy_port"
             app:iconSpaceReserved="false"
-            app:defaultValue="8080"
+            app:defaultValue="8050"
             app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="tls_how_to"
+            app:title="@string/tls_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/tls_decryption" />
+        </Preference>
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false">
-        <SwitchPreference
-            app:key="ipv6_enabled"
-            app:title="@string/enable_ipv6"
-            app:iconSpaceReserved="false"
-            app:summary="@string/enable_ipv6_summary"
-            app:defaultValue="false" />
-
+    <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
         <DropDownPreference
             app:key="app_theme"
             app:title="@string/app_theme"
@@ -99,5 +92,19 @@
             app:iconSpaceReserved="false"
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
+
+        <SwitchPreference
+            app:key="root_capture"
+            app:title="@string/root_capture"
+            app:iconSpaceReserved="false"
+            app:summary="@string/root_capture_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="ipv6_enabled"
+            app:title="@string/enable_ipv6"
+            app:iconSpaceReserved="false"
+            app:summary="@string/enable_ipv6_summary"
+            app:defaultValue="false" />
     </PreferenceCategory>
 </PreferenceScreen>

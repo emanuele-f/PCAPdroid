@@ -64,6 +64,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -82,6 +83,7 @@ public class Utils {
     public static final String PCAP_HEADER = "d4c3b2a1020004000000000000000000ffff000065000000";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
+    private static Boolean root_available = null;
 
     public static String formatBytes(long bytes) {
         long divisor;
@@ -465,5 +467,28 @@ public class Utils {
         }
 
         return fname;
+    }
+
+    public static boolean isRootAvailable() {
+        if(root_available == null) {
+            String path = System.getenv("PATH");
+            root_available = false;
+
+            if(path != null) {
+                Log.d("isRootAvailable", "PATH = " + path);
+
+                for(String part : path.split(":")) {
+                    File f = new File(part + "/su");
+
+                    if(f.exists()) {
+                        Log.d("isRootAvailable", "'su' binary found at " + f.getAbsolutePath());
+                        root_available = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return root_available;
     }
 }

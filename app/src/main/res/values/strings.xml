@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">PCAPdroid</string>
-    <string name="about_copyright" translatable="false">Copyright (C) 2020-21 - Emanuele Faranda black.silver@hotmail.it</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
 
@@ -126,5 +125,8 @@
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Proxy IP Address</string>
     <string name="proxy_port">Proxy Port</string>
+    <string name="root_capture">Capture as Root</string>
+    <string name="root_capture_summary">Capturing packets as root allows PCAPdroid to run with other VPN apps.</string>
+    <string name="donate">Donate</string>
 </resources>
 

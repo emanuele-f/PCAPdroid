@@ -98,6 +98,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
+    public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -344,8 +345,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
-        } else if (id == R.id.action_open_github) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL));
+        } else if (id == R.id.action_donate) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
             startActivity(browserIntent);
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
@@ -501,6 +502,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void startCaptureService() {
         appStateStarting();
 
+        if(Prefs.isRootCaptureEnabled(mPrefs)) {
+            onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
+            return;
+        }
+
         Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
 
         if (vpnPrepareIntent != null)
@@ -519,7 +525,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 return;
             }
 
-            if(Utils.hasVPNRunning(this)) {
+            if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.existing_vpn_confirm)
                         .setPositiveButton(R.string.yes, (dialog, whichButton) -> startCaptureService())

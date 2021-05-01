@@ -140,7 +140,8 @@ android:layout_height="fill_parent">
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:id="@+id/dns_server_row">
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -158,7 +159,8 @@ android:layout_height="fill_parent">
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:id="@+id/dns_queries_row">
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -176,7 +178,8 @@ android:layout_height="fill_parent">
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:id="@+id/open_sockets_row">
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -194,7 +197,8 @@ android:layout_height="fill_parent">
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:id="@+id/max_fd_row">
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"

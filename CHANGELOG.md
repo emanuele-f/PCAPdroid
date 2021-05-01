@@ -2,6 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.5] - 2021-04-14
+- Fix delays and slow downs with big uploads
+- Add SOCKS5 client, allowing to use the official mitmproxy
+- Implement MSS and TCP window scaling options
+
 ## [1.3.4] - 2021-03-30
 - Add dark theme
 - Android TV: fix file selection and other improvements
