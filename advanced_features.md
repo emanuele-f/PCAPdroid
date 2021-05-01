@@ -27,7 +27,7 @@ Since version 1.3.6, it's possible to capture the network traffic directly from 
 
 In this mode, PCAPdroid performs a "raw" capture, meaning that real packets are captured as they appear on the network interface. This means that the limitations described in the [PCAP Reliability section](https://emanuele-f.github.io/PCAPdroid/quick_start#14-pcap-reliability) do not apply. It's important to note, however, that PCAPdroid will skip the Ethernet headers to provide the same PCAP format regardless of the network interface in use.
 
-In fact, while common network tools like tcpdump require you to select a specific network interface, PCAPdroid automatically detects the internet-facing interface and it captures the packets from it. Moreover it automatically changes the capture interface when, for example, the device switches from WiFi to the mobile network.
+While common network tools like tcpdump require you to select a specific network interface, PCAPdroid automatically detects the internet-facing interface and it captures the packets from it. Moreover it automatically changes the capture interface when, for example, the device switches from WiFi to the mobile network.
 
 The root capture feature can be enabled from the app settings. It is only displayed when root access is detected, so if you are using magisk hide you will need to whitelist the app. Root permissions will only be asked while starting the capture. PCAPdroid will spawn a daemon process as root and will communicate with it to capture the packets. The daemon will be stopped when the capture is stopped from the app.
 
