@@ -49,7 +49,7 @@ You can reach the PCAPdroid community on the [telegram group](https://t.me/PCAPd
 
 ## What is the netd app
 
-Many applications rely on the Android DNS resolution service `netd` in order to resolve names. In such cases PCAPdroid will be unable to determine the originating app and will instead mark the connection with a question mark. Nevertheless, it will properly capture the selected app DNS traffic when an app filter is set.
+Many applications rely on the Android DNS resolution service `netd` in order to resolve names. In such cases PCAPdroid will be unable to determine the originating app and will instead mark the connection with a question mark. Nevertheless, unless [root capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture) is enabled, it will properly capture the selected app DNS traffic when an app filter is set.
 
 ## Decrypting HTTPS/TLS Traffic
 
