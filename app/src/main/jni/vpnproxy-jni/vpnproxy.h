@@ -66,6 +66,7 @@ typedef struct conn_data {
     zdtun_conn_status_t status;
     char *info;
     char *url;
+    char *proxy_url;
     jint uid;
     bool pending_notification;
 } conn_data_t;
