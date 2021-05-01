@@ -125,5 +125,8 @@
     <string name="proxy">代理</string>
     <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>
+    <string name="root_capture">以根用户身份捕获流量</string>
+    <string name="root_capture_summary">以根用户身份捕获数据包允许 PCAPdroid 与其他 VPN 应用程序一起运行。</string>
+    <string name="donate">捐赠</string>
 </resources>
 
