@@ -5,7 +5,7 @@ No. PCAPdroid only captures the traffic originated/destined to the android devic
 
 **Can I capture the traffic of other VPN apps?**
 
-Yes! But you need a rooted device. Check out the [user guide](https://emanuele-f.github.io/PCAPdroid/advanced_features/44-root-
+Yes! But you need a rooted device. Check out the [user guide](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture).
 <br/><br/>
 
 **Why I see connections originating from the IP 10.215.173.1?**
