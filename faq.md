@@ -5,7 +5,7 @@ No. PCAPdroid only captures the traffic originated/destined to the android devic
 
 **Can I capture the traffic of other VPN apps?**
 
-No, as the android system only allows 1 VPN app running. In the future it could be possible to implement a root-only solution for this.
+Yes! But you need a rooted device. Check out the [user guide](https://emanuele-f.github.io/PCAPdroid/advanced_features/44-root-
 <br/><br/>
 
 **Why I see connections originating from the IP 10.215.173.1?**
@@ -38,7 +38,7 @@ In order to run without root, the app takes advantage of the Android [VpnService
 While not specifically optimized for reduced battery consumption, running PCAPdroid on a daily/nightly basis seems fine.
 <br/><br/>
 
-**Can PCAPdroid block connections/disable ADS in app**
+**Can PCAPdroid block connections/disable ADs in app**
 
 While tecnically possible, PCAPdroid is not a firewall app. For this kind of stuff you can check out the wonderful [NetGuard](https://github.com/M66B/NetGuard) project.
 <br/><br/>
