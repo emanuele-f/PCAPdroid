@@ -23,14 +23,18 @@ In general, you can safely disable IPv6 unless you actually want to monitor an I
 
 ## 4.4 Root Capture
 
-Since version 1.3.6, PCAPdroid supports capturing the packets without creating a VPNService, allowing it to run together with other VPN apps. This requires a rooted device to work.
+Since version 1.3.6, it's possible to capture the network traffic directly from the network interface of the Android device without creating a VPNService. This allows PCAPdroid to run while other VPN apps are running. A rooted device for this feature.
 
-This feature must be manually enabled from the PCAPdroid settings. It is only displayed when root access is detected. Root permissions will only be asked while starting the capture. PCAPdroid will spawn a daemon process as root and will communicate with it to capture the packets. The daemon will be killed when stopping the capture.
+In this mode, PCAPdroid performs a "raw" capture, meaning that real packets are captured as they appear on the network interface. This means that the limitations described in the [https://emanuele-f.github.io/PCAPdroid/quick_start#14-pcap-reliability](PCAP Reliability) do not apply. PCAPdroid will however skip the Ethernet headers to provide the same PCAP format regardless of the network interface in use.
+
+In fact, while common network tools like tcpdump require you to select a specific network interface, PCAPdroid automatically detects the internet-facing interface and it captures the packets from it. Moreover it automatically changes the capture interface when, for example, the device switches from WiFi to the mobile network.
+
+The root capture feature can be enabled from the app settings. It is only displayed when root access is detected, so if you are using magisk hide you will need to whitelist the app. Root permissions will only be asked while starting the capture. PCAPdroid will spawn a daemon process as root and will communicate with it to capture the packets. The daemon will be stopped when the capture is stopped from the app.
 
 Please note that the following limitations apply for this mode:
 
 - The SOCKS5 proxy is not available
-- Only IPv4 connections will be shown (no IPv6, no ICMP)
-- Domain names for DNS requests sent via DoH will not be visible. You need to disable/block DoH if you want to extract names.
-- The connections status will not reflect the actual status
+- Only IPv4 connections will be shown (no IPv6, no ICMP, no Ethernet)
+- Domain names for DNS requests sent via DoH will not be visible. You need to disable/block DoH if you want to extract domain names.
+- The connections status show in PCAPdroid does not currently reflect the actual status of the connections
 - Some broadcast/multicast connections may have a wrong traffic direction
