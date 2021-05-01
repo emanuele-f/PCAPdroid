@@ -25,7 +25,7 @@ In general, you can safely disable IPv6 unless you actually want to monitor an I
 
 Since version 1.3.6, it's possible to capture the network traffic directly from the network interface of the Android device without creating a VPNService. This allows PCAPdroid to run while other VPN apps are running. A rooted device for this feature.
 
-In this mode, PCAPdroid performs a "raw" capture, meaning that real packets are captured as they appear on the network interface. This means that the limitations described in the [https://emanuele-f.github.io/PCAPdroid/quick_start#14-pcap-reliability](PCAP Reliability) do not apply. PCAPdroid will however skip the Ethernet headers to provide the same PCAP format regardless of the network interface in use.
+In this mode, PCAPdroid performs a "raw" capture, meaning that real packets are captured as they appear on the network interface. This means that the limitations described in the [PCAP Reliability section](https://emanuele-f.github.io/PCAPdroid/quick_start#14-pcap-reliability) do not apply. PCAPdroid will however skip the Ethernet headers to provide the same PCAP format regardless of the network interface in use.
 
 In fact, while common network tools like tcpdump require you to select a specific network interface, PCAPdroid automatically detects the internet-facing interface and it captures the packets from it. Moreover it automatically changes the capture interface when, for example, the device switches from WiFi to the mobile network.
 
