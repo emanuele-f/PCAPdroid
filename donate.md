@@ -6,7 +6,7 @@ You can get your name into the [donors file](https://github.com/emanuele-f/PCAPd
 
 ### PayPal
 
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?business=TFM9UN2ZVWDT6&currency_code=EUR)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?business=TFM9UN2ZVWDT6&item_name=PCAPdroid&custom=PCAPdroid&currency_code=EUR)
 
 ### Bitcoin
 Address: [1KxBB9TovjbbnJSGz7oCf2RzWHjCF2JLNd](bitcoin:1KxBB9TovjbbnJSGz7oCf2RzWHjCF2JLNd?message=PCAPdroid)
