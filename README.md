@@ -65,6 +65,6 @@ PCAPdroid supports decrypting TLS traffic by sending it to mitmproxy. Check out 
 ## Building
 
 1. Clone this repo
-2. Install the native dependencies: `autogen autoconf libtool pkg-config libpcap-dev libjson-c-dev`
+2. Install the native dependencies: `autogen autoconf bison flex libtool pkg-config libpcap-dev libjson-c-dev`
 3. Run `git submodule update --init`
 4. Build the app
