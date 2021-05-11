@@ -280,7 +280,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
       ipoffset = 14;
       break;
     case DLT_LINUX_SLL:
-      ipoffset = sizeof(struct sll_header);
+      ipoffset = SLL_HDR_LEN;
       break;
     default:
       log_i("[%s] unsupported datalink: %d", ifname, dlink);
@@ -408,7 +408,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
     len -= 14;
     pkt += 14;
-  } else if((rt->dlink == DLT_LINUX_SLL) && (len >= sizeof(struct sll_header))) {
+  } else if((rt->dlink == DLT_LINUX_SLL) && (len >= SLL_HDR_LEN)) {
     struct sll_header *sll = (struct sll_header*) pkt;
     uint8_t pkttype = sll->sll_pkttype;
 
@@ -416,6 +416,9 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
       return 0; // RX
     else if(pkttype == LINUX_SLL_OUTGOING)
       return 1; // TX
+
+    len -= SLL_HDR_LEN;
+    pkt += SLL_HDR_LEN;
   }
 
   // NOTE: this must be IP traffic due to the PCAP filter
