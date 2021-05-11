@@ -42,6 +42,7 @@
 #include <net/if.h>
 #include <time.h>
 #include <pcap.h>
+#include <pcap/sll.h>
 #include "pcapd.h"
 #include "nl_utils.h"
 #include "common/uid_resolver.h"
@@ -57,6 +58,7 @@ typedef struct {
 
     pcap_t *pd;
     int dlink;
+    int ipoffset;
     int pf;
     int ifidx;
     char ifname[IFNAMSIZ];
@@ -268,11 +270,22 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   }
 
   int dlink = pcap_datalink(pd);
+  int ipoffset;
 
-  if((dlink != DLT_EN10MB) && (dlink != DLT_RAW)) {
-    log_i("[%s] unsupported datalink: %d", ifname, dlink);
-    pcap_close(pd);
-    return;
+  switch(dlink) {
+    case DLT_RAW:
+      ipoffset = 0;
+      break;
+    case DLT_EN10MB:
+      ipoffset = 14;
+      break;
+    case DLT_LINUX_SLL:
+      ipoffset = sizeof(struct sll_header);
+      break;
+    default:
+      log_i("[%s] unsupported datalink: %d", ifname, dlink);
+      pcap_close(pd);
+      return;
   }
 
   struct bpf_program fcode;
@@ -308,6 +321,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
       log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
 
   rt->dlink = dlink;
+  rt->ipoffset = ipoffset;
   rt->pf = pcap_get_selectable_fd(pd);
   rt->ifidx = ri.ifidx;
   memcpy(rt->ifname, ifname, sizeof(ifname));
@@ -394,6 +408,14 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
     len -= 14;
     pkt += 14;
+  } else if((rt->dlink == DLT_LINUX_SLL) && (len >= sizeof(struct sll_header))) {
+    struct sll_header *sll = (struct sll_header*) pkt;
+    uint8_t pkttype = sll->sll_pkttype;
+
+    if(pkttype == LINUX_SLL_HOST)
+      return 0; // RX
+    else if(pkttype == LINUX_SLL_OUTGOING)
+      return 1; // TX
   }
 
   // NOTE: this must be IP traffic due to the PCAP filter
@@ -463,7 +485,7 @@ static int run_pcap_dump(int uid_filter) {
     if((rt.pf != -1) && FD_ISSET(rt.pf, &fds)) {
       struct pcap_pkthdr *hdr;
       const u_char *pkt;
-      int to_skip = (rt.dlink == DLT_EN10MB) ? 14 : 0;
+      int to_skip = rt.ipoffset;
       int rv1 = pcap_next_ex(rt.pd, &hdr, &pkt);
 
       if(rv1 == PCAP_ERROR) {
