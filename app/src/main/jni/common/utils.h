@@ -23,6 +23,7 @@
 #include <jni.h>
 #include <sys/types.h>
 #include <android/log.h>
+#include "zdtun.h"
 
 extern int loglevel;
 extern const char* logtag;
@@ -37,6 +38,7 @@ extern void (*logcallback)(int lvl, const char *msg);
 void log_android(int prio, const char *fmt, ...);
 ssize_t xwrite(int fd, const void *buf, size_t count);
 ssize_t xread(int fd, void *buf, size_t count);
+void tupleSwapPeers(zdtun_5tuple_t *tuple);
 
 jclass jniFindClass(JNIEnv *env, const char *name);
 jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);

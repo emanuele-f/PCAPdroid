@@ -101,6 +101,18 @@ ssize_t xread(int fd, void *buf, size_t count) {
 
 /* ******************************************************* */
 
+void tupleSwapPeers(zdtun_5tuple_t *tuple) {
+    uint16_t tmp = tuple->dst_port;
+    tuple->dst_port = tuple->src_port;
+    tuple->src_port = tmp;
+
+    zdtun_ip_t tmp1 = tuple->dst_ip;
+    tuple->dst_ip = tuple->src_ip;
+    tuple->src_ip = tmp1;
+}
+
+/* ******************************************************* */
+
 int jniCheckException(JNIEnv *env) {
     jthrowable ex = (*env)->ExceptionOccurred(env);
     if (ex) {

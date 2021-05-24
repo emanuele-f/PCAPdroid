@@ -410,7 +410,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
     pkt += 14;
   } else if((rt->dlink == DLT_LINUX_SLL) && (len >= SLL_HDR_LEN)) {
     struct sll_header *sll = (struct sll_header*) pkt;
-    uint8_t pkttype = sll->sll_pkttype;
+    uint16_t pkttype = ntohs(sll->sll_pkttype);
 
     if(pkttype == LINUX_SLL_HOST)
       return 0; // RX
@@ -511,13 +511,7 @@ static int run_pcap_dump(int uid_filter) {
         if(zdtun_parse_pkt((const char*)pkt, hdr->caplen, &zpkt) == 0) {
           if(!is_tx) {
             // Packet from the internet, swap src and dst
-            uint16_t tmp = zpkt.tuple.dst_port;
-            zpkt.tuple.dst_port = zpkt.tuple.src_port;
-            zpkt.tuple.src_port = tmp;
-
-            zdtun_ip_t tmp1 = zpkt.tuple.dst_ip;
-            zpkt.tuple.dst_ip = zpkt.tuple.src_ip;
-            zpkt.tuple.src_ip = tmp1;
+            tupleSwapPeers(&zpkt.tuple);
           }
 
           int uid = uid_lru_find(lru, &zpkt.tuple);

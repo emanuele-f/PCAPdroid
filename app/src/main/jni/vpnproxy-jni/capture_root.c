@@ -187,10 +187,9 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 /* ******************************************************* */
 
 static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pcapd_hdr_t *hdr, const char *buffer) {
-    zdtun_5tuple_t search;
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
-    uint8_t from_tun = (hdr->flags & PCAPD_FLAG_TX);
+    uint8_t from_tun = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
 
     // NOTE: only IP packets supported
     if(zdtun_parse_pkt(buffer, hdr->len, &pkt) != 0) {
@@ -200,56 +199,61 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
 
     if(!from_tun) {
         // Packet from the internet, swap src and dst
-        search.ipver = pkt.tuple.ipver;
-        search.ipproto = pkt.tuple.ipproto;
+        tupleSwapPeers(&pkt.tuple);
+    }
 
-        search.dst_port = pkt.tuple.src_port;
-        search.src_port = pkt.tuple.dst_port;
-        search.dst_ip = pkt.tuple.src_ip;
-        search.src_ip = pkt.tuple.dst_ip;
-    } else
-        search = pkt.tuple;
-
-    HASH_FIND(hh, *connections, &search, sizeof(zdtun_5tuple_t), conn);
+    HASH_FIND(hh, *connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
     if(!conn) {
-        conn_data_t *data = new_connection(proxy, &search, hdr->uid);
+        // from_tun may be wrong, search in the other direction
+        from_tun = !from_tun;
+        tupleSwapPeers(&pkt.tuple);
 
-        if (!data)
-            return;
+        HASH_FIND(hh, *connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
-        conn = malloc(sizeof(pcap_conn_t));
+        if(!conn) {
+            // assume from_tun was correct
+            from_tun = !from_tun;
+            tupleSwapPeers(&pkt.tuple);
 
-        if (!conn) {
-            log_e("malloc(pcap_conn_t) failed with code %d/%s",
-                        errno, strerror(errno));
-            return;
-        }
+            conn_data_t *data = new_connection(proxy, &pkt.tuple, hdr->uid);
 
-        conn->tuple = search;
-        conn->data = data;
+            if (!data)
+                return;
 
-        // TODO read from linux?
-        data->status = CONN_STATUS_CONNECTED;
+            conn = malloc(sizeof(pcap_conn_t));
 
-        HASH_ADD(hh, *connections, tuple, sizeof(search), conn);
+            if (!conn) {
+                log_e("malloc(pcap_conn_t) failed with code %d/%s",
+                      errno, strerror(errno));
+                return;
+            }
 
-        data->incr_id = proxy->incr_id++;
-        conns_add(&proxy->new_conns, &search, data);
+            conn->tuple = pkt.tuple;
+            conn->data = data;
 
-        switch(conn->tuple.ipproto) {
-            case IPPROTO_TCP:
-                proxy->stats.num_tcp_conn++;
-                proxy->stats.num_tcp_opened++;
-                break;
-            case IPPROTO_UDP:
-                proxy->stats.num_udp_conn++;
-                proxy->stats.num_udp_opened++;
-                break;
-            case IPPROTO_ICMP:
-                proxy->stats.num_icmp_conn++;
-                proxy->stats.num_icmp_opened++;
-                break;
+            // TODO read from linux?
+            data->status = CONN_STATUS_CONNECTED;
+
+            HASH_ADD(hh, *connections, tuple, sizeof(zdtun_5tuple_t), conn);
+
+            data->incr_id = proxy->incr_id++;
+            conns_add(&proxy->new_conns, &pkt.tuple, data);
+
+            switch (conn->tuple.ipproto) {
+                case IPPROTO_TCP:
+                    proxy->stats.num_tcp_conn++;
+                    proxy->stats.num_tcp_opened++;
+                    break;
+                case IPPROTO_UDP:
+                    proxy->stats.num_udp_conn++;
+                    proxy->stats.num_udp_opened++;
+                    break;
+                case IPPROTO_ICMP:
+                    proxy->stats.num_icmp_conn++;
+                    proxy->stats.num_icmp_opened++;
+                    break;
+            }
         }
     }
 
