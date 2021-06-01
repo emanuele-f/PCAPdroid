@@ -1,13 +1,23 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <!-- https://material.io/blog/android-dark-theme-tutorial -->
+    <style name="Base.AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="alertDialogTheme">@style/AppAlertDialogTheme</item>
     </style>
+
+    <!-- Make the Widget.MaterialComponents.Button.TextButton of AlertDialog use the accent color -->
+    <style name="AppAlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="colorPrimary">@color/colorAccent</item>
+    </style>
+
+    <!-- White app theme. See values-night-v8 for the dark customizations -->
+    <style name="AppTheme" parent="Base.AppTheme"/>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
         <item name="windowActionBar">false</item>
@@ -18,9 +28,9 @@
         <item name="android:windowBackground">@drawable/splash_screen</item>
     </style>
 
-    <style name="AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
-    <style name="PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
     <style name="QuickSettings.Title" parent="AppTheme">
         <item name="android:textSize">18sp</item>

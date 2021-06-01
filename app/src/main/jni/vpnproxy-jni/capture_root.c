@@ -257,7 +257,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
         }
     }
 
-    account_packet(proxy, buffer, hdr->len, from_tun, &conn->tuple, conn->data);
+    account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data);
 }
 
 /* ******************************************************* */

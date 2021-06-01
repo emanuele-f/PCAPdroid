@@ -11,7 +11,8 @@
         android:layout_height="@dimen/drawer_header_height"
         android:src="@drawable/drawer_background"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <ImageView
         android:layout_width="wrap_content"

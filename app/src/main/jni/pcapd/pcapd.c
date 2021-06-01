@@ -50,6 +50,8 @@
 #include "common/utils.h"
 #include "zdtun.h"
 
+//#define READ_FROM_PCAP "/sdcard/test.pcap"
+
 /* ******************************************************* */
 
 typedef struct {
@@ -261,6 +263,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
 
   log_i("interface changed [%d -> %d], (re)starting capture", rt->ifidx, ri.ifidx);
 
+#ifndef READ_FROM_PCAP
   // TODO support larger MTU
   pcap_t *pd = pcap_open_live(ifname, 1500, 0, 1, errbuf);
 
@@ -268,6 +271,16 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
     log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
     return;
   }
+#else
+  pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
+
+  if(!pd) {
+    log_i("pcap_open_offline(%s) failed: %s", READ_FROM_PCAP, errbuf);
+    return;
+  }
+
+  strcpy(ifname, "pcap");
+#endif
 
   int dlink = pcap_datalink(pd);
   int ipoffset;
@@ -347,6 +360,10 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
 
   ssize_t len = recvmsg(rt->nlsock, &msg, 0);
   uint8_t found = 0;
+
+#ifdef READ_FROM_PCAP
+  return 0;
+#endif
 
   if(len <= 0) {
     log_e("netlink recvmsg failed [%d]: %s\n", errno, sizeof(errno));
@@ -432,7 +449,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
   if(ip->saddr == rt->ip)
     return 1; // TX
 
-  return 0;
+  return 1; // by default assume TX
 }
 
 /* ******************************************************* */

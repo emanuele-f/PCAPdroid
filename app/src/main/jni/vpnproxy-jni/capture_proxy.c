@@ -246,9 +246,16 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
 static void on_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_tun, const zdtun_conn_t *conn_info) {
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
+    zdtun_pkt_t pkt;
 
     if(!data) {
         log_e("Missing data in connection");
+        return;
+    }
+
+    // NOTE: data->last_pkt could only be used for upstream data (from_tun=0)
+    if(zdtun_parse_pkt(packet, size, &pkt) < 0) {
+        log_e("zdtun_parse_pkt[on_packet] failed");
         return;
     }
 
@@ -273,7 +280,7 @@ static void on_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_t
         return;
     }
 
-    account_packet(proxy, packet, size, from_tun, tuple, data);
+    account_packet(proxy, &pkt, from_tun, tuple, data);
 }
 
 /* ******************************************************* */
