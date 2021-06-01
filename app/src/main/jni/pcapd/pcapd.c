@@ -71,6 +71,8 @@ typedef struct {
 } pcapd_runtime_t;
 
 static char errbuf[PCAP_ERRBUF_SIZE];
+static FILE *logf = NULL;
+static uint8_t no_logf = 0;
 
 /* ******************************************************* */
 
@@ -80,6 +82,35 @@ static uint64_t bytes2mac(const uint8_t *buf) {
   memcpy(&m, buf, 6);
 
   return m;
+}
+
+/* ******************************************************* */
+
+static void log_to_file(int lvl, const char *msg) {
+  char datetime[64];
+  struct tm res;
+  time_t now;
+
+  if(no_logf)
+    return;
+
+  if(logf == NULL) {
+    mode_t old_mask = umask(033);
+    logf = fopen(PCAPD_LOGFILE_PATH, "w");
+    umask(old_mask);
+
+    if(logf == NULL) {
+      log_e("Could not open log file[%d]: %s", errno, strerror(errno));
+      no_logf = 1;
+      return;
+    }
+  }
+
+  now = time(NULL);
+  strftime(datetime, sizeof(datetime), "%d/%b/%Y %H:%M:%S", localtime_r(&now, &res));
+
+  fprintf(logf, "[%c] %s - %s\n", loglvl2char(lvl), datetime, msg);
+  fflush(logf);
 }
 
 /* ******************************************************* */
@@ -103,7 +134,7 @@ static int get_iface_mac(const char *iface, uint64_t *mac) {
 
 /* ******************************************************* */
 
-int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
+static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
   struct ifreq ifr;
   int fd;
   int rv;
@@ -147,6 +178,9 @@ static int list_interfaces() {
 static void sighandler(__unused int signo) {
   log_i("SIGTERM received, terminating");
   unlink(PCAPD_PID);
+
+  if(logf)
+    fclose(logf);
 
   exit(0);
 }
@@ -493,7 +527,7 @@ static int run_pcap_dump(int uid_filter) {
     }
 
     if(FD_ISSET(rt.client, &fds)) {
-      log_i("client closed");
+      log_i("Client closed");
       break;
     }
     if(FD_ISSET(rt.nlsock, &fds)) {
@@ -593,6 +627,7 @@ static void usage() {
 
 int main(int argc, char *argv[]) {
   logtag = "pcapd";
+  logcallback = log_to_file;
 
   if(argc < 2)
     usage();

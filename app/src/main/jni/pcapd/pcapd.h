@@ -21,6 +21,7 @@
 #define __PCAPD_H__
 
 #define PCAPD_SOCKET_PATH  "pcapsock"
+#define PCAPD_LOGFILE_PATH "pcapd.log"
 #define PCAPD_PID          "pcapd.pid"
 
 #define PCAPD_FLAG_TX      (1 << 0)

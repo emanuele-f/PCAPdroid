@@ -34,8 +34,8 @@ void set_log_level(int lvl) {
 
 /* ******************************************************* */
 
-void log_android(int prio, const char *fmt, ...) {
-    if(prio >= loglevel) {
+void log_android(int lvl, const char *fmt, ...) {
+    if(lvl >= loglevel) {
         char line[1024];
         va_list argptr;
 
@@ -43,10 +43,23 @@ void log_android(int prio, const char *fmt, ...) {
         vsnprintf(line, sizeof(line), fmt, argptr);
         va_end(argptr);
 
-        __android_log_print(prio, logtag, "%s", line);
+        __android_log_print(lvl, logtag, "%s", line);
 
         if(logcallback != NULL)
-            logcallback(prio, line);
+            logcallback(lvl, line);
+    }
+}
+
+/* ******************************************************* */
+
+char loglvl2char(int lvl) {
+    switch (lvl) {
+        case ANDROID_LOG_DEBUG: return 'D';
+        case ANDROID_LOG_INFO:  return 'I';
+        case ANDROID_LOG_WARN:  return 'W';
+        case ANDROID_LOG_ERROR: return 'E';
+        case ANDROID_LOG_FATAL: return 'F';
+        default:                return '?';
     }
 }
 

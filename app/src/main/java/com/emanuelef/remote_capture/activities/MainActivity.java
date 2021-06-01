@@ -51,6 +51,7 @@ import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -187,6 +188,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
             startActivity(browserIntent);
         });
+
+        if(Prefs.isRootCaptureEnabled(mPrefs)) {
+            Menu navMenu = navView.getMenu();
+            navMenu.findItem(R.id.open_root_log).setVisible(true);
+        }
     }
 
     @Override
@@ -345,6 +351,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
+        } else if(id == R.id.open_root_log) {
+            Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
+            startActivity(intent);
         } else if (id == R.id.action_donate) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
             startActivity(browserIntent);

@@ -145,12 +145,7 @@ public class StatsActivity extends BaseActivity {
 
         if(id == R.id.copy_to_clipboard) {
             String contents = Utils.table2Text(mTable);
-
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(getString(R.string.stats), contents);
-            clipboard.setPrimaryClip(clip);
-
-            Utils.showToast(this, R.string.copied_to_clipboard);
+            Utils.copyToClipboard(this, contents);
             return true;
         } else if(id == R.id.share) {
             String contents = Utils.table2Text(mTable);

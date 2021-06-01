@@ -23,6 +23,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.UiModeManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -490,5 +492,13 @@ public class Utils {
         }
 
         return root_available;
+    }
+
+    public static void copyToClipboard(Context ctx, String contents) {
+        ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
+        clipboard.setPrimaryClip(clip);
+
+        Utils.showToast(ctx, R.string.copied_to_clipboard);
     }
 }
