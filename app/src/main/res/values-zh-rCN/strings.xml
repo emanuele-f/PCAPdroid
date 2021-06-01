@@ -2,6 +2,10 @@
     <string name="app_name" translatable="false">PCAPdroid</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
+    <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
+    <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
+    <string name="sni" translatable="false">SNI</string>
+    <string name="url" translatable="false">URL</string>
 
     <!-- Localized -->
     <string name="start_button">启动</string>
@@ -10,9 +14,7 @@
     <string name="no_filter">无过滤器</string>
     <string name="collector_info">UDP 收集器： %1$s:%2$d</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
-    <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
-    <string name="up_and_down">%1$s 下行 — %2$s 上行</string>
-    <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
+    <string name="rcvd_and_sent">%1$s 下行 — %2$s 上行</string>
     <string name="query">查询</string>
     <string name="host">主机</string>
     <string name="capture_not_running">流量捕获未在运行!</string>
@@ -26,10 +28,8 @@
     <string name="connection_details">连接详情</string>
     <string name="app">应用程序</string>
     <string name="protocol">协议</string>
-    <string name="sni" translatable="false">SNI</string>
     <string name="source">源</string>
     <string name="destination">目的地</string>
-    <string name="url" translatable="false">URL</string>
     <string name="bytes">字节</string>
     <string name="packets">流量包</string>
     <string name="duration">持续时间</string>

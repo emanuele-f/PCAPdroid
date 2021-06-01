@@ -45,7 +45,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/colorAccent"
         app:tint="@null"
         app:maxImageSize="48dp"
         android:src="@drawable/ic_arrow_drop_down" />

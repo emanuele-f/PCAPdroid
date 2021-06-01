@@ -72,7 +72,6 @@ typedef struct conn_data {
     struct {
         char *url;
         char *request_data;
-        int request_len;
         bool parsing_done;
     } http;
 } conn_data_t;

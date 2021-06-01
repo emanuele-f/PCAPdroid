@@ -185,8 +185,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
     private void updateStats(ConnectionDescriptor conn) {
         if(conn != null) {
-            mBytesView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
-            mPacketsView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
+            mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
+            mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
             mDurationView.setText(Utils.formatDuration(conn.last_seen - conn.first_seen));
             mFirstSeen.setText(Utils.formatEpochFull(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochFull(this, conn.last_seen));

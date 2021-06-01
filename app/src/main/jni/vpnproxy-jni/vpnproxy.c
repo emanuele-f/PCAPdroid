@@ -42,6 +42,13 @@ static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
 
+static void trim_trailing_newlines(char *request_data, int request_len) {
+    while((request_len > 0) && (request_data[request_len - 1] == '\n'))
+        request_data[--request_len] = '\0';
+}
+
+/* ******************************************************* */
+
 void free_ndpi(conn_data_t *data) {
     if(data->ndpi_flow) {
         ndpi_free_flow(data->ndpi_flow);
@@ -367,6 +374,10 @@ void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5
             if(data->ndpi_flow->http.url)
                 data->http.url = strndup(data->ndpi_flow->http.url, 256);
 
+            if(data->http.request_data && !data->http.parsing_done)
+                trim_trailing_newlines(data->http.request_data, strlen(data->http.request_data));
+            data->http.parsing_done = true;
+
             break;
         case NDPI_PROTOCOL_TLS:
             if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0]) {
@@ -391,8 +402,10 @@ static int http_is_printable(char c) {
 
 static void process_http_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
     if(pkt->l7_len > 0) {
+        int request_len = data->http.request_data ? (int)strlen(data->http.request_data) : 0;
+
         if(from_tun) {
-            int num_chars = min(MAX_HTTP_REQUEST_LENGTH - data->http.request_len, pkt->l7_len);
+            int num_chars = min(MAX_HTTP_REQUEST_LENGTH - request_len, pkt->l7_len);
 
             if(num_chars <= 0) {
                 data->http.parsing_done = true;
@@ -401,13 +414,12 @@ static void process_http_data(conn_data_t *data, const struct zdtun_pkt *pkt, ui
 
             // +1 to add a NULL terminator
             data->http.request_data = realloc(data->http.request_data,
-                                              data->http.request_len + num_chars + 1);
+                                              request_len + num_chars + 1);
 
             if(!data->http.request_data) {
                 log_e("realloc(http.request_data.buffer) failed with code %d/%s",
                       errno, strerror(errno));
                 data->http.parsing_done = true;
-                data->http.request_len = 0;
                 return;
             }
 
@@ -420,11 +432,12 @@ static void process_http_data(conn_data_t *data, const struct zdtun_pkt *pkt, ui
                 }
 
                 if(ch != '\r')
-                    data->http.request_data[data->http.request_len++] = ch;
+                    data->http.request_data[request_len++] = ch;
             }
 
-            data->http.request_data[data->http.request_len] = '\0';
+            data->http.request_data[request_len] = '\0';
         } else {
+            trim_trailing_newlines(data->http.request_data, request_len);
             data->http.parsing_done = true;
         }
     }

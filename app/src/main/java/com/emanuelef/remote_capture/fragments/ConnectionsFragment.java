@@ -62,6 +62,7 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -74,7 +75,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private static final String TAG = "ConnectionsFragment";
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
-    private View mFabDown;
+    private FloatingActionButton mFabDown;
     private EmptyRecyclerView mRecyclerView;
     private TextView mEmptyText;
     private TextView mOldConnectionsText;
@@ -286,10 +287,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void showFabDown(boolean visible) {
+        // compared to setVisibility, .show/.hide provide animations and also properly clear the AnchorId
         if(visible)
-            mFabDown.setVisibility(View.VISIBLE);
+            mFabDown.show();
         else
-            mFabDown.setVisibility(View.INVISIBLE);
+            mFabDown.hide();
     }
 
     private void scrollToBottom() {
