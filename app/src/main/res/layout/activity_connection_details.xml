@@ -268,12 +268,12 @@
         android:background="@color/colorBackgroundGray"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/http_request_label"
-        android:layout_marginTop="4dp">
+        android:layout_marginTop="8dp">
         <TextView
             android:id="@+id/http_request"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="4sp"
+            android:padding="6sp"
             android:textIsSelectable="true"
             android:fontFamily="monospace"
             android:textSize="12sp"

@@ -22,7 +22,7 @@
 
 static void protectSocketCallback(zdtun_t *tun, socket_t sock) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
-    protectSocket(proxy, sock);
+    vpn_protect_socket(proxy, sock);
 }
 
 /* ******************************************************* */
@@ -210,7 +210,7 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
         // ConnectionsRegister::connectionsUpdates does not allow gaps
         data->incr_id = proxy->incr_id++;
 
-        conns_add(&proxy->new_conns, tuple, data);
+        notify_connection(&proxy->new_conns, tuple, data);
     }
 
     /* accept connection */
@@ -234,28 +234,21 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         // Will free the data in sendConnectionsDump
         if(!data->pending_notification) {
             // Send last notification
-            conns_add(&proxy->conns_updates, tuple, data);
+            notify_connection(&proxy->conns_updates, tuple, data);
         }
 
         data->status = zdtun_conn_get_status(conn_info);
     } else
-        free_connection_data(data);
+        conn_free_data(data);
 }
 
 /* ******************************************************* */
 
-static void on_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_tun, const zdtun_conn_t *conn_info) {
+static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
-    zdtun_pkt_t pkt;
 
     if(!data) {
         log_e("Missing data in connection");
-        return;
-    }
-
-    // NOTE: data->last_pkt could only be used for upstream data (from_tun=0)
-    if(zdtun_parse_pkt(packet, size, &pkt) < 0) {
-        log_e("zdtun_parse_pkt[on_packet] failed");
         return;
     }
 
@@ -268,10 +261,10 @@ static void on_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_t
         /* NOTE: account connection stats also for non-matched connections */
         if(from_tun) {
             data->sent_pkts++;
-            data->sent_bytes += size;
+            data->sent_bytes += pkt->len;
         } else {
             data->rcvd_pkts++;
-            data->rcvd_bytes += size;
+            data->rcvd_bytes += pkt->len;
         }
 
         data->last_seen = time(NULL);
@@ -280,7 +273,7 @@ static void on_packet(zdtun_t *tun, const char *packet, int size, uint8_t from_t
         return;
     }
 
-    account_packet(proxy, &pkt, from_tun, tuple, data);
+    account_packet(proxy, pkt, from_tun, tuple, data);
 }
 
 /* ******************************************************* */
@@ -335,7 +328,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
     ip.ip4 = proxy->dns_server;
     zdtun_set_dnat_info(tun, &ip, ntohs(53), 4);
 
-    refreshTime(proxy);
+    refresh_time(proxy);
     next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_d("Starting packet loop [tunfd=%d]", proxy->tunfd);
@@ -360,7 +353,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
         if(!running)
             break;
 
-        refreshTime(proxy);
+        refresh_time(proxy);
 
         if(FD_ISSET(proxy->tunfd, &fdset)) {
             /* Packet from VPN */

@@ -184,18 +184,17 @@ extern bool running;
 extern uint32_t new_dns_server;
 extern bool dump_vpn_stats_now;
 
-void free_ndpi(conn_data_t *data);
-void conns_add(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
-void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
+conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
+void conn_free_data(conn_data_t *data);
+void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
+void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
 void run_housekeeping(vpnproxy_data_t *proxy);
 void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
 int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
-void free_connection_data(conn_data_t *data);
-void protectSocket(vpnproxy_data_t *proxy, socket_t sock);
+void refresh_time(vpnproxy_data_t *proxy);
+void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
-void refreshTime(vpnproxy_data_t *proxy);
-void initMasterProtocolsBitmap(ndpi_protocol_bitmask_struct_t *b);
-conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
 
 int run_proxy(vpnproxy_data_t *proxy);
 int run_root(vpnproxy_data_t *proxy);
