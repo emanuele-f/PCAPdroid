@@ -12,9 +12,9 @@
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
     <string name="no_filter">无过滤器</string>
-    <string name="collector_info">UDP 收集器： %1$s:%2$d</string>
+    <string name="collector_info">UDP 收集器: %1$s:%2$d</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
-    <string name="rcvd_and_sent">%1$s 下行 — %2$s 上行</string>
+    <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
     <string name="host">主机</string>
     <string name="capture_not_running">流量捕获未在运行!</string>
@@ -22,7 +22,7 @@
     <string name="app_filter">应用过滤器</string>
     <string name="ready">就绪</string>
     <string name="about">关于</string>
-    <string name="status">Status</string>
+    <string name="status">状态</string>
     <string name="connections_view">连接</string>
     <string name="no_connections">无连接</string>
     <string name="connection_details">连接详情</string>
@@ -128,5 +128,7 @@
     <string name="root_capture">以根用户身份捕获流量</string>
     <string name="root_capture_summary">以根用户身份捕获数据包允许 PCAPdroid 与其他 VPN 应用程序一起运行。</string>
     <string name="donate">捐赠</string>
+    <string name="http_request">HTTP 请求</string>
+    <string name="root_log">Root 日志</string>
 </resources>
 
