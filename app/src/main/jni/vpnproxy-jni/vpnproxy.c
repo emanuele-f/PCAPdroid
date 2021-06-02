@@ -454,9 +454,12 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
             from_tun ? data->src_id : data->dst_id,
             from_tun ? data->dst_id : data->src_id);
 
-    if((data->l7proto.master_protocol == NDPI_PROTOCOL_HTTP) && (!data->http.parsing_done)
-            && !data->ndpi_flow->packet.tcp_retransmission)
+    if((data->l7proto.master_protocol == NDPI_PROTOCOL_HTTP) || (data->l7proto.app_protocol == NDPI_PROTOCOL_HTTP)
+            && (!data->http.parsing_done)
+            && !data->ndpi_flow->packet.tcp_retransmission) {
+        data->l7proto.master_protocol = NDPI_PROTOCOL_HTTP;
         process_http_data(data, pkt, from_tun);
+    }
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))

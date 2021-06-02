@@ -262,23 +262,20 @@
         app:layout_constraintTop_toBottomOf="@id/table"
         android:text="@string/http_request"/>
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorBackgroundGray"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/http_request_label"
-        android:layout_marginTop="8dp">
         <TextView
-            android:id="@+id/http_request"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/colorBackgroundGray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/http_request_label"
+            android:layout_marginTop="8dp"
+            android:id="@+id/http_request"
             android:padding="6sp"
             android:textIsSelectable="true"
             android:fontFamily="monospace"
             android:textSize="12sp"
             android:scrollHorizontally="true"
             tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
-    </HorizontalScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
