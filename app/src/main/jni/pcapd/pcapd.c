@@ -42,12 +42,15 @@
 #include <net/if.h>
 #include <time.h>
 #include <pcap.h>
+#include <pcap/sll.h>
 #include "pcapd.h"
 #include "nl_utils.h"
 #include "common/uid_resolver.h"
 #include "common/uid_lru.h"
 #include "common/utils.h"
 #include "zdtun.h"
+
+//#define READ_FROM_PCAP "/sdcard/test.pcap"
 
 /* ******************************************************* */
 
@@ -57,6 +60,7 @@ typedef struct {
 
     pcap_t *pd;
     int dlink;
+    int ipoffset;
     int pf;
     int ifidx;
     char ifname[IFNAMSIZ];
@@ -67,6 +71,8 @@ typedef struct {
 } pcapd_runtime_t;
 
 static char errbuf[PCAP_ERRBUF_SIZE];
+static FILE *logf = NULL;
+static uint8_t no_logf = 0;
 
 /* ******************************************************* */
 
@@ -76,6 +82,35 @@ static uint64_t bytes2mac(const uint8_t *buf) {
   memcpy(&m, buf, 6);
 
   return m;
+}
+
+/* ******************************************************* */
+
+static void log_to_file(int lvl, const char *msg) {
+  char datetime[64];
+  struct tm res;
+  time_t now;
+
+  if(no_logf)
+    return;
+
+  if(logf == NULL) {
+    mode_t old_mask = umask(033);
+    logf = fopen(PCAPD_LOGFILE_PATH, "w");
+    umask(old_mask);
+
+    if(logf == NULL) {
+      log_e("Could not open log file[%d]: %s", errno, strerror(errno));
+      no_logf = 1;
+      return;
+    }
+  }
+
+  now = time(NULL);
+  strftime(datetime, sizeof(datetime), "%d/%b/%Y %H:%M:%S", localtime_r(&now, &res));
+
+  fprintf(logf, "[%c] %s - %s\n", loglvl2char(lvl), datetime, msg);
+  fflush(logf);
 }
 
 /* ******************************************************* */
@@ -99,7 +134,7 @@ static int get_iface_mac(const char *iface, uint64_t *mac) {
 
 /* ******************************************************* */
 
-int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
+static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
   struct ifreq ifr;
   int fd;
   int rv;
@@ -143,6 +178,9 @@ static int list_interfaces() {
 static void sighandler(__unused int signo) {
   log_i("SIGTERM received, terminating");
   unlink(PCAPD_PID);
+
+  if(logf)
+    fclose(logf);
 
   exit(0);
 }
@@ -259,6 +297,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
 
   log_i("interface changed [%d -> %d], (re)starting capture", rt->ifidx, ri.ifidx);
 
+#ifndef READ_FROM_PCAP
   // TODO support larger MTU
   pcap_t *pd = pcap_open_live(ifname, 1500, 0, 1, errbuf);
 
@@ -266,13 +305,34 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
     log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
     return;
   }
+#else
+  pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
+
+  if(!pd) {
+    log_i("pcap_open_offline(%s) failed: %s", READ_FROM_PCAP, errbuf);
+    return;
+  }
+
+  strcpy(ifname, "pcap");
+#endif
 
   int dlink = pcap_datalink(pd);
+  int ipoffset;
 
-  if((dlink != DLT_EN10MB) && (dlink != DLT_RAW)) {
-    log_i("[%s] unsupported datalink: %d", ifname, dlink);
-    pcap_close(pd);
-    return;
+  switch(dlink) {
+    case DLT_RAW:
+      ipoffset = 0;
+      break;
+    case DLT_EN10MB:
+      ipoffset = 14;
+      break;
+    case DLT_LINUX_SLL:
+      ipoffset = SLL_HDR_LEN;
+      break;
+    default:
+      log_i("[%s] unsupported datalink: %d", ifname, dlink);
+      pcap_close(pd);
+      return;
   }
 
   struct bpf_program fcode;
@@ -308,6 +368,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
       log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
 
   rt->dlink = dlink;
+  rt->ipoffset = ipoffset;
   rt->pf = pcap_get_selectable_fd(pd);
   rt->ifidx = ri.ifidx;
   memcpy(rt->ifname, ifname, sizeof(ifname));
@@ -333,6 +394,10 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
 
   ssize_t len = recvmsg(rt->nlsock, &msg, 0);
   uint8_t found = 0;
+
+#ifdef READ_FROM_PCAP
+  return 0;
+#endif
 
   if(len <= 0) {
     log_e("netlink recvmsg failed [%d]: %s\n", errno, sizeof(errno));
@@ -394,6 +459,17 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
     len -= 14;
     pkt += 14;
+  } else if((rt->dlink == DLT_LINUX_SLL) && (len >= SLL_HDR_LEN)) {
+    struct sll_header *sll = (struct sll_header*) pkt;
+    uint16_t pkttype = ntohs(sll->sll_pkttype);
+
+    if(pkttype == LINUX_SLL_HOST)
+      return 0; // RX
+    else if(pkttype == LINUX_SLL_OUTGOING)
+      return 1; // TX
+
+    len -= SLL_HDR_LEN;
+    pkt += SLL_HDR_LEN;
   }
 
   // NOTE: this must be IP traffic due to the PCAP filter
@@ -407,7 +483,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
   if(ip->saddr == rt->ip)
     return 1; // TX
 
-  return 0;
+  return 1; // by default assume TX
 }
 
 /* ******************************************************* */
@@ -451,7 +527,7 @@ static int run_pcap_dump(int uid_filter) {
     }
 
     if(FD_ISSET(rt.client, &fds)) {
-      log_i("client closed");
+      log_i("Client closed");
       break;
     }
     if(FD_ISSET(rt.nlsock, &fds)) {
@@ -463,7 +539,7 @@ static int run_pcap_dump(int uid_filter) {
     if((rt.pf != -1) && FD_ISSET(rt.pf, &fds)) {
       struct pcap_pkthdr *hdr;
       const u_char *pkt;
-      int to_skip = (rt.dlink == DLT_EN10MB) ? 14 : 0;
+      int to_skip = rt.ipoffset;
       int rv1 = pcap_next_ex(rt.pd, &hdr, &pkt);
 
       if(rv1 == PCAP_ERROR) {
@@ -486,13 +562,7 @@ static int run_pcap_dump(int uid_filter) {
         if(zdtun_parse_pkt((const char*)pkt, hdr->caplen, &zpkt) == 0) {
           if(!is_tx) {
             // Packet from the internet, swap src and dst
-            uint16_t tmp = zpkt.tuple.dst_port;
-            zpkt.tuple.dst_port = zpkt.tuple.src_port;
-            zpkt.tuple.src_port = tmp;
-
-            zdtun_ip_t tmp1 = zpkt.tuple.dst_ip;
-            zpkt.tuple.dst_ip = zpkt.tuple.src_ip;
-            zpkt.tuple.src_ip = tmp1;
+            tupleSwapPeers(&zpkt.tuple);
           }
 
           int uid = uid_lru_find(lru, &zpkt.tuple);
@@ -557,6 +627,7 @@ static void usage() {
 
 int main(int argc, char *argv[]) {
   logtag = "pcapd";
+  logcallback = log_to_file;
 
   if(argc < 2)
     usage();

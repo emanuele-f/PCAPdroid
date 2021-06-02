@@ -77,6 +77,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         View url_row = findViewById(R.id.detail_url_row);
         View info_row = findViewById(R.id.detail_info_row);
         TextView source = findViewById(R.id.detail_source);
+        TextView http_request = findViewById(R.id.http_request);
+        TextView http_request_lbl = findViewById(R.id.http_request_label);
         TextView destination = findViewById(R.id.detail_destination);
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
@@ -115,6 +117,13 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 url.setText(mConn.url);
             else
                 url_row.setVisibility(View.GONE);
+
+            if(!mConn.http_request.isEmpty())
+                http_request.setText(mConn.http_request);
+            else {
+                http_request.setVisibility(View.GONE);
+                http_request_lbl.setVisibility(View.GONE);
+            }
 
             updateStats(mConn);
         }
@@ -176,8 +185,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
     private void updateStats(ConnectionDescriptor conn) {
         if(conn != null) {
-            mBytesView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
-            mPacketsView.setText(String.format(getResources().getString(R.string.up_and_down), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
+            mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
+            mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
             mDurationView.setText(Utils.formatDuration(conn.last_seen - conn.first_seen));
             mFirstSeen.setText(Utils.formatEpochFull(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochFull(this, conn.last_seen));

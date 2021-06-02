@@ -1,247 +1,284 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:fillViewport="true"
+    android:padding="8dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<TableLayout
-    android:id="@+id/table"
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:layout_height="wrap_content">
 
-    <TableRow
+    <TableLayout
+        android:id="@+id/table"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/app" />
-        <TextView
-            android:id="@+id/detail_app"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="com.emanuelef.remote_capture (14503)" />
-    </TableRow>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TableRow
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/app" />
+            <TextView
+                android:id="@+id/detail_app"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="com.emanuelef.remote_capture (14503)" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/protocol" />
+            <TextView
+                android:id="@+id/detail_protocol"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="TLS (TCP)" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/detail_info_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:id="@+id/detail_info_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/sni" />
+            <TextView
+                android:id="@+id/detail_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="ssl.example.com" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textIsSelectable="true"
+                android:textStyle="bold"
+                android:text="@string/source" />
+            <TextView
+                android:id="@+id/detail_source"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="1.2.3.4:14631" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/destination" />
+            <TextView
+                android:id="@+id/detail_destination"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="5.6.7.8:443" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/status" />
+            <TextView
+                android:id="@+id/detail_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="Open" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/detail_url_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/url" />
+            <TextView
+                android:id="@+id/detail_url"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="example.com/test" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/bytes" />
+            <TextView
+                android:id="@+id/detail_bytes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="1.5 MB down - 0.1 up" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/packets" />
+            <TextView
+                android:id="@+id/detail_packets"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="1.1 K down - 98 down" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/duration" />
+            <TextView
+                android:id="@+id/detail_duration"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="2 min" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/first_seen" />
+            <TextView
+                android:id="@+id/first_seen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="01/02/20 00:45:01" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/last_seen" />
+            <TextView
+                android:id="@+id/last_seen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="01/02/20 00:47:01" />
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/http_request_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/table"
+        android:text="@string/http_request"/>
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
+        android:layout_height="wrap_content"
+        android:background="@color/colorBackgroundGray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/http_request_label"
+        android:layout_marginTop="4dp">
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/http_request"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/protocol" />
-        <TextView
-            android:id="@+id/detail_protocol"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
+            android:padding="4sp"
             android:textIsSelectable="true"
-            tools:text="TLS (TCP)" />
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/detail_info_row"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:id="@+id/detail_info_label"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/sni" />
-        <TextView
-            android:id="@+id/detail_info"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="ssl.example.com" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textIsSelectable="true"
-            android:textStyle="bold"
-            android:text="@string/source" />
-        <TextView
-            android:id="@+id/detail_source"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="1.2.3.4:14631" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/destination" />
-        <TextView
-            android:id="@+id/detail_destination"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="5.6.7.8:443" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/status" />
-        <TextView
-            android:id="@+id/detail_status"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="Open" />
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/detail_url_row"
-        android:layout_width="match_parent"
-        android:layout_height="0dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/url" />
-        <TextView
-            android:id="@+id/detail_url"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="example.com/test" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/bytes" />
-        <TextView
-            android:id="@+id/detail_bytes"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="1.5 MB down - 0.1 up" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/packets" />
-        <TextView
-            android:id="@+id/detail_packets"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="1.1 K down - 98 down" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/duration" />
-        <TextView
-            android:id="@+id/detail_duration"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="2 min" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/first_seen" />
-        <TextView
-            android:id="@+id/first_seen"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="01/02/20 00:45:01" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="4dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textStyle="bold"
-            android:text="@string/last_seen" />
-        <TextView
-            android:id="@+id/last_seen"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:textIsSelectable="true"
-            tools:text="01/02/20 00:47:01" />
-    </TableRow>
-</TableLayout>
-
+            android:fontFamily="monospace"
+            android:textSize="12sp"
+            android:scrollHorizontally="true"
+            tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
+    </HorizontalScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         android:layout_margin="2dp"
         tools:src="@drawable/ic_apps"
-        tools:tint="@color/colorAccent" />
+        tools:tint="?attr/colorAccent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"

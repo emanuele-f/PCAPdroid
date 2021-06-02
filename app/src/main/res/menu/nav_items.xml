@@ -9,6 +9,11 @@
             android:id="@+id/action_stats"
             android:title="@string/stats"
             android:icon="@drawable/ic_list" />
+        <item
+            android:id="@+id/open_root_log"
+            android:title="@string/root_log"
+            android:icon="@drawable/ic_bug_report"
+            android:visible="false" />
     </group>
     <group android:id="@+id/group_social">
         <item

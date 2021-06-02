@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.18.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../..)

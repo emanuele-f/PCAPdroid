@@ -34,6 +34,7 @@
 #define MAX_HOST_LRU_SIZE 128
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
+#define MAX_HTTP_REQUEST_LENGTH 1024
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
@@ -65,9 +66,14 @@ typedef struct conn_data {
     jint rcvd_pkts;
     zdtun_conn_status_t status;
     char *info;
-    char *url;
     jint uid;
     bool pending_notification;
+
+    struct {
+        char *url;
+        char *request_data;
+        bool parsing_done;
+    } http;
 } conn_data_t;
 
 typedef struct vpn_conn {
@@ -182,7 +188,7 @@ void free_ndpi(conn_data_t *data);
 void conns_add(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
 void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
 void run_housekeeping(vpnproxy_data_t *proxy);
-void account_packet(vpnproxy_data_t *proxy, const char *packet, int size, uint8_t from_tun, const zdtun_5tuple_t *tuple, conn_data_t *data);
+void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
 int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void free_connection_data(conn_data_t *data);
 void protectSocket(vpnproxy_data_t *proxy, socket_t sock);

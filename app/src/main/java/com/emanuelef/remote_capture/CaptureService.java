@@ -671,8 +671,11 @@ public class CaptureService extends VpnService implements Runnable {
         });
     }
 
+    public static String getPcapdWorkingDir(Context ctx) {
+        return ctx.getCacheDir().getAbsolutePath();
+    }
     public String getPcapdWorkingDir() {
-        return getCacheDir().getAbsolutePath();
+        return getPcapdWorkingDir(this);
     }
 
     public String getLibprogPath(String prog_name) {

@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.7] - 2021-05-19
+- Handle DLT_LINUX_SLL to fix some root daemon start issues
+
+## [1.3.6] - 2021-05-01
+- Implement root based capture to run with other VPN apps
+- Fix bad URL when an HTTP proxy is used
+
 ## [1.3.5] - 2021-04-14
 - Fix delays and slow downs with big uploads
 - Add SOCKS5 client, allowing to use the official mitmproxy
