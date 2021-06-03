@@ -121,4 +121,5 @@
     <string name="donate">Пожертвовать</string>
     <string name="http_request">HTTP-запрос</string>
     <string name="root_log">Root-журнал</string>
+    <string name="request_plaintext">Запрос в чистом виде</string>
 </resources>

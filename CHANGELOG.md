@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.8] - 2021-06-03
+- Fix monodirectional connections with LINUX_SLL in root mode
+- Show plaintext request data (e.g. HTTP headers) in the connection details
+
 ## [1.3.7] - 2021-05-19
 - Handle DLT_LINUX_SLL to fix some root daemon start issues
 
