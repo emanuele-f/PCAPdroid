@@ -1,4 +1,4 @@
-PCAPdroid is brought to you free of charge, free of ads and, most importantly, open source. This means that you can learn from it, run it now and in the future, modify it for your needs. This is the beauty of open source and free software. Our phones contain our life, so it is very important that people can audit what a critical app like PCAPdroid does.
+PCAPdroid is brought to you free of charge and, most importantly, open source. This means that you can verify it, learn from it and modify it for your needs. This is the beauty of open source and free software. Our phones contain our life, so it is very important that people can audit what a critical app like PCAPdroid does.
 
 If you like the app and want to foster future developments, you can donate via one of the methods below. Please note that donations are fully voluntary and no refunds are allowed.
 
