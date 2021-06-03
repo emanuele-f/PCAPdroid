@@ -34,6 +34,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.emanuelef.remote_capture.AD;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -42,12 +43,16 @@ import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity {
     private static final String ACTION_LANG_RESTART = "lang_restart";
+    private AD mAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.title_activity_settings); // note: setting via manifest does not honor custom locale
         setContentView(R.layout.settings_activity);
+
+        mAd = new AD(this, "ca-app-pub-5059485193178567/1641030673");
+        mAd.show();
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -57,6 +62,12 @@ public class SettingsActivity extends BaseActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mAd.hide();
+        super.onDestroy();
     }
 
     @Override

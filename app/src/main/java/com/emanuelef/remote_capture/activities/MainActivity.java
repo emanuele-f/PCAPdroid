@@ -56,6 +56,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.AD;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -73,6 +74,7 @@ import java.io.FileNotFoundException;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private AD mAd;
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
     private AppState mState;
@@ -106,6 +108,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        mAd = new AD(this, "ca-app-pub-5059485193178567/1497791951");
 
         initAppState();
         checkPermissions();
@@ -155,6 +159,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mAd.hide();
 
         if(mReceiver != null)
             LocalBroadcastManager.getInstance(this)
@@ -398,11 +403,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public void appStateReady() {
         mState = AppState.ready;
+        mAd.show();
         notifyAppState();
     }
 
     public void appStateStarting() {
         mState = AppState.starting;
+        mAd.hide();
         notifyAppState();
     }
 
