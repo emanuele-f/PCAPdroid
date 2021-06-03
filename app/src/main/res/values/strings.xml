@@ -130,5 +130,6 @@
     <string name="donate">Donate</string>
     <string name="http_request">HTTP Request</string>
     <string name="root_log">Root Log</string>
+    <string name="request_plaintext">Request Plaintext</string>
 </resources>
 

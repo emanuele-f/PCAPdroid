@@ -121,5 +121,6 @@
     <string name="donate">Donazioni</string>
     <string name="http_request">Richiesta HTTP</string>
     <string name="root_log">Log Root</string>
+    <string name="request_plaintext">Richiesta in Chiaro</string>
 </resources>
 

@@ -56,7 +56,7 @@ public class ConnectionDescriptor implements Serializable {
     public int rcvd_pkts;
     public String info;
     public String url;
-    public String http_request;
+    public String request_plaintext;
     public String l7proto;
     public int uid;
     public int incr_id;
@@ -88,7 +88,7 @@ public class ConnectionDescriptor implements Serializable {
         status = _status;
         info = _info;
         url = _url;
-        http_request = _req;
+        request_plaintext = _req;
         l7proto = _l7proto;
         uid = _uid;
         incr_id = _incr_id;

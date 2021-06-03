@@ -42,13 +42,6 @@ static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
 
-static void trim_trailing_newlines(char *request_data, int request_len) {
-    while((request_len > 0) && (request_data[request_len - 1] == '\n'))
-        request_data[--request_len] = '\0';
-}
-
-/* ******************************************************* */
-
 static void conn_free_ndpi(conn_data_t *data) {
     if(data->ndpi_flow) {
         ndpi_free_flow(data->ndpi_flow);
@@ -74,10 +67,10 @@ void conn_free_data(conn_data_t *data) {
 
     if(data->info)
         free(data->info);
-    if(data->http.url)
-        free(data->http.url);
-    if(data->http.request_data)
-        free(data->http.request_data);
+    if(data->url)
+        free(data->url);
+    if(data->request_data)
+        free(data->request_data);
 
     free(data);
 }
@@ -372,11 +365,7 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
             }
 
             if(data->ndpi_flow->http.url)
-                data->http.url = strndup(data->ndpi_flow->http.url, 256);
-
-            if(data->http.request_data && !data->http.parsing_done)
-                trim_trailing_newlines(data->http.request_data, strlen(data->http.request_data));
-            data->http.parsing_done = true;
+                data->url = strndup(data->ndpi_flow->http.url, 256);
 
             break;
         case NDPI_PROTOCOL_TLS:
@@ -394,52 +383,47 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
 
 /* ******************************************************* */
 
-static int http_is_printable(char c) {
-    return isprint(c) || (c == '\r') || (c == '\n');
+static int is_plaintext(char c) {
+    return isprint(c) || (c == '\r') || (c == '\n') || (c == '\t');
 }
 
 /* ******************************************************* */
 
-static void process_http_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
+static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
     if(pkt->l7_len > 0) {
-        int request_len = data->http.request_data ? (int)strlen(data->http.request_data) : 0;
-
-        if(from_tun) {
-            int num_chars = min(MAX_HTTP_REQUEST_LENGTH - request_len, pkt->l7_len);
+        if(from_tun && is_plaintext(pkt->l7[0])) {
+            int request_len = data->request_data ? (int)strlen(data->request_data) : 0;
+            int num_chars = min(MAX_PLAINTEXT_LENGTH - request_len, pkt->l7_len);
 
             if(num_chars <= 0) {
-                data->http.parsing_done = true;
+                data->request_done = true;
                 return;
             }
 
             // +1 to add a NULL terminator
-            data->http.request_data = realloc(data->http.request_data,
-                                              request_len + num_chars + 1);
+            data->request_data = realloc(data->request_data,request_len + num_chars + 1);
 
-            if(!data->http.request_data) {
-                log_e("realloc(http.request_data.buffer) failed with code %d/%s",
+            if(!data->request_data) {
+                log_e("realloc(request_data) failed with code %d/%s",
                       errno, strerror(errno));
-                data->http.parsing_done = true;
+                data->request_done = true;
                 return;
             }
 
             for(int i = 0; i < num_chars; i++) {
                 char ch = pkt->l7[i];
 
-                if(!http_is_printable(ch)) {
-                    data->http.parsing_done = true;
+                if(!is_plaintext(ch)) {
+                    data->request_done = true;
                     break;
                 }
 
-                if(ch != '\r')
-                    data->http.request_data[request_len++] = ch;
+                data->request_data[request_len++] = ch;
             }
 
-            data->http.request_data[request_len] = '\0';
-        } else {
-            trim_trailing_newlines(data->http.request_data, request_len);
-            data->http.parsing_done = true;
-        }
+            data->request_data[request_len] = '\0';
+        } else
+            data->request_done = true;
     }
 }
 
@@ -454,12 +438,8 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
             from_tun ? data->src_id : data->dst_id,
             from_tun ? data->dst_id : data->src_id);
 
-    if((data->l7proto.master_protocol == NDPI_PROTOCOL_HTTP) || (data->l7proto.app_protocol == NDPI_PROTOCOL_HTTP)
-            && (!data->http.parsing_done)
-            && !data->ndpi_flow->packet.tcp_retransmission) {
-        data->l7proto.master_protocol = NDPI_PROTOCOL_HTTP;
-        process_http_data(data, pkt, from_tun);
-    }
+    if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
+        process_request_data(data, pkt, from_tun);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
@@ -541,8 +521,8 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
 #endif
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
-    jobject url_string = (*env)->NewStringUTF(env, data->http.url ? data->http.url : "");
-    jobject req_string = (*env)->NewStringUTF(env, data->http.request_data ? data->http.request_data : "");
+    jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
+    jobject req_string = (*env)->NewStringUTF(env, data->request_data ? data->request_data : "");
     jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);

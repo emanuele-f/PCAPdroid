@@ -34,7 +34,7 @@
 #define MAX_HOST_LRU_SIZE 128
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
-#define MAX_HTTP_REQUEST_LENGTH 2048
+#define MAX_PLAINTEXT_LENGTH 1024
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
@@ -68,12 +68,9 @@ typedef struct conn_data {
     char *info;
     jint uid;
     bool pending_notification;
-
-    struct {
-        char *url;
-        char *request_data;
-        bool parsing_done;
-    } http;
+    bool request_done;
+    char *request_data;
+    char *url;
 } conn_data_t;
 
 typedef struct vpn_conn {

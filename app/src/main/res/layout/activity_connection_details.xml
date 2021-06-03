@@ -253,23 +253,23 @@
     </TableLayout>
 
     <TextView
-        android:id="@+id/http_request_label"
+        android:id="@+id/request_data_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/table"
-        android:text="@string/http_request"/>
+        android:text="@string/request_plaintext"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorBackgroundGray"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/http_request_label"
+            app:layout_constraintTop_toBottomOf="@id/request_data_label"
             android:layout_marginTop="8dp"
-            android:id="@+id/http_request"
+            android:id="@+id/request_data"
             android:padding="6sp"
             android:textIsSelectable="true"
             android:fontFamily="monospace"
