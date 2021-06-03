@@ -105,6 +105,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_activity);
 
         initAppState();
         checkPermissions();
@@ -115,8 +116,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
                 .apply();
-
-        setContentView(R.layout.main_activity);
 
         mTabLayout = findViewById(R.id.tablayout);
         mPager = findViewById(R.id.pager);

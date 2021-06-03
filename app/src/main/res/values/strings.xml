@@ -83,7 +83,7 @@
     <string name="cannot_write_file">Cannot write file</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="pcap_file_action">Traffic saved to file %1$s (%2$s).</string>
     <string name="delete_error">Could not delete file</string>
     <string name="capture_running">Capture running</string>

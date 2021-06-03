@@ -8,7 +8,8 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         android:scrollbarStyle="outsideOverlay"
-        android:id="@+id/apps_stats_view" />
+        android:id="@+id/apps_stats_view"
+        android:fillViewport="true" />
 
     <TextView
         android:id="@+id/no_apps"

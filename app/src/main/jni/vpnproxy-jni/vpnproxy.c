@@ -148,7 +148,7 @@ char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufs
 
 /* ******************************************************* */
 
-static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
+u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in_addr addr = {0};
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
@@ -171,7 +171,7 @@ static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
 
 /* ******************************************************* */
 
-static struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
+struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in6_addr addr = {0};
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
@@ -194,7 +194,7 @@ static struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *ke
 
 /* ******************************************************* */
 
-static jint getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
+int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
     jint value;
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()I");
 

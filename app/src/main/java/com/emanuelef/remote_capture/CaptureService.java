@@ -51,6 +51,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
@@ -581,6 +582,15 @@ public class CaptureService extends VpnService implements Runnable {
     public int isRootCapture() { return(root_capture ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
+
+    public int getOwnAppUid() {
+        AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID);
+
+        if(app != null)
+            return app.getUid();
+
+        return Utils.UID_NO_FILTER;
+    }
 
     // returns 1 if dumpPcapData should be called
     public int dumpPcapToJava() {

@@ -35,7 +35,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
-            android:scrollbarStyle="outsideOverlay" />
+            android:scrollbarStyle="outsideOverlay"
+            android:fillViewport="true" />
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

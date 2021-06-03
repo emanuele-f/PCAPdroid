@@ -194,7 +194,11 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
+
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
+int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
+uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
+struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 
 int run_proxy(vpnproxy_data_t *proxy);
 int run_root(vpnproxy_data_t *proxy);
