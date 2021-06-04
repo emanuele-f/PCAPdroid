@@ -130,5 +130,6 @@
     <string name="donate">捐赠</string>
     <string name="http_request">HTTP 请求</string>
     <string name="root_log">Root 日志</string>
+    <string name="request_plaintext">请求明文</string>
 </resources>
 
