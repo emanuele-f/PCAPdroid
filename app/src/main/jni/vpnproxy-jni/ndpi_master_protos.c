@@ -21,7 +21,7 @@
 #include "ndpi_protocol_ids.h"
 
 // protocols which are not application protocols
-void initMasterProtocolsBitmap(ndpi_protocol_bitmask_struct_t *b) {
+void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b) {
     NDPI_ZERO(b);
 
     // https://github.com/ntop/nDPI/blob/dev/src/include/ndpi_protocol_ids.h

@@ -77,8 +77,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         View url_row = findViewById(R.id.detail_url_row);
         View info_row = findViewById(R.id.detail_info_row);
         TextView source = findViewById(R.id.detail_source);
-        TextView http_request = findViewById(R.id.http_request);
-        TextView http_request_lbl = findViewById(R.id.http_request_label);
+        TextView request_data = findViewById(R.id.request_data);
+        TextView request_data_lbl = findViewById(R.id.request_data_label);
         TextView destination = findViewById(R.id.detail_destination);
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
@@ -118,11 +118,11 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             else
                 url_row.setVisibility(View.GONE);
 
-            if(!mConn.http_request.isEmpty())
-                http_request.setText(mConn.http_request);
+            if(!mConn.request_plaintext.isEmpty())
+                request_data.setText(mConn.request_plaintext);
             else {
-                http_request.setVisibility(View.GONE);
-                http_request_lbl.setVisibility(View.GONE);
+                request_data.setVisibility(View.GONE);
+                request_data_lbl.setVisibility(View.GONE);
             }
 
             updateStats(mConn);

@@ -238,7 +238,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
             HASH_ADD(hh, *connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             data->incr_id = proxy->incr_id++;
-            conns_add(&proxy->new_conns, &pkt.tuple, data);
+            notify_connection(&proxy->new_conns, &pkt.tuple, data);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
@@ -287,7 +287,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
 
             // Will free the data in sendConnectionsDump
             if(!conn->data->pending_notification)
-                conns_add(&proxy->conns_updates, &conn->tuple, conn->data);
+                notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
 
             conn->data->status = CONN_STATUS_CLOSED;
 
@@ -321,7 +321,7 @@ int run_root(vpnproxy_data_t *proxy) {
     if(sock < 0)
         return(-1);
 
-    refreshTime(proxy);
+    refresh_time(proxy);
     next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_d("Starting packet loop");
@@ -339,7 +339,7 @@ int run_root(vpnproxy_data_t *proxy) {
             goto cleanup;
         }
 
-        refreshTime(proxy);
+        refresh_time(proxy);
 
         if(!running)
             break;

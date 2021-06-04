@@ -42,14 +42,7 @@ static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
 
-static void trim_trailing_newlines(char *request_data, int request_len) {
-    while((request_len > 0) && (request_data[request_len - 1] == '\n'))
-        request_data[--request_len] = '\0';
-}
-
-/* ******************************************************* */
-
-void free_ndpi(conn_data_t *data) {
+static void conn_free_ndpi(conn_data_t *data) {
     if(data->ndpi_flow) {
         ndpi_free_flow(data->ndpi_flow);
         data->ndpi_flow = NULL;
@@ -66,25 +59,25 @@ void free_ndpi(conn_data_t *data) {
 
 /* ******************************************************* */
 
-void free_connection_data(conn_data_t *data) {
+void conn_free_data(conn_data_t *data) {
     if(!data)
         return;
 
-    free_ndpi(data);
+    conn_free_ndpi(data);
 
     if(data->info)
         free(data->info);
-    if(data->http.url)
-        free(data->http.url);
-    if(data->http.request_data)
-        free(data->http.request_data);
+    if(data->url)
+        free(data->url);
+    if(data->request_data)
+        free(data->request_data);
 
     free(data);
 }
 
 /* ******************************************************* */
 
-void conns_add(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
+void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
     if(arr->cur_items >= arr->size) {
         /* Extend array */
         arr->size = (arr->size == 0) ? 8 : (arr->size * 2);
@@ -110,7 +103,7 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
             vpn_conn_t *slot = &arr->items[i];
 
             if(slot->data && ((slot->data->status >= CONN_STATUS_CLOSED) || free_all))
-                free_connection_data(slot->data);
+                conn_free_data(slot->data);
         }
 
         free(arr->items);
@@ -148,7 +141,7 @@ char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufs
 
 /* ******************************************************* */
 
-static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
+u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in_addr addr = {0};
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
@@ -171,7 +164,7 @@ static u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
 
 /* ******************************************************* */
 
-static struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
+struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in6_addr addr = {0};
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
@@ -194,7 +187,7 @@ static struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *ke
 
 /* ******************************************************* */
 
-static jint getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
+int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
     jint value;
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()I");
 
@@ -277,17 +270,17 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
     /* nDPI */
     if((data->ndpi_flow = calloc(1, SIZEOF_FLOW_STRUCT)) == NULL) {
         log_e("ndpi_flow_malloc failed");
-        free_ndpi(data);
+        conn_free_ndpi(data);
     }
 
     if((data->src_id = calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
         log_e("ndpi_malloc(src_id) failed");
-        free_ndpi(data);
+        conn_free_ndpi(data);
     }
 
     if((data->dst_id = calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
         log_e("ndpi_malloc(dst_id) failed");
-        free_ndpi(data);
+        conn_free_ndpi(data);
     }
 
     data->first_seen = data->last_seen = time(NULL);
@@ -312,7 +305,7 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
 
 /* ******************************************************* */
 
-void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple) {
+void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple) {
     if(!data->ndpi_flow)
         return;
 
@@ -372,11 +365,7 @@ void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5
             }
 
             if(data->ndpi_flow->http.url)
-                data->http.url = strndup(data->ndpi_flow->http.url, 256);
-
-            if(data->http.request_data && !data->http.parsing_done)
-                trim_trailing_newlines(data->http.request_data, strlen(data->http.request_data));
-            data->http.parsing_done = true;
+                data->url = strndup(data->ndpi_flow->http.url, 256);
 
             break;
         case NDPI_PROTOCOL_TLS:
@@ -389,57 +378,52 @@ void end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5
             break;
     }
 
-    free_ndpi(data);
+    conn_free_ndpi(data);
 }
 
 /* ******************************************************* */
 
-static int http_is_printable(char c) {
-    return isprint(c) || (c == '\r') || (c == '\n');
+static int is_plaintext(char c) {
+    return isprint(c) || (c == '\r') || (c == '\n') || (c == '\t');
 }
 
 /* ******************************************************* */
 
-static void process_http_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
+static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
     if(pkt->l7_len > 0) {
-        int request_len = data->http.request_data ? (int)strlen(data->http.request_data) : 0;
-
-        if(from_tun) {
-            int num_chars = min(MAX_HTTP_REQUEST_LENGTH - request_len, pkt->l7_len);
+        if(from_tun && is_plaintext(pkt->l7[0])) {
+            int request_len = data->request_data ? (int)strlen(data->request_data) : 0;
+            int num_chars = min(MAX_PLAINTEXT_LENGTH - request_len, pkt->l7_len);
 
             if(num_chars <= 0) {
-                data->http.parsing_done = true;
+                data->request_done = true;
                 return;
             }
 
             // +1 to add a NULL terminator
-            data->http.request_data = realloc(data->http.request_data,
-                                              request_len + num_chars + 1);
+            data->request_data = realloc(data->request_data,request_len + num_chars + 1);
 
-            if(!data->http.request_data) {
-                log_e("realloc(http.request_data.buffer) failed with code %d/%s",
+            if(!data->request_data) {
+                log_e("realloc(request_data) failed with code %d/%s",
                       errno, strerror(errno));
-                data->http.parsing_done = true;
+                data->request_done = true;
                 return;
             }
 
             for(int i = 0; i < num_chars; i++) {
                 char ch = pkt->l7[i];
 
-                if(!http_is_printable(ch)) {
-                    data->http.parsing_done = true;
+                if(!is_plaintext(ch)) {
+                    data->request_done = true;
                     break;
                 }
 
-                if(ch != '\r')
-                    data->http.request_data[request_len++] = ch;
+                data->request_data[request_len++] = ch;
             }
 
-            data->http.request_data[request_len] = '\0';
-        } else {
-            trim_trailing_newlines(data->http.request_data, request_len);
-            data->http.parsing_done = true;
-        }
+            data->request_data[request_len] = '\0';
+        } else
+            data->request_done = true;
     }
 }
 
@@ -450,17 +434,16 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
 
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-            pkt->pkt_len, data->last_seen,
+                                                  pkt->len, data->last_seen,
             from_tun ? data->src_id : data->dst_id,
             from_tun ? data->dst_id : data->src_id);
 
-    if((data->l7proto.master_protocol == NDPI_PROTOCOL_HTTP) && (!data->http.parsing_done)
-            && !data->ndpi_flow->packet.tcp_retransmission)
-        process_http_data(data, pkt, from_tun);
+    if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
+        process_request_data(data, pkt, from_tun);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
-        end_ndpi_detection(data, proxy, &pkt->tuple);
+        conn_end_ndpi_detection(data, proxy, &pkt->tuple);
 }
 
 /* ******************************************************* */
@@ -538,8 +521,8 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
 #endif
 
     jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
-    jobject url_string = (*env)->NewStringUTF(env, data->http.url ? data->http.url : "");
-    jobject req_string = (*env)->NewStringUTF(env, data->http.request_data ? data->http.request_data : "");
+    jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
+    jobject req_string = (*env)->NewStringUTF(env, data->request_data ? data->request_data : "");
     jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
@@ -673,7 +656,7 @@ static void notifyServiceStatus(vpnproxy_data_t *proxy, const char *status) {
 
 /* ******************************************************* */
 
-void protectSocket(vpnproxy_data_t *proxy, socket_t sock) {
+void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock) {
     JNIEnv *env = proxy->env;
 
     if(proxy->root_capture)
@@ -699,7 +682,7 @@ static int connect_dumper(vpnproxy_data_t *proxy) {
             return(-1);
         }
 
-        protectSocket(proxy, dumper_socket);
+        vpn_protect_socket(proxy, dumper_socket);
 
         if(proxy->pcap_dump.tcp_socket) {
             struct sockaddr_in servaddr = {0};
@@ -744,7 +727,7 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-void refreshTime(vpnproxy_data_t *proxy) {
+void refresh_time(vpnproxy_data_t *proxy) {
     struct timeval now_tv;
 
     gettimeofday(&now_tv, NULL);
@@ -785,14 +768,14 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 
     if(from_tun) {
         data->sent_pkts++;
-        data->sent_bytes += pkt->pkt_len;
+        data->sent_bytes += pkt->len;
         proxy->capture_stats.sent_pkts++;
-        proxy->capture_stats.sent_bytes += pkt->pkt_len;
+        proxy->capture_stats.sent_bytes += pkt->len;
     } else {
         data->rcvd_pkts++;
-        data->rcvd_bytes += pkt->pkt_len;
+        data->rcvd_bytes += pkt->len;
         proxy->capture_stats.rcvd_pkts++;
-        proxy->capture_stats.rcvd_bytes += pkt->pkt_len;
+        proxy->capture_stats.rcvd_bytes += pkt->len;
     }
 
     if(data->ndpi_flow)
@@ -802,12 +785,12 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
     proxy->capture_stats.new_stats = true;
 
     if (!data->pending_notification) {
-        conns_add(&proxy->conns_updates, conn_tuple, data);
+        notify_connection(&proxy->conns_updates, conn_tuple, data);
         data->pending_notification = true;
     }
 
     if (proxy->java_dump.buffer) {
-        int tot_size = pkt->pkt_len + (int) sizeof(pcaprec_hdr_s);
+        int tot_size = pkt->len + (int) sizeof(pcaprec_hdr_s);
 
         if ((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
 // Flush the buffer
@@ -820,7 +803,7 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         else
             proxy->java_dump.buffer_idx += dump_pcap_rec(
                     (u_char *) proxy->java_dump.buffer + proxy->java_dump.buffer_idx,
-                    (u_char *) pkt->buf, pkt->pkt_len);
+                    (u_char *) pkt->buf, pkt->len);
     }
 
     if (dumper_socket > 0) {
@@ -835,7 +818,7 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         }
 
         write_pcap_rec(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr),
-                       (u_int8_t *) pkt->buf, pkt->pkt_len);
+                       (u_int8_t *) pkt->buf, pkt->len);
     }
 }
 
@@ -910,7 +893,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
 
     /* nDPI */
     proxy.ndpi = init_ndpi();
-    initMasterProtocolsBitmap(&masterProtos);
+    init_protocols_bitmask(&masterProtos);
 
     if(proxy.ndpi == NULL) {
         log_f("nDPI initialization failed");

@@ -5,7 +5,7 @@
     <string name="no_filter">Нет фильтра</string>
     <string name="collector_info">UDP сборщик: %1$s:%2$d</string>
     <string name="http_server_status">HTTP сервер: http://%1$s:%2$d</string>
-    <string name="rcvd_and_sent">%1$s вниз — %2$s вверх</string>
+    <string name="rcvd_and_sent">%1$s получено — %2$s отправлено</string>
     <string name="query">Запрос</string>
     <string name="host">Главная ЭВМ</string>
     <string name="capture_not_running">Захват не проводится!</string>
@@ -106,4 +106,20 @@
     <string name="app_language">Язык приложения</string>
     <string name="lang_english">Английский</string>
     <string name="system_default">Системный по-умолчанию</string>
+    <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
+    <string name="file_saved_with_name">Файл %1$s успешно сохранён</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="app_theme">Тема</string>
+    <string name="enable_socks5_proxy">Включить SOCKS5-прокси</string>
+    <string name="enable_socks5_proxy_summary">При включении все TCP-соединения будут проведены через SOCKS5-прокси.</string>
+    <string name="proxy">Прокси</string>
+    <string name="proxy_ip_address">IP-адрес прокси</string>
+    <string name="proxy_port">Порт Прокси</string>
+    <string name="root_capture">Захват в режиме Root</string>
+    <string name="root_capture_summary">Захват в Root-режиме позволит PCAPDroid работать в паре с другими VPN-приложениями.</string>
+    <string name="donate">Пожертвовать</string>
+    <string name="http_request">HTTP-запрос</string>
+    <string name="root_log">Root-журнал</string>
+    <string name="request_plaintext">Запрос в чистом виде</string>
 </resources>

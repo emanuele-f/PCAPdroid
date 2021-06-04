@@ -74,7 +74,7 @@
     <string name="cannot_write_file">Impossibile scrivere il file</string>
     <string name="share">Condividi</string>
     <string name="delete">Elimina</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="pcap_file_action">Traffico salvato nel file %1$s (%2$s).</string>
     <string name="delete_error">Impossibile eliminare il file</string>
     <string name="capture_running">Cattura in esecuzione</string>
@@ -120,5 +120,7 @@
     <string name="root_capture_summary">Catturare i pacchetti come root permette a PCAPdroid di funzionare assieme ad altre app VPN.</string>
     <string name="donate">Donazioni</string>
     <string name="http_request">Richiesta HTTP</string>
+    <string name="root_log">Log Root</string>
+    <string name="request_plaintext">Richiesta in Chiaro</string>
 </resources>
 
