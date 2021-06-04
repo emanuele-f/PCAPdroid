@@ -31,10 +31,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.net.VpnService;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -91,15 +95,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private static final int TOTAL_COUNT = 2;
 
     public static final String UID_FILTER_EXTRA = "uidFilter";
-    public static final int REQUEST_CODE_VPN = 2;
-    public static final int REQUEST_CODE_PCAP_FILE = 3;
-    public static final int REQUEST_CODE_CSV_FILE = 4;
     public static final int REQUEST_STORAGE_PERMISSIONS = 5;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
+
+    private final ActivityResultLauncher<Intent> captureServiceLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::captureServiceResult);
+    private final ActivityResultLauncher<Intent> pcapFileLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -458,35 +464,34 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void captureServiceResult(final ActivityResult result) {
+        if(result.getResultCode() == RESULT_OK) {
+            captureServiceOk();
+        } else {
+            Log.w(TAG, "VPN request failed");
+            appStateReady();
+        }
+    }
 
-        if (requestCode == REQUEST_CODE_VPN) {
-            if(resultCode == RESULT_OK) {
-                Intent intent = new Intent(MainActivity.this, CaptureService.class);
-                Bundle bundle = new Bundle();
+    private void captureServiceOk() {
+        final Intent intent = new Intent(MainActivity.this, CaptureService.class);
+        final Bundle bundle = new Bundle();
 
-                if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
-                    bundle.putString(Prefs.PREF_PCAP_URI, mPcapUri.toString());
+        if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
+            bundle.putString(Prefs.PREF_PCAP_URI, mPcapUri.toString());
 
-                intent.putExtra("settings", bundle);
+        intent.putExtra("settings", bundle);
 
-                Log.d(TAG, "onActivityResult -> start CaptureService");
+        Log.d(TAG, "onActivityResult -> start CaptureService");
 
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    startForegroundService(intent);
-                else
-                    startService(intent);
-            } else {
-                Log.w(TAG, "VPN request failed");
-                appStateReady();
-            }
-        } else if(requestCode == REQUEST_CODE_PCAP_FILE) {
-            if(resultCode == RESULT_OK)
-                startWithPcapFile(data.getData());
-            else
-                mPcapUri = null;
+        ContextCompat.startForegroundService(this, intent);
+    }
+
+    private void pcapFileResult(final ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+            startWithPcapFile(result.getData().getData());
+        } else {
+            mPcapUri = null;
         }
     }
 
@@ -511,16 +516,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         appStateStarting();
 
         if(Prefs.isRootCaptureEnabled(mPrefs)) {
-            onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
+            captureServiceOk();
             return;
         }
 
         Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
 
         if (vpnPrepareIntent != null)
-            startActivityForResult(vpnPrepareIntent, REQUEST_CODE_VPN);
+            captureServiceLauncher.launch(vpnPrepareIntent);
         else
-            onActivityResult(REQUEST_CODE_VPN, RESULT_OK, null);
+            captureServiceOk();
     }
 
     public void toggleService() {
@@ -554,7 +559,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if(Utils.supportsFileDialog(this, intent)) {
             try {
-                startActivityForResult(intent, REQUEST_CODE_PCAP_FILE);
+                pcapFileLauncher.launch(intent);
             } catch (ActivityNotFoundException e) {
                 noFileDialog = true;
             }
