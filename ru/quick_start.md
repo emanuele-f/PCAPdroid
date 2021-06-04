@@ -17,8 +17,9 @@ PCAPdroid использует [системный сервис VPN](https://dev
 ## 1.2 Основы использования
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" />
+<img src="./images/main-screen.jpg" width="200" />
 </p>
+
 
 Для того чтобы начать пользоваться PCAPdroid, Вам необходимо нажать на кнопку запуска захвата (треугольник слева от кнопки настроек).
 
@@ -31,8 +32,9 @@ PCAPdroid использует [системный сервис VPN](https://dev
 Весь захваченный траффик так же отображается во вкладке "Соединения".
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="200" />
+<img src="./images/connections.jpg" width="200" />
 </p>
+
 
 Каждая строка представляет исходящее соединение сделанное приложением или системой. Отображаются следующие сведения:
 
@@ -47,13 +49,14 @@ PCAPdroid использует [системный сервис VPN](https://dev
 Нажав на строку соединения можно получить больше деталей о нем.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="200" />
+<img src="./images/connection-details.jpg" width="200" />
 </p>
+
 
 Во время захвата PCAPdroid держит всю информацию в памяти. По достижению предела, информация о старых соединениях будет удалена для освобождения памяти под новые соединения. Так же будет отображено сообщение о количестве удаленных по данной причине соединений. Общая информация о количестве траффика сгенерированного приложениями можно посмотреть в разделе "Приложения".
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" />
+<img src="./images/apps.jpg" width="200" />
 </p>
 
 Нажав на строку с конкретным приложением Вы сможете посмотреть все соединения сделанные только этим приложением.
