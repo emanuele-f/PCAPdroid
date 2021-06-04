@@ -236,8 +236,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 }
             });
 
-    private static class MyStateAdapter extends FragmentStateAdapter {
-        MyStateAdapter(final FragmentActivity fa) { super(fa); }
+    private static class MainStateAdapter extends FragmentStateAdapter {
+        MainStateAdapter(final FragmentActivity fa) { super(fa); }
 
         @NonNull
         @Override
@@ -255,23 +255,25 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         @Override
         public int getItemCount() {  return TOTAL_COUNT;  }
-    }
 
-    private void setupTabs() {
-        final MyStateAdapter stateAdapter = new MyStateAdapter(this);
-        mPager.setAdapter(stateAdapter);
-
-        new TabLayoutMediator(mTabLayout, mPager, (tab, position) -> {
+        public int getPageTitle(final int position) {
             switch (position) {
                 default: // Deliberate fall-through to status tab
                 case POS_STATUS:
-                    tab.setText(R.string.status);
-                    break;
+                    return R.string.status;
                 case POS_CONNECTIONS:
-                    tab.setText(R.string.connections_view);
-                    break;
+                    return R.string.connections_view;
             }
-        }).attach();
+        }
+    }
+
+    private void setupTabs() {
+        final MainStateAdapter stateAdapter = new MainStateAdapter(this);
+        mPager.setAdapter(stateAdapter);
+
+        new TabLayoutMediator(mTabLayout, mPager, (tab, position) ->
+                tab.setText(getString(stateAdapter.getPageTitle(position)))
+        ).attach();
 
         checkUidFilterIntent(getIntent());
     }
