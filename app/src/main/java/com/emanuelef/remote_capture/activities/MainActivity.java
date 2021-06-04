@@ -33,6 +33,7 @@ import android.net.VpnService;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -95,7 +96,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private static final int TOTAL_COUNT = 2;
 
     public static final String UID_FILTER_EXTRA = "uidFilter";
-    public static final int REQUEST_STORAGE_PERMISSIONS = 5;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -220,27 +220,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     // Needed to write file on devices which do not support ACTION_CREATE_DOCUMENT
                     if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSIONS);
+                        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                     }
                 }
             }
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch(requestCode) {
-            case REQUEST_STORAGE_PERMISSIONS:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new RequestPermission(), isGranted -> {
+                if (isGranted) {
                     Log.d(TAG, "Write permission granted");
                 } else {
                     Log.w(TAG, "Write permission denied");
                 }
-                break;
-        }
-    }
+            });
 
     private static class MyStateAdapter extends FragmentStateAdapter {
         MyStateAdapter(final FragmentActivity fa) { super(fa); }
