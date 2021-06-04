@@ -23,3 +23,7 @@ Welcome to the PCAPdroid User Guide.
     - [4.4 Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture)
 - [5. FAQ](faq)
 - [6. Donate](donate)
+
+## Other available languages
+
+- [Russian](ru/)
