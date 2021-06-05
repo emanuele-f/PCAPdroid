@@ -231,11 +231,9 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
     if(!shouldIgnoreConn(proxy, tuple)) {
+        // Send last notification
         // Will free the data in sendConnectionsDump
-        if(!data->pending_notification) {
-            // Send last notification
-            notify_connection(&proxy->conns_updates, tuple, data);
-        }
+        notify_connection(&proxy->conns_updates, tuple, data);
 
         data->status = zdtun_conn_get_status(conn_info);
     } else
@@ -338,7 +336,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
         fd_set fdset;
         fd_set wrfds;
         int size;
-        struct timeval timeout = {.tv_sec = 0, .tv_usec = 500*1000}; // wake every 500 ms
+        struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
 
         zdtun_fds(tun, &max_fd, &fdset, &wrfds);
 
