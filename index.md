@@ -24,6 +24,6 @@ Welcome to the PCAPdroid User Guide.
 - [5. FAQ](faq)
 - [6. Donate](donate)
 
-## Other available languages
+## Other Languages
 
 - [Russian](ru/)
