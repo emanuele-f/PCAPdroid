@@ -106,6 +106,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             registerForActivityResult(new StartActivityForResult(), this::captureServiceResult);
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new RequestPermission(), isGranted ->
+                Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied"))
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,15 +230,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         }
     }
-
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    Log.d(TAG, "Write permission granted");
-                } else {
-                    Log.w(TAG, "Write permission denied");
-                }
-            });
 
     private static class MainStateAdapter extends FragmentStateAdapter {
         MainStateAdapter(final FragmentActivity fa) { super(fa); }
