@@ -111,8 +111,21 @@ public class Utils {
         return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
     }
 
+    @SuppressWarnings("deprecation")
+    public static Locale getPrimaryLocale(Context context) {
+        Configuration config = context.getResources().getConfiguration();
+        Locale locale;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            locale = config.getLocales().get(0);
+        else
+            locale = config.locale;
+
+        return locale;
+    }
+
     public static String formatNumber(Context context, long num) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         return String.format(locale, "%,d", num);
     }
 
@@ -129,7 +142,7 @@ public class Utils {
 
     public static String formatEpochShort(Context context, long epoch) {
         long now = Utils.now();
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
 
         if((epoch - now) < (23 * 3600)) {
             final DateFormat fmt = new SimpleDateFormat("HH:mm:ss", locale);
@@ -141,7 +154,7 @@ public class Utils {
     }
 
     public static String formatEpochFull(Context context, long epoch) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
 
         return fmt.format(new Date(epoch * 1000));
@@ -344,7 +357,7 @@ public class Utils {
     }
 
     public static String getUniqueFileName(Context context, String ext) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
         return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
     }
@@ -423,6 +436,7 @@ public class Utils {
         return((comp != null) && (!"com.google.android.tv.frameworkpackagestubs".equals(comp.getPackageName())));
     }
 
+    @SuppressWarnings("deprecation")
     public static Uri getInternalStorageFile(Context context, String fname) {
         ContentValues values = new ContentValues();
 
@@ -430,8 +444,8 @@ public class Utils {
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid");
-            values.put(MediaStore.MediaColumns.IS_PENDING, true); // exclusive access for long operations
+            // On Android Q+ cannot directly access the external dir. Must use RELATIVE_PATH instead.
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -440,8 +454,10 @@ public class Utils {
                 }
             }
 
-            Log.d("getInternalStorageFile", Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
-            values.put(MediaStore.MediaColumns.DATA, Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
+            // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
+            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fname;
+            Log.d("getInternalStorageFile", path);
+            values.put(MediaStore.MediaColumns.DATA, path);
         }
 
         return context.getContentResolver().insert(

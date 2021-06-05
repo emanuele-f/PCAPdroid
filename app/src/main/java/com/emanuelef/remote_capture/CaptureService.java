@@ -47,6 +47,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
@@ -219,6 +220,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mPcapUri = Uri.parse(path);
 
                 try {
+                    Log.d(TAG, "PCAP URI: " + mPcapUri);
                     mOutputStream = getContentResolver().openOutputStream(mPcapUri);
                     mFirstStreamWrite = true;
                 } catch (FileNotFoundException e) {
@@ -344,7 +346,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
-                .setColor(getResources().getColor(R.color.colorPrimary))
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)

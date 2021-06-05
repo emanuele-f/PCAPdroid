@@ -574,6 +574,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void showPcapActionDialog(Uri pcapUri) {
         Cursor cursor;
 
+        Log.d(TAG, "showPcapActionDialog: " + pcapUri.toString());
+
         try {
             cursor = getContentResolver().query(pcapUri, null, null, null, null);
         } catch (Exception e) {
