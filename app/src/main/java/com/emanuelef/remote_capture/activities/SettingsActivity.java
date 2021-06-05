@@ -49,14 +49,15 @@ public class SettingsActivity extends BaseActivity {
         setTitle(R.string.title_activity_settings); // note: setting via manifest does not honor custom locale
         setContentView(R.layout.settings_activity);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.settings, new SettingsFragment())
-                .commit();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.settings_container, new SettingsFragment())
+                .commit();
     }
 
     @Override

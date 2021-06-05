@@ -4,10 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/apps_fragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:name="com.emanuelef.remote_capture.fragments.AppsFragment" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

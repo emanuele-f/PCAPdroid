@@ -40,6 +40,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -89,6 +92,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private Uri mCsvFname;
     private boolean hasUntrackedConnections;
     private AppsResolver mApps;
+
+    private final ActivityResultLauncher<Intent> csvFileLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
 
     @Override
     public void onResume() {
@@ -553,7 +559,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(Utils.supportsFileDialog(requireContext(), intent)) {
             try {
-                startActivityForResult(intent, MainActivity.REQUEST_CODE_CSV_FILE);
+                csvFileLauncher.launch(intent);
             } catch (ActivityNotFoundException e) {
                 noFileDialog = true;
             }
@@ -574,16 +580,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == MainActivity.REQUEST_CODE_CSV_FILE) {
-            if(resultCode == Activity.RESULT_OK) {
-                mCsvFname = data.getData();
-                dumpCsv();
-            } else
-                mCsvFname = null;
+    private void csvFileResult(final ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            mCsvFname = result.getData().getData();
+            dumpCsv();
+        } else {
+            mCsvFname = null;
         }
     }
 }
