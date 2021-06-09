@@ -139,8 +139,8 @@
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocol: %1$s</string>
     <string name="cancel">Cancel</string>
-    <string name="disable">Disable</string>
-    <string name="enable">Enable</string>
+    <string name="show_exclusions">Show exclusions</string>
+    <string name="hide_exclusions">Hide exclusions</string>
     <string name="exclusions">Exclusions</string>
     <string name="delete_exclusions_confirm">Do you really want to delete all the configured exclusions?</string>
     <string name="edit">Edit</string>

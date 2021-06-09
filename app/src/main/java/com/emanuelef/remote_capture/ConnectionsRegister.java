@@ -20,13 +20,18 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionsMatcher;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,10 +51,11 @@ public class ConnectionsRegister {
     private int mUntrackedItems;
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
+    private final SharedPreferences mPrefs;
     public final ConnectionsMatcher mExclusions;
     public boolean mExclusionsEnabled;
 
-    public ConnectionsRegister(int _size) {
+    public ConnectionsRegister(int _size, SharedPreferences prefs) {
         mTail = 0;
         mNumItems = 0;
         mUntrackedItems = 0;
@@ -57,8 +63,15 @@ public class ConnectionsRegister {
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
-        mExclusions = new ConnectionsMatcher();
         mExclusionsEnabled = true;
+        mPrefs = prefs;
+        mExclusions = new ConnectionsMatcher();
+
+        // Try to restore the exclusions
+        String serialized = prefs.getString(Prefs.PREF_EXCLUSIONS, "");
+
+        if(!serialized.isEmpty())
+            mExclusions.fromJson(serialized);
     }
 
     private int firstPos() {
@@ -347,5 +360,11 @@ public class ConnectionsRegister {
         }
 
         return builder.toString();
+    }
+
+    public void saveExclusions() {
+        mPrefs.edit()
+                .putString(Prefs.PREF_EXCLUSIONS, mExclusions.toJson())
+                .apply();
     }
 }

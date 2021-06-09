@@ -41,6 +41,7 @@ public class Prefs {
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
+    public static final String PREF_EXCLUSIONS = "exclusions";
 
     public enum DumpMode {
         NONE,

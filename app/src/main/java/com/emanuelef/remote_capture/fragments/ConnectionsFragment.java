@@ -333,6 +333,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         else
             return super.onContextItemSelected(item);
 
+        reg.mExclusionsEnabled = true;
         refreshExclusionsMenu();
         refreshFilteredConnections();
         return true;

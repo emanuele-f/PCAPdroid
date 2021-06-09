@@ -18,10 +18,10 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
-                android:title="@string/enable"
+                android:title="@string/hide_exclusions"
                 android:id="@+id/enable_exclusions" />
             <item
-                android:title="@string/disable"
+                android:title="@string/show_exclusions"
                 android:id="@+id/disable_exclusions" />
             <item
                 android:title="@string/edit"

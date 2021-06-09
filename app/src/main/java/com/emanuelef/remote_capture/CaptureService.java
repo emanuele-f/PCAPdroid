@@ -195,8 +195,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_bytes = 0;
         last_connections = 0;
         root_capture = Prefs.isRootCaptureEnabled(prefs);
-
-        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
+        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE, prefs);
 
         if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
             mHttpServer = null;
@@ -431,6 +430,9 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void stop() {
         stopPacketLoop();
+
+        if(conn_reg != null)
+            conn_reg.saveExclusions();
 
         while((mThread != null) && (mThread.isAlive())) {
             try {
