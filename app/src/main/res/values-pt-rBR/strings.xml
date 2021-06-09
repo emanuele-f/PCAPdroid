@@ -121,7 +121,7 @@
     <string name="root_capture">Capturar via Root</string>
     <string name="root_capture_summary">A captura de pacotes via Root permite que o PCAPdroid funcione simultaneamente com outros apps de VPN.</string>
     <string name="donate">Doar</string>
-    <string name="http_request">Solicitar HTTP</string>
+    <string name="http_request">Solicitação HTTP</string>
     <string name="root_log">Root Log</string>
-    <string name="request_plaintext">Solicitar texto simples</string>
+    <string name="request_plaintext">Solicitação texto simples</string>
 </resources>
