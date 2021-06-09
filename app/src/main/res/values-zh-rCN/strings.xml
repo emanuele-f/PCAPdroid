@@ -131,5 +131,18 @@
     <string name="http_request">HTTP 请求</string>
     <string name="root_log">Root 日志</string>
     <string name="request_plaintext">请求明文</string>
+    <string name="edit_exclusions">编辑排除项</string>
+    <string name="exclude">排除 …</string>
+    <string name="search">搜索</string>
+    <string name="app_val">应用: %1$s</string>
+    <string name="ip_address_val">IP 地址: %1$s</string>
+    <string name="host_val">主机: %1$s</string>
+    <string name="protocol_val">协议: %1$s</string>
+    <string name="cancel">取消</string>
+    <string name="disable">禁用</string>
+    <string name="enable">启用</string>
+    <string name="exclusions">排除项</string>
+    <string name="delete_exclusions_confirm">你真想删除所有已配置的排除项吗？</string>
+    <string name="edit">编辑</string>
+    <string name="delete_all">删除所有</string>
 </resources>
-
