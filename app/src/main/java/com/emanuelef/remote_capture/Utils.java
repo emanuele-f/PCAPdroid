@@ -50,6 +50,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.TableLayout;
@@ -85,7 +87,8 @@ public class Utils {
     public static final String PCAP_HEADER = "d4c3b2a1020004000000000000000000ffff000065000000";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
-    private static Boolean root_available = null;
+    private static Boolean rootAvailable = null;
+    private static Locale primaryLocale = null;
 
     public static String formatBytes(long bytes) {
         long divisor;
@@ -113,15 +116,24 @@ public class Utils {
 
     @SuppressWarnings("deprecation")
     public static Locale getPrimaryLocale(Context context) {
-        Configuration config = context.getResources().getConfiguration();
-        Locale locale;
+        if(primaryLocale == null) {
+            Configuration config = context.getResources().getConfiguration();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            locale = config.getLocales().get(0);
-        else
-            locale = config.locale;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                primaryLocale = config.getLocales().get(0);
+            else
+                primaryLocale = config.locale;
+        }
 
-        return locale;
+        return primaryLocale;
+    }
+
+    public static boolean isRTL(Context ctx) {
+        Locale locale = getPrimaryLocale(ctx);
+        final int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
+
+        return direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
     }
 
     public static String formatNumber(Context context, long num) {
@@ -488,9 +500,9 @@ public class Utils {
     }
 
     public static boolean isRootAvailable() {
-        if(root_available == null) {
+        if(rootAvailable == null) {
             String path = System.getenv("PATH");
-            root_available = false;
+            rootAvailable = false;
 
             if(path != null) {
                 Log.d("isRootAvailable", "PATH = " + path);
@@ -500,14 +512,14 @@ public class Utils {
 
                     if(f.exists()) {
                         Log.d("isRootAvailable", "'su' binary found at " + f.getAbsolutePath());
-                        root_available = true;
+                        rootAvailable = true;
                         break;
                     }
                 }
             }
         }
 
-        return root_available;
+        return rootAvailable;
     }
 
     public static void copyToClipboard(Context ctx, String contents) {
@@ -516,5 +528,27 @@ public class Utils {
         clipboard.setPrimaryClip(clip);
 
         Utils.showToast(ctx, R.string.copied_to_clipboard);
+    }
+
+    // Formats a string resource like "text: %1s" by applying the specified style to the "text:" and "value" ("%1s")
+    public static SpannableString formatTextValue(Context ctx, StyleSpan textStyle, StyleSpan valStyle, int resid, String value) {
+        String fmt = ctx.getResources().getString(resid);
+        String textAndValue = String.format(fmt, value);
+        SpannableString s = new SpannableString(textAndValue);
+        int valOffset = fmt.length() - 4;
+
+        if(!isRTL(ctx)) {
+            if (textStyle != null)
+                s.setSpan(textStyle, 0, valOffset, 0);
+            if (valStyle != null)
+                s.setSpan(valStyle, valOffset, textAndValue.length(), 0);
+        } else {
+            if (textStyle != null)
+                s.setSpan(textStyle, textAndValue.length() - valOffset, textAndValue.length(), 0);
+            if (valStyle != null)
+                s.setSpan(valStyle, 0, textAndValue.length() - valOffset, 0);
+        }
+
+        return s;
     }
 }

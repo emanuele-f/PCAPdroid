@@ -153,7 +153,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             mConnPos = reg.getConnPositionByIncrId(mConn.incr_id);
 
             if(mConnPos != -1) {
-                ConnectionDescriptor conn = reg.getConn(mConnPos);
+                ConnectionDescriptor conn = reg.getConn(mConnPos, Utils.UID_NO_FILTER);
 
                 if(conn != null) {
                     if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED) {
@@ -252,7 +252,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
         for(int pos : positions) {
             if(pos == mConnPos) {
-                ConnectionDescriptor conn = reg.getConn(pos);
+                ConnectionDescriptor conn = reg.getConn(pos, Utils.UID_NO_FILTER);
 
                 // Double check the incr_id
                 if((conn != null) && (conn.incr_id == mConn.incr_id))

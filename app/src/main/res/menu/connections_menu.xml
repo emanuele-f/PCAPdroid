@@ -11,9 +11,31 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/exclusions"
+        android:title="@string/exclusions"
+        android:orderInCategory="20"
+        android:icon="@drawable/ic_eye_slash"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:title="@string/enable"
+                android:id="@+id/enable_exclusions" />
+            <item
+                android:title="@string/disable"
+                android:id="@+id/disable_exclusions" />
+            <item
+                android:title="@string/edit"
+                android:id="@+id/edit_exclusions" />
+            <item
+                android:title="@string/delete_all"
+                android:id="@+id/delete_exclusions" />
+        </menu>
+    </item>
+
+    <item
         android:id="@+id/save"
         android:title="@string/save_to_file"
-        android:orderInCategory="20"
+        android:orderInCategory="30"
         android:icon="@drawable/ic_save"
         app:showAsAction="ifRoom" />
 

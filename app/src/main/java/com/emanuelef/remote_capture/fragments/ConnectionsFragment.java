@@ -25,18 +25,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +49,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -54,6 +59,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.adapters.ExclusionsEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.AppState;
@@ -62,6 +68,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.model.ConnectionsMatcher;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -71,6 +78,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -85,6 +93,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
+    private MenuItem mMenuItemExclusions;
+    private MenuItem mMenuItemEnableExclusions;
+    private MenuItem mMenuItemDisableExclusions;
     private MenuItem mSave;
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
@@ -163,6 +174,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
         mRecyclerView.setEmptyView(mEmptyText);
+        registerForContextMenu(mRecyclerView);
 
         Drawable icon = ContextCompat.getDrawable(requireContext(), android.R.color.transparent);
         mNoFilterApp = new AppDescriptor("", icon, this.getResources().getString(R.string.no_filter), Utils.UID_NO_FILTER, false);
@@ -266,6 +278,66 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
     }
 
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+                                    @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        MenuInflater inflater = requireActivity().getMenuInflater();
+        inflater.inflate(R.menu.connection_context_menu, menu);
+
+        ConnectionDescriptor conn = mAdapter.getClickedItem();
+
+        if(conn == null)
+            return;
+
+        AppDescriptor app = mApps.get(conn.uid);
+        StyleSpan italic = new StyleSpan(Typeface.ITALIC);
+        Context ctx = requireContext();
+
+        if(app != null) {
+            MenuItem item = menu.findItem(R.id.exclude_app);
+            item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.app_val, app.getName()));
+            item.setVisible(true);
+        }
+
+        if((conn.info != null) && (!conn.info.isEmpty())) {
+            MenuItem item = menu.findItem(R.id.exclude_host);
+            item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.host_val, conn.info));
+            item.setVisible(true);
+        }
+
+        menu.findItem(R.id.exclude_ip).setTitle(Utils.formatTextValue(ctx, null, italic, R.string.ip_address_val, conn.dst_ip));
+        menu.findItem(R.id.exclude_proto).setTitle(Utils.formatTextValue(ctx, null, italic, R.string.protocol_val, conn.l7proto));
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        ConnectionDescriptor conn = mAdapter.getClickedItem();
+
+        if((reg == null) || (conn == null))
+            return super.onContextItemSelected(item);
+
+        int id = item.getItemId();
+        String label = item.getTitle().toString();
+
+        if(id == R.id.exclude_app)
+            reg.mExclusions.addApp(conn.uid, label);
+        else if(id == R.id.exclude_host)
+            reg.mExclusions.addHost(conn.info, label);
+        else if(id == R.id.exclude_ip)
+            reg.mExclusions.addIp(conn.dst_ip, label);
+        else if(id == R.id.exclude_proto)
+            reg.mExclusions.addProto(conn.l7proto, label);
+        else
+            return super.onContextItemSelected(item);
+
+        refreshExclusionsMenu();
+        refreshFilteredConnections();
+        return true;
+    }
+
     private void recheckScroll() {
         final LinearLayoutManager layoutMan = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         assert layoutMan != null;
@@ -308,14 +380,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
+    private boolean hasConnectionFilter() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        return((mAdapter.getUidFilter() != Utils.UID_NO_FILTER) || ((reg != null) && reg.hasExclusionFilter()));
+    }
+
     // This performs an unoptimized adapter refresh
-    private void refreshUidConnections() {
+    private void refreshFilteredConnections() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         int item_count;
         int uid = mAdapter.getUidFilter();
 
         if(reg != null)
-            item_count = reg.getUidConnCount(uid);
+            item_count = reg.getFilteredConnCount(uid);
         else
             item_count = mAdapter.getItemCount();
 
@@ -332,8 +409,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         // in order to avoid desyncs
 
         mHandler.post(() -> {
-            if(mAdapter.getUidFilter() != Utils.UID_NO_FILTER) {
-                refreshUidConnections();
+            if(hasConnectionFilter()) {
+                refreshFilteredConnections();
                 return;
             }
 
@@ -353,11 +430,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mHandler.post(() -> {
             Log.d(TAG, "Add " + count + " items at " + start);
 
-            if(mAdapter.getUidFilter() == Utils.UID_NO_FILTER) {
+            if(!hasConnectionFilter()) {
                 mAdapter.setItemCount(mAdapter.getItemCount() + count);
                 mAdapter.notifyItemRangeInserted(start, count);
             } else
-                refreshUidConnections();
+                refreshFilteredConnections();
 
             if(autoScroll)
                 scrollToBottom();
@@ -381,19 +458,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mHandler.post(() -> {
             Log.d(TAG, "Remove " + count + " items at " + start);
 
-            if (mAdapter.getUidFilter() == Utils.UID_NO_FILTER) {
+            if (!hasConnectionFilter()) {
                 mAdapter.setItemCount(mAdapter.getItemCount() - count);
                 mAdapter.notifyItemRangeRemoved(start, count);
             } else
-                refreshUidConnections();
+                refreshFilteredConnections();
         });
     }
 
     @Override
     public void connectionsUpdated(int[] positions) {
         mHandler.post(() -> {
-            if (mAdapter.getUidFilter() != Utils.UID_NO_FILTER) {
-                refreshUidConnections();
+            if (hasConnectionFilter()) {
+                refreshFilteredConnections();
                 return;
             }
 
@@ -414,10 +491,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mSave = menu.findItem(R.id.save);
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
+        mMenuItemExclusions = menu.findItem(R.id.exclusions);
+        mMenuItemEnableExclusions = menu.findItem(R.id.enable_exclusions);
+        mMenuItemDisableExclusions = menu.findItem(R.id.disable_exclusions);
         mFilterIcon = mMenuItemAppSel.getIcon();
 
         refreshFilterIcon();
         refreshMenuIcons();
+        refreshExclusionsMenu();
     }
 
     @Override
@@ -425,7 +506,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int id = item.getItemId();
 
         if(id == R.id.action_show_app_filter) {
-            if(mAdapter.getUidFilter() != Utils.UID_NO_FILTER)
+            if(hasConnectionFilter())
                 setUidFilter(Utils.UID_NO_FILTER);
             else
                 openAppSelector();
@@ -433,6 +514,31 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return true;
         } else if(id == R.id.save) {
             openFileSelector();
+            return true;
+        } else if(id == R.id.edit_exclusions) {
+            showExclusionsEditor();
+            return true;
+        } else if((id == R.id.enable_exclusions) || (id == R.id.disable_exclusions)) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if(reg == null)
+                return false;
+
+            reg.mExclusionsEnabled = !reg.mExclusionsEnabled;
+
+            // Delay the refresh to wait for the menu to be closed
+            (new Handler(requireActivity().getMainLooper())).postDelayed(() -> {
+                refreshExclusionsMenu();
+                refreshFilteredConnections();
+            }, 50);
+
+            return true;
+        } else if(id == R.id.delete_exclusions) {
+            new AlertDialog.Builder(requireContext())
+                    .setMessage(R.string.delete_exclusions_confirm)
+                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> deleteExclusions())
+                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                    .show();
+
             return true;
         }
 
@@ -509,6 +615,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSave.setEnabled(is_enabled);
     }
 
+    private void refreshExclusionsMenu() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if(reg == null)
+            return;
+
+        // Update the icon only if something changed
+        // NOTE: getApplicationContext required to properly style the tint
+        mMenuItemExclusions.setIcon(
+                ContextCompat.getDrawable(requireContext().getApplicationContext(),
+                        reg.mExclusionsEnabled ? R.drawable.ic_eye_slash : R.drawable.ic_eye));
+
+        mMenuItemExclusions.setVisible(!reg.mExclusions.isEmpty());
+        mMenuItemDisableExclusions.setVisible(reg.mExclusionsEnabled);
+        mMenuItemEnableExclusions.setVisible(!reg.mExclusionsEnabled);
+    }
+
     private void dumpCsv() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
@@ -578,6 +701,75 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             } else
                 Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
         }
+    }
+
+    private void showExclusionsEditor() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if(reg == null)
+            return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        ExclusionsEditAdapter adapter = new ExclusionsEditAdapter(requireContext(),
+                R.layout.exclusion_item, reg.mExclusions.iterItems());
+        View exclListView = requireActivity().getLayoutInflater().inflate(R.layout.exclusion_list, null);
+
+        ListView exclusion = ((ListView)exclListView.findViewById(R.id.list));
+        exclusion.setAdapter(adapter);
+        exclusion.setOnItemClickListener((parent, view, position, id) -> {
+            Log.d(TAG, "TODO:2 on click view " + position);
+
+            if(adapter.getCount() > 1)
+                adapter.remove(adapter.getItem(position));
+        });
+
+        builder.setTitle(R.string.edit_exclusions);
+        builder.setView(exclListView);
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> {
+           updateExclusions(adapter);
+        });
+        builder.setNeutralButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
+
+        final AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(true);
+
+        alert.show();
+    }
+
+    private void updateExclusions(ExclusionsEditAdapter adapter) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if(reg == null)
+            return;
+
+        Iterator<ConnectionsMatcher.Item> iter = reg.mExclusions.iterItems();
+        boolean changed = false;
+
+        // Remove the exclusions which are not in the adapter dataset
+        while(iter.hasNext()) {
+            ConnectionsMatcher.Item item = iter.next();
+
+            if(adapter.getPosition(item) < 0) {
+                iter.remove();
+                changed = true;
+            }
+        }
+
+        if(changed) {
+            refreshExclusionsMenu();
+            refreshFilteredConnections();
+        }
+    }
+
+    private void deleteExclusions() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if(reg == null)
+            return;
+
+        reg.mExclusions.clear();
+        refreshExclusionsMenu();
+        refreshFilteredConnections();
     }
 
     private void csvFileResult(final ActivityResult result) {
