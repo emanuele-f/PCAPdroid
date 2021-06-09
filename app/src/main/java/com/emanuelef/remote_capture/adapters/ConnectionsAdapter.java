@@ -49,7 +49,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private View.OnClickListener mListener;
     private final AppsResolver mApps;
     private final Context mContext;
-    int mUidFilter;
+    private int mClickedPosition;
+    private int mUidFilter;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -140,10 +141,20 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.connection_item, parent, false);
 
+        // Enable the ability to show the context menu
+        view.setLongClickable(true);
+
         if(mListener != null)
             view.setOnClickListener(mListener);
 
-        return new ViewHolder(view);
+        ViewHolder holder = new ViewHolder(view);
+
+        view.setOnLongClickListener(v -> {
+            mClickedPosition = holder.getAbsoluteAdapterPosition();
+            return false;
+        });
+
+        return holder;
     }
 
     @Override
@@ -169,10 +180,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         if((pos < 0) || (pos >= getItemCount()) || (reg == null))
             return null;
 
-        if(mUidFilter == Utils.UID_NO_FILTER)
-            return reg.getConn(pos);
-        else
-            return reg.getUidConn(mUidFilter, pos);
+        return reg.getConn(pos, mUidFilter);
     }
 
     public void setClickListener(View.OnClickListener listener) {
@@ -185,5 +193,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public int getUidFilter() {
         return mUidFilter;
+    }
+
+    public ConnectionDescriptor getClickedItem() {
+        return getItem(mClickedPosition);
     }
 }

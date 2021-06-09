@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:layout_height="wrap_content"
+    android:padding="12sp">
+
+    <TextView
+        android:id="@+id/item_label"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        tools:text="App: example app"
+        android:maxLines="1"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="8dp" />
+
+    <ImageView
+        android:id="@+id/item_icon"
+        android:src="@drawable/ic_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

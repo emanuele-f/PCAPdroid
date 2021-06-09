@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <item
+        android:title="@string/exclude">
+        <menu>
+            <item
+                android:id="@+id/exclude_app"
+                android:title=""
+                tools:title="@string/app_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/exclude_ip"
+                android:title=""
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/exclude_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/exclude_proto"
+                android:title=""
+                tools:title="@string/protocol_val" />
+        </menu>
+    </item>
+
+    <!-- TODO -->
+    <item android:title="@string/search" android:visible="false">
+        <menu>
+            <item
+                android:id="@+id/search_ip"
+                android:title=""
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/search_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/search_proto"
+                android:title=""
+                tools:title="@string/protocol_val" />
+        </menu>
+    </item>
+</menu>

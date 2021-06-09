@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.activities;
 import android.os.Bundle;
 
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.fragments.AppsFragment;
 
 public class AppsActivity extends BaseActivity {
     private static final String TAG = "AppsActivity";
@@ -32,5 +33,9 @@ public class AppsActivity extends BaseActivity {
 
         setTitle(R.string.apps);
         setContentView(R.layout.apps_activity);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.apps_fragment, new AppsFragment())
+                .commit();
     }
 }

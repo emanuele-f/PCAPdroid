@@ -1,0 +1,18 @@
+<i>PCAPdroid</i> é uma ferramenta de captura e monitoramento de rede de software livre. Você pode capturar o tráfego num dispositivo de Android sem acesso Root. O tráfego também pode ser enviado para um receptor remoto.
+
+<b>Funcionalidades:</b>
+
+* Registe e examine as conexões feitas pelo usuário e os aplicativos de sistema
+* Extraia SNI, consultas de DNS, URLs e endereços de IP remotos
+* Aplique um filtro para capturar apenas o tráfego do aplicativo selecionado
+* Baixe facilmente um arquivo PCAP de tráfego via um servidor HTTP integrado
+* Transmita o PCAP a um receptor remoto para análise posterior (p.ex. via wireshark)
+* Descriptografe o tráfego de HTTPS/TLS via um mitmproxy remoto
+* Nos dispositivos com acesso Root, você pode simultaneamente capturar os pacotes enquanto outros aplicativos de VPN estão funcionando
+
+
+<b>Importante</b>: o PCAP gerado por PCAPdroid não é 100% preciso. Confira a<a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-pcap-reliability'>precisão do PCAP</a> para mais detalhes.
+
+PCAPdroid potencializa o serviço da Vpn do Android para receber todo o tráfego gerado pelos aplicativos no Sistema. Nenhuma VPN é realmente criada, o tráfego é processado localmente pelo aplicativo.
+
+Visite o <a href='https://github.com/emanuele-f/PCAPdroid'>site do projeto no Github</a> para mais detalhes.

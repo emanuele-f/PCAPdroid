@@ -37,7 +37,9 @@ static ndpi_protocol_bitmask_struct_t masterProtos;
 /* NOTE: these must be reset during each run, as android may reuse the service */
 static int dumper_socket;
 static bool send_header;
+static int netd_resolve_waiting;
 static time_t last_connections_dump;
+static time_t next_connections_dump;
 static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
@@ -78,6 +80,9 @@ void conn_free_data(conn_data_t *data) {
 /* ******************************************************* */
 
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
+    if(data->pending_notification)
+        return;
+
     if(arr->cur_items >= arr->size) {
         /* Extend array */
         arr->size = (arr->size == 0) ? 8 : (arr->size * 2);
@@ -298,6 +303,34 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
         inet_ntop(family, &ip, resip, sizeof(resip));
 
         log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
+
+        if(data->uid != UID_UNKNOWN) {
+            // When a DNS request is followed by a TLS connection or similar, mark the DNS request
+            // with the uid of this connection. This allows us to match netd requests to actual apps.
+            // Only change the uid of new connections (proxy->new_conns) to avoid possible side effects
+            for(int i=0; i<proxy->new_conns.cur_items; i++) {
+                vpn_conn_t *conn = &proxy->new_conns.items[i];
+
+                if((conn->data->uid == UID_NETD)
+                        && (conn->data->info != NULL)
+                        && (strcmp(conn->data->info, data->info) == 0)) {
+                    char buf[256];
+
+                    conn->data->uid = data->uid;
+
+                    zdtun_5tuple2str(tuple, buf, sizeof(buf));
+                    log_d("Resolved netd uid: %s : %d", buf, data->uid);
+
+                    if(netd_resolve_waiting > 0) {
+                        // If all the netd connections have been resolved, remove the dump delay
+                        if((--netd_resolve_waiting) == 0) {
+                            log_d("Removing netd resolution delay");
+                            next_connections_dump -= proxy->now_ms;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return(data);
@@ -479,9 +512,9 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
     if(uid >= 0) {
         char appbuf[128];
 
-        if(uid == 0)
+        if(uid == UID_ROOT)
             strncpy(appbuf, "ROOT", sizeof(appbuf));
-        else if(uid == 1051)
+        else if(uid == UID_NETD)
             strncpy(appbuf, "netd", sizeof(appbuf));
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
@@ -569,7 +602,9 @@ static void sendConnectionsDump(vpnproxy_data_t *proxy) {
     if((proxy->new_conns.cur_items == 0) && (proxy->conns_updates.cur_items == 0))
         return;
 
-    log_d("sendConnectionsDump: new=%d, updates=%d", proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
+    log_d("sendConnectionsDump [after %d ms]: new=%d, updates=%d",
+          proxy->now_ms - last_connections_dump,
+          proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
 
     JNIEnv *env = proxy->env;
     jobject new_conns = (*env)->NewObjectArray(env, proxy->new_conns.cur_items, cls.conn, NULL);
@@ -716,9 +751,11 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
 
         proxy->capture_stats.new_stats = false;
         proxy->capture_stats.last_update_ms = proxy->now_ms;
-    } else if ((proxy->now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
+    } else if (proxy->now_ms >= next_connections_dump) {
         sendConnectionsDump(proxy);
         last_connections_dump = proxy->now_ms;
+        next_connections_dump = proxy->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
+        netd_resolve_waiting = 0;
     } else if ((proxy->java_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
@@ -778,16 +815,27 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         proxy->capture_stats.rcvd_bytes += pkt->len;
     }
 
-    if(data->ndpi_flow)
+    if(data->ndpi_flow) {
         process_ndpi_packet(data, proxy, pkt, from_tun);
+
+        if((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
+                && (data->uid == UID_NETD)
+                && (data->sent_pkts + data->rcvd_pkts == 1)
+                && ((netd_resolve_waiting > 0) || (next_connections_dump > (proxy->now_ms - NETD_RESOLVE_DELAY_MS)))) {
+            if(netd_resolve_waiting == 0) {
+                // Wait before sending the dump to possibly resolve netd DNS connections uid.
+                // Only delay for the first DNS request, to avoid excessive delay.
+                log_d("Adding netd resolution delay");
+                next_connections_dump += NETD_RESOLVE_DELAY_MS;
+            }
+            netd_resolve_waiting++;
+        }
+    }
 
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
-    if (!data->pending_notification) {
-        notify_connection(&proxy->conns_updates, conn_tuple, data);
-        data->pending_notification = true;
-    }
+    notify_connection(&proxy->conns_updates, conn_tuple, data);
 
     if (proxy->java_dump.buffer) {
         int tot_size = pkt->len + (int) sizeof(pcaprec_hdr_s);
@@ -825,7 +873,9 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 /* ******************************************************* */
 
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
-    last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
+    last_connections_dump = time(NULL) * 1000;
+    next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
+    netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
     /* Classes */
