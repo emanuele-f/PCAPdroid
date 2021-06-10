@@ -138,11 +138,12 @@
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
     <string name="protocol_val">协议: %1$s</string>
-    <string name="cancel">取消</string>
-    <string name="disable">禁用</string>
+    <string name="show_exclusions">显示排除项</string>
+    <string name="hide_exclusions">隐藏排除项</string>
     <string name="enable">启用</string>
     <string name="exclusions">排除项</string>
     <string name="delete_exclusions_confirm">你真想删除所有已配置的排除项吗？</string>
     <string name="edit">编辑</string>
     <string name="delete_all">删除所有</string>
 </resources>
+
