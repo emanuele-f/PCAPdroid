@@ -19,17 +19,20 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.content.Context;
+import android.graphics.Typeface;
+import android.text.style.StyleSpan;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
+import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
@@ -37,60 +40,76 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class ConnectionsMatcher {
     private static final String TAG = "ConnectionsMatcher";
+    private static final StyleSpan italic = new StyleSpan(Typeface.ITALIC);
+    private final Context mContext;
     private ArrayList<Item> mItems = new ArrayList<>();
+    private final HashMap<String, Item> mMatches = new HashMap<>();
 
-    public static abstract class Item {
-        protected String mLabel;
+    public enum ItemType {
+        APP,
+        IP,
+        HOST,
+        ROOT_DOMAIN,
+        PROTOCOL
+    }
 
-        Item(String label) {
+    public static class Item {
+        private final String mLabel;
+        private final ItemType mType;
+        private final Object mValue;
+
+        Item(ItemType tp, Object value, String label) {
             mLabel = label;
+            mType = tp;
+            mValue = value;
         }
 
         public String getLabel() {
             return mLabel;
         }
 
-        abstract public String getValue();
-        abstract boolean matches(ConnectionDescriptor conn);
+        public ItemType getType() {
+            return mType;
+        }
+
+        public Object getValue() {
+            return mValue;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if(!(obj instanceof Item))
+                return super.equals(obj);
+
+            Item other = (Item) obj;
+            return((mType == other.mType) && (mValue.equals(other.mValue)));
+        }
     }
 
-    private static class AppItem extends Item {
-        int mUid;
-        AppItem(int uid, String label) { super(label); mUid = uid; }
-        public boolean matches(ConnectionDescriptor conn) { return conn.uid == mUid; }
-        public String getValue() { return Integer.toString(mUid); }
+    public ConnectionsMatcher(Context ctx) {
+        mContext = ctx;
     }
 
-    private static class IpItem extends Item {
-        String mIp;
-        IpItem(String ip, String label) { super(label); mIp = ip; }
-        public boolean matches(ConnectionDescriptor conn) { return conn.dst_ip.equals(mIp); }
-        public String getValue() { return mIp; }
-    }
+    public static String getLabel(Context ctx, ItemType tp, String value) {
+        int resid;
 
-    private static class HostItem extends Item {
-        String mInfo;
-        HostItem(String info, String label) { super(label); mInfo = info; }
-        public boolean matches(ConnectionDescriptor conn) { return conn.info.equals(mInfo); }
-        public String getValue() { return mInfo; }
-    }
+        switch(tp) {
+            case APP:           resid = R.string.app_val; break;
+            case IP:            resid = R.string.ip_address_val; break;
+            case HOST:
+            case ROOT_DOMAIN:   resid = R.string.host_val; break;
+            case PROTOCOL:      resid = R.string.protocol_val; break;
+            default:
+                return "";
+        }
 
-    private static class RootDomainItem extends Item {
-        String mRootDomain;
-        RootDomainItem(String domain, String label) { super(label); mRootDomain = domain; }
-        public boolean matches(ConnectionDescriptor conn) { return Utils.getRootDomain(conn.info).equals(mRootDomain); }
-        public String getValue() { return mRootDomain; }
-    }
-
-    private static class ProtoItem extends Item {
-        String mProto;
-        ProtoItem(String info, String label) { super(label); mProto = info; }
-        public boolean matches(ConnectionDescriptor conn) {  return conn.l7proto.equals(mProto); }
-        public String getValue() { return mProto; }
+        return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
     }
 
     private static class Serializer implements JsonSerializer<ConnectionsMatcher> {
@@ -102,9 +121,9 @@ public class ConnectionsMatcher {
             for(Item item : src.mItems) {
                 JsonObject itemObject = new JsonObject();
 
-                itemObject.add("type", new JsonPrimitive(item.getClass().getSimpleName()));
+                itemObject.add("type", new JsonPrimitive(item.getType().name()));
                 itemObject.add("label", new JsonPrimitive(item.getLabel()));
-                itemObject.add("value", new JsonPrimitive(item.getValue()));
+                itemObject.add("value", new JsonPrimitive(item.getValue().toString()));
 
                 itemsArr.add(itemObject);
             }
@@ -118,62 +137,61 @@ public class ConnectionsMatcher {
         mItems = new ArrayList<>();
         JsonArray itemArray = object.getAsJsonArray("items");
 
-        String appItemClass = AppItem.class.getSimpleName();
-        String ipItemClass = IpItem.class.getSimpleName();
-        String hostItemClass = HostItem.class.getSimpleName();
-        String protoItemClass = ProtoItem.class.getSimpleName();
-        String rootDomainItemClass = RootDomainItem.class.getSimpleName();
-
         for(JsonElement el: itemArray) {
             JsonObject itemObj = el.getAsJsonObject();
+            ItemType type;
 
-            String type = itemObj.get("type").getAsString();
-            String label = itemObj.get("label").getAsString();
-            JsonElement val = itemObj.get("value");
+            try {
+                type = ItemType.valueOf(itemObj.get("type").getAsString());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                continue;
+            }
 
-            if(type.equals(appItemClass))
-                addApp(val.getAsInt(), label);
-            else if(type.equals(ipItemClass))
-                addIp(val.getAsString(), label);
-            else if(type.equals(hostItemClass))
-                addHost(val.getAsString(), label);
-            else if(type.equals(protoItemClass))
-                addProto(val.getAsString(), label);
-            else if(type.equals(rootDomainItemClass))
-                addRootDomain(val.getAsString(), label);
-            else
-                Log.w(TAG, "unknown item type: " + type);
+            String val = itemObj.get("value").getAsString();
+            String label = getLabel(mContext, type, val);
+
+            addItem(new Item(type, val, label));
         }
     }
 
-    public void addApp(int uid, String label)        { addItem(new AppItem(uid, label)); }
-    public void addIp(String ip, String label)       { addItem(new IpItem(ip, label)); }
-    public void addHost(String info, String label)   { addItem(new HostItem(info, label)); }
-    public void addProto(String proto, String label) { addItem(new ProtoItem(proto, label)); }
-    public void addRootDomain(String domain, String label) { addItem(new RootDomainItem(domain, label)); }
+    public void addApp(int uid, String label)        { addItem(new Item(ItemType.APP, uid, label)); }
+    public void addIp(String ip, String label)       { addItem(new Item(ItemType.IP, ip, label)); }
+    public void addHost(String info, String label)   { addItem(new Item(ItemType.HOST, info, label)); }
+    public void addProto(String proto, String label) { addItem(new Item(ItemType.PROTOCOL, proto, label)); }
+    public void addRootDomain(String domain, String label) { addItem(new Item(ItemType.ROOT_DOMAIN, domain, label)); }
+
+    static private String matchKey(ItemType tp, Object val) {
+        return tp + "@" + val;
+    }
 
     private void addItem(Item item) {
-        // Avoid duplicates
-        if(!hasItem(item))
+        String key = matchKey(item.getType(), item.getValue().toString());
+        Log.d(TAG, key);
+
+        if(!mMatches.containsKey(key)) {
             mItems.add(item);
+            mMatches.put(key, item);
+        }
     }
 
-    private boolean hasItem(Item search) {
-        for(Item item : mItems) {
-            if(item.mLabel.equals(search.mLabel))
-                return true;
-        }
+    public void removeItems(List<Item> items) {
+        mItems.removeAll(items);
 
-        return false;
+        for(Item item: items) {
+            String key = matchKey(item.getType(), item.getValue().toString());
+            mMatches.remove(key);
+        }
     }
 
     public boolean matches(ConnectionDescriptor conn) {
-        for(Item item : mItems) {
-            if(item.matches(conn))
-                return true;
-        }
+        boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
 
-        return false;
+        return(mMatches.containsKey(matchKey(ItemType.APP, conn.uid)) ||
+                mMatches.containsKey(matchKey(ItemType.IP, conn.dst_ip)) ||
+                mMatches.containsKey(matchKey(ItemType.PROTOCOL, conn.l7proto)) ||
+                (hasInfo && mMatches.containsKey(matchKey(ItemType.HOST, conn.info))) ||
+                (hasInfo && mMatches.containsKey(matchKey(ItemType.ROOT_DOMAIN, Utils.getRootDomain(conn.info)))));
     }
 
     public Iterator<Item> iterItems() {
@@ -182,6 +200,7 @@ public class ConnectionsMatcher {
 
     public void clear() {
         mItems.clear();
+        mMatches.clear();
     }
 
     public boolean isEmpty() {

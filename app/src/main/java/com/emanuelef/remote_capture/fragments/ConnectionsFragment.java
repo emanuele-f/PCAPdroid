@@ -25,13 +25,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -70,6 +68,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.model.ConnectionsMatcher;
+import com.emanuelef.remote_capture.model.ConnectionsMatcher.ItemType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -302,18 +301,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         AppDescriptor app = mApps.get(conn.uid);
-        StyleSpan italic = new StyleSpan(Typeface.ITALIC);
         Context ctx = requireContext();
 
         if(app != null) {
             MenuItem item = menu.findItem(R.id.exclude_app);
-            item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.app_val, app.getName()));
+            item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.APP, app.getName()));
             item.setVisible(true);
         }
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
             MenuItem item = menu.findItem(R.id.exclude_host);
-            item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.host_val, conn.info));
+            item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.HOST, conn.info));
             item.setVisible(true);
 
             String rootDomain = Utils.getRootDomain(conn.info);
@@ -321,13 +319,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(!rootDomain.equals(conn.info)) {
                 String val = "*" + rootDomain;
                 item = menu.findItem(R.id.exclude_root_domain);
-                item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.host_val, val));
+                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, val));
                 item.setVisible(true);
             }
         }
 
-        menu.findItem(R.id.exclude_ip).setTitle(Utils.formatTextValue(ctx, null, italic, R.string.ip_address_val, conn.dst_ip));
-        menu.findItem(R.id.exclude_proto).setTitle(Utils.formatTextValue(ctx, null, italic, R.string.protocol_val, conn.l7proto));
+        menu.findItem(R.id.exclude_ip).setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.IP, conn.dst_ip));
+        menu.findItem(R.id.exclude_proto).setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.PROTOCOL, conn.l7proto));
     }
 
     @Override
@@ -685,8 +683,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ListView exclusion = ((ListView)exclListView.findViewById(R.id.list));
         exclusion.setAdapter(adapter);
         exclusion.setOnItemClickListener((parent, view, position, id) -> {
-            Log.d(TAG, "TODO:2 on click view " + position);
-
             if(adapter.getCount() > 1)
                 adapter.remove(adapter.getItem(position));
         });
@@ -704,6 +700,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     private void updateExclusions(ExclusionsEditAdapter adapter) {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
+        ArrayList<ConnectionsMatcher.Item> toRemove = new ArrayList<>();
 
         if(reg == null)
             return;
@@ -715,14 +712,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         while(iter.hasNext()) {
             ConnectionsMatcher.Item item = iter.next();
 
-            if(adapter.getPosition(item) < 0) {
-                iter.remove();
-                changed = true;
-            }
+            if(adapter.getPosition(item) < 0)
+                toRemove.add(item);
         }
 
-        if(changed)
+        if(toRemove.size() > 0) {
+            reg.mExclusions.removeItems(toRemove);
             refreshFilteredConnections();
+        }
     }
 
     private void deleteExclusions() {

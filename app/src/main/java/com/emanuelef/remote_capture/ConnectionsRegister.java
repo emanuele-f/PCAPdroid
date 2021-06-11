@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -52,7 +53,7 @@ public class ConnectionsRegister {
     public final ConnectionsMatcher mExclusions;
     public boolean mExclusionsEnabled;
 
-    public ConnectionsRegister(int _size, SharedPreferences prefs) {
+    public ConnectionsRegister(int _size, Context context, SharedPreferences prefs) {
         mTail = 0;
         mNumItems = 0;
         mUntrackedItems = 0;
@@ -62,7 +63,7 @@ public class ConnectionsRegister {
         mAppsStats = new HashMap<>(); // uid -> AppStats
         mExclusionsEnabled = true;
         mPrefs = prefs;
-        mExclusions = new ConnectionsMatcher();
+        mExclusions = new ConnectionsMatcher(context);
 
         // Try to restore the exclusions
         String serialized = prefs.getString(Prefs.PREF_EXCLUSIONS, "");

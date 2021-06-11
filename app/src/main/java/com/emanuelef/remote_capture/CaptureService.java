@@ -196,7 +196,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_bytes = 0;
         last_connections = 0;
         root_capture = Prefs.isRootCaptureEnabled(prefs);
-        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE, prefs);
+        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE, this, prefs);
 
         if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
             mHttpServer = null;
