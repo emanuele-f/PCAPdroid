@@ -112,6 +112,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onResume();
 
         registerConnsListener();
+
+        // reg.mExclusionsEnabled may have changed (e.g. when filtering from the AppsActivity
+        if(mMenuItemExclusions != null)
+            refreshExclusionsMenu();
     }
 
     @Override
@@ -229,6 +233,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(uidFilter != Utils.UID_NO_FILTER) {
                 // "consume" it
                 intent.removeExtra(MainActivity.UID_FILTER_EXTRA);
+
+                // disable the exclusions to prevent an empty view
+                ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+                if(reg != null)
+                    reg.mExclusionsEnabled = false;
             }
         }
 
@@ -507,7 +517,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int id = item.getItemId();
 
         if(id == R.id.action_show_app_filter) {
-            if(hasConnectionFilter())
+            if(mAdapter.getUidFilter() != Utils.UID_NO_FILTER)
                 setUidFilter(Utils.UID_NO_FILTER);
             else
                 openAppSelector();
