@@ -26,6 +26,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;
@@ -122,7 +123,6 @@ public class ConnectionsMatcher {
                 JsonObject itemObject = new JsonObject();
 
                 itemObject.add("type", new JsonPrimitive(item.getType().name()));
-                itemObject.add("label", new JsonPrimitive(item.getLabel()));
                 itemObject.add("value", new JsonPrimitive(item.getValue().toString()));
 
                 itemsArr.add(itemObject);
@@ -136,6 +136,7 @@ public class ConnectionsMatcher {
     private void deserialize(JsonObject object) {
         mItems = new ArrayList<>();
         JsonArray itemArray = object.getAsJsonArray("items");
+        AppsResolver resolver = new AppsResolver(mContext);
 
         for(JsonElement el: itemArray) {
             JsonObject itemObj = el.getAsJsonObject();
@@ -149,8 +150,16 @@ public class ConnectionsMatcher {
             }
 
             String val = itemObj.get("value").getAsString();
-            String label = getLabel(mContext, type, val);
+            String valLabel = val;
 
+            if(type == ItemType.APP) {
+                AppDescriptor app = resolver.get(Integer.parseInt(val));
+
+                if(app != null)
+                    valLabel = app.getName();
+            }
+
+            String label = getLabel(mContext, type, valLabel);
             addItem(new Item(type, val, label));
         }
     }
