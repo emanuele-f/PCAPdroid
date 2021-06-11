@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.model;
 
 import android.util.Log;
 
+import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -60,22 +61,29 @@ public class ConnectionsMatcher {
     private static class AppItem extends Item {
         int mUid;
         AppItem(int uid, String label) { super(label); mUid = uid; }
-        public boolean matches(ConnectionDescriptor conn) {  return conn.uid == mUid; }
+        public boolean matches(ConnectionDescriptor conn) { return conn.uid == mUid; }
         public String getValue() { return Integer.toString(mUid); }
     }
 
     private static class IpItem extends Item {
         String mIp;
         IpItem(String ip, String label) { super(label); mIp = ip; }
-        public boolean matches(ConnectionDescriptor conn) {  return conn.dst_ip.equals(mIp); }
+        public boolean matches(ConnectionDescriptor conn) { return conn.dst_ip.equals(mIp); }
         public String getValue() { return mIp; }
     }
 
     private static class HostItem extends Item {
         String mInfo;
         HostItem(String info, String label) { super(label); mInfo = info; }
-        public boolean matches(ConnectionDescriptor conn) {  return conn.info.equals(mInfo); }
+        public boolean matches(ConnectionDescriptor conn) { return conn.info.equals(mInfo); }
         public String getValue() { return mInfo; }
+    }
+
+    private static class RootDomainItem extends Item {
+        String mRootDomain;
+        RootDomainItem(String domain, String label) { super(label); mRootDomain = domain; }
+        public boolean matches(ConnectionDescriptor conn) { return Utils.getRootDomain(conn.info).equals(mRootDomain); }
+        public String getValue() { return mRootDomain; }
     }
 
     private static class ProtoItem extends Item {
@@ -114,6 +122,7 @@ public class ConnectionsMatcher {
         String ipItemClass = IpItem.class.getSimpleName();
         String hostItemClass = HostItem.class.getSimpleName();
         String protoItemClass = ProtoItem.class.getSimpleName();
+        String rootDomainItemClass = RootDomainItem.class.getSimpleName();
 
         for(JsonElement el: itemArray) {
             JsonObject itemObj = el.getAsJsonObject();
@@ -130,6 +139,8 @@ public class ConnectionsMatcher {
                 addHost(val.getAsString(), label);
             else if(type.equals(protoItemClass))
                 addProto(val.getAsString(), label);
+            else if(type.equals(rootDomainItemClass))
+                addRootDomain(val.getAsString(), label);
             else
                 Log.w(TAG, "unknown item type: " + type);
         }
@@ -139,6 +150,7 @@ public class ConnectionsMatcher {
     public void addIp(String ip, String label)       { addItem(new IpItem(ip, label)); }
     public void addHost(String info, String label)   { addItem(new HostItem(info, label)); }
     public void addProto(String proto, String label) { addItem(new ProtoItem(proto, label)); }
+    public void addRootDomain(String domain, String label) { addItem(new RootDomainItem(domain, label)); }
 
     private void addItem(Item item) {
         // Avoid duplicates

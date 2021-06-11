@@ -551,4 +551,19 @@ public class Utils {
 
         return s;
     }
+
+    // a.example.org -> example.org
+    public static String getRootDomain(String domain) {
+        int tldPos = domain.lastIndexOf(".");
+
+        if(tldPos <= 0)
+            return domain;
+
+        int rootPos = domain.substring(0, tldPos).lastIndexOf(".");
+
+        if(rootPos <= 0)
+            return domain;
+
+        return domain.substring(rootPos + 1);
+    }
 }

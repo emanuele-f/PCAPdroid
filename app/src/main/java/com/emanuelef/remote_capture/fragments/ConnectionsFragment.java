@@ -315,6 +315,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             MenuItem item = menu.findItem(R.id.exclude_host);
             item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.host_val, conn.info));
             item.setVisible(true);
+
+            String rootDomain = Utils.getRootDomain(conn.info);
+
+            if(!rootDomain.equals(conn.info)) {
+                String val = "*" + rootDomain;
+                item = menu.findItem(R.id.exclude_root_domain);
+                item.setTitle(Utils.formatTextValue(ctx, null, italic, R.string.host_val, val));
+                item.setVisible(true);
+            }
         }
 
         menu.findItem(R.id.exclude_ip).setTitle(Utils.formatTextValue(ctx, null, italic, R.string.ip_address_val, conn.dst_ip));
@@ -340,6 +349,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             reg.mExclusions.addIp(conn.dst_ip, label);
         else if(id == R.id.exclude_proto)
             reg.mExclusions.addProto(conn.l7proto, label);
+        else if(id == R.id.exclude_root_domain)
+            reg.mExclusions.addRootDomain(Utils.getRootDomain(conn.info), label);
         else
             return super.onContextItemSelected(item);
 

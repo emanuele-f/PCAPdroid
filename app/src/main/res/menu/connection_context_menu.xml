@@ -24,6 +24,12 @@
                 android:visible="false" />
 
             <item
+                android:id="@+id/exclude_root_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
                 android:id="@+id/exclude_proto"
                 android:title=""
                 tools:title="@string/protocol_val" />
