@@ -19,9 +19,11 @@
 
 package com.emanuelef.remote_capture.interfaces;
 
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+
 public interface ConnectionsListener {
     void connectionsChanges(int num_connetions);
-    void connectionsAdded(int start, int count);
-    void connectionsRemoved(int start, int count);
+    void connectionsAdded(int start, ConnectionDescriptor []conns);
+    void connectionsRemoved(int start, ConnectionDescriptor []conns);
     void connectionsUpdated(int[] positions);
 }

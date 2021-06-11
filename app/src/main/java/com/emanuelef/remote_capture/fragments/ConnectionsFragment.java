@@ -57,20 +57,20 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.ExclusionsEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.AppState;
-import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
-import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.model.ConnectionsMatcher;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
-import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -344,7 +344,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return super.onContextItemSelected(item);
 
         reg.mExclusionsEnabled = true;
-        refreshExclusionsMenu();
         refreshFilteredConnections();
         return true;
     }
@@ -391,26 +390,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
-    private boolean hasConnectionFilter() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        return((mAdapter.getUidFilter() != Utils.UID_NO_FILTER) || ((reg != null) && reg.hasExclusionFilter()));
-    }
-
     // This performs an unoptimized adapter refresh
     private void refreshFilteredConnections() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        int item_count;
-        int uid = mAdapter.getUidFilter();
-
-        if(reg != null)
-            item_count = reg.getFilteredConnCount(uid);
-        else
-            item_count = mAdapter.getItemCount();
-
-        Log.d(TAG, "New dataset size (uid=" +uid + "): " + item_count);
-
-        mAdapter.setItemCount(item_count);
-        mAdapter.notifyDataSetChanged();
+        mAdapter.refreshFilteredConnections();
+        refreshExclusionsMenu();
         recheckScroll();
     }
 
@@ -420,15 +403,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         // in order to avoid desyncs
 
         mHandler.post(() -> {
-            if(hasConnectionFilter()) {
-                refreshFilteredConnections();
-                return;
-            }
+            Log.d(TAG, "New connections size: " + num_connections);
 
-            Log.d(TAG, "New dataset size: " + num_connections);
-
-            mAdapter.setItemCount(num_connections);
-            mAdapter.notifyDataSetChanged();
+            mAdapter.connectionsChanges(num_connections);
             recheckScroll();
 
             if(autoScroll)
@@ -437,22 +414,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void connectionsAdded(int start, int count) {
+    public void connectionsAdded(int start, ConnectionDescriptor []conns) {
         mHandler.post(() -> {
-            Log.d(TAG, "Add " + count + " items at " + start);
+            Log.d(TAG, "Added " + conns.length + " connections at " + start);
 
-            if(!hasConnectionFilter()) {
-                mAdapter.setItemCount(mAdapter.getItemCount() + count);
-                mAdapter.notifyItemRangeInserted(start, count);
-            } else
-                refreshFilteredConnections();
+            mAdapter.connectionsAdded(start, conns);
 
             if(autoScroll)
                 scrollToBottom();
 
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            ConnectionsRegister reg = CaptureService.requireConnsRegister();
 
-            if((reg != null) && (reg.getUntrackedConnCount() > 0)) {
+            if(reg.getUntrackedConnCount() > 0) {
                 String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
                 mOldConnectionsText.setText(info);
 
@@ -465,35 +438,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void connectionsRemoved(int start, int count) {
+    public void connectionsRemoved(int start,ConnectionDescriptor []conns) {
         mHandler.post(() -> {
-            Log.d(TAG, "Remove " + count + " items at " + start);
-
-            if (!hasConnectionFilter()) {
-                mAdapter.setItemCount(mAdapter.getItemCount() - count);
-                mAdapter.notifyItemRangeRemoved(start, count);
-            } else
-                refreshFilteredConnections();
+            Log.d(TAG, "Remove " + conns.length + " connections at " + start);
+            mAdapter.connectionsRemoved(start, conns);
         });
     }
 
     @Override
     public void connectionsUpdated(int[] positions) {
-        mHandler.post(() -> {
-            if (hasConnectionFilter()) {
-                refreshFilteredConnections();
-                return;
-            }
-
-            int item_count = mAdapter.getItemCount();
-
-            for(int pos : positions) {
-                if(pos < item_count) {
-                    Log.d(TAG, "Changed item " + pos + ", dataset size: " + mAdapter.getItemCount());
-                    mAdapter.notifyItemChanged(pos);
-                }
-            }
-        });
+        mHandler.post(() -> mAdapter.connectionsUpdated(positions));
     }
 
     @Override
@@ -537,10 +491,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             reg.mExclusionsEnabled = !reg.mExclusionsEnabled;
 
             // Delay the refresh to wait for the menu to be closed
-            (new Handler(requireActivity().getMainLooper())).postDelayed(() -> {
-                refreshExclusionsMenu();
-                refreshFilteredConnections();
-            }, 50);
+            (new Handler(requireActivity().getMainLooper())).postDelayed(this::refreshFilteredConnections, 50);
 
             return true;
         } else if(id == R.id.delete_exclusions) {
@@ -644,12 +595,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void dumpCsv() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        if(reg == null)
-            return;
-
-        String dump = reg.dumpConnectionsCsv(requireContext(), mAdapter.getUidFilter());
+        String dump = mAdapter.dumpConnectionsCsv();
 
         if(mCsvFname != null) {
             Log.d(TAG, "Writing CSV file: " + mCsvFname);
@@ -736,9 +682,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         builder.setTitle(R.string.edit_exclusions);
         builder.setView(exclListView);
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> {
-           updateExclusions(adapter);
-        });
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> updateExclusions(adapter));
         builder.setNeutralButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
 
         final AlertDialog alert = builder.create();
@@ -766,10 +710,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         }
 
-        if(changed) {
-            refreshExclusionsMenu();
+        if(changed)
             refreshFilteredConnections();
-        }
     }
 
     private void deleteExclusions() {
@@ -779,7 +721,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         reg.mExclusions.clear();
-        refreshExclusionsMenu();
         refreshFilteredConnections();
     }
 

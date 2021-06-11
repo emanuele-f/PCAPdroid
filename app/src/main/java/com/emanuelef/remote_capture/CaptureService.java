@@ -44,6 +44,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -521,8 +522,16 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.stop();
     }
 
-    public static ConnectionsRegister getConnsRegister() {
+    public static @Nullable ConnectionsRegister getConnsRegister() {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
+    }
+
+    public static @NonNull ConnectionsRegister requireConnsRegister() {
+        ConnectionsRegister reg = getConnsRegister();
+
+        assert(reg != null);
+
+        return reg;
     }
 
     public static boolean isCapturingAsRoot() {

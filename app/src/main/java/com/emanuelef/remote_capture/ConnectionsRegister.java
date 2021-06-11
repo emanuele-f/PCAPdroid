@@ -19,19 +19,16 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
+import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionsMatcher;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,9 +89,11 @@ public class ConnectionsRegister {
         int in_items = Math.min((mSize - mNumItems), conns.length);
         int out_items = conns.length - in_items;
         int insert_pos = mNumItems;
+        ConnectionDescriptor []removedItems = null;
 
         if(out_items > 0) {
             int pos = mTail;
+            removedItems = new ConnectionDescriptor[out_items];
 
             // update the apps stats
             for(int i=0; i<out_items; i++) {
@@ -109,6 +108,7 @@ public class ConnectionsRegister {
                         mAppsStats.remove(uid);
                 }
 
+                removedItems[i] = conn;
                 pos = (pos + 1) % mSize;
             }
         }
@@ -135,10 +135,10 @@ public class ConnectionsRegister {
 
         for(ConnectionsListener listener: mListeners) {
             if(out_items > 0)
-                listener.connectionsRemoved(0, out_items);
+                listener.connectionsRemoved(0, removedItems);
 
             if(conns.length > 0)
-                listener.connectionsAdded(insert_pos - out_items, conns.length);
+                listener.connectionsAdded(insert_pos - out_items, conns);
         }
     }
 
@@ -219,7 +219,11 @@ public class ConnectionsRegister {
         return mUntrackedItems;
     }
 
-    private synchronized ConnectionDescriptor getConnSimple(int i) {
+    public boolean hasExclusionFilter() {
+        return(mExclusionsEnabled && !mExclusions.isEmpty());
+    }
+
+    public @Nullable ConnectionDescriptor getConn(int i) {
         if(i >= mNumItems)
             return null;
 
@@ -227,44 +231,7 @@ public class ConnectionsRegister {
         return mItemsRing[pos];
     }
 
-    private synchronized ConnectionDescriptor getConnWithFilter(int uidFilter, int target_pos) {
-        // pos is relative to the connections matching the provided uid / exclusions
-        int first = firstPos();
-        int virt_pos = 0;
-
-        for(int i = 0; i < mNumItems; i++) {
-            int pos = (first + i) % mSize;
-            ConnectionDescriptor item = mItemsRing[pos];
-
-            if(matches(item, uidFilter)) {
-                if(virt_pos == target_pos)
-                    return item;
-
-                virt_pos++;
-            }
-        }
-
-        return null;
-    }
-
-    public boolean hasExclusionFilter() {
-        return(mExclusionsEnabled && !mExclusions.isEmpty());
-    }
-
-    private boolean matches(ConnectionDescriptor conn, int uidFilter) {
-        return((conn != null)
-                && ((uidFilter == Utils.UID_NO_FILTER) || (conn.uid == uidFilter))
-                && (!mExclusionsEnabled || !mExclusions.matches(conn)));
-    }
-
-    public ConnectionDescriptor getConn(int pos, int uidFilter) {
-        if((uidFilter == Utils.UID_NO_FILTER) && !hasExclusionFilter())
-            return getConnSimple(pos);
-        else
-            return getConnWithFilter(uidFilter, pos);
-    }
-
-    public synchronized int getConnPositionByIncrId(int incr_id) {
+    public synchronized int getConnPositionById(int incr_id) {
         int first = firstPos();
 
         for(int i = 0; i < mNumItems; i++) {
@@ -300,66 +267,6 @@ public class ConnectionsRegister {
         }
 
         return rv;
-    }
-
-    public synchronized int getFilteredConnCount(int uidFilter) {
-        if(!hasExclusionFilter() && (uidFilter != Utils.UID_NO_FILTER)) {
-            // Optimized
-            AppStats stats = mAppsStats.get(uidFilter);
-
-            if(stats == null)
-                return 0;
-            return stats.num_connections;
-        } else {
-            // TODO optimize
-            int count = 0;
-
-            for(int i = 0; i < mNumItems; i++) {
-                ConnectionDescriptor item = mItemsRing[i];
-
-                if(matches(item, uidFilter))
-                    count++;
-            }
-
-            return count;
-        }
-    }
-
-    public synchronized String dumpConnectionsCsv(Context context, int uidFilter) {
-        StringBuilder builder = new StringBuilder();
-        AppsResolver resolver = new AppsResolver(context);
-
-        // Header
-        builder.append(context.getString(R.string.connections_csv_fields_v1));
-        builder.append("\n");
-
-        // Contents
-        for(int i=0; i<getConnCount(); i++) {
-            ConnectionDescriptor conn = getConn(i, uidFilter);
-
-            if(conn != null) {
-                AppDescriptor app = resolver.get(conn.uid);
-
-                builder.append(conn.ipproto);                               builder.append(",");
-                builder.append(conn.src_ip);                                builder.append(",");
-                builder.append(conn.src_port);                              builder.append(",");
-                builder.append(conn.dst_ip);                                builder.append(",");
-                builder.append(conn.dst_port);                              builder.append(",");
-                builder.append(conn.uid);                                   builder.append(",");
-                builder.append((app != null) ? app.getName() : "");         builder.append(",");
-                builder.append(conn.l7proto);                               builder.append(",");
-                builder.append(conn.getStatusLabel(context));               builder.append(",");
-                builder.append((conn.info != null) ? conn.info : "");       builder.append(",");
-                builder.append(conn.sent_bytes);                            builder.append(",");
-                builder.append(conn.rcvd_bytes);                            builder.append(",");
-                builder.append(conn.sent_pkts);                             builder.append(",");
-                builder.append(conn.rcvd_pkts);                             builder.append(",");
-                builder.append(conn.first_seen);                            builder.append(",");
-                builder.append(conn.last_seen);                             builder.append("\n");
-            }
-        }
-
-        return builder.toString();
     }
 
     public void saveExclusions() {
