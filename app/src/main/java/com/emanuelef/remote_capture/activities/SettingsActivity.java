@@ -54,14 +54,15 @@ public class SettingsActivity extends BaseActivity {
         mAd = new AD(this, "ca-app-pub-5059485193178567/1641030673");
         mAd.show();
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.settings, new SettingsFragment())
-                .commit();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.settings_container, new SettingsFragment())
+                .commit();
     }
 
     @Override

@@ -150,7 +150,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if((reg != null) && !mListenerSet) {
-            mConnPos = reg.getConnPositionByIncrId(mConn.incr_id);
+            mConnPos = reg.getConnPositionById(mConn.incr_id);
 
             if(mConnPos != -1) {
                 ConnectionDescriptor conn = reg.getConn(mConnPos);
@@ -238,10 +238,10 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     public void connectionsChanges(int num_connetions) {}
 
     @Override
-    public void connectionsAdded(int start, int count) {}
+    public void connectionsAdded(int start, ConnectionDescriptor []conns) {}
 
     @Override
-    public void connectionsRemoved(int start, int count) {}
+    public void connectionsRemoved(int start, ConnectionDescriptor []conns) {}
 
     @Override
     public void connectionsUpdated(int[] positions) {

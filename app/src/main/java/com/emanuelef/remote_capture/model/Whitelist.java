@@ -17,25 +17,33 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+package com.emanuelef.remote_capture.model;
 
-import android.os.Bundle;
+import android.content.Context;
+import android.content.SharedPreferences;
 
-import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.AppsFragment;
+import androidx.preference.PreferenceManager;
 
-public class AppsActivity extends BaseActivity {
-    private static final String TAG = "AppsActivity";
+public class Whitelist extends ConnectionsMatcher {
+    private final SharedPreferences mPrefs;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public Whitelist(Context ctx) {
+        super(ctx);
 
-        setTitle(R.string.apps);
-        setContentView(R.layout.apps_activity);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+    }
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.apps_fragment, new AppsFragment())
-                .commit();
+    public void reload() {
+        // Try to restore the whitelist
+        String serialized = mPrefs.getString(Prefs.PREF_WHITELIST, "");
+
+        if(!serialized.isEmpty())
+            fromJson(serialized);
+    }
+
+    public void save() {
+        mPrefs.edit()
+            .putString(Prefs.PREF_WHITELIST, toJson())
+            .apply();
     }
 }

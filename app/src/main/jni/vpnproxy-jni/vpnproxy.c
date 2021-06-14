@@ -37,7 +37,9 @@ static ndpi_protocol_bitmask_struct_t masterProtos;
 /* NOTE: these must be reset during each run, as android may reuse the service */
 static int dumper_socket;
 static bool send_header;
+static int netd_resolve_waiting;
 static time_t last_connections_dump;
+static time_t next_connections_dump;
 static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
@@ -78,6 +80,9 @@ void conn_free_data(conn_data_t *data) {
 /* ******************************************************* */
 
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
+    if(data->pending_notification)
+        return;
+
     if(arr->cur_items >= arr->size) {
         /* Extend array */
         arr->size = (arr->size == 0) ? 8 : (arr->size * 2);
@@ -298,9 +303,55 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
         inet_ntop(family, &ip, resip, sizeof(resip));
 
         log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
+
+        if(data->uid != UID_UNKNOWN) {
+            // When a DNS request is followed by a TLS connection or similar, mark the DNS request
+            // with the uid of this connection. This allows us to match netd requests to actual apps.
+            // Only change the uid of new connections (proxy->new_conns) to avoid possible side effects
+            for(int i=0; i<proxy->new_conns.cur_items; i++) {
+                vpn_conn_t *conn = &proxy->new_conns.items[i];
+
+                if((conn->data->uid == UID_NETD)
+                        && (conn->data->info != NULL)
+                        && (strcmp(conn->data->info, data->info) == 0)) {
+                    char buf[256];
+
+                    conn->data->uid = data->uid;
+
+                    zdtun_5tuple2str(&conn->tuple, buf, sizeof(buf));
+                    log_d("Resolved netd uid: %s : %d", buf, data->uid);
+
+                    if(netd_resolve_waiting > 0) {
+                        // If all the netd connections have been resolved, remove the dump delay
+                        if((--netd_resolve_waiting) == 0) {
+                            log_d("Removing netd resolution delay");
+                            next_connections_dump -= proxy->now_ms;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return(data);
+}
+
+/* ******************************************************* */
+
+static bool is_numeric_host(const char *host) {
+    if(isdigit(*host))
+        return true;
+
+    for(; *host; host++) {
+        char ch = *host;
+
+        if(ch == ':') // IPv6
+            return true;
+        if(ch == '.')
+            break;
+    }
+
+    return false;
 }
 
 /* ******************************************************* */
@@ -325,40 +376,14 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
     switch (data->l7proto.master_protocol) {
         case NDPI_PROTOCOL_DNS:
             if(data->ndpi_flow->host_server_name[0]) {
-                u_int16_t rsp_type = data->ndpi_flow->protos.dns.rsp_type;
-                zdtun_ip_t rsp_addr = {0};
-                int ipver = 0;
-
                 if(data->info)
                     free(data->info);
                 data->info = strndup((char*)data->ndpi_flow->host_server_name, 256);
-
-                if(data->info && strchr(data->info, '.')) { // ignore invalid domain names
-                    if((rsp_type == 0x1) && (data->ndpi_flow->protos.dns.rsp_addr.ipv4 != 0)) { /* A */
-                        rsp_addr.ip4 = data->ndpi_flow->protos.dns.rsp_addr.ipv4;
-                        ipver = 4;
-                    } else if((rsp_type == 0x1c)
-                              && ((data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr.u6_addr8[0] & 0xE0) == 0x20)) { /* AAAA unicast */
-                        memcpy(&rsp_addr.ip6, &data->ndpi_flow->protos.dns.rsp_addr.ipv6.u6_addr, 16);
-                        ipver = 6;
-                    }
-
-                    if(ipver != 0) {
-                        char rspip[INET6_ADDRSTRLEN];
-                        int family = (ipver == 4) ? AF_INET : AF_INET6;
-
-                        rspip[0] = '\0';
-                        inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
-
-                        log_d("Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, data->info);
-
-                        ip_lru_add(proxy->ip_to_host, &rsp_addr, data->info);
-                    }
-                }
             }
             break;
         case NDPI_PROTOCOL_HTTP:
-            if(data->ndpi_flow->host_server_name[0]) {
+            if(data->ndpi_flow->host_server_name[0] &&
+                    (!data->info || !is_numeric_host((char*)data->ndpi_flow->host_server_name))) {
                 if(data->info)
                     free(data->info);
                 data->info = strndup((char*) data->ndpi_flow->host_server_name, 256);
@@ -429,6 +454,80 @@ static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt,
 
 /* ******************************************************* */
 
+static void process_dns_reply(conn_data_t *data, vpnproxy_data_t *proxy, const struct zdtun_pkt *pkt) {
+    const char *query = data->ndpi_flow->host_server_name;
+
+    if((!query[0]) || !strchr(query, '.') || (pkt->l7_len < sizeof(dns_packet_t)))
+        return;
+
+    dns_packet_t *dns = (dns_packet_t*)pkt->l7;
+
+    if(((dns->flags & 0x8000) == 0x8000) && (dns->questions != 0) && (dns->answ_rrs != 0)) {
+        u_char *reply = dns->queries;
+        int len = pkt->l7_len - sizeof(dns_packet_t);
+        int num_queries = ntohs(dns->questions);
+        int num_replies = min(ntohs(dns->answ_rrs), 32);
+
+        // Skip queries
+        for(int i=0; (i<num_queries) && (len > 0); i++) {
+            while((len > 0) && (*reply != '\0')) {
+                reply++;
+                len--;
+            }
+
+            reply += 5; len -= 5;
+        }
+
+        for(int i=0; (i<num_replies) && (len > 0); i++) {
+            int ipver = 0;
+            zdtun_ip_t rsp_addr = {0};
+
+            // Skip name
+            while(len > 0) {
+                if(*reply == 0x00) {
+                    reply++; len--;
+                    break;
+                } else if(*reply == 0xc0) {
+                    reply+=2; len-=2;
+                    break;
+                }
+
+                reply++; len--;
+            }
+
+            if(len < 10)
+                return;
+
+            uint16_t rec_type = ntohs((*(uint16_t*)reply));
+            uint16_t addr_len = ntohs((*(uint16_t*)(reply + 8)));
+            reply += 10; len -= 10;
+
+            if((rec_type == 0x1) && (addr_len == 4)) { // A record
+                ipver = 4;
+                rsp_addr.ip4 = *((u_int32_t*)reply);
+            } else if((rec_type == 0x1c) && (addr_len == 16)) { // AAAA record
+                ipver = 6;
+                memcpy(&rsp_addr.ip6, reply, 16);
+            }
+
+            if(ipver != 0) {
+                char rspip[INET6_ADDRSTRLEN];
+                int family = (ipver == 4) ? AF_INET : AF_INET6;
+
+                rspip[0] = '\0';
+                inet_ntop(family, &rsp_addr, rspip, sizeof(rspip));
+
+                log_d("Host LRU cache ADD [v%d]: %s -> %s", ipver, rspip, query);
+                ip_lru_add(proxy->ip_to_host, &rsp_addr, query);
+            }
+
+            reply += addr_len; len -= addr_len;
+        }
+    }
+}
+
+/* ******************************************************* */
+
 static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
                                 const struct zdtun_pkt *pkt, uint8_t from_tun) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
@@ -440,6 +539,10 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
 
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
         process_request_data(data, pkt, from_tun);
+
+    if(!from_tun && ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
+            || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS)))
+        process_dns_reply(data, proxy, pkt);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
@@ -479,9 +582,9 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
     if(uid >= 0) {
         char appbuf[128];
 
-        if(uid == 0)
+        if(uid == UID_ROOT)
             strncpy(appbuf, "ROOT", sizeof(appbuf));
-        else if(uid == 1051)
+        else if(uid == UID_NETD)
             strncpy(appbuf, "netd", sizeof(appbuf));
         else
             getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
@@ -569,7 +672,9 @@ static void sendConnectionsDump(vpnproxy_data_t *proxy) {
     if((proxy->new_conns.cur_items == 0) && (proxy->conns_updates.cur_items == 0))
         return;
 
-    log_d("sendConnectionsDump: new=%d, updates=%d", proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
+    log_d("sendConnectionsDump [after %d ms]: new=%d, updates=%d",
+          proxy->now_ms - last_connections_dump,
+          proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
 
     JNIEnv *env = proxy->env;
     jobject new_conns = (*env)->NewObjectArray(env, proxy->new_conns.cur_items, cls.conn, NULL);
@@ -716,9 +821,11 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
 
         proxy->capture_stats.new_stats = false;
         proxy->capture_stats.last_update_ms = proxy->now_ms;
-    } else if ((proxy->now_ms - last_connections_dump) >= CONNECTION_DUMP_UPDATE_FREQUENCY_MS) {
+    } else if (proxy->now_ms >= next_connections_dump) {
         sendConnectionsDump(proxy);
         last_connections_dump = proxy->now_ms;
+        next_connections_dump = proxy->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
+        netd_resolve_waiting = 0;
     } else if ((proxy->java_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
@@ -778,16 +885,27 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         proxy->capture_stats.rcvd_bytes += pkt->len;
     }
 
-    if(data->ndpi_flow)
+    if(data->ndpi_flow) {
         process_ndpi_packet(data, proxy, pkt, from_tun);
+
+        if((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
+                && (data->uid == UID_NETD)
+                && (data->sent_pkts + data->rcvd_pkts == 1)
+                && ((netd_resolve_waiting > 0) || (next_connections_dump > (proxy->now_ms - NETD_RESOLVE_DELAY_MS)))) {
+            if(netd_resolve_waiting == 0) {
+                // Wait before sending the dump to possibly resolve netd DNS connections uid.
+                // Only delay for the first DNS request, to avoid excessive delay.
+                log_d("Adding netd resolution delay");
+                next_connections_dump += NETD_RESOLVE_DELAY_MS;
+            }
+            netd_resolve_waiting++;
+        }
+    }
 
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
-    if (!data->pending_notification) {
-        notify_connection(&proxy->conns_updates, conn_tuple, data);
-        data->pending_notification = true;
-    }
+    notify_connection(&proxy->conns_updates, conn_tuple, data);
 
     if (proxy->java_dump.buffer) {
         int tot_size = pkt->len + (int) sizeof(pcaprec_hdr_s);
@@ -825,7 +943,9 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 /* ******************************************************* */
 
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
-    last_connections_dump = (time(NULL) * 1000) - CONNECTION_DUMP_UPDATE_FREQUENCY_MS + 1000 /* update in a second */;
+    last_connections_dump = time(NULL) * 1000;
+    next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
+    netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
     /* Classes */

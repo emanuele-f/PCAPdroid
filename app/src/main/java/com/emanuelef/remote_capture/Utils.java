@@ -50,6 +50,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.TableLayout;
@@ -62,6 +64,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
@@ -85,7 +88,8 @@ public class Utils {
     public static final String PCAP_HEADER = "d4c3b2a1020004000000000000000000ffff000065000000";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
-    private static Boolean root_available = null;
+    private static Boolean rootAvailable = null;
+    private static Locale primaryLocale = null;
 
     public static String formatBytes(long bytes) {
         long divisor;
@@ -111,8 +115,30 @@ public class Utils {
         return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
     }
 
+    @SuppressWarnings("deprecation")
+    public static Locale getPrimaryLocale(Context context) {
+        if(primaryLocale == null) {
+            Configuration config = context.getResources().getConfiguration();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                primaryLocale = config.getLocales().get(0);
+            else
+                primaryLocale = config.locale;
+        }
+
+        return primaryLocale;
+    }
+
+    public static boolean isRTL(Context ctx) {
+        Locale locale = getPrimaryLocale(ctx);
+        final int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
+
+        return direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
+    }
+
     public static String formatNumber(Context context, long num) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         return String.format(locale, "%,d", num);
     }
 
@@ -129,7 +155,7 @@ public class Utils {
 
     public static String formatEpochShort(Context context, long epoch) {
         long now = Utils.now();
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
 
         if((epoch - now) < (23 * 3600)) {
             final DateFormat fmt = new SimpleDateFormat("HH:mm:ss", locale);
@@ -141,7 +167,7 @@ public class Utils {
     }
 
     public static String formatEpochFull(Context context, long epoch) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
 
         return fmt.format(new Date(epoch * 1000));
@@ -344,7 +370,7 @@ public class Utils {
     }
 
     public static String getUniqueFileName(Context context, String ext) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getPrimaryLocale(context);
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
         return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
     }
@@ -390,6 +416,19 @@ public class Utils {
         return builder.toString();
     }
 
+    public static String adapter2Text(TextAdapter adapter) {
+        StringBuilder builder = new StringBuilder();
+
+        for(int i=0; i< adapter.getCount(); i++) {
+            String text = adapter.getItemText(i);
+
+            builder.append(text);
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
     public static boolean isTv(Context context) {
         UiModeManager uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
 
@@ -423,6 +462,7 @@ public class Utils {
         return((comp != null) && (!"com.google.android.tv.frameworkpackagestubs".equals(comp.getPackageName())));
     }
 
+    @SuppressWarnings("deprecation")
     public static Uri getInternalStorageFile(Context context, String fname) {
         ContentValues values = new ContentValues();
 
@@ -430,8 +470,8 @@ public class Utils {
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid");
-            values.put(MediaStore.MediaColumns.IS_PENDING, true); // exclusive access for long operations
+            // On Android Q+ cannot directly access the external dir. Must use RELATIVE_PATH instead.
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -440,8 +480,10 @@ public class Utils {
                 }
             }
 
-            Log.d("getInternalStorageFile", Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
-            values.put(MediaStore.MediaColumns.DATA, Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + fname);
+            // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
+            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fname;
+            Log.d("getInternalStorageFile", path);
+            values.put(MediaStore.MediaColumns.DATA, path);
         }
 
         return context.getContentResolver().insert(
@@ -472,9 +514,9 @@ public class Utils {
     }
 
     public static boolean isRootAvailable() {
-        if(root_available == null) {
+        if(rootAvailable == null) {
             String path = System.getenv("PATH");
-            root_available = false;
+            rootAvailable = false;
 
             if(path != null) {
                 Log.d("isRootAvailable", "PATH = " + path);
@@ -484,14 +526,14 @@ public class Utils {
 
                     if(f.exists()) {
                         Log.d("isRootAvailable", "'su' binary found at " + f.getAbsolutePath());
-                        root_available = true;
+                        rootAvailable = true;
                         break;
                     }
                 }
             }
         }
 
-        return root_available;
+        return rootAvailable;
     }
 
     public static void copyToClipboard(Context ctx, String contents) {
@@ -500,5 +542,42 @@ public class Utils {
         clipboard.setPrimaryClip(clip);
 
         Utils.showToast(ctx, R.string.copied_to_clipboard);
+    }
+
+    // Formats a string resource like "text: %1s" by applying the specified style to the "text:" and "value" ("%1s")
+    public static SpannableString formatTextValue(Context ctx, StyleSpan textStyle, StyleSpan valStyle, int resid, String value) {
+        String fmt = ctx.getResources().getString(resid);
+        String textAndValue = String.format(fmt, value);
+        SpannableString s = new SpannableString(textAndValue);
+        int valOffset = fmt.length() - 4;
+
+        if(!isRTL(ctx)) {
+            if (textStyle != null)
+                s.setSpan(textStyle, 0, valOffset, 0);
+            if (valStyle != null)
+                s.setSpan(valStyle, valOffset, textAndValue.length(), 0);
+        } else {
+            if (textStyle != null)
+                s.setSpan(textStyle, textAndValue.length() - valOffset, textAndValue.length(), 0);
+            if (valStyle != null)
+                s.setSpan(valStyle, 0, textAndValue.length() - valOffset, 0);
+        }
+
+        return s;
+    }
+
+    // a.example.org -> example.org
+    public static String getRootDomain(String domain) {
+        int tldPos = domain.lastIndexOf(".");
+
+        if(tldPos <= 0)
+            return domain;
+
+        int rootPos = domain.substring(0, tldPos).lastIndexOf(".");
+
+        if(rootPos <= 0)
+            return domain;
+
+        return domain.substring(rootPos + 1);
     }
 }

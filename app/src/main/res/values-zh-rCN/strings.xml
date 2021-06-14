@@ -130,5 +130,19 @@
     <string name="donate">捐赠</string>
     <string name="http_request">HTTP 请求</string>
     <string name="root_log">Root 日志</string>
+    <string name="request_plaintext">请求明文</string>
+    <string name="search">搜索…</string>
+    <string name="app_val">应用: %1$s</string>
+    <string name="ip_address_val">IP 地址: %1$s</string>
+    <string name="host_val">主机: %1$s</string>
+    <string name="protocol_val">协议: %1$s</string>
+    <string name="cancel">取消</string>
+    <string name="show_whitelisted">显示加白的连接</string>
+    <string name="hide_whitelisted">隐藏加白的连接</string>
+    <string name="whitelist">白名单</string>
+    <string name="edit_whitelist">编辑白名单</string>
+    <string name="whitelist_action">白名单 …</string>
+    <string name="whitelist_empty">白名单为空。\n你可以长按一个连接将其加入白名单。</string>
+    <string name="n_selected">选中了 %1$d </string>
+    <string name="select_all">选择全部</string>
 </resources>
-

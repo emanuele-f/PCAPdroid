@@ -19,11 +19,11 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
-import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
@@ -36,50 +36,53 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConnectionsRegister {
-    private final ConnectionDescriptor[] items_ring;
-    private int tail;
-    private final int size;
-    private int num_items;
-    private int untracked_items;
-    private final Map<Integer, AppStats> mAppsStats;
-    private final ArrayList<ConnectionsListener> mListeners;
     private static final String TAG = "ConnectionsRegister";
 
+    private final ConnectionDescriptor[] mItemsRing;
+    private int mTail;
+    private final int mSize;
+    private int mNumItems;
+    private int mUntrackedItems;
+    private final Map<Integer, AppStats> mAppsStats;
+    private final ArrayList<ConnectionsListener> mListeners;
+
     public ConnectionsRegister(int _size) {
-        tail = 0;
-        num_items = 0;
-        untracked_items = 0;
-        size = _size;
-        items_ring = new ConnectionDescriptor[size];
+        mTail = 0;
+        mNumItems = 0;
+        mUntrackedItems = 0;
+        mSize = _size;
+        mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
     }
 
     private int firstPos() {
-        return (num_items < size) ? 0 : tail;
+        return (mNumItems < mSize) ? 0 : mTail;
     }
 
     private int lastPos() {
-        return (tail - 1 + size) % size;
+        return (mTail - 1 + mSize) % mSize;
     }
 
     public synchronized void newConnections(ConnectionDescriptor[] conns) {
-        if(conns.length > size) {
+        if(conns.length > mSize) {
             // take the most recent
-            untracked_items += conns.length - size;
-            conns = Arrays.copyOfRange(conns, conns.length - size, conns.length);
+            mUntrackedItems += conns.length - mSize;
+            conns = Arrays.copyOfRange(conns, conns.length - mSize, conns.length);
         }
 
-        int in_items = Math.min((size - num_items), conns.length);
+        int in_items = Math.min((mSize - mNumItems), conns.length);
         int out_items = conns.length - in_items;
-        int insert_pos = num_items;
+        int insert_pos = mNumItems;
+        ConnectionDescriptor []removedItems = null;
 
         if(out_items > 0) {
-            int pos = tail;
+            int pos = mTail;
+            removedItems = new ConnectionDescriptor[out_items];
 
             // update the apps stats
             for(int i=0; i<out_items; i++) {
-                ConnectionDescriptor conn = items_ring[pos];
+                ConnectionDescriptor conn = mItemsRing[pos];
 
                 if(conn != null) {
                     int uid = conn.uid;
@@ -90,14 +93,15 @@ public class ConnectionsRegister {
                         mAppsStats.remove(uid);
                 }
 
-                pos = (pos + 1) % size;
+                removedItems[i] = conn;
+                pos = (pos + 1) % mSize;
             }
         }
 
         for(ConnectionDescriptor conn: conns) {
-            items_ring[tail] = conn;
-            tail = (tail + 1) % size;
-            num_items = Math.min(num_items + 1, size);
+            mItemsRing[mTail] = conn;
+            mTail = (mTail + 1) % mSize;
+            mNumItems = Math.min(mNumItems + 1, mSize);
 
             // update the apps stats
             int uid = conn.uid;
@@ -112,36 +116,36 @@ public class ConnectionsRegister {
             stats.bytes += conn.rcvd_bytes + conn.sent_bytes;
         }
 
-        untracked_items += out_items;
+        mUntrackedItems += out_items;
 
         for(ConnectionsListener listener: mListeners) {
             if(out_items > 0)
-                listener.connectionsRemoved(0, out_items);
+                listener.connectionsRemoved(0, removedItems);
 
             if(conns.length > 0)
-                listener.connectionsAdded(insert_pos - out_items, conns.length);
+                listener.connectionsAdded(insert_pos - out_items, conns);
         }
     }
 
     public synchronized void connectionsUpdates(ConnectionDescriptor[] conns) {
         int first_pos = firstPos();
-        int first_id = items_ring[first_pos].incr_id;
-        int last_id = items_ring[lastPos()].incr_id;
+        int first_id = mItemsRing[first_pos].incr_id;
+        int last_id = mItemsRing[lastPos()].incr_id;
         int []changed_pos = new int[conns.length];
         int k = 0;
 
-        Log.d(TAG, "connectionsUpdates: items=" + num_items + ", first_id=" + first_id + ", last_id=" + last_id);
+        Log.d(TAG, "connectionsUpdates: items=" + mNumItems + ", first_id=" + first_id + ", last_id=" + last_id);
 
         for(ConnectionDescriptor conn: conns) {
             int id = conn.incr_id;
 
             // ignore updates for untracked items
             if((id >= first_id) && (id <= last_id)) {
-                int pos = ((id - first_id) + first_pos) % size;
-                ConnectionDescriptor old = items_ring[pos];
+                int pos = ((id - first_id) + first_pos) % mSize;
+                ConnectionDescriptor old = mItemsRing[pos];
 
                 assert(old.incr_id == id);
-                items_ring[pos] = conn;
+                mItemsRing[pos] = conn;
 
                 // update the apps stats
                 long old_bytes = old.rcvd_bytes + old.sent_bytes;
@@ -149,7 +153,7 @@ public class ConnectionsRegister {
                 AppStats stats = mAppsStats.get(conn.uid);
                 stats.bytes += bytes_delta;
 
-                changed_pos[k++] = (pos + size - first_pos) % size;
+                changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }
         }
 
@@ -165,23 +169,23 @@ public class ConnectionsRegister {
     }
 
     public synchronized void reset() {
-        for(int i=0; i<size; i++)
-            items_ring[i] = null;
+        for(int i = 0; i< mSize; i++)
+            mItemsRing[i] = null;
 
-        num_items = 0;
-        untracked_items = 0;
-        tail = 0;
+        mNumItems = 0;
+        mUntrackedItems = 0;
+        mTail = 0;
         mAppsStats.clear();
 
         for(ConnectionsListener listener: mListeners)
-            listener.connectionsChanges(num_items);
+            listener.connectionsChanges(mNumItems);
     }
 
     public synchronized void addListener(ConnectionsListener listener) {
         mListeners.add(listener);
 
         // Send the first update to sync it
-        listener.connectionsChanges(num_items);
+        listener.connectionsChanges(mNumItems);
 
         Log.d(TAG, "(add) new connections listeners size: " + mListeners.size());
     }
@@ -193,47 +197,27 @@ public class ConnectionsRegister {
     }
 
     public int getConnCount() {
-        return num_items;
+        return mNumItems;
     }
 
     public int getUntrackedConnCount() {
-        return untracked_items;
+        return mUntrackedItems;
     }
 
-    public synchronized ConnectionDescriptor getConn(int i) {
-        if(i >= num_items)
+    public @Nullable ConnectionDescriptor getConn(int i) {
+        if(i >= mNumItems)
             return null;
 
-        int pos = (firstPos() + i) % size;
-        return items_ring[pos];
+        int pos = (firstPos() + i) % mSize;
+        return mItemsRing[pos];
     }
 
-    public synchronized ConnectionDescriptor getUidConn(int uid, int target_pos) {
-        // pos is relative to the connections matching the provided uid
-        int first = firstPos();
-        int virt_pos = 0;
-
-        for(int i = 0; i < num_items; i++) {
-            int pos = (first + i) % size;
-            ConnectionDescriptor item = items_ring[pos];
-
-            if((item != null) && (item.uid == uid)) {
-                if(virt_pos == target_pos)
-                    return item;
-
-                virt_pos++;
-            }
-        }
-
-        return null;
-    }
-
-    public synchronized int getConnPositionByIncrId(int incr_id) {
+    public synchronized int getConnPositionById(int incr_id) {
         int first = firstPos();
 
-        for(int i = 0; i < num_items; i++) {
-            int pos = (first + i) % size;
-            ConnectionDescriptor item = items_ring[pos];
+        for(int i = 0; i < mNumItems; i++) {
+            int pos = (first + i) % mSize;
+            ConnectionDescriptor item = mItemsRing[pos];
 
             if((item != null) && (item.incr_id == incr_id)) {
                 return pos;
@@ -264,49 +248,5 @@ public class ConnectionsRegister {
         }
 
         return rv;
-    }
-
-    public synchronized int getUidConnCount(int uid) {
-        AppStats stats = mAppsStats.get(uid);
-
-        if(stats == null)
-            return 0;
-        return stats.num_connections;
-    }
-
-    public synchronized String dumpConnectionsCsv(Context context, int uidFilter) {
-        StringBuilder builder = new StringBuilder();
-        AppsResolver resolver = new AppsResolver(context);
-
-        // Header
-        builder.append(context.getString(R.string.connections_csv_fields_v1));
-        builder.append("\n");
-
-        // Contents
-        for(int i=0; i<getConnCount(); i++) {
-            ConnectionDescriptor conn = getConn(i);
-            AppDescriptor app = resolver.get(conn.uid);
-
-            if((conn != null) && ((uidFilter == Utils.UID_NO_FILTER) || (conn.uid == uidFilter))) {
-                builder.append(conn.ipproto);                               builder.append(",");
-                builder.append(conn.src_ip);                                builder.append(",");
-                builder.append(conn.src_port);                              builder.append(",");
-                builder.append(conn.dst_ip);                                builder.append(",");
-                builder.append(conn.dst_port);                              builder.append(",");
-                builder.append(conn.uid);                                   builder.append(",");
-                builder.append((app != null) ? app.getName() : "");         builder.append(",");
-                builder.append(conn.l7proto);                               builder.append(",");
-                builder.append(conn.getStatusLabel(context));               builder.append(",");
-                builder.append((conn.info != null) ? conn.info : "");       builder.append(",");
-                builder.append(conn.sent_bytes);                            builder.append(",");
-                builder.append(conn.rcvd_bytes);                            builder.append(",");
-                builder.append(conn.sent_pkts);                             builder.append(",");
-                builder.append(conn.rcvd_pkts);                             builder.append(",");
-                builder.append(conn.first_seen);                            builder.append(",");
-                builder.append(conn.last_seen);                             builder.append("\n");
-            }
-        }
-
-        return builder.toString();
     }
 }

@@ -44,6 +44,7 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class AppsFragment extends Fragment implements ConnectionsListener {
@@ -93,11 +94,11 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
-            AppStats item = mAdapter.getItem(pos);
+            String packageName = mAdapter.getItemPackage(pos);
 
-            if(item != null) {
+            if(packageName != null) {
                 Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.putExtra(MainActivity.UID_FILTER_EXTRA, item.getUid());
+                intent.putExtra(MainActivity.FILTER_EXTRA, packageName);
 
                 startActivity(intent);
             }
@@ -181,12 +182,12 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     }
 
     @Override
-    public void connectionsAdded(int start, int count) {
+    public void connectionsAdded(int start, ConnectionDescriptor []conns) {
         refreshAppsAsync();
     }
 
     @Override
-    public void connectionsRemoved(int start, int count) {
+    public void connectionsRemoved(int start, ConnectionDescriptor []conns) {
         refreshAppsAsync();
     }
 

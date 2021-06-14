@@ -10,7 +10,7 @@ PCAPdroid is an open source network monitoring and capture tool. It can capture 
 Features:
 
 - Log and examine the connections made by the user and system apps
-- Extract SNI, DNS query, URL and remote IP address
+- Extract SNI, DNS query, HTTP request, HTTP URL and remote IP address
 - Apply a filter to only capture the traffic of the selected app
 - Easily download a PCAP file of the traffic thanks to the integrated HTTP server
 - Stream the PCAP to a remote receiver for further analysis (e.g. wireshark)
@@ -63,6 +63,8 @@ PCAPdroid supports decrypting TLS traffic by sending it to mitmproxy. Check out 
 - [CustomActivityOnCrash](https://github.com/Ereza/CustomActivityOnCrash): handles app crashes gracefully and allows to copy the crash log
 
 ## Building
+
+PCAPdroid is intended to be built on a linux distribution, for example Debian or Ubuntu.
 
 1. Clone this repo
 2. Install the native dependencies: `autogen autoconf bison flex libtool pkg-config libpcap-dev libjson-c-dev`

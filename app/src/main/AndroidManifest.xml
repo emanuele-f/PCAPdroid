@@ -66,6 +66,10 @@
             android:name=".activities.LogviewActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
+        <activity
+            android:name=".activities.WhitelistActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
 
         <service
             android:name=".CaptureService"

@@ -24,6 +24,8 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
+import androidx.core.text.HtmlCompat;
+
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 
@@ -41,12 +43,12 @@ public class AboutActivity extends BaseActivity {
 
         TextView gplLicense = findViewById(R.id.app_license_link);
         String localized = gplLicense.getText().toString();
-        gplLicense.setText(Html.fromHtml("<a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>" + localized + "</a>"));
+        gplLicense.setText(HtmlCompat.fromHtml("<a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>" + localized + "</a>", HtmlCompat.FROM_HTML_MODE_LEGACY));
         gplLicense.setMovementMethod(LinkMovementMethod.getInstance());
 
         TextView sourceLink = findViewById(R.id.app_source_link);
         localized = sourceLink.getText().toString();
-        sourceLink.setText(Html.fromHtml("<a href='" + MainActivity.GITHUB_PROJECT_URL + "'>" + localized + "</a>"));
+        sourceLink.setText(HtmlCompat.fromHtml("<a href='" + MainActivity.GITHUB_PROJECT_URL + "'>" + localized + "</a>", HtmlCompat.FROM_HTML_MODE_LEGACY));
         sourceLink.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

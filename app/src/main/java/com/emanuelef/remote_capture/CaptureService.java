@@ -44,9 +44,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
@@ -194,7 +196,6 @@ public class CaptureService extends VpnService implements Runnable {
         last_bytes = 0;
         last_connections = 0;
         root_capture = Prefs.isRootCaptureEnabled(prefs);
-
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
 
         if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
@@ -219,6 +220,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mPcapUri = Uri.parse(path);
 
                 try {
+                    Log.d(TAG, "PCAP URI: " + mPcapUri);
                     mOutputStream = getContentResolver().openOutputStream(mPcapUri);
                     mFirstStreamWrite = true;
                 } catch (FileNotFoundException e) {
@@ -344,7 +346,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
-                .setColor(getResources().getColor(R.color.colorPrimary))
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setAutoCancel(false)
@@ -517,8 +519,16 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.stop();
     }
 
-    public static ConnectionsRegister getConnsRegister() {
+    public static @Nullable ConnectionsRegister getConnsRegister() {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
+    }
+
+    public static @NonNull ConnectionsRegister requireConnsRegister() {
+        ConnectionsRegister reg = getConnsRegister();
+
+        assert(reg != null);
+
+        return reg;
     }
 
     public static boolean isCapturingAsRoot() {

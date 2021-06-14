@@ -4,16 +4,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_show_app_filter"
-        android:title="@string/set_app_filter"
-        android:orderInCategory="10"
-        android:icon="@drawable/ic_filter_alt"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/search"
+        android:title="@string/search"
+        android:icon="@drawable/ic_search"
+        android:orderInCategory="15"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/hide_whitelist"
+        android:title="@string/hide_whitelisted"
+        android:icon="@drawable/ic_eye_slash"
+        android:orderInCategory="20"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/show_whitelist"
+        android:title="@string/show_whitelisted"
+        android:icon="@drawable/ic_eye"
+        android:orderInCategory="20"
+        app:showAsAction="ifRoom"
+        android:visible="false" />
 
     <item
         android:id="@+id/save"
         android:title="@string/save_to_file"
-        android:orderInCategory="20"
+        android:orderInCategory="30"
         android:icon="@drawable/ic_save"
         app:showAsAction="ifRoom" />
 

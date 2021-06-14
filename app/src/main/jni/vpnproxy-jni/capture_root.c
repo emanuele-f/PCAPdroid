@@ -286,8 +286,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
             log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // Will free the data in sendConnectionsDump
-            if(!conn->data->pending_notification)
-                notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
+            notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
 
             conn->data->status = CONN_STATUS_CLOSED;
 
@@ -332,7 +331,7 @@ int run_root(vpnproxy_data_t *proxy) {
 
         FD_SET(sock, &fdset);
 
-        struct timeval timeout = {.tv_sec = 0, .tv_usec = 500*1000}; // wake every 500 ms
+        struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
 
         if(select(sock + 1, &fdset, NULL, NULL, &timeout) < 0) {
             log_e("select failed[%d]: %s", errno, strerror(errno));

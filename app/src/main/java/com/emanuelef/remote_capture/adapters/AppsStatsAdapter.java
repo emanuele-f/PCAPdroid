@@ -131,6 +131,17 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         return mStats.get(pos);
     }
 
+    public String getItemPackage(int pos) {
+        AppStats stats = getItem(pos);
+
+        if(stats == null)
+            return null;
+
+        AppDescriptor descr = mApps.get(stats.getUid());
+
+        return((descr != null) ? descr.getPackageName() : null);
+    }
+
     public void setClickListener(View.OnClickListener listener) {
         mListener = listener;
     }

@@ -131,5 +131,21 @@
     <string name="http_request">HTTP Request</string>
     <string name="root_log">Root Log</string>
     <string name="request_plaintext">Request Plaintext</string>
+    <string name="search">Search…</string>
+    <string name="app_val">App: %1$s</string>
+    <string name="ip_address_val">IP Address: %1$s</string>
+    <string name="host_val">Host: %1$s</string>
+    <string name="protocol_val">Protocol: %1$s</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete_all">Delete all</string>
+    <string name="show_whitelisted">Show whitelisted connections</string>
+    <string name="hide_whitelisted">Hide whitelisted connections</string>
+    <string name="whitelist">Whitelist</string>
+    <string name="edit_whitelist">Edit Whitelist</string>
+    <string name="whitelist_action">Whitelist…</string>
+    <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
+    <string name="n_selected">%1$d selected</string>
+    <string name="select_all">Select all</string>
 </resources>
 
