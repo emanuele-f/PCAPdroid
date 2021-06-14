@@ -16,6 +16,9 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
+
+import java.util.Collections;
 
 public class AD {
     public static final String TAG = "Advertisements";
@@ -31,11 +34,20 @@ public class AD {
         adSize = getAdSize(ctx);
         adContainer = ctx.findViewById(R.id.adContainer);
 
+        if(BuildConfig.DEBUG) {
+            RequestConfiguration configuration = new RequestConfiguration.Builder().setTestDeviceIds(
+                    Collections.singletonList("f4e7e555-760e-4a4e-a2e9-98fcdef94a09")).build();
+            MobileAds.setRequestConfiguration(configuration);
+        }
+
         Log.d(TAG, "ad size: " + adSize.toString());
         MobileAds.initialize(ctx, initializationStatus -> Log.d(TAG, "initialized: " + initializationStatus));
     }
 
     public void show() {
+        if(adView != null)
+            return;
+
         adView = new AdView(ctx);
         adView.setAdUnitId(unitId);
         adContainer.addView(adView);
@@ -73,11 +85,11 @@ public class AD {
     }
 
     public void hide() {
-        if(adView != null) {
+        /*if(adView != null) {
             Log.d(TAG, "ad destroy");
             adContainer.removeAllViews();
             adContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
             adView.destroy();
-        }
+        }*/
     }
 }
