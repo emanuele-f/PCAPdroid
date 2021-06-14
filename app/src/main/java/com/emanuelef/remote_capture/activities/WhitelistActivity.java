@@ -19,14 +19,24 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.ListView;
+
+import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
 import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.fragments.WhitelistFragment;
 
 public class WhitelistActivity extends BaseActivity {
     private static final String TAG = "WhitelistActivity";
+    private WhitelistFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,5 +48,47 @@ public class WhitelistActivity extends BaseActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.whitelist_fragment, new WhitelistFragment())
                 .commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mFragment = null;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.copy_share_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        ListView lv = findViewById(R.id.whitelist);
+
+        if(lv == null)
+            return false;
+
+        if(id == R.id.copy_to_clipboard) {
+            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+            Utils.copyToClipboard(this, contents);
+            return true;
+        } else if(id == R.id.share) {
+            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.whitelist));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

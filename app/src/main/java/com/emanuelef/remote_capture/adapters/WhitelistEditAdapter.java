@@ -30,11 +30,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.ConnectionsMatcher;
 
 import java.util.Iterator;
 
-public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> {
+public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
 
     public WhitelistEditAdapter(Context context, Iterator<ConnectionsMatcher.Item> items) {
@@ -57,5 +58,10 @@ public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> 
         ((TextView)convertView.findViewById(R.id.item_label)).setText(item.getLabel());
 
         return convertView;
+    }
+
+    @Override
+    public String getItemText(int pos) {
+        return getItem(pos).getLabel();
     }
 }

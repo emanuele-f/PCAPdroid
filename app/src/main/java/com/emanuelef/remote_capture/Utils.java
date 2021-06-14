@@ -64,6 +64,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
@@ -410,6 +411,19 @@ public class Utils {
                     builder.append("\n");
                 }
             }
+        }
+
+        return builder.toString();
+    }
+
+    public static String adapter2Text(TextAdapter adapter) {
+        StringBuilder builder = new StringBuilder();
+
+        for(int i=0; i< adapter.getCount(); i++) {
+            String text = adapter.getItemText(i);
+
+            builder.append(text);
+            builder.append("\n");
         }
 
         return builder.toString();
