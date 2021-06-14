@@ -11,23 +11,19 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/whitelist"
-        android:title="@string/whitelist"
+        android:id="@+id/hide_whitelist"
+        android:title="@string/hide_whitelisted"
+        android:icon="@drawable/ic_eye"
         android:orderInCategory="20"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/show_whitelist"
+        android:title="@string/show_whitelisted"
         android:icon="@drawable/ic_eye_slash"
-        app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:title="@string/hide_whitelisted"
-                android:id="@+id/enable_whitelist" />
-            <item
-                android:title="@string/show_whitelisted"
-                android:id="@+id/disable_whitelist" />
-            <item
-                android:title="@string/edit"
-                android:id="@+id/edit_whitelist" />
-        </menu>
-    </item>
+        android:orderInCategory="20"
+        app:showAsAction="ifRoom"
+        android:visible="false" />
 
     <item
         android:id="@+id/save"

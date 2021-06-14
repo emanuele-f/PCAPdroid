@@ -3,22 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.emanuelef.remote_capture.views.EmptyRecyclerView
-        android:id="@+id/apps_stats_view"
+    <ListView
+        android:id="@+id/whitelist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:scrollbarStyle="outsideOverlay"
-        android:fillViewport="true" />
+        android:scrollbarStyle="outsideOverlay" />
 
     <TextView
-        android:id="@+id/no_apps"
+        android:id="@+id/whitelist_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:layout_marginTop="40dp"
         android:textStyle="italic"
         android:textSize="15sp"
-        android:text="@string/no_apps">
+        android:text="@string/whitelist_empty">
     </TextView>
 </RelativeLayout>

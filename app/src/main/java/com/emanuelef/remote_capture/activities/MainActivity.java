@@ -347,6 +347,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
+        } else if(id == R.id.edit_whitelist) {
+            Intent intent = new Intent(MainActivity.this, WhitelistActivity.class);
+            startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
             startActivity(intent);

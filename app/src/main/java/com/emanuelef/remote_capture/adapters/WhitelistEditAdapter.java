@@ -36,52 +36,26 @@ import java.util.Iterator;
 
 public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> {
     private final LayoutInflater mLayoutInflater;
-    private boolean mShowTrash;
-    private final int mResId;
 
-    public WhitelistEditAdapter(Context context, int res, Iterator<ConnectionsMatcher.Item> items) {
-        super(context, res);
-
-        mResId = res;
-        mShowTrash = true;
+    public WhitelistEditAdapter(Context context, Iterator<ConnectionsMatcher.Item> items) {
+        super(context, R.layout.whitelist_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         while(items.hasNext()) {
             ConnectionsMatcher.Item item = items.next();
             add(item);
         }
-
-        recheckSize();
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if(convertView == null)
-            convertView = mLayoutInflater.inflate(mResId, parent, false);
+            convertView = mLayoutInflater.inflate(R.layout.whitelist_item, parent, false);
 
         ConnectionsMatcher.Item item = getItem(position);
         ((TextView)convertView.findViewById(R.id.item_label)).setText(item.getLabel());
-        convertView.findViewById(R.id.item_icon).setVisibility(mShowTrash ? View.VISIBLE : View.INVISIBLE);
 
         return convertView;
-    }
-
-    @Override
-    public void remove(@Nullable ConnectionsMatcher.Item object) {
-        super.remove(object);
-
-        recheckSize();
-    }
-
-    private void recheckSize() {
-        if(getCount() == 1) {
-            // Prevent an empty view
-            mShowTrash = false;
-            notifyDataSetChanged();
-        } else if(!mShowTrash) {
-            mShowTrash = true;
-            notifyDataSetChanged();
-        }
     }
 }

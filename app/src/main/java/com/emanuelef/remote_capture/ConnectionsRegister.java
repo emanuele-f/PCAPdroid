@@ -19,8 +19,6 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -28,8 +26,6 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
-import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,11 +45,8 @@ public class ConnectionsRegister {
     private int mUntrackedItems;
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
-    private final SharedPreferences mPrefs;
-    public final ConnectionsMatcher mWhitelist;
-    public boolean mWhitelistEnabled;
 
-    public ConnectionsRegister(int _size, Context context, SharedPreferences prefs) {
+    public ConnectionsRegister(int _size) {
         mTail = 0;
         mNumItems = 0;
         mUntrackedItems = 0;
@@ -61,15 +54,6 @@ public class ConnectionsRegister {
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
-        mWhitelistEnabled = true;
-        mPrefs = prefs;
-        mWhitelist = new ConnectionsMatcher(context);
-
-        // Try to restore the whitelist
-        String serialized = prefs.getString(Prefs.PREF_WHITELIST, "");
-
-        if(!serialized.isEmpty())
-            mWhitelist.fromJson(serialized);
     }
 
     private int firstPos() {
@@ -220,10 +204,6 @@ public class ConnectionsRegister {
         return mUntrackedItems;
     }
 
-    public boolean hasWhitelistFilter() {
-        return(mWhitelistEnabled && !mWhitelist.isEmpty());
-    }
-
     public @Nullable ConnectionDescriptor getConn(int i) {
         if(i >= mNumItems)
             return null;
@@ -268,11 +248,5 @@ public class ConnectionsRegister {
         }
 
         return rv;
-    }
-
-    public void saveWhitelist() {
-        mPrefs.edit()
-                .putString(Prefs.PREF_WHITELIST, mWhitelist.toJson())
-                .apply();
     }
 }

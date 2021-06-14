@@ -38,7 +38,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +46,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -61,7 +59,6 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -77,7 +74,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -92,7 +88,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
-    private MenuItem mMenuItemWhitelist;
     private MenuItem mMenuItemEnableWhitelist;
     private MenuItem mMenuItemDisableWhitelist;
     private MenuItem mSave;
@@ -110,11 +105,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
-        registerConnsListener();
+        // Reload the whitelist as it could modified in WhitelistActivity
+        mAdapter.mWhitelist.reload();
 
-        // reg.mWhitelistEnabled may have changed (e.g. when filtering from the AppsActivity
-        if(mMenuItemWhitelist != null)
-            refreshWhitelistMenu();
+        registerConnsListener();
+        refreshMenuIcons();
     }
 
     @Override
@@ -129,6 +124,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onSaveInstanceState(outState);
 
         outState.putInt("uidFilter", mAdapter.getUidFilter());
+        outState.putBoolean("whitelistEnabled", mAdapter.mWhitelistEnabled);
     }
 
     @Override
@@ -232,21 +228,22 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(uidFilter != Utils.UID_NO_FILTER) {
                 // "consume" it
                 intent.removeExtra(MainActivity.UID_FILTER_EXTRA);
-
-                // disable the whitelist to prevent an empty view
-                ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-                if(reg != null)
-                    reg.mWhitelistEnabled = false;
             }
         }
 
-        if ((uidFilter == Utils.UID_NO_FILTER) && (savedInstanceState != null)) {
-            uidFilter = savedInstanceState.getInt("uidFilter", Utils.UID_NO_FILTER);
+        if(savedInstanceState != null) {
+            if(uidFilter == Utils.UID_NO_FILTER)
+                uidFilter = savedInstanceState.getInt("uidFilter", Utils.UID_NO_FILTER);
+
+            mAdapter.mWhitelistEnabled = savedInstanceState.getBoolean("whitelistEnabled", true);
         }
 
-        if(uidFilter != Utils.UID_NO_FILTER)
+        if(uidFilter != Utils.UID_NO_FILTER) {
             setUidFilter(uidFilter);
+
+            // Avoid hiding the interesting items
+            mAdapter.mWhitelistEnabled = false;
+        }
 
         // Register for service status
         mReceiver = new BroadcastReceiver() {
@@ -330,29 +327,29 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
         ConnectionDescriptor conn = mAdapter.getClickedItem();
 
-        if((reg == null) || (conn == null))
+        if(conn == null)
             return super.onContextItemSelected(item);
 
         int id = item.getItemId();
         String label = item.getTitle().toString();
 
         if(id == R.id.exclude_app)
-            reg.mWhitelist.addApp(conn.uid, label);
+            mAdapter.mWhitelist.addApp(conn.uid, label);
         else if(id == R.id.exclude_host)
-            reg.mWhitelist.addHost(conn.info, label);
+            mAdapter.mWhitelist.addHost(conn.info, label);
         else if(id == R.id.exclude_ip)
-            reg.mWhitelist.addIp(conn.dst_ip, label);
+            mAdapter.mWhitelist.addIp(conn.dst_ip, label);
         else if(id == R.id.exclude_proto)
-            reg.mWhitelist.addProto(conn.l7proto, label);
+            mAdapter.mWhitelist.addProto(conn.l7proto, label);
         else if(id == R.id.exclude_root_domain)
-            reg.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
+            mAdapter.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
         else
             return super.onContextItemSelected(item);
 
-        reg.mWhitelistEnabled = true;
+        mAdapter.mWhitelist.save();
+        mAdapter.mWhitelistEnabled = true;
         refreshFilteredConnections();
         return true;
     }
@@ -402,7 +399,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     // This performs an unoptimized adapter refresh
     private void refreshFilteredConnections() {
         mAdapter.refreshFilteredConnections();
-        refreshWhitelistMenu();
+        refreshMenuIcons();
         recheckScroll();
     }
 
@@ -465,14 +462,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mSave = menu.findItem(R.id.save);
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
-        mMenuItemWhitelist = menu.findItem(R.id.whitelist);
-        mMenuItemEnableWhitelist = menu.findItem(R.id.enable_whitelist);
-        mMenuItemDisableWhitelist = menu.findItem(R.id.disable_whitelist);
+        mMenuItemEnableWhitelist = menu.findItem(R.id.hide_whitelist);
+        mMenuItemDisableWhitelist = menu.findItem(R.id.show_whitelist);
         mFilterIcon = mMenuItemAppSel.getIcon();
 
         refreshFilterIcon();
         refreshMenuIcons();
-        refreshWhitelistMenu();
     }
 
     @Override
@@ -489,15 +484,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.save) {
             openFileSelector();
             return true;
-        } else if(id == R.id.edit_whitelist) {
-            showWhitelistEditor();
-            return true;
-        } else if((id == R.id.enable_whitelist) || (id == R.id.disable_whitelist)) {
+        } else if((id == R.id.hide_whitelist) || (id == R.id.show_whitelist)) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if(reg == null)
                 return false;
 
-            reg.mWhitelistEnabled = !reg.mWhitelistEnabled;
+            mAdapter.mWhitelistEnabled = !mAdapter.mWhitelistEnabled;
 
             // Delay the refresh to wait for the menu to be closed
             (new Handler(requireActivity().getMainLooper())).postDelayed(this::refreshFilteredConnections, 50);
@@ -576,25 +568,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mMenuItemAppSel.setEnabled(is_enabled);
         mSave.setEnabled(is_enabled);
-    }
 
-    private void refreshWhitelistMenu() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        if(reg == null) {
-            mMenuItemWhitelist.setVisible(false);
-            return;
+        if((mAdapter == null) || mAdapter.mWhitelist.isEmpty()) {
+            mMenuItemDisableWhitelist.setVisible(false);
+            mMenuItemEnableWhitelist.setVisible(false);
+        } else {
+            mMenuItemDisableWhitelist.setVisible(mAdapter.mWhitelistEnabled);
+            mMenuItemEnableWhitelist.setVisible(!mAdapter.mWhitelistEnabled);
         }
-
-        // Update the icon only if something changed
-        // NOTE: getApplicationContext required to properly style the tint
-        mMenuItemWhitelist.setIcon(
-                ContextCompat.getDrawable(requireContext().getApplicationContext(),
-                        reg.mWhitelistEnabled ? R.drawable.ic_eye_slash : R.drawable.ic_eye));
-
-        mMenuItemWhitelist.setVisible(!reg.mWhitelist.isEmpty());
-        mMenuItemDisableWhitelist.setVisible(reg.mWhitelistEnabled);
-        mMenuItemEnableWhitelist.setVisible(!reg.mWhitelistEnabled);
     }
 
     private void dumpCsv() {
@@ -660,59 +641,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 dumpCsv();
             } else
                 Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
-        }
-    }
-
-    private void showWhitelistEditor() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        if(reg == null)
-            return;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        WhitelistEditAdapter adapter = new WhitelistEditAdapter(requireContext(),
-                R.layout.whitelist_item, reg.mWhitelist.iterItems());
-        View exclListView = requireActivity().getLayoutInflater().inflate(R.layout.whitelist, null);
-
-        ListView whitelist = exclListView.findViewById(R.id.list);
-        whitelist.setAdapter(adapter);
-        whitelist.setOnItemClickListener((parent, view, position, id) -> {
-            if(adapter.getCount() > 1)
-                adapter.remove(adapter.getItem(position));
-        });
-
-        builder.setTitle(R.string.edit_whitelist);
-        builder.setView(exclListView);
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> updateWhitelist(adapter));
-        builder.setNeutralButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
-
-        final AlertDialog alert = builder.create();
-        alert.setCanceledOnTouchOutside(true);
-
-        alert.show();
-    }
-
-    private void updateWhitelist(WhitelistEditAdapter adapter) {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        ArrayList<ConnectionsMatcher.Item> toRemove = new ArrayList<>();
-
-        if(reg == null)
-            return;
-
-        Iterator<ConnectionsMatcher.Item> iter = reg.mWhitelist.iterItems();
-        boolean changed = false;
-
-        // Remove the whitelisted items which are not in the adapter dataset
-        while(iter.hasNext()) {
-            ConnectionsMatcher.Item item = iter.next();
-
-            if(adapter.getPosition(item) < 0)
-                toRemove.add(item);
-        }
-
-        if(toRemove.size() > 0) {
-            reg.mWhitelist.removeItems(toRemove);
-            refreshFilteredConnections();
         }
     }
 

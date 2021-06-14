@@ -139,10 +139,13 @@
     <string name="cancel">Cancel</string>
     <string name="edit">Edit</string>
     <string name="delete_all">Delete all</string>
-    <string name="show_whitelisted">Show whitelisted</string>
-    <string name="hide_whitelisted">Hide whitelisted</string>
+    <string name="show_whitelisted">Show whitelisted connections</string>
+    <string name="hide_whitelisted">Hide whitelisted connections</string>
     <string name="whitelist">Whitelist</string>
     <string name="edit_whitelist">Edit Whitelist</string>
     <string name="whitelist_action">Whitelist …</string>
+    <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
+    <string name="n_selected">%1$d selected</string>
+    <string name="ic_select_all">Select all</string>
 </resources>
 

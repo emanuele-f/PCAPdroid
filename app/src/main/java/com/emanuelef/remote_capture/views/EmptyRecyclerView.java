@@ -83,6 +83,8 @@ public class EmptyRecyclerView extends RecyclerView {
         if (adapter != null) {
             adapter.registerAdapterDataObserver(observer);
         }
+
+        initEmptyView();
     }
 
     public void setEmptyView(View view) {

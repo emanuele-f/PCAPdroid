@@ -135,5 +135,8 @@
     <string name="whitelist">Esclusioni</string>
     <string name="edit_whitelist">Modifica Esclusioni</string>
     <string name="whitelist_action">Escludi …</string>
+    <string name="whitelist_empty">Lista esclusioni vuota.\nPuoi escludere una connessione tenendo premuto su di essa.</string>
+    <string name="n_selected">%1$d selezionati</string>
+    <string name="ic_select_all">Seleziona tutto</string>
 </resources>
 

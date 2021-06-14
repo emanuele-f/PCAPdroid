@@ -40,6 +40,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.Whitelist;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,8 +58,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private int mClickedPosition;
     private int mUidFilter;
     private int mNumRemovedItems;
+    public boolean mWhitelistEnabled;
     private final HashMap<Integer, Integer> mIdToFilteredPos;
     private ArrayList<ConnectionDescriptor> mFilteredConn;
+    public final Whitelist mWhitelist;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -135,7 +138,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mNumRemovedItems = 0;
         mIdToFilteredPos = new HashMap<>();
         mUidFilter = Utils.UID_NO_FILTER;
+        mWhitelistEnabled = true;
+        mWhitelist = new Whitelist(context);
         setHasStableIds(true);
+
+        mWhitelist.reload();
     }
 
     @Override
@@ -181,10 +188,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return ((conn != null) ? conn.incr_id : Utils.UID_UNKNOWN);
     }
 
-    private boolean matches(ConnectionDescriptor conn, ConnectionsRegister reg) {
+    private boolean matches(ConnectionDescriptor conn) {
         return((conn != null)
                 && ((mUidFilter == Utils.UID_NO_FILTER) || (conn.uid == mUidFilter))
-                && (!reg.mWhitelistEnabled || !reg.mWhitelist.matches(conn)));
+                && (!mWhitelistEnabled || !mWhitelist.matches(conn)));
     }
 
     private int getFilteredItemPos(int incrId) {
@@ -211,13 +218,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
-        ConnectionsRegister reg = CaptureService.requireConnsRegister();
         int numNew = 0;
         int vpos = mNumRemovedItems + mFilteredConn.size();
 
         // Assume that connections are only added at the end of the dataset
         for(ConnectionDescriptor conn : conns) {
-            if(matches(conn, reg)) {
+            if(matches(conn)) {
                 mIdToFilteredPos.put(conn.incr_id, vpos++);
                 mFilteredConn.add(conn);
                 numNew++;
@@ -288,14 +294,14 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos.clear();
         mNumRemovedItems = 0;
 
-        if((mUidFilter != Utils.UID_NO_FILTER) || reg.hasWhitelistFilter()) {
+        if((mUidFilter != Utils.UID_NO_FILTER) || hasWhitelistFilter()) {
             int vpos = 0;
             mFilteredConn = new ArrayList<>();
 
             for(int i=0; i<mUnfilteredItemsCount; i++) {
                 ConnectionDescriptor conn = reg.getConn(i);
 
-                if(matches(conn, reg)) {
+                if(matches(conn)) {
                     mFilteredConn.add(conn);
                     mIdToFilteredPos.put(conn.incr_id, vpos++);
                 }
@@ -334,6 +340,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public ConnectionDescriptor getClickedItem() {
         return getItem(mClickedPosition);
+    }
+
+    public boolean hasWhitelistFilter() {
+        return (mWhitelistEnabled && !mWhitelist.isEmpty());
     }
 
     public synchronized String dumpConnectionsCsv() {

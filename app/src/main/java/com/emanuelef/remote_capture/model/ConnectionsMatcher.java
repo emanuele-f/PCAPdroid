@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -135,6 +134,8 @@ public class ConnectionsMatcher {
 
     private void deserialize(JsonObject object) {
         mItems = new ArrayList<>();
+        mMatches.clear();
+
         JsonArray itemArray = object.getAsJsonArray("items");
         AppsResolver resolver = new AppsResolver(mContext);
 
@@ -176,7 +177,6 @@ public class ConnectionsMatcher {
 
     private void addItem(Item item) {
         String key = matchKey(item.getType(), item.getValue().toString());
-        Log.d(TAG, key);
 
         if(!mMatches.containsKey(key)) {
             mItems.add(item);
@@ -217,7 +217,7 @@ public class ConnectionsMatcher {
     }
 
     public String toJson() {
-        Gson gson = new GsonBuilder().registerTypeAdapter(ConnectionsMatcher.class, new Serializer())
+        Gson gson = new GsonBuilder().registerTypeAdapter(getClass(), new Serializer())
                 .create();
 
         String serialized = gson.toJson(this);
