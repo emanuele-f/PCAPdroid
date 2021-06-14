@@ -118,8 +118,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putString("filter", mSearchView.getQuery().toString());
-        outState.putBoolean("whitelistEnabled", mAdapter.mWhitelistEnabled);
+        if(mSearchView != null)
+            outState.putString("filter", mSearchView.getQuery().toString());
+        if(mAdapter != null)
+            outState.putBoolean("whitelistEnabled", mAdapter.mWhitelistEnabled);
     }
 
     @Override
