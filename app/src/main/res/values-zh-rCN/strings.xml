@@ -136,7 +136,15 @@
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
     <string name="protocol_val">协议: %1$s</string>
-    <string name="edit">编辑</string>
-    <string name="delete_all">删除所有</string>
+    <string name="cancel">取消</string>
+    <string name="show_exclusions">显示排除项</string>
+    <string name="hide_exclusions">隐藏排除项</string>
+    <string name="show_whitelisted">显示加白的连接</string>
+    <string name="hide_whitelisted">隐藏加白的连接</string>
+    <string name="whitelist">白名单</string>
+    <string name="edit_whitelist">编辑白名单</string>
+    <string name="whitelist_action">白名单 …</string>
+    <string name="whitelist_empty">白名单为空。\n你可以长按一个连接将其加入白名单。</string>
+    <string name="n_selected">选中了 %1$d </string>
+    <string name="ic_select_all">选择全部</string>
 </resources>
-
