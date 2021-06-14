@@ -61,7 +61,7 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.adapters.ExclusionsEditAdapter;
+import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -92,9 +92,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean autoScroll;
     private boolean listenerSet;
     private MenuItem mMenuItemAppSel;
-    private MenuItem mMenuItemExclusions;
-    private MenuItem mMenuItemEnableExclusions;
-    private MenuItem mMenuItemDisableExclusions;
+    private MenuItem mMenuItemWhitelist;
+    private MenuItem mMenuItemEnableWhitelist;
+    private MenuItem mMenuItemDisableWhitelist;
     private MenuItem mSave;
     private Drawable mFilterIcon;
     private AppDescriptor mNoFilterApp;
@@ -112,9 +112,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         registerConnsListener();
 
-        // reg.mExclusionsEnabled may have changed (e.g. when filtering from the AppsActivity
-        if(mMenuItemExclusions != null)
-            refreshExclusionsMenu();
+        // reg.mWhitelistEnabled may have changed (e.g. when filtering from the AppsActivity
+        if(mMenuItemWhitelist != null)
+            refreshWhitelistMenu();
     }
 
     @Override
@@ -233,11 +233,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 // "consume" it
                 intent.removeExtra(MainActivity.UID_FILTER_EXTRA);
 
-                // disable the exclusions to prevent an empty view
+                // disable the whitelist to prevent an empty view
                 ConnectionsRegister reg = CaptureService.getConnsRegister();
 
                 if(reg != null)
-                    reg.mExclusionsEnabled = false;
+                    reg.mWhitelistEnabled = false;
             }
         }
 
@@ -340,19 +340,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         String label = item.getTitle().toString();
 
         if(id == R.id.exclude_app)
-            reg.mExclusions.addApp(conn.uid, label);
+            reg.mWhitelist.addApp(conn.uid, label);
         else if(id == R.id.exclude_host)
-            reg.mExclusions.addHost(conn.info, label);
+            reg.mWhitelist.addHost(conn.info, label);
         else if(id == R.id.exclude_ip)
-            reg.mExclusions.addIp(conn.dst_ip, label);
+            reg.mWhitelist.addIp(conn.dst_ip, label);
         else if(id == R.id.exclude_proto)
-            reg.mExclusions.addProto(conn.l7proto, label);
+            reg.mWhitelist.addProto(conn.l7proto, label);
         else if(id == R.id.exclude_root_domain)
-            reg.mExclusions.addRootDomain(Utils.getRootDomain(conn.info), label);
+            reg.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
         else
             return super.onContextItemSelected(item);
 
-        reg.mExclusionsEnabled = true;
+        reg.mWhitelistEnabled = true;
         refreshFilteredConnections();
         return true;
     }
@@ -402,7 +402,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     // This performs an unoptimized adapter refresh
     private void refreshFilteredConnections() {
         mAdapter.refreshFilteredConnections();
-        refreshExclusionsMenu();
+        refreshWhitelistMenu();
         recheckScroll();
     }
 
@@ -465,14 +465,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mSave = menu.findItem(R.id.save);
         mMenuItemAppSel = menu.findItem(R.id.action_show_app_filter);
-        mMenuItemExclusions = menu.findItem(R.id.exclusions);
-        mMenuItemEnableExclusions = menu.findItem(R.id.enable_exclusions);
-        mMenuItemDisableExclusions = menu.findItem(R.id.disable_exclusions);
+        mMenuItemWhitelist = menu.findItem(R.id.whitelist);
+        mMenuItemEnableWhitelist = menu.findItem(R.id.enable_whitelist);
+        mMenuItemDisableWhitelist = menu.findItem(R.id.disable_whitelist);
         mFilterIcon = mMenuItemAppSel.getIcon();
 
         refreshFilterIcon();
         refreshMenuIcons();
-        refreshExclusionsMenu();
+        refreshWhitelistMenu();
     }
 
     @Override
@@ -489,26 +489,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.save) {
             openFileSelector();
             return true;
-        } else if(id == R.id.edit_exclusions) {
-            showExclusionsEditor();
+        } else if(id == R.id.edit_whitelist) {
+            showWhitelistEditor();
             return true;
-        } else if((id == R.id.enable_exclusions) || (id == R.id.disable_exclusions)) {
+        } else if((id == R.id.enable_whitelist) || (id == R.id.disable_whitelist)) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if(reg == null)
                 return false;
 
-            reg.mExclusionsEnabled = !reg.mExclusionsEnabled;
+            reg.mWhitelistEnabled = !reg.mWhitelistEnabled;
 
             // Delay the refresh to wait for the menu to be closed
             (new Handler(requireActivity().getMainLooper())).postDelayed(this::refreshFilteredConnections, 50);
-
-            return true;
-        } else if(id == R.id.delete_exclusions) {
-            new AlertDialog.Builder(requireContext())
-                    .setMessage(R.string.delete_exclusions_confirm)
-                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> deleteExclusions())
-                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
-                    .show();
 
             return true;
         }
@@ -586,21 +578,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSave.setEnabled(is_enabled);
     }
 
-    private void refreshExclusionsMenu() {
+    private void refreshWhitelistMenu() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
-        if(reg == null)
+        if(reg == null) {
+            mMenuItemWhitelist.setVisible(false);
             return;
+        }
 
         // Update the icon only if something changed
         // NOTE: getApplicationContext required to properly style the tint
-        mMenuItemExclusions.setIcon(
+        mMenuItemWhitelist.setIcon(
                 ContextCompat.getDrawable(requireContext().getApplicationContext(),
-                        reg.mExclusionsEnabled ? R.drawable.ic_eye_slash : R.drawable.ic_eye));
+                        reg.mWhitelistEnabled ? R.drawable.ic_eye_slash : R.drawable.ic_eye));
 
-        mMenuItemExclusions.setVisible(!reg.mExclusions.isEmpty());
-        mMenuItemDisableExclusions.setVisible(reg.mExclusionsEnabled);
-        mMenuItemEnableExclusions.setVisible(!reg.mExclusionsEnabled);
+        mMenuItemWhitelist.setVisible(!reg.mWhitelist.isEmpty());
+        mMenuItemDisableWhitelist.setVisible(reg.mWhitelistEnabled);
+        mMenuItemEnableWhitelist.setVisible(!reg.mWhitelistEnabled);
     }
 
     private void dumpCsv() {
@@ -669,27 +663,27 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
     }
 
-    private void showExclusionsEditor() {
+    private void showWhitelistEditor() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if(reg == null)
             return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        ExclusionsEditAdapter adapter = new ExclusionsEditAdapter(requireContext(),
-                R.layout.exclusion_item, reg.mExclusions.iterItems());
-        View exclListView = requireActivity().getLayoutInflater().inflate(R.layout.exclusion_list, null);
+        WhitelistEditAdapter adapter = new WhitelistEditAdapter(requireContext(),
+                R.layout.whitelist_item, reg.mWhitelist.iterItems());
+        View exclListView = requireActivity().getLayoutInflater().inflate(R.layout.whitelist, null);
 
-        ListView exclusion = ((ListView)exclListView.findViewById(R.id.list));
-        exclusion.setAdapter(adapter);
-        exclusion.setOnItemClickListener((parent, view, position, id) -> {
+        ListView whitelist = exclListView.findViewById(R.id.list);
+        whitelist.setAdapter(adapter);
+        whitelist.setOnItemClickListener((parent, view, position, id) -> {
             if(adapter.getCount() > 1)
                 adapter.remove(adapter.getItem(position));
         });
 
-        builder.setTitle(R.string.edit_exclusions);
+        builder.setTitle(R.string.edit_whitelist);
         builder.setView(exclListView);
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> updateExclusions(adapter));
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> updateWhitelist(adapter));
         builder.setNeutralButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
 
         final AlertDialog alert = builder.create();
@@ -698,17 +692,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         alert.show();
     }
 
-    private void updateExclusions(ExclusionsEditAdapter adapter) {
+    private void updateWhitelist(WhitelistEditAdapter adapter) {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         ArrayList<ConnectionsMatcher.Item> toRemove = new ArrayList<>();
 
         if(reg == null)
             return;
 
-        Iterator<ConnectionsMatcher.Item> iter = reg.mExclusions.iterItems();
+        Iterator<ConnectionsMatcher.Item> iter = reg.mWhitelist.iterItems();
         boolean changed = false;
 
-        // Remove the exclusions which are not in the adapter dataset
+        // Remove the whitelisted items which are not in the adapter dataset
         while(iter.hasNext()) {
             ConnectionsMatcher.Item item = iter.next();
 
@@ -717,19 +711,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         if(toRemove.size() > 0) {
-            reg.mExclusions.removeItems(toRemove);
+            reg.mWhitelist.removeItems(toRemove);
             refreshFilteredConnections();
         }
-    }
-
-    private void deleteExclusions() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-
-        if(reg == null)
-            return;
-
-        reg.mExclusions.clear();
-        refreshFilteredConnections();
     }
 
     private void csvFileResult(final ActivityResult result) {

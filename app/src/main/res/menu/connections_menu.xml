@@ -11,24 +11,21 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/exclusions"
-        android:title="@string/exclusions"
+        android:id="@+id/whitelist"
+        android:title="@string/whitelist"
         android:orderInCategory="20"
         android:icon="@drawable/ic_eye_slash"
         app:showAsAction="ifRoom">
         <menu>
             <item
-                android:title="@string/hide_exclusions"
-                android:id="@+id/enable_exclusions" />
+                android:title="@string/hide_whitelisted"
+                android:id="@+id/enable_whitelist" />
             <item
-                android:title="@string/show_exclusions"
-                android:id="@+id/disable_exclusions" />
+                android:title="@string/show_whitelisted"
+                android:id="@+id/disable_whitelist" />
             <item
                 android:title="@string/edit"
-                android:id="@+id/edit_exclusions" />
-            <item
-                android:title="@string/delete_all"
-                android:id="@+id/delete_exclusions" />
+                android:id="@+id/edit_whitelist" />
         </menu>
     </item>
 

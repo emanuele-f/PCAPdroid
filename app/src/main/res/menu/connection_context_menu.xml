@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item
-        android:title="@string/exclude">
+        android:title="@string/whitelist_action">
         <menu>
             <item
                 android:id="@+id/exclude_app"

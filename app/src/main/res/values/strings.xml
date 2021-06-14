@@ -131,19 +131,18 @@
     <string name="http_request">HTTP Request</string>
     <string name="root_log">Root Log</string>
     <string name="request_plaintext">Request Plaintext</string>
-    <string name="edit_exclusions">Edit Exclusions</string>
-    <string name="exclude">Exclude …</string>
     <string name="search">Search</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">IP Address: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocol: %1$s</string>
     <string name="cancel">Cancel</string>
-    <string name="show_exclusions">Show exclusions</string>
-    <string name="hide_exclusions">Hide exclusions</string>
-    <string name="exclusions">Exclusions</string>
-    <string name="delete_exclusions_confirm">Do you really want to delete all the configured exclusions?</string>
     <string name="edit">Edit</string>
     <string name="delete_all">Delete all</string>
+    <string name="show_whitelisted">Show whitelisted</string>
+    <string name="hide_whitelisted">Hide whitelisted</string>
+    <string name="whitelist">Whitelist</string>
+    <string name="edit_whitelist">Edit Whitelist</string>
+    <string name="whitelist_action">Whitelist …</string>
 </resources>
 

@@ -50,8 +50,8 @@ public class ConnectionsRegister {
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
     private final SharedPreferences mPrefs;
-    public final ConnectionsMatcher mExclusions;
-    public boolean mExclusionsEnabled;
+    public final ConnectionsMatcher mWhitelist;
+    public boolean mWhitelistEnabled;
 
     public ConnectionsRegister(int _size, Context context, SharedPreferences prefs) {
         mTail = 0;
@@ -61,15 +61,15 @@ public class ConnectionsRegister {
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
-        mExclusionsEnabled = true;
+        mWhitelistEnabled = true;
         mPrefs = prefs;
-        mExclusions = new ConnectionsMatcher(context);
+        mWhitelist = new ConnectionsMatcher(context);
 
-        // Try to restore the exclusions
-        String serialized = prefs.getString(Prefs.PREF_EXCLUSIONS, "");
+        // Try to restore the whitelist
+        String serialized = prefs.getString(Prefs.PREF_WHITELIST, "");
 
         if(!serialized.isEmpty())
-            mExclusions.fromJson(serialized);
+            mWhitelist.fromJson(serialized);
     }
 
     private int firstPos() {
@@ -220,8 +220,8 @@ public class ConnectionsRegister {
         return mUntrackedItems;
     }
 
-    public boolean hasExclusionFilter() {
-        return(mExclusionsEnabled && !mExclusions.isEmpty());
+    public boolean hasWhitelistFilter() {
+        return(mWhitelistEnabled && !mWhitelist.isEmpty());
     }
 
     public @Nullable ConnectionDescriptor getConn(int i) {
@@ -270,9 +270,9 @@ public class ConnectionsRegister {
         return rv;
     }
 
-    public void saveExclusions() {
+    public void saveWhitelist() {
         mPrefs.edit()
-                .putString(Prefs.PREF_EXCLUSIONS, mExclusions.toJson())
+                .putString(Prefs.PREF_WHITELIST, mWhitelist.toJson())
                 .apply();
     }
 }

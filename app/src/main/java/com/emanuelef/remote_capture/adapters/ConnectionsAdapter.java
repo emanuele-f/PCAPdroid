@@ -184,7 +184,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private boolean matches(ConnectionDescriptor conn, ConnectionsRegister reg) {
         return((conn != null)
                 && ((mUidFilter == Utils.UID_NO_FILTER) || (conn.uid == mUidFilter))
-                && (!reg.mExclusionsEnabled || !reg.mExclusions.matches(conn)));
+                && (!reg.mWhitelistEnabled || !reg.mWhitelist.matches(conn)));
     }
 
     private int getFilteredItemPos(int incrId) {
@@ -288,7 +288,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos.clear();
         mNumRemovedItems = 0;
 
-        if((mUidFilter != Utils.UID_NO_FILTER) || reg.hasExclusionFilter()) {
+        if((mUidFilter != Utils.UID_NO_FILTER) || reg.hasWhitelistFilter()) {
             int vpos = 0;
             mFilteredConn = new ArrayList<>();
 

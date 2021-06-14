@@ -34,12 +34,12 @@ import com.emanuelef.remote_capture.model.ConnectionsMatcher;
 
 import java.util.Iterator;
 
-public class ExclusionsEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> {
+public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> {
     private final LayoutInflater mLayoutInflater;
     private boolean mShowTrash;
     private final int mResId;
 
-    public ExclusionsEditAdapter(Context context, int res, Iterator<ConnectionsMatcher.Item> items) {
+    public WhitelistEditAdapter(Context context, int res, Iterator<ConnectionsMatcher.Item> items) {
         super(context, res);
 
         mResId = res;

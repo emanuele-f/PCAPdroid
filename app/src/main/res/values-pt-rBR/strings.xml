@@ -124,18 +124,12 @@
     <string name="http_request">Solicitação HTTP</string>
     <string name="root_log">Root Log</string>
     <string name="request_plaintext">Solicitação em texto puro</string>
-    <string name="edit_exclusions">Editar as exclusões</string>
-    <string name="exclude">Excluir …</string>
     <string name="search">Pesquisa</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Endereço de IP: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocolo: %1$s</string>
     <string name="cancel">Cancelar</string>
-    <string name="show_exclusions">Mostrar as exclusões</string>
-    <string name="hide_exclusions">Ocultar as exclusões</string>
-    <string name="exclusions">Exclusões</string>
-    <string name="delete_exclusions_confirm">Realmente quer excluir todas as exclusões configuradas?</string>
     <string name="edit">Editar</string>
     <string name="delete_all">Excluir tudo</string>
 </resources>

@@ -433,7 +433,7 @@ public class CaptureService extends VpnService implements Runnable {
         stopPacketLoop();
 
         if(conn_reg != null)
-            conn_reg.saveExclusions();
+            conn_reg.saveWhitelist();
 
         while((mThread != null) && (mThread.isAlive())) {
             try {

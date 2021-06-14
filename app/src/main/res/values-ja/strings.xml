@@ -123,18 +123,12 @@
     <string name="http_request">HTTP リクエスト</string>
     <string name="root_log">ルート ログ</string>
     <string name="request_plaintext">プレーンテキストをリクエスト</string>
-    <string name="edit_exclusions">例外を編集</string>
-    <string name="exclude">例外 …</string>
     <string name="search">検索</string>
     <string name="app_val">アプリ: %1$s</string>
     <string name="ip_address_val">IP アドレス: %1$s</string>
     <string name="host_val">ホスト: %1$s</string>
     <string name="protocol_val">プロトコル: %1$s</string>
     <string name="cancel">キャンセル</string>
-    <string name="show_exclusions">例外を表示</string>
-    <string name="hide_exclusions">例外を隠す</string>
-    <string name="exclusions">例外</string>
-    <string name="delete_exclusions_confirm">すべての構成された例外を削除してよろしいですか?</string>
     <string name="edit">編集</string>
     <string name="delete_all">すべて削除</string>
 </resources>
