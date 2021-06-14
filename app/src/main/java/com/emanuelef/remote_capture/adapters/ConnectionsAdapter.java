@@ -56,11 +56,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final AppsResolver mApps;
     private final Context mContext;
     private int mClickedPosition;
-    private int mUidFilter;
     private int mNumRemovedItems;
     public boolean mWhitelistEnabled;
     private final HashMap<Integer, Integer> mIdToFilteredPos;
     private ArrayList<ConnectionDescriptor> mFilteredConn;
+    private String mFilter;
     public final Whitelist mWhitelist;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -137,9 +137,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mUnfilteredItemsCount = 0;
         mNumRemovedItems = 0;
         mIdToFilteredPos = new HashMap<>();
-        mUidFilter = Utils.UID_NO_FILTER;
         mWhitelistEnabled = true;
         mWhitelist = new Whitelist(context);
+        mFilter = null;
         setHasStableIds(true);
 
         mWhitelist.reload();
@@ -190,8 +190,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     private boolean matches(ConnectionDescriptor conn) {
         return((conn != null)
-                && ((mUidFilter == Utils.UID_NO_FILTER) || (conn.uid == mUidFilter))
-                && (!mWhitelistEnabled || !mWhitelist.matches(conn)));
+                && (!mWhitelistEnabled || !mWhitelist.matches(conn)))
+                && ((mFilter == null) || conn.matches(mApps, mFilter));
     }
 
     private int getFilteredItemPos(int incrId) {
@@ -294,7 +294,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos.clear();
         mNumRemovedItems = 0;
 
-        if((mUidFilter != Utils.UID_NO_FILTER) || hasWhitelistFilter()) {
+        if(hasWhitelistFilter() || (mFilter != null)) {
             int vpos = 0;
             mFilteredConn = new ArrayList<>();
 
@@ -326,16 +326,13 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return reg.getConn(pos);
     }
 
+    public void setFilter(String text) {
+        mFilter = text;
+        refreshFilteredConnections();
+    }
+
     public void setClickListener(View.OnClickListener listener) {
         mListener = listener;
-    }
-
-    public void setUidFilter(int uid) {
-        mUidFilter = uid;
-    }
-
-    public int getUidFilter() {
-        return mUidFilter;
     }
 
     public ConnectionDescriptor getClickedItem() {

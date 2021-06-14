@@ -123,7 +123,7 @@
     <string name="http_request">HTTP リクエスト</string>
     <string name="root_log">ルート ログ</string>
     <string name="request_plaintext">プレーンテキストをリクエスト</string>
-    <string name="search">検索</string>
+    <string name="search">検索…</string>
     <string name="app_val">アプリ: %1$s</string>
     <string name="ip_address_val">IP アドレス: %1$s</string>
     <string name="host_val">ホスト: %1$s</string>

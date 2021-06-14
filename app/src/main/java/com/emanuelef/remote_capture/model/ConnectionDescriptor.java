@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 
 import java.io.Serializable;
@@ -114,5 +115,18 @@ public class ConnectionDescriptor implements Serializable {
             resid = R.string.conn_status_open;
 
         return(ctx.getString(resid));
+    }
+
+    public boolean matches(AppsResolver res, String filter) {
+        filter = filter.toLowerCase();
+        AppDescriptor app = res.get(uid);
+
+        return(((info != null) && (info.contains(filter))) ||
+                dst_ip.contains(filter) ||
+                l7proto.toLowerCase().contains(filter) ||
+                Integer.toString(uid).equals(filter) ||
+                ((app != null) && (app.getName().toLowerCase().contains(filter) ||
+                        app.getPackageName().equals(filter)))
+        );
     }
 }

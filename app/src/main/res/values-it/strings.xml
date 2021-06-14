@@ -122,7 +122,7 @@
     <string name="http_request">Richiesta HTTP</string>
     <string name="root_log">Log Root</string>
     <string name="request_plaintext">Richiesta in Chiaro</string>
-    <string name="search">Cerca</string>
+    <string name="search">Cerca…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Indirizzo IP: %1$s</string>
     <string name="host_val">Host: %1$s</string>
@@ -134,9 +134,9 @@
     <string name="hide_whitelisted">Nascondi esclusi</string>
     <string name="whitelist">Esclusioni</string>
     <string name="edit_whitelist">Modifica Esclusioni</string>
-    <string name="whitelist_action">Escludi …</string>
+    <string name="whitelist_action">Escludi…</string>
     <string name="whitelist_empty">Lista esclusioni vuota.\nPuoi escludere una connessione tenendo premuto su di essa.</string>
     <string name="n_selected">%1$d selezionati</string>
-    <string name="ic_select_all">Seleziona tutto</string>
+    <string name="select_all">Seleziona tutto</string>
 </resources>
 

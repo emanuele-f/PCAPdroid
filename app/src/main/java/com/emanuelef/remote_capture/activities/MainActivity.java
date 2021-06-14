@@ -74,6 +74,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -95,7 +96,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private static final int POS_CONNECTIONS = 1;
     private static final int TOTAL_COUNT = 2;
 
-    public static final String UID_FILTER_EXTRA = "uidFilter";
+    public static final String FILTER_EXTRA = "filter";
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -208,8 +209,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void onBackPressed() {
         if(mDrawer.isDrawerOpen(GravityCompat.START))
             mDrawer.closeDrawer(GravityCompat.START, true);
-        else
+        else {
+            if(mPager.getCurrentItem() == POS_CONNECTIONS) {
+                Fragment fragment = getFragment(ConnectionsFragment.class);
+
+                if((fragment != null) && ((ConnectionsFragment)fragment).onBackPressed())
+                    return;
+            }
+
             super.onBackPressed();
+        }
+    }
+
+    private Fragment getFragment(Class targetClass) {
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+
+        for(Fragment fragment : fragments) {
+            if(targetClass.isInstance(fragment))
+                return fragment;
+        }
+
+        return null;
     }
 
     private void checkPermissions() {
@@ -270,7 +290,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 tab.setText(getString(stateAdapter.getPageTitle(position)))
         ).attach();
 
-        checkUidFilterIntent(getIntent());
+        checkFilterIntent(getIntent());
     }
 
     @Override
@@ -322,16 +342,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        checkUidFilterIntent(intent);
+        checkFilterIntent(intent);
     }
 
-    private void checkUidFilterIntent(Intent intent) {
+    private void checkFilterIntent(Intent intent) {
         if(intent != null) {
-            int uid = intent.getIntExtra(UID_FILTER_EXTRA, Utils.UID_NO_FILTER);
+            String filter = intent.getStringExtra(FILTER_EXTRA);
 
-            if(uid != Utils.UID_NO_FILTER) {
+            if((filter != null) && (!filter.isEmpty())) {
                 // Move to the connections tab
-                Log.d(TAG, "UID_FILTER_EXTRA " + uid);
+                Log.d(TAG, "FILTER_EXTRA " + filter);
 
                 mPager.setCurrentItem(POS_CONNECTIONS, false);
             }

@@ -36,9 +36,13 @@
         </menu>
     </item>
 
-    <!-- TODO -->
-    <item android:title="@string/search" android:visible="false">
+    <item android:title="@string/search">
         <menu>
+            <item
+                android:id="@+id/search_app"
+                android:title=""
+                tools:title="@string/app_val" />
+
             <item
                 android:id="@+id/search_ip"
                 android:title=""

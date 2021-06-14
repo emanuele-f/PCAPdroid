@@ -94,11 +94,11 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
-            AppStats item = mAdapter.getItem(pos);
+            String packageName = mAdapter.getItemPackage(pos);
 
-            if(item != null) {
+            if(packageName != null) {
                 Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.putExtra(MainActivity.UID_FILTER_EXTRA, item.getUid());
+                intent.putExtra(MainActivity.FILTER_EXTRA, packageName);
 
                 startActivity(intent);
             }

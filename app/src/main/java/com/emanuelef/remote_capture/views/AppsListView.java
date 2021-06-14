@@ -99,7 +99,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        return false;
+        return true;
     }
 
     @Override
