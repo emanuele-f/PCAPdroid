@@ -31,12 +31,10 @@ import androidx.annotation.NonNull;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
-import com.emanuelef.remote_capture.fragments.AppsFragment;
 import com.emanuelef.remote_capture.fragments.WhitelistFragment;
 
 public class WhitelistActivity extends BaseActivity {
     private static final String TAG = "WhitelistActivity";
-    private WhitelistFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +46,6 @@ public class WhitelistActivity extends BaseActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.whitelist_fragment, new WhitelistFragment())
                 .commit();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mFragment = null;
     }
 
     @Override
