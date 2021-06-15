@@ -139,7 +139,7 @@
     <string name="cancel">取消</string>
     <string name="edit">编辑</string>
     <string name="delete_all">删除全部</string>
-	<string name="show_whitelisted">显示加白的连接</string>
+    <string name="show_whitelisted">显示加白的连接</string>
     <string name="hide_whitelisted">隐藏加白的连接</string>
     <string name="whitelist">白名单</string>
     <string name="edit_whitelist">编辑白名单</string>
