@@ -131,4 +131,12 @@
     <string name="cancel">キャンセル</string>
     <string name="edit">編集</string>
     <string name="delete_all">すべて削除</string>
+    <string name="show_whitelisted">ホワイトリストの接続を表示</string>
+    <string name="hide_whitelisted">ホワイトリストの接続を隠す</string>
+    <string name="whitelist">ホワイトリスト</string>
+    <string name="edit_whitelist">ホワイトリストを編集</string>
+    <string name="whitelist_action">ホワイトリスト…</string>
+    <string name="whitelist_empty">ホワイトリストは空です。\n接続を長押しすることでホワイトリストに登録することができます。</string>
+    <string name="n_selected">%1$d 選択済み</string>
+    <string name="select_all">すべて選択</string>
 </resources>
