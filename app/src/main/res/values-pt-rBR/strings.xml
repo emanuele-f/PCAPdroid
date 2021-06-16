@@ -132,4 +132,12 @@
     <string name="cancel">Cancelar</string>
     <string name="edit">Editar</string>
     <string name="delete_all">Excluir tudo</string>
+    <string name="show_whitelisted">Mostrar as conexões da lista branca</string>
+    <string name="hide_whitelisted">Ocultar as conexões da lista branca</string>
+    <string name="whitelist">Lista branca</string>
+    <string name="edit_whitelist">Editar a lista branca</string>
+    <string name="whitelist_action">Autorizar…</string>
+    <string name="whitelist_empty">A lista branca está vazia.\nUse o clique longo para adicionar à lista branca.</string>
+    <string name="n_selected">%1$d selecionado</string>
+    <string name="select_all">Selecionar tudo</string>
 </resources>
