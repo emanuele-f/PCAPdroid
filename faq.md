@@ -18,6 +18,10 @@ Yes! But you need a rooted device. Check out the [user guide](https://emanuele-f
 `10.215.173.2` is virtual IP address used by PCAPdroid to capture the DNS traffic. During startup, PCAPdroid detects the DNS server in use by the device and proxies all the DNS requests to such address. Only UDP DNS queries as currently supported. TCP DNS queries are dropped.
 <br/><br/>
 
+**How can I extract the URLs from an app?**
+
+In PCAPdroid you can tap on an HTTP connection to show its details, which include the requested URL. However, most apps employ HTTPS, in which case it's necessary to decrypt the connections via mitm in order to extract the URL. Check out the [TLS Decryption section](https://emanuele-f.github.io/PCAPdroid/tls_decryption) for details. If the app provides a web version, instead of decrypting the connections, it's easier to open the app in a browser on a PC and inspect the connections data via the browser developer tools.
+
 **Does PCAPdroid support decrypting TLS 1.3?**
 
 PCAPdroid relies on [mitmproxy](https://mitmproxy.org/) for the TLS decryption and it supports TLS 1.3.
