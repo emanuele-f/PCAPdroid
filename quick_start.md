@@ -56,11 +56,11 @@ By pressing on an app it is possible to show its individual connections.
 
 ## 1.3 Filters
 
-Before the capture is started, in the "Status" tab it is possible to specify an "App Filter" to only capture the traffic of the specified app. Only this app will be routed inside the VPNService. This is expecially useful when using the [TLS decryption](tls_decryption) to ensure that the mitm will only take place on the target app.
+Before the capture is started, in the "Status" tab it is possible to specify an "App Filter" to only capture the traffic of the specified app. Only this app will be routed inside the VPNService. This is especially useful when using the [TLS decryption](tls_decryption) to ensure that the mitm will only take place on the target app.
 
 After the capture is started, PCAPdroid provides different ways to filter the displayed connections:
 
-- via the search bar, it is possible to filter the connections by IP address, host, protocol, app name, uid or protocol. A convenient way to search the connections is by long pressing a connection and then selecting a filter from the contextual menu.
+- via the search bar, it is possible to filter the connections by IP address, host, protocol, app name or uid. A convenient way to search the connections is by long pressing a connection and then selecting a filter from the contextual menu.
 - from the `Apps` view, it is possible to tap on an app to apply it as a filter
 - by long pressing a connection, it is also possible to add it to the *whitelist*
 
