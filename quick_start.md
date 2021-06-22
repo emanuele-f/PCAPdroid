@@ -60,11 +60,11 @@ Before the capture is started, in the "Status" tab it is possible to specify an 
 
 After the capture is started, PCAPdroid provides different ways to filter the displayed connections:
 
-- via the search bar, it is possible to filter connections by IP address, host, protocol, app name, uid or protocol. A convenient way to search connections is to long press a connection and then selecting a filter from the contextual menu.
-- from the `Apps` view, it is possible to click on an app to apply it as a filter
-- by long pressing a connection, it is possible to add it to the *whitelist*
+- via the search bar, it is possible to filter the connections by IP address, host, protocol, app name, uid or protocol. A convenient way to search the connections is by long pressing a connection and then selecting a filter from the contextual menu.
+- from the `Apps` view, it is possible to tap on an app to apply it as a filter
+- by long pressing a connection, it is also possible to add it to the *whitelist*
 
-The whitelist feature allows you to create rules to hide groups of connections from the "Connections" tab. By carefully building a whitelist of "good" connections, it is possible to filter out the background noise made by periodic connections or by frequently used apps and only display a few relevant connections. This is particularly useful to detect unwanted or possibly malicious connections. The whitelist is persistent and can be modified from the corresponding entry in the left drawer.
+The whitelist feature allows you to create rules to hide groups of connections from the "Connections" tab. By carefully building a whitelist of "good" connections, it is possible to filter out the background noise made by the periodic connections or by the frequently used apps and only display a few relevant connections. This is particularly useful to detect unwanted or possibly malicious connections. The whitelist is persistent and can be modified from the corresponding entry in the left drawer.
 
 <p align="center">
 <img src="./images/whitelist.jpg" width="200" />
