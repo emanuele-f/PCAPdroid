@@ -5,7 +5,7 @@ Welcome to the PCAPdroid User Guide.
 - [1. Quick Start](quick_start)
     - [1.1 What is PCAPdroid](quick_start#11-what-is-pcapdroid)
     - [1.2 Basic Usage](quick_start#12-basic-usage)
-    - [1.3 App Filter](quick_start#13-app-filter)
+    - [1.3 Filters](quick_start#13-filters)
     - [1.4 PCAP Reliability](quick_start#14-pcap-reliability)
 - [2. Dump Modes](dump_modes)
     - [2.1 None](dump_modes#2.1-none)
