@@ -52,9 +52,21 @@ During the capture, PCAPdroid logs all the connections in memory. After a limit 
 
 By tapping on an app it's possible to show its individual connections.
 
-## 1.3 App Filter
+## 1.3 Filters
 
-By default PCAPdroid captures the packets of all the android apps. You can limit the capture to a specific app by specifying an "App Filter". The capture will now affect only the specified applications. This is expecially useful when using the [TLS decryption](tls_decryption) to ensure that only the target app traffic will be affected by the TLS decoding.
+Before the capture is started, in the "Status" tab it's possible to specify an "App Filter" to only capture the traffic of the specified app. Only such app will be routed inside the VPNService. This is expecially useful when using the [TLS decryption](tls_decryption) to ensure that the mitm will only take place on the target app.
+
+After the capture is started, PCAPdroid provides different ways to filter the displayed connections:
+
+- via the search bar, it's possible to filter connections by IP address, host, protocol, app name, uid or protocol. A convenient way to search connections is to long press a connection and then selecting a filter from the contextual menu.
+- from the `Apps` view, it's possible to click on an app to apply it as a filter
+- by long pressing a connection, it's possible to add it to the *whitelist*
+
+The whitelist feature allows you to create rules to hide groups of connections from the "Connections" tab. By carefully building a whitelist of "good" connections, it's possible to filter out the background noise made by periodic connections or by frequently used apps and only display a few relevant connections. This is particularly useful to detect unwanted or possibly malicious connections. The whitelist is persistent and can be modified from the corresponding entry in the left drawer.
+
+<p align="center">
+<img src="./images/whitelist.jpg" width="200" />
+</p>
 
 ## 1.4 PCAP Reliability
 
