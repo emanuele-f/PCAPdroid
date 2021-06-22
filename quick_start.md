@@ -52,7 +52,7 @@ During the capture, PCAPdroid logs all the connections in memory. After a limit 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" />
 </p>
 
-By tapping on an app it is possible to show its individual connections.
+By pressing on an app it is possible to show its individual connections.
 
 ## 1.3 Filters
 
