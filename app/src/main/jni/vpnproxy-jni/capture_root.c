@@ -40,21 +40,20 @@ typedef struct {
 
 /* ******************************************************* */
 
-static int su_cmd(vpnproxy_data_t *proxy, const char *prog, const char *args) {
-    char cmd[1024];
-    int rv;
-    JNIEnv *env = proxy->env;
+static int su_cmd(const char *prog, const char *args) {
+    FILE *fp;
 
-    if(snprintf(cmd, sizeof(cmd), "su -c '%s %s'", prog, args) >= sizeof(cmd)) {
-        log_e("su cmd buffer too small");
-        return -1;
+    if((fp = popen("su", "w")) == NULL) {
+      log_e("popen(\"su\") failed[%d]: %s", errno, strerror(errno));
+      pclose(fp);
+      return -1;
     }
 
-    log_d("su_cmd: %s", cmd);
+    log_d("su_cmd: %s %s", prog, args);
+    fprintf(fp, "%s", prog);
+    fprintf(fp, " %s\n", args);
 
-    rv = system(cmd);
-
-    return rv;
+    return pclose(fp);
 }
 
 /* ******************************************************* */
@@ -99,7 +98,7 @@ static void kill_pcapd(vpnproxy_data_t *proxy) {
 
     if(pid != 0) {
         log_d("Killing old pcapd with pid %d", pid);
-        su_cmd(proxy, "kill", pid_s);
+        su_cmd("kill", pid_s);
     }
 
     fclose(f);
@@ -154,7 +153,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     // Start the daemon
     char args[32];
     snprintf(args, sizeof(args), "-d %d", proxy->app_filter);
-    su_cmd(proxy, pcapd, args);
+    su_cmd(pcapd, args);
 
     // Wait for pcapd to start
     struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};

@@ -30,6 +30,7 @@ ADD_LIBRARY(pcap STATIC
         ${LIBPCAP_ROOT}/missing/strlcpy.c)
 
 # Executables must be names as libraries to be stored into corresponding native folder
+# NOTE: only works if extractNativeLibs is true
 add_executable(libpcapd.so pcapd.c nl_utils.c)
 
 # Better to link static libs to avoid changing the library path

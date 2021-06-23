@@ -10,7 +10,7 @@
     <string name="host">Главная ЭВМ</string>
     <string name="capture_not_running">Захват не проводится!</string>
     <string name="capture_not_started">Захват не начат!</string>
-    <string name="app_filter">Фильтр приложений</string>
+    <string name="app_filter">Целевое приложение</string>
     <string name="ready">Готов</string>
     <string name="about">О</string>
     <string name="status">Состояние</string>
@@ -79,7 +79,7 @@
     <string name="delete_error">Невозможно удалить файл</string>
     <string name="capture_running">Захват проводится</string>
     <string name="notification_msg">%1$s захвачено, %2$s соединения</string>
-    <string name="no_app_filter">Фильтр приложений не установлен</string>
+    <string name="no_app_filter">Целевое приложение не выбрано</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">Открыто</string>
     <string name="first_seen">Впервые обнаружено</string>
@@ -122,4 +122,20 @@
     <string name="http_request">HTTP-запрос</string>
     <string name="root_log">Root-журнал</string>
     <string name="request_plaintext">Запрос в чистом виде</string>
+	<string name="search">Поиск</string>
+    <string name="app_val">Приложение: %1$s</string>
+    <string name="ip_address_val">IP адрес: %1$s</string>
+    <string name="host_val">Хост: %1$s</string>
+    <string name="protocol_val">Протокол: %1$s</string>
+    <string name="cancel">Отмена</string>
+    <string name="edit">Изменить</string>
+    <string name="delete_all">Удалить все</string>
+    <string name="show_whitelisted">Показать соединения из белого списка</string>
+    <string name="hide_whitelisted">Скрыть соединения из белого списка</string>
+    <string name="whitelist">Белый список</string>
+    <string name="edit_whitelist">Редактировать белый список</string>
+    <string name="whitelist_action">В белый список</string>
+    <string name="whitelist_empty">Белый список пуст.\nИспользуйте долгое нажатие на строку соединения для добавления.</string>
+    <string name="n_selected">%1$d выбран(о)</string>
+    <string name="select_all">Выбрать все</string>
 </resources>

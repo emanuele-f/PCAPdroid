@@ -2,6 +2,15 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.3.9] - 2021-06-16
+This release brings a set of new features to make it easier to spot unwanted connections!
+
+- Long press a connection to whitelist it, making it easy to filter out background traffic
+- Add ability to search connections
+- Most netd DNS connections are now resolved into actual apps
+- Add Brazilian translation (credits: mezysinc)
+- Add Japanese translation (credits: Akihiro Nagai)
+
 ## [1.3.8] - 2021-06-03
 - Fix monodirectional connections with LINUX_SLL in root mode
 - Show plaintext request data (e.g. HTTP headers) in the connection details
