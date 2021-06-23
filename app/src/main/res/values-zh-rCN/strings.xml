@@ -19,7 +19,7 @@
     <string name="host">主机</string>
     <string name="capture_not_running">流量捕获未在运行!</string>
     <string name="capture_not_started">流量捕获未启动!</string>
-    <string name="app_filter">应用过滤器</string>
+    <string name="app_filter">目标应用</string>
     <string name="ready">就绪</string>
     <string name="about">关于</string>
     <string name="status">状态</string>
@@ -88,7 +88,7 @@
     <string name="delete_error">无法删除文件</string>
     <string name="capture_running">流量捕获运行中</string>
     <string name="notification_msg">%1$s 已捕获, %2$s 连接</string>
-    <string name="no_app_filter">未设置应用过滤器</string>
+    <string name="no_app_filter">未选中目标应用</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">已打开</string>
     <string name="first_seen">第一次见</string>
