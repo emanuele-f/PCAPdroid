@@ -320,9 +320,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             String rootDomain = Utils.getRootDomain(conn.info);
 
             if(!rootDomain.equals(conn.info)) {
-                String val = "*" + rootDomain;
                 item = menu.findItem(R.id.exclude_root_domain);
-                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, val));
+                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, rootDomain));
                 item.setVisible(true);
             }
         }

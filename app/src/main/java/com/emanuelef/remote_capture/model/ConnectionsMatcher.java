@@ -102,8 +102,8 @@ public class ConnectionsMatcher {
         switch(tp) {
             case APP:           resid = R.string.app_val; break;
             case IP:            resid = R.string.ip_address_val; break;
-            case HOST:
-            case ROOT_DOMAIN:   resid = R.string.host_val; break;
+            case ROOT_DOMAIN:   value = "*" + value; // fallthrough
+            case HOST:          resid = R.string.host_val; break;
             case PROTOCOL:      resid = R.string.protocol_val; break;
             default:
                 return "";
