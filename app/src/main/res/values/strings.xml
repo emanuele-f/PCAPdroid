@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">PCAPdroid</string>
+    <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
     <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
@@ -147,5 +147,16 @@
     <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
+    <string name="app_details">App Details</string>
+    <string name="package_name">Package Name</string>
+    <string name="uid">UID</string>
+    <string name="app_name">Name</string>
+    <string name="version">Version</string>
+    <string name="target_sdk">Target SDK</string>
+    <string name="installed_on">Installed on</string>
+    <string name="last_update">Last Update</string>
+    <string name="permissions">Permissions</string>
+    <string name="virtual_app_info">This is a system daemon.</string>
+    <string name="unknown_app_info">\"Unknown\" marks connections whose app could not be determined</string>
 </resources>
 

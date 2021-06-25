@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.model;
 
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
@@ -36,7 +37,7 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
 
     // NULL for virtual apps
     PackageManager mPm;
-    ApplicationInfo mAppInfo;
+    PackageInfo mPackageInfo;
 
     public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
         this.mName = name;
@@ -46,12 +47,13 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
         this.mIsSystem = is_system;
     }
 
-    public AppDescriptor(PackageManager pm, ApplicationInfo appInfo) {
-        this(appInfo.loadLabel(pm).toString(), null, appInfo.packageName, appInfo.uid,
-                (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+    public AppDescriptor(PackageManager pm, PackageInfo pkgInfo) {
+        this(pkgInfo.applicationInfo.loadLabel(pm).toString(), null,
+                pkgInfo.applicationInfo.packageName, pkgInfo.applicationInfo.uid,
+                (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
 
         mPm = pm;
-        mAppInfo = appInfo;
+        mPackageInfo = pkgInfo;
     }
 
     public String getName() {
@@ -62,11 +64,11 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
         if(mIcon != null)
             return mIcon;
 
-        if((mAppInfo == null) || (mPm == null))
+        if((mPackageInfo == null) || (mPm == null))
             return null;
 
         // NOTE: this call is expensive
-        mIcon = mAppInfo.loadIcon(mPm);
+        mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
 
         return mIcon;
     }
@@ -82,7 +84,9 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     public boolean isSystem() { return mIsSystem; }
 
     // the app does not have a package name (e.g. uid 0 is android system)
-    public boolean isVirtual() { return (mAppInfo == null); }
+    public boolean isVirtual() { return (mPackageInfo == null); }
+
+    public @Nullable PackageInfo getPackageInfo() { return mPackageInfo; }
 
     @Override
     public int compareTo(AppDescriptor o) {

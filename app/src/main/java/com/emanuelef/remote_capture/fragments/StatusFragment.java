@@ -240,7 +240,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter);
+        AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
         String description;
 
         if(app == null)
@@ -311,7 +311,7 @@ private void refreshPcapDumpInfo() {
 
         // Check if a filter is set
         if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
-            AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter);
+            AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
 
             if((app != null) && (app.getIcon() != null)) {
                 int height = mCollectorInfo.getMeasuredHeight();

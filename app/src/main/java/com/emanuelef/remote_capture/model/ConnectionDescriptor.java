@@ -119,7 +119,7 @@ public class ConnectionDescriptor implements Serializable {
 
     public boolean matches(AppsResolver res, String filter) {
         filter = filter.toLowerCase();
-        AppDescriptor app = res.get(uid);
+        AppDescriptor app = res.get(uid, 0);
 
         return(((info != null) && (info.contains(filter))) ||
                 dst_ip.contains(filter) ||

@@ -75,7 +75,7 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
 
             if(!uids.contains(p.applicationInfo.uid) && !package_name.equals(app_package)) {
                 int uid = p.applicationInfo.uid;
-                AppDescriptor app = new AppDescriptor(pm, p.applicationInfo);
+                AppDescriptor app = new AppDescriptor(pm, p);
 
                 apps.add(app);
                 uids.add(uid);

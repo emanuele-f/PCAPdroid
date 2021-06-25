@@ -173,6 +173,11 @@ public class Utils {
         return fmt.format(new Date(epoch * 1000));
     }
 
+    public static String formatInteger(Context context, int val) {
+        Locale locale = getPrimaryLocale(context);
+        return String.format(locale, "%d", val);
+    }
+
     public static Configuration getLocalizedConfig(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Configuration config = context.getResources().getConfiguration();

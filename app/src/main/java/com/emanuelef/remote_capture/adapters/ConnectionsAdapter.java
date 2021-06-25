@@ -89,7 +89,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
 
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
-            AppDescriptor app = apps.get(conn.uid);
+            AppDescriptor app = apps.get(conn.uid, 0);
             Drawable appIcon;
             String l7Text;
 
@@ -356,7 +356,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             ConnectionDescriptor conn = getItem(i);
 
             if(conn != null) {
-                AppDescriptor app = resolver.get(conn.uid);
+                AppDescriptor app = resolver.get(conn.uid, 0);
 
                 builder.append(conn.ipproto);                               builder.append(",");
                 builder.append(conn.src_ip);                                builder.append(",");

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fillViewport="true"
+    android:padding="8dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/app_icon"
+        tools:src="@drawable/ic_apps"
+        tools:tint="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TableLayout
+        android:id="@+id/table"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/app_icon"
+        android:layout_marginTop="16dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/app_name" />
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="PCAPdroid" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/package_name_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/package_name" />
+            <TextView
+                android:id="@+id/package_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="com.emanuelef.remote_capture" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/uid" />
+            <TextView
+                android:id="@+id/uid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="12345" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/version_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/version" />
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="1.3.9" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/target_sdk_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/target_sdk" />
+            <TextView
+                android:id="@+id/target_sdk"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="23" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/install_date_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/installed_on" />
+            <TextView
+                android:id="@+id/install_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="01/02/20 00:45:01" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/last_update_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/last_update" />
+            <TextView
+                android:id="@+id/last_update"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="01/02/20 00:45:01" />
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/table">
+
+        <Button
+            android:id="@+id/app_settings"
+            android:text="@string/title_activity_settings"
+            android:layout_width="0dp"
+            android:layout_height="42dip"
+            android:layout_weight="1"
+            android:textSize="12sp"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/show_connections"
+            android:text="@string/connections_view"
+            android:layout_marginStart="5dp"
+            android:layout_width="0dp"
+            android:layout_height="42dip"
+            android:layout_weight="1"
+            android:textSize="12sp"
+            tools:ignore="ButtonStyle"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/vapp_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttons"
+        android:text="@string/virtual_app_info"/>
+
+    <TextView
+        android:id="@+id/permissions_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttons"
+        android:text="@string/permissions"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissions_label"
+            android:background="@color/colorBackgroundGray"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/permissions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="0sp"
+                android:textIsSelectable="true"
+                android:fontFamily="monospace"
+                android:textSize="12sp"
+                android:scrollHorizontally="true"
+                tools:text="android.permission.INTERNET\nandroid.permission.FOREGROUND_SERVICE"/>
+        </HorizontalScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

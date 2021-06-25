@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
-import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
@@ -39,7 +38,7 @@ public class AboutActivity extends BaseActivity {
         setContentView(R.layout.about_activity);
 
         TextView appVersion = findViewById(R.id.app_version);
-        appVersion.setText(getString(R.string.app_name) + " " + Utils.getAppVersion(this));
+        appVersion.setText(getString(R.string.pcapdroid_app_name) + " " + Utils.getAppVersion(this));
 
         TextView gplLicense = findViewById(R.id.app_license_link);
         String localized = gplLicense.getText().toString();

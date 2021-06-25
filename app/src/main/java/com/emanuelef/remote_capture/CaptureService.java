@@ -594,7 +594,7 @@ public class CaptureService extends VpnService implements Runnable {
     public int getAppFilterUid() { return(app_filter_uid); }
 
     public int getOwnAppUid() {
-        AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID);
+        AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
 
         if(app != null)
             return app.getUid();

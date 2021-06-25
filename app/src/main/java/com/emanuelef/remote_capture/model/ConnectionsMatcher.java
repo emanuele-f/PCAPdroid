@@ -154,7 +154,7 @@ public class ConnectionsMatcher {
             String valLabel = val;
 
             if(type == ItemType.APP) {
-                AppDescriptor app = resolver.get(Integer.parseInt(val));
+                AppDescriptor app = resolver.get(Integer.parseInt(val), 0);
 
                 if(app != null)
                     valLabel = app.getName();

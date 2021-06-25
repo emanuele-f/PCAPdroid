@@ -182,7 +182,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
-                AppDescriptor app = mApps.get(item.uid);
+                AppDescriptor app = mApps.get(item.uid, 0);
                 String app_name = null;
 
                 if(app != null)
@@ -293,7 +293,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(conn == null)
             return;
 
-        AppDescriptor app = mApps.get(conn.uid);
+        AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
 
         if(app != null) {
@@ -357,7 +357,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mAdapter.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
         else if(id == R.id.search_app) {
             mSearchView.setIconified(false);
-            mSearchView.setQuery(mApps.get(conn.uid).getPackageName(), true);
+            mSearchView.setQuery(mApps.get(conn.uid, 0).getPackageName(), true);
             return true;
         } else if(id == R.id.search_host) {
             mSearchView.setIconified(false);

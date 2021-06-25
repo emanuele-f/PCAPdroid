@@ -40,6 +40,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -94,14 +96,11 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
-            String packageName = mAdapter.getItemPackage(pos);
+            int uid = (int) mAdapter.getItemId(pos);
 
-            if(packageName != null) {
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.putExtra(MainActivity.FILTER_EXTRA, packageName);
-
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getActivity(), AppDetailsActivity.class);
+            intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, uid);
+            startActivity(intent);
         });
 
         /* Register for service status */

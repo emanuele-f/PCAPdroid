@@ -32,10 +32,10 @@ public class AppsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setTitle(R.string.apps);
-        setContentView(R.layout.apps_activity);
+        setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.apps_fragment, new AppsFragment())
+                .replace(R.id.fragment, new AppsFragment())
                 .commit();
     }
 }

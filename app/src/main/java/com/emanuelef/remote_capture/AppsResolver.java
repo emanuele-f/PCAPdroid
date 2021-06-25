@@ -11,6 +11,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 public class AppsResolver {
@@ -52,20 +53,20 @@ public class AppsResolver {
                                          mVirtualAppIcon,"nobody", 9999, true));
     }
 
-    public static AppDescriptor resolve(PackageManager pm, String packageName) {
+    public static AppDescriptor resolve(PackageManager pm, String packageName, int pm_flags) {
         PackageInfo pinfo;
 
         try {
-            pinfo = pm.getPackageInfo(packageName, 0);
+            pinfo = pm.getPackageInfo(packageName, pm_flags);
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "could not retrieve package: " + packageName);
             return null;
         }
 
-        return new AppDescriptor(pm, pinfo.applicationInfo);
+        return new AppDescriptor(pm, pinfo);
     }
 
-    public AppDescriptor get(int uid) {
+    public @Nullable AppDescriptor get(int uid, int pm_flags) {
         AppDescriptor app = mApps.get(uid);
 
         if(app != null)
@@ -80,7 +81,7 @@ public class AppsResolver {
 
         String packageName = packages[0];
 
-        app = resolve(mPm, packageName);
+        app = resolve(mPm, packageName, pm_flags);
 
         if(app != null)
             mApps.put(uid, app);
