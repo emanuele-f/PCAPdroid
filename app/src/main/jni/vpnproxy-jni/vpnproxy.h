@@ -101,6 +101,7 @@ typedef struct vpnproxy_data {
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
     uint64_t now_ms;
+    u_int num_dropped_pkts;
     u_int32_t num_dropped_connections;
     u_int32_t num_dns_requests;
     conn_array_t new_conns;

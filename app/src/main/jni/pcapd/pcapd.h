@@ -31,6 +31,7 @@
 
 typedef struct {
   struct timeval ts;
+  u_int pkt_drops;
   uid_t uid;
   uint16_t len;
   uint8_t flags;

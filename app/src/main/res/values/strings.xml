@@ -158,5 +158,6 @@
     <string name="permissions">Permissions</string>
     <string name="virtual_app_info">This is a system daemon.</string>
     <string name="unknown_app_info">\"Unknown\" marks connections whose app could not be determined</string>
+    <string name="packets_dropped">Packets Dropped</string>
 </resources>
 

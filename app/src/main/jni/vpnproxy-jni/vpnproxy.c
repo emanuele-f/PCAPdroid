@@ -734,7 +734,7 @@ static void sendStatsDump(const vpnproxy_data_t *proxy, const zdtun_statistics_t
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
             capstats->sent_bytes, capstats->rcvd_bytes,
             capstats->sent_pkts, capstats->rcvd_pkts,
-            proxy->num_dropped_connections,
+            min(proxy->num_dropped_pkts, INT_MAX), proxy->num_dropped_connections,
             stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns, proxy->num_dns_requests);
 
     if(!jniCheckException(env)) {
@@ -967,7 +967,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             /* NOTE: must match ConnectionDescriptor::setData */
                                       "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIJJJJIIII)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIII)V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIIII)V");
 
     vpnproxy_data_t proxy = {
             .tunfd = tunfd,

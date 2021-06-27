@@ -358,6 +358,7 @@ int run_root(vpnproxy_data_t *proxy) {
             goto cleanup;
         }
 
+        proxy->num_dropped_pkts = hdr.pkt_drops;
         handle_packet(proxy, &connections, &hdr, buffer);
 
     housekeeping:

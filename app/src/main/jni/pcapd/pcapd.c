@@ -490,8 +490,10 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
 static int run_pcap_dump(int uid_filter) {
   int rv = -1;
+  struct pcap_stat stats = {0};
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
+  time_t next_stats_update = 0;
   uid_resolver_t *resolver = NULL;
   uid_lru_t *lru = NULL;
 
@@ -575,6 +577,7 @@ static int run_pcap_dump(int uid_filter) {
           if((uid_filter == -1) || (uid_filter == uid)) {
             phdr.ts = hdr->ts;
             phdr.len = hdr->caplen;
+            phdr.pkt_drops = stats.ps_drop;
             phdr.uid = uid;
             phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
 
@@ -591,9 +594,14 @@ static int run_pcap_dump(int uid_filter) {
       }
     }
 
-    if((rt.pd == NULL) && (time(NULL) >= next_interface_recheck)) {
+    time_t now = time(NULL);
+
+    if((rt.pd == NULL) && (now >= next_interface_recheck)) {
       check_capture_interface(&rt);
-      next_interface_recheck = time(NULL) + 5;
+      next_interface_recheck = now + 5;
+    } else if((now >= next_stats_update)) {
+      pcap_stats(rt.pd, &stats);
+      next_stats_update = now + 3;
     }
   }
 
