@@ -125,6 +125,7 @@ public class ConnectionDescriptor implements Serializable {
                 dst_ip.contains(filter) ||
                 l7proto.toLowerCase().contains(filter) ||
                 Integer.toString(uid).equals(filter) ||
+                Integer.toString(dst_port).contains(filter) ||
                 ((app != null) && (app.getName().toLowerCase().contains(filter) ||
                         app.getPackageName().equals(filter)))
         );
