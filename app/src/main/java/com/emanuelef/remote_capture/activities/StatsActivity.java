@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.content.BroadcastReceiver;
@@ -61,6 +60,7 @@ public class StatsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.stats);
+        displayBackAction();
         setContentView(R.layout.activity_stats);
 
         mTable = findViewById(R.id.table);
@@ -96,11 +96,6 @@ public class StatsActivity extends BaseActivity {
         /* Register for updates */
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         CaptureService.askStatsDump();
     }

@@ -26,7 +26,6 @@ import android.text.InputType;
 import android.util.Patterns;
 import android.view.MenuItem;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -47,12 +46,8 @@ public class SettingsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.title_activity_settings); // note: setting via manifest does not honor custom locale
+        displayBackAction();
         setContentView(R.layout.settings_activity);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -69,17 +64,6 @@ public class SettingsActivity extends BaseActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == android.R.id.home) {
-            /* Make the back button in the action bar behave like the back button */
-            onBackPressed();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

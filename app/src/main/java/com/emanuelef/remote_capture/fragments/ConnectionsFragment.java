@@ -75,6 +75,7 @@ import java.io.OutputStream;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
+    public static final String FILTER_EXTRA = "filter";
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
     private FloatingActionButton mFabDown;
@@ -164,7 +165,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mApps = new AppsResolver(requireContext());
         mEmptyText = view.findViewById(R.id.no_connections);
 
-        if(((MainActivity) requireActivity()).getState() == AppState.running)
+        if((requireActivity() instanceof MainActivity) &&
+                (((MainActivity) requireActivity()).getState() == AppState.running))
             mEmptyText.setText(R.string.no_connections);
 
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
@@ -219,12 +221,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            filter = intent.getStringExtra(MainActivity.FILTER_EXTRA);
+            filter = intent.getStringExtra(FILTER_EXTRA);
 
             if((filter != null) && !filter.isEmpty()) {
-                // "consume" it
-                intent.removeExtra(MainActivity.FILTER_EXTRA);
-
                 // Avoid hiding the interesting items
                 mAdapter.mWhitelistEnabled = false;
                 fromIntent = true;

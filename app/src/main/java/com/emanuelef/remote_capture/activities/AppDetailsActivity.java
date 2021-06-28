@@ -34,11 +34,11 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 
 public class AppDetailsActivity extends BaseActivity {
@@ -50,11 +50,8 @@ public class AppDetailsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.app_details);
+        displayBackAction();
         setContentView(R.layout.app_details_activity);
-
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null)
-            actionBar.setDisplayHomeAsUpEnabled(true);
 
         int uid = getIntent().getIntExtra(APP_UID_EXTRA, Utils.UID_UNKNOWN);
         AppsResolver res = new AppsResolver(this);
@@ -121,9 +118,8 @@ public class AppDetailsActivity extends BaseActivity {
         });
 
         findViewById(R.id.show_connections).setOnClickListener(v -> {
-            // TODO implement new activity
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(MainActivity.FILTER_EXTRA, dsc.getPackageName());
+            Intent intent = new Intent(this, ConnectionsActivity.class);
+            intent.putExtra(ConnectionsFragment.FILTER_EXTRA, dsc.getPackageName());
             startActivity(intent);
         });
     }
@@ -163,10 +159,8 @@ public class AppDetailsActivity extends BaseActivity {
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
-        } else if(item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

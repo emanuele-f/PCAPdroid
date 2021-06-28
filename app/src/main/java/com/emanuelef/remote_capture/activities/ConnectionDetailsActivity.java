@@ -62,6 +62,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.connection_details);
+        displayBackAction();
         setContentView(R.layout.activity_connection_details);
 
         mConn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
