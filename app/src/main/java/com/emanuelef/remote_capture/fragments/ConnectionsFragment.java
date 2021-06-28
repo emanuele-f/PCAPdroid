@@ -72,6 +72,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -357,7 +358,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mAdapter.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
         else if(id == R.id.search_app) {
             mSearchView.setIconified(false);
-            mSearchView.setQuery(mApps.get(conn.uid, 0).getPackageName(), true);
+            mSearchView.setQuery(Objects.requireNonNull(
+                    mApps.get(conn.uid, 0)).getPackageName(), true);
             return true;
         } else if(id == R.id.search_host) {
             mSearchView.setIconified(false);
@@ -500,14 +502,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSearchView.setOnQueryTextListener(this);
 
         if(mFilterToApply != null) {
-            mSearchView.setQuery(mFilterToApply, true);
+            String query = mFilterToApply;
             mFilterToApply = null;
 
-            // Delay to avoid a bug which causes other icons to be hidden when a filter is applied
-            // from the AppsActivity
-            (new Handler(requireActivity().getMainLooper())).postDelayed(() -> {
-                mSearchView.setIconified(false);
-            }, 50);
+            mSearchView.setIconified(false);
+            mMenuItemSearch.expandActionView();
+
+            // Delay otherwise the query won't be set
+            /* NOTE: there is still a bug with "ifRoom" which causes the other icons to be permanently
+             * hidden when the searchview is collapsed. */
+            mSearchView.post(() -> {
+                mSearchView.setQuery(query, true);
+            });
         }
 
         refreshMenuIcons();
