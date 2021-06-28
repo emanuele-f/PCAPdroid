@@ -57,6 +57,7 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -370,6 +371,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.search_proto) {
             mSearchView.setIconified(false);
             mSearchView.setQuery(conn.l7proto, true);
+            return true;
+        } else if(id == R.id.open_app_details) {
+            Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
+            intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
+            startActivity(intent);
             return true;
         } else
             return super.onContextItemSelected(item);

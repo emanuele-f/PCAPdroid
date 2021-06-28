@@ -15,6 +15,7 @@
         android:id="@+id/app_icon"
         tools:src="@drawable/ic_apps"
         tools:tint="@color/colorAccent"
+        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -27,7 +28,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/app_icon"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="20dp">
 
         <TableRow
             android:layout_width="match_parent"
@@ -206,8 +207,7 @@
         android:textStyle="italic"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttons"
-        android:text="@string/virtual_app_info"/>
+        app:layout_constraintTop_toBottomOf="@id/buttons" />
 
     <TextView
         android:id="@+id/permissions_label"

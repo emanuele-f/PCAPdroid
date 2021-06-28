@@ -60,4 +60,8 @@
                 tools:title="@string/protocol_val" />
         </menu>
     </item>
+
+    <item
+        android:id="@+id/open_app_details"
+        android:title="@string/app_details" />
 </menu>

@@ -34,6 +34,7 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final int mUid;
     private final boolean mIsSystem;
     private Drawable mIcon;
+    private String mDescription;
 
     // NULL for virtual apps
     PackageManager mPm;
@@ -45,6 +46,7 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
         this.mPackageName = package_name;
         this.mUid = uid;
         this.mIsSystem = is_system;
+        this.mDescription = "";
     }
 
     public AppDescriptor(PackageManager pm, PackageInfo pkgInfo) {
@@ -54,6 +56,15 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
 
         mPm = pm;
         mPackageInfo = pkgInfo;
+    }
+
+    public AppDescriptor setDescription(String dsc) {
+        mDescription = dsc;
+        return this;
+    }
+
+    public String getDescription() {
+        return mDescription;
     }
 
     public String getName() {

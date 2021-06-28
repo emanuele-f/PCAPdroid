@@ -25,10 +25,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -42,6 +44,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 public class AppDetailsActivity extends BaseActivity {
     private static final String TAG = "AppDetailsActivity";
     public static final String APP_UID_EXTRA = "app_uid";
+    private TableLayout mTable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,10 +97,10 @@ public class AppDetailsActivity extends BaseActivity {
             }
         } else {
             // This is a virtual App
-            findViewById(R.id.vapp_info).setVisibility(View.VISIBLE);
-
-            if(uid == Utils.UID_UNKNOWN)
-                ((TextView)findViewById(R.id.vapp_info)).setText(R.string.unknown_app_info);
+            if(!dsc.getDescription().isEmpty()) {
+               ((TextView) findViewById(R.id.vapp_info)).setText(dsc.getDescription());
+               findViewById(R.id.vapp_info).setVisibility(View.VISIBLE);
+            }
 
             findViewById(R.id.package_name_row).setVisibility(View.GONE);
             findViewById(R.id.version_row).setVisibility(View.GONE);
@@ -108,6 +111,8 @@ public class AppDetailsActivity extends BaseActivity {
             findViewById(R.id.permissions).setVisibility(View.GONE);
             findViewById(R.id.app_settings).setVisibility(View.GONE);
         }
+
+        mTable = findViewById(R.id.table);
 
         findViewById(R.id.app_settings).setOnClickListener(v -> {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -123,9 +128,42 @@ public class AppDetailsActivity extends BaseActivity {
         });
     }
 
+    private String asString() {
+        if(findViewById(R.id.permissions).getVisibility() == View.GONE)
+            return Utils.table2Text(mTable);
+
+        return Utils.table2Text(mTable) +
+                "\n" +
+                getString(R.string.permissions) +
+                ":\n" +
+                ((TextView) findViewById(R.id.permissions)).getText();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.copy_share_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+
+        if(id == R.id.copy_to_clipboard) {
+            Utils.copyToClipboard(this, asString());
+            return true;
+        } else if(id == R.id.share) {
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_details));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, asString());
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+
+            return true;
+        } else if(item.getItemId() == android.R.id.home) {
             finish();
             return true;
         }
