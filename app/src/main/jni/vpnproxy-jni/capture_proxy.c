@@ -233,6 +233,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     if(!shouldIgnoreConn(proxy, tuple)) {
         // Send last notification
         // Will free the data in sendConnectionsDump
+        data->update_type |= CONN_UPDATE_STATS;
         notify_connection(&proxy->conns_updates, tuple, data);
 
         data->status = zdtun_conn_get_status(conn_info);
