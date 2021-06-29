@@ -455,7 +455,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public void connectionsAdded(int start, ConnectionDescriptor []conns) {
         mHandler.post(() -> {
-            Log.d(TAG, "Added " + conns.length + " connections at " + start);
+            Log.d(TAG, "Add " + conns.length + " connections at " + start);
 
             mAdapter.connectionsAdded(start, conns);
 

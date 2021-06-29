@@ -17,6 +17,7 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
+#include <inttypes.h>
 #include "vpnproxy.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
@@ -38,8 +39,8 @@ static ndpi_protocol_bitmask_struct_t masterProtos;
 static int dumper_socket;
 static bool send_header;
 static int netd_resolve_waiting;
-static time_t last_connections_dump;
-static time_t next_connections_dump;
+static u_int64_t last_connections_dump;
+static u_int64_t next_connections_dump;
 static vpnproxy_data_t *global_proxy = NULL;
 
 /* ******************************************************* */
@@ -728,7 +729,7 @@ static void sendConnectionsDump(vpnproxy_data_t *proxy) {
     if((proxy->new_conns.cur_items == 0) && (proxy->conns_updates.cur_items == 0))
         return;
 
-    log_d("sendConnectionsDump [after %d ms]: new=%d, updates=%d",
+    log_d("sendConnectionsDump [after %" PRIu64 " ms]: new=%d, updates=%d",
           proxy->now_ms - last_connections_dump,
           proxy->new_conns.cur_items, proxy->conns_updates.cur_items);
 

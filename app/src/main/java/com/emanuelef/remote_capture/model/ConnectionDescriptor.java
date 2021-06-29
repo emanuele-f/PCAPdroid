@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 
@@ -127,5 +129,11 @@ public class ConnectionDescriptor implements Serializable {
                 ((app != null) && (app.getName().toLowerCase().contains(filter) ||
                         app.getPackageName().equals(filter)))
         );
+    }
+
+    @Override
+    public @NonNull String toString() {
+        return "[proto=" + ipproto + "/" + l7proto + "]: " + src_ip + ":" + src_port + " -> " +
+                dst_ip + ":" + dst_port + " [" + uid + "] " + info;
     }
 }

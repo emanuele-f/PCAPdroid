@@ -72,13 +72,15 @@ public class ConnectionsRegister {
             conns = Arrays.copyOfRange(conns, conns.length - mSize, conns.length);
         }
 
-        int in_items = Math.min((mSize - mNumItems), conns.length);
-        int out_items = conns.length - in_items;
+        int out_items = conns.length - Math.min((mSize - mNumItems), conns.length);
         int insert_pos = mNumItems;
         ConnectionDescriptor []removedItems = null;
 
+        //Log.d(TAG, "newConnections[" + mNumItems + "/" + mSize +"]: insert " + conns.length +
+        //        " items at " + mTail + " (removed: " + out_items + " at " + firstPos() + ")");
+
         if(out_items > 0) {
-            int pos = mTail;
+            int pos = firstPos();
             removedItems = new ConnectionDescriptor[out_items];
 
             // update the apps stats
@@ -128,16 +130,16 @@ public class ConnectionsRegister {
         }
     }
 
-    public synchronized void connectionsUpdates(ConnectionUpdate[] conns) {
+    public synchronized void connectionsUpdates(ConnectionUpdate[] updates) {
         int first_pos = firstPos();
         int first_id = mItemsRing[first_pos].incr_id;
         int last_id = mItemsRing[lastPos()].incr_id;
-        int []changed_pos = new int[conns.length];
+        int []changed_pos = new int[updates.length];
         int k = 0;
 
         Log.d(TAG, "connectionsUpdates: items=" + mNumItems + ", first_id=" + first_id + ", last_id=" + last_id);
 
-        for(ConnectionUpdate update: conns) {
+        for(ConnectionUpdate update: updates) {
             int id = update.incr_id;
 
             // ignore updates for untracked items
@@ -159,10 +161,10 @@ public class ConnectionsRegister {
         }
 
         for(ConnectionsListener listener: mListeners) {
-            if(k != conns.length) {
+            if(k != updates.length) {
                 // some untracked items where skipped, shrink the array
                 changed_pos = Arrays.copyOf(changed_pos, k);
-                k = conns.length;
+                k = updates.length;
             }
 
             listener.connectionsUpdated(changed_pos);
