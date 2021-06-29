@@ -899,7 +899,7 @@ void refresh_time(vpnproxy_data_t *proxy) {
     struct timeval now_tv;
 
     gettimeofday(&now_tv, NULL);
-    proxy->now_ms = now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+    proxy->now_ms = (uint64_t)now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
 }
 
 /* ******************************************************* */

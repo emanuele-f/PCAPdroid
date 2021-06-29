@@ -285,6 +285,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
             log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // Will free the data in sendConnectionsDump
+            conn->data->update_type = CONN_UPDATE_STATS;
             notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
 
             conn->data->status = CONN_STATUS_CLOSED;
