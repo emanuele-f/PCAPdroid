@@ -63,36 +63,34 @@ public class ConnectionDescriptor implements Serializable {
     public int incr_id;
     public int status;
 
-    /* Invoked by native code
-    * NOTE: interleaving String and int in the parameters is not good as it makes the app crash
-    * nto the emulator! Better to put the strings first. */
-    public void setData(String _src_ip, String _dst_ip, String _info,
-                        String _url, String _req, String _l7proto,
-                        int _status, int _ipver, int _ipproto, int _src_port, int _dst_port,
-                        long _first_seen, long _last_seen, long _sent_bytes, long _rcvd_bytes,
-                        int _sent_pkts, int _rcvd_pkts, int _uid, int _incr_id) {
-        /* Metadata */
+    public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
+                                int _src_port, int _dst_port, int _uid, long when) {
+        incr_id = _incr_id;
         ipver = _ipver;
         ipproto = _ipproto;
         src_ip = _src_ip;
         dst_ip = _dst_ip;
         src_port = _src_port;
         dst_port = _dst_port;
-
-        /* Data */
-        first_seen = _first_seen;
-        last_seen = _last_seen;
-        sent_bytes = _sent_bytes;
-        rcvd_bytes = _rcvd_bytes;
-        sent_pkts = _sent_pkts;
-        rcvd_pkts = _rcvd_pkts;
-        status = _status;
-        info = _info;
-        url = _url;
-        request_plaintext = _req;
-        l7proto = _l7proto;
         uid = _uid;
-        incr_id = _incr_id;
+        first_seen = last_seen = when;
+    }
+
+    public void processUpdate(ConnectionUpdate update) {
+        if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
+            sent_bytes = update.sent_bytes;
+            rcvd_bytes = update.rcvd_bytes;
+            sent_pkts = update.sent_pkts;
+            rcvd_pkts = update.rcvd_pkts;
+            status = update.status;
+            last_seen = update.last_seen;
+        }
+        if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
+            info = update.info;
+            url = update.url;
+            request_plaintext = update.request_plaintext;
+            l7proto = update.l7proto;
+        }
     }
 
     public String getStatusLabel(Context ctx) {

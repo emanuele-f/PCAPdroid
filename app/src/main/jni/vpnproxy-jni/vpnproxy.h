@@ -42,6 +42,9 @@
 #define DNS_TYPE_REQUEST 0x0000
 #define DNS_TYPE_RESPONSE 0x8000
 
+#define CONN_UPDATE_STATS 1
+#define CONN_UPDATE_INFO 2
+
 typedef struct capture_stats {
     jlong sent_bytes;
     jlong rcvd_bytes;
@@ -73,6 +76,7 @@ typedef struct conn_data {
     bool request_done;
     char *request_data;
     char *url;
+    uint8_t update_type;
 } conn_data_t;
 
 typedef struct vpn_conn {
@@ -160,9 +164,12 @@ typedef struct jni_methods {
     jmethodID getApplicationByUid;
     jmethodID protect;
     jmethodID dumpPcapData;
-    jmethodID sendConnectionsDump;
+    jmethodID updateConnections;
     jmethodID connInit;
-    jmethodID connSetData;
+    jmethodID connProcessUpdate;
+    jmethodID connUpdateInit;
+    jmethodID connUpdateSetStats;
+    jmethodID connUpdateSetInfo;
     jmethodID sendServiceStatus;
     jmethodID sendStatsDump;
     jmethodID statsInit;
@@ -173,6 +180,7 @@ typedef struct jni_methods {
 typedef struct jni_classes {
     jclass vpn_service;
     jclass conn;
+    jclass conn_update;
     jclass stats;
 } jni_classes_t;
 

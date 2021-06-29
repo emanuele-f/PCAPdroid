@@ -403,6 +403,7 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
             break;
     }
 
+    data->update_type |= CONN_UPDATE_INFO;
     conn_free_ndpi(data);
 }
 
@@ -447,6 +448,7 @@ static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt,
             }
 
             data->request_data[request_len] = '\0';
+            data->update_type |= CONN_UPDATE_INFO;
         } else
             data->request_done = true;
     }
@@ -532,10 +534,14 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
                                 const struct zdtun_pkt *pkt, uint8_t from_tun) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
 
+    u_int16_t old_proto = data->l7proto.master_protocol;
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
                                                   pkt->len, data->last_seen,
             from_tun ? data->src_id : data->dst_id,
             from_tun ? data->dst_id : data->src_id);
+
+    if(old_proto != data->l7proto.master_protocol)
+        data->update_type |= CONN_UPDATE_INFO;
 
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
         process_request_data(data, pkt, from_tun);
@@ -600,9 +606,52 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
 
 /* ******************************************************* */
 
-static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
+static jobject getConnUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn) {
+    JNIEnv *env = proxy->env;
+    conn_data_t *data = conn->data;
+
+    jobject update = (*env)->NewObject(env, cls.conn_update, mids.connUpdateInit, data->incr_id);
+
+    if((update == NULL) || jniCheckException(env)) {
+        log_e("NewObject(ConnectionDescriptor) failed");
+        return NULL;
+    }
+
+    if(data->update_type & CONN_UPDATE_STATS) {
+        (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
+                               data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts,
+                               data->status);
+    }
+    if(data->update_type & CONN_UPDATE_INFO) {
+        jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
+        jobject url = (*env)->NewStringUTF(env, data->url ? data->url : "");
+        jobject req = (*env)->NewStringUTF(env, data->request_data ? data->request_data : "");
+        jobject l7proto = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn->tuple.ipproto));
+
+        (*env)->CallVoidMethod(env, update, mids.connUpdateSetInfo, info, url, req, l7proto);
+
+        (*env)->DeleteLocalRef(env, info);
+        (*env)->DeleteLocalRef(env, url);
+        (*env)->DeleteLocalRef(env, req);
+        (*env)->DeleteLocalRef(env, l7proto);
+    }
+
+    // reset the update flag
+    data->update_type = 0;
+
+    if(jniCheckException(env)) {
+        log_e("getConnUpdate() failed");
+        (*env)->DeleteLocalRef(env, update);
+        return NULL;
+    }
+
+    return update;
+}
+
+/* ******************************************************* */
+
+static int dumpNewConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
     char srcip[INET6_ADDRSTRLEN], dstip[INET6_ADDRSTRLEN];
-    //struct in_addr addr;
     JNIEnv *env = proxy->env;
     const zdtun_5tuple_t *conn_info = &conn->tuple;
     const conn_data_t *data = conn->data;
@@ -623,33 +672,30 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
                         data->uid);
 #endif
 
-    jobject info_string = (*env)->NewStringUTF(env, data->info ? data->info : "");
-    jobject url_string = (*env)->NewStringUTF(env, data->url ? data->url : "");
-    jobject req_string = (*env)->NewStringUTF(env, data->request_data ? data->request_data : "");
-    jobject proto_string = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn_info->ipproto));
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
-    jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit);
+    jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
+                                                conn_info->ipver, conn_info->ipproto,
+                                                src_string, dst_string,
+                                                ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
+                                                data->uid, data->first_seen);
 
     if((conn_descriptor != NULL) && !jniCheckException(env)) {
-        /* NOTE: as an alternative to pass all the params into the constructor, GetFieldID and
-         * SetIntField like methods could be used. */
-        (*env)->CallVoidMethod(env, conn_descriptor, mids.connSetData,
-                               src_string, dst_string, info_string, url_string, req_string, proto_string,
-                               data->status, conn_info->ipver, conn_info->ipproto,
-                               ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
-                               data->first_seen, data->last_seen, data->sent_bytes,
-                               data->rcvd_bytes, data->sent_pkts,
-                               data->rcvd_pkts, data->uid, data->incr_id);
+        // This is the first update, send all the data
+        conn->data->update_type = CONN_UPDATE_STATS | CONN_UPDATE_INFO;
+        jobject update = getConnUpdate(proxy, conn);
+
+        if(update != NULL) {
+            (*env)->CallVoidMethod(env, conn_descriptor, mids.connProcessUpdate, update);
+            (*env)->DeleteLocalRef(env, update);
+        } else
+            rv = -1;
+
+        /* Add the connection to the array */
+        (*env)->SetObjectArrayElement(env, arr, idx, conn_descriptor);
+
         if(jniCheckException(env))
             rv = -1;
-        else {
-            /* Add the connection to the array */
-            (*env)->SetObjectArrayElement(env, arr, idx, conn_descriptor);
-
-            if(jniCheckException(env))
-                rv = -1;
-        }
 
         (*env)->DeleteLocalRef(env, conn_descriptor);
     } else {
@@ -657,15 +703,25 @@ static int dumpConnection(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobjec
         rv = -1;
     }
 
-    (*env)->DeleteLocalRef(env, info_string);
-    (*env)->DeleteLocalRef(env, req_string);
-    (*env)->DeleteLocalRef(env, url_string);
-    (*env)->DeleteLocalRef(env, proto_string);
     (*env)->DeleteLocalRef(env, src_string);
     (*env)->DeleteLocalRef(env, dst_string);
 
     return rv;
 }
+
+/* ******************************************************* */
+
+static int dumpConnectionUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn, jobject arr, int idx) {
+    JNIEnv *env = proxy->env;
+    jobject update = getConnUpdate(proxy, conn);
+
+    if(update != NULL) {
+        (*env)->SetObjectArrayElement(env, arr, idx, update);
+        (*env)->DeleteLocalRef(env, update);
+    }
+}
+
+/* ******************************************************* */
 
 /* Perform a full dump of the active connections */
 static void sendConnectionsDump(vpnproxy_data_t *proxy) {
@@ -678,7 +734,7 @@ static void sendConnectionsDump(vpnproxy_data_t *proxy) {
 
     JNIEnv *env = proxy->env;
     jobject new_conns = (*env)->NewObjectArray(env, proxy->new_conns.cur_items, cls.conn, NULL);
-    jobject conns_updates = (*env)->NewObjectArray(env, proxy->conns_updates.cur_items, cls.conn, NULL);
+    jobject conns_updates = (*env)->NewObjectArray(env, proxy->conns_updates.cur_items, cls.conn_update, NULL);
 
     if((new_conns == NULL) || (conns_updates == NULL) || jniCheckException(env)) {
         log_e("NewObjectArray() failed");
@@ -690,21 +746,26 @@ static void sendConnectionsDump(vpnproxy_data_t *proxy) {
         vpn_conn_t *conn = &proxy->new_conns.items[i];
         conn->data->pending_notification = false;
 
-        if(dumpConnection(proxy, conn, new_conns, i) < 0)
+        if(dumpNewConnection(proxy, conn, new_conns, i) < 0)
             goto cleanup;
     }
+
+    //clock_t start = clock();
 
     // Updated connections
     for(int i=0; i<proxy->conns_updates.cur_items; i++) {
         vpn_conn_t *conn = &proxy->conns_updates.items[i];
         conn->data->pending_notification = false;
 
-        if(dumpConnection(proxy, conn, conns_updates, i) < 0)
+        if(dumpConnectionUpdate(proxy, conn, conns_updates, i) < 0)
             goto cleanup;
     }
 
+    //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
+    //log_d("avg cpu_time_used per update: %f sec", cpu_time_used / proxy->conns_updates.cur_items);
+
     /* Send the dump */
-    (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendConnectionsDump, new_conns, conns_updates);
+    (*env)->CallVoidMethod(env, proxy->vpn_service, mids.updateConnections, new_conns, conns_updates);
     jniCheckException(env);
 
 cleanup:
@@ -905,6 +966,7 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
     /* New stats to notify */
     proxy->capture_stats.new_stats = true;
 
+    data->update_type |= CONN_UPDATE_STATS;
     notify_connection(&proxy->conns_updates, conn_tuple, data);
 
     if (proxy->java_dump.buffer) {
@@ -951,6 +1013,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     /* Classes */
     cls.vpn_service = vpn_class;
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
+    cls.conn_update = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionUpdate");
     cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
 
     /* Methods */
@@ -958,14 +1021,15 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
             mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
-    mids.sendConnectionsDump = jniGetMethodID(env, vpn_class, "sendConnectionsDump", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;)V");
+    mids.updateConnections = jniGetMethodID(env, vpn_class, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
-    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "()V");
-    mids.connSetData = jniGetMethodID(env, cls.conn, "setData",
-            /* NOTE: must match ConnectionDescriptor::setData */
-                                      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIJJJJIIII)V");
+    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIJ)V");
+    mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
+    mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
+    mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJIII)V");
+    mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIIII)V");
 

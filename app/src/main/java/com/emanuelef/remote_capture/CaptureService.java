@@ -55,6 +55,7 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 
@@ -628,7 +629,7 @@ public class CaptureService extends VpnService implements Runnable {
         return cm.getConnectionOwnerUid(protocol, local, remote);
     }
 
-    public void sendConnectionsDump(ConnectionDescriptor[] new_conns, ConnectionDescriptor[] conns_updates) {
+    public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
         // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
         // thus preventing the ConnectionsAdapter from interleaving other operations
         synchronized (conn_reg) {
@@ -637,7 +638,7 @@ public class CaptureService extends VpnService implements Runnable {
 
             if(conns_updates.length > 0)
                 conn_reg.connectionsUpdates(conns_updates);
-            }
+        }
     }
 
     public void sendStatsDump(VPNStats stats) {
