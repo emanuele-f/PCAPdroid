@@ -14,8 +14,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -55,4 +59,10 @@ dependencies {
 // Third-party
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
+
+// Conscrypt for nitmproxy
+    implementation 'org.conscrypt:conscrypt-android:2.5.2'
+// nitmproxy built-in MITM proxy
+    implementation 'com.github.chhsiao90:nitmproxy:1.4.0'
+
 }
