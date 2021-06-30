@@ -66,6 +66,7 @@ typedef struct {
     char ifname[IFNAMSIZ];
     uint64_t mac;
     uint32_t ip;
+    struct in6_addr ip6;
 
     char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
 } pcapd_runtime_t;
@@ -157,6 +158,41 @@ static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
 
 /* ******************************************************* */
 
+static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
+  FILE *f = fopen("/proc/net/if_inet6", "r");
+  char line[128];
+  int found = 0;
+
+  if(f == NULL)
+    return -1;
+
+  __be32 *ip6 = ip->in6_u.u6_addr32;
+
+  while(fgets(line, sizeof(line), f)) {
+    if((strstr(line, iface) != NULL) &&
+            (sscanf(line, "%08x%08x%08x%08x", &ip6[0], &ip6[1], &ip6[2], &ip6[3]) == 4)) {
+      for(int i=0; i<4; i++)
+        ip6[i] = htonl(ip6[i]);
+
+      if((ip->in6_u.u6_addr8[0] == 0xfe) &&
+         ((ip->in6_u.u6_addr8[1] & 0xC0) == 0x80)) // link local address
+        continue;
+
+      char addr[INET6_ADDRSTRLEN];
+      inet_ntop(AF_INET6, ip, addr, INET6_ADDRSTRLEN);
+
+      log_d("IPv6 address[%s]: %s", iface, addr);
+      found = 1;
+      break;
+    }
+  }
+
+  fclose(f);
+  return(found ? 0 : -1);
+}
+
+/* ******************************************************* */
+
 static int list_interfaces() {
   pcap_if_t *devs, *pd;
 
@@ -241,7 +277,8 @@ static int init_pcapd_capture(pcapd_runtime_t *rt) {
     return -1;
   }
 
-  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE); // TODO IPv6
+  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR);
 
   if(rt->nlsock < 0) {
     log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
@@ -338,7 +375,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   struct bpf_program fcode;
 
   // Only IP traffic
-  if(pcap_compile(pd, &fcode, "ip", 1, PCAP_NETMASK_UNKNOWN) < 0) {
+  if(pcap_compile(pd, &fcode, "ip or ip6", 1, PCAP_NETMASK_UNKNOWN) < 0) {
     log_i("[%s] could not set capture filter: %s", ifname, pcap_geterr(pd));
     pcap_close(pd);
     return;
@@ -360,12 +397,17 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
 
   rt->mac = 0;
   if((dlink == DLT_EN10MB) && (get_iface_mac(ifname, &rt->mac) < 0))
-      log_i("Could not get interface %s MAC[%d]: %s", ifname, errno, strerror(errno));
+    log_i("Could not get interface %s MAC[%d]: %s", ifname, errno, strerror(errno));
 
   uint32_t netmask;
   rt->ip = 0;
   if(get_iface_ip(ifname, &rt->ip, &netmask) < 0)
-      log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
+    log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
+
+  if(get_iface_ip6(ifname, &rt->ip6) < 0) {
+    log_i("Could not get interface %s IPv6[%d]: %s", ifname, errno, strerror(errno));
+    memset(&rt->ip6, 0, sizeof(rt->ip6));
+  }
 
   rt->dlink = dlink;
   rt->ipoffset = ipoffset;
@@ -424,6 +466,11 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
           if(get_iface_ip(rt->ifname, &rt->ip, &netmask) < 0)
             log_i("Could not get interface %s IP[%d]: %s", rt->ifname, errno, strerror(errno));
 
+          if(get_iface_ip6(rt->ifname, &rt->ip6) < 0) {
+            log_i("Could not get interface %s IPv6[%d]: %s", rt->ifname, errno, strerror(errno));
+            memset(&rt->ip6, 0, sizeof(rt->ip6));
+          }
+
           break;
         }
         break;
@@ -472,16 +519,21 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
     pkt += SLL_HDR_LEN;
   }
 
-  // NOTE: this must be IP traffic due to the PCAP filter
+  // NOTE: this must be IPv4/IPv6 traffic due to the PCAP filter
   if(len < 20)
     return 0;
 
   struct iphdr *ip = (struct iphdr *) pkt;
-  if(ip->version != 4) // TODO IPv6 support
-    return 0;
 
-  if(ip->saddr == rt->ip)
-    return 1; // TX
+  if(ip->version == 4) {
+    if(ip->daddr == rt->ip)
+      return 0; // RX
+  } else if(ip->version == 6) {
+    struct ipv6hdr *hdr = (struct ipv6hdr *) pkt;
+
+    if(memcmp(&hdr->daddr, &rt->ip6, sizeof(rt->ip6)) == 0)
+      return 0; // RX
+  }
 
   return 1; // by default assume TX
 }
