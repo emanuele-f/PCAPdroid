@@ -123,6 +123,9 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         log_d("Using new DNS server");
     }
 
+    if(zdtun_conn_get_5tuple(conn)->ipproto == IPPROTO_ICMP)
+        return true;
+
     bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns);
     bool is_dns_server = is_internal_dns
                          || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));

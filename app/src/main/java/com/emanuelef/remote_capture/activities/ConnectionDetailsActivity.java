@@ -97,8 +97,13 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             else
                 proto.setText(mConn.l7proto);
 
-            source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
-            destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+            if(l4proto.equals("ICMP")) {
+                source.setText(mConn.src_ip);
+                destination.setText(mConn.dst_ip);
+            } else {
+                source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
+                destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+            }
 
             if((mConn.info != null) && (!mConn.info.isEmpty())) {
                 if(mConn.l7proto.equals("DNS"))
