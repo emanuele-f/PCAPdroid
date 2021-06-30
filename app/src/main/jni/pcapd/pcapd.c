@@ -87,6 +87,22 @@ static uint64_t bytes2mac(const uint8_t *buf) {
 
 /* ******************************************************* */
 
+static int str2mac(const char *buf, uint64_t *mac) {
+    uint8_t mac_bytes[6];
+    int m[6] = {0};
+
+    if(sscanf(buf, "%02X:%02X:%02X:%02X:%02X:%02X", m+0, m+1, m+2, m+3, m+4, m+5) != 6)
+        return -1;
+
+    for(int i = 0; i < 6; i++)
+        mac_bytes[i] = m[i];
+
+    *mac = bytes2mac(mac_bytes);
+    return 0;
+}
+
+/* ******************************************************* */
+
 static void log_to_file(int lvl, const char *msg) {
   char datetime[64];
   struct tm res;
@@ -117,20 +133,25 @@ static void log_to_file(int lvl, const char *msg) {
 /* ******************************************************* */
 
 static int get_iface_mac(const char *iface, uint64_t *mac) {
-  struct ifreq ifr;
-  int fd;
-  int rv;
+  char fpath[128];
+  char buf[24];
 
-  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  // avoid using ioctl as it sometimes triggers SELINUX errors
+  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/address", iface);
 
-  ifr.ifr_addr.sa_family = AF_INET;
-  strncpy((char *)ifr.ifr_name, iface, IFNAMSIZ-1);
+  FILE *f = fopen(fpath, "r");
 
-  if((rv = ioctl(fd, SIOCGIFHWADDR, &ifr)) != -1)
-    *mac = bytes2mac((uint8_t*)ifr.ifr_hwaddr.sa_data);
+  if(f == NULL)
+    return -1;
 
-  close(fd);
-  return(rv);
+  buf[0] = '\0';
+  fgets(buf, sizeof(buf), f);
+  fclose(f);
+
+  if(str2mac(buf, mac) != 0)
+      return -1;
+
+  return(0);
 }
 
 /* ******************************************************* */
