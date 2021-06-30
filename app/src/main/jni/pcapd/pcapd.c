@@ -583,6 +583,8 @@ static int run_pcap_dump(int uid_filter) {
   if(init_pcapd_capture(&rt) < 0)
     goto cleanup;
 
+  rt.pf = -1;
+  rt.ifidx = -1;
   check_capture_interface(&rt);
   rv = 0;
 
@@ -676,7 +678,7 @@ static int run_pcap_dump(int uid_filter) {
     if((rt.pd == NULL) && (now >= next_interface_recheck)) {
       check_capture_interface(&rt);
       next_interface_recheck = now + 5;
-    } else if((now >= next_stats_update)) {
+    } else if((rt.pd != NULL) && (now >= next_stats_update)) {
       pcap_stats(rt.pd, &stats);
       next_stats_update = now + 3;
     }
