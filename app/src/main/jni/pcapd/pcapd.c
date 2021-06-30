@@ -342,6 +342,10 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
     log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
     return;
   }
+
+  // Fixes pcap_next_ex sometimes hanging on interface down
+  // https://github.com/the-tcpdump-group/libpcap/issues/899
+  pcap_setnonblock(pd, 1, errbuf);
 #else
   pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
 
