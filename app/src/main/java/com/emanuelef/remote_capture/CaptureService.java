@@ -58,12 +58,15 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
+import com.emanuelef.remote_capture.pcap_dump.FileDumper;
+import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
+import com.emanuelef.remote_capture.interfaces.PcapDumper;
+import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class CaptureService extends VpnService implements Runnable {
@@ -91,11 +94,9 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private String app_filter;
     private int app_filter_uid;
-    private HTTPServer mHttpServer;
-    private OutputStream mOutputStream;
+    private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
-    private boolean mFirstStreamWrite;
     private NotificationCompat.Builder mNotificationBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
@@ -139,15 +140,23 @@ public class CaptureService extends VpnService implements Runnable {
         super.onCreate();
     }
 
+    private int abortStart() {
+        // NOTE: startForeground must be called before stopSelf, otherwise an exception will occur
+        setupNotifications();
+        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+
+        stopSelf();
+        sendServiceStatus(SERVICE_STATUS_STOPPED);
+        return START_STICKY;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Context app_ctx = getApplicationContext();
-
         mHandler = new Handler(Looper.getMainLooper());
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
-            return super.onStartCommand(null, flags, startId);
+            return abortStart();
         }
 
         Log.d(CaptureService.TAG, "onStartCommand");
@@ -157,7 +166,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         if (settings == null) {
             Log.e(CaptureService.TAG, "NULL settings");
-            return super.onStartCommand(null, flags, startId);
+            return abortStart();
         }
 
         // Retrieve DNS server
@@ -198,40 +207,41 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
-
-        if(dump_mode != Prefs.DumpMode.HTTP_SERVER)
-            mHttpServer = null;
-        mOutputStream = null;
         mPcapUri = null;
+        mDumper = null;
 
-        if(dump_mode == Prefs.DumpMode.HTTP_SERVER) {
-            if (mHttpServer == null)
-                mHttpServer = new HTTPServer(app_ctx, http_server_port);
-
-            try {
-                mHttpServer.startConnections();
-            } catch (IOException e) {
-                Log.e(CaptureService.TAG, "Could not start the HTTP server");
-                e.printStackTrace();
-            }
-        } else if(dump_mode == Prefs.DumpMode.PCAP_FILE) {
+        // Possibly allocate the dumper
+        if(dump_mode == Prefs.DumpMode.HTTP_SERVER)
+            mDumper = new HTTPServer(this, http_server_port);
+        else if(dump_mode == Prefs.DumpMode.PCAP_FILE) {
             String path = settings.getString(Prefs.PREF_PCAP_URI);
 
             if(path != null) {
                 mPcapUri = Uri.parse(path);
+                mDumper = new FileDumper(this, mPcapUri);
+            }
+        } else if(dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
+            InetAddress addr;
 
-                try {
-                    Log.d(TAG, "PCAP URI: " + mPcapUri);
-                    mOutputStream = getContentResolver().openOutputStream(mPcapUri);
-                    mFirstStreamWrite = true;
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+            try {
+                addr = InetAddress.getByName(Prefs.getCollectorIp(prefs));
+            } catch (UnknownHostException e) {
+                reportError(e.getLocalizedMessage());
+                e.printStackTrace();
+                return abortStart();
             }
 
-            if(mOutputStream == null) {
-                Utils.showToast(this, R.string.cannot_write_pcap_file);
-                return super.onStartCommand(intent, flags, startId);
+            mDumper = new UDPDumper(new InetSocketAddress(addr, Prefs.getCollectorPort(prefs)));
+        }
+
+        if(mDumper != null) {
+            try {
+                mDumper.startDumper();
+            } catch (IOException e) {
+                reportError(e.getLocalizedMessage());
+                e.printStackTrace();
+                mDumper = null;
+                return abortStart();
             }
         }
 
@@ -281,7 +291,7 @@ public class CaptureService extends VpnService implements Runnable {
                 } catch (PackageManager.NameNotFoundException e) {
                     String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-                    return super.onStartCommand(intent, flags, startId);
+                    return abortStart();
                 }
             }
 
@@ -289,7 +299,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
             } catch (IllegalArgumentException | IllegalStateException e) {
                 Utils.showToast(this, R.string.vpn_setup_failed);
-                return super.onStartCommand(intent, flags, startId);
+                return abortStart();
             }
         }
 
@@ -304,9 +314,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         setupNotifications();
         startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
-
         return START_STICKY;
-        //return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -326,8 +334,14 @@ public class CaptureService extends VpnService implements Runnable {
         if(mThread != null) {
             mThread.interrupt();
         }
-        if(mHttpServer != null)
-            mHttpServer.stop();
+        if(mDumper != null) {
+            try {
+                mDumper.stopDumper();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mDumper = null;
+        }
 
         super.onDestroy();
     }
@@ -453,16 +467,13 @@ public class CaptureService extends VpnService implements Runnable {
             mParcelFileDescriptor = null;
         }
 
-        if(mHttpServer != null)
-            mHttpServer.endConnections();
-        // NOTE: do not destroy the mHttpServer, let it terminate the active connections
-
-        if(mOutputStream != null) {
+        if(mDumper != null) {
             try {
-                mOutputStream.close();
+                mDumper.stopDumper();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            mDumper = null;
         }
 
         mPcapUri = null;
@@ -520,6 +531,12 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.stop();
     }
 
+    public static @NonNull CaptureService requireInstance() {
+        CaptureService inst = INSTANCE;
+        assert(inst != null);
+        return(inst);
+    }
+
     public static @Nullable ConnectionsRegister getConnsRegister() {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
     }
@@ -574,14 +591,6 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getIpv6DnsServer() { return(IPV6_DNS_SERVER); }
 
-    public String getPcapCollectorAddress() {
-        return(collector_address);
-    }
-
-    public int getPcapCollectorPort() {
-        return(collector_port);
-    }
-
     public String getSocks5ProxyAddress() {  return(socks5_proxy_address);  }
 
     public int getSocks5Enabled() { return socks5_enabled ? 1 : 0; }
@@ -604,12 +613,17 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     // returns 1 if dumpPcapData should be called
-    public int dumpPcapToJava() {
-        return(((dump_mode == Prefs.DumpMode.HTTP_SERVER) || (dump_mode == Prefs.DumpMode.PCAP_FILE)) ? 1 : 0);
+    public int pcapDumpEnabled() {
+        return((dump_mode != Prefs.DumpMode.NONE) ? 1 : 0);
     }
 
-    public int dumpPcapToUdp() {
-        return((dump_mode == Prefs.DumpMode.UDP_EXPORTER) ? 1 : 0);
+    @Override
+    public boolean protect(int socket) {
+        // Do not call protect in root mode
+        if(root_capture)
+            return true;
+
+        return super.protect(socket);
     }
 
     // from NetGuard
@@ -668,16 +682,9 @@ public class CaptureService extends VpnService implements Runnable {
 
     /* Exports a PCAP data chunk */
     public void dumpPcapData(byte[] data) {
-        if(mHttpServer != null)
-            mHttpServer.pushData(data);
-        else if(mOutputStream != null) {
+        if(mDumper != null) {
             try {
-                if(mFirstStreamWrite) {
-                    mOutputStream.write(Utils.hexStringToByteArray(Utils.PCAP_HEADER));
-                    mFirstStreamWrite = false;
-                }
-
-                mOutputStream.write(data);
+                mDumper.dumpData(data);
             } catch (IOException e) {
                 e.printStackTrace();
                 reportError(e.getLocalizedMessage());

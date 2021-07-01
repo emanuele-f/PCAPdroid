@@ -117,18 +117,11 @@ typedef struct vpnproxy_data {
     zdtun_statistics_t stats;
 
     struct {
-        u_int32_t collector_addr;
-        u_int16_t collector_port;
-        bool tcp_socket;
-        bool enabled;
-    } pcap_dump;
-
-    struct {
         bool enabled;
         jbyte *buffer;
         int buffer_idx;
         u_int64_t last_dump_ms;
-    } java_dump;
+    } pcap_dump;
 
     struct {
         bool enabled;

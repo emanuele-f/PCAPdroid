@@ -83,20 +83,6 @@ void write_pcap_hdr(int fd, const struct sockaddr *srv, int srv_size) {
 
 /* ******************************************************* */
 
-void write_pcap_rec(int fd, const struct sockaddr *srv, int srv_size, const uint8_t *buffer, int length) {
-    struct pcaprec_hdr_s *pcap_rec = (struct pcaprec_hdr_s *) pcap_buffer;
-
-    size_t incl_len = init_pcap_rec_hdr(pcap_rec, length);
-    size_t tot_len = sizeof(struct pcaprec_hdr_s) + incl_len;
-
-    // NOTE: use incl_size as the packet may be cut due to the SNAPLEN
-    memcpy(pcap_buffer + sizeof(struct pcaprec_hdr_s), buffer, incl_len);
-
-    write_pcap(fd, srv, srv_size, pcap_rec, tot_len);
-}
-
-/* ******************************************************* */
-
 size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, int pkt_len) {
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
 

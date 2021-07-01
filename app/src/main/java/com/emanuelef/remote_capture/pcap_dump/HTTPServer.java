@@ -17,9 +17,13 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.pcap_dump;
 
 import android.content.Context;
+
+import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,9 +31,8 @@ import java.util.ArrayList;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
 
-public class HTTPServer extends NanoHTTPD {
+public class HTTPServer extends NanoHTTPD implements PcapDumper {
     private static final String PCAP_MIME = "application/vnd.tcpdump.pcap";
-    private boolean firstStart = true;
     private boolean mAcceptConnections = false;
     private final Context mContext;
 
@@ -59,54 +62,6 @@ public class HTTPServer extends NanoHTTPD {
     }
 
     @Override
-    public void stop() {
-        super.stop();
-        firstStart = true;
-    }
-
-    public void startConnections() throws IOException {
-        mAcceptConnections = true;
-
-        if(firstStart) {
-            start();
-            firstStart = false;
-        }
-    }
-
-    /* Marks data end on all the active connections */
-    public synchronized void endConnections() {
-        for(int i=mActiveResponses.size()-1; i >= 0; i--) {
-            Response res = mActiveResponses.get(i);
-
-            if(res.isCloseConnection()) {
-                /* Cleanup closed connections */
-                mActiveResponses.remove(i);
-                continue;
-            }
-
-            ((ChunkedInputStream) res.getData()).stop();
-        }
-
-        mActiveResponses.clear();
-        mAcceptConnections = false;
-    }
-
-    /* Dispatch PCAP data to the active connections */
-    public synchronized void pushData(byte[] data) {
-        for(int i=mActiveResponses.size()-1; i >= 0; i--) {
-            Response res = mActiveResponses.get(i);
-
-            if(res.isCloseConnection()) {
-                /* Cleanup closed connections */
-                mActiveResponses.remove(i);
-                continue;
-            }
-
-            ((ChunkedInputStream) res.getData()).produceData(data);
-        }
-    }
-
-    @Override
     public Response serve(IHTTPSession session) {
         if(!mAcceptConnections)
             return newFixedLengthResponse(Status.FORBIDDEN, MIME_PLAINTEXT,
@@ -118,5 +73,51 @@ public class HTTPServer extends NanoHTTPD {
         }
 
         return newPcapStream();
+    }
+
+    @Override
+    public void startDumper() throws IOException {
+        mAcceptConnections = true;
+        start();
+    }
+
+    @Override
+    public void stopDumper() throws IOException {
+        synchronized (this) {
+            for (int i = mActiveResponses.size() - 1; i >= 0; i--) {
+                Response res = mActiveResponses.get(i);
+
+                if (res.isCloseConnection()) {
+                    /* Cleanup closed connections */
+                    mActiveResponses.remove(i);
+                    continue;
+                }
+
+                ((ChunkedInputStream) res.getData()).stop();
+            }
+
+            mActiveResponses.clear();
+            mAcceptConnections = false;
+        }
+
+        stop();
+    }
+
+    @Override
+    public void dumpData(byte[] data) throws IOException {
+        synchronized (this) {
+            /* Dispatch PCAP data to the active connections */
+            for (int i = mActiveResponses.size() - 1; i >= 0; i--) {
+                Response res = mActiveResponses.get(i);
+
+                if (res.isCloseConnection()) {
+                    /* Cleanup closed connections */
+                    mActiveResponses.remove(i);
+                    continue;
+                }
+
+                ((ChunkedInputStream) res.getData()).produceData(data);
+            }
+        }
     }
 }

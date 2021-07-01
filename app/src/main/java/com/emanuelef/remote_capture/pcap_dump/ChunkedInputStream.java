@@ -17,7 +17,9 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture;
+package com.emanuelef.remote_capture.pcap_dump;
+
+import com.emanuelef.remote_capture.Utils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,17 +31,16 @@ import java.util.concurrent.locks.ReentrantLock;
    asynchronously via produceData(). bytes[] chunks are used instead of a
    single bytes[] in order to avoid excessive data copies.
  */
-class ChunkedInputStream extends InputStream {
-    private static final byte[] pcapHeader = Utils.hexStringToByteArray(Utils.PCAP_HEADER);
+public class ChunkedInputStream extends InputStream {
     final Lock mLock = new ReentrantLock();
     final Condition newData = mLock.newCondition();
     ArrayList<byte[]> mChunks = new ArrayList<byte[]>();
     int mCurChunkIndex = 0;
     boolean hasFinished = false;
 
-    ChunkedInputStream() {
+    public ChunkedInputStream() {
         // Send the PCAP header as the first chunk
-        mChunks.add(pcapHeader);
+        mChunks.add(Utils.PCAP_HEADER);
     }
 
     /* Mark the termination of stream */

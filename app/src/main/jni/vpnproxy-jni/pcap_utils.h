@@ -42,7 +42,6 @@ typedef struct pcaprec_hdr_s {
 } __packed pcaprec_hdr_s;
 
 void write_pcap_hdr(int fd, const struct sockaddr *srv, int srv_size);
-void write_pcap_rec(int fd, const struct sockaddr *srv, int srv_size, const uint8_t *buffer, int length);
 size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, int pkt_len);
 
 #endif // __MY_PCAP_H__

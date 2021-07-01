@@ -36,8 +36,6 @@ static ndpi_protocol_bitmask_struct_t masterProtos;
 /* ******************************************************* */
 
 /* NOTE: these must be reset during each run, as android may reuse the service */
-static int dumper_socket;
-static bool send_header;
 static int netd_resolve_waiting;
 static u_int64_t last_connections_dump;
 static u_int64_t next_connections_dump;
@@ -561,18 +559,18 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
 static void javaPcapDump(vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
 
-    log_d("Exporting a %d B PCAP buffer", proxy->java_dump.buffer_idx);
+    log_d("Exporting a %d B PCAP buffer", proxy->pcap_dump.buffer_idx);
 
-    jbyteArray barray = (*env)->NewByteArray(env, proxy->java_dump.buffer_idx);
+    jbyteArray barray = (*env)->NewByteArray(env, proxy->pcap_dump.buffer_idx);
     if(jniCheckException(env))
         return;
 
-    (*env)->SetByteArrayRegion(env, barray, 0, proxy->java_dump.buffer_idx, proxy->java_dump.buffer);
+    (*env)->SetByteArrayRegion(env, barray, 0, proxy->pcap_dump.buffer_idx, proxy->pcap_dump.buffer);
     (*env)->CallVoidMethod(env, proxy->vpn_service, mids.dumpPcapData, barray);
     jniCheckException(env);
 
-    proxy->java_dump.buffer_idx = 0;
-    proxy->java_dump.last_dump_ms = proxy->now_ms;
+    proxy->pcap_dump.buffer_idx = 0;
+    proxy->pcap_dump.last_dump_ms = proxy->now_ms;
 
     (*env)->DeleteLocalRef(env, barray);
 }
@@ -840,36 +838,6 @@ void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock) {
 
 /* ******************************************************* */
 
-static int connect_dumper(vpnproxy_data_t *proxy) {
-    if(proxy->pcap_dump.enabled) {
-        dumper_socket = socket(AF_INET, proxy->pcap_dump.tcp_socket ? SOCK_STREAM : SOCK_DGRAM, 0);
-
-        if (!dumper_socket) {
-            log_f("could not open UDP pcap dump socket [%d]: %s", errno, strerror(errno));
-            return(-1);
-        }
-
-        vpn_protect_socket(proxy, dumper_socket);
-
-        if(proxy->pcap_dump.tcp_socket) {
-            struct sockaddr_in servaddr = {0};
-            servaddr.sin_family = AF_INET;
-            servaddr.sin_port = proxy->pcap_dump.collector_port;
-            servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
-
-            if(connect(dumper_socket, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-                log_f("connection to the PCAP receiver failed [%d]: %s", errno,
-                                    strerror(errno));
-                return(-2);
-            }
-        }
-    }
-
-    return(0);
-}
-
-/* ******************************************************* */
-
 void run_housekeeping(vpnproxy_data_t *proxy) {
     if(proxy->capture_stats.new_stats
             && ((proxy->now_ms - proxy->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
@@ -888,8 +856,8 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
         last_connections_dump = proxy->now_ms;
         next_connections_dump = proxy->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
         netd_resolve_waiting = 0;
-    } else if ((proxy->java_dump.buffer_idx > 0)
-               && (proxy->now_ms - proxy->java_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
+    } else if ((proxy->pcap_dump.buffer_idx > 0)
+               && (proxy->now_ms - proxy->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
     }
 }
@@ -970,36 +938,21 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
     data->update_type |= CONN_UPDATE_STATS;
     notify_connection(&proxy->conns_updates, conn_tuple, data);
 
-    if (proxy->java_dump.buffer) {
+    if (proxy->pcap_dump.buffer) {
         int tot_size = pkt->len + (int) sizeof(pcaprec_hdr_s);
 
-        if ((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size) {
+        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= tot_size) {
 // Flush the buffer
             javaPcapDump(proxy);
         }
 
-        if ((JAVA_PCAP_BUFFER_SIZE - proxy->java_dump.buffer_idx) <= tot_size)
+        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= tot_size)
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
-                        JAVA_PCAP_BUFFER_SIZE, proxy->java_dump.buffer_idx, tot_size);
+                  JAVA_PCAP_BUFFER_SIZE, proxy->pcap_dump.buffer_idx, tot_size);
         else
-            proxy->java_dump.buffer_idx += dump_pcap_rec(
-                    (u_char *) proxy->java_dump.buffer + proxy->java_dump.buffer_idx,
+            proxy->pcap_dump.buffer_idx += dump_pcap_rec(
+                    (u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
                     (u_char *) pkt->buf, pkt->len);
-    }
-
-    if (dumper_socket > 0) {
-        struct sockaddr_in servaddr = {0};
-        servaddr.sin_family = AF_INET;
-        servaddr.sin_port = proxy->pcap_dump.collector_port;
-        servaddr.sin_addr.s_addr = proxy->pcap_dump.collector_addr;
-
-        if(send_header) {
-            write_pcap_hdr(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr));
-            send_header = false;
-        }
-
-        write_pcap_rec(dumper_socket, (struct sockaddr *) &servaddr, sizeof(servaddr),
-                       (u_int8_t *) pkt->buf, pkt->len);
     }
 }
 
@@ -1048,14 +1001,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
             .incr_id = 0,
-            .java_dump = {
-                    .enabled = (bool) getIntPref(env, vpn, "dumpPcapToJava"),
-            },
             .pcap_dump = {
-                    .collector_addr = getIPv4Pref(env, vpn, "getPcapCollectorAddress"),
-                    .collector_port = htons(getIntPref(env, vpn, "getPcapCollectorPort")),
-                    .tcp_socket = false,
-                    .enabled = (bool) getIntPref(env, vpn, "dumpPcapToUdp"),
+                    .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
             },
             .socks5 = {
                     .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
@@ -1069,8 +1016,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     };
 
     /* Important: init global state every time. Android may reuse the service. */
-    dumper_socket = -1;
-    send_header = true;
     running = true;
 
     logcallback = log_callback;
@@ -1088,16 +1033,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     signal(SIGPIPE, SIG_IGN);
 
     if(proxy.pcap_dump.enabled) {
-        if(connect_dumper(&proxy) < 0)
-            running = false;
-    }
+        proxy.pcap_dump.buffer = malloc(JAVA_PCAP_BUFFER_SIZE);
+        proxy.pcap_dump.buffer_idx = 0;
 
-    if(proxy.java_dump.enabled) {
-        proxy.java_dump.buffer = malloc(JAVA_PCAP_BUFFER_SIZE);
-        proxy.java_dump.buffer_idx = 0;
-
-        if(!proxy.java_dump.buffer) {
-            log_f("malloc(java_dump.buffer) failed with code %d/%s",
+        if(!proxy.pcap_dump.buffer) {
+            log_f("malloc(pcap_dump.buffer) failed with code %d/%s",
                         errno, strerror(errno));
             running = false;
         }
@@ -1117,17 +1057,12 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
 
     ndpi_exit_detection_module(proxy.ndpi);
 
-    if(dumper_socket > 0) {
-        close(dumper_socket);
-        dumper_socket = -1;
-    }
-
-    if(proxy.java_dump.buffer) {
-        if(proxy.java_dump.buffer_idx > 0)
+    if(proxy.pcap_dump.buffer) {
+        if(proxy.pcap_dump.buffer_idx > 0)
             javaPcapDump(&proxy);
 
-        free(proxy.java_dump.buffer);
-        proxy.java_dump.buffer = NULL;
+        free(proxy.pcap_dump.buffer);
+        proxy.pcap_dump.buffer = NULL;
     }
 
     notifyServiceStatus(&proxy, "stopped");
