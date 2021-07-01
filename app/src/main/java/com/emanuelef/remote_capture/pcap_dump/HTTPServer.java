@@ -34,6 +34,7 @@ import fi.iki.elonen.NanoHTTPD.Response.Status;
 public class HTTPServer extends NanoHTTPD implements PcapDumper {
     private static final String PCAP_MIME = "application/vnd.tcpdump.pcap";
     private boolean mAcceptConnections = false;
+    private int mPort;
     private final Context mContext;
 
     /* NOTE: access to mActiveResponses must be synchronized */
@@ -41,6 +42,7 @@ public class HTTPServer extends NanoHTTPD implements PcapDumper {
 
     public HTTPServer(Context context, int port) {
         super(port);
+        mPort = port;
         mContext = context;
     }
 
@@ -101,6 +103,11 @@ public class HTTPServer extends NanoHTTPD implements PcapDumper {
         }
 
         stop();
+    }
+
+    @Override
+    public String getBpf() {
+        return "not (host " + Utils.getLocalIPAddress(mContext) + " and tcp port " + mPort + ")";
     }
 
     @Override

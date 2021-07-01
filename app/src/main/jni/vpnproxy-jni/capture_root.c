@@ -109,8 +109,10 @@ static void kill_pcapd(vpnproxy_data_t *proxy) {
 static int connectPcapd(vpnproxy_data_t *proxy) {
     int sock;
     int client = -1;
+    char bpf[256];
     char workdir[PATH_MAX], pcapd[PATH_MAX];
 
+    getStringPref(proxy, "getPcapDumperBpf", bpf, sizeof(bpf));
     getStringPref(proxy, "getPcapdWorkingDir", workdir, PATH_MAX);
     get_libprog_path(proxy, "pcapd", pcapd, sizeof(pcapd));
 
@@ -150,9 +152,12 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     log_d("AF_UNIX socket listening at '%s'", addr.sun_path);
 
+    if(bpf[0])
+        log_d("Using dumper BPF \"%s\"", bpf);
+
     // Start the daemon
-    char args[32];
-    snprintf(args, sizeof(args), "-d %d", proxy->app_filter);
+    char args[256];
+    snprintf(args, sizeof(args), "-d %d -b \"%s\"", proxy->app_filter, bpf);
     su_cmd(pcapd, args);
 
     // Wait for pcapd to start

@@ -617,6 +617,8 @@ public class CaptureService extends VpnService implements Runnable {
         return((dump_mode != Prefs.DumpMode.NONE) ? 1 : 0);
     }
 
+    public String getPcapDumperBpf() { return((mDumper != null) ? mDumper.getBpf() : ""); }
+
     @Override
     public boolean protect(int socket) {
         // Do not call protect in root mode

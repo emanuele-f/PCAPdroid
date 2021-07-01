@@ -59,11 +59,6 @@ static size_t init_pcap_rec_hdr(struct pcaprec_hdr_s *pcap_rec, int length) {
     pcap_rec->incl_len = (guint32_t) incl_len;
     pcap_rec->orig_len = (guint32_t) length;
 
-    pcap_rec->ts_sec = (guint32_t) ts.tv_sec;
-    pcap_rec->ts_usec = (guint32_t) (ts.tv_nsec / 1000);
-    pcap_rec->incl_len = (guint32_t) incl_len;
-    pcap_rec->orig_len = (guint32_t) length;
-
     return(incl_len);
 }
 

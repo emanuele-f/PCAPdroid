@@ -58,6 +58,7 @@ typedef struct {
     int nlsock;
     int client;
 
+    char bpf[512];
     pcap_t *pd;
     int dlink;
     int ipoffset;
@@ -210,24 +211,6 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
 
   fclose(f);
   return(found ? 0 : -1);
-}
-
-/* ******************************************************* */
-
-static int list_interfaces() {
-  pcap_if_t *devs, *pd;
-
-  if(pcap_findalldevs(&devs, errbuf) != 0) {
-    fprintf(stderr, "pcap_findalldevs failed: %s\n", errbuf);
-    return -1;
-  }
-
-  for(pd = devs; pd; pd = pd->next)
-    printf("%s\n", pd->name);
-
-  pcap_freealldevs(devs);
-
-  return 0;
 }
 
 /* ******************************************************* */
@@ -400,7 +383,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   struct bpf_program fcode;
 
   // Only IP traffic
-  if(pcap_compile(pd, &fcode, "ip or ip6", 1, PCAP_NETMASK_UNKNOWN) < 0) {
+  if(pcap_compile(pd, &fcode, rt->bpf, 1, PCAP_NETMASK_UNKNOWN) < 0) {
     log_i("[%s] could not set capture filter: %s", ifname, pcap_geterr(pd));
     pcap_close(pd);
     return;
@@ -565,7 +548,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
 /* ******************************************************* */
 
-static int run_pcap_dump(int uid_filter) {
+static int run_pcap_dump(int uid_filter, const char *bpf) {
   int rv = -1;
   struct pcap_stat stats = {0};
   pcapd_runtime_t rt = {0};
@@ -582,6 +565,13 @@ static int run_pcap_dump(int uid_filter) {
 
   if(init_pcapd_capture(&rt) < 0)
     goto cleanup;
+
+  int l = snprintf(rt.bpf, sizeof(rt.bpf), "ip or ip6");
+
+  if(bpf[0])
+    snprintf(rt.bpf + l, sizeof(rt.bpf) - l, " and (%s)", bpf);
+
+  log_d("Using BPF: %s", rt.bpf);
 
   rt.pf = -1;
   rt.ifidx = -1;
@@ -702,9 +692,9 @@ cleanup:
 static void usage() {
   fprintf(stderr, "pcapd - root companion for PCAPdroid\n"
                   "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
-                  "Usage: pcapd [--interfaces|-d]\n"
-                  " --interfaces   list the interfaces of the system\n"
-                  " -d [uid]       daemonize and dump packets from the internet interface, possibly filtered by uid\n"
+                  "Usage: pcapd -d uid [-b bpf]\n"
+                  " -d [uid]       daemonize and dump packets from the internet interface, filtered by uid (-1 for no filter)\n"
+                  " -b [bpf]       specify a BPF filter to apply"
   );
 
   exit(1);
@@ -715,20 +705,16 @@ static void usage() {
 int main(int argc, char *argv[]) {
   logtag = "pcapd";
   logcallback = log_to_file;
+  int uid_filter;
+  char *bpf = "";
 
-  if(argc < 2)
+  if((argc < 3) || (strcmp(argv[1], "-d") != 0))
     usage();
 
-  if(!strcmp(argv[1], "--interfaces"))
-    return list_interfaces();
-  else if(!strcmp(argv[1], "-d")) {
-    int uid_filter = -1;
+  uid_filter = atoi(argv[2]);
 
-    if(argc >= 3)
-      uid_filter = atoi(argv[2]);
+  if((argc == 5) && (strcmp(argv[3], "-b") == 0))
+    bpf = argv[4];
 
-    return run_pcap_dump(uid_filter);
-  }
-
-  usage();
+  return run_pcap_dump(uid_filter, bpf);
 }

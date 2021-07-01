@@ -35,6 +35,11 @@ public class FileDumper implements PcapDumper {
     }
 
     @Override
+    public String getBpf() {
+        return "";
+    }
+
+    @Override
     public void dumpData(byte[] data) throws IOException {
         if(mSendHeader) {
             mSendHeader = false;

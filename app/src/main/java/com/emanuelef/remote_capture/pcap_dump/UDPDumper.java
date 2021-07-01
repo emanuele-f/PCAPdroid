@@ -7,16 +7,16 @@ import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.Iterator;
 
 public class UDPDumper implements PcapDumper {
     public static final String TAG = "UDPDumper";
-    private final SocketAddress mServer;
+    private final InetSocketAddress mServer;
     private boolean mSendHeader;
     private DatagramSocket mSocket;
 
-    public UDPDumper(SocketAddress server) {
+    public UDPDumper(InetSocketAddress server) {
         mServer = server;
         mSendHeader = true;
     }
@@ -30,6 +30,11 @@ public class UDPDumper implements PcapDumper {
     @Override
     public void stopDumper() throws IOException {
         mSocket.close();
+    }
+
+    @Override
+    public String getBpf() {
+        return "not (host " + mServer.getAddress().getHostAddress() + " and udp port " + mServer.getPort() + ")";
     }
 
     private void sendDatagram(byte[] data, int offset, int len) throws IOException {
