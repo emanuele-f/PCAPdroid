@@ -157,6 +157,25 @@ static int get_iface_mac(const char *iface, uint64_t *mac) {
 
 /* ******************************************************* */
 
+static int get_iface_mtu(const char *iface) {
+  char fpath[128];
+  int mtu = -1;
+
+  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/mtu", iface);
+
+  FILE *f = fopen(fpath, "r");
+
+  if(f == NULL)
+    return -1;
+
+  fscanf(f, "%d", &mtu);
+  fclose(f);
+
+  return mtu;
+}
+
+/* ******************************************************* */
+
 static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
   struct ifreq ifr;
   int fd;
@@ -339,8 +358,18 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   log_i("interface changed [%d -> %d], (re)starting capture", rt->ifidx, ri.ifidx);
 
 #ifndef READ_FROM_PCAP
-  // TODO support larger MTU
-  pcap_t *pd = pcap_open_live(ifname, 1500, 0, 1, errbuf);
+  int mtu = get_iface_mtu(ifname);
+
+  if(mtu < 0) {
+    mtu = 1500;
+    log_w("Could not get %s MTU, assuming %d", ifname, mtu);
+  }
+
+  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL): 16 B */
+  int snaplen = mtu + SLL_HDR_LEN;
+  log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
+
+  pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
 
   if(!pd) {
     log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
@@ -626,6 +655,9 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
         pcapd_hdr_t phdr;
         zdtun_pkt_t zpkt;
         uint8_t is_tx = is_tx_packet(&rt, pkt, hdr->caplen);
+
+        if(hdr->caplen < hdr->len)
+          log_w("Packet truncated: %d/%d", hdr->caplen, hdr->len);
 
         pkt += to_skip;
         hdr->caplen -= to_skip;

@@ -318,7 +318,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
 int run_root(vpnproxy_data_t *proxy) {
     int sock = connectPcapd(proxy);
     int rv = -1;
-    char buffer[16384];
+    char buffer[65535];
     pcap_conn_t *connections = NULL;
     u_int64_t next_purge_ms;
 
