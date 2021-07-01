@@ -205,7 +205,7 @@ int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
 
 /* ******************************************************* */
 
-static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, int bufsize) {
+static void getApplicationByUidJava(vpnproxy_data_t *proxy, jint uid, char *buf, int bufsize) {
     JNIEnv *env = proxy->env;
     const char *value = NULL;
 
@@ -225,8 +225,35 @@ static char* getApplicationByUid(vpnproxy_data_t *proxy, jint uid, char *buf, in
 
     if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
     if(obj) (*env)->DeleteLocalRef(env, obj);
+}
 
-    return(buf);
+/* ******************************************************* */
+
+static char* get_appname_by_uid(vpnproxy_data_t *proxy, int uid, char *buf, int bufsize) {
+    uid_to_app_t *app_entry;
+
+    HASH_FIND_INT(proxy->uid2app, &uid, app_entry);
+    if(app_entry == NULL) {
+        app_entry = (uid_to_app_t*) malloc(sizeof(uid_to_app_t));
+
+        if(app_entry) {
+            // Resolve the app name
+            getApplicationByUidJava(proxy, uid, app_entry->appname, sizeof(app_entry->appname));
+
+            log_d("uid %d resolved to \"%s\"", uid, app_entry->appname);
+
+            app_entry->uid = uid;
+            HASH_ADD_INT(proxy->uid2app, uid, app_entry);
+        }
+    }
+
+    if(app_entry) {
+        strncpy(buf, app_entry->appname, bufsize-1);
+        buf[bufsize-1] = '\0';
+    } else
+        buf[0] = '\0';
+
+    return buf;
 }
 
 /* ******************************************************* */
@@ -585,15 +612,9 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info) {
     uid = get_uid(proxy->resolver, conn_info);
 
     if(uid >= 0) {
-        char appbuf[128];
+        char appbuf[64];
 
-        if(uid == UID_ROOT)
-            strncpy(appbuf, "ROOT", sizeof(appbuf));
-        else if(uid == UID_NETD)
-            strncpy(appbuf, "netd", sizeof(appbuf));
-        else
-            getApplicationByUid(proxy, uid, appbuf, sizeof(appbuf));
-
+        get_appname_by_uid(proxy, uid, appbuf, sizeof(appbuf));
         log_i( "%s [%d/%s]", buf, uid, appbuf);
     } else {
         uid = UID_UNKNOWN;
@@ -892,6 +913,16 @@ static void log_callback(int lvl, const char *line) {
 
 /* ******************************************************* */
 
+void fill_custom_data(struct pcap_custom_data *cdata, vpnproxy_data_t *proxy, conn_data_t *conn) {
+    memset(cdata, 0, sizeof(*cdata));
+
+    cdata->magic = htonl(CUSTOM_PCAP_MAGIC);
+    cdata->uid = htonl(conn->uid);
+    get_appname_by_uid(proxy, conn->uid, cdata->appname, sizeof(cdata->appname));
+}
+
+/* ******************************************************* */
+
 void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
                     const zdtun_5tuple_t *conn_tuple, conn_data_t *data) {
 #if 0
@@ -952,8 +983,8 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
                   JAVA_PCAP_BUFFER_SIZE, proxy->pcap_dump.buffer_idx, rec_size);
         else {
-            pcap_dump_rec((u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
-                    (u_char *) pkt->buf, pkt->len);
+            pcap_dump_rec(pkt, (u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
+                    proxy, data);
 
             proxy->pcap_dump.buffer_idx += rec_size;
         }
@@ -1069,6 +1100,12 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         proxy.pcap_dump.buffer = NULL;
     }
 
+    uid_to_app_t *e, *tmp;
+    HASH_ITER(hh, proxy.uid2app, e, tmp) {
+        HASH_DEL(proxy.uid2app, e);
+        free(e);
+    }
+
     notifyServiceStatus(&proxy, "stopped");
     destroy_uid_resolver(proxy.resolver);
     ndpi_ptree_destroy(proxy.known_dns_servers);
@@ -1118,4 +1155,24 @@ Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jcla
 
     if(inet_aton(value, &addr) != 0)
         new_dns_server = addr.s_addr;
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jclass clazz) {
+    struct pcap_hdr_s pcap_hdr;
+
+    pcap_build_hdr(&pcap_hdr);
+
+    jbyteArray barray = (*env)->NewByteArray(env, sizeof(struct pcap_hdr_s));
+    if((barray == NULL) || jniCheckException(env))
+        return NULL;
+
+    (*env)->SetByteArrayRegion(env, barray, 0, sizeof(struct pcap_hdr_s), (jbyte*)&pcap_hdr);
+
+    if(jniCheckException(env)) {
+        (*env)->DeleteLocalRef(env, barray);
+        return NULL;
+    }
+
+    return barray;
 }

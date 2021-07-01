@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.pcap_dump;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Utils;
 
 import java.io.InputStream;
@@ -40,7 +41,7 @@ public class ChunkedInputStream extends InputStream {
 
     public ChunkedInputStream() {
         // Send the PCAP header as the first chunk
-        mChunks.add(Utils.PCAP_HEADER);
+        mChunks.add(CaptureService.getPcapHeader());
     }
 
     /* Mark the termination of stream */

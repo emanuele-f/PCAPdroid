@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
@@ -43,7 +44,7 @@ public class FileDumper implements PcapDumper {
     public void dumpData(byte[] data) throws IOException {
         if(mSendHeader) {
             mSendHeader = false;
-            mOutputStream.write(Utils.PCAP_HEADER);
+            mOutputStream.write(CaptureService.getPcapHeader());
         }
 
         mOutputStream.write(data);

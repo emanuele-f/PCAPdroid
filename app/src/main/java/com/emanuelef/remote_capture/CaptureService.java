@@ -74,7 +74,8 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
     private static final int NOTIFY_ID_VPNSERVICE = 1;
-    private ParcelFileDescriptor mParcelFileDescriptor = null;
+    private static CaptureService INSTANCE;
+    private ParcelFileDescriptor mParcelFileDescriptor;
     private Handler mHandler;
     private Thread mThread;
     private String vpn_ipv4;
@@ -91,7 +92,6 @@ public class CaptureService extends VpnService implements Runnable {
     private int socks5_proxy_port;
     private long last_bytes;
     private int last_connections;
-    private static CaptureService INSTANCE;
     private String app_filter;
     private int app_filter_uid;
     private PcapDumper mDumper;
@@ -100,6 +100,7 @@ public class CaptureService extends VpnService implements Runnable {
     private NotificationCompat.Builder mNotificationBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
+    private AppsResolver appsResolver;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -137,6 +138,8 @@ public class CaptureService extends VpnService implements Runnable {
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
         INSTANCE = this;
+        appsResolver = new AppsResolver(this);
+
         super.onCreate();
     }
 
@@ -343,6 +346,7 @@ public class CaptureService extends VpnService implements Runnable {
             mDumper = null;
         }
 
+        appsResolver = null;
         super.onDestroy();
     }
 
@@ -679,7 +683,12 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public String getApplicationByUid(int uid) {
-        return(getPackageManager().getNameForUid(uid));
+        AppDescriptor dsc = appsResolver.get(uid, 0);
+
+        if(dsc == null)
+            return "";
+
+        return dsc.getName();
     }
 
     /* Exports a PCAP data chunk */
@@ -719,4 +728,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void askStatsDump();
     public static native int getFdSetSize();
     public static native void setDnsServer(String server);
+    public static native byte[] getPcapHeader();
 }

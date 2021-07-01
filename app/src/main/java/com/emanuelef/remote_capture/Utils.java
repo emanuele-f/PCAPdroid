@@ -93,9 +93,6 @@ public class Utils {
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
 
-    // magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_RAW
-    public static final byte[] PCAP_HEADER = Utils.hexStringToByteArray("d4c3b2a1020004000000000000000000ffff000065000000");
-
     public static String formatBytes(long bytes) {
         long divisor;
         String suffix;

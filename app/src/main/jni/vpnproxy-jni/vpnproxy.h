@@ -26,6 +26,7 @@
 #include "ip_lru.h"
 #include "ndpi_api.h"
 #include "common/uid_resolver.h"
+#include "third_party/uthash.h"
 
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
@@ -90,6 +91,12 @@ typedef struct conn_array {
     int cur_items;
 } conn_array_t;
 
+typedef struct {
+    int uid;
+    char appname[64];
+    UT_hash_handle hh;
+} uid_to_app_t;
+
 typedef struct vpnproxy_data {
     int tunfd;
     int incr_id;
@@ -116,6 +123,7 @@ typedef struct vpnproxy_data {
     bool last_conn_blocked;
     bool root_capture;
     zdtun_statistics_t stats;
+    uid_to_app_t *uid2app;
 
     struct {
         bool enabled;
@@ -186,6 +194,8 @@ extern bool running;
 extern uint32_t new_dns_server;
 extern bool dump_vpn_stats_now;
 
+struct pcap_custom_data;
+
 conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
 void conn_free_data(conn_data_t *data);
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
@@ -196,6 +206,8 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
+void fill_custom_data(struct pcap_custom_data *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
+uint32_t crc32(u_char *buf, size_t len);
 
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);

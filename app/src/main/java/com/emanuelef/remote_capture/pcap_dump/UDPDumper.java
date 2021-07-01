@@ -46,7 +46,9 @@ public class UDPDumper implements PcapDumper {
     public void dumpData(byte[] data) throws IOException {
         if(mSendHeader) {
             mSendHeader = false;
-            sendDatagram(Utils.PCAP_HEADER, 0, Utils.PCAP_HEADER.length);
+
+            byte[] hdr = CaptureService.getPcapHeader();
+            sendDatagram(hdr, 0, hdr.length);
         }
 
         Iterator<Integer> it = Utils.iterPcapRecords(data);
