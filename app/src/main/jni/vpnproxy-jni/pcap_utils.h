@@ -20,28 +20,28 @@
 #ifndef __MY_PCAP_H__
 #define __MY_PCAP_H__
 
-typedef uint16_t guint16_t;
-typedef uint32_t guint32_t;
-typedef int32_t gint32_t;
+#include <stdlib.h>
+#include <stdint.h>
 
 typedef struct pcap_hdr_s {
-    guint32_t magic_number;
-    guint16_t version_major;
-    guint16_t version_minor;
-    gint32_t thiszone;
-    guint32_t sigfigs;
-    guint32_t snaplen;
-    guint32_t network;
+    uint32_t magic_number;
+    uint16_t version_major;
+    uint16_t version_minor;
+    int32_t thiszone;
+    uint32_t sigfigs;
+    uint32_t snaplen;
+    uint32_t network;
 } __packed pcap_hdr_s;
 
 typedef struct pcaprec_hdr_s {
-    guint32_t ts_sec;
-    guint32_t ts_usec;
-    guint32_t incl_len;
-    guint32_t orig_len;
+    uint32_t ts_sec;
+    uint32_t ts_usec;
+    uint32_t incl_len;
+    uint32_t orig_len;
 } __packed pcaprec_hdr_s;
 
-void write_pcap_hdr(int fd, const struct sockaddr *srv, int srv_size);
-size_t dump_pcap_rec(u_char *buffer, const u_char *pkt, int pkt_len);
+void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr);
+int pcap_rec_size(int pkt_len);
+void pcap_dump_rec(u_char *buffer, const u_char *pkt, int pkt_len);
 
 #endif // __MY_PCAP_H__

@@ -88,11 +88,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class Utils {
-    public static final byte[] PCAP_HEADER = Utils.hexStringToByteArray("d4c3b2a1020004000000000000000000ffff000065000000");
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
+
+    // magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_RAW
+    public static final byte[] PCAP_HEADER = Utils.hexStringToByteArray("d4c3b2a1020004000000000000000000ffff000065000000");
 
     public static String formatBytes(long bytes) {
         long divisor;

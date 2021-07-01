@@ -941,20 +941,22 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
     notify_connection(&proxy->conns_updates, conn_tuple, data);
 
     if (proxy->pcap_dump.buffer) {
-        int tot_size = pkt->len + (int) sizeof(pcaprec_hdr_s);
+        int rec_size = pcap_rec_size(pkt->len);
 
-        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= tot_size) {
-// Flush the buffer
+        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= rec_size) {
+            // Flush the buffer
             javaPcapDump(proxy);
         }
 
-        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= tot_size)
+        if ((JAVA_PCAP_BUFFER_SIZE - proxy->pcap_dump.buffer_idx) <= rec_size)
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
-                  JAVA_PCAP_BUFFER_SIZE, proxy->pcap_dump.buffer_idx, tot_size);
-        else
-            proxy->pcap_dump.buffer_idx += dump_pcap_rec(
-                    (u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
+                  JAVA_PCAP_BUFFER_SIZE, proxy->pcap_dump.buffer_idx, rec_size);
+        else {
+            pcap_dump_rec((u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
                     (u_char *) pkt->buf, pkt->len);
+
+            proxy->pcap_dump.buffer_idx += rec_size;
+        }
     }
 }
 
