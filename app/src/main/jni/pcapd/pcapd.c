@@ -59,6 +59,7 @@ typedef struct {
     int client;
 
     char bpf[512];
+    zdtun_t *tun;
     pcap_t *pd;
     int dlink;
     int ipoffset;
@@ -585,6 +586,10 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
   time_t next_stats_update = 0;
   uid_resolver_t *resolver = NULL;
   uid_lru_t *lru = NULL;
+  zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+  if(!(rt.tun = zdtun_init(&callbacks, NULL)))
+    goto cleanup;
 
   if(!(resolver = init_uid_resolver_from_proc()))
     goto cleanup;
@@ -662,7 +667,7 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
         pkt += to_skip;
         hdr->caplen -= to_skip;
 
-        if(zdtun_parse_pkt((const char*)pkt, hdr->caplen, &zpkt) == 0) {
+        if(zdtun_parse_pkt(rt.tun, (const char*)pkt, hdr->caplen, &zpkt) == 0) {
           if(!is_tx) {
             // Packet from the internet, swap src and dst
             tupleSwapPeers(&zpkt.tuple);
@@ -711,6 +716,8 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
 cleanup:
   finish_pcapd_capture(&rt);
 
+  if(rt.tun)
+    zdtun_finalize(rt.tun);
   if(resolver)
     destroy_uid_resolver(resolver);
   if(lru)

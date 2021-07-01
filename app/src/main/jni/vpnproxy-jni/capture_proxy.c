@@ -364,8 +364,14 @@ int run_proxy(vpnproxy_data_t *proxy) {
             if (size > 0) {
                 zdtun_pkt_t pkt;
 
-                if (zdtun_parse_pkt(buffer, size, &pkt) != 0) {
+                if(zdtun_parse_pkt(tun, buffer, size, &pkt) != 0) {
                     log_d("zdtun_parse_pkt failed");
+                    goto housekeeping;
+                }
+
+                if(pkt.flags & ZDTUN_PKT_IS_FRAGMENT) {
+                    log_d("discarding IP fragment");
+                    proxy->num_discarded_fragments++;
                     goto housekeeping;
                 }
 
@@ -433,7 +439,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
             }
     }
 
-    ztdun_finalize(tun);
+    zdtun_finalize(tun);
     return(0);
 }
 

@@ -915,7 +915,9 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         proxy->capture_stats.rcvd_bytes += pkt->len;
     }
 
-    if(data->ndpi_flow) {
+    if(data->ndpi_flow &&
+            (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {
+        // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
         process_ndpi_packet(data, proxy, pkt, from_tun);
 
         if((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
@@ -1070,6 +1072,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     ndpi_ptree_destroy(proxy.known_dns_servers);
 
     log_d("Host LRU cache size: %d", ip_lru_size(proxy.ip_to_host));
+    log_d("Discarded fragments: %ld", proxy.num_discarded_fragments);
     ip_lru_destroy(proxy.ip_to_host);
 
     logcallback = NULL;

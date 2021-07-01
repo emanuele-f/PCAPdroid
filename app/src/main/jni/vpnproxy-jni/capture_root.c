@@ -195,9 +195,19 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
     pcap_conn_t *conn = NULL;
     uint8_t from_tun = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
 
-    // NOTE: only IP packets supported
-    if(zdtun_parse_pkt(buffer, hdr->len, &pkt) != 0) {
+    if(zdtun_parse_pkt(proxy->tun, buffer, hdr->len, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
+        return;
+    }
+
+    if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
+            (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
+        // This fragment cannot be mapped to the original src/dst ports. This may happen if the first
+        // IP fragment is lost or was not captured (e.g. for packets matching the BPF of getPcapDumperBpf).
+        // In such a case, we can only ignore the packet as we cannot determine the connection it belongs to.
+
+        //log_d("unmatched IP fragment (ID = 0x%04x)", pkt.ip4->id);
+        proxy->num_discarded_fragments++;
         return;
     }
 
@@ -216,6 +226,12 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
         HASH_FIND(hh, *connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
         if(!conn) {
+            if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) && !(pkt.flags & ZDTUN_PKT_IS_FIRST_FRAGMENT)) {
+                log_d("ignoring fragment as it cannot start a connection");
+                proxy->num_discarded_fragments++;
+                return;
+            }
+
             // assume from_tun was correct
             from_tun = !from_tun;
             tupleSwapPeers(&pkt.tuple);
@@ -316,14 +332,20 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
 /* ******************************************************* */
 
 int run_root(vpnproxy_data_t *proxy) {
-    int sock = connectPcapd(proxy);
+    int sock = -1;
     int rv = -1;
     char buffer[65535];
     pcap_conn_t *connections = NULL;
     u_int64_t next_purge_ms;
+    zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
-    if(sock < 0)
+    if((proxy->tun = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
+
+    if((sock = connectPcapd(proxy)) < 0) {
+        rv = -1;
+        goto cleanup;
+    }
 
     refresh_time(proxy);
     next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -381,6 +403,8 @@ int run_root(vpnproxy_data_t *proxy) {
 cleanup:
     purge_expired_connections(proxy, &connections, 1 /* purge_all */);
 
-    close(sock);
+    if(proxy->tun) zdtun_finalize(proxy->tun);
+    if(sock > 0) close(sock);
+
     return rv;
 }

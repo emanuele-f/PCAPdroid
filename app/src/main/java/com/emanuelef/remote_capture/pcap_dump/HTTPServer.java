@@ -53,7 +53,8 @@ public class HTTPServer extends NanoHTTPD implements PcapDumper {
         return(r);
     }
 
-    /* Creates a new Response and add it to the active responses. */
+    /* Creates a new Response and add it to the active responses.
+     * NOTE: socket protect not needed for inbound connections. */
     private synchronized Response newPcapStream() {
         /* NOTE: response length is unknown */
         Response res = newChunkedResponse(Status.OK, PCAP_MIME, new ChunkedInputStream());
