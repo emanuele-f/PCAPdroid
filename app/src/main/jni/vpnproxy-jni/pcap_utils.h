@@ -43,21 +43,21 @@ typedef struct pcaprec_hdr_s {
 #define CUSTOM_PCAP_MAGIC 0x01072021
 
 /* A trailer to the packet which contains PCAPdroid-specific information.
- * When custom_format_enabled is set, the raw packet will be prepended with a bogus ethernet header,
- * whose size spans the raw packet data. The pcap_custom_data_t will be appended after the L3 data
+ * When pcapdroid_trailer is set, the raw packet will be prepended with a bogus ethernet header,
+ * whose size spans the raw packet data. The pcapdroid_trailer_t will be appended after the L3 data
  * so that PCAP parsers which are not aware of this data will just ignore it.
  *
- * original: [IP | Payload]
- *   custom: [ETH | IP | Payload | CustomData]
+ *  original: [IP | Payload]
+ * pcapdroid: [ETH | IP | Payload | CustomData]
  */
-typedef struct pcap_custom_data {
+typedef struct pcapdroid_trailer {
     uint32_t magic;
     uint32_t uid;
-    char appname[16];
+    char appname[20];
     uint32_t fcs;
-} __packed pcap_custom_data_t;
+} __packed pcapdroid_trailer_t;
 
-void pcap_set_custom_format(uint8_t enabled);
+void pcap_set_pcapdroid_trailer(uint8_t enabled);
 void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr);
 int pcap_rec_size(int pkt_len);
 void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *proxy, conn_data_t *conn);

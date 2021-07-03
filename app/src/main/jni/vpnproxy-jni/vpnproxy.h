@@ -194,7 +194,7 @@ extern bool running;
 extern uint32_t new_dns_server;
 extern bool dump_vpn_stats_now;
 
-struct pcap_custom_data;
+struct pcapdroid_trailer;
 
 conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
 void conn_free_data(conn_data_t *data);
@@ -206,7 +206,7 @@ int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
-void fill_custom_data(struct pcap_custom_data *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
+void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);

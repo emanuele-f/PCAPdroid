@@ -26,9 +26,14 @@ import argparse
 BUFSIZE = 65535
 
 # Standard PCAP header (struct pcap_hdr_s). Must be sent before any other PCAP record (struct pcaprec_hdr_s).
+# magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_RAW
 PCAP_HDR_BYTES = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000065000000")
 
-pcap_header_sent = False
+# PCAP header when PCAPDroid trailer is in use
+# magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_ETHERNET
+PCAP_HDR_BYTES_TRAILER = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000001000000")
+PCAPDROID_TRAILER_MAGIC = bytes.fromhex("01072021")
+PCAPDROID_TRAILER_SIZE = 32
 
 parser = argparse.ArgumentParser(
     description='''Receives data from the PCAPdroid app and outputs it to stdout.''')
@@ -40,13 +45,7 @@ args = parser.parse_args()
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(("0.0.0.0", args.port))
 
-# Send the initial PCAP header
-# By sending this manually at startup we can be sure that consumer application (e.g. wireshark)
-# reads the header before anything else.
-if(args.verbose):
-	sys.stderr.write("Sending PCAP header\n");
-sys.stdout.buffer.write(PCAP_HDR_BYTES)
-sys.stdout.flush()
+pcap_header_sent = False
 
 # Send the individual records (struct pcaprec_hdr_s)
 while True:
@@ -55,7 +54,21 @@ while True:
 	if(args.verbose):
 		sys.stderr.write("Got a {}B packet\n".format(len(data)))
 
-	if(data == PCAP_HDR_BYTES):
+	if(not pcap_header_sent):
+		# Determine is the PCAPDroid trailer is in use
+		offset = len(data) - PCAPDROID_TRAILER_SIZE
+		has_trailer = (data == PCAP_HDR_BYTES_TRAILER) or ((offset > 0) and \
+			(data[offset:offset+4] == PCAPDROID_TRAILER_MAGIC))
+
+		if(args.verbose):
+			sys.stderr.write("Sending PCAP header (trailer " + ("not " if not has_trailer else "") + "detected)\n")
+
+		# Send the PCAP header before any other data
+		sys.stdout.buffer.write(PCAP_HDR_BYTES if not has_trailer else PCAP_HDR_BYTES_TRAILER)
+		sys.stdout.flush()
+		pcap_header_sent = True
+
+	if((data == PCAP_HDR_BYTES) or (data == PCAP_HDR_BYTES_TRAILER)):
 		# Ignore the PCAP header as we already sent it above
 		if(args.verbose):
 			sys.stderr.write("PCAP header detected, skipping\n");

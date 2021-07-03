@@ -22,7 +22,7 @@ pcapdroid = Proto("PCAPdroid", "PCAPdroid data")
 -- #############################################
 
 local PCAPDROID_MAGIC = 0x01072021
-local STRUCT_SIZE = 28
+local PCAPDROID_TRAILER_SIZE = 32
 
 -- #############################################
 
@@ -39,24 +39,24 @@ pcapdroid.fields = fields
 function pcapdroid.dissector(buffer, pinfo, tree)
   local length = buffer:len()
 
-  if(length < STRUCT_SIZE) then
+  if(length < PCAPDROID_TRAILER_SIZE) then
     return
   end
 
   -- -4: skip the FCS
-  local trailer = buffer(length - STRUCT_SIZE, STRUCT_SIZE - 4)
+  local trailer = buffer(length - PCAPDROID_TRAILER_SIZE, PCAPDROID_TRAILER_SIZE - 4)
   local magic = trailer(0, 4):uint()
 
   if(magic ~= PCAPDROID_MAGIC) then
     return
   end
 
-  local appname = trailer(8, 16):string()
+  local appname = trailer(8, 20):string()
   local subtree = tree:add(pcapdroid, buffer(), string.format("PCAPdroid, App: %s", appname))
 
   subtree:add(fields.magic, trailer(0, 4))
   subtree:add(fields.uid, trailer(4, 4))
-  subtree:add(fields.appname, trailer(8, 16))
+  subtree:add(fields.appname, trailer(8, 20))
 end
 
 -- #############################################
