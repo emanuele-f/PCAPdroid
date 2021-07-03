@@ -98,7 +98,7 @@ void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *prox
         fill_custom_data(cdata, proxy, conn);
 
         //clock_t start = clock();
-        cdata->fcs = crc32(buffer, pcap_rec->incl_len - 4);
+        cdata->fcs = crc32(buffer, pcap_rec->incl_len - 4, 0);
         //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
         //log_d("crc cpu_time_used: %f sec", cpu_time_used);
 

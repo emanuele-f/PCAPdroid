@@ -207,7 +207,7 @@ void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
 void fill_custom_data(struct pcap_custom_data *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
-uint32_t crc32(u_char *buf, size_t len);
+uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
