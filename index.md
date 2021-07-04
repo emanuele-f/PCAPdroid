@@ -21,6 +21,7 @@ Welcome to the PCAPdroid User Guide.
     - [4.2 DoH Support](advanced_features#42-doh-support)
     - [4.3 IPv6 Support](advanced_features#43-ipv6-support)
     - [4.4 Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture)
+    - [4.5 PCAPdroid Trailer](https://emanuele-f.github.io/PCAPdroid/advanced_features#45-pcapdroid-trailer)
 - [5. FAQ](faq)
 - [6. Donate](donate)
 
