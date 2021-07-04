@@ -87,6 +87,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean socks5_enabled;
     private boolean ipv6_enabled;
     private boolean root_capture;
+    private boolean pcapdroid_trailer;
     private int collector_port;
     private int http_server_port;
     private int socks5_proxy_port;
@@ -209,6 +210,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_bytes = 0;
         last_connections = 0;
         root_capture = Prefs.isRootCaptureEnabled(prefs);
+        pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
@@ -604,6 +606,8 @@ public class CaptureService extends VpnService implements Runnable {
     public int getIPv6Enabled() { return(ipv6_enabled ? 1 : 0); }
 
     public int isRootCapture() { return(root_capture ? 1 : 0); }
+
+    public int addPcapdroidTrailer() { return(pcapdroid_trailer ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
 

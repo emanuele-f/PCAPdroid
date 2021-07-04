@@ -74,6 +74,30 @@
         </Preference>
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false" >
+        <SwitchPreference
+            app:key="root_capture"
+            app:title="@string/root_capture"
+            app:iconSpaceReserved="false"
+            app:summary="@string/root_capture_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="pcapdroid_trailer"
+            app:title="@string/pcapdroid_trailer"
+            app:iconSpaceReserved="false"
+            app:summary="@string/pcapdroid_trailer_summary"
+            app:defaultValue="false" />
+
+        <Preference
+            app:key="trailer_how_to"
+            app:title="@string/trailer_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/advanced_features#45-pcapdroid-trailer" />
+        </Preference>
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
         <DropDownPreference
             app:key="app_theme"
@@ -92,13 +116,6 @@
             app:iconSpaceReserved="false"
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
-
-        <SwitchPreference
-            app:key="root_capture"
-            app:title="@string/root_capture"
-            app:iconSpaceReserved="false"
-            app:summary="@string/root_capture_summary"
-            app:defaultValue="false" />
 
         <SwitchPreference
             app:key="ipv6_enabled"

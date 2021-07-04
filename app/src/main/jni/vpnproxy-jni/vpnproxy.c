@@ -1050,6 +1050,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             }
     };
 
+    // Enable or disable the PCAPdroid trailer
+    pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
+
     /* Important: init global state every time. Android may reuse the service. */
     running = true;
 

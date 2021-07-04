@@ -29,7 +29,7 @@ local PCAPDROID_TRAILER_SIZE = 32
 local fields = {}
 
 fields.magic   = ProtoField.uint32("pcapdroid.magic", "Magic", base.HEX)
-fields.uid     = ProtoField.uint32("pcapdroid.uid", "UID", base.DEC)
+fields.uid     = ProtoField.int32("pcapdroid.uid", "UID", base.DEC)
 fields.appname = ProtoField.string("pcapdroid.appname", "App name", base.ASCII)
 
 pcapdroid.fields = fields
