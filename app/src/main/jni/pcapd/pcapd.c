@@ -302,7 +302,7 @@ static int init_pcapd_capture(pcapd_runtime_t *rt) {
   }
 
   rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
-                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR);
+                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
 
   if(rt->nlsock < 0) {
     log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
@@ -458,6 +458,19 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
 
 /* ******************************************************* */
 
+static void reset_capture_interface(pcapd_runtime_t *rt) {
+  if(!rt->pd)
+    return;
+
+  pcap_close(rt->pd);
+  rt->pd = NULL;
+  rt->pf = -1;
+  rt->ifidx = -1;
+  rt->ifname[0] = '\0';
+}
+
+/* ******************************************************* */
+
 static int handle_nl_message(pcapd_runtime_t *rt) {
   struct iovec iov = {
     .iov_base = rt->nlbuf,
@@ -508,8 +521,16 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
             log_i("Could not get interface %s IPv6[%d]: %s", rt->ifname, errno, strerror(errno));
             memset(&rt->ip6, 0, sizeof(rt->ip6));
           }
-
-          break;
+        }
+        break;
+      case RTM_DELLINK:
+        if(rt->ifidx == ((struct ifinfomsg *) NLMSG_DATA(nh))->ifi_index) {
+          // libpcap sometimes does not detect that an interface was removed. Making it necessary
+          // to subscribe to RTMGRP_LINK
+          log_i("RTM_DELLINK: interface %s deleted", rt->ifname);
+          reset_capture_interface(rt);
+          found = 1;
+          do_break = 1;
         }
         break;
     }
@@ -651,11 +672,7 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
         log_i("pcap_next_ex failed: %s", pcap_geterr(rt.pd));
 
         // Do not abort, just wait for route changes
-        pcap_close(rt.pd);
-        rt.pd = NULL;
-        rt.pf = -1;
-        rt.ifidx = -1;
-        rt.ifname[0] = '\0';
+        reset_capture_interface(&rt);
       } else if((rv1 == 1) && (hdr->caplen >= to_skip)) {
         pcapd_hdr_t phdr;
         zdtun_pkt_t zpkt;
@@ -704,7 +721,7 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
 
     if((rt.pd == NULL) && (now >= next_interface_recheck)) {
       check_capture_interface(&rt);
-      next_interface_recheck = now + 5;
+      next_interface_recheck = now + 2;
     } else if((rt.pd != NULL) && (now >= next_stats_update)) {
       pcap_stats(rt.pd, &stats);
       next_stats_update = now + 3;
