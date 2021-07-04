@@ -916,7 +916,7 @@ static void log_callback(int lvl, const char *line) {
 void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, conn_data_t *conn) {
     memset(cdata, 0, sizeof(*cdata));
 
-    cdata->magic = htonl(CUSTOM_PCAP_MAGIC);
+    cdata->magic = htonl(PCAPDROID_TRAILER_MAGIC);
     cdata->uid = htonl(conn->uid);
     get_appname_by_uid(proxy, conn->uid, cdata->appname, sizeof(cdata->appname));
 }

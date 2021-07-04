@@ -40,7 +40,7 @@ typedef struct pcaprec_hdr_s {
     uint32_t orig_len;
 } __packed pcaprec_hdr_s;
 
-#define CUSTOM_PCAP_MAGIC 0x01072021
+#define PCAPDROID_TRAILER_MAGIC 0x01072021
 
 /* A trailer to the packet which contains PCAPdroid-specific information.
  * When pcapdroid_trailer is set, the raw packet will be prepended with a bogus ethernet header,
@@ -52,7 +52,7 @@ typedef struct pcaprec_hdr_s {
  */
 typedef struct pcapdroid_trailer {
     uint32_t magic;
-    uint32_t uid;
+    int32_t uid;
     char appname[20];
     uint32_t fcs;
 } __packed pcapdroid_trailer_t;
