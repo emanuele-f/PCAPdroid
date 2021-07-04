@@ -46,6 +46,10 @@ Since version 1.3.10, by enabling the `PCAPdroid Trailer` setting, it is possibl
 
 Moreover, by using the custom [pcapdroid.lua](https://github.com/emanuele-f/PCAPdroid/blob/dev/tools/pcapdroid.lua) plugin, it is possible to interpret the metadata into Wireshark, displaying the metadata fields as columns and even apply them as a filter. The plugin should be placed into [the plugins directory](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html) or it can be manually loaded on the linux cli with `-X lua_script:tools/pcapdroid.lua`.
 
+<p align="center">
+<img src="./images/trailer_wireshark.png" width="200" />
+</p>
+
 When the trailer is enabled, a fake Ethernet header will be added to the packets to encapsulate both the the trailer and the original IP header and data. This makes it possible to recover the original capture data by simply skipping the Ethernet header. The format of the PCAPdroid trailer is described into the `struct pcapdroid_trailer`:
 
 ```C
