@@ -203,14 +203,14 @@ static void update_connection_status(pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_
 
       if(tcp->th_flags & TH_RST)
           conn->data->status = CONN_STATUS_RESET;
-      else if(seen_flags & TCP_FLAG_FIN) {
+      else if(seen_flags & TH_FIN) {
           // closed when both the peers have sent FIN and the last FIN was acknowledged
           if(!conn->data->last_ack)
               conn->data->last_ack = true; // wait for the last ACK
           else if(tcp->th_flags & TH_ACK)
               conn->data->status = CONN_STATUS_CLOSED;
       } else if(conn->data->status < CONN_STATUS_CONNECTED) {
-          const uint8_t syn_ack_flags = TCP_FLAG_SYN | TCP_FLAG_ACK;
+          const uint8_t syn_ack_flags = TH_SYN | TH_ACK;
 
           // the 3-way-handshake is complete when both the peers have sent the SYN+ACK flags
           if((pkt->l7_len > 0) ||
