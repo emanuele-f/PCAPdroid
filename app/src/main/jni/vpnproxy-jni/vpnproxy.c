@@ -483,7 +483,7 @@ static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt,
 /* ******************************************************* */
 
 static void process_dns_reply(conn_data_t *data, vpnproxy_data_t *proxy, const struct zdtun_pkt *pkt) {
-    const char *query = data->ndpi_flow->host_server_name;
+    const char *query = (const char*) data->ndpi_flow->host_server_name;
 
     if((!query[0]) || !strchr(query, '.') || (pkt->l7_len < sizeof(dns_packet_t)))
         return;
@@ -738,7 +738,10 @@ static int dumpConnectionUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn, 
     if(update != NULL) {
         (*env)->SetObjectArrayElement(env, arr, idx, update);
         (*env)->DeleteLocalRef(env, update);
+        return 0;
     }
+
+    return -1;
 }
 
 /* ******************************************************* */
@@ -798,9 +801,10 @@ cleanup:
 
 /* ******************************************************* */
 
-static void sendStatsDump(const vpnproxy_data_t *proxy, const zdtun_statistics_t *stats) {
+static void sendStatsDump(const vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
     const capture_stats_t *capstats = &proxy->capture_stats;
+    const zdtun_statistics_t *stats = &proxy->stats;
 
     int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
     int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);
@@ -865,10 +869,10 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
             dump_capture_stats_now) {
         dump_capture_stats_now = false;
 
-        if(proxy->tun)
+        if(!proxy->root_capture)
             zdtun_get_stats(proxy->tun, &proxy->stats);
 
-        sendStatsDump(proxy, &proxy->stats);
+        sendStatsDump(proxy);
 
         proxy->capture_stats.new_stats = false;
         proxy->capture_stats.last_update_ms = proxy->now_ms;
