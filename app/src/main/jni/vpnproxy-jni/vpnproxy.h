@@ -73,6 +73,11 @@ typedef struct conn_data {
     zdtun_conn_status_t status;
     char *info;
     jint uid;
+    uint8_t tcp_flags[2]; // cli2srv, srv2cli
+    union {
+        uint8_t last_ack;
+        uint8_t pending_dns_queries;
+    };
     bool pending_notification;
     bool request_done;
     char *request_data;

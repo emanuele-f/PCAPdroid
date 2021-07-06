@@ -190,6 +190,59 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
+// Determines when a connection gets closed
+static void update_connection_status(pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
+  if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
+      return;
+
+  if(conn->tuple.ipproto == IPPROTO_TCP) {
+      struct tcphdr *tcp = pkt->tcp;
+
+      conn->data->tcp_flags[dir] |= tcp->th_flags;
+      uint8_t seen_flags = conn->data->tcp_flags[0] | conn->data->tcp_flags[1];
+
+      if(tcp->th_flags & TH_RST)
+          conn->data->status = CONN_STATUS_RESET;
+      else if(seen_flags & TCP_FLAG_FIN) {
+          // closed when both the peers have sent FIN and the last FIN was acknowledged
+          if(!conn->data->last_ack)
+              conn->data->last_ack = true; // wait for the last ACK
+          else if(tcp->th_flags & TH_ACK)
+              conn->data->status = CONN_STATUS_CLOSED;
+      } else if(conn->data->status < CONN_STATUS_CONNECTED) {
+          const uint8_t syn_ack_flags = TCP_FLAG_SYN | TCP_FLAG_ACK;
+
+          // the 3-way-handshake is complete when both the peers have sent the SYN+ACK flags
+          if((pkt->l7_len > 0) ||
+                ((seen_flags & syn_ack_flags) == syn_ack_flags))
+              conn->data->status = CONN_STATUS_CONNECTED;
+          else
+              conn->data->status = CONN_STATUS_CONNECTING;
+      }
+  } else {
+      if(conn->data->status < CONN_STATUS_CONNECTED)
+        conn->data->status = CONN_STATUS_CONNECTED;
+
+      if((conn->tuple.ipproto == IPPROTO_UDP) &&
+            pkt->l7_len >= sizeof(struct dns_packet) &&
+            (conn->tuple.dst_port == ntohs(53))) {
+          const dns_packet_t *dns = (dns_packet_t *)pkt->l7;
+
+          if((dns->flags & DNS_FLAGS_MASK) == DNS_TYPE_REQUEST)
+              conn->data->pending_dns_queries++;
+          else if((dns->flags & DNS_FLAGS_MASK) == DNS_TYPE_RESPONSE) {
+              conn->data->pending_dns_queries--;
+
+              // Close the connection as soon as all the responses arrive
+              if(conn->data->pending_dns_queries == 0)
+                  conn->data->status = CONN_STATUS_CLOSED;
+          }
+      }
+  }
+}
+
+/* ******************************************************* */
+
 static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pcapd_hdr_t *hdr, const char *buffer) {
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
@@ -252,9 +305,6 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
             conn->tuple = pkt.tuple;
             conn->data = data;
 
-            // TODO read from linux?
-            data->status = CONN_STATUS_CONNECTED;
-
             HASH_ADD(hh, *connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             data->incr_id = proxy->incr_id++;
@@ -281,6 +331,14 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
 
     uint64_t pkt_ms = (uint64_t)hdr->ts.tv_sec * 1000 + hdr->ts.tv_usec / 1000;
     account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data, pkt_ms);
+
+    update_connection_status(conn, &pkt, !from_tun);
+
+    if(conn->data->status >= CONN_STATUS_CLOSED) {
+        // Will free the data in sendConnectionsDump
+        HASH_DELETE(hh, *connections, conn);
+        free(conn);
+    }
 }
 
 /* ******************************************************* */
@@ -292,7 +350,6 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
     HASH_ITER(hh, *connections, conn, tmp) {
         uint64_t timeout = 0;
 
-        // TODO: sync with linux?
         switch(conn->tuple.ipproto) {
             case IPPROTO_TCP:
                 timeout = TCP_TIMEOUT_SEC * 1000;
@@ -305,14 +362,17 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
                 break;
         }
 
-        if(purge_all || (conn->data->status >= CONN_STATUS_CLOSED) || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
+        if(purge_all
+                || (conn->data->status >= CONN_STATUS_CLOSED)
+                || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
             log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // Will free the data in sendConnectionsDump
             conn->data->update_type |= CONN_UPDATE_STATS;
             notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
 
-            conn->data->status = CONN_STATUS_CLOSED;
+            if(conn->data->status < CONN_STATUS_CLOSED)
+                conn->data->status = CONN_STATUS_CLOSED;
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
