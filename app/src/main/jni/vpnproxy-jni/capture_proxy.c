@@ -256,7 +256,15 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
 
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
+    struct timespec ts = {0};
 
+    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
+        proxy->last_pkt_ts.tv_sec = ts.tv_sec;
+        proxy->last_pkt_ts.tv_usec = ts.tv_nsec / 1000;
+    } else
+        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
+
+    uint64_t pkt_ms = timeval2ms(&proxy->last_pkt_ts);
     data->status = zdtun_conn_get_status(conn_info);
 
     if(shouldIgnoreConn(proxy, tuple)) {
@@ -269,13 +277,13 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
             data->rcvd_bytes += pkt->len;
         }
 
-        data->last_seen = time(NULL);
+        data->last_seen = pkt_ms;
 
         //log_d("Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
 
-    account_packet(proxy, pkt, from_tun, tuple, data);
+    account_packet(proxy, pkt, from_tun, tuple, data, pkt_ms);
 }
 
 /* ******************************************************* */
@@ -434,7 +442,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
             run_housekeeping(proxy);
 
             if(proxy->now_ms >= next_purge_ms) {
-                zdtun_purge_expired(tun, proxy->now_ms / 1000);
+                zdtun_purge_expired(tun);
                 next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
             }
     }

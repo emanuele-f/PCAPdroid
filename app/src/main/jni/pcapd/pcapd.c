@@ -601,6 +601,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
 static int run_pcap_dump(int uid_filter, const char *bpf) {
   int rv = -1;
+  struct timespec ts = {0};
   struct pcap_stat stats = {0};
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
@@ -717,7 +718,8 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
       }
     }
 
-    time_t now = time(NULL);
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+    time_t now = ts.tv_sec;
 
     if((rt.pd == NULL) && (now >= next_interface_recheck)) {
       check_capture_interface(&rt);

@@ -277,32 +277,35 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
         }
     }
 
-    account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data);
+    proxy->last_pkt_ts = hdr->ts;
+
+    uint64_t pkt_ms = (uint64_t)hdr->ts.tv_sec * 1000 + hdr->ts.tv_usec / 1000;
+    account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data, pkt_ms);
 }
 
 /* ******************************************************* */
 
 static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **connections, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
-    time_t now = proxy->now_ms / 1000;
+    uint64_t last_pkt_ms = timeval2ms(&proxy->last_pkt_ts);
 
     HASH_ITER(hh, *connections, conn, tmp) {
-        time_t timeout = 0;
+        uint64_t timeout = 0;
 
         // TODO: sync with linux?
         switch(conn->tuple.ipproto) {
             case IPPROTO_TCP:
-                timeout = TCP_TIMEOUT_SEC;
+                timeout = TCP_TIMEOUT_SEC * 1000;
                 break;
             case IPPROTO_UDP:
-                timeout = UDP_TIMEOUT_SEC;
+                timeout = UDP_TIMEOUT_SEC * 1000;
                 break;
             case IPPROTO_ICMP:
-                timeout = ICMP_TIMEOUT_SEC;
+                timeout = ICMP_TIMEOUT_SEC + 1000;
                 break;
         }
 
-        if(purge_all || (conn->data->status >= CONN_STATUS_CLOSED) || (now >= (timeout + conn->data->last_seen))) {
+        if(purge_all || (conn->data->status >= CONN_STATUS_CLOSED) || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
             log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // Will free the data in sendConnectionsDump

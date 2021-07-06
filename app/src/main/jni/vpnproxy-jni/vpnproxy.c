@@ -314,7 +314,6 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
         conn_free_ndpi(data);
     }
 
-    data->first_seen = data->last_seen = time(NULL);
     data->uid = uid;
 
     // Try to resolve host name via the LRU cache
@@ -562,7 +561,7 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
 
     u_int16_t old_proto = data->l7proto.master_protocol;
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-                                                  pkt->len, data->last_seen,
+            pkt->len, data->last_seen,
             from_tun ? data->src_id : data->dst_id,
             from_tun ? data->dst_id : data->src_id);
 
@@ -890,10 +889,14 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
 /* ******************************************************* */
 
 void refresh_time(vpnproxy_data_t *proxy) {
-    struct timeval now_tv;
+    struct timespec ts;
 
-    gettimeofday(&now_tv, NULL);
-    proxy->now_ms = (uint64_t)now_tv.tv_sec * 1000 + now_tv.tv_usec / 1000;
+    if(clock_gettime(CLOCK_MONOTONIC_COARSE, &ts)) {
+        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
+        return;
+    }
+
+    proxy->now_ms = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
 /* ******************************************************* */
@@ -928,7 +931,7 @@ void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, c
 /* ******************************************************* */
 
 void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
-                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data) {
+                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data, uint64_t pkt_ms) {
 #if 0
     if(from_tun)
         log_d("tun2net: %ld B", size);
@@ -936,7 +939,9 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         log_d("net2tun: %lu B", size);
 #endif
 
-    data->last_seen = time(NULL);
+    if((data->sent_pkts + data->rcvd_pkts) == 0)
+        data->first_seen = pkt_ms;
+    data->last_seen = pkt_ms;
 
     if(from_tun) {
         data->sent_pkts++;
@@ -998,8 +1003,6 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 /* ******************************************************* */
 
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
-    last_connections_dump = time(NULL) * 1000;
-    next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
     netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
@@ -1086,6 +1089,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     }
 
     memset(&proxy.stats, 0, sizeof(proxy.stats));
+
+    refresh_time(&proxy);
+    last_connections_dump = proxy.now_ms;
+    next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
 
     notifyServiceStatus(&proxy, "started");
 

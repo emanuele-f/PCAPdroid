@@ -120,7 +120,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             String info_txt = (app != null) ? app.getName() : Integer.toString(conn.uid);
             appName.setText(info_txt);
             traffic.setText(Utils.formatBytes(conn.sent_bytes + conn.rcvd_bytes));
-            lastSeen.setText(Utils.formatEpochShort(context, conn.last_seen));
+            lastSeen.setText(Utils.formatEpochShort(context, conn.last_seen / 1000));
             statusInd.setText(conn.getStatusLabel(context));
 
             if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)

@@ -175,6 +175,13 @@ public class Utils {
         return fmt.format(new Date(epoch * 1000));
     }
 
+    public static String formatEpochMillis(Context context, long millis) {
+        Locale locale = getPrimaryLocale(context);
+        DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS", locale);
+
+        return fmt.format(new Date(millis));
+    }
+
     public static String formatInteger(Context context, int val) {
         Locale locale = getPrimaryLocale(context);
         return String.format(locale, "%d", val);

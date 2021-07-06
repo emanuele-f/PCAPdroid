@@ -111,7 +111,8 @@ typedef struct vpnproxy_data {
     ndpi_ptree_t *known_dns_servers;
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
-    uint64_t now_ms;
+    struct timeval last_pkt_ts; // Packet timestamp, reported into the exported PCAP
+    uint64_t now_ms;            // Monotonic timestamp, see refresh_time
     u_int num_dropped_pkts;
     long num_discarded_fragments;
     u_int32_t num_dropped_connections;
@@ -201,7 +202,8 @@ void conn_free_data(conn_data_t *data);
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
 void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
 void run_housekeeping(vpnproxy_data_t *proxy);
-void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
+void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
+                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data, uint64_t pkt_ms);
 int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
