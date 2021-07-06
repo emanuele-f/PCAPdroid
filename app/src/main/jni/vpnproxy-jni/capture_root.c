@@ -329,6 +329,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
     }
 
     proxy->last_pkt_ts = hdr->ts;
+    conn->data->last_update_ms = proxy->now_ms;
 
     uint64_t pkt_ms = (uint64_t)hdr->ts.tv_sec * 1000 + hdr->ts.tv_usec / 1000;
     account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data, pkt_ms);
@@ -340,7 +341,6 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
 
 static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **connections, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
-    uint64_t last_pkt_ms = timeval2ms(&proxy->last_pkt_ts);
 
     HASH_ITER(hh, *connections, conn, tmp) {
         uint64_t timeout = 0;
@@ -357,7 +357,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
                 break;
         }
 
-        if(purge_all || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
+        if(purge_all || (proxy->now_ms >= (conn->data->last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // The connection data will be purged

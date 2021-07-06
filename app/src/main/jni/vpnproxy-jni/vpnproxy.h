@@ -64,6 +64,7 @@ typedef struct conn_data {
     struct ndpi_id_struct *src_id, *dst_id;
     ndpi_protocol l7proto;
 
+    uint64_t last_update_ms; // like last_seen but monotonic (only root)
     jlong first_seen;
     jlong last_seen;
     jlong sent_bytes;
