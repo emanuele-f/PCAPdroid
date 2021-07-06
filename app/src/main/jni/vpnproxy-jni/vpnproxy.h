@@ -79,6 +79,7 @@ typedef struct conn_data {
         uint8_t pending_dns_queries;
     };
     bool pending_notification;
+    bool to_purge;
     bool request_done;
     char *request_data;
     char *url;

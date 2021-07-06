@@ -240,6 +240,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         notify_connection(&proxy->conns_updates, tuple, data);
 
         data->status = zdtun_conn_get_status(conn_info);
+        data->to_purge = true;
     } else
         conn_free_data(data);
 }
@@ -284,6 +285,9 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
     }
 
     account_packet(proxy, pkt, from_tun, tuple, data, pkt_ms);
+
+    if(data->status >= CONN_STATUS_CLOSED)
+        data->to_purge = true;
 }
 
 /* ******************************************************* */

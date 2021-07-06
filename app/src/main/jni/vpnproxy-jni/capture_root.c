@@ -27,6 +27,7 @@
 // Keep in sync with zdtun.c
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
+#define TCP_CLOSED_TIMEOUT_SEC 15
 #define TCP_TIMEOUT_SEC 60
 
 /* ******************************************************* */
@@ -333,12 +334,6 @@ static void handle_packet(vpnproxy_data_t *proxy, pcap_conn_t **connections, pca
     account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data, pkt_ms);
 
     update_connection_status(conn, &pkt, !from_tun);
-
-    if(conn->data->status >= CONN_STATUS_CLOSED) {
-        // Will free the data in sendConnectionsDump
-        HASH_DELETE(hh, *connections, conn);
-        free(conn);
-    }
 }
 
 /* ******************************************************* */
@@ -352,7 +347,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
 
         switch(conn->tuple.ipproto) {
             case IPPROTO_TCP:
-                timeout = TCP_TIMEOUT_SEC * 1000;
+                timeout = (conn->data->status >= CONN_STATUS_CLOSED) ? (TCP_CLOSED_TIMEOUT_SEC * 1000) : (TCP_TIMEOUT_SEC * 1000);
                 break;
             case IPPROTO_UDP:
                 timeout = UDP_TIMEOUT_SEC * 1000;
@@ -362,17 +357,22 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, pcap_conn_t **conn
                 break;
         }
 
-        if(purge_all
-                || (conn->data->status >= CONN_STATUS_CLOSED)
-                || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
-            log_d("IDLE (type=%d)", conn->tuple.ipproto);
+        if(purge_all || (last_pkt_ms >= (conn->data->last_seen + timeout))) {
+            //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
-            // Will free the data in sendConnectionsDump
-            conn->data->update_type |= CONN_UPDATE_STATS;
-            notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
+            // The connection data will be purged
+            conn->data->to_purge = true;
 
-            if(conn->data->status < CONN_STATUS_CLOSED)
+            if(conn->data->status < CONN_STATUS_CLOSED) {
                 conn->data->status = CONN_STATUS_CLOSED;
+                conn->data->update_type |= CONN_UPDATE_STATS;
+            }
+
+            if(conn->data->update_type != 0) {
+                // Will free the data in sendConnectionsDump
+                notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
+            } else
+                conn_free_data(conn->data);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:

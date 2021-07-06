@@ -106,7 +106,7 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
         for(int i=0; i < arr->cur_items; i++) {
             vpn_conn_t *slot = &arr->items[i];
 
-            if(slot->data && ((slot->data->status >= CONN_STATUS_CLOSED) || free_all))
+            if(slot->data && (slot->data->to_purge || free_all))
                 conn_free_data(slot->data);
         }
 
