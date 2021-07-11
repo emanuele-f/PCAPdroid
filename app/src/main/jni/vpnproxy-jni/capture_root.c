@@ -24,11 +24,10 @@
 #include "common/utils.h"
 #include "third_party/uthash.h"
 
-// Keep in sync with zdtun.c
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
-#define TCP_CLOSED_TIMEOUT_SEC 15
-#define TCP_TIMEOUT_SEC 60
+#define TCP_CLOSED_TIMEOUT_SEC 20
+#define TCP_TIMEOUT_SEC 300         // needs to be large as TCP connections may stay active for a long time
 
 /* ******************************************************* */
 
