@@ -21,6 +21,7 @@ table {
   margin-left: auto;
   margin-right: auto;
   font-size: 0.92rem;
+  background-color: #fff;
 }
 
 tr:nth-child(2n) {
@@ -31,11 +32,11 @@ table th {
   color: inherit;
   background: transparent;
   font-weight: bold;
-  padding: 5px;
+  padding: 6px;
   border: 1px solid #e0e3e6;
 }
 
 table td {
-  padding: 5px;
+  padding: 6px;
   border: 1px solid #e0e3e6;
 }
