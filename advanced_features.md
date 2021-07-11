@@ -42,22 +42,20 @@ Please note that the following limitations apply for this mode:
 
 ## 4.5 PCAPdroid Trailer
 
-Since version 1.3.10, by enabling the `PCAPdroid Trailer` setting, it is possible to append additional metadata to the exported packets. Such metadata include the app name and UID of the originating process. This information can be processed by third-party monitoring tools to get unique insights from the network traffic, e.g. to create a chart of the network utilization by app.
+Since version 1.4.0, by enabling the `PCAPdroid Trailer` setting, it is possible to add additional metadata to the exported packets. Such metadata include the app name and UID of the originating process. This information can be processed by third-party monitoring tools e.g. Wireshark.
 
-Moreover, by using the custom [pcapdroid.lua](https://github.com/emanuele-f/PCAPdroid/blob/dev/tools/pcapdroid.lua) plugin, it is possible to interpret the metadata into Wireshark, displaying the metadata fields as columns and even apply them as a filter. The plugin should be placed into [the plugins directory](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html) or it can be manually loaded on the linux cli with `-X lua_script:tools/pcapdroid.lua`.
+By using the custom [pcapdroid.lua](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/pcapdroid.lua) plugin, it is possible to interpret the metadata into Wireshark, displaying the metadata fields as columns and even apply them as a filter. The plugin should be placed into [the plugins directory](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html) or it can be manually loaded on the linux cli with `-X lua_script:tools/pcapdroid.lua`.
 
 <p align="center">
 <img src="./images/trailer_wireshark.png" width="600" />
 </p>
 
-When the trailer is enabled, a fake Ethernet header will be added to the packets to encapsulate both the the trailer and the original IP header and data. This makes it possible to recover the original capture data by simply skipping the Ethernet header. The format of the PCAPdroid trailer is described into the `struct pcapdroid_trailer`:
+When the trailer is enabled, a fake Ethernet header will be added to the packets to encapsulate both the the trailer and the original IP header and data. This makes it possible to recover the original capture data by simply skipping the Ethernet header. Here is a description of the fields in the PCAPdroid trailer:
 
-```C
-struct pcapdroid_trailer {
-    uint32_t magic;
-    int32_t uid;
-    char appname[20];
-};
-```
+| Offset | Size (Bytes) | Name    | Type   | Description                |
+|-------:|-------------:|---------|--------|----------------------------|
+|      0 |            4 | magic   | uint32 | Trailer magic: 0x01072021  |
+|      4 |            4 | uid     | int32  | Process UID, -1 if unknown |
+|      8 |           20 | appname | string | App package name           |
 
-The `magic` field is used to identify the PCAPdroid trailer and its value is `0x01072021`. The `uid` field contains the UID of the app, whereas the `appname` field contains the app package name truncated to 19 characters, which is useful to quickly spot an app without having to manually resolve it from the uid. The total per-packet overhead when the trailer is enabled is `14 B (Ethernet) + 28 B (trailer) + 4 B (Ethernet FCS) = 46 B`.
+The `appname` field contains the app package name truncated to 19 characters, which is useful to quickly spot an app without having to manually resolve it from the uid. The total per-packet overhead when the trailer is enabled is `14 B (Ethernet) + 28 B (trailer) + 4 B (Ethernet FCS) = 46 B`.
