@@ -21,22 +21,22 @@ table {
   margin-left: auto;
   margin-right: auto;
   font-size: 0.92rem;
-  background-color: #fff;
+  background-color: #fafafa;
 }
 
 tr:nth-child(2n) {
-  background-color: #f6f8fa;
+  background-color: #f3f5f5;
 }
 
 table th {
   color: inherit;
   background: transparent;
   font-weight: bold;
-  padding: 6px;
+  padding: 8px;
   border: 1px solid #e0e3e6;
 }
 
 table td {
-  padding: 6px;
+  padding: 8px;
   border: 1px solid #e0e3e6;
 }
