@@ -1,12 +1,25 @@
-// //////////////////////////////////////////////////////////
-// Crc32.cpp
-// Copyright (c) 2011-2019 Stephan Brumme. All rights reserved.
-// Slicing-by-16 contributed by Bulat Ziganshin
-// Tableless bytewise CRC contributed by Hagai Gold
-// see http://create.stephan-brumme.com/disclaimer.html
-//
-// Adapted from https://github.com/stbrumme/crc32/blob/master/Crc32.cpp - Emanuele Faranda
-//
+/*
+ * This file is part of PCAPdroid.
+ *
+ * PCAPdroid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PCAPdroid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright 2021 - Emanuele Faranda
+ *
+ * Adapted from the slicing-by-4 implementation provided in
+ * https://github.com/stbrumme/crc32/blob/master/Crc32.cpp .
+ * Original Copyright (c) 2011-2019 Stephan Brumme.
+ */
 
 #include <endian.h>
 #include <stdlib.h>
