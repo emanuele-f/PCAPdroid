@@ -20,12 +20,9 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -51,6 +48,7 @@ public class StatsActivity extends BaseActivity {
     private TextView mPacketsRcvd;
     private TextView mActiveConns;
     private TextView mDroppedConns;
+    private TextView mDroppedPkts;
     private TextView mTotConns;
     private TextView mMaxFd;
     private TextView mOpenSocks;
@@ -62,6 +60,7 @@ public class StatsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.stats);
+        displayBackAction();
         setContentView(R.layout.activity_stats);
 
         mTable = findViewById(R.id.table);
@@ -71,6 +70,7 @@ public class StatsActivity extends BaseActivity {
         mPacketsRcvd = findViewById(R.id.packets_rcvd);
         mActiveConns = findViewById(R.id.active_connections);
         mDroppedConns = findViewById(R.id.dropped_connections);
+        mDroppedPkts = findViewById(R.id.pkts_dropped);
         mTotConns = findViewById(R.id.tot_connections);
         mMaxFd = findViewById(R.id.max_fd);
         mOpenSocks = findViewById(R.id.open_sockets);
@@ -82,7 +82,9 @@ public class StatsActivity extends BaseActivity {
             findViewById(R.id.dns_queries_row).setVisibility(View.GONE);
             findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
             findViewById(R.id.max_fd_row).setVisibility(View.GONE);
-        }
+            findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
+        } else
+            findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -94,11 +96,6 @@ public class StatsActivity extends BaseActivity {
         /* Register for updates */
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         CaptureService.askStatsDump();
     }
@@ -121,6 +118,7 @@ public class StatsActivity extends BaseActivity {
         mPacketsRcvd.setText(Utils.formatPkts(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));
         mDroppedConns.setText(Utils.formatNumber(this, stats.num_dropped_conns));
+        mDroppedPkts.setText(Utils.formatNumber(this, stats.pkts_dropped));
         mTotConns.setText(Utils.formatNumber(this, stats.tot_conns));
         mMaxFd.setText(Utils.formatNumber(this, stats.max_fd));
         mOpenSocks.setText(Utils.formatNumber(this, stats.num_open_sockets));

@@ -5,6 +5,7 @@
     android:background="?attr/selectableItemBackground"
     android:orientation="horizontal"
     android:paddingHorizontal="4dp"
+    android:paddingVertical="2dp"
     android:layout_height="wrap_content">
 
     <ImageView
@@ -28,7 +29,7 @@
         android:layout_width="8sp"
         android:layout_height="fill_parent"
         android:layout_weight="0.2"
-        android:text="1.05 MB"
+        tools:text="1.05 MB"
         android:gravity="center_vertical|end"
         android:id="@+id/traffic"/>
 </LinearLayout>

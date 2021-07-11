@@ -22,20 +22,20 @@ package com.emanuelef.remote_capture.activities;
 import android.os.Bundle;
 
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.AppsFragment;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 
-public class AppsActivity extends BaseActivity {
-    private static final String TAG = "AppsActivity";
+public class ConnectionsActivity extends BaseActivity {
+    private static final String TAG = "ConnectionsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setTitle(R.string.apps);
+        setTitle(R.string.connections_view);
+        displayBackAction(); // Use explicit back to restore the AppDetailsActivity state
         setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new AppsFragment())
+                .replace(R.id.fragment, new ConnectionsFragment())
                 .commit();
     }
 }

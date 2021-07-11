@@ -6,6 +6,7 @@ add_library(vpnproxy-jni SHARED
         capture_root.c
         ip_lru.c
         ndpi_master_protos.c
+        crc32.c
         pcap_utils.c)
 
 # nDPI

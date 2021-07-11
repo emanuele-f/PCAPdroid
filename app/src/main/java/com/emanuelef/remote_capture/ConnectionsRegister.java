@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.ConnectionUpdate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,13 +72,15 @@ public class ConnectionsRegister {
             conns = Arrays.copyOfRange(conns, conns.length - mSize, conns.length);
         }
 
-        int in_items = Math.min((mSize - mNumItems), conns.length);
-        int out_items = conns.length - in_items;
+        int out_items = conns.length - Math.min((mSize - mNumItems), conns.length);
         int insert_pos = mNumItems;
         ConnectionDescriptor []removedItems = null;
 
+        //Log.d(TAG, "newConnections[" + mNumItems + "/" + mSize +"]: insert " + conns.length +
+        //        " items at " + mTail + " (removed: " + out_items + " at " + firstPos() + ")");
+
         if(out_items > 0) {
-            int pos = mTail;
+            int pos = firstPos();
             removedItems = new ConnectionDescriptor[out_items];
 
             // update the apps stats
@@ -127,41 +130,41 @@ public class ConnectionsRegister {
         }
     }
 
-    public synchronized void connectionsUpdates(ConnectionDescriptor[] conns) {
+    public synchronized void connectionsUpdates(ConnectionUpdate[] updates) {
         int first_pos = firstPos();
         int first_id = mItemsRing[first_pos].incr_id;
         int last_id = mItemsRing[lastPos()].incr_id;
-        int []changed_pos = new int[conns.length];
+        int []changed_pos = new int[updates.length];
         int k = 0;
 
         Log.d(TAG, "connectionsUpdates: items=" + mNumItems + ", first_id=" + first_id + ", last_id=" + last_id);
 
-        for(ConnectionDescriptor conn: conns) {
-            int id = conn.incr_id;
+        for(ConnectionUpdate update: updates) {
+            int id = update.incr_id;
 
             // ignore updates for untracked items
             if((id >= first_id) && (id <= last_id)) {
                 int pos = ((id - first_id) + first_pos) % mSize;
-                ConnectionDescriptor old = mItemsRing[pos];
+                ConnectionDescriptor conn = mItemsRing[pos];
+                assert(conn.incr_id == id);
 
-                assert(old.incr_id == id);
-                mItemsRing[pos] = conn;
-
-                // update the apps stats
-                long old_bytes = old.rcvd_bytes + old.sent_bytes;
-                long bytes_delta = (conn.rcvd_bytes + conn.sent_bytes) - old_bytes;
+                // update the app stats
+                long bytes_delta = (update.rcvd_bytes + update.sent_bytes) - (conn.rcvd_bytes + conn.sent_bytes);
                 AppStats stats = mAppsStats.get(conn.uid);
                 stats.bytes += bytes_delta;
+
+                //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
+                conn.processUpdate(update);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }
         }
 
         for(ConnectionsListener listener: mListeners) {
-            if(k != conns.length) {
+            if(k != updates.length) {
                 // some untracked items where skipped, shrink the array
                 changed_pos = Arrays.copyOf(changed_pos, k);
-                k = conns.length;
+                k = updates.length;
             }
 
             listener.connectionsUpdated(changed_pos);

@@ -42,6 +42,7 @@ public class Prefs {
     public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
     public static final String PREF_WHITELIST = "whitelist";
+    public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
 
     public enum DumpMode {
         NONE,
@@ -73,4 +74,5 @@ public class Prefs {
     public static boolean getIPv6Enabled(SharedPreferences p)    { return(p.getBoolean(PREF_IPV6_ENABLED, false)); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
+    public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
 }

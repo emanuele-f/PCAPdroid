@@ -123,6 +123,9 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         log_d("Using new DNS server");
     }
 
+    if(zdtun_conn_get_5tuple(conn)->ipproto == IPPROTO_ICMP)
+        return true;
+
     bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns);
     bool is_dns_server = is_internal_dns
                          || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &proxy->ipv6.dns_server, 16) == 0));
@@ -233,9 +236,11 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
     if(!shouldIgnoreConn(proxy, tuple)) {
         // Send last notification
         // Will free the data in sendConnectionsDump
+        data->update_type |= CONN_UPDATE_STATS;
         notify_connection(&proxy->conns_updates, tuple, data);
 
         data->status = zdtun_conn_get_status(conn_info);
+        data->to_purge = true;
     } else
         conn_free_data(data);
 }
@@ -252,7 +257,15 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
 
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
+    struct timespec ts = {0};
 
+    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
+        proxy->last_pkt_ts.tv_sec = ts.tv_sec;
+        proxy->last_pkt_ts.tv_usec = ts.tv_nsec / 1000;
+    } else
+        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
+
+    uint64_t pkt_ms = timeval2ms(&proxy->last_pkt_ts);
     data->status = zdtun_conn_get_status(conn_info);
 
     if(shouldIgnoreConn(proxy, tuple)) {
@@ -265,13 +278,16 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
             data->rcvd_bytes += pkt->len;
         }
 
-        data->last_seen = time(NULL);
+        data->last_seen = pkt_ms;
 
         //log_d("Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
 
-    account_packet(proxy, pkt, from_tun, tuple, data);
+    account_packet(proxy, pkt, from_tun, tuple, data, pkt_ms);
+
+    if(data->status >= CONN_STATUS_CLOSED)
+        data->to_purge = true;
 }
 
 /* ******************************************************* */
@@ -360,8 +376,14 @@ int run_proxy(vpnproxy_data_t *proxy) {
             if (size > 0) {
                 zdtun_pkt_t pkt;
 
-                if (zdtun_parse_pkt(buffer, size, &pkt) != 0) {
+                if(zdtun_parse_pkt(tun, buffer, size, &pkt) != 0) {
                     log_d("zdtun_parse_pkt failed");
+                    goto housekeeping;
+                }
+
+                if(pkt.flags & ZDTUN_PKT_IS_FRAGMENT) {
+                    log_d("discarding IP fragment");
+                    proxy->num_discarded_fragments++;
                     goto housekeeping;
                 }
 
@@ -424,12 +446,12 @@ int run_proxy(vpnproxy_data_t *proxy) {
             run_housekeeping(proxy);
 
             if(proxy->now_ms >= next_purge_ms) {
-                zdtun_purge_expired(tun, proxy->now_ms / 1000);
+                zdtun_purge_expired(tun);
                 next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
             }
     }
 
-    ztdun_finalize(tun);
+    zdtun_finalize(tun);
     return(0);
 }
 

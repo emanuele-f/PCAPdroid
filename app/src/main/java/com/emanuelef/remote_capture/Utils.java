@@ -75,17 +75,19 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 public class Utils {
-    public static final String PCAP_HEADER = "d4c3b2a1020004000000000000000000ffff000065000000";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
@@ -171,6 +173,18 @@ public class Utils {
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss", locale);
 
         return fmt.format(new Date(epoch * 1000));
+    }
+
+    public static String formatEpochMillis(Context context, long millis) {
+        Locale locale = getPrimaryLocale(context);
+        DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS", locale);
+
+        return fmt.format(new Date(millis));
+    }
+
+    public static String formatInteger(Context context, int val) {
+        Locale locale = getPrimaryLocale(context);
+        return String.format(locale, "%d", val);
     }
 
     public static Configuration getLocalizedConfig(Context context) {
@@ -311,6 +325,28 @@ public class Utils {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    // Splits the provided data into individual PCAP records. Intended to be used with data received
+    // via CaptureService::dumpPcapData
+    public static Iterator<Integer> iterPcapRecords(byte[] data) {
+        final ByteBuffer buf = ByteBuffer.wrap(data);
+        buf.order(ByteOrder.nativeOrder());
+
+        return new Iterator<Integer>() {
+            @Override
+            public boolean hasNext() {
+                // 16: sizeof(pcaprec_hdr_s)
+                return(buf.remaining() > 16);
+            }
+
+            @Override
+            public Integer next() {
+                int rec_len = buf.getInt(buf.position() + 8) + 16;
+                buf.position(buf.position() + rec_len);
+                return rec_len;
+            }
+        };
     }
 
     public static boolean hasVPNRunning(Context context) {

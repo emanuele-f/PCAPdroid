@@ -62,6 +62,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.connection_details);
+        displayBackAction();
         setContentView(R.layout.activity_connection_details);
 
         mConn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
@@ -96,8 +97,13 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             else
                 proto.setText(mConn.l7proto);
 
-            source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
-            destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+            if(l4proto.equals("ICMP")) {
+                source.setText(mConn.src_ip);
+                destination.setText(mConn.dst_ip);
+            } else {
+                source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
+                destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+            }
 
             if((mConn.info != null) && (!mConn.info.isEmpty())) {
                 if(mConn.l7proto.equals("DNS"))
@@ -187,9 +193,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         if(conn != null) {
             mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
             mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
-            mDurationView.setText(Utils.formatDuration(conn.last_seen - conn.first_seen));
-            mFirstSeen.setText(Utils.formatEpochFull(this, conn.first_seen));
-            mLastSeen.setText(Utils.formatEpochFull(this, conn.last_seen));
+            mDurationView.setText(Utils.formatDuration((conn.last_seen - conn.first_seen) / 1000));
+            mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
+            mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));
             mStatus.setText(conn.getStatusLabel(this));
 
             if(conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)

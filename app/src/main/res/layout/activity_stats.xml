@@ -83,6 +83,25 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/row_pkts_dropped"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.60"
+            android:textStyle="bold"
+            android:text="@string/packets_dropped" />
+        <TextView
+            android:id="@+id/pkts_dropped"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.40"
+            android:textIsSelectable="true" />
+    </TableRow>
+
+    <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp"
@@ -102,6 +121,7 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/row_dropped_connections"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp">
