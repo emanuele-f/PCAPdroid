@@ -31,6 +31,7 @@ public class ConnectionUpdate {
     public long rcvd_bytes;
     public int sent_pkts;
     public int rcvd_pkts;
+    public int tcp_flags;
     public int status;
 
     /* set if update_type & UPDATE_INFO */
@@ -44,7 +45,8 @@ public class ConnectionUpdate {
     }
 
     public void setStats(long _last_seen, long _sent_bytes, long _rcvd_bytes,
-                         int _sent_pkts, int _rcvd_pkts, int _status) {
+                         int _sent_pkts, int _rcvd_pkts, int _tcp_flags,
+                         int _status) {
         update_type |= UPDATE_STATS;
 
         last_seen = _last_seen;
@@ -52,6 +54,7 @@ public class ConnectionUpdate {
         rcvd_bytes = _rcvd_bytes;
         sent_pkts = _sent_pkts;
         rcvd_pkts = _rcvd_pkts;
+        tcp_flags = _tcp_flags;
         status = _status;
     }
 

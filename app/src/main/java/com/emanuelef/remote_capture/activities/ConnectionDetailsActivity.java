@@ -54,6 +54,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mStatus;
     private TextView mFirstSeen;
     private TextView mLastSeen;
+    private TextView mTcpFlags;
     private Handler mHandler;
     private int mConnPos;
     private boolean mListenerSet;
@@ -88,8 +89,12 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mStatus = findViewById(R.id.detail_status);
         mFirstSeen = findViewById(R.id.first_seen);
         mLastSeen = findViewById(R.id.last_seen);
+        mTcpFlags = findViewById(R.id.tcp_flags);
 
         String l4proto = Utils.proto2str(mConn.ipproto);
+
+        //if(l4proto.equals("TCP"))
+        //    findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
 
         if(mConn != null) {
             if(!mConn.l7proto.equals(l4proto))
@@ -197,6 +202,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));
             mStatus.setText(conn.getStatusLabel(this));
+            mTcpFlags.setText(Utils.tcpFlagsToStr(conn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(conn.getSentTcpFlags()));
 
             if(conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
                 unregisterConnsListener();
