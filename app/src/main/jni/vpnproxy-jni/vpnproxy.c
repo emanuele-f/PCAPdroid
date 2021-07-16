@@ -23,6 +23,9 @@
 #include "common/utils.h"
 #include "ndpi_protocol_ids.h"
 
+// Minimum length (e.g. of "GET") to avoid reporting non-requests
+#define MIN_REQ_PLAINTEXT_CHARS 3
+
 /* ******************************************************* */
 
 jni_classes_t cls;
@@ -644,7 +647,8 @@ static jobject getConnUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn) {
     if(data->update_type & CONN_UPDATE_INFO) {
         jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
         jobject url = (*env)->NewStringUTF(env, data->url ? data->url : "");
-        jobject req = (*env)->NewStringUTF(env, data->request_data ? data->request_data : "");
+        jobject req = (*env)->NewStringUTF(env, (data->request_data &&
+            (strnlen(data->request_data, MIN_REQ_PLAINTEXT_CHARS) == MIN_REQ_PLAINTEXT_CHARS)) ? data->request_data : "");
         jobject l7proto = (*env)->NewStringUTF(env, getProtoName(proxy->ndpi, data->l7proto, conn->tuple.ipproto));
 
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetInfo, info, url, req, l7proto);
