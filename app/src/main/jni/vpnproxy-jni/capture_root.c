@@ -26,7 +26,7 @@
 
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
-#define TCP_CLOSED_TIMEOUT_SEC 20
+#define TCP_CLOSED_TIMEOUT_SEC 60   // some servers keep sending FIN+ACK after close
 #define TCP_TIMEOUT_SEC 300         // needs to be large as TCP connections may stay active for a long time
 
 /* ******************************************************* */
