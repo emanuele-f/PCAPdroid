@@ -176,6 +176,27 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/tcp_flags_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="TCP Flags" />
+            <TextView
+                android:id="@+id/tcp_flags"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="1.1 K down - 98 down" />
+        </TableRow>
+
+        <TableRow
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="4dp">

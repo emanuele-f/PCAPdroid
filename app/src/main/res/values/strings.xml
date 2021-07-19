@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">PCAPdroid</string>
+    <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
     <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
@@ -19,7 +19,7 @@
     <string name="host">Host</string>
     <string name="capture_not_running">Capture not running!</string>
     <string name="capture_not_started">Capture not started!</string>
-    <string name="app_filter">App Filter</string>
+    <string name="app_filter">Target app</string>
     <string name="ready">Ready</string>
     <string name="about">About</string>
     <string name="status">Status</string>
@@ -88,7 +88,7 @@
     <string name="delete_error">Could not delete file</string>
     <string name="capture_running">Capture running</string>
     <string name="notification_msg">%1$s captured, %2$s connections</string>
-    <string name="no_app_filter">No app filter set</string>
+    <string name="no_app_filter">Target app is not selected</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">Open</string>
     <string name="first_seen">First Seen</string>
@@ -104,7 +104,7 @@
     <string name="app_no_warranty">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</string>
     <string name="gpl_license_link">GPLv3 License</string>
     <string name="get_app">Get it:</string>
-    <string name="tls_how_to">How to setup TLS Decryption</string>
+    <string name="tls_how_to">How to setup the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
     <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">Enable IPv6</string>
@@ -147,5 +147,23 @@
     <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
+    <string name="app_details">App Details</string>
+    <string name="package_name">Package Name</string>
+    <string name="uid">UID</string>
+    <string name="app_name">Name</string>
+    <string name="version">Version</string>
+    <string name="target_sdk">Target SDK</string>
+    <string name="installed_on">Installed on</string>
+    <string name="last_update">Last Update</string>
+    <string name="permissions">Permissions</string>
+    <string name="root_app_info">System daemons running with maximum privileges.</string>
+    <string name="netd_app_info">The system daemon which performs the DNS resolutions.</string>
+    <string name="android_app_info">The Android system.</string>
+    <string name="unknown_app_info">\"Unknown\" marks connections whose app could not be determined.</string>
+    <string name="packets_dropped">Packets Dropped</string>
+    <string name="capture_prefs">Capture</string>
+    <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
+    <string name="pcapdroid_trailer_summary">A trailer containing additional metadata, such as the app name, will be added to the dumped packets.</string>
+    <string name="trailer_how_to">How to display the trailer data in Wireshark</string>
 </resources>
 

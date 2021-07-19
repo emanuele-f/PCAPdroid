@@ -38,6 +38,7 @@ extern void (*logcallback)(int lvl, const char *msg);
 void log_android(int lvl, const char *fmt, ...);
 ssize_t xwrite(int fd, const void *buf, size_t count);
 ssize_t xread(int fd, void *buf, size_t count);
+uint64_t timeval2ms(struct timeval *tv);
 void tupleSwapPeers(zdtun_5tuple_t *tuple);
 char loglvl2char(int lvl);
 

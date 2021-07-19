@@ -57,6 +57,7 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -71,9 +72,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
+    public static final String FILTER_EXTRA = "filter";
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
     private FloatingActionButton mFabDown;
@@ -163,7 +166,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mApps = new AppsResolver(requireContext());
         mEmptyText = view.findViewById(R.id.no_connections);
 
-        if(((MainActivity) requireActivity()).getState() == AppState.running)
+        if((requireActivity() instanceof MainActivity) &&
+                (((MainActivity) requireActivity()).getState() == AppState.running))
             mEmptyText.setText(R.string.no_connections);
 
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
@@ -182,7 +186,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
-                AppDescriptor app = mApps.get(item.uid);
+                AppDescriptor app = mApps.get(item.uid, 0);
                 String app_name = null;
 
                 if(app != null)
@@ -218,12 +222,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            filter = intent.getStringExtra(MainActivity.FILTER_EXTRA);
+            filter = intent.getStringExtra(FILTER_EXTRA);
 
             if((filter != null) && !filter.isEmpty()) {
-                // "consume" it
-                intent.removeExtra(MainActivity.FILTER_EXTRA);
-
                 // Avoid hiding the interesting items
                 mAdapter.mWhitelistEnabled = false;
                 fromIntent = true;
@@ -293,7 +294,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(conn == null)
             return;
 
-        AppDescriptor app = mApps.get(conn.uid);
+        AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
 
         if(app != null) {
@@ -320,9 +321,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             String rootDomain = Utils.getRootDomain(conn.info);
 
             if(!rootDomain.equals(conn.info)) {
-                String val = "*" + rootDomain;
                 item = menu.findItem(R.id.exclude_root_domain);
-                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, val));
+                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, rootDomain));
                 item.setVisible(true);
             }
         }
@@ -358,7 +358,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mAdapter.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
         else if(id == R.id.search_app) {
             mSearchView.setIconified(false);
-            mSearchView.setQuery(mApps.get(conn.uid).getPackageName(), true);
+            mSearchView.setQuery(Objects.requireNonNull(
+                    mApps.get(conn.uid, 0)).getPackageName(), true);
             return true;
         } else if(id == R.id.search_host) {
             mSearchView.setIconified(false);
@@ -371,6 +372,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.search_proto) {
             mSearchView.setIconified(false);
             mSearchView.setQuery(conn.l7proto, true);
+            return true;
+        } else if(id == R.id.open_app_details) {
+            Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
+            intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
+            startActivity(intent);
             return true;
         } else
             return super.onContextItemSelected(item);
@@ -449,7 +455,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public void connectionsAdded(int start, ConnectionDescriptor []conns) {
         mHandler.post(() -> {
-            Log.d(TAG, "Added " + conns.length + " connections at " + start);
+            Log.d(TAG, "Add " + conns.length + " connections at " + start);
 
             mAdapter.connectionsAdded(start, conns);
 
@@ -496,14 +502,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSearchView.setOnQueryTextListener(this);
 
         if(mFilterToApply != null) {
-            mSearchView.setQuery(mFilterToApply, true);
+            String query = mFilterToApply;
             mFilterToApply = null;
 
-            // Delay to avoid a bug which causes other icons to be hidden when a filter is applied
-            // from the AppsActivity
-            (new Handler(requireActivity().getMainLooper())).postDelayed(() -> {
-                mSearchView.setIconified(false);
-            }, 50);
+            mSearchView.setIconified(false);
+            mMenuItemSearch.expandActionView();
+
+            // Delay otherwise the query won't be set
+            /* NOTE: there is still a bug with "ifRoom" which causes the other icons to be permanently
+             * hidden when the searchview is collapsed. */
+            mSearchView.post(() -> {
+                mSearchView.setQuery(query, true);
+            });
         }
 
         refreshMenuIcons();

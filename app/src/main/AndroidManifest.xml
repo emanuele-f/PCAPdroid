@@ -17,7 +17,7 @@
     <application
         android:name=".MyApplication"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/pcapdroid_app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:banner="@drawable/banner"
         android:supportsRtl="true"
@@ -44,12 +44,15 @@
         </activity>
 
         <activity
+            android:name=".activities.ConnectionDetailsActivity" />
+        <activity
+            android:name=".activities.AppDetailsActivity" />
+        <activity
+            android:name=".activities.ConnectionsActivity" />
+        <activity
             android:name=".activities.AppsActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
-        <activity
-            android:name=".activities.ConnectionDetailsActivity"
-            android:parentActivityName=".activities.MainActivity"/>
         <activity
             android:name=".activities.StatsActivity"
             android:launchMode="singleTop"

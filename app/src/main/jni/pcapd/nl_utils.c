@@ -61,7 +61,7 @@ int nl_get_route(int af, const addr_t *addr, route_info_t *out) {
   struct iovec iov;
   struct msghdr msg;
   u_char buf[512];
-  int i, alen, ok, nlsock, rv = -1;
+  int i, alen, nlsock, rv = -1;
 
   nlsock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 
@@ -79,7 +79,7 @@ int nl_get_route(int af, const addr_t *addr, route_info_t *out) {
 
   rmsg = (struct rtmsg *)(nmsg + 1);
   rmsg->rtm_family = af;
-  rmsg->rtm_dst_len = alen;
+  rmsg->rtm_dst_len = alen * 8;
 
   rta = RTM_RTA(rmsg);
   rta->rta_type = RTA_DST;
@@ -90,7 +90,7 @@ int nl_get_route(int af, const addr_t *addr, route_info_t *out) {
     i = htonl(0x60060606);
     memcpy(RTA_DATA(rta), &i, alen);
   } else
-    memcpy(RTA_DATA(rta), &addr, alen);
+    memcpy(RTA_DATA(rta), addr, alen);
 
   memset(&snl, 0, sizeof(snl));
   snl.nl_family = AF_NETLINK;

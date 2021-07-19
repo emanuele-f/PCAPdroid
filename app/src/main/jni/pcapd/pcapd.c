@@ -58,6 +58,8 @@ typedef struct {
     int nlsock;
     int client;
 
+    char bpf[512];
+    zdtun_t *tun;
     pcap_t *pd;
     int dlink;
     int ipoffset;
@@ -66,6 +68,7 @@ typedef struct {
     char ifname[IFNAMSIZ];
     uint64_t mac;
     uint32_t ip;
+    struct in6_addr ip6;
 
     char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
 } pcapd_runtime_t;
@@ -82,6 +85,22 @@ static uint64_t bytes2mac(const uint8_t *buf) {
   memcpy(&m, buf, 6);
 
   return m;
+}
+
+/* ******************************************************* */
+
+static int str2mac(const char *buf, uint64_t *mac) {
+    uint8_t mac_bytes[6];
+    int m[6] = {0};
+
+    if(sscanf(buf, "%02X:%02X:%02X:%02X:%02X:%02X", m+0, m+1, m+2, m+3, m+4, m+5) != 6)
+        return -1;
+
+    for(int i = 0; i < 6; i++)
+        mac_bytes[i] = m[i];
+
+    *mac = bytes2mac(mac_bytes);
+    return 0;
 }
 
 /* ******************************************************* */
@@ -116,20 +135,44 @@ static void log_to_file(int lvl, const char *msg) {
 /* ******************************************************* */
 
 static int get_iface_mac(const char *iface, uint64_t *mac) {
-  struct ifreq ifr;
-  int fd;
-  int rv;
+  char fpath[128];
+  char buf[24];
 
-  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  // avoid using ioctl as it sometimes triggers SELINUX errors
+  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/address", iface);
 
-  ifr.ifr_addr.sa_family = AF_INET;
-  strncpy((char *)ifr.ifr_name, iface, IFNAMSIZ-1);
+  FILE *f = fopen(fpath, "r");
 
-  if((rv = ioctl(fd, SIOCGIFHWADDR, &ifr)) != -1)
-    *mac = bytes2mac((uint8_t*)ifr.ifr_hwaddr.sa_data);
+  if(f == NULL)
+    return -1;
 
-  close(fd);
-  return(rv);
+  buf[0] = '\0';
+  fgets(buf, sizeof(buf), f);
+  fclose(f);
+
+  if(str2mac(buf, mac) != 0)
+      return -1;
+
+  return(0);
+}
+
+/* ******************************************************* */
+
+static int get_iface_mtu(const char *iface) {
+  char fpath[128];
+  int mtu = -1;
+
+  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/mtu", iface);
+
+  FILE *f = fopen(fpath, "r");
+
+  if(f == NULL)
+    return -1;
+
+  fscanf(f, "%d", &mtu);
+  fclose(f);
+
+  return mtu;
 }
 
 /* ******************************************************* */
@@ -157,20 +200,37 @@ static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
 
 /* ******************************************************* */
 
-static int list_interfaces() {
-  pcap_if_t *devs, *pd;
+static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
+  FILE *f = fopen("/proc/net/if_inet6", "r");
+  char line[128];
+  int found = 0;
 
-  if(pcap_findalldevs(&devs, errbuf) != 0) {
-    fprintf(stderr, "pcap_findalldevs failed: %s\n", errbuf);
+  if(f == NULL)
     return -1;
+
+  __be32 *ip6 = ip->in6_u.u6_addr32;
+
+  while(fgets(line, sizeof(line), f)) {
+    if((strstr(line, iface) != NULL) &&
+            (sscanf(line, "%08x%08x%08x%08x", &ip6[0], &ip6[1], &ip6[2], &ip6[3]) == 4)) {
+      for(int i=0; i<4; i++)
+        ip6[i] = htonl(ip6[i]);
+
+      if((ip->in6_u.u6_addr8[0] == 0xfe) &&
+         ((ip->in6_u.u6_addr8[1] & 0xC0) == 0x80)) // link local address
+        continue;
+
+      char addr[INET6_ADDRSTRLEN];
+      inet_ntop(AF_INET6, ip, addr, INET6_ADDRSTRLEN);
+
+      log_d("IPv6 address[%s]: %s", iface, addr);
+      found = 1;
+      break;
+    }
   }
 
-  for(pd = devs; pd; pd = pd->next)
-    printf("%s\n", pd->name);
-
-  pcap_freealldevs(devs);
-
-  return 0;
+  fclose(f);
+  return(found ? 0 : -1);
 }
 
 /* ******************************************************* */
@@ -241,7 +301,8 @@ static int init_pcapd_capture(pcapd_runtime_t *rt) {
     return -1;
   }
 
-  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE); // TODO IPv6
+  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
 
   if(rt->nlsock < 0) {
     log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
@@ -298,13 +359,27 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   log_i("interface changed [%d -> %d], (re)starting capture", rt->ifidx, ri.ifidx);
 
 #ifndef READ_FROM_PCAP
-  // TODO support larger MTU
-  pcap_t *pd = pcap_open_live(ifname, 1500, 0, 1, errbuf);
+  int mtu = get_iface_mtu(ifname);
+
+  if(mtu < 0) {
+    mtu = 1500;
+    log_w("Could not get %s MTU, assuming %d", ifname, mtu);
+  }
+
+  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL): 16 B */
+  int snaplen = mtu + SLL_HDR_LEN;
+  log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
+
+  pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
 
   if(!pd) {
     log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
     return;
   }
+
+  // Fixes pcap_next_ex sometimes hanging on interface down
+  // https://github.com/the-tcpdump-group/libpcap/issues/899
+  pcap_setnonblock(pd, 1, errbuf);
 #else
   pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
 
@@ -338,7 +413,7 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   struct bpf_program fcode;
 
   // Only IP traffic
-  if(pcap_compile(pd, &fcode, "ip", 1, PCAP_NETMASK_UNKNOWN) < 0) {
+  if(pcap_compile(pd, &fcode, rt->bpf, 1, PCAP_NETMASK_UNKNOWN) < 0) {
     log_i("[%s] could not set capture filter: %s", ifname, pcap_geterr(pd));
     pcap_close(pd);
     return;
@@ -360,12 +435,17 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
 
   rt->mac = 0;
   if((dlink == DLT_EN10MB) && (get_iface_mac(ifname, &rt->mac) < 0))
-      log_i("Could not get interface %s MAC[%d]: %s", ifname, errno, strerror(errno));
+    log_i("Could not get interface %s MAC[%d]: %s", ifname, errno, strerror(errno));
 
   uint32_t netmask;
   rt->ip = 0;
   if(get_iface_ip(ifname, &rt->ip, &netmask) < 0)
-      log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
+    log_i("Could not get interface %s IP[%d]: %s", ifname, errno, strerror(errno));
+
+  if(get_iface_ip6(ifname, &rt->ip6) < 0) {
+    log_i("Could not get interface %s IPv6[%d]: %s", ifname, errno, strerror(errno));
+    memset(&rt->ip6, 0, sizeof(rt->ip6));
+  }
 
   rt->dlink = dlink;
   rt->ipoffset = ipoffset;
@@ -374,6 +454,19 @@ static void check_capture_interface(pcapd_runtime_t *rt) {
   memcpy(rt->ifname, ifname, sizeof(ifname));
 
   log_i("Capturing packets from %s", ifname);
+}
+
+/* ******************************************************* */
+
+static void reset_capture_interface(pcapd_runtime_t *rt) {
+  if(!rt->pd)
+    return;
+
+  pcap_close(rt->pd);
+  rt->pd = NULL;
+  rt->pf = -1;
+  rt->ifidx = -1;
+  rt->ifname[0] = '\0';
 }
 
 /* ******************************************************* */
@@ -424,7 +517,20 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
           if(get_iface_ip(rt->ifname, &rt->ip, &netmask) < 0)
             log_i("Could not get interface %s IP[%d]: %s", rt->ifname, errno, strerror(errno));
 
-          break;
+          if(get_iface_ip6(rt->ifname, &rt->ip6) < 0) {
+            log_i("Could not get interface %s IPv6[%d]: %s", rt->ifname, errno, strerror(errno));
+            memset(&rt->ip6, 0, sizeof(rt->ip6));
+          }
+        }
+        break;
+      case RTM_DELLINK:
+        if(rt->ifidx == ((struct ifinfomsg *) NLMSG_DATA(nh))->ifi_index) {
+          // libpcap sometimes does not detect that an interface was removed. Making it necessary
+          // to subscribe to RTMGRP_LINK
+          log_i("RTM_DELLINK: interface %s deleted", rt->ifname);
+          reset_capture_interface(rt);
+          found = 1;
+          do_break = 1;
         }
         break;
     }
@@ -472,28 +578,40 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
     pkt += SLL_HDR_LEN;
   }
 
-  // NOTE: this must be IP traffic due to the PCAP filter
+  // NOTE: this must be IPv4/IPv6 traffic due to the PCAP filter
   if(len < 20)
     return 0;
 
   struct iphdr *ip = (struct iphdr *) pkt;
-  if(ip->version != 4) // TODO IPv6 support
-    return 0;
 
-  if(ip->saddr == rt->ip)
-    return 1; // TX
+  if(ip->version == 4) {
+    if(ip->daddr == rt->ip)
+      return 0; // RX
+  } else if(ip->version == 6) {
+    struct ipv6hdr *hdr = (struct ipv6hdr *) pkt;
+
+    if(memcmp(&hdr->daddr, &rt->ip6, sizeof(rt->ip6)) == 0)
+      return 0; // RX
+  }
 
   return 1; // by default assume TX
 }
 
 /* ******************************************************* */
 
-static int run_pcap_dump(int uid_filter) {
+static int run_pcap_dump(int uid_filter, const char *bpf) {
   int rv = -1;
+  struct timespec ts = {0};
+  struct pcap_stat stats = {0};
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
+  time_t next_stats_update = 0;
   uid_resolver_t *resolver = NULL;
   uid_lru_t *lru = NULL;
+  zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+  if(!(rt.tun = zdtun_init(&callbacks, NULL)))
+    goto cleanup;
 
   if(!(resolver = init_uid_resolver_from_proc()))
     goto cleanup;
@@ -504,6 +622,15 @@ static int run_pcap_dump(int uid_filter) {
   if(init_pcapd_capture(&rt) < 0)
     goto cleanup;
 
+  int l = snprintf(rt.bpf, sizeof(rt.bpf), "ip or ip6");
+
+  if(bpf[0])
+    snprintf(rt.bpf + l, sizeof(rt.bpf) - l, " and (%s)", bpf);
+
+  log_d("Using BPF: %s", rt.bpf);
+
+  rt.pf = -1;
+  rt.ifidx = -1;
   check_capture_interface(&rt);
   rv = 0;
 
@@ -546,20 +673,19 @@ static int run_pcap_dump(int uid_filter) {
         log_i("pcap_next_ex failed: %s", pcap_geterr(rt.pd));
 
         // Do not abort, just wait for route changes
-        pcap_close(rt.pd);
-        rt.pd = NULL;
-        rt.pf = -1;
-        rt.ifidx = -1;
-        rt.ifname[0] = '\0';
+        reset_capture_interface(&rt);
       } else if((rv1 == 1) && (hdr->caplen >= to_skip)) {
         pcapd_hdr_t phdr;
         zdtun_pkt_t zpkt;
         uint8_t is_tx = is_tx_packet(&rt, pkt, hdr->caplen);
 
+        if(hdr->caplen < hdr->len)
+          log_w("Packet truncated: %d/%d", hdr->caplen, hdr->len);
+
         pkt += to_skip;
         hdr->caplen -= to_skip;
 
-        if(zdtun_parse_pkt((const char*)pkt, hdr->caplen, &zpkt) == 0) {
+        if(zdtun_parse_pkt(rt.tun, (const char*)pkt, hdr->caplen, &zpkt) == 0) {
           if(!is_tx) {
             // Packet from the internet, swap src and dst
             tupleSwapPeers(&zpkt.tuple);
@@ -575,6 +701,7 @@ static int run_pcap_dump(int uid_filter) {
           if((uid_filter == -1) || (uid_filter == uid)) {
             phdr.ts = hdr->ts;
             phdr.len = hdr->caplen;
+            phdr.pkt_drops = stats.ps_drop;
             phdr.uid = uid;
             phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
 
@@ -591,9 +718,15 @@ static int run_pcap_dump(int uid_filter) {
       }
     }
 
-    if((rt.pd == NULL) && (time(NULL) >= next_interface_recheck)) {
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+    time_t now = ts.tv_sec;
+
+    if((rt.pd == NULL) && (now >= next_interface_recheck)) {
       check_capture_interface(&rt);
-      next_interface_recheck = time(NULL) + 5;
+      next_interface_recheck = now + 2;
+    } else if((rt.pd != NULL) && (now >= next_stats_update)) {
+      pcap_stats(rt.pd, &stats);
+      next_stats_update = now + 3;
     }
   }
 
@@ -602,6 +735,8 @@ static int run_pcap_dump(int uid_filter) {
 cleanup:
   finish_pcapd_capture(&rt);
 
+  if(rt.tun)
+    zdtun_finalize(rt.tun);
   if(resolver)
     destroy_uid_resolver(resolver);
   if(lru)
@@ -615,9 +750,9 @@ cleanup:
 static void usage() {
   fprintf(stderr, "pcapd - root companion for PCAPdroid\n"
                   "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
-                  "Usage: pcapd [--interfaces|-d]\n"
-                  " --interfaces   list the interfaces of the system\n"
-                  " -d [uid]       daemonize and dump packets from the internet interface, possibly filtered by uid\n"
+                  "Usage: pcapd -d uid [-b bpf]\n"
+                  " -d [uid]       daemonize and dump packets from the internet interface, filtered by uid (-1 for no filter)\n"
+                  " -b [bpf]       specify a BPF filter to apply"
   );
 
   exit(1);
@@ -628,20 +763,16 @@ static void usage() {
 int main(int argc, char *argv[]) {
   logtag = "pcapd";
   logcallback = log_to_file;
+  int uid_filter;
+  char *bpf = "";
 
-  if(argc < 2)
+  if((argc < 3) || (strcmp(argv[1], "-d") != 0))
     usage();
 
-  if(!strcmp(argv[1], "--interfaces"))
-    return list_interfaces();
-  else if(!strcmp(argv[1], "-d")) {
-    int uid_filter = -1;
+  uid_filter = atoi(argv[2]);
 
-    if(argc >= 3)
-      uid_filter = atoi(argv[2]);
+  if((argc == 5) && (strcmp(argv[3], "-b") == 0))
+    bpf = argv[4];
 
-    return run_pcap_dump(uid_filter);
-  }
-
-  usage();
+  return run_pcap_dump(uid_filter, bpf);
 }

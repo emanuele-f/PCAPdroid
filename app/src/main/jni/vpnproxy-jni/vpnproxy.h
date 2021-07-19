@@ -26,6 +26,7 @@
 #include "ip_lru.h"
 #include "ndpi_api.h"
 #include "common/uid_resolver.h"
+#include "third_party/uthash.h"
 
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
@@ -41,6 +42,9 @@
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
 #define DNS_TYPE_RESPONSE 0x8000
+
+#define CONN_UPDATE_STATS 1
+#define CONN_UPDATE_INFO 2
 
 typedef struct capture_stats {
     jlong sent_bytes;
@@ -60,6 +64,7 @@ typedef struct conn_data {
     struct ndpi_id_struct *src_id, *dst_id;
     ndpi_protocol l7proto;
 
+    uint64_t last_update_ms; // like last_seen but monotonic (only root)
     jlong first_seen;
     jlong last_seen;
     jlong sent_bytes;
@@ -69,10 +74,17 @@ typedef struct conn_data {
     zdtun_conn_status_t status;
     char *info;
     jint uid;
+    uint8_t tcp_flags[2]; // cli2srv, srv2cli
+    union {
+        uint8_t last_ack;
+        uint8_t pending_dns_queries;
+    };
     bool pending_notification;
+    bool to_purge;
     bool request_done;
     char *request_data;
     char *url;
+    uint8_t update_type;
 } conn_data_t;
 
 typedef struct vpn_conn {
@@ -85,6 +97,12 @@ typedef struct conn_array {
     int size;
     int cur_items;
 } conn_array_t;
+
+typedef struct {
+    int uid;
+    char appname[64];
+    UT_hash_handle hh;
+} uid_to_app_t;
 
 typedef struct vpnproxy_data {
     int tunfd;
@@ -100,7 +118,10 @@ typedef struct vpnproxy_data {
     ndpi_ptree_t *known_dns_servers;
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
-    uint64_t now_ms;
+    struct timeval last_pkt_ts; // Packet timestamp, reported into the exported PCAP
+    uint64_t now_ms;            // Monotonic timestamp, see refresh_time
+    u_int num_dropped_pkts;
+    long num_discarded_fragments;
     u_int32_t num_dropped_connections;
     u_int32_t num_dns_requests;
     conn_array_t new_conns;
@@ -110,20 +131,14 @@ typedef struct vpnproxy_data {
     bool last_conn_blocked;
     bool root_capture;
     zdtun_statistics_t stats;
-
-    struct {
-        u_int32_t collector_addr;
-        u_int16_t collector_port;
-        bool tcp_socket;
-        bool enabled;
-    } pcap_dump;
+    uid_to_app_t *uid2app;
 
     struct {
         bool enabled;
         jbyte *buffer;
         int buffer_idx;
         u_int64_t last_dump_ms;
-    } java_dump;
+    } pcap_dump;
 
     struct {
         bool enabled;
@@ -159,9 +174,12 @@ typedef struct jni_methods {
     jmethodID getApplicationByUid;
     jmethodID protect;
     jmethodID dumpPcapData;
-    jmethodID sendConnectionsDump;
+    jmethodID updateConnections;
     jmethodID connInit;
-    jmethodID connSetData;
+    jmethodID connProcessUpdate;
+    jmethodID connUpdateInit;
+    jmethodID connUpdateSetStats;
+    jmethodID connUpdateSetInfo;
     jmethodID sendServiceStatus;
     jmethodID sendStatsDump;
     jmethodID statsInit;
@@ -172,6 +190,7 @@ typedef struct jni_methods {
 typedef struct jni_classes {
     jclass vpn_service;
     jclass conn;
+    jclass conn_update;
     jclass stats;
 } jni_classes_t;
 
@@ -183,16 +202,21 @@ extern bool running;
 extern uint32_t new_dns_server;
 extern bool dump_vpn_stats_now;
 
+struct pcapdroid_trailer;
+
 conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
 void conn_free_data(conn_data_t *data);
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
 void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
 void run_housekeeping(vpnproxy_data_t *proxy);
-void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
+void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
+                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data, uint64_t pkt_ms);
 int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
+void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
+uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);

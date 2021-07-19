@@ -75,7 +75,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -97,8 +96,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private static final int POS_STATUS = 0;
     private static final int POS_CONNECTIONS = 1;
     private static final int TOTAL_COUNT = 2;
-
-    public static final String FILTER_EXTRA = "filter";
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -226,17 +223,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    private Fragment getFragment(Class targetClass) {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-
-        for(Fragment fragment : fragments) {
-            if(targetClass.isInstance(fragment))
-                return fragment;
-        }
-
-        return null;
-    }
-
     private void checkPermissions() {
         String fname = "test.pcap";
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -294,8 +280,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         new TabLayoutMediator(mTabLayout, mPager, (tab, position) ->
                 tab.setText(getString(stateAdapter.getPageTitle(position)))
         ).attach();
-
-        checkFilterIntent(getIntent());
     }
 
     @Override
@@ -342,25 +326,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        checkFilterIntent(intent);
-    }
-
-    private void checkFilterIntent(Intent intent) {
-        if(intent != null) {
-            String filter = intent.getStringExtra(FILTER_EXTRA);
-
-            if((filter != null) && (!filter.isEmpty())) {
-                // Move to the connections tab
-                Log.d(TAG, "FILTER_EXTRA " + filter);
-
-                mPager.setCurrentItem(POS_CONNECTIONS, false);
-            }
-        }
     }
 
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {

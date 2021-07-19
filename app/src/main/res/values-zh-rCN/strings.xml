@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">PCAPdroid</string>
+    <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
     <string name="default_collector_ip" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
     <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
@@ -19,7 +19,7 @@
     <string name="host">主机</string>
     <string name="capture_not_running">流量捕获未在运行!</string>
     <string name="capture_not_started">流量捕获未启动!</string>
-    <string name="app_filter">应用过滤器</string>
+    <string name="app_filter">目标应用</string>
     <string name="ready">就绪</string>
     <string name="about">关于</string>
     <string name="status">状态</string>
@@ -88,7 +88,7 @@
     <string name="delete_error">无法删除文件</string>
     <string name="capture_running">流量捕获运行中</string>
     <string name="notification_msg">%1$s 已捕获, %2$s 连接</string>
-    <string name="no_app_filter">未设置应用过滤器</string>
+    <string name="no_app_filter">未选中目标应用</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">已打开</string>
     <string name="first_seen">第一次见</string>
@@ -99,7 +99,7 @@
     <string name="connections_csv_fields_v1">IP协议,源IP,源端口,目标IP,目标端口,Uid,应用,协议,状态,信息,已发送字节数,已接收字节数,已发送数据包,已接收数据包,第一次见,最后一次见</string>
     <string name="save_to_file">保存到文件</string>
     <string name="file_saved">文件保存成功</string>
-    <string name="older_connections_notice">%1$d 个较旧连接未显示</string>
+    <string name="older_connections_notice">未显示 %1$d 个较旧连接</string>
     <string name="about_text">PCAPdroid 是一款无需获取根权限便可进行网络捕获和监视的开源工具</string>
     <string name="app_no_warranty">分发 PCAPdroid 是希望它会有用，但开发者不提供任何保证；甚至没有对适销性或适合某一特定目的的默示保证。更多细节请参阅 GNU 通用公共许可证。</string>
     <string name="gpl_license_link">GPLv3 许可</string>
@@ -131,7 +131,7 @@
     <string name="http_request">HTTP 请求</string>
     <string name="root_log">Root 日志</string>
     <string name="request_plaintext">请求明文</string>
-    <string name="search">搜索 ...</string>
+    <string name="search">搜索…</string>
     <string name="app_val">应用: %1$s</string>
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
@@ -147,4 +147,22 @@
     <string name="whitelist_empty">白名单为空。\n你可以长按一个连接将其加入白名单。</string>
     <string name="n_selected">选中了 %1$d </string>
     <string name="select_all">选择全部</string>
+    <string name="app_details">应用详情</string>
+    <string name="package_name">包名</string>
+    <string name="uid">UID</string>
+    <string name="app_name">名称</string>
+    <string name="version">版本号</string>
+    <string name="target_sdk">目标 SDK</string>
+    <string name="installed_on">安装时间</string>
+    <string name="last_update">上次更新</string>
+    <string name="permissions">权限</string>
+    <string name="root_app_info">以最高权限运行的系统守护进程。</string>
+    <string name="netd_app_info">执行 DNS 解析的系统守护进程。</string>
+    <string name="android_app_info">安卓系统。</string>
+    <string name="unknown_app_info">\"未知\" 标记无法确定来自什么应用的连接。</string>
+    <string name="packets_dropped">丢弃的数据包</string>
+    <string name="capture_prefs">捕获</string>
+    <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
+    <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中。</string>
+    <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
 </resources>
