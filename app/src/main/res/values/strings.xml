@@ -165,5 +165,9 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">A trailer containing additional metadata, such as the app name, will be added to the dumped packets.</string>
     <string name="trailer_how_to">How to display the trailer data in Wireshark</string>
+    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by paying a small fee.</string>
+    <string name="remove_ads">Remove Ads</string>
+    <string name="pending_transaction">Please complete your transaction to redeem this feature</string>
+    <string name="purchased_feature_ok">The purchased feature is now available!</string>
 </resources>
 
