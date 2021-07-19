@@ -22,10 +22,11 @@ import java.util.Collections;
 
 public class AD {
     public static final String TAG = "Advertisements";
-    private Activity ctx;
+    private final Activity ctx;
     private final AdSize adSize;
     private final FrameLayout adContainer;
     private final String unitId;
+    private boolean mShown;
     private AdView adView;
 
     public AD(Activity activity, String unitid) {
@@ -41,13 +42,20 @@ public class AD {
         }
 
         Log.d(TAG, "ad size: " + adSize.toString());
-        MobileAds.initialize(ctx, initializationStatus -> Log.d(TAG, "initialized: " + initializationStatus));
+
+        // Calling initialize is not needed
+        //MobileAds.initialize(ctx, initializationStatus -> Log.d(TAG, "initialized: " + initializationStatus));
+    }
+
+    private boolean tmpSkip() {
+        return(System.currentTimeMillis() < 1627320000000L);
     }
 
     public void show() {
-        if(adView != null)
+        if((adView != null) || tmpSkip())
             return;
 
+        Log.d(TAG, "Start ad loading");
         adView = new AdView(ctx);
         adView.setAdUnitId(unitId);
         adContainer.addView(adView);
@@ -59,16 +67,19 @@ public class AD {
             @Override
             public void onAdLoaded() {
                 Log.w(TAG, "AD successfully loaded");
+                mShown = true;
             }
 
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.w(TAG, "Load ad failed: " + loadAdError);
+                hide();
             }
         });
 
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+        Log.d(TAG, "Finished ad loading");
     }
 
     // https://developers.google.com/admob/android/banner/adaptive
@@ -85,11 +96,16 @@ public class AD {
     }
 
     public void hide() {
-        /*if(adView != null) {
+        if(adView != null) {
             Log.d(TAG, "ad destroy");
             adContainer.removeAllViews();
             adContainer.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
             adView.destroy();
-        }*/
+            mShown = false;
+        }
+    }
+
+    public boolean isShown() {
+        return mShown;
     }
 }

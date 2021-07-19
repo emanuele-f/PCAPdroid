@@ -61,7 +61,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.Purchase.PurchaseState;
 import com.emanuelef.remote_capture.AD;
+import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -75,11 +79,15 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private AD mAd;
+    private boolean noAdsAvailable;
+    private boolean showAdsNotice;
+    private PlayBilling mIab;
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
     private AppState mState;
@@ -117,7 +125,69 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        mAd = new AD(this, "ca-app-pub-5059485193178567/1497791951");
+        mAd = new AD(this, "ca-app-pub-5059485193178567/9939820922");
+        mIab = new PlayBilling(this);
+
+        // Must show the AD here in the onCreate otherwise it will get stuck for some reason
+        if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU))
+            mAd.show();
+
+        if(!CaptureService.isServiceActive() && (getIntent() != null) &&
+                getIntent().hasCategory("android.intent.category.LAUNCHER")) {
+            // startPurchases will make Internet connections, only call it if capture is not running
+            // endPurchases will be called to stop the connections after the purchase has been validated
+            mIab.startPurchases(new PlayBilling.PurchaseReadyListener() {
+                @Override
+                public void onPurchasesReady(List<SkuDetails> availableSkus) {
+                    if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU)) {
+                        noAdsAvailable = false;
+
+                        for(SkuDetails sku: availableSkus) {
+                            if(sku.getSku().equals(PlayBilling.NO_ADS_SKU)) {
+                                noAdsAvailable = true;
+                                break;
+                            }
+                        }
+
+                        if(noAdsAvailable) {
+                            NavigationView navView = findViewById(R.id.nav_view);
+                            Menu menu = navView.getMenu();
+
+                            menu.findItem(R.id.action_donate)
+                                    .setTitle(R.string.remove_ads)
+                                    .setVisible(true);
+
+                            showAdsNotice = true;
+                        } else
+                            Log.d(PlayBilling.TAG, "Ads removal sku is not available");
+                    } else
+                        mIab.endPurchases();
+                }
+
+                @Override
+                public void onPurchasesError(BillingResult res) {
+                    mIab.endPurchases();
+                }
+
+                @Override
+                public void onSKUStateUpdate(String sku, int state) {
+                    if(sku.equals(PlayBilling.NO_ADS_SKU)) {
+                        if(state == PurchaseState.PURCHASED) {
+                            mAd.hide();
+                            mIab.endPurchases();
+                            showAdsNotice = false;
+
+                            Utils.showToastLong(MainActivity.this, R.string.purchased_feature_ok);
+                        } else {
+                            mAd.show();
+
+                            if(state == PurchaseState.PENDING)
+                                Utils.showToastLong(MainActivity.this, R.string.pending_transaction);
+                        }
+                    }
+                }
+            });
+        }
 
         initAppState();
         checkPermissions();
@@ -201,10 +271,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             startActivity(browserIntent);
         });
 
-        if(Prefs.isRootCaptureEnabled(mPrefs)) {
-            Menu navMenu = navView.getMenu();
+        Menu navMenu = navView.getMenu();
+
+        if(Prefs.isRootCaptureEnabled(mPrefs))
             navMenu.findItem(R.id.open_root_log).setVisible(true);
-        }
+
+        navMenu.findItem(R.id.action_donate).setVisible(false);
     }
 
     @Override
@@ -344,8 +416,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
             startActivity(intent);
         } else if (id == R.id.action_donate) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
-            startActivity(browserIntent);
+            //Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
+            //startActivity(browserIntent);
+            mIab.purchase(this, PlayBilling.NO_ADS_SKU);
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
         } else if (id == R.id.action_open_user_guide) {
@@ -388,13 +461,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public void appStateReady() {
         mState = AppState.ready;
-        mAd.show();
         notifyAppState();
     }
 
     public void appStateStarting() {
+        if(showAdsNotice && mAd.isShown()) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setMessage(R.string.ads_notice)
+                    .setPositiveButton(R.string.remove_ads, (dialog, whichButton) -> mIab.purchase(this, PlayBilling.NO_ADS_SKU))
+                    .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
+                    .show();
+
+            showAdsNotice = false;
+        }
+
         mState = AppState.starting;
-        mAd.hide();
         notifyAppState();
     }
 

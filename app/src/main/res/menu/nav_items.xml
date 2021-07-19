@@ -39,8 +39,7 @@
         <item
             android:id="@+id/action_donate"
             android:title="@string/donate"
-            android:icon="@drawable/ic_money"
-            android:visible="false" />
+            android:icon="@drawable/ic_money" />
 
         <item
             android:id="@+id/action_about"

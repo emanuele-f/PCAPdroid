@@ -34,6 +34,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.AD;
+import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -51,13 +52,11 @@ public class SettingsActivity extends BaseActivity {
         displayBackAction();
         setContentView(R.layout.settings_activity);
 
-        mAd = new AD(this, "ca-app-pub-5059485193178567/1641030673");
-        mAd.show();
+        PlayBilling billing = new PlayBilling(this);
+        mAd = new AD(this, "ca-app-pub-5059485193178567/9893032544");
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        if(!billing.isPurchased(PlayBilling.NO_ADS_SKU))
+            mAd.show();
 
         getSupportFragmentManager()
                 .beginTransaction()
