@@ -52,7 +52,13 @@ During the capture, PCAPdroid logs all the connections in memory. After a limit 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" />
 </p>
 
-By pressing on an app it is possible to show its individual connections.
+By pressing on an app, its details page will open, where it's possible to review its metadata, like the installation date, version and permissions.
+
+<p align="center">
+<img src="./images/app_details.jpg" width="200" />
+</p>
+
+By clicking on the "Settings" button, the system settings for the app will open. The "Connections" buttons provides a shortcut to show the connections made by the app.
 
 ## 1.3 Filters
 
