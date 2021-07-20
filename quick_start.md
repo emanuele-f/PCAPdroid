@@ -58,7 +58,7 @@ By pressing on an app, its details page will open, where it's possible to review
 <img src="./images/app_details.jpg" width="200" />
 </p>
 
-By clicking on the "Settings" button, the system settings for the app will open. The "Connections" buttons provides a shortcut to show the connections made by the app.
+By clicking on the "Settings" button, the system settings for the app will open. The "Connections" button provides a shortcut to show the connections made by the app.
 
 ## 1.3 Filters
 
