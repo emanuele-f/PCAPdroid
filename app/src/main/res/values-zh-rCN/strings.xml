@@ -165,4 +165,8 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中。</string>
     <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
+    <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过支付少量费用来去除广告。</string>
+    <string name="remove_ads">去除广告</string>
+    <string name="pending_transaction">请完成您的交易以兑换此功能</string>
+    <string name="purchased_feature_ok">购买的功能现在可用！</string>
 </resources>
