@@ -26,7 +26,7 @@
 
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
-#define TCP_CLOSED_TIMEOUT_SEC 20
+#define TCP_CLOSED_TIMEOUT_SEC 60   // some servers keep sending FIN+ACK after close
 #define TCP_TIMEOUT_SEC 300         // needs to be large as TCP connections may stay active for a long time
 
 /* ******************************************************* */
@@ -199,7 +199,7 @@ static void update_connection_status(pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_
       struct tcphdr *tcp = pkt->tcp;
 
       conn->data->tcp_flags[dir] |= tcp->th_flags;
-      uint8_t seen_flags = conn->data->tcp_flags[0] | conn->data->tcp_flags[1];
+      uint8_t seen_flags = conn->data->tcp_flags[0] & conn->data->tcp_flags[1];
 
       if(tcp->th_flags & TH_RST)
           conn->data->status = CONN_STATUS_RESET;

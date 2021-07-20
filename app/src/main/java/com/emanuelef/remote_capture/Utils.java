@@ -616,4 +616,21 @@ public class Utils {
 
         return domain.substring(rootPos + 1);
     }
+
+    public static String tcpFlagsToStr(int flags) {
+        final String []flags_s = {"FIN", "SYN", "RST", "PSH", "ACK", "URG", "ECN", "CWR"};
+        final StringBuilder builder = new StringBuilder();
+        boolean first = true;
+
+        for(int i=0; i<flags_s.length; i++) {
+            if((flags & (1 << i)) != 0) {
+                if(!first)
+                    builder.append(" ");
+                builder.append(flags_s[i]);
+                first = false;
+            }
+        }
+
+        return builder.toString();
+    }
 }

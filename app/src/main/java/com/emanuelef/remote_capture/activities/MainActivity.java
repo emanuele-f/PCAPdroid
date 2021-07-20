@@ -346,8 +346,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.action_open_user_guide) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
             startActivity(browserIntent);
-        } else if (id == R.id.action_rate_app) {
-            rateApp();
         } else if (id == R.id.action_stats) {
             if(mState == AppState.running) {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
@@ -419,10 +417,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void rateApp() {
         try {
-            /* If playstore is installed */
+            // If playstore is installed
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + this.getPackageName())));
         } catch (android.content.ActivityNotFoundException e) {
-            /* If playstore is not available */
+            // If playstore is not available
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
         }
     }

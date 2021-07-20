@@ -64,6 +64,7 @@ public class ConnectionDescriptor implements Serializable {
     public int uid;
     public int incr_id;
     public int status;
+    private int tcp_flags;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
                                 int _src_port, int _dst_port, int _uid, long when) {
@@ -86,6 +87,7 @@ public class ConnectionDescriptor implements Serializable {
             rcvd_pkts = update.rcvd_pkts;
             status = update.status;
             last_seen = update.last_seen;
+            tcp_flags = update.tcp_flags;
         }
         if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
             info = update.info;
@@ -126,9 +128,18 @@ public class ConnectionDescriptor implements Serializable {
                 l7proto.toLowerCase().contains(filter) ||
                 Integer.toString(uid).equals(filter) ||
                 Integer.toString(dst_port).contains(filter) ||
+                Integer.toString(src_port).equals(filter) ||
                 ((app != null) && (app.getName().toLowerCase().contains(filter) ||
                         app.getPackageName().equals(filter)))
         );
+    }
+
+    public int getSentTcpFlags() {
+        return (tcp_flags >> 8);
+    }
+
+    public int getRcvdTcpFlags() {
+        return (tcp_flags & 0xFF);
     }
 
     @Override
