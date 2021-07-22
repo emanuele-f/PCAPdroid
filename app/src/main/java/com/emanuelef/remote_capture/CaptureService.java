@@ -57,13 +57,35 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
+import com.github.chhsiao90.nitmproxy.NitmProxy;
+import com.github.chhsiao90.nitmproxy.NitmProxyConfig;
+import com.github.chhsiao90.nitmproxy.enums.ProxyMode;
+import com.github.chhsiao90.nitmproxy.tls.CertUtil;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.conscrypt.Conscrypt;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
@@ -91,6 +113,8 @@ public class CaptureService extends VpnService implements Runnable {
     private String app_filter;
     private int app_filter_uid;
     private HTTPServer mHttpServer;
+    private NitmProxy nitmProxy;
+
     private OutputStream mOutputStream;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
@@ -234,6 +258,43 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
+        if (nitmProxy == null) {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1);
+            NitmProxyConfig config = new NitmProxyConfig();
+            config.setProxyMode(ProxyMode.SOCKS);
+            config.setHost("127.0.0.1");
+            config.setPort(9090);
+            X509CertificateHolder certificate = null;
+            PEMKeyPair key = null;
+            try {
+                certificate = (X509CertificateHolder) new PEMParser(
+                        new InputStreamReader(getResources().openRawResource(R.raw.server))).readObject();
+            } catch (Exception e) {
+                Log.e(CaptureService.TAG, "Could not start the proxy server");
+                e.printStackTrace();
+                return super.onStartCommand(intent, flags, startId);
+            }
+            try {
+                key = (PEMKeyPair) new PEMParser(
+                        new InputStreamReader(getResources().openRawResource(R.raw.key))).readObject();
+            } catch (Exception e) {
+                Log.e(CaptureService.TAG, "Could not start the proxy server");
+                e.printStackTrace();
+                return super.onStartCommand(intent, flags, startId);
+            }
+            config.setCertificate(certificate);
+            config.setKey(key.getPrivateKeyInfo());
+
+            nitmProxy = new NitmProxy(config);
+            try {
+                nitmProxy.start();
+            } catch (Exception e) {
+                Log.e(CaptureService.TAG, "Could not start the proxy server");
+                e.printStackTrace();
+                return super.onStartCommand(intent, flags, startId);
+            }
+        }
+
         if ((app_filter != null) && (!app_filter.isEmpty())) {
             try {
                 app_filter_uid = getPackageManager().getApplicationInfo(app_filter, 0).uid;
@@ -327,7 +388,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
         if(mHttpServer != null)
             mHttpServer.stop();
-
+        if (nitmProxy != null) {
+            nitmProxy.stop();
+        }
         super.onDestroy();
     }
 
