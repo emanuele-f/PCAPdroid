@@ -47,11 +47,11 @@
     <string name="source_code">Código fonte</string>
     <string name="yes">SIM</string>
     <string name="no">NÃO</string>
-    <string name="existing_vpn_confirm">O App da VPN que está atualmente ativo será desconectado. Você quer prosseguir?</string>
+    <string name="existing_vpn_confirm">O app da VPN atualmente ativo será desconectado. Você quer prosseguir?</string>
     <string name="vpn_setup_failed">Configuração da VPN falhou</string>
     <string name="app_not_found">O "%1$s" app não foi encontrado</string>
     <string name="apps_loading_please_wait">Apps estão carregando, por favor aguarde</string>
-    <string name="stats">Stats</string>
+    <string name="stats">Estatísticas</string>
     <string name="active_connections">Conexões ativas</string>
     <string name="dropped_connections">Conexões interrompidas</string>
     <string name="tot_connections">Total das conexões</string>
@@ -108,7 +108,7 @@
     <string name="app_language">Idioma do App</string>
     <string name="lang_english">Inglês</string>
     <string name="system_default">Padrão do sistema</string>
-    <string name="no_activity_file_selection">Nenhum app de seleção de arquivos encontrado</string>
+    <string name="no_activity_file_selection">Não foi encontrado nenhum app de seleção de arquivos</string>
     <string name="file_saved_with_name">Arquivo %1$s salvo com sucesso</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
@@ -122,7 +122,7 @@
     <string name="root_capture_summary">A captura de pacotes via Root permite que o PCAPdroid funcione simultaneamente com outros apps de VPN.</string>
     <string name="donate">Doar</string>
     <string name="http_request">Solicitação HTTP</string>
-    <string name="root_log">Root Log</string>
+    <string name="root_log">Registro via Root</string>
     <string name="request_plaintext">Solicitação em texto puro</string>
     <string name="search">Pesquisa…</string>
     <string name="app_val">App: %1$s</string>
@@ -140,4 +140,22 @@
     <string name="whitelist_empty">A lista branca está vazia.\nUse o clique longo para adicionar à lista branca.</string>
     <string name="n_selected">%1$d selecionado</string>
     <string name="select_all">Selecionar tudo</string>
+    <string name="app_details">Detalhes do app</string>
+    <string name="package_name">Nome do pacote</string>
+    <string name="uid">UID</string>
+    <string name="app_name">Nome</string>
+    <string name="version">Versão</string>
+    <string name="target_sdk">Nível alvo SDK</string>
+    <string name="installed_on">Instalado em</string>
+    <string name="last_update">Última atualização</string>
+    <string name="permissions">Permissões</string>
+    <string name="root_app_info">Serviços do sistema (em segundo plano) estão funcionando com privilégios máximos.</string>
+    <string name="netd_app_info">O serviço do sistema que realiza as resoluções de DNS.</string>
+    <string name="android_app_info">O sistema do Android.</string>
+    <string name="unknown_app_info">O \"Desconhecido\" está atribuído a conexões para as quais o app da fonte não pôde ser identificado</string>
+    <string name="packets_dropped">Pacotes desconsiderados</string>
+    <string name="capture_prefs">Capturar</string>
+    <string name="pcapdroid_trailer">Metadados adicionais de PCAPdroid</string>
+    <string name="pcapdroid_trailer_summary">Um Trailer contém metadados complementares, como o nome do app, que serão adicionados aos dados brutos.</string>
+    <string name="trailer_how_to">Como exibir os dados do Trailer em Wireshark</string>
 </resources>
