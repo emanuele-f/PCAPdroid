@@ -158,4 +158,9 @@
     <string name="pcapdroid_trailer">Metadados adicionais de PCAPdroid</string>
     <string name="pcapdroid_trailer_summary">Um Trailer contém metadados complementares, como o nome do app, que serão adicionados aos dados brutos.</string>
     <string name="trailer_how_to">Como exibir os dados do Trailer em Wireshark</string>
+    <string name="ads_notice">Os anúncios dentro-do-app geram tráfego adicional no PCAPdroid em direção aos servidores externos. Você pode removê-los pagando um valor irrisório.</string>
+    <string name="remove_ads">Remover anúncios</string>
+    <string name="pending_transaction">Por favor, finalize sua transação para liberar esta funcionalidade</string>
+    <string name="purchased_feature_ok">A funcionalidade adquirida já está disponível!</string>
+
 </resources>
