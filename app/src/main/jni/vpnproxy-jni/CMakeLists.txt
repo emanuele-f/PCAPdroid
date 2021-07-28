@@ -17,9 +17,9 @@ AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/protocols ndpiSources)
 
-add_custom_command(OUTPUT ${NDPI_ROOT}/src/include/ndpi_api.h
-        COMMAND cd ${NDPI_ROOT} && ./autogen.sh && ./configure --disable-gcrypt
-        DEPENDS ${NDPI_ROOT}/src/include/ndpi_api.h.in)
+configure_file(${NDPI_ROOT}/Android/ndpi_api.h ${NDPI_ROOT}/src/include/ndpi_api.h)
+configure_file(${NDPI_ROOT}/Android/ndpi_config.h ${NDPI_ROOT}/src/include/ndpi_config.h)
+configure_file(${NDPI_ROOT}/Android/ndpi_define.h ${NDPI_ROOT}/src/include/ndpi_define.h)
 
 ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
 
