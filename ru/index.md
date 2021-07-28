@@ -21,5 +21,6 @@
     - [4.2 Поддержка DNS-over-HTTPS](advanced_features#42-поддержка-doh)
     - [4.3 Поддержка IPv6](advanced_features#43-поддержка-ipv6)
     - [4.4 Захват траффика в Root-режиме](advanced_features#44-захват-траффика-с-правами-root)
+    - [4.5 PCAPdroid Trailer](advanced_features#45-pcapdroid-trailer)
 - [5. Ответы на частые вопросы (FAQ)](faq)
 - [6. Пожертвования](donate)
