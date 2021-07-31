@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.1] - 2021-07-31
+- Fix crash in some devices with PCAPdroid trailer
+- Add ability to build on Windows
+
 ## [1.4.0] - 2021-07-20
 - Ability to export app name to Wireshark (PCAPdroid trailer)
 - Add apps details page with app metadata and permissions
