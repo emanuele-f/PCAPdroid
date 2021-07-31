@@ -7,9 +7,11 @@ add_definitions(-DHAVE_STRERROR)
 add_definitions(-DHAVE_SOCKLEN_T)
 include_directories(${LIBPCAP_ROOT})
 
-add_custom_command(OUTPUT ${LIBPCAP_ROOT}/grammar.c ${LIBPCAP_ROOT}/scanner.c
-        COMMAND cd ${LIBPCAP_ROOT} && ./configure && make grammar.c scanner.c
-        DEPENDS ${LIBPCAP_ROOT}/grammar.y.in)
+set(LIBPCAP_GEN ${ROOTDIR}/generated/libpcap)
+configure_file(${LIBPCAP_GEN}/grammar.c ${LIBPCAP_ROOT}/grammar.c)
+configure_file(${LIBPCAP_GEN}/grammar.h ${LIBPCAP_ROOT}/grammar.h)
+configure_file(${LIBPCAP_GEN}/scanner.c ${LIBPCAP_ROOT}/scanner.c)
+configure_file(${LIBPCAP_GEN}/scanner.h ${LIBPCAP_ROOT}/scanner.h)
 
 ADD_LIBRARY(pcap STATIC
         ${LIBPCAP_ROOT}/pcap.c

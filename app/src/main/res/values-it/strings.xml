@@ -138,5 +138,27 @@
     <string name="whitelist_empty">Lista esclusioni vuota.\nPuoi escludere una connessione tenendo premuto su di essa.</string>
     <string name="n_selected">%1$d selezionati</string>
     <string name="select_all">Seleziona tutto</string>
+    <string name="app_details">Dettaglio App</string>
+    <string name="package_name">Nome Package</string>
+    <string name="uid">UID</string>
+    <string name="app_name">Nome</string>
+    <string name="version">Versione</string>
+    <string name="target_sdk">Target SDK</string>
+    <string name="installed_on">Installata il</string>
+    <string name="last_update">Ultimo Aggiornamento</string>
+    <string name="permissions">Permessi</string>
+    <string name="root_app_info">Servizi di sistema eseguiti con i massimi privilegi.</string>
+    <string name="netd_app_info">Il servizio di sistema che effettua la risoluzione DNS.</string>
+    <string name="android_app_info">Il sistema Android.</string>
+    <string name="unknown_app_info">\"Sconosciuta\" indica connessioni la cui app non può essere determinata.</string>
+    <string name="packets_dropped">Pacchetti Persi</string>
+    <string name="capture_prefs">Cattura</string>
+    <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
+    <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti dumpati.</string>
+    <string name="trailer_how_to">Come visualizare le info del trailer su Wireshark</string>
+    <string name="ads_notice">Gli annunci in-app generano traffico verso server esterni. Puoi rimuovere gli annunci pagando una piccola tassa.</string>
+    <string name="remove_ads">Rimuovi Annunci</string>
+    <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
+    <string name="purchased_feature_ok">La funzionalità acquistata è ora disponibile!</string>
 </resources>
 

@@ -64,9 +64,11 @@ PCAPdroid supports decrypting TLS traffic by sending it to mitmproxy. Check out 
 
 ## Building
 
-PCAPdroid is intended to be built on a linux distribution, for example Debian or Ubuntu.
+1. On Windows, install [gitforwindows](https://gitforwindows.org)
+2. Clone this repo
+3. Inside the repo dir, run `git submodule update --init`. The `submodules` directory should get populated.
+4. Open the project in Android Studio, install the appropriate SDK and the NDK
+5. Build the app
 
-1. Clone this repo
-2. Install the native dependencies: `autogen autoconf bison flex libtool pkg-config libpcap-dev libjson-c-dev`
-3. Run `git submodule update --init`
-4. Build the app
+*Note*: If you get "No valid CMake executable was found", be sure to install the CMake version used by PCAPdroid (currently [3.18.1](https://github.com/emanuele-f/PCAPdroid/blob/master/app/build.gradle)) from the SDK manager
+
