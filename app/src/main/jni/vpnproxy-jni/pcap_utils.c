@@ -51,8 +51,12 @@ void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr) {
 
 /* Returns the size of a PCAP record */
 int pcap_rec_size(int pkt_len) {
-    if(pcapdroid_trailer)
+    if(pcapdroid_trailer) {
         pkt_len += (int)(sizeof(pcapdroid_trailer_t) + sizeof(struct ethhdr));
+
+        // Pad the frame so that the buffer keeps its 4-bytes alignment
+        pkt_len += (~pkt_len + 1) & 0x3;
+    }
 
     return((pkt_len < SNAPLEN ? pkt_len : SNAPLEN) +
             (int)sizeof(struct pcaprec_hdr_s));
@@ -73,6 +77,9 @@ void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *prox
     buffer += sizeof(struct pcaprec_hdr_s);
 
     if(pcapdroid_trailer) {
+        if((((uint64_t)buffer) & 0x03) != 0)
+            log_w("Unaligned buffer!");
+
         // Insert the bogus header: both the MAC addresses are 0
         struct ethhdr *eth = (struct ethhdr*) buffer;
         memset(eth, 0, sizeof(struct ethhdr));
@@ -88,6 +95,14 @@ void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *prox
 
     if(pcapdroid_trailer &&
        ((pcap_rec->incl_len - offset) >= sizeof(pcapdroid_trailer_t))) {
+        // Pad the frame so that the buffer keeps its 4-bytes alignment
+        // The padding is inserted before the PCAPdroid trailer so that accesses to pcapdroid_trailer_t
+        // are also aligned.
+        uint8_t padding = (~offset + 1) & 0x03;
+
+        for(uint8_t i=0; i<padding; i++)
+            buffer[offset++] = 0x00;
+
         // Populate the custom data
         pcapdroid_trailer_t *cdata = (pcapdroid_trailer_t*)(buffer + offset);
 
@@ -98,6 +113,6 @@ void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *prox
         //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
         //log_d("crc cpu_time_used: %f sec", cpu_time_used);
 
-        pcap_rec->orig_len += sizeof(pcapdroid_trailer_t);
+        pcap_rec->orig_len += padding + sizeof(pcapdroid_trailer_t);
     }
 }
