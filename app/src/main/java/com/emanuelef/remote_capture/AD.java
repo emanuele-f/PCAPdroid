@@ -47,12 +47,8 @@ public class AD {
         //MobileAds.initialize(ctx, initializationStatus -> Log.d(TAG, "initialized: " + initializationStatus));
     }
 
-    private boolean tmpSkip() {
-        return(System.currentTimeMillis() < 1627320000000L);
-    }
-
     public void show() {
-        if((adView != null) || tmpSkip())
+        if(adView != null)
             return;
 
         Log.d(TAG, "Start ad loading");

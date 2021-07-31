@@ -124,7 +124,7 @@ public class PlayBilling implements BillingClientStateListener, PurchasesUpdated
             }
         }
 
-        if(mWaitingStart) {
+        if(mWaitingStart && (mListener != null)) {
             if(billingResult.getResponseCode() == BillingResponseCode.OK)
                 mListener.onPurchasesReady(mAvailableSkus);
             else
@@ -145,7 +145,7 @@ public class PlayBilling implements BillingClientStateListener, PurchasesUpdated
                 Log.d(TAG, "queryPurchasesAsync: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage());
                 processPurchases(billingResult1, purchases);
             });
-        } else
+        } else if(mListener != null)
             mListener.onPurchasesError(billingResult);
     }
 
@@ -159,7 +159,7 @@ public class PlayBilling implements BillingClientStateListener, PurchasesUpdated
                     .setSkusList(Arrays.asList(NO_ADS_SKU));
 
             mBillingClient.querySkuDetailsAsync(builder.build(), this);
-        } else
+        } else if(mListener != null)
             mListener.onPurchasesError(billingResult);
     }
 
@@ -168,7 +168,8 @@ public class PlayBilling implements BillingClientStateListener, PurchasesUpdated
         Log.w(TAG, "onBillingServiceDisconnected");
 
         mHandler.postDelayed(() -> {
-            mBillingClient.startConnection(PlayBilling.this);
+            if(mBillingClient != null)
+                mBillingClient.startConnection(PlayBilling.this);
         }, 5000);
     }
 
@@ -236,6 +237,9 @@ public class PlayBilling implements BillingClientStateListener, PurchasesUpdated
 
     public boolean purchase(Activity activity, String sku) {
         SkuDetails details = null;
+
+        if(mBillingClient == null)
+            return false;
 
         for(SkuDetails skudet : mAvailableSkus) {
             if(skudet.getSku().equals(sku)) {
