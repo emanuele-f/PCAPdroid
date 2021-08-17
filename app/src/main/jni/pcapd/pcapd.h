@@ -19,11 +19,12 @@
 #include <stdint.h>
 
 typedef struct {
-  struct timeval ts;
-  u_int pkt_drops;
-  uid_t uid;
-  uint16_t len;
-  uint8_t flags;
+  struct timeval ts;        // the packet timestamp
+  u_int pkt_drops;          // number of dropped packets on this interface
+  uid_t uid;                // the UID of the process which sent/received the packet
+  uint16_t len;             // the packet length
+  uint8_t flags;            // packet flags, see PCAPD_FLAG_
+  uint8_t ifid;             // the interface id, which is the interface position in the -i args
 } __attribute__((packed)) pcapd_hdr_t;
 
 #endif
