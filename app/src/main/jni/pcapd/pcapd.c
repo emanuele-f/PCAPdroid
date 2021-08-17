@@ -55,6 +55,12 @@
 /* ******************************************************* */
 
 typedef struct {
+  uid_t uid_filter;
+  char *bpf;
+  char *log_file;
+} pcapd_conf_t;
+
+typedef struct {
     int nlsock;
     int client;
 
@@ -71,11 +77,12 @@ typedef struct {
     struct in6_addr ip6;
 
     char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
+    pcapd_conf_t conf;
 } pcapd_runtime_t;
 
 static char errbuf[PCAP_ERRBUF_SIZE];
 static FILE *logf = NULL;
-static uint8_t no_logf = 0;
+static sig_atomic_t running;
 
 /* ******************************************************* */
 
@@ -110,20 +117,8 @@ static void log_to_file(int lvl, const char *msg) {
   struct tm res;
   time_t now;
 
-  if(no_logf)
+  if(!logf)
     return;
-
-  if(logf == NULL) {
-    mode_t old_mask = umask(033);
-    logf = fopen(PCAPD_LOGFILE_PATH, "w");
-    umask(old_mask);
-
-    if(logf == NULL) {
-      log_e("Could not open log file[%d]: %s", errno, strerror(errno));
-      no_logf = 1;
-      return;
-    }
-  }
 
   now = time(NULL);
   strftime(datetime, sizeof(datetime), "%d/%b/%Y %H:%M:%S", localtime_r(&now, &res));
@@ -236,13 +231,14 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
 /* ******************************************************* */
 
 static void sighandler(__unused int signo) {
-  log_i("SIGTERM received, terminating");
-  unlink(PCAPD_PID);
-
-  if(logf)
-    fclose(logf);
-
-  exit(0);
+  if(running) {
+    log_i("SIGTERM received, terminating");
+    running = 0;
+  } else {
+    log_w("Exit now");
+    unlink(PCAPD_PID);
+    exit(1);
+  }
 }
 
 /* ******************************************************* */
@@ -599,7 +595,7 @@ static int is_tx_packet(pcapd_runtime_t *rt, const u_char *pkt, u_int16_t len) {
 
 /* ******************************************************* */
 
-static int run_pcap_dump(int uid_filter, const char *bpf) {
+static int run_pcap_dump(pcapd_conf_t *conf) {
   int rv = -1;
   struct timespec ts = {0};
   struct pcap_stat stats = {0};
@@ -624,8 +620,8 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
 
   int l = snprintf(rt.bpf, sizeof(rt.bpf), "ip or ip6");
 
-  if(bpf[0])
-    snprintf(rt.bpf + l, sizeof(rt.bpf) - l, " and (%s)", bpf);
+  if(conf->bpf && conf->bpf[0])
+    snprintf(rt.bpf + l, sizeof(rt.bpf) - l, " and (%s)", conf->bpf);
 
   log_d("Using BPF: %s", rt.bpf);
 
@@ -633,8 +629,9 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
   rt.ifidx = -1;
   check_capture_interface(&rt);
   rv = 0;
+  running = 1;
 
-  while(1) {
+  while(running) {
     struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};
     fd_set fds = {0};
     int maxfd = (rt.client > rt.nlsock) ? rt.client : rt.nlsock;
@@ -698,7 +695,7 @@ static int run_pcap_dump(int uid_filter, const char *bpf) {
             uid_lru_add(lru, &zpkt.tuple, uid);
           }
 
-          if((uid_filter == -1) || (uid_filter == uid)) {
+          if((conf->uid_filter == -1) || (conf->uid_filter == uid)) {
             phdr.ts = hdr->ts;
             phdr.len = hdr->caplen;
             phdr.pkt_drops = stats.ps_drop;
@@ -748,11 +745,12 @@ cleanup:
 /* ******************************************************* */
 
 static void usage() {
-  fprintf(stderr, "pcapd - root companion for PCAPdroid\n"
+  fprintf(stderr, "pcapd - root capture tool of PCAPdroid\n"
                   "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
-                  "Usage: pcapd -d uid [-b bpf]\n"
-                  " -d [uid]       daemonize and dump packets from the internet interface, filtered by uid (-1 for no filter)\n"
-                  " -b [bpf]       specify a BPF filter to apply"
+                  "Usage: pcapd [-u uid] [-b bpf] [-l]\n"
+                  " -u [uid]       filter packets by uid\n"
+                  " -b [bpf]       filter packets by BPF filter\n"
+                  " -l [file]      log output to the specified file\n"
   );
 
   exit(1);
@@ -760,19 +758,66 @@ static void usage() {
 
 /* ******************************************************* */
 
-int main(int argc, char *argv[]) {
-  logtag = "pcapd";
-  logcallback = log_to_file;
-  int uid_filter;
-  char *bpf = "";
+static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
+  int c;
 
-  if((argc < 3) || (strcmp(argv[1], "-d") != 0))
+  memset(conf, 0, sizeof(pcapd_conf_t));
+  conf->uid_filter = -1;
+  opterr = 0;
+
+  while ((c = getopt (argc, argv, "hu:b:l:")) != -1) {
+    switch(c) {
+      case 'u':
+        conf->uid_filter = atoi(optarg);
+        if(conf->uid_filter < -1)
+          fprintf(stderr, "Invalid UID: %s\n", optarg);
+        break;
+      case 'b':
+        if(conf->bpf) free(conf->bpf);
+        conf->bpf = strdup(optarg);
+        break;
+      case 'l':
+        if(conf->log_file) free(conf->log_file);
+        conf->log_file = strdup(optarg);
+        logcallback = log_to_file;
+        break;
+      default:
+        usage();
+    }
+  }
+
+  // No positional args
+  if(optind < argc)
     usage();
+}
 
-  uid_filter = atoi(argv[2]);
+/* ******************************************************* */
 
-  if((argc == 5) && (strcmp(argv[3], "-b") == 0))
-    bpf = argv[4];
+int main(int argc, char *argv[]) {
+  pcapd_conf_t conf;
+  int rv;
 
-  return run_pcap_dump(uid_filter, bpf);
+  logtag = "pcapd";
+  parse_args(&conf, argc, argv);
+
+  if(conf.log_file) {
+    mode_t old_mask = umask(033);
+    logf = fopen(conf.log_file, "w");
+    umask(old_mask);
+
+    if(logf == NULL)
+      log_e("Could not open log file[%d]: %s", errno, strerror(errno));
+  }
+
+  rv = run_pcap_dump(&conf);
+  unlink(PCAPD_PID);
+
+  if(conf.bpf)
+    free(conf.bpf);
+  if(conf.log_file)
+    free(conf.log_file);
+  if(logf)
+    fclose(logf);
+
+  return rv;
 }
