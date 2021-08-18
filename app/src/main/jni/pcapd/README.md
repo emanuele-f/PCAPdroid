@@ -59,3 +59,13 @@ Here are the steps to make it communicate with your app:
 6. When the app closes the UNIX socket, the pcapd daemon is automatically stopped.
 
 Check out the [capture_root.c source](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/jni/vpnproxy-jni/capture_root.c) to see an example of integration.
+
+Packets Data
+------------
+
+pcapd captures packets on the specified interfaces and writes them to the `PCAPD_SOCKET_PATH` UNIX socket.
+
+Each packet is prepended with the fixed size `pcapd_hdr_t` header, which contains the packet metadata such as the packet length and the interface it was captured on.
+The `ifid` field corresponds to the positional index of the interface in the pcapd command line. For example, when running pcapd with `-i wlan0 -i rmnet0`, `wlan0` will have index `0` and `rmnet0` will have index `1`.
+
+For a description of all the header fields check out [pcapd.h](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/jni/pcapd/pcapd.h).
