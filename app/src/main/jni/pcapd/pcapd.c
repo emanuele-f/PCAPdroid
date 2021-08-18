@@ -63,6 +63,7 @@ typedef struct {
   uid_t uid_filter;
   int num_interfaces;
   int daemonize;
+  int dump_datalink;
   int inet_ifid;
 } pcapd_conf_t;
 
@@ -707,15 +708,16 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
   } else if((rv1 == 1) && (hdr->caplen >= to_skip)) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
-    uint8_t is_tx = is_tx_packet(iface, pkt, hdr->caplen);
+    int len = hdr->caplen;
+    uint8_t is_tx = is_tx_packet(iface, pkt, len);
 
     if(hdr->caplen < hdr->len)
       log_w("Packet truncated: %d/%d", hdr->caplen, hdr->len);
 
     pkt += to_skip;
-    hdr->caplen -= to_skip;
+    len -= to_skip;
 
-    if(zdtun_parse_pkt(rt->tun, (const char*)pkt, hdr->caplen, &zpkt) == 0) {
+    if(zdtun_parse_pkt(rt->tun, (const char*)pkt, len, &zpkt) == 0) {
       if(!is_tx) {
         // Packet from the internet, swap src and dst
         tupleSwapPeers(&zpkt.tuple);
@@ -729,8 +731,14 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
       }
 
       if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
+        if(rt->conf->dump_datalink && (iface != rt->inet_iface)) {
+          // Include the datalink header
+          pkt -= to_skip;
+          len += to_skip;
+        }
+
         phdr.ts = hdr->ts;
-        phdr.len = hdr->caplen;
+        phdr.len = len;
         phdr.pkt_drops = iface->stats.ps_drop;
         phdr.uid = uid;
         phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
@@ -857,15 +865,17 @@ cleanup:
 
 static void usage() {
   fprintf(stderr, "pcapd - root capture tool of PCAPdroid\n"
-                  "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
-                  "Usage: pcapd [-i ifname, -i ...] [-d] [-u uid] [-b bpf] [-l]\n"
-                  " -i [ifname]    capture packets on the specified interface. Can be specified\n"
-                  "                multiple times. The '@inet' keyword can be used to capture from\n"
-                  "                the internet interface\n"
-                  " -d             daemonize the process\n"
-                  " -u [uid]       filter packets by uid\n"
-                  " -b [bpf]       filter packets by BPF filter\n"
-                  " -l [file]      log output to the specified file\n"
+    "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
+    "Usage: pcapd [-i ifname, -i ...] [-d] [-u uid] [-b bpf] [-l]\n"
+    " -i [ifname]    capture packets on the specified interface. Can be specified\n"
+    "                multiple times. The '@inet' keyword can be used to capture from\n"
+    "                the internet interface\n"
+    " -d             daemonize the process\n"
+    " -t             dump the interface datalink header. By default, the interface\n"
+    "                datalink is skipped. This does not affect the @inet interface.\n"
+    " -u [uid]       filter packets by uid\n"
+    " -b [bpf]       filter packets by BPF filter\n"
+    " -l [file]      log output to the specified file\n"
   );
 
   exit(1);
@@ -881,7 +891,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
   conf->inet_ifid = -1;
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "hdi:u:b:l:")) != -1) {
+  while ((c = getopt (argc, argv, "hdti:u:b:l:")) != -1) {
     switch(c) {
       case 'i':
         if(conf->num_interfaces >= MAX_IFACES) {
@@ -899,6 +909,9 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
         break;
       case 'd':
         conf->daemonize = 1;
+        break;
+      case 't':
+        conf->dump_datalink = 1;
         break;
       case 'u':
         conf->uid_filter = atoi(optarg);
