@@ -23,7 +23,8 @@ typedef struct {
   u_int pkt_drops;          // number of dropped packets on this interface
   uid_t uid;                // the UID of the process which sent/received the packet
   uint16_t len;             // the packet length
-  uint8_t flags;            // packet flags, see PCAPD_FLAG_
+  uint16_t datalink;        // the datalink type
+  uint8_t flags;            // packet flags, see PCAPD_FLAG_*
   uint8_t ifid;             // the interface id, which is the interface position in the -i args
 } __attribute__((packed)) pcapd_hdr_t;
 

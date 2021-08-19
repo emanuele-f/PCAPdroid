@@ -731,11 +731,13 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
       }
 
       if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
-        if(rt->conf->dump_datalink && (iface != rt->inet_iface)) {
+        if(rt->conf->dump_datalink) {
           // Include the datalink header
           pkt -= to_skip;
           len += to_skip;
-        }
+          phdr.datalink = iface->dlink;
+        } else
+          phdr.datalink = DLT_RAW;
 
         phdr.ts = hdr->ts;
         phdr.len = len;
@@ -871,8 +873,7 @@ static void usage() {
     "                multiple times. The '@inet' keyword can be used to capture from\n"
     "                the internet interface\n"
     " -d             daemonize the process\n"
-    " -t             dump the interface datalink header. By default, the interface\n"
-    "                datalink is skipped. This does not affect the @inet interface.\n"
+    " -t             dump the interface datalink header. Default: don't dump\n"
     " -u [uid]       filter packets by uid\n"
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
