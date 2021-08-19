@@ -180,9 +180,8 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     log_d("Connected to pcapd");
 
-    unlink(PCAPD_SOCKET_PATH);
-
     cleanup:
+    unlink(PCAPD_SOCKET_PATH);
     close(sock);
 
     return client;

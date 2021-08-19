@@ -60,7 +60,7 @@ typedef struct {
   char *ifnames[MAX_IFACES];
   char *bpf;
   char *log_file;
-  uid_t uid_filter;
+  int uid_filter;
   int num_interfaces;
   int daemonize;
   int dump_datalink;
@@ -373,7 +373,6 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   return 0;
 
 err:
-  finish_pcapd_capture(rt);
   return -1;
 }
 
