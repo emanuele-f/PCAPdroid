@@ -735,9 +735,9 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
           // Include the datalink header
           pkt -= to_skip;
           len += to_skip;
-          phdr.datalink = iface->dlink;
+          phdr.linktype = iface->dlink;
         } else
-          phdr.datalink = DLT_RAW;
+          phdr.linktype = DLT_RAW;
 
         phdr.ts = hdr->ts;
         phdr.len = len;
