@@ -40,6 +40,12 @@
         </activity>
 
         <activity
+            android:name=".activities.CaptureCtrl"
+            android:theme="@style/AppTheme.Floating"
+            android:launchMode="singleTop"
+            android:exported="true" />
+
+        <activity
             android:name=".activities.ConnectionDetailsActivity" />
         <activity
             android:name=".activities.AppDetailsActivity" />

@@ -66,6 +66,7 @@ import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -452,12 +453,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void captureServiceOk() {
         final Intent intent = new Intent(MainActivity.this, CaptureService.class);
-        final Bundle bundle = new Bundle();
+
+        CaptureSettings settings = new CaptureSettings(mPrefs);
+        intent.putExtra("settings", settings);
 
         if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
-            bundle.putString(Prefs.PREF_PCAP_URI, mPcapUri.toString());
-
-        intent.putExtra("settings", bundle);
+            intent.putExtra(Prefs.PREF_PCAP_URI, mPcapUri.toString());
 
         Log.d(TAG, "onActivityResult -> start CaptureService");
 
