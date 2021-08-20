@@ -50,7 +50,6 @@
 #include "common/utils.h"
 #include "zdtun.h"
 
-//#define LOCAL_DEBUG
 //#define READ_FROM_PCAP "/sdcard/test.pcap"
 #define MAX_IFACES 16
 
@@ -65,37 +64,38 @@ typedef struct {
   int daemonize;
   int dump_datalink;
   int inet_ifid;
+  int no_client;
 } pcapd_conf_t;
 
 typedef struct {
-    char name[IFNAMSIZ];
-    int ifidx;
-    uint8_t ifid;       // positional interface index
-    pcap_t *pd;
-    int pf;
-    int dlink;
-    int ipoffset;
-    uint64_t mac;
-    uint32_t ip;
-    struct in6_addr ip6;
-    time_t next_stats_update;
-    struct pcap_stat stats;
+  char name[IFNAMSIZ];
+  int ifidx;
+  uint8_t ifid;       // positional interface index
+  pcap_t *pd;
+  int pf;
+  int dlink;
+  int ipoffset;
+  uint64_t mac;
+  uint32_t ip;
+  struct in6_addr ip6;
+  time_t next_stats_update;
+  struct pcap_stat stats;
 } pcapd_iface_t;
 
 typedef struct {
-    char bpf[512];
-    char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
+  char bpf[512];
+  char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
 
-    int nlsock;
-    int client;
+  int nlsock;
+  int client;
 
-    zdtun_t *tun;
-    uid_lru_t *lru;
-    uid_resolver_t *resolver;
-    pcapd_iface_t *inet_iface;
-    pcapd_iface_t ifaces[MAX_IFACES];
-    int maxfd;
-    pcapd_conf_t *conf;
+  zdtun_t *tun;
+  uid_lru_t *lru;
+  uid_resolver_t *resolver;
+  pcapd_iface_t *inet_iface;
+  pcapd_iface_t ifaces[MAX_IFACES];
+  int maxfd;
+  pcapd_conf_t *conf;
 } pcapd_runtime_t;
 
 static void init_interface(pcapd_iface_t *iface);
@@ -120,17 +120,17 @@ static uint64_t bytes2mac(const uint8_t *buf) {
 /* ******************************************************* */
 
 static int str2mac(const char *buf, uint64_t *mac) {
-    uint8_t mac_bytes[6];
-    int m[6] = {0};
+  uint8_t mac_bytes[6];
+  int m[6] = {0};
 
-    if(sscanf(buf, "%02X:%02X:%02X:%02X:%02X:%02X", m+0, m+1, m+2, m+3, m+4, m+5) != 6)
-        return -1;
+  if(sscanf(buf, "%02X:%02X:%02X:%02X:%02X:%02X", m+0, m+1, m+2, m+3, m+4, m+5) != 6)
+      return -1;
 
-    for(int i = 0; i < 6; i++)
-        mac_bytes[i] = m[i];
+  for(int i = 0; i < 6; i++)
+      mac_bytes[i] = m[i];
 
-    *mac = bytes2mac(mac_bytes);
-    return 0;
+  *mac = bytes2mac(mac_bytes);
+  return 0;
 }
 
 /* ******************************************************* */
@@ -346,29 +346,29 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   signal(SIGTERM, &sighandler);
   signal(SIGHUP, &sighandler);
 
-#ifndef LOCAL_DEBUG
-  rt->client = socket(AF_UNIX, SOCK_STREAM, 0);
-  if(rt->client < 0) {
-    log_e("socket creation failed[%d]: %s", errno, strerror(errno));
-    goto err;
+  if(!rt->conf->no_client) {
+    rt->client = socket(AF_UNIX, SOCK_STREAM, 0);
+    if(rt->client < 0) {
+      log_e("socket creation failed[%d]: %s", errno, strerror(errno));
+      goto err;
+    }
+    rt->maxfd = max(rt->maxfd, rt->client);
+
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, PCAPD_SOCKET_PATH);
+
+    log_i("Connecting to client...");
+
+    if(connect(rt->client, (struct sockaddr*) &addr, sizeof(addr)) != 0) {
+      log_e("client connection failed[%d]: %s", errno, strerror(errno));
+      goto err;
+    }
+
+    log_i("Connected to client");
+    unlink(PCAPD_SOCKET_PATH);
   }
-  rt->maxfd = max(rt->maxfd, rt->client);
-
-  struct sockaddr_un addr;
-  memset(&addr, 0, sizeof(addr));
-  addr.sun_family = AF_UNIX;
-  strcpy(addr.sun_path, PCAPD_SOCKET_PATH);
-
-  log_i("Connecting to client...");
-
-  if(connect(rt->client, (struct sockaddr*) &addr, sizeof(addr)) != 0) {
-    log_e("client connection failed[%d]: %s", errno, strerror(errno));
-    goto err;
-  }
-
-  log_i("Connected to client");
-  unlink(PCAPD_SOCKET_PATH);
-#endif
 
   return 0;
 
@@ -680,9 +680,9 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
 static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
   FD_ZERO(fds);
 
-#ifndef LOCAL_DEBUG
-  FD_SET(rt->client, fds);
-#endif
+  if(rt->client > 0)
+    FD_SET(rt->client, fds);
+
   FD_SET(rt->nlsock, fds);
 
   for(int i=0; i<rt->conf->num_interfaces; i++) {
@@ -745,20 +745,20 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
         phdr.ifid = iface->ifid;
 
-#ifndef LOCAL_DEBUG
-        // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
-        // the IP header.
-        if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
-           (xwrite(rt->client, pkt, phdr.len) < 0)) {
-          log_e("write failed[%d]: %s", errno, strerror(errno));
-          return -1;
-        }
-#else
-        char buf[512];
-        zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
+        if(!rt->conf->no_client) {
+          // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
+          // the IP header.
+          if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
+             (xwrite(rt->client, pkt, phdr.len) < 0)) {
+            log_e("write failed[%d]: %s", errno, strerror(errno));
+            return -1;
+          }
+        } else {
+          char buf[512];
+          zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-        log_d("[%s:%d] %s [%cX]", iface->name, iface->ifid, buf, is_tx ? 'T' : 'R');
-#endif
+          printf("[%s:%d] %s [%cX]\n", iface->name, iface->ifid, buf, is_tx ? 'T' : 'R');
+        }
       }
     }
   }
@@ -812,21 +812,21 @@ static int run_pcap_dump(pcapd_conf_t *conf) {
     fd_set fds = all_fds;
 
     if(select(rt.maxfd + 1, &fds, NULL, NULL, &timeout) < 0) {
-      log_e("select failed[%d]: %s", errno, strerror(errno));
-      rv = -1;
+      if(errno != EINTR) {
+        log_e("select failed[%d]: %s", errno, strerror(errno));
+        rv = -1;
+      }
       break;
     }
 
     clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
     time_t now = ts.tv_sec;
 
-#ifndef LOCAL_DEBUG
-    if(FD_ISSET(rt.client, &fds)) {
+
+    if((rt.client > 0) && FD_ISSET(rt.client, &fds)) {
       log_i("Client closed");
       break;
-    } else
-#endif
-    if(FD_ISSET(rt.nlsock, &fds)) {
+    } else if(FD_ISSET(rt.nlsock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
         rv = -1;
         break;
@@ -876,6 +876,7 @@ static void usage() {
     " -u [uid]       filter packets by uid\n"
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
+    " -n             do not connect to the UNIX socket, log to stdout instead\n"
   );
 
   exit(1);
@@ -891,7 +892,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
   conf->inet_ifid = -1;
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "hdti:u:b:l:")) != -1) {
+  while ((c = getopt (argc, argv, "hdtni:u:b:l:")) != -1) {
     switch(c) {
       case 'i':
         if(conf->num_interfaces >= MAX_IFACES) {
@@ -912,6 +913,9 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
         break;
       case 't':
         conf->dump_datalink = 1;
+        break;
+      case 'n':
+        conf->no_client = 1;
         break;
       case 'u':
         conf->uid_filter = atoi(optarg);
