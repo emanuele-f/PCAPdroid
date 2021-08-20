@@ -867,7 +867,7 @@ cleanup:
 static void usage() {
   fprintf(stderr, "pcapd - root capture tool of PCAPdroid\n"
     "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
-    "Usage: pcapd [-i ifname, -i ...] [-d] [-u uid] [-b bpf] [-l]\n"
+    "Usage: pcapd [OPTIONS]\n"
     " -i [ifname]    capture packets on the specified interface. Can be specified\n"
     "                multiple times. The '@inet' keyword can be used to capture from\n"
     "                the internet interface\n"
