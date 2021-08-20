@@ -58,8 +58,10 @@ The result code tells if the command succeded or not.
 ## User Consent
 
 To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started. If the user denies consent, then the request fails.
-Consent is also asked when a stop request is received from a different app from the one which started it. Please note that AFAIK Android does not provide a consistent way to determine the source of an Intent.
-This is only available via [getCallingPackage](`https://developer.android.com/reference/android/app/Activity#getCallingPackage()`) when the caller app uses `startActivityForResult` (or the equivalent `ActivityResultLauncher`).
+Consent is also asked when a stop request is received from a different app from the one which started it.
+
+Please note that AFAIK Android does not provide a consistent way to determine the source of an Intent.
+This is only available via [getCallingPackage](`https://developer.android.com/reference/android/app/Activity#getCallingPackage()`) when the caller app uses `startActivityForResult` (or the equivalent `ActivityResultLauncher`). So it's adviced to always invoke the API via `startActivityForResult`.
 
 ## Capture Settings
 
