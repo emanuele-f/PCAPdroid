@@ -1,4 +1,6 @@
-PCAPdroid exposes an API for other apps to configure and control the packet capture. This can be used to easily enable packet capture in your app.
+PCAPdroid exposes an API for other apps to configure and control the packet capture. This can be used to easily enable packet capture in your app, provided that the PCAPdroid app is also installed into the device.
+
+## The API
 
 The [CaptureCtrl.java](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/java/com/emanuelef/remote_capture/activities/CaptureCtrl.java) activity is the one exposed to allow you to control the PCAPdroid capture via Intents.
 
