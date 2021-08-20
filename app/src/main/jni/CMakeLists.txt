@@ -1,3 +1,4 @@
+project("PCAPdroid")
 cmake_minimum_required(VERSION 3.18.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)

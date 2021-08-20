@@ -2,6 +2,24 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.1] - 2021-07-31
+- Fix crash in some devices with PCAPdroid trailer
+- Add ability to build on Windows
+
+## [1.4.0] - 2021-07-20
+- Ability to export app name to Wireshark (PCAPdroid trailer)
+- Add apps details page with app metadata and permissions
+- Allow searching by source and destination port
+- Packet capture optimizations
+- Add in-app purchases to remove ads
+- Add packet drops for root capture
+- Add IPv6 and ICMP support for root capture
+- Fix root capture stall in some cases
+- Fix PCAP dump in root mode
+- Fix truncated full size packets in root mode and handle fragments
+- PCAP timestamps in root mode now correspond to the capture timestamps
+- Fix ping to known DNS servers being blocked
+
 ## [1.3.9] - 2021-06-16
 This release brings a set of new features to make it easier to spot unwanted connections!
 

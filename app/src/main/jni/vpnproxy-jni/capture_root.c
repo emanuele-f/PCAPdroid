@@ -157,7 +157,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-d %d -b \"%s\"", proxy->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -d -u %d -b \"%s\"", proxy->app_filter, bpf);
     su_cmd(pcapd, args);
 
     // Wait for pcapd to start
@@ -180,9 +180,8 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     log_d("Connected to pcapd");
 
-    unlink(PCAPD_SOCKET_PATH);
-
     cleanup:
+    unlink(PCAPD_SOCKET_PATH);
     close(sock);
 
     return client;

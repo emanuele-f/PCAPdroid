@@ -156,4 +156,8 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">Trailer содержит дополнительные мета-данные, такие как название приложения и его идентификатор в системе(UID), которые будут добавлены в дамп.</string>
     <string name="trailer_how_to">Как отобразить данные из Trailer в Wireshark</string>
+    <string name="ads_notice">Реклама в приложении является причиной, по которой PCAPdroid генерирует некоторый трафик до внешних серверов. Вы можете отключить рекламу за небольшую плату.</string>
+    <string name="remove_ads">Отключить рекламу</string>
+    <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности.</string>
+    <string name="purchased_feature_ok">Платная возможность теперь доступна!</string>
 </resources>
