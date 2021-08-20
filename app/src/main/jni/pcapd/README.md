@@ -5,10 +5,10 @@ pcapd is an executable, run with root privileges, which can be used to capture n
 
 Its hot features include:
 
-- Ability to capture from the internet-facing interface and automatically roam when it changes
+- Capture from the internet-facing interface and automatically roam when it changes
+- Filter traffic by app (via the app UID)
+- Capture from multiple interfaces and detect the packet direction
 - The executable lives within the normal app directories and does not alter the Android root file system
-- Ability to capture from multiple interfaces
-- Detect the direction of the packets
 - All the dumped packets start with the IP headers, which relieves your app from doing datalink processing
 
 The following datalinks are currently supported: `DLT_RAW`, `DLT_EN10MB` and `DLT_LINUX_SLL`.
@@ -24,16 +24,16 @@ The pcapd executable can be run with the `-h` option to print its cli usage:
 pcapd - root capture tool of PCAPdroid
 Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>
 
-Usage: pcapd [-i ifname, -i ...] [-d] [-u uid] [-b bpf] [-l]
+Usage: pcapd [OPTIONS]
  -i [ifname]    capture packets on the specified interface. Can be specified
                 multiple times. The '@inet' keyword can be used to capture from
                 the internet interface
  -d             daemonize the process
- -t             dump the interface datalink header. By default, the interface
-                datalink is skipped. This does not affect the @inet interface.
+ -t             dump the interface datalink header. Default: don't dump
  -u [uid]       filter packets by uid
  -b [bpf]       filter packets by BPF filter
  -l [file]      log output to the specified file
+ -n             do not connect to the UNIX socket, log to stdout instead
 ```
 
 If no option is provided, pcapd will start capturing on the internet interface.
