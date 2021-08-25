@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.18.1)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../..)
 
+# Add debug symbols
+# See packagingOptions.doNotStrip in build.gradle to avoid stripping
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+
 # zdtun
 set(ZDTUN_ROOT ${ROOTDIR}/submodules/zdtun)
 include_directories(${ZDTUN_ROOT})

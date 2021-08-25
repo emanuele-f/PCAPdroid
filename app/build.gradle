@@ -18,6 +18,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            packagingOptions {
+                // NOTE: unstripped nDPI library takes up about 4 MB!
+                //doNotStrip '**.so'
+                doNotStrip '**/libpcapd.so'
+                doNotStrip '**/libvpnproxy-jni.so'
+            }
+        }
     }
 
     externalNativeBuild {
@@ -31,11 +39,6 @@ android {
         encoding "UTF-8"
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    packagingOptions {
-        // NOTE: unstripped nDPI library takes up about 4 MB!
-        //doNotStrip '**.so'
     }
 }
 
