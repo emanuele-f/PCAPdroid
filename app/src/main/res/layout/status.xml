@@ -24,9 +24,19 @@
             android:drawablePadding="10dp"
             tools:text="Collector Info"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/status_view" />
+
+        <TextView
+            android:id="@+id/interface_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            tools:text="Capturing from eth0..."
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/collector_info" />
 
         <TextView
             android:id="@+id/status_view"

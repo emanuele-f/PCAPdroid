@@ -82,6 +82,13 @@
             app:summary="@string/root_capture_summary"
             app:defaultValue="false" />
 
+        <DropDownPreference
+            app:key="capture_interface"
+            app:title="@string/capture_interface"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true"
+            app:defaultValue="\@inet" />
+
         <SwitchPreference
             app:key="pcapdroid_trailer"
             app:title="@string/pcapdroid_trailer"

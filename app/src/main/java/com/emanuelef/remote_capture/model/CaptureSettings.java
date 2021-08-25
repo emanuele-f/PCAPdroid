@@ -17,6 +17,7 @@ public class CaptureSettings implements Serializable {
     public final boolean ipv6_enabled;
     public final boolean root_capture;
     public final boolean pcapdroid_trailer;
+    public final String capture_interface;
 
     public CaptureSettings(SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
@@ -30,6 +31,7 @@ public class CaptureSettings implements Serializable {
         ipv6_enabled = Prefs.getIPv6Enabled(prefs);
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
+        capture_interface = Prefs.getCaptureInterface(prefs);
     }
 
     public CaptureSettings(Intent intent) {
@@ -44,6 +46,7 @@ public class CaptureSettings implements Serializable {
         ipv6_enabled = intent.getBooleanExtra(Prefs.PREF_IPV6_ENABLED, false);
         root_capture = intent.getBooleanExtra(Prefs.PREF_ROOT_CAPTURE, false);
         pcapdroid_trailer = intent.getBooleanExtra(Prefs.PREF_PCAPDROID_TRAILER, false);
+        capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
     }
 
     private static String getString(Intent intent, String key, String def_value) {

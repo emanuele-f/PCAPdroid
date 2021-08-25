@@ -111,9 +111,11 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     int client = -1;
     char bpf[256];
     char workdir[PATH_MAX], pcapd[PATH_MAX];
+    char capture_interface[16];
 
     getStringPref(proxy, "getPcapDumperBpf", bpf, sizeof(bpf));
     getStringPref(proxy, "getPcapdWorkingDir", workdir, PATH_MAX);
+    getStringPref(proxy, "getCaptureInterface", capture_interface, sizeof(capture_interface));
     get_libprog_path(proxy, "pcapd", pcapd, sizeof(pcapd));
 
     if(!pcapd[0])
@@ -157,7 +159,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -d -u %d -b \"%s\"", proxy->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, proxy->app_filter, bpf);
     su_cmd(pcapd, args);
 
     // Wait for pcapd to start

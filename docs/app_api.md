@@ -81,3 +81,4 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | ipv6_enabled         | bool   | true to enable IPv6 support in non-root mode                      |
 | root_capture         | bool   | true to capture packets in root mode, false to use the VPNService |
 | pcapdroid_trailer    | bool   | true to enable the PCAPdroid trailer                              |
+| capture_interface    | string | @inet \| any \| ifname - network interface to use in root mode    |
