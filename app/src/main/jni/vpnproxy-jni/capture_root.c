@@ -19,6 +19,8 @@
 
 #include <sys/un.h>
 #include <linux/limits.h>
+#include <sys/wait.h>
+#include <paths.h>
 #include "vpnproxy.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
@@ -41,19 +43,76 @@ typedef struct {
 /* ******************************************************* */
 
 static int su_cmd(const char *prog, const char *args) {
-    FILE *fp;
+    int in_p[2], out_p[2];
+    int rv = -1;
+    pid_t pid;
 
-    if((fp = popen("su", "w")) == NULL) {
-      log_e("popen(\"su\") failed[%d]: %s", errno, strerror(errno));
-      pclose(fp);
-      return -1;
+    if((pipe(in_p) != 0) || (pipe(out_p) != 0)) {
+        log_f("pipe failed[%d]: %s", errno, strerror(errno));
+        return -1;
     }
 
-    log_d("su_cmd: %s %s", prog, args);
-    fprintf(fp, "%s", prog);
-    fprintf(fp, " %s\n", args);
+    if((pid = fork()) == 0) {
+        // child
+        char *argp[] = {"sh", "-c", "su", NULL};
 
-    return pclose(fp);
+        close(in_p[1]);
+        close(out_p[0]);
+
+        dup2(in_p[0], STDIN_FILENO);
+        dup2(out_p[1], STDOUT_FILENO);
+        dup2(out_p[1], STDERR_FILENO);
+
+        execve(_PATH_BSHELL, argp, environ);
+        fprintf(stderr, "execve failed[%d]: %s", errno, strerror(errno));
+        exit(1);
+    } else if(pid > 0) {
+        // parent
+        int out = out_p[0];
+        close(in_p[0]);
+        close(out_p[1]);
+
+        // write "su" command input
+        log_d("su_cmd: %s %s", prog, args);
+        write(in_p[1], prog, strlen(prog));
+        write(in_p[1], " ", 1);
+        write(in_p[1], args, strlen(args));
+        write(in_p[1], "\n", 1);
+        close(in_p[1]);
+
+        waitpid(pid, &rv, 0);
+
+        if(rv != 0) {
+            char buf[128];
+            struct timeval timeout = {0};
+            fd_set fds;
+
+            buf[0] = '\0';
+            FD_ZERO(&fds);
+            FD_SET(out, &fds);
+
+            select(out + 1, &fds, NULL, NULL, &timeout);
+            if (FD_ISSET(out, &fds)) {
+                int num = read(out, buf, sizeof(buf) - 1);
+                if (num > 0)
+                    buf[num] = '\0';
+            }
+
+            log_f("su \"%s\" invocation failed: %s", prog, buf);
+            rv = -1;
+        }
+
+        close(out_p[0]);
+    } else {
+        log_f("fork() failed[%d]: %s", errno, strerror(errno));
+        close(in_p[0]);
+        close(in_p[1]);
+        close(out_p[0]);
+        close(out_p[1]);
+        return -1;
+    }
+
+    return rv;
 }
 
 /* ******************************************************* */
@@ -160,7 +219,8 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     // Start the daemon
     char args[256];
     snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, proxy->app_filter, bpf);
-    su_cmd(pcapd, args);
+    if(su_cmd(pcapd, args) != 0)
+        goto cleanup;
 
     // Wait for pcapd to start
     struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};
