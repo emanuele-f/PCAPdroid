@@ -117,7 +117,7 @@
     <string name="proxy_ip_address">IP-адрес прокси</string>
     <string name="proxy_port">Порт Прокси</string>
     <string name="root_capture">Захват в режиме Root</string>
-    <string name="root_capture_summary">Захват в Root-режиме позволит PCAPDroid работать в паре с другими VPN-приложениями.</string>
+    <string name="root_capture_summary">Захват в Root-режиме позволит PCAPdroid работать в паре с другими VPN-приложениями.</string>
     <string name="donate">Пожертвовать</string>
     <string name="http_request">HTTP-запрос</string>
     <string name="root_log">Root-журнал</string>
@@ -160,4 +160,14 @@
     <string name="remove_ads">Отключить рекламу</string>
     <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности.</string>
     <string name="purchased_feature_ok">Платная возможность теперь доступна!</string>
+    <string name="ctrl_consent">Внешнее приложение хочет начать захват трафика посредством PCAPdroid.\nЕсли вы не уверены (или это не вы), то отклоните запрос!</string>
+    <string name="deny">Отклонить</string>
+    <string name="allow">Разрешить</string>
+    <string name="ctrl_consent_title">PCAPdroid Контрольный запрос</string>
+    <string name="ctrl_consent_denied">Запрос был отклонен</string>
+    <string name="ctrl_consent_allowed">Запрос был разрешен</string>
+    <string name="capture_interface">Интерфейс для захвата</string>
+    <string name="internet">Интернет</string>
+    <string name="all_interfaces">Все интерфейсы</string>
+    <string name="capturing_from">Перехватываются пакеты с \"%1$s\"</string>
 </resources>
