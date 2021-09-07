@@ -650,7 +650,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     public boolean onBackPressed() {
-        if(!mSearchView.isIconified()) {
+        if((mSearchView != null) && !mSearchView.isIconified()) {
             // Required to close the SearchView when the search submit button was not pressed
             mSearchView.setIconified(true);
             return true;
