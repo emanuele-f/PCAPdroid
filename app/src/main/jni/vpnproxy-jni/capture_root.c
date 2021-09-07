@@ -42,7 +42,7 @@ typedef struct {
 
 /* ******************************************************* */
 
-static int su_cmd(const char *prog, const char *args) {
+static int su_cmd(const char *prog, const char *args, bool check_error) {
     int in_p[2], out_p[2];
     int rv = -1;
     pid_t pid;
@@ -73,7 +73,7 @@ static int su_cmd(const char *prog, const char *args) {
         close(out_p[1]);
 
         // write "su" command input
-        log_d("su_cmd: %s %s", prog, args);
+        log_d("su_cmd[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);
         write(in_p[1], args, strlen(args));
@@ -82,7 +82,7 @@ static int su_cmd(const char *prog, const char *args) {
 
         waitpid(pid, &rv, 0);
 
-        if(rv != 0) {
+        if(check_error && (rv != 0)) {
             char buf[128];
             struct timeval timeout = {0};
             fd_set fds;
@@ -157,7 +157,7 @@ static void kill_pcapd(vpnproxy_data_t *proxy) {
 
     if(pid != 0) {
         log_d("Killing old pcapd with pid %d", pid);
-        su_cmd("kill", pid_s);
+        su_cmd("kill", pid_s, false);
     }
 
     fclose(f);
@@ -219,11 +219,11 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     // Start the daemon
     char args[256];
     snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, proxy->app_filter, bpf);
-    if(su_cmd(pcapd, args) != 0)
+    if(su_cmd(pcapd, args, true) != 0)
         goto cleanup;
 
     // Wait for pcapd to start
-    struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};
+    struct timeval timeout = {.tv_sec = 3, .tv_usec = 0};
     fd_set selfds = {0};
 
     FD_SET(sock, &selfds);
@@ -242,7 +242,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     log_d("Connected to pcapd");
 
-    cleanup:
+cleanup:
     unlink(PCAPD_SOCKET_PATH);
     close(sock);
 
