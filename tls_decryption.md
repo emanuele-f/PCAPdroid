@@ -12,7 +12,7 @@ For a complete list of tools and options refer to the [mitmproxy documentation](
 
 In order to enable the TLS decryption in PCAPdroid:
 
-1. Install the mitmproxy certificate `~/.mitmproxy/mitmproxy-ca-cert.cer` in the android phone. It is usually needed to change the extension to `.crt`.
+1. Install the mitmproxy certificate `~/.mitmproxy/mitmproxy-ca-cert.cer` in the Android phone. It is usually needed to change the extension to `.crt`.
 2. Open the PCAPdroid settings
 3. Toggle "Enable SOCKS5 Proxy"
 4. Set the IP address and port of the remote mitmproxy instance (port 8050 in the example above).
@@ -25,16 +25,16 @@ Since enabling TLS decryption has an high probability of breaking the network co
 
 ## 3.2 Decryption after Android 7
 
-After android Nougat, android apps do not trust user certificates anymore. This means that android apps will reject the mitmproxy certificate and their connections will be broken. On a rooted device, this is easily solved by installing a system ca (see https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android). On non-rooted devices, the most reliable way to fix the problem is to change the app configuration to trust user certificates as explained in [the android guide](https://developer.android.com/training/articles/security-config.html). If you don't have the app source it is still possible to unpack the app and repack it with the modified configuration, see [apktool](https://ibotpeaches.github.io/Apktool).
+After Android Nougat, Android apps do not trust user certificates anymore. This means that Android apps will reject the mitmproxy certificate and their connections will be broken. On a rooted device, this is easily solved by installing a system ca (see https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android). On non-rooted devices, the most reliable way to fix the problem is to change the app configuration to trust user certificates as explained in [the Android guide](https://developer.android.com/training/articles/security-config.html). If you don't have the app source it is still possible to unpack the app and repack it with the modified configuration, see [apktool](https://ibotpeaches.github.io/Apktool).
 
-There is also a much simpler but unreliable approach which does not require messing with the app configuration. By using the [VirtualXposed](https://github.com/android-hacker/VirtualXposed) app in conjuction with PCAPdroid it's possible to trick android into using the old security policy of pre-nougat, thus making the app accept the mitmproxy certificate. VirtualXposed is an open source virtualization app is available on [F-Droid](https://f-droid.org/en/packages/io.va.exposed/). In order to use VirtualXposed with PCAPdroid:
+There is also a much simpler but unreliable approach which does not require messing with the app configuration. By using the [VirtualXposed](https://github.com/android-hacker/VirtualXposed) app in conjuction with PCAPdroid it's possible to trick Android into using the old security policy of pre-nougat, thus making the app accept the mitmproxy certificate. VirtualXposed is an open source virtualization app is available on [F-Droid](https://f-droid.org/en/packages/io.va.exposed/). In order to use VirtualXposed with PCAPdroid:
 
 1. Setup PCAPdroid for the TLS decryption as explained above
 2. Possibly set the app filter in PCAPdroid to only capture the VirtualXposed traffic
 3. Open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method).
 4. Run the target application via VirtualXposed.
 
-What is the trick? VirtualXposed has [the target SDK version](https://github.com/android-hacker/VirtualXposed/blob/vxp/VirtualApp/app/build.gradle) set to 23. It turns out that any app with target SDK < 24 still accepts user certificates even after android 7! Any virtualization app with appropriate target SDK version will do the trick. It is important to keep in mind that app virtualization alters the normal environment of the app and can cause crashes. APK unpacking remains the suggested approach.
+What is the trick? VirtualXposed has [the target SDK version](https://github.com/android-hacker/VirtualXposed/blob/vxp/VirtualApp/app/build.gradle) set to 23. It turns out that any app with target SDK < 24 still accepts user certificates even after Android 7! Any virtualization app with appropriate target SDK version will do the trick. It is important to keep in mind that app virtualization alters the normal environment of the app and can cause crashes. APK unpacking remains the suggested approach.
 
 ## 3.3 Troubleshooting
 

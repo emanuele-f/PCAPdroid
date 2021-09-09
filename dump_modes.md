@@ -17,14 +17,14 @@ In order to properly download the PCAP, you need to follow these steps:
 
 ## 2.3 PCAP File
 
-This mode can be used to save a PCAP file into the device storage. The file name and path can be selected after clicking the start button. Some android TV devices do not implement the file selection dialog; in such cases, a file name is automatically pick and file is saved to the Downloads directory.
+This mode can be used to save a PCAP file into the device storage. The file name and path can be selected after clicking the start button. Some Android TV devices do not implement the file selection dialog; in such cases, a file name will be picked automatically and file will be saved to the Downloads directory.
 After the capture is stopped, a dialog is displayed which offers the option to share the PCAP file, delete it or just keep it.
 
 ## 2.4 UDP Exporter
 
-This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a linux PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream, sent to the remote UDP collector. The collector IP and port must be configured through the settings.
+This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a linux PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream and sends the stream to the remote UDP collector. The collector IP and port must be configured through the settings.
 
-The udp_receiver.py script will receive the UDP packets on the specified port, decapsulate them, and print the raw PCAP records to the stdout. By piping it into a network monotoring program it is possible to analyze the captured packets in real time.
+The udp_receiver.py script will receive the UDP packets on the specified port, decapsulate them, and print the raw PCAP records to the stdout. By piping it into a network monitoring program it is possible to analyze the captured packets in real time.
 
 Here are some examples of the applicability of this mode:
 
