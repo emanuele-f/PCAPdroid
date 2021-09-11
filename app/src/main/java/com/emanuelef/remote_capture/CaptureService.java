@@ -655,6 +655,7 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    // also called from native
     private void sendServiceStatus(String cur_status) {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);

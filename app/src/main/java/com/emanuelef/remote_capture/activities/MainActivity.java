@@ -88,6 +88,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private String mPcapFname;
     private DrawerLayout mDrawer;
     private SharedPreferences mPrefs;
+    private NavigationView mNavView;
     private boolean usingMediaStore;
 
     private static final String TAG = "Main";
@@ -138,6 +139,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
 
                 if (status != null) {
+                    Log.d(TAG, "Service status: " + status);
+
                     if (status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
@@ -176,6 +179,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setupNavigationDrawer();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Menu navMenu = mNavView.getMenu();
+        navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
+    }
+
     private void setupNavigationDrawer() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -185,9 +196,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navView = findViewById(R.id.nav_view);
-        navView.setNavigationItemSelectedListener(this);
-        View header = navView.getHeaderView(0);
+        mNavView = findViewById(R.id.nav_view);
+        mNavView.setNavigationItemSelectedListener(this);
+        View header = mNavView.getHeaderView(0);
 
         TextView appVer = header.findViewById(R.id.app_version);
         String verStr = Utils.getAppVersion(this);
@@ -196,11 +207,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
             startActivity(browserIntent);
         });
-
-        if(Prefs.isRootCaptureEnabled(mPrefs)) {
-            Menu navMenu = navView.getMenu();
-            navMenu.findItem(R.id.open_root_log).setVisible(true);
-        }
     }
 
     @Override
@@ -416,7 +422,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         startActivity(intent);
     }
 
-    private void rateApp() {
+    /*private void rateApp() {
         try {
             // If playstore is installed
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + this.getPackageName())));
@@ -424,7 +430,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             // If playstore is not available
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
         }
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

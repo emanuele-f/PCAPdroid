@@ -343,6 +343,8 @@ private void refreshPcapDumpInfo() {
                 mCollectorInfo.setVisibility(View.GONE);
                 mInterfaceInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
+                mAppFilter = Prefs.getAppFilter(mPrefs);
+                refreshFilterInfo();
                 break;
             case starting:
             case stopping:
@@ -361,6 +363,7 @@ private void refreshPcapDumpInfo() {
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
+
                 if(CaptureService.isCapturingAsRoot()) {
                     CaptureService service = CaptureService.requireInstance();
                     String capiface = service.getCaptureInterface();
@@ -373,6 +376,8 @@ private void refreshPcapDumpInfo() {
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 }
+
+                mAppFilter = CaptureService.getAppFilter();
                 refreshPcapDumpInfo();
                 break;
             default:
