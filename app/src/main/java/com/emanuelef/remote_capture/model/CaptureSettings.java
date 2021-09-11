@@ -43,12 +43,12 @@ public class CaptureSettings implements Serializable {
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
         http_server_port = getInt(intent, Prefs.PREF_HTTP_SERVER_PORT, 8080);
-        socks5_enabled = intent.getBooleanExtra(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, false);
+        socks5_enabled = getBool(intent, Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY, false);
         socks5_proxy_address = getString(intent, Prefs.PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0");
         socks5_proxy_port = getInt(intent, Prefs.PREF_SOCKS5_PROXY_PORT_KEY, 8080);
-        ipv6_enabled = intent.getBooleanExtra(Prefs.PREF_IPV6_ENABLED, false);
-        root_capture = intent.getBooleanExtra(Prefs.PREF_ROOT_CAPTURE, false);
-        pcapdroid_trailer = intent.getBooleanExtra(Prefs.PREF_PCAPDROID_TRAILER, false);
+        ipv6_enabled = getBool(intent, Prefs.PREF_IPV6_ENABLED, false);
+        root_capture = getBool(intent, Prefs.PREF_ROOT_CAPTURE, false);
+        pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
         pcap_uri = getString(intent, Prefs.PREF_PCAP_URI, "");
     }
@@ -58,13 +58,23 @@ public class CaptureSettings implements Serializable {
         return (val != null) ? val : def_value;
     }
 
-    // get a integer value from the bundle. The value may be represented as int or as a string.
+    // get a integer value from the bundle. The value may be represented as an int or as a string.
     private static int getInt(Intent intent, String key, int def_value) {
         Bundle bundle = intent.getExtras();
         Object o = bundle.get(key);
 
         if(o != null)
             return Integer.parseInt(o.toString());
+        return def_value;
+    }
+
+    // get a boolean value from the bundle. The value may be represented as a bool or as a string.
+    private static boolean getBool(Intent intent, String key, boolean def_value) {
+        Bundle bundle = intent.getExtras();
+        Object o = bundle.get(key);
+
+        if(o != null)
+            return Boolean.parseBoolean(o.toString());
         return def_value;
     }
 }
