@@ -115,6 +115,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onPause();
 
         unregisterConnsListener();
+
+        if(mSearchView != null)
+            mFilterToApply = mSearchView.getQuery().toString();
     }
 
     @Override
@@ -501,7 +504,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
         mSearchView.setOnQueryTextListener(this);
 
-        if(mFilterToApply != null) {
+        if((mFilterToApply != null) && (!mFilterToApply.isEmpty())) {
             String query = mFilterToApply;
             mFilterToApply = null;
 

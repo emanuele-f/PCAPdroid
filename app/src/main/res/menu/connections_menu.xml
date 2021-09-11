@@ -9,7 +9,7 @@
         android:icon="@drawable/ic_search"
         android:orderInCategory="15"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="always|collapseActionView" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/hide_whitelist"
