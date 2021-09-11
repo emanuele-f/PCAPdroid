@@ -192,10 +192,8 @@ public class CaptureService extends VpnService implements Runnable {
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
             mDumper = new HTTPServer(this, mSettings.http_server_port);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
-            String path = intent.getStringExtra(Prefs.PREF_PCAP_URI);
-
-            if(path != null) {
-                mPcapUri = Uri.parse(path);
+            if(mSettings.pcap_uri != null) {
+                mPcapUri = Uri.parse(mSettings.pcap_uri);
                 mDumper = new FileDumper(this, mPcapUri);
             }
         } else if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) {

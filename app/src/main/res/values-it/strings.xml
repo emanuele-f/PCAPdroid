@@ -169,6 +169,6 @@
     <string name="capture_interface">Interfaccia di Cattura</string>
     <string name="internet">Internet</string>
     <string name="all_interfaces">Tutte le Interfacce</string>
-    <string name="capturing_from">Cattura in esecuzione su \"%1$s\"</string>
+    <string name="capturing_from">Cattura in corso da \"%1$s\"</string>
 </resources>
 

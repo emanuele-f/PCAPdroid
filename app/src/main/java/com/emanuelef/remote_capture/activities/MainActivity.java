@@ -29,7 +29,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.net.VpnService;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,7 +38,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -61,6 +59,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -89,6 +88,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private DrawerLayout mDrawer;
     private SharedPreferences mPrefs;
     private NavigationView mNavView;
+    private CaptureHelper mCapHelper;
     private boolean usingMediaStore;
 
     private static final String TAG = "Main";
@@ -102,8 +102,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
 
-    private final ActivityResultLauncher<Intent> captureServiceLauncher =
-            registerForActivityResult(new StartActivityForResult(), this::captureServiceResult);
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -122,6 +120,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPcapUri = CaptureService.getPcapUri();
+        mCapHelper = new CaptureHelper(this);
+        mCapHelper.setListener(success -> {
+            if(!success) {
+                Log.w(TAG, "VPN request failed");
+                appStateReady();
+            }
+        });
 
         CaocConfig.Builder.create()
                 .errorDrawable(R.drawable.ic_app_crash)
@@ -171,6 +176,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(mReceiver != null)
             LocalBroadcastManager.getInstance(this)
                     .unregisterReceiver(mReceiver);
+
+        mCapHelper = null;
     }
 
     @Override
@@ -448,29 +455,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return super.onOptionsItemSelected(item);
     }
 
-    private void captureServiceResult(final ActivityResult result) {
-        if(result.getResultCode() == RESULT_OK) {
-            captureServiceOk();
-        } else {
-            Log.w(TAG, "VPN request failed");
-            appStateReady();
-        }
-    }
-
-    private void captureServiceOk() {
-        final Intent intent = new Intent(MainActivity.this, CaptureService.class);
-
-        CaptureSettings settings = new CaptureSettings(mPrefs);
-        intent.putExtra("settings", settings);
-
-        if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE))
-            intent.putExtra(Prefs.PREF_PCAP_URI, mPcapUri.toString());
-
-        Log.d(TAG, "onActivityResult -> start CaptureService");
-
-        ContextCompat.startForegroundService(this, intent);
-    }
-
     private void pcapFileResult(final ActivityResult result) {
         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
             startWithPcapFile(result.getData().getData());
@@ -499,17 +483,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void startCaptureService() {
         appStateStarting();
 
-        if(Prefs.isRootCaptureEnabled(mPrefs)) {
-            captureServiceOk();
-            return;
-        }
-
-        Intent vpnPrepareIntent = VpnService.prepare(MainActivity.this);
-
-        if (vpnPrepareIntent != null)
-            captureServiceLauncher.launch(vpnPrepareIntent);
-        else
-            captureServiceOk();
+        String pcap_uri = ((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) ? mPcapUri.toString() : "";
+        mCapHelper.startCapture(new CaptureSettings(mPrefs, pcap_uri));
     }
 
     public void toggleService() {

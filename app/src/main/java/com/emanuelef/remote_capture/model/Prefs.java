@@ -36,7 +36,7 @@ public class Prefs {
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
-    public static final String PREF_PCAP_URI = "pcap_path";
+    public static final String PREF_PCAP_URI = "pcap_uri";
     public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";

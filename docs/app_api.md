@@ -75,6 +75,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | collector_address    | string | the IP address of the collector in udp_exporter mode              |
 | collector_port       | int    | the UDP port of the collector in udp_exporter mode                |
 | http_server_port     | int    | the HTTP server port in http_server mode                          |
+| pcap_uri             | string | the URI for the PCAP dump in pcap_file mode                       |
 | socks5_enabled       | bool   | true to enable the SOCKS5 proxy                                   |
 | socks5_proxy_address | string | the IP address of the SOCKS5 proxy                                |
 | socks5_proxy_port    | int    | the TCP port of the SOCKS5 proxy                                  |
