@@ -19,11 +19,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
-            packagingOptions {
-                // NOTE: unstripped nDPI library takes up about 4 MB!
-                //doNotStrip '**.so'
-                doNotStrip '**/libpcapd.so'
-                doNotStrip '**/libvpnproxy-jni.so'
+            if(project.hasProperty("doNotStrip")) {
+                // NOTE: packagingOptions will also affect the "release" build, so the "doNotStrip"
+                // guard is required
+                packagingOptions {
+                    // NOTE: unstripped nDPI library takes up about 4 MB!
+                    //doNotStrip '**.so'
+                    doNotStrip '**/libpcapd.so'
+                    doNotStrip '**/libvpnproxy-jni.so'
+                }
             }
         }
     }
