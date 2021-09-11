@@ -160,5 +160,15 @@
     <string name="remove_ads">Rimuovi Annunci</string>
     <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
     <string name="purchased_feature_ok">La funzionalità acquistata è ora disponibile!</string>
+    <string name="ctrl_consent">Un\'altra app vuole catturare il traffico di questo dispositivo.\nNegare l\'accesso se non si è sicuri!</string>
+    <string name="deny">Nega</string>
+    <string name="allow">Permetti</string>
+    <string name="ctrl_consent_title">Richiesta di Controllo PCAPdroid</string>
+    <string name="ctrl_consent_denied">La richiesta di controllo è stata rifiutata</string>
+    <string name="ctrl_consent_allowed">La richiesta di controllo è stata accettata</string>
+    <string name="capture_interface">Interfaccia di Cattura</string>
+    <string name="internet">Internet</string>
+    <string name="all_interfaces">Tutte le Interfacce</string>
+    <string name="capturing_from">Cattura in corso da \"%1$s\"</string>
 </resources>
 

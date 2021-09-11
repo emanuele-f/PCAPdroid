@@ -169,5 +169,15 @@
     <string name="remove_ads">Remove Ads</string>
     <string name="pending_transaction">Please complete your transaction to redeem this feature</string>
     <string name="purchased_feature_ok">The purchased feature is now available!</string>
+    <string name="ctrl_consent">An app wants to capture your device traffic.\nDeny it if you are not sure!</string>
+    <string name="deny">Deny</string>
+    <string name="allow">Allow</string>
+    <string name="ctrl_consent_title">PCAPdroid Control Request</string>
+    <string name="ctrl_consent_denied">The control request was denied</string>
+    <string name="ctrl_consent_allowed">The control request was allowed</string>
+    <string name="capture_interface">Capture Interface</string>
+    <string name="internet">Internet</string>
+    <string name="all_interfaces">All Interfaces</string>
+    <string name="capturing_from">Capturing packets from \"%1$s\"</string>
 </resources>
 

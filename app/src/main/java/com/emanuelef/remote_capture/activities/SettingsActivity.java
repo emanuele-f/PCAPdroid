@@ -39,6 +39,10 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity {
@@ -89,6 +93,7 @@ public class SettingsActivity extends BaseActivity {
         private Preference mTlsHelp;
         private Preference mProxyPrefs;
         private Preference mIpv6Enabled;
+        private DropDownPreference mCapInterface;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -97,6 +102,7 @@ public class SettingsActivity extends BaseActivity {
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
             setupSocks5ProxyPrefs();
+            setupCapturePrefs();
             setupOtherPrefs();
 
             socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
@@ -130,6 +136,40 @@ public class SettingsActivity extends BaseActivity {
             /* HTTP Server port validation */
             EditTextPreference mHttpServerPort = findPreference(Prefs.PREF_HTTP_SERVER_PORT);
             mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+        }
+
+        private void refreshInterfaces() {
+            ArrayList<String> labels = new ArrayList<>();
+            ArrayList<String> values = new ArrayList<>();
+
+            labels.add(getString(R.string.internet));
+            values.add("@inet");
+            labels.add(getString(R.string.all_interfaces));
+            values.add("any");
+
+            try {
+                Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+
+                while (ifaces.hasMoreElements()) {
+                    NetworkInterface iface = ifaces.nextElement();
+                    if(!iface.isUp())
+                        continue;
+
+                    String name = iface.getName();
+                    labels.add(name);
+                    values.add(name);
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+
+            mCapInterface.setEntryValues(values.toArray(new String[0]));
+            mCapInterface.setEntries(labels.toArray(new String[0]));
+        }
+
+        private void setupCapturePrefs() {
+            mCapInterface = findPreference(Prefs.PREF_CAPTURE_INTERFACE);
+            refreshInterfaces();
         }
 
         private void setupSocks5ProxyPrefs() {
@@ -209,6 +249,7 @@ public class SettingsActivity extends BaseActivity {
         private void rootCaptureHideShow(boolean enabled) {
             mProxyPrefs.setVisible(!enabled);
             mIpv6Enabled.setVisible(!enabled);
+            mCapInterface.setVisible(enabled);
         }
     }
 }

@@ -50,6 +50,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mBytesView;
     private TextView mPacketsView;
     private TextView mDurationView;
+    private TextView mRequestData;
     private ConnectionDescriptor mConn;
     private TextView mStatus;
     private TextView mFirstSeen;
@@ -79,7 +80,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         View url_row = findViewById(R.id.detail_url_row);
         View info_row = findViewById(R.id.detail_info_row);
         TextView source = findViewById(R.id.detail_source);
-        TextView request_data = findViewById(R.id.request_data);
+        mRequestData = findViewById(R.id.request_data);
         TextView request_data_lbl = findViewById(R.id.request_data_label);
         TextView destination = findViewById(R.id.detail_destination);
         mTable = findViewById(R.id.table);
@@ -130,9 +131,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 url_row.setVisibility(View.GONE);
 
             if(!mConn.request_plaintext.isEmpty())
-                request_data.setText(mConn.request_plaintext);
+                mRequestData.setText(mConn.request_plaintext);
             else {
-                request_data.setVisibility(View.GONE);
+                mRequestData.setVisibility(View.GONE);
                 request_data_lbl.setVisibility(View.GONE);
             }
 
@@ -217,29 +218,36 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         return super.onCreateOptionsMenu(menu);
     }
 
+    private String getContents() {
+        if(mTable == null)
+            return "";
+
+        String contents = Utils.table2Text(mTable);
+
+        if(mRequestData.getText().length() > 0)
+            contents += "\n" + getString(R.string.request_plaintext) + ":\n" + mRequestData.getText();
+
+        return contents;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
-            String contents = Utils.table2Text(mTable);
-
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(getString(R.string.connection_details), contents);
+            ClipData clip = ClipData.newPlainText(getString(R.string.connection_details), getContents());
             clipboard.setPrimaryClip(clip);
 
             Utils.showToast(this, R.string.copied_to_clipboard);
             return true;
         } else if(id == R.id.share) {
-            String contents = Utils.table2Text(mTable);
-
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connection_details));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
 
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
-
             return true;
         }
 

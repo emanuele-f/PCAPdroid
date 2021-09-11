@@ -1,18 +1,8 @@
 /*
  * This file is part of PCAPdroid.
  *
- * PCAPdroid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * PCAPdroid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
+ * You are allowed to distribute this file with your proprietary app
+ * as long as you provide proper attribution to the PCAPdroid project.
  *
  * Copyright 2021 - Emanuele Faranda
  */
@@ -21,7 +11,6 @@
 #define __PCAPD_H__
 
 #define PCAPD_SOCKET_PATH  "pcapsock"
-#define PCAPD_LOGFILE_PATH "pcapd.log"
 #define PCAPD_PID          "pcapd.pid"
 
 #define PCAPD_FLAG_TX      (1 << 0)
@@ -29,12 +18,19 @@
 #include <time.h>
 #include <stdint.h>
 
+// https://www.tcpdump.org/linktypes.html
+#define PCAPD_DLT_ETHERNET    1
+#define PCAPD_DLT_RAW         101
+#define PCAPD_DLT_LINUX_SLL   113
+
 typedef struct {
-  struct timeval ts;
-  u_int pkt_drops;
-  uid_t uid;
-  uint16_t len;
-  uint8_t flags;
+  struct timeval ts;        // the packet timestamp
+  u_int pkt_drops;          // number of dropped packets on this interface
+  uid_t uid;                // the UID of the process which sent/received the packet
+  uint16_t len;             // the packet length
+  uint16_t linktype;        // the link type, see PCAPD_DLT_*
+  uint8_t flags;            // packet flags, see PCAPD_FLAG_*
+  uint8_t ifid;             // the interface id, which is the interface position in the -i args
 } __attribute__((packed)) pcapd_hdr_t;
 
 #endif

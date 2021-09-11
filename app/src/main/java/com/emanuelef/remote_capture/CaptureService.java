@@ -27,7 +27,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -50,10 +49,10 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -66,7 +65,6 @@ import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class CaptureService extends VpnService implements Runnable {
@@ -76,24 +74,14 @@ public class CaptureService extends VpnService implements Runnable {
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
+    private CaptureSettings mSettings;
     private Handler mHandler;
     private Thread mThread;
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
-    private String collector_address;
-    private String socks5_proxy_address;
-    private Prefs.DumpMode dump_mode;
-    private boolean socks5_enabled;
-    private boolean ipv6_enabled;
-    private boolean root_capture;
-    private boolean pcapdroid_trailer;
-    private int collector_port;
-    private int http_server_port;
-    private int socks5_proxy_port;
     private long last_bytes;
     private int last_connections;
-    private String app_filter;
     private int app_filter_uid;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
@@ -164,12 +152,10 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         Log.d(CaptureService.TAG, "onStartCommand");
+        mSettings = (CaptureSettings) intent.getSerializableExtra("settings");
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Bundle settings = intent.getBundleExtra("settings");
-
-        if (settings == null) {
-            Log.e(CaptureService.TAG, "NULL settings");
+        if (mSettings == null) {
+            Log.e(CaptureService.TAG, "Missing capture settings");
             return abortStart();
         }
 
@@ -194,49 +180,34 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        // Retrieve Configuration
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
-
-        app_filter = Prefs.getAppFilter(prefs);
-        collector_address = Prefs.getCollectorIp(prefs);
-        collector_port = Prefs.getCollectorPort(prefs);
-        http_server_port = Prefs.getHttpServerPort(prefs);
-        socks5_enabled = Prefs.getTlsDecryptionEnabled(prefs); // TODO rename
-        socks5_proxy_address = Prefs.getSocks5ProxyAddress(prefs);
-        socks5_proxy_port = Prefs.getSocks5ProxyPort(prefs);
-        dump_mode = Prefs.getDumpMode(prefs);
-        ipv6_enabled = Prefs.getIPv6Enabled(prefs);
         last_bytes = 0;
         last_connections = 0;
-        root_capture = Prefs.isRootCaptureEnabled(prefs);
-        pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
 
         // Possibly allocate the dumper
-        if(dump_mode == Prefs.DumpMode.HTTP_SERVER)
-            mDumper = new HTTPServer(this, http_server_port);
-        else if(dump_mode == Prefs.DumpMode.PCAP_FILE) {
-            String path = settings.getString(Prefs.PREF_PCAP_URI);
-
-            if(path != null) {
-                mPcapUri = Uri.parse(path);
+        if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
+            mDumper = new HTTPServer(this, mSettings.http_server_port);
+        else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
+            if(mSettings.pcap_uri != null) {
+                mPcapUri = Uri.parse(mSettings.pcap_uri);
                 mDumper = new FileDumper(this, mPcapUri);
             }
-        } else if(dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
+        } else if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
             InetAddress addr;
 
             try {
-                addr = InetAddress.getByName(Prefs.getCollectorIp(prefs));
+                addr = InetAddress.getByName(mSettings.collector_address);
             } catch (UnknownHostException e) {
                 reportError(e.getLocalizedMessage());
                 e.printStackTrace();
                 return abortStart();
             }
 
-            mDumper = new UDPDumper(new InetSocketAddress(addr, Prefs.getCollectorPort(prefs)));
+            mDumper = new UDPDumper(new InetSocketAddress(addr, mSettings.collector_port));
         }
 
         if(mDumper != null) {
@@ -250,9 +221,9 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        if ((app_filter != null) && (!app_filter.isEmpty())) {
+        if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
             try {
-                app_filter_uid = getPackageManager().getApplicationInfo(app_filter, 0).uid;
+                app_filter_uid = getPackageManager().getApplicationInfo(mSettings.app_filter, 0).uid;
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
                 app_filter_uid = -1;
@@ -260,7 +231,7 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             app_filter_uid = -1;
 
-        if(!root_capture) {
+        if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
 
             // VPN
@@ -272,7 +243,7 @@ public class CaptureService extends VpnService implements Runnable {
                     .addRoute("128.0.0.0", 1)
                     .addDnsServer(vpn_dns);
 
-            if (ipv6_enabled) {
+            if (mSettings.ipv6_enabled) {
                 builder.addAddress(VPN_IP6_ADDRESS, 128);
 
                 // Route unicast IPv6 addresses
@@ -285,16 +256,16 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
 
-            if ((app_filter != null) && (!app_filter.isEmpty())) {
-                Log.d(TAG, "Setting app filter: " + app_filter);
+            if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
+                Log.d(TAG, "Setting app filter: " + mSettings.app_filter);
 
                 try {
                     // NOTE: the API requires a package name, however it is converted to a UID
                     // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
                     // not on a package-name basis!
-                    builder.addAllowedApplication(app_filter);
+                    builder.addAllowedApplication(mSettings.app_filter);
                 } catch (PackageManager.NameNotFoundException e) {
-                    String msg = String.format(getResources().getString(R.string.app_not_found), app_filter);
+                    String msg = String.format(getResources().getString(R.string.app_not_found), mSettings.app_filter);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     return abortStart();
                 }
@@ -500,7 +471,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public static String getAppFilter() {
-        return((INSTANCE != null) ? INSTANCE.app_filter : null);
+        return((INSTANCE != null) ? INSTANCE.mSettings.app_filter : null);
     }
 
     public static Uri getPcapUri() {
@@ -512,19 +483,19 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public static String getCollectorAddress() {
-        return((INSTANCE != null) ? INSTANCE.collector_address : "");
+        return((INSTANCE != null) ? INSTANCE.mSettings.collector_address : "");
     }
 
     public static int getCollectorPort() {
-        return((INSTANCE != null) ? INSTANCE.collector_port : 0);
+        return((INSTANCE != null) ? INSTANCE.mSettings.collector_port : 0);
     }
 
     public static int getHTTPServerPort() {
-        return((INSTANCE != null) ? INSTANCE.http_server_port : 0);
+        return((INSTANCE != null) ? INSTANCE.mSettings.http_server_port : 0);
     }
 
     public static Prefs.DumpMode getDumpMode() {
-        return((INSTANCE != null) ? INSTANCE.dump_mode : Prefs.DumpMode.NONE);
+        return((INSTANCE != null) ? INSTANCE.mSettings.dump_mode : Prefs.DumpMode.NONE);
     }
 
     public static String getDNSServer() {
@@ -562,7 +533,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public void run() {
-        if(root_capture) {
+        if(mSettings.root_capture) {
             runPacketLoop(-1, this, Build.VERSION.SDK_INT);
             return;
         }
@@ -597,19 +568,21 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getIpv6DnsServer() { return(IPV6_DNS_SERVER); }
 
-    public String getSocks5ProxyAddress() {  return(socks5_proxy_address);  }
+    public String getSocks5ProxyAddress() {  return(mSettings.socks5_proxy_address);  }
 
-    public int getSocks5Enabled() { return socks5_enabled ? 1 : 0; }
+    public int getSocks5Enabled() { return mSettings.socks5_enabled ? 1 : 0; }
 
-    public int getSocks5ProxyPort() {  return(socks5_proxy_port);  }
+    public int getSocks5ProxyPort() {  return(mSettings.socks5_proxy_port);  }
 
-    public int getIPv6Enabled() { return(ipv6_enabled ? 1 : 0); }
+    public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
 
-    public int isRootCapture() { return(root_capture ? 1 : 0); }
+    public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
 
-    public int addPcapdroidTrailer() { return(pcapdroid_trailer ? 1 : 0); }
+    public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
+
+    public String getCaptureInterface() { return(mSettings.capture_interface); }
 
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
@@ -622,7 +595,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // returns 1 if dumpPcapData should be called
     public int pcapDumpEnabled() {
-        return((dump_mode != Prefs.DumpMode.NONE) ? 1 : 0);
+        return((mSettings.dump_mode != Prefs.DumpMode.NONE) ? 1 : 0);
     }
 
     public String getPcapDumperBpf() { return((mDumper != null) ? mDumper.getBpf() : ""); }
@@ -630,7 +603,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public boolean protect(int socket) {
         // Do not call protect in root mode
-        if(root_capture)
+        if(mSettings.root_capture)
             return true;
 
         return super.protect(socket);
@@ -680,6 +653,7 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    // also called from native
     private void sendServiceStatus(String cur_status) {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);

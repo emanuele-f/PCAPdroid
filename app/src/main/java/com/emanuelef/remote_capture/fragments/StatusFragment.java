@@ -74,6 +74,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private Menu mMenu;
     private MenuItem mMenuItemStartBtn;
     private MenuItem mMenuSettings;
+    private TextView mInterfaceInfo;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
     private View mQuickSettings;
@@ -140,6 +141,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mInterfaceInfo = view.findViewById(R.id.interface_info);
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mQuickSettings = view.findViewById(R.id.quick_settings);
@@ -339,7 +341,10 @@ private void refreshPcapDumpInfo() {
 
                 mCaptureStatus.setText(R.string.ready);
                 mCollectorInfo.setVisibility(View.GONE);
+                mInterfaceInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
+                mAppFilter = Prefs.getAppFilter(mPrefs);
+                refreshFilterInfo();
                 break;
             case starting:
             case stopping:
@@ -358,6 +363,21 @@ private void refreshPcapDumpInfo() {
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
+
+                if(CaptureService.isCapturingAsRoot()) {
+                    CaptureService service = CaptureService.requireInstance();
+                    String capiface = service.getCaptureInterface();
+
+                    if(capiface.equals("@inet"))
+                        capiface = getString(R.string.internet);
+                    else if(capiface.equals("any"))
+                        capiface = getString(R.string.all_interfaces);
+
+                    mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                }
+
+                mAppFilter = CaptureService.getAppFilter();
                 refreshPcapDumpInfo();
                 break;
             default:

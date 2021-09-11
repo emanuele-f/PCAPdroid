@@ -31,11 +31,12 @@ public class Prefs {
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
+    public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
     public static final String PREF_TLS_DECRYPTION_ENABLED_KEY = "tls_decryption_enabled";
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
-    public static final String PREF_PCAP_URI = "pcap_path";
+    public static final String PREF_PCAP_URI = "pcap_uri";
     public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";
@@ -75,4 +76,5 @@ public class Prefs {
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
     public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
+    public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
 }

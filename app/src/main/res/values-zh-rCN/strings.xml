@@ -169,4 +169,14 @@
     <string name="remove_ads">去除广告</string>
     <string name="pending_transaction">请完成您的交易以兑换此功能</string>
     <string name="purchased_feature_ok">购买的功能现在可用！</string>
+    <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。\n如果你不确定，最好拒绝！</string>
+    <string name="deny">拒绝</string>
+    <string name="allow">允许</string>
+    <string name="ctrl_consent_title">PCAPdroid 控制请求</string>
+    <string name="ctrl_consent_denied">控制请求被拒绝</string>
+    <string name="ctrl_consent_allowed">控制请求被允许</string>
+    <string name="capture_interface">捕获接口</string>
+    <string name="internet">互联网</string>
+    <string name="all_interfaces">所有接口</string>
+    <string name="capturing_from">正从 \"%1$s\" 捕获数据包</string>
 </resources>
