@@ -290,7 +290,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             startActivity(browserIntent);
         });
 
-        Menu navMenu = navView.getMenu();
+        Menu navMenu = mNavView.getMenu();
 
         if(Prefs.isRootCaptureEnabled(mPrefs))
             navMenu.findItem(R.id.open_root_log).setVisible(true);
