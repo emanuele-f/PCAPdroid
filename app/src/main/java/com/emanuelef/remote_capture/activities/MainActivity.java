@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -466,8 +467,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void startWithPcapFile(Uri uri) {
         mPcapUri = uri;
         mPcapFname = null;
+        boolean hasPermission = false;
 
-        Log.d(TAG, "PCAP to write: " + mPcapUri.toString());
+        // Revoke the previous permissions
+        for(UriPermission permission : getContentResolver ().getPersistedUriPermissions()) {
+            if(!permission.getUri().equals(uri)) {
+                Log.d(TAG, "Releasing URI permission: " + permission.getUri().toString());
+                getContentResolver().releasePersistableUriPermission(permission.getUri(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } else
+                hasPermission = true;
+        }
+
+        /* Request a persistent permission to write this URI without invoking the system picker.
+         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents. */
+        if(!hasPermission)
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+        Log.d(TAG, "PCAP URI to write: " + mPcapUri.toString());
         toggleService();
     }
 
