@@ -1,6 +1,6 @@
-name: Debug build
+name: Pull Request builds
 
-on: [push, pull_request]
+on: pull_request
    
 jobs:
   build:

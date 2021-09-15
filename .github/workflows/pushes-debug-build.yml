@@ -1,0 +1,24 @@
+name: Latest debug build
+
+on: push
+   
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - run: ./gradlew assembleDebug -PdoNotStrip
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        prerelease: true
+        body: Debug build for commit ${{github.sha}}
+        replacesArtifacts: true
+        tag: "latest-debug"
+        artifacts: "app/build/outputs/apk/debug/app-debug.apk"
+        token: ${{ secrets.GITHUB_TOKEN }}
