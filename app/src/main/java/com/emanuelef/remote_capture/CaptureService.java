@@ -213,7 +213,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mDumper != null) {
             try {
                 mDumper.startDumper();
-            } catch (IOException e) {
+            } catch (IOException | SecurityException e) {
                 reportError(e.getLocalizedMessage());
                 e.printStackTrace();
                 mDumper = null;
