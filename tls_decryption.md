@@ -13,7 +13,7 @@ python3 -m pip install --upgrade pip
 CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install mitmproxy
 ```
 
-**Note**: when installed on the Android device in via termux, it's essential to set an app filter in PCAPdroid to only capture a specific app traffic, otherwise the termux mitmproxy traffic would run in a loop, breaking the phone internet connectivity.
+**Note**: when installed on the Android device via termux, it's essential to set an app filter in PCAPdroid to only capture a specific app traffic, otherwise the termux mitmproxy traffic would run in a loop, breaking the phone internet connectivity.
 
 In order to enable the TLS decryption in PCAPdroid:
 
