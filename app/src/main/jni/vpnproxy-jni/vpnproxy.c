@@ -272,7 +272,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
     NDPI_BITMASK_SET_ALL(protocols);
 
     ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
-    ndpi_finalize_initalization(ndpi);
+    ndpi_finalize_initialization(ndpi);
 
     return(ndpi);
 }
@@ -422,11 +422,11 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
 
             break;
         case NDPI_PROTOCOL_TLS:
-            if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0]) {
+            if(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name[0]) {
                 if(data->info)
                     free(data->info);
 
-                data->info = strndup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name, 256);
+                data->info = strndup(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name, 256);
             }
             break;
     }

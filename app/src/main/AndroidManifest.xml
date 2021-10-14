@@ -30,7 +30,8 @@
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.SplashScreen"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -78,7 +79,8 @@
 
         <service
             android:name=".CaptureService"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>

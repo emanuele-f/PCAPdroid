@@ -132,7 +132,7 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
 
     if(!is_dns_server) {
         // try with known DNS servers
-        u_int32_t matched = 0;
+        u_int64_t matched = 0;
         ndpi_ip_addr_t addr = {0};
 
         if(tuple->ipver == 4)

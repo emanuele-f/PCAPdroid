@@ -17,9 +17,10 @@ AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/protocols ndpiSources)
 
-configure_file(${NDPI_ROOT}/Android/ndpi_api.h ${NDPI_ROOT}/src/include/ndpi_api.h)
-configure_file(${NDPI_ROOT}/Android/ndpi_config.h ${NDPI_ROOT}/src/include/ndpi_config.h)
-configure_file(${NDPI_ROOT}/Android/ndpi_define.h ${NDPI_ROOT}/src/include/ndpi_define.h)
+set(NDPI_GEN ${ROOTDIR}/generated/nDPI)
+configure_file(${NDPI_GEN}/ndpi_api.h ${NDPI_ROOT}/src/include/ndpi_api.h)
+configure_file(${NDPI_GEN}/ndpi_config.h ${NDPI_ROOT}/src/include/ndpi_config.h)
+configure_file(${NDPI_GEN}/ndpi_define.h ${NDPI_ROOT}/src/include/ndpi_define.h)
 
 ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
 
