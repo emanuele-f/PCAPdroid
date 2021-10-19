@@ -42,7 +42,7 @@ public class Prefs {
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
-    public static final String PREF_WHITELIST = "whitelist";
+    public static final String PREF_VISUALIZATION_MASK = "vis_mask";
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
 
     public enum DumpMode {

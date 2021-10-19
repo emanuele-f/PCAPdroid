@@ -35,20 +35,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
+import com.emanuelef.remote_capture.adapters.MaskEditAdapter;
 import com.emanuelef.remote_capture.model.MatchList;
-import com.emanuelef.remote_capture.model.Whitelist;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class WhitelistFragment extends Fragment {
-    private WhitelistEditAdapter mAdapter;
+public class MaskEditFragment extends Fragment {
+    private MaskEditAdapter mAdapter;
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
-    private Whitelist mWhitelist;
-    private ListView mWhitelistView;
+    private MatchList mMask;
+    private ListView mListView;
     private static final String TAG = "WhitelistFragment";
 
     @Override
@@ -59,15 +59,14 @@ public class WhitelistFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mWhitelistView = view.findViewById(R.id.whitelist);
+        mListView = view.findViewById(R.id.listview);
         mEmptyText = view.findViewById(R.id.whitelist_empty);
-        mWhitelist = new Whitelist(view.getContext());
-        mWhitelist.reload();
+        mMask = PCAPdroid.getInstance().getVisualizationMask();
 
-        mAdapter = new WhitelistEditAdapter(requireContext(), mWhitelist.iterRules());
-        mWhitelistView.setAdapter(mAdapter);
-        mWhitelistView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        mWhitelistView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        mAdapter = new MaskEditAdapter(requireContext(), mMask.iterRules());
+        mListView.setAdapter(mAdapter);
+        mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 MatchList.Rule item = mAdapter.getItem(position);
@@ -99,24 +98,24 @@ public class WhitelistFragment extends Fragment {
                 if(id == R.id.delete_entry) {
                     if(mSelected.size() >= mAdapter.getCount()) {
                         mAdapter.clear();
-                        mWhitelist.clear();
-                        mWhitelist.save();
+                        mMask.clear();
+                        mMask.save();
                     } else {
                         for(MatchList.Rule item : mSelected)
                             mAdapter.remove(item);
-                        updateWhitelist();
+                        updateMask();
                     }
 
                     mode.finish();
-                    recheckWhitelistSize();
+                    recheckListSize();
                     return true;
                 } else if(id == R.id.select_all) {
                     if(mSelected.size() >= mAdapter.getCount())
                         mode.finish();
                     else {
                         for(int i=0; i<mAdapter.getCount(); i++) {
-                            if(!mWhitelistView.isItemChecked(i))
-                                mWhitelistView.setItemChecked(i, true);
+                            if(!mListView.isItemChecked(i))
+                                mListView.setItemChecked(i, true);
                         }
                     }
 
@@ -131,19 +130,19 @@ public class WhitelistFragment extends Fragment {
             }
         });
 
-        recheckWhitelistSize();
+        recheckListSize();
     }
 
-    private void recheckWhitelistSize() {
+    private void recheckListSize() {
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
     }
 
-    private void updateWhitelist() {
+    private void updateMask() {
         ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
 
-        Iterator<MatchList.Rule> iter = mWhitelist.iterRules();
+        Iterator<MatchList.Rule> iter = mMask.iterRules();
 
-        // Remove the whitelisted items which are not in the adapter dataset
+        // Remove the mMask rules which are not in the adapter dataset
         while(iter.hasNext()) {
             MatchList.Rule rule = iter.next();
 
@@ -152,8 +151,8 @@ public class WhitelistFragment extends Fragment {
         }
 
         if(toRemove.size() > 0) {
-            mWhitelist.removeRules(toRemove);
-            mWhitelist.save();
+            mMask.removeRules(toRemove);
+            mMask.save();
         }
     }
 }

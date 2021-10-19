@@ -30,11 +30,11 @@ import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
-import com.emanuelef.remote_capture.fragments.WhitelistFragment;
+import com.emanuelef.remote_capture.adapters.MaskEditAdapter;
+import com.emanuelef.remote_capture.fragments.MaskEditFragment;
 
-public class WhitelistActivity extends BaseActivity {
-    private static final String TAG = "WhitelistActivity";
+public class MaskEditActivity extends BaseActivity {
+    private static final String TAG = "MaskEditActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +44,7 @@ public class WhitelistActivity extends BaseActivity {
         setContentView(R.layout.whitelist_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.whitelist_fragment, new WhitelistFragment())
+                .replace(R.id.mask_fragment, new MaskEditFragment())
                 .commit();
     }
 
@@ -59,17 +59,17 @@ public class WhitelistActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        ListView lv = findViewById(R.id.whitelist);
+        ListView lv = findViewById(R.id.listview);
 
         if(lv == null)
             return false;
 
         if(id == R.id.copy_to_clipboard) {
-            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+            String contents = Utils.adapter2Text((MaskEditAdapter)lv.getAdapter());
             Utils.copyToClipboard(this, contents);
             return true;
         } else if(id == R.id.share) {
-            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+            String contents = Utils.adapter2Text((MaskEditAdapter)lv.getAdapter());
 
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");

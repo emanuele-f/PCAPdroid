@@ -5,11 +5,19 @@ import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
-public class MyApplication extends Application {
+import java.lang.ref.WeakReference;
+
+public class PCAPdroid extends Application {
+    private MatchList mVisMask;
+    private static WeakReference<PCAPdroid> mInstance;
+
+    @Override
     public void onCreate() {
         super.onCreate();
+        mInstance = new WeakReference<>(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = prefs.getString(Prefs.PREF_APP_THEME, "");
@@ -22,7 +30,17 @@ public class MyApplication extends Application {
             } else
                 theme = "system";
         }
-
         Utils.setAppTheme(theme);
+    }
+
+    public static PCAPdroid getInstance() {
+        return mInstance.get();
+    }
+
+    public MatchList getVisualizationMask() {
+        if(mVisMask == null)
+            mVisMask = new MatchList(this, Prefs.PREF_VISUALIZATION_MASK);
+
+        return mVisMask;
     }
 }

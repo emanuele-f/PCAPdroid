@@ -35,11 +35,11 @@ import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.Iterator;
 
-public class WhitelistEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
+public class MaskEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
 
-    public WhitelistEditAdapter(Context context, Iterator<MatchList.Rule> items) {
-        super(context, R.layout.whitelist_item);
+    public MaskEditAdapter(Context context, Iterator<MatchList.Rule> items) {
+        super(context, R.layout.rule_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         while(items.hasNext()) {
@@ -52,10 +52,10 @@ public class WhitelistEditAdapter extends ArrayAdapter<MatchList.Rule> implement
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if(convertView == null)
-            convertView = mLayoutInflater.inflate(R.layout.whitelist_item, parent, false);
+            convertView = mLayoutInflater.inflate(R.layout.rule_item, parent, false);
 
-        MatchList.Rule item = getItem(position);
-        ((TextView)convertView.findViewById(R.id.item_label)).setText(item.getLabel());
+        MatchList.Rule rule = getItem(position);
+        ((TextView)convertView.findViewById(R.id.item_label)).setText(rule.getLabel());
 
         return convertView;
     }

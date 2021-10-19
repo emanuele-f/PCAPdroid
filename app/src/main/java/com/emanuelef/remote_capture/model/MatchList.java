@@ -20,10 +20,12 @@
 package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
 
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
@@ -49,6 +51,8 @@ public class MatchList {
     private static final String TAG = "ConnectionsMatcher";
     private static final StyleSpan italic = new StyleSpan(Typeface.ITALIC);
     private final Context mContext;
+    private final SharedPreferences mPrefs;
+    private final String mPrefName;
     private ArrayList<Rule> mRules = new ArrayList<>();
     private final HashMap<String, Rule> mMatches = new HashMap<>();
 
@@ -93,8 +97,27 @@ public class MatchList {
         }
     }
 
-    public MatchList(Context ctx) {
+    public MatchList(Context ctx, String pref_name) {
         mContext = ctx;
+        mPrefName = pref_name; // The preference to bake the list rules
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        reload();
+    }
+
+    public void reload() {
+        // Try to restore the whitelist
+        String serialized = mPrefs.getString(mPrefName, "");
+
+        if(!serialized.isEmpty())
+            fromJson(serialized);
+        else
+            clear();
+    }
+
+    public void save() {
+        mPrefs.edit()
+                .putString(Prefs.PREF_VISUALIZATION_MASK, toJson())
+                .apply();
     }
 
     public static String getLabel(Context ctx, RuleType tp, String value) {

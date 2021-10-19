@@ -103,9 +103,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
-        // Reload the whitelist as it could modified in WhitelistActivity
-        mAdapter.mWhitelist.reload();
-
         registerConnsListener();
         refreshMenuIcons();
     }
@@ -127,7 +124,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(mSearchView != null)
             outState.putString("filter", mSearchView.getQuery().toString());
         if(mAdapter != null)
-            outState.putBoolean("whitelistEnabled", mAdapter.mWhitelistEnabled);
+            outState.putBoolean("whitelistEnabled", mAdapter.mHideMasked);
     }
 
     @Override
@@ -229,7 +226,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if((filter != null) && !filter.isEmpty()) {
                 // Avoid hiding the interesting items
-                mAdapter.mWhitelistEnabled = false;
+                mAdapter.mHideMasked = false;
                 fromIntent = true;
             }
         }
@@ -239,7 +236,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 filter = savedInstanceState.getString("filter");
 
             if(!fromIntent)
-                mAdapter.mWhitelistEnabled = savedInstanceState.getBoolean("whitelistEnabled", true);
+                mAdapter.mHideMasked = savedInstanceState.getBoolean("whitelistEnabled", true);
         }
 
         if((filter != null) && !filter.isEmpty())
@@ -350,15 +347,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         String label = item.getTitle().toString();
 
         if(id == R.id.exclude_app)
-            mAdapter.mWhitelist.addApp(conn.uid, label);
+            mAdapter.mMask.addApp(conn.uid, label);
         else if(id == R.id.exclude_host)
-            mAdapter.mWhitelist.addHost(conn.info, label);
+            mAdapter.mMask.addHost(conn.info, label);
         else if(id == R.id.exclude_ip)
-            mAdapter.mWhitelist.addIp(conn.dst_ip, label);
+            mAdapter.mMask.addIp(conn.dst_ip, label);
         else if(id == R.id.exclude_proto)
-            mAdapter.mWhitelist.addProto(conn.l7proto, label);
+            mAdapter.mMask.addProto(conn.l7proto, label);
         else if(id == R.id.exclude_root_domain)
-            mAdapter.mWhitelist.addRootDomain(Utils.getRootDomain(conn.info), label);
+            mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info), label);
         else if(id == R.id.search_app) {
             mSearchView.setIconified(false);
             mSearchView.setQuery(Objects.requireNonNull(
@@ -384,8 +381,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else
             return super.onContextItemSelected(item);
 
-        mAdapter.mWhitelist.save();
-        mAdapter.mWhitelistEnabled = true;
+        mAdapter.mMask.save();
+        mAdapter.mHideMasked = true;
         refreshFilteredConnections();
         return true;
     }
@@ -534,7 +531,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(reg == null)
                 return false;
 
-            mAdapter.mWhitelistEnabled = !mAdapter.mWhitelistEnabled;
+            mAdapter.mHideMasked = !mAdapter.mHideMasked;
 
             // Delay the refresh to wait for the menu to be closed
             (new Handler(requireActivity().getMainLooper())).postDelayed(this::refreshFilteredConnections, 50);
@@ -558,12 +555,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mMenuItemDisableWhitelist.setEnabled(is_enabled);
         mMenuItemEnableWhitelist.setEnabled(is_enabled);
 
-        if((mAdapter == null) || mAdapter.mWhitelist.isEmpty()) {
+        if((mAdapter == null) || mAdapter.mMask.isEmpty()) {
             mMenuItemDisableWhitelist.setVisible(false);
             mMenuItemEnableWhitelist.setVisible(false);
         } else {
-            mMenuItemDisableWhitelist.setVisible(mAdapter.mWhitelistEnabled);
-            mMenuItemEnableWhitelist.setVisible(!mAdapter.mWhitelistEnabled);
+            mMenuItemDisableWhitelist.setVisible(mAdapter.mHideMasked);
+            mMenuItemEnableWhitelist.setVisible(!mAdapter.mHideMasked);
         }
     }
 
