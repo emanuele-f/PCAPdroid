@@ -48,7 +48,7 @@ import java.util.List;
 
 /* Matches connections against the configured rules. */
 public class MatchList {
-    private static final String TAG = "ConnectionsMatcher";
+    private static final String TAG = "MatchList";
     private static final StyleSpan italic = new StyleSpan(Typeface.ITALIC);
     private final Context mContext;
     private final SharedPreferences mPrefs;
@@ -106,6 +106,7 @@ public class MatchList {
 
     public void reload() {
         String serialized = mPrefs.getString(mPrefName, "");
+        //Log.d(TAG, serialized);
 
         if(!serialized.isEmpty())
             fromJson(serialized);
@@ -115,7 +116,7 @@ public class MatchList {
 
     public void save() {
         mPrefs.edit()
-                .putString(Prefs.PREF_VISUALIZATION_MASK, toJson())
+                .putString(mPrefName, toJson())
                 .apply();
     }
 

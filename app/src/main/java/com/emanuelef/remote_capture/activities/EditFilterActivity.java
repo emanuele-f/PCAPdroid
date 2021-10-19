@@ -10,7 +10,6 @@ import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
@@ -19,7 +18,7 @@ import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.google.android.material.chip.Chip;
 
-public class EditFilterActivity extends AppCompatActivity {
+public class EditFilterActivity extends BaseActivity {
     public static final String FILTER_DESCRIPTOR = "filter";
     private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;

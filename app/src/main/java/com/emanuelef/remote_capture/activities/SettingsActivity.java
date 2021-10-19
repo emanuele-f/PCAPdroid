@@ -194,6 +194,7 @@ public class SettingsActivity extends BaseActivity {
             if(SettingsActivity.ACTION_LANG_RESTART.equals(getActivity().getIntent().getAction()))
                 scrollToPreference(appLang);
 
+            // Current locale applied via BaseActivity.attachBaseContext
             appLang.setOnPreferenceChangeListener((preference, newValue) -> {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 

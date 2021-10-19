@@ -1,7 +1,9 @@
 package com.emanuelef.remote_capture;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 
 import androidx.preference.PreferenceManager;
 
@@ -12,12 +14,14 @@ import java.lang.ref.WeakReference;
 
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
+    private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mInstance = new WeakReference<>(this);
+        mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = prefs.getString(Prefs.PREF_APP_THEME, "");
@@ -42,5 +46,14 @@ public class PCAPdroid extends Application {
             mVisMask = new MatchList(this, Prefs.PREF_VISUALIZATION_MASK);
 
         return mVisMask;
+    }
+
+    @Override
+    public Resources getResources() {
+        if(mLocalizedContext == null)
+            return super.getResources();
+
+        // Ensure that the selected locale is used
+        return mLocalizedContext.getResources();
     }
 }
