@@ -42,6 +42,14 @@ public class ConnectionDescriptor implements Serializable {
         CONN_STATUS_RESET = 7,
         CONN_STATUS_UNREACHABLE = 8;
 
+    public enum Status {
+        STATUS_INVALID,
+        STATUS_OPEN,
+        STATUS_CLOSED,
+        STATUS_UNREACHABLE,
+        STATUS_ERROR,
+    }
+
     /* Metadata */
     public int ipver;
     public int ipproto;
@@ -97,24 +105,30 @@ public class ConnectionDescriptor implements Serializable {
         }
     }
 
-    public String getStatusLabel(Context ctx) {
-        int resid;
-
+    public Status getStatus() {
         if(status >= CONN_STATUS_CLOSED) {
             switch(status) {
                 case CONN_STATUS_CLOSED:
                 case CONN_STATUS_RESET:
-                    resid = R.string.conn_status_closed;
-                    break;
+                    return Status.STATUS_CLOSED;
                 case CONN_STATUS_UNREACHABLE:
-                    resid = R.string.conn_status_unreachable;
-                    break;
+                    return Status.STATUS_UNREACHABLE;
                 default:
-                    resid = R.string.error;
-                    break;
+                    return Status.STATUS_ERROR;
             }
-        } else
-            resid = R.string.conn_status_open;
+        }
+        return Status.STATUS_OPEN;
+    }
+
+    public String getStatusLabel(Context ctx) {
+        int resid;
+
+        switch (getStatus()) {
+            case STATUS_OPEN: resid = R.string.conn_status_open; break;
+            case STATUS_CLOSED: resid = R.string.conn_status_closed; break;
+            case STATUS_UNREACHABLE: resid = R.string.conn_status_unreachable; break;
+            default: resid = R.string.error;
+        }
 
         return(ctx.getString(resid));
     }

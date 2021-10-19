@@ -157,10 +157,12 @@ public class MatchList {
     }
 
     private void deserialize(JsonObject object) {
-        mRules = new ArrayList<>();
-        mMatches.clear();
+        clear();
 
-        JsonArray ruleArray = object.getAsJsonArray("rule");
+        JsonArray ruleArray = object.getAsJsonArray("rules");
+        if(ruleArray == null)
+            return;
+
         AppsResolver resolver = new AppsResolver(mContext);
 
         for(JsonElement el: ruleArray) {

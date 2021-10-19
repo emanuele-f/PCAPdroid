@@ -76,6 +76,9 @@
             android:name=".activities.MaskEditActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
+        <activity
+            android:name=".activities.FilterActivity"
+            android:launchMode="singleTop" />
 
         <service
             android:name=".CaptureService"

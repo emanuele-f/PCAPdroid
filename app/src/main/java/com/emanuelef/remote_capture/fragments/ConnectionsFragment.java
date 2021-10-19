@@ -64,10 +64,12 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
+import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.activities.FilterActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -85,8 +87,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private TextView mOldConnectionsText;
     private boolean autoScroll;
     private boolean listenerSet;
-    private MenuItem mMenuItemEnableWhitelist;
-    private MenuItem mMenuItemDisableWhitelist;
+    private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
     private BroadcastReceiver mReceiver;
@@ -94,10 +95,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean hasUntrackedConnections;
     private AppsResolver mApps;
     private SearchView mSearchView;
-    private String mFilterToApply;
+    private String mQueryToApply;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
+    private final ActivityResultLauncher<Intent> filterLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::filterResult);
 
     @Override
     public void onResume() {
@@ -114,7 +117,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         unregisterConnsListener();
 
         if(mSearchView != null)
-            mFilterToApply = mSearchView.getQuery().toString();
+            mQueryToApply = mSearchView.getQuery().toString();
     }
 
     @Override
@@ -122,9 +125,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onSaveInstanceState(outState);
 
         if(mSearchView != null)
-            outState.putString("filter", mSearchView.getQuery().toString());
+            outState.putString("search", mSearchView.getQuery().toString());
         if(mAdapter != null)
-            outState.putBoolean("whitelistEnabled", mAdapter.mHideMasked);
+            outState.putSerializable("filter_desc", mAdapter.mFilter);
     }
 
     @Override
@@ -217,30 +220,30 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         refreshMenuIcons();
 
-        String filter = "";
+        String search = "";
         boolean fromIntent = false;
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            filter = intent.getStringExtra(FILTER_EXTRA);
+            search = intent.getStringExtra(FILTER_EXTRA);
 
-            if((filter != null) && !filter.isEmpty()) {
+            if((search != null) && !search.isEmpty()) {
                 // Avoid hiding the interesting items
-                mAdapter.mHideMasked = false;
+                mAdapter.mFilter.showMasked = true;
                 fromIntent = true;
             }
         }
 
         if(savedInstanceState != null) {
-            if((filter == null) || filter.isEmpty())
-                filter = savedInstanceState.getString("filter");
+            if((search == null) || search.isEmpty())
+                search = savedInstanceState.getString("search");
 
-            if(!fromIntent)
-                mAdapter.mHideMasked = savedInstanceState.getBoolean("whitelistEnabled", true);
+            if(!fromIntent && savedInstanceState.containsKey("filter_desc"))
+                mAdapter.mFilter = (FilterDescriptor) savedInstanceState.getSerializable("filter_desc");
         }
 
-        if((filter != null) && !filter.isEmpty())
-            mFilterToApply = filter;
+        if((search != null) && !search.isEmpty())
+            mQueryToApply = search;
 
         // Register for service status
         mReceiver = new BroadcastReceiver() {
@@ -298,7 +301,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
 
         if(app != null) {
-            MenuItem item = menu.findItem(R.id.exclude_app);
+            MenuItem item = menu.findItem(R.id.hide_app);
             String label = MatchList.getLabel(ctx, RuleType.APP, app.getName());
             item.setTitle(label);
             item.setVisible(true);
@@ -309,7 +312,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
-            MenuItem item = menu.findItem(R.id.exclude_host);
+            MenuItem item = menu.findItem(R.id.hide_host);
             String label = MatchList.getLabel(ctx, RuleType.HOST, conn.info);
             item.setTitle(label);
             item.setVisible(true);
@@ -321,19 +324,32 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             String rootDomain = Utils.getRootDomain(conn.info);
 
             if(!rootDomain.equals(conn.info)) {
-                item = menu.findItem(R.id.exclude_root_domain);
+                item = menu.findItem(R.id.hide_root_domain);
                 item.setTitle(MatchList.getLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
                 item.setVisible(true);
             }
         }
 
         String label = MatchList.getLabel(ctx, RuleType.IP, conn.dst_ip);
-        menu.findItem(R.id.exclude_ip).setTitle(label);
+        menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
 
         label = MatchList.getLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
-        menu.findItem(R.id.exclude_proto).setTitle(label);
+        menu.findItem(R.id.hide_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
+    }
+
+    private void setQuery(String query) {
+        mSearchView.setIconified(false);
+        mMenuItemSearch.expandActionView();
+
+        mSearchView.setIconified(false);
+        mMenuItemSearch.expandActionView();
+
+        // Delay otherwise the query won't be set when the activity is just started.
+        mSearchView.post(() -> {
+            mSearchView.setQuery(query, true);
+        });
     }
 
     @Override
@@ -346,32 +362,28 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int id = item.getItemId();
         String label = item.getTitle().toString();
 
-        if(id == R.id.exclude_app)
+        if(id == R.id.hide_app)
             mAdapter.mMask.addApp(conn.uid, label);
-        else if(id == R.id.exclude_host)
+        else if(id == R.id.hide_host)
             mAdapter.mMask.addHost(conn.info, label);
-        else if(id == R.id.exclude_ip)
+        else if(id == R.id.hide_ip)
             mAdapter.mMask.addIp(conn.dst_ip, label);
-        else if(id == R.id.exclude_proto)
+        else if(id == R.id.hide_proto)
             mAdapter.mMask.addProto(conn.l7proto, label);
-        else if(id == R.id.exclude_root_domain)
+        else if(id == R.id.hide_root_domain)
             mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info), label);
         else if(id == R.id.search_app) {
-            mSearchView.setIconified(false);
-            mSearchView.setQuery(Objects.requireNonNull(
-                    mApps.get(conn.uid, 0)).getPackageName(), true);
+            setQuery(Objects.requireNonNull(
+                    mApps.get(conn.uid, 0)).getPackageName());
             return true;
         } else if(id == R.id.search_host) {
-            mSearchView.setIconified(false);
-            mSearchView.setQuery(conn.info, true);
+            setQuery(conn.info);
             return true;
         } else if(id == R.id.search_ip) {
-            mSearchView.setIconified(false);
-            mSearchView.setQuery(conn.dst_ip, true);
+            setQuery(conn.dst_ip);
             return true;
         } else if(id == R.id.search_proto) {
-            mSearchView.setIconified(false);
-            mSearchView.setQuery(conn.l7proto, true);
+            setQuery(conn.l7proto);
             return true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
@@ -382,7 +394,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return super.onContextItemSelected(item);
 
         mAdapter.mMask.save();
-        mAdapter.mHideMasked = true;
+        mAdapter.mFilter.showMasked = true;
         refreshFilteredConnections();
         return true;
     }
@@ -494,26 +506,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menuInflater.inflate(R.menu.connections_menu, menu);
 
         mSave = menu.findItem(R.id.save);
-        mMenuItemEnableWhitelist = menu.findItem(R.id.hide_whitelist);
-        mMenuItemDisableWhitelist = menu.findItem(R.id.show_whitelist);
+        mMenuFilter = menu.findItem(R.id.edit_filter);
         mMenuItemSearch = menu.findItem(R.id.search);
 
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
         mSearchView.setOnQueryTextListener(this);
 
-        if((mFilterToApply != null) && (!mFilterToApply.isEmpty())) {
-            String query = mFilterToApply;
-            mFilterToApply = null;
-
-            mSearchView.setIconified(false);
-            mMenuItemSearch.expandActionView();
-
-            // Delay otherwise the query won't be set
-            /* NOTE: there is still a bug with "ifRoom" which causes the other icons to be permanently
-             * hidden when the searchview is collapsed. */
-            mSearchView.post(() -> {
-                mSearchView.setQuery(query, true);
-            });
+        if((mQueryToApply != null) && (!mQueryToApply.isEmpty())) {
+            String query = mQueryToApply;
+            mQueryToApply = null;
+            setQuery(query);
         }
 
         refreshMenuIcons();
@@ -526,16 +528,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(id == R.id.save) {
             openFileSelector();
             return true;
-        } else if((id == R.id.hide_whitelist) || (id == R.id.show_whitelist)) {
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
-            if(reg == null)
-                return false;
-
-            mAdapter.mHideMasked = !mAdapter.mHideMasked;
-
-            // Delay the refresh to wait for the menu to be closed
-            (new Handler(requireActivity().getMainLooper())).postDelayed(this::refreshFilteredConnections, 50);
-
+        } else if(id == R.id.edit_filter) {
+            Intent intent = new Intent(requireContext(), FilterActivity.class);
+            intent.putExtra(FilterActivity.FILTER_DESCRIPTOR, mAdapter.mFilter);
+            filterLauncher.launch(intent);
             return true;
         }
 
@@ -548,20 +544,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
 
-        // NOTE: setEnabled does not work for this
-        mMenuItemSearch.setVisible(is_enabled);
-
+        mMenuItemSearch.setVisible(is_enabled); // NOTE: setEnabled does not work for this
+        //mMenuFilter.setVisible(is_enabled);
         mSave.setEnabled(is_enabled);
-        mMenuItemDisableWhitelist.setEnabled(is_enabled);
-        mMenuItemEnableWhitelist.setEnabled(is_enabled);
-
-        if((mAdapter == null) || mAdapter.mMask.isEmpty()) {
-            mMenuItemDisableWhitelist.setVisible(false);
-            mMenuItemEnableWhitelist.setVisible(false);
-        } else {
-            mMenuItemDisableWhitelist.setVisible(mAdapter.mHideMasked);
-            mMenuItemEnableWhitelist.setVisible(!mAdapter.mHideMasked);
-        }
     }
 
     private void dumpCsv() {
@@ -639,12 +624,22 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
     }
 
+    private void filterResult(final ActivityResult result) {
+        if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(FilterActivity.FILTER_DESCRIPTOR);
+            if(descriptor != null) {
+                mAdapter.mFilter = descriptor;
+                mAdapter.refreshFilteredConnections();
+            }
+        }
+    }
+
     @Override
     public boolean onQueryTextSubmit(String query) { return true; }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        mAdapter.setFilter(newText);
+        mAdapter.setSearch(newText);
         recheckScroll();
         return true;
     }

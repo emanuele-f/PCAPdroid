@@ -41,6 +41,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
@@ -59,7 +60,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Context mContext;
     private int mClickedPosition;
     private int mNumRemovedItems;
-    public boolean mHideMasked;
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
     // to provide an always increasing position even when items are removed. The correct unshifted
@@ -67,8 +67,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final HashMap<Integer, Integer> mIdToFilteredPos;
 
     private ArrayList<ConnectionDescriptor> mFilteredConn;
-    private String mFilter;
+    private String mSearch;
     public final MatchList mMask;
+    public FilterDescriptor mFilter = new FilterDescriptor();
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -124,13 +125,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             lastSeen.setText(Utils.formatEpochShort(context, conn.last_seen / 1000));
             statusInd.setText(conn.getStatusLabel(context));
 
+            int color;
             if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
-                statusInd.setTextColor(0xFF28BC36); // Open
+                color = R.color.statusOpen;
             else if((conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                     || (conn.status == ConnectionDescriptor.CONN_STATUS_RESET))
-                statusInd.setTextColor(0xFFAAAAAA);
+                color = R.color.statusClosed;
             else
-                statusInd.setTextColor(0xFFF20015); // Error
+                color = R.color.statusError;
+            statusInd.setTextColor(context.getResources().getColor(color));
         }
     }
 
@@ -144,9 +147,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mUnfilteredItemsCount = 0;
         mNumRemovedItems = 0;
         mIdToFilteredPos = new HashMap<>();
-        mHideMasked = true;
         mMask = PCAPdroid.getInstance().getVisualizationMask();
-        mFilter = null;
+        mSearch = null;
         setHasStableIds(true);
     }
 
@@ -197,8 +199,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     private boolean matches(ConnectionDescriptor conn) {
         return((conn != null)
-                && (!mHideMasked || !mMask.matches(conn)))
-                && ((mFilter == null) || conn.matches(mApps, mFilter));
+                && mFilter.matches(conn)
+                && ((mSearch == null) || conn.matches(mApps, mSearch)));
     }
 
     private int getFilteredItemPos(int incrId) {
@@ -338,7 +340,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos.clear();
         mNumRemovedItems = 0;
 
-        if(hasWhitelistFilter() || (mFilter != null)) {
+        if(hasFilter()) {
             int pos = 0;
             mFilteredConn = new ArrayList<>();
 
@@ -372,8 +374,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return reg.getConn(pos);
     }
 
-    public void setFilter(String text) {
-        mFilter = text;
+    public void setSearch(String text) {
+        mSearch = text;
         refreshFilteredConnections();
     }
 
@@ -385,8 +387,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return getItem(mClickedPosition);
     }
 
-    public boolean hasWhitelistFilter() {
-        return (mHideMasked && !mMask.isEmpty());
+    public boolean hasFilter() {
+        return (mSearch != null) || mFilter.isSet();
     }
 
     public synchronized String dumpConnectionsCsv() {
