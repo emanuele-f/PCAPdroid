@@ -185,8 +185,8 @@
             android:layout_width="0dp"
             android:layout_height="42dip"
             android:layout_weight="1"
-            android:textSize="12sp"
-            tools:ignore="ButtonStyle" />
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="@color/colorTabText" />
 
         <Button
             android:id="@+id/show_connections"
@@ -194,9 +194,7 @@
             android:layout_marginStart="5dp"
             android:layout_width="0dp"
             android:layout_height="42dip"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            tools:ignore="ButtonStyle"/>
+            android:layout_weight="1" />
     </LinearLayout>
 
     <TextView

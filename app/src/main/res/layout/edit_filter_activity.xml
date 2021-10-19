@@ -29,10 +29,11 @@
                 android:id="@+id/edit_mask"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
                 android:layout_marginBottom="15dp"
                 android:text="@string/edit_rules"
-                android:layout_alignParentEnd="true"
-                android:textSize="12sp" />
+                style="?attr/materialButtonOutlinedStyle"
+                android:textColor="@color/colorTabText" />
         </RelativeLayout>
 
         <TextView

@@ -53,7 +53,7 @@ public class MatchList {
     private final Context mContext;
     private final SharedPreferences mPrefs;
     private final String mPrefName;
-    private ArrayList<Rule> mRules = new ArrayList<>();
+    private final ArrayList<Rule> mRules = new ArrayList<>();
     private final HashMap<String, Rule> mMatches = new HashMap<>();
 
     public enum RuleType {
