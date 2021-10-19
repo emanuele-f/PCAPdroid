@@ -24,7 +24,7 @@ import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
 
-public class Whitelist extends ConnectionsMatcher {
+public class Whitelist extends MatchList {
     private final SharedPreferences mPrefs;
 
     public Whitelist(Context ctx) {

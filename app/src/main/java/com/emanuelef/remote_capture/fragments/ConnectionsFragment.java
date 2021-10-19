@@ -64,8 +64,8 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher.ItemType;
+import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -302,7 +302,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(app != null) {
             MenuItem item = menu.findItem(R.id.exclude_app);
-            String label = ConnectionsMatcher.getLabel(ctx, ItemType.APP, app.getName());
+            String label = MatchList.getLabel(ctx, RuleType.APP, app.getName());
             item.setTitle(label);
             item.setVisible(true);
 
@@ -313,7 +313,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
             MenuItem item = menu.findItem(R.id.exclude_host);
-            String label = ConnectionsMatcher.getLabel(ctx, ItemType.HOST, conn.info);
+            String label = MatchList.getLabel(ctx, RuleType.HOST, conn.info);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -325,16 +325,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(!rootDomain.equals(conn.info)) {
                 item = menu.findItem(R.id.exclude_root_domain);
-                item.setTitle(ConnectionsMatcher.getLabel(ctx, ItemType.ROOT_DOMAIN, rootDomain));
+                item.setTitle(MatchList.getLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
                 item.setVisible(true);
             }
         }
 
-        String label = ConnectionsMatcher.getLabel(ctx, ItemType.IP, conn.dst_ip);
+        String label = MatchList.getLabel(ctx, RuleType.IP, conn.dst_ip);
         menu.findItem(R.id.exclude_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
 
-        label = ConnectionsMatcher.getLabel(ctx, ItemType.PROTOCOL, conn.l7proto);
+        label = MatchList.getLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
         menu.findItem(R.id.exclude_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
     }

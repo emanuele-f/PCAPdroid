@@ -31,19 +31,19 @@ import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.Iterator;
 
-public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> implements TextAdapter {
+public class WhitelistEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
 
-    public WhitelistEditAdapter(Context context, Iterator<ConnectionsMatcher.Item> items) {
+    public WhitelistEditAdapter(Context context, Iterator<MatchList.Rule> items) {
         super(context, R.layout.whitelist_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         while(items.hasNext()) {
-            ConnectionsMatcher.Item item = items.next();
+            MatchList.Rule item = items.next();
             add(item);
         }
     }
@@ -54,7 +54,7 @@ public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> 
         if(convertView == null)
             convertView = mLayoutInflater.inflate(R.layout.whitelist_item, parent, false);
 
-        ConnectionsMatcher.Item item = getItem(position);
+        MatchList.Rule item = getItem(position);
         ((TextView)convertView.findViewById(R.id.item_label)).setText(item.getLabel());
 
         return convertView;

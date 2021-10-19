@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -38,7 +37,7 @@ import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Whitelist;
 
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ import java.util.Iterator;
 public class WhitelistFragment extends Fragment {
     private WhitelistEditAdapter mAdapter;
     private TextView mEmptyText;
-    private ArrayList<ConnectionsMatcher.Item> mSelected = new ArrayList<>();
+    private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
     private Whitelist mWhitelist;
     private ListView mWhitelistView;
     private static final String TAG = "WhitelistFragment";
@@ -65,13 +64,13 @@ public class WhitelistFragment extends Fragment {
         mWhitelist = new Whitelist(view.getContext());
         mWhitelist.reload();
 
-        mAdapter = new WhitelistEditAdapter(requireContext(), mWhitelist.iterItems());
+        mAdapter = new WhitelistEditAdapter(requireContext(), mWhitelist.iterRules());
         mWhitelistView.setAdapter(mAdapter);
         mWhitelistView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mWhitelistView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                ConnectionsMatcher.Item item = mAdapter.getItem(position);
+                MatchList.Rule item = mAdapter.getItem(position);
 
                 if(checked)
                     mSelected.add(item);
@@ -103,7 +102,7 @@ public class WhitelistFragment extends Fragment {
                         mWhitelist.clear();
                         mWhitelist.save();
                     } else {
-                        for(ConnectionsMatcher.Item item : mSelected)
+                        for(MatchList.Rule item : mSelected)
                             mAdapter.remove(item);
                         updateWhitelist();
                     }
@@ -140,20 +139,20 @@ public class WhitelistFragment extends Fragment {
     }
 
     private void updateWhitelist() {
-        ArrayList<ConnectionsMatcher.Item> toRemove = new ArrayList<>();
+        ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
 
-        Iterator<ConnectionsMatcher.Item> iter = mWhitelist.iterItems();
+        Iterator<MatchList.Rule> iter = mWhitelist.iterRules();
 
         // Remove the whitelisted items which are not in the adapter dataset
         while(iter.hasNext()) {
-            ConnectionsMatcher.Item item = iter.next();
+            MatchList.Rule rule = iter.next();
 
-            if (mAdapter.getPosition(item) < 0)
-                toRemove.add(item);
+            if (mAdapter.getPosition(rule) < 0)
+                toRemove.add(rule);
         }
 
         if(toRemove.size() > 0) {
-            mWhitelist.removeItems(toRemove);
+            mWhitelist.removeRules(toRemove);
             mWhitelist.save();
         }
     }

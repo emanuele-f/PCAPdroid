@@ -44,14 +44,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class ConnectionsMatcher {
+/* Matches connections against the configured rules. */
+public class MatchList {
     private static final String TAG = "ConnectionsMatcher";
     private static final StyleSpan italic = new StyleSpan(Typeface.ITALIC);
     private final Context mContext;
-    private ArrayList<Item> mItems = new ArrayList<>();
-    private final HashMap<String, Item> mMatches = new HashMap<>();
+    private ArrayList<Rule> mRules = new ArrayList<>();
+    private final HashMap<String, Rule> mMatches = new HashMap<>();
 
-    public enum ItemType {
+    public enum RuleType {
         APP,
         IP,
         HOST,
@@ -59,12 +60,12 @@ public class ConnectionsMatcher {
         PROTOCOL
     }
 
-    public static class Item {
+    public static class Rule {
         private final String mLabel;
-        private final ItemType mType;
+        private final RuleType mType;
         private final Object mValue;
 
-        Item(ItemType tp, Object value, String label) {
+        Rule(RuleType tp, Object value, String label) {
             mLabel = label;
             mType = tp;
             mValue = value;
@@ -74,7 +75,7 @@ public class ConnectionsMatcher {
             return mLabel;
         }
 
-        public ItemType getType() {
+        public RuleType getType() {
             return mType;
         }
 
@@ -84,19 +85,19 @@ public class ConnectionsMatcher {
 
         @Override
         public boolean equals(@Nullable Object obj) {
-            if(!(obj instanceof Item))
+            if(!(obj instanceof Rule))
                 return super.equals(obj);
 
-            Item other = (Item) obj;
+            Rule other = (Rule) obj;
             return((mType == other.mType) && (mValue.equals(other.mValue)));
         }
     }
 
-    public ConnectionsMatcher(Context ctx) {
+    public MatchList(Context ctx) {
         mContext = ctx;
     }
 
-    public static String getLabel(Context ctx, ItemType tp, String value) {
+    public static String getLabel(Context ctx, RuleType tp, String value) {
         int resid;
 
         switch(tp) {
@@ -112,48 +113,48 @@ public class ConnectionsMatcher {
         return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
     }
 
-    private static class Serializer implements JsonSerializer<ConnectionsMatcher> {
+    private static class Serializer implements JsonSerializer<MatchList> {
         @Override
-        public JsonElement serialize(ConnectionsMatcher src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(MatchList src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject result = new JsonObject();
-            JsonArray itemsArr = new JsonArray();
+            JsonArray rulesArr = new JsonArray();
 
-            for(Item item : src.mItems) {
-                JsonObject itemObject = new JsonObject();
+            for(Rule rule : src.mRules) {
+                JsonObject ruleObject = new JsonObject();
 
-                itemObject.add("type", new JsonPrimitive(item.getType().name()));
-                itemObject.add("value", new JsonPrimitive(item.getValue().toString()));
+                ruleObject.add("type", new JsonPrimitive(rule.getType().name()));
+                ruleObject.add("value", new JsonPrimitive(rule.getValue().toString()));
 
-                itemsArr.add(itemObject);
+                rulesArr.add(ruleObject);
             }
 
-            result.add("items", itemsArr);
+            result.add("rules", rulesArr);
             return result;
         }
     }
 
     private void deserialize(JsonObject object) {
-        mItems = new ArrayList<>();
+        mRules = new ArrayList<>();
         mMatches.clear();
 
-        JsonArray itemArray = object.getAsJsonArray("items");
+        JsonArray ruleArray = object.getAsJsonArray("rule");
         AppsResolver resolver = new AppsResolver(mContext);
 
-        for(JsonElement el: itemArray) {
-            JsonObject itemObj = el.getAsJsonObject();
-            ItemType type;
+        for(JsonElement el: ruleArray) {
+            JsonObject ruleObj = el.getAsJsonObject();
+            RuleType type;
 
             try {
-                type = ItemType.valueOf(itemObj.get("type").getAsString());
+                type = RuleType.valueOf(ruleObj.get("type").getAsString());
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
                 continue;
             }
 
-            String val = itemObj.get("value").getAsString();
+            String val = ruleObj.get("value").getAsString();
             String valLabel = val;
 
-            if(type == ItemType.APP) {
+            if(type == RuleType.APP) {
                 AppDescriptor app = resolver.get(Integer.parseInt(val), 0);
 
                 if(app != null)
@@ -161,34 +162,34 @@ public class ConnectionsMatcher {
             }
 
             String label = getLabel(mContext, type, valLabel);
-            addItem(new Item(type, val, label));
+            addRule(new Rule(type, val, label));
         }
     }
 
-    public void addApp(int uid, String label)        { addItem(new Item(ItemType.APP, uid, label)); }
-    public void addIp(String ip, String label)       { addItem(new Item(ItemType.IP, ip, label)); }
-    public void addHost(String info, String label)   { addItem(new Item(ItemType.HOST, info, label)); }
-    public void addProto(String proto, String label) { addItem(new Item(ItemType.PROTOCOL, proto, label)); }
-    public void addRootDomain(String domain, String label) { addItem(new Item(ItemType.ROOT_DOMAIN, domain, label)); }
+    public void addApp(int uid, String label)        { addRule(new Rule(RuleType.APP, uid, label)); }
+    public void addIp(String ip, String label)       { addRule(new Rule(RuleType.IP, ip, label)); }
+    public void addHost(String info, String label)   { addRule(new Rule(RuleType.HOST, info, label)); }
+    public void addProto(String proto, String label) { addRule(new Rule(RuleType.PROTOCOL, proto, label)); }
+    public void addRootDomain(String domain, String label) { addRule(new Rule(RuleType.ROOT_DOMAIN, domain, label)); }
 
-    static private String matchKey(ItemType tp, Object val) {
+    static private String matchKey(RuleType tp, Object val) {
         return tp + "@" + val;
     }
 
-    private void addItem(Item item) {
-        String key = matchKey(item.getType(), item.getValue().toString());
+    private void addRule(Rule rule) {
+        String key = matchKey(rule.getType(), rule.getValue().toString());
 
         if(!mMatches.containsKey(key)) {
-            mItems.add(item);
-            mMatches.put(key, item);
+            mRules.add(rule);
+            mMatches.put(key, rule);
         }
     }
 
-    public void removeItems(List<Item> items) {
-        mItems.removeAll(items);
+    public void removeRules(List<Rule> rules) {
+        mRules.removeAll(rules);
 
-        for(Item item: items) {
-            String key = matchKey(item.getType(), item.getValue().toString());
+        for(Rule rule: rules) {
+            String key = matchKey(rule.getType(), rule.getValue().toString());
             mMatches.remove(key);
         }
     }
@@ -196,24 +197,24 @@ public class ConnectionsMatcher {
     public boolean matches(ConnectionDescriptor conn) {
         boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
 
-        return(mMatches.containsKey(matchKey(ItemType.APP, conn.uid)) ||
-                mMatches.containsKey(matchKey(ItemType.IP, conn.dst_ip)) ||
-                mMatches.containsKey(matchKey(ItemType.PROTOCOL, conn.l7proto)) ||
-                (hasInfo && mMatches.containsKey(matchKey(ItemType.HOST, conn.info))) ||
-                (hasInfo && mMatches.containsKey(matchKey(ItemType.ROOT_DOMAIN, Utils.getRootDomain(conn.info)))));
+        return(mMatches.containsKey(matchKey(RuleType.APP, conn.uid)) ||
+                mMatches.containsKey(matchKey(RuleType.IP, conn.dst_ip)) ||
+                mMatches.containsKey(matchKey(RuleType.PROTOCOL, conn.l7proto)) ||
+                (hasInfo && mMatches.containsKey(matchKey(RuleType.HOST, conn.info))) ||
+                (hasInfo && mMatches.containsKey(matchKey(RuleType.ROOT_DOMAIN, Utils.getRootDomain(conn.info)))));
     }
 
-    public Iterator<Item> iterItems() {
-        return mItems.iterator();
+    public Iterator<Rule> iterRules() {
+        return mRules.iterator();
     }
 
     public void clear() {
-        mItems.clear();
+        mRules.clear();
         mMatches.clear();
     }
 
     public boolean isEmpty() {
-        return(mItems.size() == 0);
+        return(mRules.size() == 0);
     }
 
     public String toJson() {
