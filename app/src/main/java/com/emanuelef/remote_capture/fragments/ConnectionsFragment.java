@@ -69,7 +69,7 @@ import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
-import com.emanuelef.remote_capture.activities.FilterActivity;
+import com.emanuelef.remote_capture.activities.EditFilterActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -394,7 +394,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return super.onContextItemSelected(item);
 
         mAdapter.mMask.save();
-        mAdapter.mFilter.showMasked = true;
+        mAdapter.mFilter.showMasked = false;
         refreshFilteredConnections();
         return true;
     }
@@ -529,8 +529,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             openFileSelector();
             return true;
         } else if(id == R.id.edit_filter) {
-            Intent intent = new Intent(requireContext(), FilterActivity.class);
-            intent.putExtra(FilterActivity.FILTER_DESCRIPTOR, mAdapter.mFilter);
+            Intent intent = new Intent(requireContext(), EditFilterActivity.class);
+            intent.putExtra(EditFilterActivity.FILTER_DESCRIPTOR, mAdapter.mFilter);
             filterLauncher.launch(intent);
             return true;
         }
@@ -545,7 +545,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
 
         mMenuItemSearch.setVisible(is_enabled); // NOTE: setEnabled does not work for this
-        //mMenuFilter.setVisible(is_enabled);
+        //mMenuFilter.setEnabled(is_enabled);
         mSave.setEnabled(is_enabled);
     }
 
@@ -626,7 +626,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-            FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(FilterActivity.FILTER_DESCRIPTOR);
+            FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
             if(descriptor != null) {
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();

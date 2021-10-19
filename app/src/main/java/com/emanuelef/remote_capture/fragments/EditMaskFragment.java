@@ -43,24 +43,24 @@ import com.emanuelef.remote_capture.model.MatchList;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class MaskEditFragment extends Fragment {
+public class EditMaskFragment extends Fragment {
     private MaskEditAdapter mAdapter;
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
     private MatchList mMask;
     private ListView mListView;
-    private static final String TAG = "WhitelistFragment";
+    private static final String TAG = "MaskEditFragment";
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.whitelist_fragment, container, false);
+        return inflater.inflate(R.layout.edit_mask_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListView = view.findViewById(R.id.listview);
-        mEmptyText = view.findViewById(R.id.whitelist_empty);
+        mEmptyText = view.findViewById(R.id.mask_empty);
         mMask = PCAPdroid.getInstance().getVisualizationMask();
 
         mAdapter = new MaskEditAdapter(requireContext(), mMask.iterRules());
@@ -82,7 +82,7 @@ public class MaskEditFragment extends Fragment {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 MenuInflater inflater = requireActivity().getMenuInflater();
-                inflater.inflate(R.menu.whitelist_cab, menu);
+                inflater.inflate(R.menu.mask_edit_cab, menu);
                 return true;
             }
 

@@ -31,20 +31,20 @@ import androidx.annotation.NonNull;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.MaskEditAdapter;
-import com.emanuelef.remote_capture.fragments.MaskEditFragment;
+import com.emanuelef.remote_capture.fragments.EditMaskFragment;
 
-public class MaskEditActivity extends BaseActivity {
+public class EditMaskActivity extends BaseActivity {
     private static final String TAG = "MaskEditActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle(R.string.whitelist);
-        setContentView(R.layout.whitelist_activity);
+        setTitle(R.string.edit_rules);
+        setContentView(R.layout.edit_mask_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.mask_fragment, new MaskEditFragment())
+                .replace(R.id.mask_fragment, new EditMaskFragment())
                 .commit();
     }
 
@@ -73,7 +73,7 @@ public class MaskEditActivity extends BaseActivity {
 
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.whitelist));
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.hidden_connections_rules));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
 
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));

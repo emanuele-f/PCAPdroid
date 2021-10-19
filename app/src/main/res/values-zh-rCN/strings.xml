@@ -144,7 +144,6 @@
     <string name="whitelist">白名单</string>
     <string name="edit_whitelist">编辑白名单</string>
     <string name="whitelist_action">白名单…</string>
-    <string name="whitelist_empty">白名单为空。\n你可以长按一个连接将其加入白名单。</string>
     <string name="n_selected">选中了 %1$d </string>
     <string name="select_all">选择全部</string>
     <string name="app_details">应用详情</string>

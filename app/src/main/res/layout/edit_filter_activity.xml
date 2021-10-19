@@ -12,12 +12,28 @@
         android:layout_width="match_parent"
         android:layout_margin="15dp">
 
-        <CheckBox
-            android:id="@+id/show_masked"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/connections_mask"
             android:layout_height="wrap_content"
-            android:text="@string/show_masked_connections"
-            android:layout_marginBottom="15dp"/>
+            android:layout_width="match_parent">
+
+            <CheckBox
+                android:id="@+id/show_masked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/edit_mask"
+                android:text="@string/show_hidden_connections" />
+
+            <Button
+                android:id="@+id/edit_mask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:text="@string/edit_rules"
+                android:layout_alignParentEnd="true"
+                android:textSize="12sp" />
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"

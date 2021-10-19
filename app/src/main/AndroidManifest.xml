@@ -73,11 +73,11 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
-            android:name=".activities.MaskEditActivity"
+            android:name=".activities.EditMaskActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".activities.MainActivity" />
+            android:parentActivityName=".activities.EditFilterActivity" />
         <activity
-            android:name=".activities.FilterActivity"
+            android:name=".activities.EditFilterActivity"
             android:launchMode="singleTop" />
 
         <service

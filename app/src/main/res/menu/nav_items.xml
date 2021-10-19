@@ -10,10 +10,6 @@
             android:title="@string/stats"
             android:icon="@drawable/ic_list" />
         <item
-            android:id="@+id/edit_whitelist"
-            android:title="@string/whitelist"
-            android:icon="@drawable/ic_checklist" />
-        <item
             android:id="@+id/open_root_log"
             android:title="@string/root_log"
             android:icon="@drawable/ic_bug_report"

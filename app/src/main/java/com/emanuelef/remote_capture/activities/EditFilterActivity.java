@@ -4,20 +4,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.google.android.material.chip.Chip;
 
-public class FilterActivity extends AppCompatActivity {
+public class EditFilterActivity extends AppCompatActivity {
     public static final String FILTER_DESCRIPTOR = "filter";
-    private static final String TAG = "FilterActivity";
+    private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;
     private CheckBox mShowMasked;
     private Chip mStatusOpen;
@@ -28,7 +32,7 @@ public class FilterActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.edit_filter_dialog);
+        setContentView(R.layout.edit_filter_activity);
         setTitle(R.string.edit_filter);
 
         ActionBar actionBar = getSupportActionBar();
@@ -52,7 +56,20 @@ public class FilterActivity extends AppCompatActivity {
         mStatusUnreachable = findViewById(R.id.status_unreachable);
         mStatusError = findViewById(R.id.status_error);
 
+        ((Button)findViewById(R.id.edit_mask)).setOnClickListener(v -> {
+            Intent editIntent = new Intent(this, EditMaskActivity.class);
+            startActivity(editIntent);
+        });
+
         model2view();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        MatchList mask = PCAPdroid.getInstance().getVisualizationMask();
+        findViewById(R.id.connections_mask).setVisibility(mask.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private void model2view() {

@@ -105,7 +105,6 @@ public class MatchList {
     }
 
     public void reload() {
-        // Try to restore the whitelist
         String serialized = mPrefs.getString(mPrefName, "");
 
         if(!serialized.isEmpty())

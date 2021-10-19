@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item
-        android:title="@string/filter_out">
+        android:title="@string/hide">
         <menu>
             <item
                 android:id="@+id/hide_app"

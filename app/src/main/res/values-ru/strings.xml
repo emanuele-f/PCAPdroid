@@ -135,7 +135,6 @@
     <string name="whitelist">Белый список</string>
     <string name="edit_whitelist">Редактировать белый список</string>
     <string name="whitelist_action">В белый список</string>
-    <string name="whitelist_empty">Белый список пуст.\nИспользуйте долгое нажатие на строку соединения для добавления.</string>
     <string name="n_selected">%1$d выбран(о)</string>
     <string name="select_all">Выбрать все</string>
     <string name="app_details">Информация о приложении</string>

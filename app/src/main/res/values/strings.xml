@@ -144,8 +144,7 @@
     <string name="whitelist">Whitelist</string>
     <string name="edit_whitelist">Edit Whitelist</string>
     <string name="whitelist_action">Whitelist…</string>
-    <string name="filter_out">Filter out…</string>
-    <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
+    <string name="hide">Hide…</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
     <string name="app_details">App Details</string>
@@ -181,7 +180,10 @@
     <string name="all_interfaces">All Interfaces</string>
     <string name="capturing_from">Capturing packets from \"%1$s\"</string>
     <string name="edit_filter">Edit Filter</string>
-    <string name="show_masked_connections">Show Masked</string>
+    <string name="show_hidden_connections">Show hidden connections</string>
     <string name="apply_changes">Apply</string>
+    <string name="edit_rules">Edit Rules</string>
+    <string name="hidden_connections_rules">Hidden Connections Rules</string>
+    <string name="no_rules">No rules</string>
 </resources>
 
