@@ -37,6 +37,15 @@ public class PCAPdroid extends Application {
         Utils.setAppTheme(theme);
     }
 
+    @Override
+    public Resources getResources() {
+        if(mLocalizedContext == null)
+            return super.getResources();
+
+        // Ensure that the selected locale is used
+        return mLocalizedContext.getResources();
+    }
+
     public static PCAPdroid getInstance() {
         return mInstance.get();
     }
@@ -48,12 +57,7 @@ public class PCAPdroid extends Application {
         return mVisMask;
     }
 
-    @Override
-    public Resources getResources() {
-        if(mLocalizedContext == null)
-            return super.getResources();
-
-        // Ensure that the selected locale is used
-        return mLocalizedContext.getResources();
+    public Billing getBilling(Context ctx) {
+        return new Billing(ctx);
     }
 }

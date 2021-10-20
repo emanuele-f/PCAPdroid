@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include "zdtun.h"
 #include "ip_lru.h"
+#include "blacklist.h"
 #include "ndpi_api.h"
 #include "common/uid_resolver.h"
 #include "third_party/uthash.h"
@@ -82,6 +83,8 @@ typedef struct conn_data {
     bool pending_notification;
     bool to_purge;
     bool request_done;
+    bool blacklisted_ip;
+    bool blacklisted_domain;
     char *request_data;
     char *url;
     uint8_t update_type;
@@ -118,6 +121,8 @@ typedef struct vpnproxy_data {
     ndpi_ptree_t *known_dns_servers;
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
+    char workdir[PATH_MAX];
+    int basepath_len;
     struct timeval last_pkt_ts; // Packet timestamp, reported into the exported PCAP
     uint64_t now_ms;            // Monotonic timestamp, see refresh_time
     u_int num_dropped_pkts;
@@ -152,6 +157,11 @@ typedef struct vpnproxy_data {
         bool enabled;
         struct in6_addr dns_server;
     } ipv6;
+
+    struct {
+        bool enabled;
+        blacklist_t *bl;
+    } malware_detection;
 
     capture_stats_t capture_stats;
 } vpnproxy_data_t;

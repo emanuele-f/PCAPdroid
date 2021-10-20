@@ -73,6 +73,11 @@ public class ConnectionDescriptor implements Serializable {
     public int incr_id;
     public int status;
     private int tcp_flags;
+    public boolean blacklisted_ip;
+    public boolean blacklisted_domain;
+
+    /* Internal */
+    public boolean alerted = false;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
                                 int _src_port, int _dst_port, int _uid, long when) {
@@ -88,12 +93,15 @@ public class ConnectionDescriptor implements Serializable {
     }
 
     public void processUpdate(ConnectionUpdate update) {
+        // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
             sent_bytes = update.sent_bytes;
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
             rcvd_pkts = update.rcvd_pkts;
-            status = update.status;
+            status = (update.status & 0x00FF);
+            blacklisted_ip = (update.status & 0x0100) != 0;
+            blacklisted_domain = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
             tcp_flags = update.tcp_flags;
         }
@@ -154,6 +162,10 @@ public class ConnectionDescriptor implements Serializable {
 
     public int getRcvdTcpFlags() {
         return (tcp_flags & 0xFF);
+    }
+
+    public boolean isBlacklisted() {
+        return blacklisted_ip || blacklisted_domain;
     }
 
     @Override

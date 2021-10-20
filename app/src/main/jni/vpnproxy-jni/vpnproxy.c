@@ -320,15 +320,15 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
     data->uid = uid;
 
     // Try to resolve host name via the LRU cache
-    zdtun_ip_t ip = tuple->dst_ip;
-    data->info = ip_lru_find(proxy->ip_to_host, &ip);
+    const zdtun_ip_t dst_ip = tuple->dst_ip;
+    data->info = ip_lru_find(proxy->ip_to_host, &dst_ip);
 
     if(data->info) {
         char resip[INET6_ADDRSTRLEN];
         int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
         resip[0] = '\0';
-        inet_ntop(family, &ip, resip, sizeof(resip));
+        inet_ntop(family, &dst_ip, resip, sizeof(resip));
 
         log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
 
@@ -358,6 +358,17 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
                     }
                 }
             }
+        }
+    }
+
+    if(proxy->malware_detection.bl && (tuple->ipver == 4)) {
+        data->blacklisted_ip = blacklist_match_ip(proxy->malware_detection.bl, tuple->dst_ip.ip4);
+        if(data->blacklisted_ip) {
+            char appbuf[64];
+            char buf[256];
+
+            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
+            log_w("Blacklisted dst ip: %s[%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
     }
 
@@ -429,6 +440,18 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
                 data->info = strndup(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name, 256);
             }
             break;
+    }
+
+    if(proxy->malware_detection.bl && data->info && data->info[0] && !data->blacklisted_domain) {
+        // TODO early match
+        data->blacklisted_domain = blacklist_match_domain(proxy->malware_detection.bl, data->info);
+        if(data->blacklisted_domain) {
+            char appbuf[64];
+            char buf[512];
+
+            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
+            log_w("Blacklisted domain [%s]: %s[%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+        }
     }
 
     data->update_type |= CONN_UPDATE_INFO;
@@ -642,7 +665,8 @@ static jobject getConnUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn) {
     if(data->update_type & CONN_UPDATE_STATS) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts,
-                               (data->tcp_flags[0] << 8) | data->tcp_flags[1], data->status);
+                               (data->tcp_flags[0] << 8) | data->tcp_flags[1],
+                               (data->blacklisted_domain << 9) | (data->blacklisted_ip << 8) | (data->status & 0xFF));
     }
     if(data->update_type & CONN_UPDATE_INFO) {
         jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
@@ -1006,6 +1030,15 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 
 /* ******************************************************* */
 
+static char* get_path(const char *subpath) {
+    strncpy(global_proxy->workdir + global_proxy->basepath_len, subpath,
+            sizeof(global_proxy->workdir) - global_proxy->basepath_len - 1);
+    global_proxy->workdir[sizeof(global_proxy->workdir) - 1] = 0;
+    return global_proxy->workdir;
+}
+
+/* ******************************************************* */
+
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
@@ -1058,8 +1091,13 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .ipv6 = {
                     .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
                     .dns_server = getIPv6Pref(env, vpn, "getIpv6DnsServer"),
+            },
+            .malware_detection = {
+                    .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
             }
     };
+    getStringPref(&proxy, "getWorkingDir", proxy.workdir, sizeof(proxy.workdir));
+    proxy.basepath_len = strlen(proxy.workdir);
 
     // Enable or disable the PCAPdroid trailer
     pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
@@ -1073,10 +1111,25 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     /* nDPI */
     proxy.ndpi = init_ndpi();
     init_protocols_bitmask(&masterProtos);
-
     if(proxy.ndpi == NULL) {
         log_f("nDPI initialization failed");
         return(-1);
+    }
+
+    // Load blacklist
+    if(proxy.malware_detection.enabled) {
+        blacklist_t *bl = blacklist_init(proxy.ndpi);
+        if(bl == NULL) {
+            log_f("Blacklist initialization failed");
+            ndpi_exit_detection_module(proxy.ndpi);
+            return (-1);
+        }
+
+        blacklist_load_file(bl, get_path("/maltrail-malware-domains.txt"));
+        blacklist_load_file(bl, get_path("/emerging-Block-IPs.txt"));
+        blacklist_load_file(bl, get_path("/abuse_sslipblacklist.txt"));
+        blacklist_load_file(bl, get_path("/feodotracker_ipblocklist.txt"));
+        proxy.malware_detection.bl = bl;
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -1108,6 +1161,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     conns_clear(&proxy.new_conns, true);
     conns_clear(&proxy.conns_updates, true);
 
+    if(proxy.malware_detection.bl)
+        blacklist_destroy(proxy.malware_detection.bl);
     ndpi_exit_detection_module(proxy.ndpi);
 
     if(proxy.pcap_dump.buffer) {

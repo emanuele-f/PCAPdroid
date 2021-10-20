@@ -27,6 +27,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -49,12 +50,17 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
+import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
@@ -71,6 +77,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
+    private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -86,10 +93,12 @@ public class CaptureService extends VpnService implements Runnable {
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
-    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mStatusBuilder;
+    private NotificationCompat.Builder mBlacklistedBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
+    private boolean mMalwareDetectionEnabled;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -135,7 +144,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int abortStart() {
         // NOTE: startForeground must be called before stopSelf, otherwise an exception will occur
         setupNotifications();
-        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
 
         stopSelf();
         sendServiceStatus(SERVICE_STATUS_STOPPED);
@@ -231,6 +240,13 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             app_filter_uid = -1;
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, prefs);
+        if(mMalwareDetectionEnabled) {
+            // TODO load from URL
+            Utils.unzip(getResources().openRawResource(R.raw.malware_blacklist), getCacheDir().getPath());
+        }
+
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
 
@@ -289,7 +305,7 @@ public class CaptureService extends VpnService implements Runnable {
         mThread.start();
 
         setupNotifications();
-        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
         return START_STICKY;
     }
 
@@ -327,16 +343,21 @@ public class CaptureService extends VpnService implements Runnable {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+            // VPN running notification channel
             NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
                     NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
             nm.createNotificationChannel(chan);
+
+            // Blacklisted connection notification channel
+            chan = new NotificationChannel(NOTIFY_CHAN_BLACKLISTED,
+                    NOTIFY_CHAN_BLACKLISTED, NotificationManager.IMPORTANCE_HIGH);
+            nm.createNotificationChannel(chan);
         }
 
-        // Notification builder
+        // Status notification builder
         PendingIntent pi = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
+                new Intent(this, MainActivity.class), Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+        mStatusBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentIntent(pi)
@@ -344,38 +365,62 @@ public class CaptureService extends VpnService implements Runnable {
                 .setAutoCancel(false)
                 .setContentTitle(getResources().getString(R.string.capture_running))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
-        // CATEGORY_RECOMMENDATION makes the notification visible on the home screen of Android TVs.
-        // However this is not what CATEGORY_RECOMMENDATION is designed for, so it should be avoided.
-        /*
-        if(Utils.isTv(this)) {
-            // This is the icon which is visualized
-            Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
-            BitmapDrawable largeIcon = Utils.scaleDrawable(getResources(), banner,
-                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight());
-
-            if(largeIcon != null)
-                mNotificationBuilder.setLargeIcon(largeIcon.getBitmap());
-
-            // On Android TV it must be shown as a recommendation
-            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
-        } else*/
-        mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
+        // Blacklisted notification builder
+        mBlacklistedBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_BLACKLISTED)
+                .setSmallIcon(R.drawable.ic_skull)
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setPriority(NotificationCompat.PRIORITY_HIGH); // see IMPORTANCE_HIGH
     }
 
-    private Notification getNotification() {
+    private Notification getStatusNotification() {
         String msg = String.format(getString(R.string.notification_msg),
                 Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
 
-        mNotificationBuilder.setContentText(msg);
+        mStatusBuilder.setContentText(msg);
 
-        return mNotificationBuilder.build();
+        return mStatusBuilder.build();
     }
 
     private void updateNotification() {
-        Notification notification = getNotification();
+        Notification notification = getStatusNotification();
         NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
+    }
+
+    public void notifyBlacklistedConnection(ConnectionDescriptor conn) {
+        int uid = conn.uid;
+
+        AppDescriptor app = appsResolver.get(conn.uid, 0);
+        assert app != null;
+
+        FilterDescriptor filter = new FilterDescriptor();
+        filter.onlyBlacklisted = true;
+
+        Intent intent = new Intent(this, ConnectionsActivity.class)
+                .putExtra(ConnectionsFragment.FILTER_EXTRA, filter)
+                .putExtra(ConnectionsFragment.QUERY_EXTRA, app.getPackageName());
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                intent, Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+
+        String rule_label;
+        if(conn.blacklisted_domain)
+            rule_label = MatchList.getLabel(this, MatchList.RuleType.HOST, conn.info);
+        else
+            rule_label = MatchList.getLabel(this, MatchList.RuleType.IP, conn.dst_ip);
+
+        mBlacklistedBuilder
+                .setContentIntent(pi)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(String.format(getResources().getString(R.string.malicious_connection_app), app.getName()))
+                .setContentText(rule_label);
+        Notification notification = mBlacklistedBuilder.build();
+
+        // Use the UID as the notification ID to group alerts from the same app
+        mHandler.post(() -> NotificationManagerCompat.from(this).notify(uid, notification));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -578,6 +623,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
 
+    public int malwareDetectionEnabled() { return(mMalwareDetectionEnabled ? 1 : 0); }
+
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
@@ -688,11 +735,11 @@ public class CaptureService extends VpnService implements Runnable {
         });
     }
 
-    public static String getPcapdWorkingDir(Context ctx) {
+    public static String getWorkingDir(Context ctx) {
         return ctx.getCacheDir().getAbsolutePath();
     }
-    public String getPcapdWorkingDir() {
-        return getPcapdWorkingDir(this);
+    public String getWorkingDir() {
+        return getWorkingDir(this);
     }
 
     public String getLibprogPath(String prog_name) {

@@ -73,6 +73,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
+        ImageView blacklistedInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -91,6 +92,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             statusInd = itemView.findViewById(R.id.status_ind);
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
+            blacklistedInd = itemView.findViewById(R.id.blacklisted);
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
@@ -134,6 +136,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             else
                 color = R.color.statusError;
             statusInd.setTextColor(context.getResources().getColor(color));
+
+            blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.INVISIBLE);
         }
     }
 

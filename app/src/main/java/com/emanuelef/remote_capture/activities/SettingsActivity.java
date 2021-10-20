@@ -33,6 +33,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -79,15 +81,19 @@ public class SettingsActivity extends BaseActivity {
         private Preference mProxyPrefs;
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
+        private SwitchPreference mMalwareDetectionEnabled;
+        private Billing mIab;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            mIab = PCAPdroid.getInstance().getBilling(requireContext());
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
             setupSocks5ProxyPrefs();
             setupCapturePrefs();
+            setupSecurityPrefs();
             setupOtherPrefs();
 
             socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
@@ -155,6 +161,17 @@ public class SettingsActivity extends BaseActivity {
         private void setupCapturePrefs() {
             mCapInterface = findPreference(Prefs.PREF_CAPTURE_INTERFACE);
             refreshInterfaces();
+        }
+
+        private void setupSecurityPrefs() {
+            mMalwareDetectionEnabled = findPreference(Prefs.PREF_MALWARE_DETECTION);
+
+            if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
+                getPreferenceScreen().removePreference(findPreference("security"));
+                return;
+            }
+
+            // Billing code here
         }
 
         private void setupSocks5ProxyPrefs() {

@@ -19,8 +19,11 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
@@ -32,6 +35,7 @@ public class Prefs {
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
     public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
+    public static final String PREF_MALWARE_DETECTION = "malware_detection";
     public static final String PREF_TLS_DECRYPTION_ENABLED_KEY = "tls_decryption_enabled";
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
@@ -77,4 +81,8 @@ public class Prefs {
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
     public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
+    public static boolean isMalwareDetectionEnabled(Context ctx, SharedPreferences p) {
+        return(PCAPdroid.getInstance().getBilling(ctx).isPurchased(Billing.MALWARE_DETECTION_SKU)
+                && p.getBoolean(PREF_MALWARE_DETECTION, false));
+    }
 }

@@ -15,7 +15,8 @@
         <RelativeLayout
             android:id="@+id/connections_mask"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent">
+            android:layout_width="match_parent"
+            android:layout_marginBottom="15dp">
 
             <CheckBox
                 android:id="@+id/show_masked"
@@ -30,11 +31,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginBottom="15dp"
                 android:text="@string/edit_rules"
                 style="?attr/materialButtonOutlinedStyle"
                 android:textColor="@color/colorTabText" />
         </RelativeLayout>
+
+        <CheckBox
+            android:id="@+id/only_blacklisted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:text="@string/show_only_malicious" />
 
         <TextView
             android:layout_width="wrap_content"

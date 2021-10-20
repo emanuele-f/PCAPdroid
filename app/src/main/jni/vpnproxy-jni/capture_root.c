@@ -173,7 +173,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     char capture_interface[16];
 
     getStringPref(proxy, "getPcapDumperBpf", bpf, sizeof(bpf));
-    getStringPref(proxy, "getPcapdWorkingDir", workdir, PATH_MAX);
+    getStringPref(proxy, "getWorkingDir", workdir, PATH_MAX);
     getStringPref(proxy, "getCaptureInterface", capture_interface, sizeof(capture_interface));
     get_libprog_path(proxy, "pcapd", pcapd, sizeof(pcapd));
 

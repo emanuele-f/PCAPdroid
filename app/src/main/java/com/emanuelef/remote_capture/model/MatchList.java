@@ -75,6 +75,10 @@ public class MatchList {
             mValue = value;
         }
 
+        public Rule(Context ctx, RuleType tp, Object value) {
+            this(tp, value, MatchList.getLabel(ctx, tp, value.toString()));
+        }
+
         public String getLabel() {
             return mLabel;
         }

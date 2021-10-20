@@ -27,14 +27,17 @@ import java.io.Serializable;
 public class FilterDescriptor implements Serializable {
     public Status status = Status.STATUS_INVALID;
     public boolean showMasked = false;
+    public boolean onlyBlacklisted = false;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
+                || onlyBlacklisted
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
+                && (!onlyBlacklisted || conn.isBlacklisted())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)));
     }
 }

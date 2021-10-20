@@ -105,6 +105,15 @@
         </Preference>
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/security" app:iconSpaceReserved="false" app:key="security">
+        <SwitchPreference
+            app:key="malware_detection"
+            app:title="@string/malware_detection"
+            app:iconSpaceReserved="false"
+            app:summary="@string/malware_detection_summary"
+            app:defaultValue="false" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
         <DropDownPreference
             app:key="app_theme"

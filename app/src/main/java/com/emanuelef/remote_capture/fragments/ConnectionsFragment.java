@@ -79,6 +79,7 @@ import java.util.Objects;
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
     public static final String FILTER_EXTRA = "filter";
+    public static final String QUERY_EXTRA = "query";
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
     private FloatingActionButton mFabDown;
@@ -225,8 +226,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            search = intent.getStringExtra(FILTER_EXTRA);
+            FilterDescriptor filter = (FilterDescriptor) intent.getSerializableExtra(FILTER_EXTRA);
+            if(filter != null) {
+                mAdapter.mFilter = filter;
+                fromIntent = true;
+            }
 
+            search = intent.getStringExtra(QUERY_EXTRA);
             if((search != null) && !search.isEmpty()) {
                 // Avoid hiding the interesting items
                 mAdapter.mFilter.showMasked = true;

@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -69,7 +70,11 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -85,6 +90,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Utils {
     public static final int UID_UNKNOWN = -1;
@@ -631,5 +638,45 @@ public class Utils {
         }
 
         return builder.toString();
+    }
+
+    public static int getIntentFlags(int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        return flags;
+    }
+
+    public static boolean unzip(InputStream is, String dstpath) {
+        try(ZipInputStream zipIn = new ZipInputStream(is)) {
+            ZipEntry entry = zipIn.getNextEntry();
+
+            while (entry != null) {
+                File dst = new File(dstpath + File.separator + entry.getName());
+
+                if (entry.isDirectory()) {
+                    if(!dst.mkdirs()) {
+                        Log.w("unzip", "Could not create directories");
+                        return false;
+                    }
+                } else {
+                    // Extract file
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst));
+
+                    byte[] bytesIn = new byte[4096];
+                    int read = 0;
+                    while ((read = zipIn.read(bytesIn)) != -1)
+                        bos.write(bytesIn, 0, read);
+                    bos.close();
+                }
+
+                zipIn.closeEntry();
+                entry = zipIn.getNextEntry();
+            }
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

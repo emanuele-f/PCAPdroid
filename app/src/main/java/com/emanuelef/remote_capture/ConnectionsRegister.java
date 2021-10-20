@@ -65,6 +65,13 @@ public class ConnectionsRegister {
         return (mTail - 1 + mSize) % mSize;
     }
 
+    private void processConnectionStatus(ConnectionDescriptor conn) {
+        if(!conn.alerted && conn.isBlacklisted()) {
+            CaptureService.requireInstance().notifyBlacklistedConnection(conn);
+            conn.alerted = true;
+        }
+    }
+
     public synchronized void newConnections(ConnectionDescriptor[] conns) {
         if(conns.length > mSize) {
             // take the most recent
@@ -79,6 +86,7 @@ public class ConnectionsRegister {
         //Log.d(TAG, "newConnections[" + mNumItems + "/" + mSize +"]: insert " + conns.length +
         //        " items at " + mTail + " (removed: " + out_items + " at " + firstPos() + ")");
 
+        // Remove old connections
         if(out_items > 0) {
             int pos = firstPos();
             removedItems = new ConnectionDescriptor[out_items];
@@ -101,6 +109,7 @@ public class ConnectionsRegister {
             }
         }
 
+        // Add new connections
         for(ConnectionDescriptor conn: conns) {
             mItemsRing[mTail] = conn;
             mTail = (mTail + 1) % mSize;
@@ -114,6 +123,8 @@ public class ConnectionsRegister {
                 stats = new AppStats(uid);
                 mAppsStats.put(uid, stats);
             }
+
+            processConnectionStatus(conn);
 
             stats.num_connections++;
             stats.bytes += conn.rcvd_bytes + conn.sent_bytes;
@@ -155,6 +166,7 @@ public class ConnectionsRegister {
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
                 conn.processUpdate(update);
+                processConnectionStatus(conn);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }

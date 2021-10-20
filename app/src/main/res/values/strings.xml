@@ -185,5 +185,10 @@
     <string name="edit_rules">Edit Rules</string>
     <string name="hidden_connections_rules">Hidden Connections Rules</string>
     <string name="no_rules">No rules</string>
+    <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
+    <string name="show_only_malicious">Only malicious connections</string>
+    <string name="security">Security</string>
+    <string name="malware_detection">Malware Detection</string>
+    <string name="malware_detection_summary">"Detect possibly malicious connections and trigger alerts. NOTE: the detection can produce false positives and is not a valid alternative to an antivirus."</string>
 </resources>
 

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
@@ -23,6 +22,7 @@ public class EditFilterActivity extends BaseActivity {
     private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;
     private CheckBox mShowMasked;
+    private CheckBox mOnlyBlacklisted;
     private Chip mStatusOpen;
     private Chip mStatusClosed;
     private Chip mStatusUnreachable;
@@ -50,12 +50,13 @@ public class EditFilterActivity extends BaseActivity {
             mFilter = new FilterDescriptor();
 
         mShowMasked = findViewById(R.id.show_masked);
+        mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
         mStatusOpen = findViewById(R.id.status_open);
         mStatusClosed = findViewById(R.id.status_closed);
         mStatusUnreachable = findViewById(R.id.status_unreachable);
         mStatusError = findViewById(R.id.status_error);
 
-        ((Button)findViewById(R.id.edit_mask)).setOnClickListener(v -> {
+        findViewById(R.id.edit_mask).setOnClickListener(v -> {
             Intent editIntent = new Intent(this, EditMaskActivity.class);
             startActivity(editIntent);
         });
@@ -73,6 +74,7 @@ public class EditFilterActivity extends BaseActivity {
 
     private void model2view() {
         mShowMasked.setChecked(mFilter.showMasked);
+        mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
 
         Chip selected_status = null;
         switch(mFilter.status) {
@@ -87,6 +89,7 @@ public class EditFilterActivity extends BaseActivity {
 
     private void view2model() {
         mFilter.showMasked = mShowMasked.isChecked();
+        mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
 
         if(mStatusOpen.isChecked())
             mFilter.status = Status.STATUS_OPEN;
