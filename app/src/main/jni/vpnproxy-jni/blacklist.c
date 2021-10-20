@@ -29,8 +29,7 @@ struct blacklist {
     string_entry_t *domains;
     struct ndpi_detection_module_struct *ndpi;
     bool locked;
-    uint64_t num_ips;
-    uint64_t num_domains;
+    blacklist_stats_t stats;
 };
 
 /* ******************************************************* */
@@ -54,6 +53,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
     char buffer[256];
     int num_dm_ok = 0, num_dm_fail = 0;
     int num_ip_ok = 0, num_ip_fail = 0;
+    int max_file_rules = 500000;
 
     if(bl->locked) {
         log_e("Blacklist is locked. Run blacklist_clear and load it again.");
@@ -87,6 +87,12 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
             if(!is_net && ((in_addr.s_addr == 0) || (in_addr.s_addr == 0xFFFFFFFF) || (in_addr.s_addr == 0x7F000001)))
                 continue; // invalid
 
+            if((num_ip_ok + num_dm_ok) >= max_file_rules) {
+                // limit reached
+                num_ip_fail++;
+                continue;
+            }
+
             if(ndpi_load_ip_category(bl->ndpi, item, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0)
                 num_ip_ok++;
             else
@@ -95,6 +101,12 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
             // Domain
             if(blacklist_match_domain(bl, item))
                 continue; // duplicate domain
+
+            if((num_ip_ok + num_dm_ok) >= max_file_rules) {
+                // limit reached
+                num_dm_fail++;
+                continue;
+            }
 
             string_entry_t *entry = malloc(sizeof(string_entry_t));
             if(!entry) {
@@ -118,8 +130,10 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
     log_d("Blacklist loaded[%s]: %d domains (%d failed), %d IPs (%d failed)",
           strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
 
-    bl->num_domains += num_dm_ok;
-    bl->num_ips += num_ip_ok;
+    bl->stats.num_lists++;
+    bl->stats.num_domains += num_dm_ok;
+    bl->stats.num_ips += num_ip_ok;
+    bl->stats.num_failed += num_ip_fail + num_dm_fail;
 
     return 0;
 }
@@ -134,10 +148,12 @@ void blacklist_clear(blacklist_t *bl) {
         free(entry->key);
         free(entry);
     }
-
     bl->domains = NULL;
+
+    // reload with an empty set to force release memory
+    ndpi_enable_loaded_categories(bl->ndpi);
     bl->locked = false;
-    bl->num_ips = bl->num_domains = 0;
+    memset(&bl->stats, 0, sizeof(bl->stats));
 }
 
 /* ******************************************************* */
@@ -174,4 +190,10 @@ bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
 
     HASH_FIND_STR(bl->domains, domain, entry);
     return(entry != NULL);
+}
+
+/* ******************************************************* */
+
+void blacklist_get_stats(const blacklist_t *bl, blacklist_stats_t *stats) {
+    *stats = bl->stats;
 }

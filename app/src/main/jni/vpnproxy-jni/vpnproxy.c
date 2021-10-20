@@ -18,6 +18,7 @@
  */
 
 #include <inttypes.h>
+#include <dirent.h>
 #include "vpnproxy.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
@@ -34,6 +35,7 @@ bool running = false;
 uint32_t new_dns_server = 0;
 
 static bool dump_capture_stats_now = false;
+static bool reload_blacklists_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
 
 /* ******************************************************* */
@@ -890,6 +892,55 @@ void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock) {
 
 /* ******************************************************* */
 
+const char* get_cache_path(const char *subpath) {
+    strncpy(global_proxy->cachedir + global_proxy->cachedir_len, subpath,
+            sizeof(global_proxy->cachedir) - global_proxy->cachedir_len - 1);
+    global_proxy->cachedir[sizeof(global_proxy->cachedir) - 1] = 0;
+    return global_proxy->cachedir;
+}
+
+/* ******************************************************* */
+
+const char* get_file_path(const char *subpath) {
+    strncpy(global_proxy->filesdir + global_proxy->filesdir_len, subpath,
+            sizeof(global_proxy->filesdir) - global_proxy->filesdir_len - 1);
+    global_proxy->filesdir[sizeof(global_proxy->filesdir) - 1] = 0;
+    return global_proxy->filesdir;
+}
+
+/* ******************************************************* */
+
+static void reload_blacklists(vpnproxy_data_t *proxy) {
+    blacklist_t *bl = proxy->malware_detection.bl;
+    if(!bl)
+        return;
+
+    // unload the old rules
+    blacklist_clear(bl);
+
+    // load all the files in the malware_bl directory
+    DIR *dir = opendir(get_file_path("malware_bl"));
+    if(dir) {
+        struct dirent *dent;
+        char subpath[256];
+
+        while((dent = readdir(dir)) != NULL) {
+            if(dent->d_name[0] != '.') {
+                snprintf(subpath, sizeof(subpath), "malware_bl/%s", dent->d_name);
+                blacklist_load_file(bl, get_file_path(subpath));
+            }
+        }
+        closedir(dir);
+    }
+
+    blacklist_stats_t stats;
+    blacklist_get_stats(bl, &stats);
+    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,
+                                  stats.num_lists, stats.num_domains, stats.num_ips);
+}
+
+/* ******************************************************* */
+
 void run_housekeeping(vpnproxy_data_t *proxy) {
     if(proxy->capture_stats.new_stats
             && ((proxy->now_ms - proxy->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
@@ -911,6 +962,9 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
     } else if ((proxy->pcap_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
+    } else if(reload_blacklists_now) {
+        reload_blacklists_now = false;
+        reload_blacklists(proxy);
     }
 }
 
@@ -1030,15 +1084,6 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
 
 /* ******************************************************* */
 
-static char* get_path(const char *subpath) {
-    strncpy(global_proxy->workdir + global_proxy->basepath_len, subpath,
-            sizeof(global_proxy->workdir) - global_proxy->basepath_len - 1);
-    global_proxy->workdir[sizeof(global_proxy->workdir) - 1] = 0;
-    return global_proxy->workdir;
-}
-
-/* ******************************************************* */
-
 static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
@@ -1058,6 +1103,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
+    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "(III)V");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
@@ -1096,8 +1142,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
                     .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
             }
     };
-    getStringPref(&proxy, "getWorkingDir", proxy.workdir, sizeof(proxy.workdir));
-    proxy.basepath_len = strlen(proxy.workdir);
+
+    getStringPref(&proxy, "getWorkingDir", proxy.cachedir, sizeof(proxy.cachedir));
+    strcat(proxy.cachedir, "/");
+    proxy.cachedir_len = strlen(proxy.cachedir);
+
+    getStringPref(&proxy, "getPersistentDir", proxy.filesdir, sizeof(proxy.filesdir));
+    strcat(proxy.filesdir, "/");
+    proxy.filesdir_len = strlen(proxy.filesdir);
 
     // Enable or disable the PCAPdroid trailer
     pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
@@ -1125,11 +1177,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             return (-1);
         }
 
-        blacklist_load_file(bl, get_path("/maltrail-malware-domains.txt"));
-        blacklist_load_file(bl, get_path("/emerging-Block-IPs.txt"));
-        blacklist_load_file(bl, get_path("/abuse_sslipblacklist.txt"));
-        blacklist_load_file(bl, get_path("/feodotracker_ipblocklist.txt"));
         proxy.malware_detection.bl = bl;
+        // the CaptureService will ask for reload via reload_blacklists_now
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -1248,4 +1297,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jcl
     }
 
     return barray;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, jclass clazz) {
+    reload_blacklists_now = true;
 }

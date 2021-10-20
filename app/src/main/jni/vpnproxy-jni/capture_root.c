@@ -169,19 +169,18 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     int sock;
     int client = -1;
     char bpf[256];
-    char workdir[PATH_MAX], pcapd[PATH_MAX];
+    char pcapd[PATH_MAX];
     char capture_interface[16];
 
     getStringPref(proxy, "getPcapDumperBpf", bpf, sizeof(bpf));
-    getStringPref(proxy, "getWorkingDir", workdir, PATH_MAX);
     getStringPref(proxy, "getCaptureInterface", capture_interface, sizeof(capture_interface));
     get_libprog_path(proxy, "pcapd", pcapd, sizeof(pcapd));
 
     if(!pcapd[0])
         return(-1);
 
-    if(chdir(workdir) < 0) {
-        log_f("chdir to %s failed [%d]: %s", workdir,
+    if(chdir(get_cache_dir()) < 0) {
+        log_f("chdir to %s failed [%d]: %s", get_cache_dir(),
                     errno, strerror(errno));
         return (-1);
     }

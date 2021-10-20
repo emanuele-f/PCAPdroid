@@ -190,5 +190,7 @@
     <string name="security">Security</string>
     <string name="malware_detection">Malware Detection</string>
     <string name="malware_detection_summary">"Detect possibly malicious connections and trigger alerts. NOTE: the detection can produce false positives and is not a valid alternative to an antivirus."</string>
+    <string name="blacklists_status">Blacklists Status</string>
+    <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
 </resources>
 

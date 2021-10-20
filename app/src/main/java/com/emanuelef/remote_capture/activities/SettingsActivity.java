@@ -24,7 +24,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Patterns;
-import android.view.MenuItem;
 
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;

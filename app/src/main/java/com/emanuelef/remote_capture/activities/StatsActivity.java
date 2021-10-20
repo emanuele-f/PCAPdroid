@@ -36,11 +36,13 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.VPNStats;
 
 public class StatsActivity extends BaseActivity {
+    private boolean mBlacklistsEnabled;
     private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
     private TextView mBytesRcvd;
@@ -55,6 +57,7 @@ public class StatsActivity extends BaseActivity {
     private TextView mDnsServer;
     private TextView mDnsQueries;
     private TableLayout mTable;
+    private TextView mBlacklistsStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class StatsActivity extends BaseActivity {
         mOpenSocks = findViewById(R.id.open_sockets);
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
+        mBlacklistsStatus = findViewById(R.id.blacklists_status);
 
         if(CaptureService.isCapturingAsRoot()) {
             findViewById(R.id.dns_server_row).setVisibility(View.GONE);
@@ -85,6 +89,10 @@ public class StatsActivity extends BaseActivity {
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
         } else
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
+
+        mBlacklistsEnabled = (CaptureService.requireInstance().malwareDetectionEnabled() != 0);
+        if(!mBlacklistsEnabled)
+            findViewById(R.id.blacklists_status_row).setVisibility(View.GONE);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -125,6 +133,10 @@ public class StatsActivity extends BaseActivity {
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
         mDnsServer.setText(CaptureService.getDNSServer());
 
+        // TODO use table
+        if(mBlacklistsEnabled)
+            mBlacklistsStatus.setText(PCAPdroid.getInstance().getBlacklistsStatus().toString());
+
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
     }
@@ -137,21 +149,27 @@ public class StatsActivity extends BaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    private String getContents() {
+        String rv = Utils.table2Text(mTable);
+
+        if(mBlacklistsEnabled)
+            rv += "\n" + getString(R.string.blacklists_status) + "\n" + mBlacklistsStatus.getText();
+
+        return rv;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
-            String contents = Utils.table2Text(mTable);
-            Utils.copyToClipboard(this, contents);
+            Utils.copyToClipboard(this, getContents());
             return true;
         } else if(id == R.id.share) {
-            String contents = Utils.table2Text(mTable);
-
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.stats));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
 
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
 

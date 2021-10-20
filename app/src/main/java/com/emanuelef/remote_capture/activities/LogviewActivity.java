@@ -54,7 +54,7 @@ public class LogviewActivity extends BaseActivity {
 
     private String readLog() {
         try {
-            String logpath = CaptureService.getWorkingDir(this) + "/pcapd.log";
+            String logpath = getCacheDir().getPath() + "/pcapd.log";
             BufferedReader reader = new BufferedReader(new FileReader(logpath));
 
             StringBuilder builder = new StringBuilder();

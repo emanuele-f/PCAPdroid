@@ -56,6 +56,7 @@ import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.BlacklistsStatus;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
@@ -83,7 +84,8 @@ public class CaptureService extends VpnService implements Runnable {
     private ParcelFileDescriptor mParcelFileDescriptor;
     private CaptureSettings mSettings;
     private Handler mHandler;
-    private Thread mThread;
+    private Thread mCaptureThread;
+    private Thread mBlacklistsUpdateThread;
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -99,6 +101,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
+    private BlacklistsStatus mBlacklistsStatus;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -242,10 +245,6 @@ public class CaptureService extends VpnService implements Runnable {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, prefs);
-        if(mMalwareDetectionEnabled) {
-            // TODO load from URL
-            Utils.unzip(getResources().openRawResource(R.raw.malware_blacklist), getCacheDir().getPath());
-        }
 
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
@@ -296,13 +295,18 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // Stop the previous session by interrupting the thread.
-        if (mThread != null) {
-            mThread.interrupt();
+        if (mCaptureThread != null) {
+            mCaptureThread.interrupt();
         }
 
+        mBlacklistsStatus = PCAPdroid.getInstance().getBlacklistsStatus();
+        if(mMalwareDetectionEnabled && !mBlacklistsStatus.needsUpdate())
+            reloadBlacklists();
+        checkBlacklistsUpdates();
+
         // Start a new session by creating a new thread.
-        mThread = new Thread(this, "CaptureService Thread");
-        mThread.start();
+        mCaptureThread = new Thread(this, "CaptureService Thread");
+        mCaptureThread.start();
 
         setupNotifications();
         startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
@@ -323,9 +327,10 @@ public class CaptureService extends VpnService implements Runnable {
         stop();
         INSTANCE = null;
 
-        if(mThread != null) {
-            mThread.interrupt();
-        }
+        if(mCaptureThread != null)
+            mCaptureThread.interrupt();
+        if(mBlacklistsUpdateThread != null)
+            mBlacklistsUpdateThread.interrupt();
         if(mDumper != null) {
             try {
                 mDumper.stopDumper();
@@ -469,16 +474,16 @@ public class CaptureService extends VpnService implements Runnable {
     private void stop() {
         stopPacketLoop();
 
-        while((mThread != null) && (mThread.isAlive())) {
+        while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
                 Log.d(TAG, "Joining native thread...");
-                mThread.join();
+                mCaptureThread.join();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Joining native thread failed");
             }
         }
 
-        mThread = null;
+        mCaptureThread = null;
 
         if(mParcelFileDescriptor != null) {
             try {
@@ -505,14 +510,30 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void stopThread() {
-        mThread = null;
+        mCaptureThread = null;
         stop();
     }
 
     /* Check if the VPN service was launched */
     public static boolean isServiceActive() {
         return((INSTANCE != null) &&
-                (INSTANCE.mThread != null));
+                (INSTANCE.mCaptureThread != null));
+    }
+
+    private void checkBlacklistsUpdates() {
+        if((malwareDetectionEnabled() == 0) || (mBlacklistsUpdateThread != null))
+            return;
+
+        if(mBlacklistsStatus.needsUpdate()) {
+            mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
+            mBlacklistsUpdateThread.start();
+        }
+    }
+
+    private void updateBlacklistsWork() {
+        mBlacklistsStatus.updateBlacklists();
+        reloadBlacklists();
+        mBlacklistsUpdateThread = null;
     }
 
     public static String getAppFilter() {
@@ -576,25 +597,28 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isRootCapture() == 1));
     }
 
+    // Inside the mCaptureThread
     @Override
     public void run() {
         if(mSettings.root_capture) {
             runPacketLoop(-1, this, Build.VERSION.SDK_INT);
-            return;
-        }
+        } else {
+            if(mParcelFileDescriptor != null) {
+                int fd = mParcelFileDescriptor.getFd();
+                int fd_setsize = getFdSetSize();
 
-        if(mParcelFileDescriptor != null) {
-            int fd = mParcelFileDescriptor.getFd();
-            int fd_setsize = getFdSetSize();
-
-            if((fd > 0) && (fd < fd_setsize)) {
-                Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
-                runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-            } else {
-                Log.e(TAG, "Invalid VPN fd: " + fd);
-                stopThread();
+                if((fd > 0) && (fd < fd_setsize)) {
+                    Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
+                    runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+                } else {
+                    Log.e(TAG, "Invalid VPN fd: " + fd);
+                    stopThread();
+                }
             }
         }
+
+        if(mMalwareDetectionEnabled)
+            mBlacklistsStatus.save();
     }
 
     /* The following methods are called from native code */
@@ -674,6 +698,8 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
+        checkBlacklistsUpdates();
+
         // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
         // thus preventing the ConnectionsAdapter from interleaving other operations
         synchronized (conn_reg) {
@@ -735,17 +761,19 @@ public class CaptureService extends VpnService implements Runnable {
         });
     }
 
-    public static String getWorkingDir(Context ctx) {
-        return ctx.getCacheDir().getAbsolutePath();
-    }
     public String getWorkingDir() {
-        return getWorkingDir(this);
+        return getCacheDir().getAbsolutePath();
     }
+    public String getPersistentDir() { return getFilesDir().getAbsolutePath(); }
 
     public String getLibprogPath(String prog_name) {
         // executable binaries are stored into the /lib folder of the app
         String dir = getApplicationInfo().nativeLibraryDir;
         return(dir + "/lib" + prog_name + ".so");
+    }
+
+    public void notifyBlacklistsLoaded(int num_lists, int num_domains, int num_ips) {
+        mBlacklistsStatus.loaded(num_lists, num_domains, num_ips);
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
@@ -754,4 +782,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native int getFdSetSize();
     public static native void setDnsServer(String server);
     public static native byte[] getPcapHeader();
+    public static native void reloadBlacklists();
 }

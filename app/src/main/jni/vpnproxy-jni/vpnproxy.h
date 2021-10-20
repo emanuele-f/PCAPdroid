@@ -121,8 +121,10 @@ typedef struct vpnproxy_data {
     ndpi_ptree_t *known_dns_servers;
     uid_resolver_t *resolver;
     ip_lru_t *ip_to_host;
-    char workdir[PATH_MAX];
-    int basepath_len;
+    char cachedir[PATH_MAX];
+    char filesdir[PATH_MAX];
+    int cachedir_len;
+    int filesdir_len;
     struct timeval last_pkt_ts; // Packet timestamp, reported into the exported PCAP
     uint64_t now_ms;            // Monotonic timestamp, see refresh_time
     u_int num_dropped_pkts;
@@ -197,6 +199,7 @@ typedef struct jni_methods {
     jmethodID statsInit;
     jmethodID statsSetData;
     jmethodID getLibprogPath;
+    jmethodID notifyBlacklistsLoaded;
 } jni_methods_t;
 
 typedef struct jni_classes {
@@ -229,6 +232,10 @@ void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
 void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
+const char* get_cache_path(const char *subpath);
+const char* get_file_path(const char *subpath);
+static inline const char* get_cache_dir() { return get_cache_path(""); }
+static inline const char* get_files_dir() { return get_file_path(""); }
 
 char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);

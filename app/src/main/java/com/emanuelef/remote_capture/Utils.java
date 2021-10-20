@@ -79,6 +79,7 @@ import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -92,6 +93,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class Utils {
     public static final int UID_UNKNOWN = -1;
@@ -162,6 +165,9 @@ public class Utils {
     }
 
     public static String formatEpochShort(Context context, long epoch) {
+        if(epoch == 0)
+            return "-";
+
         long now = Utils.now();
         Locale locale = getPrimaryLocale(context);
 
@@ -660,13 +666,12 @@ public class Utils {
                     }
                 } else {
                     // Extract file
-                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst));
-
-                    byte[] bytesIn = new byte[4096];
-                    int read = 0;
-                    while ((read = zipIn.read(bytesIn)) != -1)
-                        bos.write(bytesIn, 0, read);
-                    bos.close();
+                    try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                        byte[] bytesIn = new byte[4096];
+                        int read = 0;
+                        while ((read = zipIn.read(bytesIn)) != -1)
+                            bos.write(bytesIn, 0, read);
+                    }
                 }
 
                 zipIn.closeEntry();
@@ -678,5 +683,38 @@ public class Utils {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static boolean downloadFile(String _url, String path) {
+        boolean has_contents = false;
+
+        try (FileOutputStream out = new FileOutputStream(path + ".tmp")) {
+            try (BufferedOutputStream bos = new BufferedOutputStream(out)) {
+                URL url = new URL(_url);
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+                InputStream in = con.getInputStream();
+
+                byte[] bytesIn = new byte[4096];
+                int read = 0;
+                while ((read = in.read(bytesIn)) != -1) {
+                    bos.write(bytesIn, 0, read);
+                    has_contents |= (read > 0);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(!has_contents) {
+            try {
+                (new File(path + ".tmp")).delete(); // if exists
+            } catch (Exception e) {
+                // ignore
+            }
+            return false;
+        }
+
+        // Only write the target path if it was successful
+        return (new File(path + ".tmp")).renameTo(new File(path));
     }
 }
