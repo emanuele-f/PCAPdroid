@@ -368,7 +368,7 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
             char buf[256];
 
             get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blacklisted dst ip: %s[%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
     }
 
@@ -450,7 +450,7 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
             char buf[512];
 
             get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blacklisted domain [%s]: %s[%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            log_w("Blacklisted domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
     }
 
