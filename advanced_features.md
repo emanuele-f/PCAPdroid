@@ -33,7 +33,7 @@ The root capture feature can be enabled from the app settings. It is only displa
 
 Please note that the following limitations apply for this mode:
 
-- The SOCKS5 proxy is not available
+- The SOCKS5 proxy is not available. This means that the TLS decryption is not available with root capture enabled.
 - Ethernet data will not be shown
 - Domain names for DNS requests sent via DoH will not be visible. You need to disable/block DoH if you want to extract domain names.
 - The connections status show in PCAPdroid does not currently reflect the actual status of the connections in linux
