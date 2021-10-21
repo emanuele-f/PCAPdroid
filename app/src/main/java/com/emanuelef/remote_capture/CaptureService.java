@@ -412,10 +412,10 @@ public class CaptureService extends VpnService implements Runnable {
                 intent, Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
 
         String rule_label;
-        if(conn.blacklisted_domain)
-            rule_label = MatchList.getLabel(this, MatchList.RuleType.HOST, conn.info);
+        if(conn.isBlacklistedHost())
+            rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.HOST, conn.info);
         else
-            rule_label = MatchList.getLabel(this, MatchList.RuleType.IP, conn.dst_ip);
+            rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.IP, conn.dst_ip);
 
         mBlacklistedBuilder
                 .setContentIntent(pi)

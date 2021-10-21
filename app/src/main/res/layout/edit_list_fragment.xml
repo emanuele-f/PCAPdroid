@@ -10,13 +10,13 @@
         android:scrollbarStyle="outsideOverlay" />
 
     <TextView
-        android:id="@+id/mask_empty"
+        android:id="@+id/list_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:layout_marginTop="40dp"
         android:textStyle="italic"
         android:textSize="15sp"
-        android:text="@string/no_rules">
+        android:text="@string/list_is_empty">
     </TextView>
 </RelativeLayout>

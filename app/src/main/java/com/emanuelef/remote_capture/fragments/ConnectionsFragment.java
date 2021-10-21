@@ -55,6 +55,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
@@ -308,18 +309,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(app != null) {
             MenuItem item = menu.findItem(R.id.hide_app);
-            String label = MatchList.getLabel(ctx, RuleType.APP, app.getName());
+            String label = MatchList.getRuleLabel(ctx, RuleType.APP, Integer.toString(app.getUid()));
             item.setTitle(label);
             item.setVisible(true);
 
             item = menu.findItem(R.id.search_app);
             item.setTitle(label);
             item.setVisible(true);
+
+            if(conn.isBlacklisted()) {
+                item = menu.findItem(R.id.whitelist_app);
+                item.setTitle(label);
+                item.setVisible(true);
+            }
         }
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
             MenuItem item = menu.findItem(R.id.hide_host);
-            String label = MatchList.getLabel(ctx, RuleType.HOST, conn.info);
+            String label = MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -331,18 +338,29 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(!rootDomain.equals(conn.info)) {
                 item = menu.findItem(R.id.hide_root_domain);
-                item.setTitle(MatchList.getLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
+                item.setTitle(MatchList.getRuleLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
+                item.setVisible(true);
+            }
+
+            if(conn.isBlacklistedHost()) {
+                item = menu.findItem(R.id.whitelist_host);
+                item.setTitle(label);
                 item.setVisible(true);
             }
         }
 
-        String label = MatchList.getLabel(ctx, RuleType.IP, conn.dst_ip);
+        String label = MatchList.getRuleLabel(ctx, RuleType.IP, conn.dst_ip);
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
+        if(conn.isBlacklistedIp())
+            menu.findItem(R.id.whitelist_ip).setTitle(label);
 
-        label = MatchList.getLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
+        label = MatchList.getRuleLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
         menu.findItem(R.id.hide_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
+
+        if(!conn.isBlacklisted())
+            menu.findItem(R.id.whitelist_menu).setVisible(false);
     }
 
     private void setQuery(String query) {
@@ -358,50 +376,73 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         });
     }
 
+    private void recheckBlacklistedConnections() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg != null)
+            reg.refreshConnectionsWhitelist();
+    }
+
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         ConnectionDescriptor conn = mAdapter.getClickedItem();
+        MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        boolean mask_changed = false;
+        boolean whitelist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
 
         int id = item.getItemId();
-        String label = item.getTitle().toString();
 
-        if(id == R.id.hide_app)
-            mAdapter.mMask.addApp(conn.uid, label);
-        else if(id == R.id.hide_host)
-            mAdapter.mMask.addHost(conn.info, label);
-        else if(id == R.id.hide_ip)
-            mAdapter.mMask.addIp(conn.dst_ip, label);
-        else if(id == R.id.hide_proto)
-            mAdapter.mMask.addProto(conn.l7proto, label);
-        else if(id == R.id.hide_root_domain)
-            mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info), label);
-        else if(id == R.id.search_app) {
+        if(id == R.id.hide_app) {
+            mAdapter.mMask.addApp(conn.uid);
+            mask_changed = true;
+        } else if(id == R.id.hide_host) {
+            mAdapter.mMask.addHost(conn.info);
+            mask_changed = true;
+        }  else if(id == R.id.hide_ip) {
+            mAdapter.mMask.addIp(conn.dst_ip);
+            mask_changed = true;
+        } else if(id == R.id.hide_proto) {
+            mAdapter.mMask.addProto(conn.l7proto);
+            mask_changed = true;
+        } else if(id == R.id.hide_root_domain) {
+            mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info));
+            mask_changed = true;
+        } else if(id == R.id.search_app)
             setQuery(Objects.requireNonNull(
                     mApps.get(conn.uid, 0)).getPackageName());
-            return true;
-        } else if(id == R.id.search_host) {
+        else if(id == R.id.search_host)
             setQuery(conn.info);
-            return true;
-        } else if(id == R.id.search_ip) {
+        else if(id == R.id.search_ip)
             setQuery(conn.dst_ip);
-            return true;
-        } else if(id == R.id.search_proto) {
+        else if(id == R.id.search_proto)
             setQuery(conn.l7proto);
-            return true;
+        else if(id == R.id.whitelist_app)  {
+            whitelist.addApp(conn.uid);
+            whitelist_changed = true;
+        } else if(id == R.id.whitelist_ip)  {
+            whitelist.addIp(conn.dst_ip);
+            whitelist_changed = true;
+        } else if(id == R.id.whitelist_host)  {
+            whitelist.addHost(conn.info);
+            whitelist_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
             startActivity(intent);
-            return true;
         } else
             return super.onContextItemSelected(item);
 
-        mAdapter.mMask.save();
-        mAdapter.mFilter.showMasked = false;
-        refreshFilteredConnections();
+        if(mask_changed) {
+            mAdapter.mMask.save();
+            mAdapter.mFilter.showMasked = false;
+            refreshFilteredConnections();
+        } else if(whitelist_changed) {
+            whitelist.save();
+            recheckBlacklistedConnections();
+        }
+
         return true;
     }
 

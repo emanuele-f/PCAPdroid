@@ -35,35 +35,35 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.adapters.MaskEditAdapter;
+import com.emanuelef.remote_capture.activities.EditListActivity;
+import com.emanuelef.remote_capture.adapters.ListEditAdapter;
 import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class EditMaskFragment extends Fragment {
-    private MaskEditAdapter mAdapter;
+public class EditListFragment extends Fragment {
+    private ListEditAdapter mAdapter;
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
-    private MatchList mMask;
+    private MatchList mList;
     private ListView mListView;
-    private static final String TAG = "MaskEditFragment";
+    private static final String TAG = "EditListFragment";
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.edit_mask_fragment, container, false);
+        return inflater.inflate(R.layout.edit_list_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListView = view.findViewById(R.id.listview);
-        mEmptyText = view.findViewById(R.id.mask_empty);
-        mMask = PCAPdroid.getInstance().getVisualizationMask();
+        mEmptyText = view.findViewById(R.id.list_empty);
+        mList = ((EditListActivity)requireActivity()).getList();
 
-        mAdapter = new MaskEditAdapter(requireContext(), mMask.iterRules());
+        mAdapter = new ListEditAdapter(requireContext(), mList.iterRules());
         mListView.setAdapter(mAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
@@ -82,7 +82,7 @@ public class EditMaskFragment extends Fragment {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 MenuInflater inflater = requireActivity().getMenuInflater();
-                inflater.inflate(R.menu.mask_edit_cab, menu);
+                inflater.inflate(R.menu.list_edit_cab, menu);
                 return true;
             }
 
@@ -98,12 +98,12 @@ public class EditMaskFragment extends Fragment {
                 if(id == R.id.delete_entry) {
                     if(mSelected.size() >= mAdapter.getCount()) {
                         mAdapter.clear();
-                        mMask.clear();
-                        mMask.save();
+                        mList.clear();
+                        mList.save();
                     } else {
                         for(MatchList.Rule item : mSelected)
                             mAdapter.remove(item);
-                        updateMask();
+                        updateList();
                     }
 
                     mode.finish();
@@ -137,12 +137,11 @@ public class EditMaskFragment extends Fragment {
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
     }
 
-    private void updateMask() {
+    private void updateList() {
         ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
+        Iterator<MatchList.Rule> iter = mList.iterRules();
 
-        Iterator<MatchList.Rule> iter = mMask.iterRules();
-
-        // Remove the mMask rules which are not in the adapter dataset
+        // Remove the mList rules which are not in the adapter dataset
         while(iter.hasNext()) {
             MatchList.Rule rule = iter.next();
 
@@ -151,8 +150,8 @@ public class EditMaskFragment extends Fragment {
         }
 
         if(toRemove.size() > 0) {
-            mMask.removeRules(toRemove);
-            mMask.save();
+            mList.removeRules(toRemove);
+            mList.save();
         }
     }
 }

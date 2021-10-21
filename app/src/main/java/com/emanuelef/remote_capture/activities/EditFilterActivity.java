@@ -32,6 +32,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.google.android.material.chip.Chip;
 
@@ -75,7 +76,8 @@ public class EditFilterActivity extends BaseActivity {
         mStatusError = findViewById(R.id.status_error);
 
         findViewById(R.id.edit_mask).setOnClickListener(v -> {
-            Intent editIntent = new Intent(this, EditMaskActivity.class);
+            Intent editIntent = new Intent(this, EditListActivity.class);
+            editIntent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.VISUALIZATION_MASK);
             startActivity(editIntent);
         });
 

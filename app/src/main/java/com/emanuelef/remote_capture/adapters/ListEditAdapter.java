@@ -35,10 +35,10 @@ import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.Iterator;
 
-public class MaskEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
+public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
 
-    public MaskEditAdapter(Context context, Iterator<MatchList.Rule> items) {
+    public ListEditAdapter(Context context, Iterator<MatchList.Rule> items) {
         super(context, R.layout.rule_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 

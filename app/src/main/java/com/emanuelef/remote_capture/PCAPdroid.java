@@ -34,6 +34,7 @@ import java.lang.ref.WeakReference;
 
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
+    private MatchList mMalwareWhitelist;
     private BlacklistsStatus mBlacklistsStatus;
     private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
@@ -71,6 +72,10 @@ public class PCAPdroid extends Application {
         return mInstance.get();
     }
 
+    public Billing getBilling(Context ctx) {
+        return new Billing(ctx);
+    }
+
     public MatchList getVisualizationMask() {
         if(mVisMask == null)
             mVisMask = new MatchList(this, Prefs.PREF_VISUALIZATION_MASK);
@@ -85,7 +90,10 @@ public class PCAPdroid extends Application {
         return mBlacklistsStatus;
     }
 
-    public Billing getBilling(Context ctx) {
-        return new Billing(ctx);
+    public MatchList getMalwareWhitelist() {
+        if(mMalwareWhitelist == null)
+            mMalwareWhitelist = new MatchList(this, Prefs.PREF_MALWARE_WHITELIST);
+
+        return mMalwareWhitelist;
     }
 }

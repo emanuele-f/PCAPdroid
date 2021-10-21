@@ -27,6 +27,7 @@ import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ public class ConnectionsRegister {
     private int mUntrackedItems;
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
+    private final MatchList mWhitelist;
 
     public ConnectionsRegister(int _size) {
         mTail = 0;
@@ -55,6 +57,7 @@ public class ConnectionsRegister {
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
+        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
     }
 
     private int firstPos() {
@@ -124,6 +127,7 @@ public class ConnectionsRegister {
                 mAppsStats.put(uid, stats);
             }
 
+            conn.updateWhitelist(mWhitelist);
             processConnectionStatus(conn);
 
             stats.num_connections++;
@@ -165,7 +169,10 @@ public class ConnectionsRegister {
                 stats.bytes += bytes_delta;
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
+                boolean host_changed = (update.info != null) && (!update.info.equals(conn.info));
                 conn.processUpdate(update);
+                if(host_changed)
+                    conn.updateWhitelist(mWhitelist);
                 processConnectionStatus(conn);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
@@ -194,6 +201,34 @@ public class ConnectionsRegister {
 
         for(ConnectionsListener listener: mListeners)
             listener.connectionsChanges(mNumItems);
+    }
+
+    public synchronized void refreshConnectionsWhitelist() {
+        ArrayList<Integer>changed_pos = new ArrayList<>();
+
+        for(int i = 0; i< mNumItems; i++) {
+            ConnectionDescriptor conn = mItemsRing[i];
+
+            if(conn != null) {
+                boolean was_blacklisted = conn.isBlacklisted();
+
+                conn.updateWhitelist(mWhitelist);
+                if (conn.isBlacklisted() != was_blacklisted)
+                    changed_pos.add(i);
+            }
+        }
+
+        // Notify listeners
+        if(changed_pos.size() > 0) {
+            int[] changed = new int[changed_pos.size()];
+            int i = 0;
+
+            for(Integer item: changed_pos)
+                changed[i++] = item;
+
+            for(ConnectionsListener listener: mListeners)
+                listener.connectionsUpdated(changed);
+        }
     }
 
     public synchronized void addListener(ConnectionsListener listener) {

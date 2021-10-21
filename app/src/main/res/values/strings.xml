@@ -181,9 +181,9 @@
     <string name="capturing_from">Capturing packets from \"%1$s\"</string>
     <string name="edit_filter">Edit Filter</string>
     <string name="show_hidden_connections">Show hidden connections</string>
-    <string name="edit_rules">Edit Rules</string>
+    <string name="edit_list">Edit List</string>
     <string name="hidden_connections_rules">Hidden Connections Rules</string>
-    <string name="no_rules">No rules</string>
+    <string name="list_is_empty">List is empty</string>
     <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
     <string name="show_only_malicious">Only malicious connections</string>
     <string name="security">Security</string>
@@ -192,5 +192,9 @@
     <string name="blacklists_status">Blacklists Status</string>
     <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
     <string name="reset">Reset</string>
+    <string name="malware_whitelist">Malware Whitelist</string>
+    <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
+    <string name="edit_hidden_connections">Edit Hidden Connections</string>
+    <string name="edit_malware_whitelist">Edit Malware Whitelist</string>
 </resources>
 

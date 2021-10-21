@@ -73,11 +73,14 @@ public class ConnectionDescriptor implements Serializable {
     public int incr_id;
     public int status;
     private int tcp_flags;
-    public boolean blacklisted_ip;
-    public boolean blacklisted_domain;
+    private boolean blacklisted_ip;
+    private boolean blacklisted_host;
 
     /* Internal */
-    public boolean alerted = false;
+    public boolean alerted;
+    private boolean whitelisted_ip;
+    private boolean whitelisted_host;
+    private boolean whitelisted_app;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
                                 int _src_port, int _dst_port, int _uid, long when) {
@@ -101,7 +104,7 @@ public class ConnectionDescriptor implements Serializable {
             rcvd_pkts = update.rcvd_pkts;
             status = (update.status & 0x00FF);
             blacklisted_ip = (update.status & 0x0100) != 0;
-            blacklisted_domain = (update.status & 0x0200) != 0;
+            blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
             tcp_flags = update.tcp_flags;
         }
@@ -164,8 +167,16 @@ public class ConnectionDescriptor implements Serializable {
         return (tcp_flags & 0xFF);
     }
 
+    public boolean isBlacklistedIp() { return !whitelisted_app && !whitelisted_ip && blacklisted_ip; }
+    public boolean isBlacklistedHost() { return !whitelisted_app && !whitelisted_host && blacklisted_host; }
     public boolean isBlacklisted() {
-        return blacklisted_ip || blacklisted_domain;
+        return isBlacklistedIp() || isBlacklistedHost();
+    }
+
+    public void updateWhitelist(MatchList whitelist) {
+        whitelisted_app = whitelist.matchesApp(uid);
+        whitelisted_ip = whitelist.matchesIP(dst_ip);
+        whitelisted_host = whitelist.matchesHost(info);
     }
 
     @Override

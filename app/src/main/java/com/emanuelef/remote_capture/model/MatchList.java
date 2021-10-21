@@ -64,19 +64,15 @@ public class MatchList {
         PROTOCOL
     }
 
-    public static class Rule {
+    public class Rule {
         private final String mLabel;
         private final RuleType mType;
         private final Object mValue;
 
-        Rule(RuleType tp, Object value, String label) {
-            mLabel = label;
+        private Rule(RuleType tp, Object value) {
+            mLabel = MatchList.getRuleLabel(mContext, tp, value.toString());
             mType = tp;
             mValue = value;
-        }
-
-        public Rule(Context ctx, RuleType tp, Object value) {
-            this(tp, value, MatchList.getLabel(ctx, tp, value.toString()));
         }
 
         public String getLabel() {
@@ -124,7 +120,7 @@ public class MatchList {
                 .apply();
     }
 
-    public static String getLabel(Context ctx, RuleType tp, String value) {
+    public static String getRuleLabel(Context ctx, RuleType tp, String value) {
         int resid;
 
         switch(tp) {
@@ -135,6 +131,14 @@ public class MatchList {
             case PROTOCOL:      resid = R.string.protocol_val; break;
             default:
                 return "";
+        }
+
+        if(tp == RuleType.APP) {
+            AppsResolver resolver = new AppsResolver(ctx);
+            AppDescriptor app = resolver.get(Integer.parseInt(value), 0);
+
+            if(app != null)
+                value = app.getName();
         }
 
         return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
@@ -167,8 +171,6 @@ public class MatchList {
         if(ruleArray == null)
             return;
 
-        AppsResolver resolver = new AppsResolver(mContext);
-
         for(JsonElement el: ruleArray) {
             JsonObject ruleObj = el.getAsJsonObject();
             RuleType type;
@@ -181,25 +183,15 @@ public class MatchList {
             }
 
             String val = ruleObj.get("value").getAsString();
-            String valLabel = val;
-
-            if(type == RuleType.APP) {
-                AppDescriptor app = resolver.get(Integer.parseInt(val), 0);
-
-                if(app != null)
-                    valLabel = app.getName();
-            }
-
-            String label = getLabel(mContext, type, valLabel);
-            addRule(new Rule(type, val, label));
+            addRule(new Rule(type, val));
         }
     }
 
-    public void addApp(int uid, String label)        { addRule(new Rule(RuleType.APP, uid, label)); }
-    public void addIp(String ip, String label)       { addRule(new Rule(RuleType.IP, ip, label)); }
-    public void addHost(String info, String label)   { addRule(new Rule(RuleType.HOST, info, label)); }
-    public void addProto(String proto, String label) { addRule(new Rule(RuleType.PROTOCOL, proto, label)); }
-    public void addRootDomain(String domain, String label) { addRule(new Rule(RuleType.ROOT_DOMAIN, domain, label)); }
+    public void addApp(int uid)        { addRule(new Rule(RuleType.APP, uid)); }
+    public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
+    public void addHost(String info)   { addRule(new Rule(RuleType.HOST, info)); }
+    public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
+    public void addRootDomain(String domain) { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
 
     static private String matchKey(RuleType tp, Object val) {
         return tp + "@" + val;
@@ -223,14 +215,36 @@ public class MatchList {
         }
     }
 
-    public boolean matches(ConnectionDescriptor conn) {
-        boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
+    public boolean matchesApp(int uid) {
+        return mMatches.containsKey(matchKey(RuleType.APP, uid));
+    }
 
-        return(mMatches.containsKey(matchKey(RuleType.APP, conn.uid)) ||
-                mMatches.containsKey(matchKey(RuleType.IP, conn.dst_ip)) ||
-                mMatches.containsKey(matchKey(RuleType.PROTOCOL, conn.l7proto)) ||
-                (hasInfo && mMatches.containsKey(matchKey(RuleType.HOST, conn.info))) ||
-                (hasInfo && mMatches.containsKey(matchKey(RuleType.ROOT_DOMAIN, Utils.getRootDomain(conn.info)))));
+    public boolean matchesIP(String ip) {
+        return mMatches.containsKey(matchKey(RuleType.IP, ip));
+    }
+
+    public boolean matchesProto(String l7proto) {
+        return mMatches.containsKey(matchKey(RuleType.PROTOCOL, l7proto));
+    }
+
+    public boolean matchesHost(String host) {
+        return mMatches.containsKey(matchKey(RuleType.HOST, host));
+    }
+
+    public boolean matchesRootDomain(String root_domain) {
+        return mMatches.containsKey(matchKey(RuleType.ROOT_DOMAIN, root_domain));
+    }
+
+    public boolean matches(ConnectionDescriptor conn) {
+        if(mMatches.isEmpty())
+            return false;
+
+        boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
+        return(matchesApp(conn.uid) ||
+                matchesIP(conn.dst_ip) ||
+                matchesIP(conn.l7proto) ||
+                (hasInfo && matchesHost(conn.info))) ||
+                (hasInfo && matchesRootDomain(Utils.getRootDomain(conn.info)));
     }
 
     public Iterator<Rule> iterRules() {
