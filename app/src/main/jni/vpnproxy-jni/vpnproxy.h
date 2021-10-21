@@ -107,6 +107,8 @@ typedef struct {
     UT_hash_handle hh;
 } uid_to_app_t;
 
+typedef struct pcap_conn pcap_conn_t;
+
 typedef struct vpnproxy_data {
     int tunfd;
     int incr_id;
@@ -139,6 +141,7 @@ typedef struct vpnproxy_data {
     bool root_capture;
     zdtun_statistics_t stats;
     uid_to_app_t *uid2app;
+    pcap_conn_t *connections;   // root only
 
     struct {
         bool enabled;

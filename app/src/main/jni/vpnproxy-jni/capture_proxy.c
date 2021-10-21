@@ -239,6 +239,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         data->update_type |= CONN_UPDATE_STATS;
         notify_connection(&proxy->conns_updates, tuple, data);
 
+        conn_end_ndpi_detection(data, proxy, tuple);
         data->status = zdtun_conn_get_status(conn_info);
         data->to_purge = true;
     } else

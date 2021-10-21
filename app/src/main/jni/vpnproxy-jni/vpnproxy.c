@@ -84,6 +84,11 @@ void conn_free_data(conn_data_t *data) {
 /* ******************************************************* */
 
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
+    // End the detection when the connection is closed
+    // Always check this, even pending_notification are present
+    if(data->status >= CONN_STATUS_CLOSED)
+        conn_end_ndpi_detection(data, global_proxy, tuple);
+
     if(data->pending_notification)
         return;
 
@@ -294,6 +299,21 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
 
 /* ******************************************************* */
 
+static bool check_blacklisted_domain(vpnproxy_data_t *proxy, conn_data_t *data, const zdtun_5tuple_t *tuple) {
+    if(proxy->malware_detection.bl && data->info && data->info[0] && !data->blacklisted_domain) {
+        data->blacklisted_domain = blacklist_match_domain(proxy->malware_detection.bl, data->info);
+        if(data->blacklisted_domain) {
+            char appbuf[64];
+            char buf[512];
+
+            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
+            log_w("Blacklisted domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+        }
+    }
+}
+
+/* ******************************************************* */
+
 conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid) {
     conn_data_t *data = calloc(1, sizeof(conn_data_t));
 
@@ -361,6 +381,8 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
                 }
             }
         }
+
+        check_blacklisted_domain(proxy, data, tuple);
     }
 
     if(proxy->malware_detection.bl && (tuple->ipver == 4)) {
@@ -444,17 +466,8 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
             break;
     }
 
-    if(proxy->malware_detection.bl && data->info && data->info[0] && !data->blacklisted_domain) {
-        // TODO early match
-        data->blacklisted_domain = blacklist_match_domain(proxy->malware_detection.bl, data->info);
-        if(data->blacklisted_domain) {
-            char appbuf[64];
-            char buf[512];
-
-            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blacklisted domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
-        }
-    }
+    // TODO early match
+    check_blacklisted_domain(proxy, data, tuple);
 
     data->update_type |= CONN_UPDATE_INFO;
     conn_free_ndpi(data);
@@ -599,12 +612,13 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
         process_request_data(data, pkt, from_tun);
 
-    if(!from_tun && ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
-            || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS)))
+    bool is_dns = ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) ||
+            (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS));
+    if(!from_tun && is_dns)
         process_dns_reply(data, proxy, pkt);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
-            (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
+            !ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))
         conn_end_ndpi_detection(data, proxy, &pkt->tuple);
 }
 
@@ -1045,10 +1059,10 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
         process_ndpi_packet(data, proxy, pkt, from_tun);
 
-        if((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
+        if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
                 && (data->uid == UID_NETD)
                 && (data->sent_pkts + data->rcvd_pkts == 1)
-                && ((netd_resolve_waiting > 0) || (next_connections_dump > (proxy->now_ms - NETD_RESOLVE_DELAY_MS)))) {
+                && ((netd_resolve_waiting > 0) || ((next_connections_dump - NETD_RESOLVE_DELAY_MS) < proxy->now_ms))) {
             if(netd_resolve_waiting == 0) {
                 // Wait before sending the dump to possibly resolve netd DNS connections uid.
                 // Only delay for the first DNS request, to avoid excessive delay.
@@ -1181,7 +1195,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         }
 
         proxy.malware_detection.bl = bl;
-        // the CaptureService will ask for reload via reload_blacklists_now
+        if(reload_blacklists_now) {
+            reload_blacklists_now = false;
+            reload_blacklists(&proxy);
+        }
     }
 
     signal(SIGPIPE, SIG_IGN);
