@@ -181,7 +181,6 @@
     <string name="capturing_from">Capturing packets from \"%1$s\"</string>
     <string name="edit_filter">Edit Filter</string>
     <string name="show_hidden_connections">Show hidden connections</string>
-    <string name="apply_changes">Apply</string>
     <string name="edit_rules">Edit Rules</string>
     <string name="hidden_connections_rules">Hidden Connections Rules</string>
     <string name="no_rules">No rules</string>
@@ -192,5 +191,6 @@
     <string name="malware_detection_summary">"Detect possibly malicious connections and trigger alerts. NOTE: the detection can produce false positives and is not a valid alternative to an antivirus."</string>
     <string name="blacklists_status">Blacklists Status</string>
     <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
+    <string name="reset">Reset</string>
 </resources>
 

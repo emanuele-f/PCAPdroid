@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/apply_changes"
-        android:title="@string/apply_changes"
+        android:id="@+id/reset_changes"
+        android:title="@string/reset"
         app:showAsAction="ifRoom" />
 </menu>

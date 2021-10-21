@@ -521,7 +521,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void checkBlacklistsUpdates() {
-        if((malwareDetectionEnabled() == 0) || (mBlacklistsUpdateThread != null))
+        if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
 
         if(mBlacklistsStatus.needsUpdate()) {

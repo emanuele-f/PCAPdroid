@@ -94,6 +94,11 @@ public class EditFilterActivity extends BaseActivity {
         mShowMasked.setChecked(mFilter.showMasked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
 
+        mStatusOpen.setChecked(false);
+        mStatusClosed.setChecked(false);
+        mStatusUnreachable.setChecked(false);
+        mStatusError.setChecked(false);
+
         Chip selected_status = null;
         switch(mFilter.status) {
             case STATUS_OPEN: selected_status = mStatusOpen; break;
@@ -121,10 +126,23 @@ public class EditFilterActivity extends BaseActivity {
             mFilter.status = Status.STATUS_INVALID;
     }
 
+    private void finishOk() {
+        view2model();
+        Intent intent = new Intent();
+        intent.putExtra(FILTER_DESCRIPTOR, mFilter);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        finishOk();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        finishOk();
     }
 
     @Override
@@ -135,12 +153,9 @@ public class EditFilterActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == R.id.apply_changes) {
-            view2model();
-            Intent intent = new Intent();
-            intent.putExtra(FILTER_DESCRIPTOR, mFilter);
-            setResult(RESULT_OK, intent);
-            finish();
+        if(item.getItemId() == R.id.reset_changes) {
+            mFilter = new FilterDescriptor();
+            model2view();
             return true;
         }
 
