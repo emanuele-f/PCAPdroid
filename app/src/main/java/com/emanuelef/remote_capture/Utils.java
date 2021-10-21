@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -698,14 +699,22 @@ public class Utils {
         try (FileOutputStream out = new FileOutputStream(path + ".tmp")) {
             try (BufferedOutputStream bos = new BufferedOutputStream(out)) {
                 URL url = new URL(_url);
-                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-                InputStream in = con.getInputStream();
 
-                byte[] bytesIn = new byte[4096];
-                int read = 0;
-                while ((read = in.read(bytesIn)) != -1) {
-                    bos.write(bytesIn, 0, read);
-                    has_contents |= (read > 0);
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+                try {
+                    // Necessary otherwise the connection will stay open
+                    con.setRequestProperty("Connection", "Close");
+
+                    try(InputStream in = new BufferedInputStream(con.getInputStream())) {
+                        byte[] bytesIn = new byte[4096];
+                        int read = 0;
+                        while ((read = in.read(bytesIn)) != -1) {
+                            bos.write(bytesIn, 0, read);
+                            has_contents |= (read > 0);
+                        }
+                    }
+                } finally {
+                    con.disconnect();
                 }
             }
         } catch (IOException e) {
