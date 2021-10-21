@@ -38,42 +38,63 @@ PCAPDROID_TRAILER_SIZE = 32
 parser = argparse.ArgumentParser(
     description='''Receives data from the PCAPdroid app and outputs it to stdout.''')
 
-parser.add_argument('-p', '--port', type=int, help='The UDP port to listen', required=True)
+parser.add_argument('-p', '--port', type=int, help='The UDP port to listen', default=1234)
 parser.add_argument('-v', '--verbose', help='Enable verbose log to stderr', action='store_true')
+parser.add_argument('-w', '--write', help='Write the PCAP to the specified file', metavar='FILE', default="-")
 args = parser.parse_args()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind(("0.0.0.0", args.port))
+outf = None
+if args.write != '-':
+  outf = open(args.write, "wb")
 
-pcap_header_sent = False
+def write(data):
+  if outf:
+    outf.write(data)
+  else:
+    sys.stdout.buffer.write(data)
+    sys.stdout.flush()
 
-# Send the individual records (struct pcaprec_hdr_s)
-while True:
-	data, addr = sock.recvfrom(BUFSIZE)
+def main_loop():
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  sock.bind(("0.0.0.0", args.port))
 
-	if(args.verbose):
-		sys.stderr.write("Got a {}B packet\n".format(len(data)))
+  pcap_header_sent = False
 
-	if(not pcap_header_sent):
-		# Determine is the PCAPDroid trailer is in use
-		offset = len(data) - PCAPDROID_TRAILER_SIZE
-		has_trailer = (data == PCAP_HDR_BYTES_TRAILER) or ((offset > 0) and \
-			(data[offset:offset+4] == PCAPDROID_TRAILER_MAGIC))
+  # Send the individual records (struct pcaprec_hdr_s)
+  while True:
+    data, addr = sock.recvfrom(BUFSIZE)
 
-		if(args.verbose):
-			sys.stderr.write("Sending PCAP header (trailer " + ("not " if not has_trailer else "") + "detected)\n")
+    if(args.verbose):
+      sys.stderr.write("Got a {}B packet\n".format(len(data)))
 
-		# Send the PCAP header before any other data
-		sys.stdout.buffer.write(PCAP_HDR_BYTES if not has_trailer else PCAP_HDR_BYTES_TRAILER)
-		sys.stdout.flush()
-		pcap_header_sent = True
+    if(not pcap_header_sent):
+      # Determine is the PCAPDroid trailer is in use
+      offset = len(data) - PCAPDROID_TRAILER_SIZE
+      has_trailer = (data == PCAP_HDR_BYTES_TRAILER) or ((offset > 0) and \
+        (data[offset:offset+4] == PCAPDROID_TRAILER_MAGIC))
 
-	if((data == PCAP_HDR_BYTES) or (data == PCAP_HDR_BYTES_TRAILER)):
-		# Ignore the PCAP header as we already sent it above
-		if(args.verbose):
-			sys.stderr.write("PCAP header detected, skipping\n");
-		continue
+      if(args.verbose):
+        sys.stderr.write("Sending PCAP header (trailer " + ("not " if not has_trailer else "") + "detected)\n")
 
-	# this is a PCAP record, send it
-	sys.stdout.buffer.write(data)
-	sys.stdout.flush()
+      # Send the PCAP header before any other data
+      write(PCAP_HDR_BYTES if not has_trailer else PCAP_HDR_BYTES_TRAILER)
+      pcap_header_sent = True
+
+    if((data == PCAP_HDR_BYTES) or (data == PCAP_HDR_BYTES_TRAILER)):
+      # Ignore the PCAP header as we already sent it above
+      if(args.verbose):
+        sys.stderr.write("PCAP header detected, skipping\n");
+      continue
+
+    # this is a PCAP record, send it
+    write(data)
+
+if __name__ == "__main__":
+  try:
+    main_loop()
+  except KeyboardInterrupt:
+    sys.stderr.write("Terminating...")
+
+    if outf:
+      outf.close()
+    exit(0)
