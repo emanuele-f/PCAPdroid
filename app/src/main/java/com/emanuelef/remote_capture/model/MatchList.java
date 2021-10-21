@@ -139,7 +139,8 @@ public class MatchList {
 
             if(app != null)
                 value = app.getName();
-        }
+        } else if(tp == RuleType.HOST)
+            value = Utils.cleanDomain(value);
 
         return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
     }
@@ -189,7 +190,7 @@ public class MatchList {
 
     public void addApp(int uid)        { addRule(new Rule(RuleType.APP, uid)); }
     public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
-    public void addHost(String info)   { addRule(new Rule(RuleType.HOST, info)); }
+    public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
     public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
     public void addRootDomain(String domain) { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
 
@@ -228,7 +229,7 @@ public class MatchList {
     }
 
     public boolean matchesHost(String host) {
-        return mMatches.containsKey(matchKey(RuleType.HOST, host));
+        return mMatches.containsKey(matchKey(RuleType.HOST, Utils.cleanDomain(host)));
     }
 
     public boolean matchesRootDomain(String root_domain) {

@@ -48,6 +48,30 @@ blacklist_t* blacklist_init(struct ndpi_detection_module_struct *ndpi) {
 
 /* ******************************************************* */
 
+int blacklist_add_domain(blacklist_t *bl, const char *domain) {
+    if(strncmp(domain, "www.", 4) == 0)
+        domain += 4;
+
+    if(blacklist_match_domain(bl, domain))
+        return -EADDRINUSE; // duplicate domain
+
+    string_entry_t *entry = malloc(sizeof(string_entry_t));
+    if(!entry)
+        return -ENOMEM;
+
+    entry->key = strdup(domain);
+    if(!entry->key) {
+        free(entry);
+        return -ENOMEM;
+    }
+
+    HASH_ADD_KEYPTR(hh, bl->domains, entry->key, strlen(entry->key), entry);
+    bl->stats.num_domains++;
+    return 0;
+}
+
+/* ******************************************************* */
+
 int blacklist_load_file(blacklist_t *bl, const char *path) {
     FILE *f;
     char buffer[256];
@@ -98,30 +122,18 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
             else
                 num_ip_fail++;
         } else {
-            // Domain
-            if(blacklist_match_domain(bl, item))
-                continue; // duplicate domain
-
             if((num_ip_ok + num_dm_ok) >= max_file_rules) {
                 // limit reached
                 num_dm_fail++;
                 continue;
             }
 
-            string_entry_t *entry = malloc(sizeof(string_entry_t));
-            if(!entry) {
+            int rv = blacklist_add_domain(bl, item);
+            if((rv != 0) && (rv != -EADDRINUSE)) {
                 num_dm_fail++;
                 continue;
             }
 
-            entry->key = strdup(item);
-            if(!entry->key) {
-                free(entry);
-                num_dm_fail++;
-                continue;
-            }
-
-            HASH_ADD_KEYPTR(hh, bl->domains, entry->key, strlen(entry->key), entry);
             num_dm_ok++;
         }
     }
@@ -131,7 +143,6 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
           strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
 
     bl->stats.num_lists++;
-    bl->stats.num_domains += num_dm_ok;
     bl->stats.num_ips += num_ip_ok;
     bl->stats.num_failed += num_ip_fail + num_dm_fail;
 
@@ -187,6 +198,9 @@ bool blacklist_match_ip(blacklist_t *bl, uint32_t ip) {
 
 bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
     string_entry_t *entry = NULL;
+
+    if(strncmp(domain, "www.", 4) == 0)
+        domain += 4;
 
     HASH_FIND_STR(bl->domains, domain, entry);
     return(entry != NULL);

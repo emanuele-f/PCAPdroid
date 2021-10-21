@@ -35,6 +35,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.EditListActivity;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
@@ -104,6 +107,12 @@ public class EditListFragment extends Fragment {
                         for(MatchList.Rule item : mSelected)
                             mAdapter.remove(item);
                         updateList();
+                    }
+
+                    if(mList == PCAPdroid.getInstance().getMalwareWhitelist()) {
+                        ConnectionsRegister reg = CaptureService.getConnsRegister();
+                        if(reg != null)
+                            reg.refreshConnectionsWhitelist();
                     }
 
                     mode.finish();

@@ -614,6 +614,13 @@ public class Utils {
         return s;
     }
 
+    // www.example.org -> example.org
+    public static String cleanDomain(String domain) {
+        if(domain.startsWith("www."))
+            domain = domain.substring(4);
+        return domain;
+    }
+
     // a.example.org -> example.org
     public static String getRootDomain(String domain) {
         int tldPos = domain.lastIndexOf(".");

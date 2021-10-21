@@ -933,6 +933,9 @@ static void reload_blacklists(vpnproxy_data_t *proxy) {
         closedir(dir);
     }
 
+    // This is a domain to test domain blacklist match
+    blacklist_add_domain(bl, "internetbadguys.com");
+
     blacklist_stats_t stats;
     blacklist_get_stats(bl, &stats);
     (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,

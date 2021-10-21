@@ -334,9 +334,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setTitle(label);
             item.setVisible(true);
 
-            String rootDomain = Utils.getRootDomain(conn.info);
+            String dm_clean = Utils.cleanDomain(conn.info);
+            String rootDomain = Utils.getRootDomain(dm_clean);
 
-            if(!rootDomain.equals(conn.info)) {
+            if(!rootDomain.equals(dm_clean)) {
                 item = menu.findItem(R.id.hide_root_domain);
                 item.setTitle(MatchList.getRuleLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
                 item.setVisible(true);
