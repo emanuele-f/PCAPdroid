@@ -24,7 +24,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Patterns;
-import android.view.MenuItem;
 
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
@@ -35,6 +34,8 @@ import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.AD;
 import com.emanuelef.remote_capture.PlayBilling;
+import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -94,15 +95,19 @@ public class SettingsActivity extends BaseActivity {
         private Preference mProxyPrefs;
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
+        private SwitchPreference mMalwareDetectionEnabled;
+        private Billing mIab;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            mIab = PCAPdroid.getInstance().getBilling(requireContext());
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
             setupSocks5ProxyPrefs();
             setupCapturePrefs();
+            setupSecurityPrefs();
             setupOtherPrefs();
 
             socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
@@ -172,6 +177,17 @@ public class SettingsActivity extends BaseActivity {
             refreshInterfaces();
         }
 
+        private void setupSecurityPrefs() {
+            mMalwareDetectionEnabled = findPreference(Prefs.PREF_MALWARE_DETECTION);
+
+            if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
+                getPreferenceScreen().removePreference(findPreference("security"));
+                return;
+            }
+
+            // Billing code here
+        }
+
         private void setupSocks5ProxyPrefs() {
             mProxyPrefs = findPreference("proxy_prefs");
             mTlsHelp = findPreference("tls_how_to");
@@ -209,6 +225,7 @@ public class SettingsActivity extends BaseActivity {
             if(SettingsActivity.ACTION_LANG_RESTART.equals(getActivity().getIntent().getAction()))
                 scrollToPreference(appLang);
 
+            // Current locale applied via BaseActivity.attachBaseContext
             appLang.setOnPreferenceChangeListener((preference, newValue) -> {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 

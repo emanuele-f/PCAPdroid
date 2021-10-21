@@ -418,7 +418,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   if(!pd) {
     log_i("pcap_open_offline(%s) failed: %s", READ_FROM_PCAP, errbuf);
-    return;
+    return -1;
   }
 
   strcpy(ifname, "pcap");

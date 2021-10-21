@@ -4,33 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item
-        android:title="@string/whitelist_action">
+        android:title="@string/hide">
         <menu>
             <item
-                android:id="@+id/exclude_app"
+                android:id="@+id/hide_app"
                 android:title=""
                 tools:title="@string/app_val"
                 android:visible="false" />
 
             <item
-                android:id="@+id/exclude_ip"
+                android:id="@+id/hide_ip"
                 android:title=""
                 tools:title="@string/ip_address_val" />
 
             <item
-                android:id="@+id/exclude_host"
+                android:id="@+id/hide_host"
                 android:title=""
                 tools:title="@string/host_val"
                 android:visible="false" />
 
             <item
-                android:id="@+id/exclude_root_domain"
+                android:id="@+id/hide_root_domain"
                 android:title=""
                 tools:title="@string/host_val"
                 android:visible="false" />
 
             <item
-                android:id="@+id/exclude_proto"
+                android:id="@+id/hide_proto"
                 android:title=""
                 tools:title="@string/protocol_val" />
         </menu>
@@ -58,6 +58,28 @@
                 android:id="@+id/search_proto"
                 android:title=""
                 tools:title="@string/protocol_val" />
+        </menu>
+    </item>
+
+    <item android:id="@+id/whitelist_menu" android:title="@string/whitelist_action">
+        <menu>
+            <item
+                android:id="@+id/whitelist_app"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/app_val" />
+
+            <item
+                android:id="@+id/whitelist_ip"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/whitelist_host"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/host_val" />
         </menu>
     </item>
 

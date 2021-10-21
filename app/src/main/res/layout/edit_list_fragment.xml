@@ -4,19 +4,19 @@
     android:layout_height="match_parent">
 
     <ListView
-        android:id="@+id/whitelist"
+        android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbarStyle="outsideOverlay" />
 
     <TextView
-        android:id="@+id/whitelist_empty"
+        android:id="@+id/list_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:layout_marginTop="40dp"
         android:textStyle="italic"
         android:textSize="15sp"
-        android:text="@string/whitelist_empty">
+        android:text="@string/list_is_empty">
     </TextView>
 </RelativeLayout>

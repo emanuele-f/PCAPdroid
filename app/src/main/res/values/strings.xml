@@ -144,7 +144,7 @@
     <string name="whitelist">Whitelist</string>
     <string name="edit_whitelist">Edit Whitelist</string>
     <string name="whitelist_action">Whitelist…</string>
-    <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
+    <string name="hide">Hide…</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
     <string name="app_details">App Details</string>
@@ -179,5 +179,22 @@
     <string name="internet">Internet</string>
     <string name="all_interfaces">All Interfaces</string>
     <string name="capturing_from">Capturing packets from \"%1$s\"</string>
+    <string name="edit_filter">Edit Filter</string>
+    <string name="show_hidden_connections">Show hidden connections</string>
+    <string name="edit_list">Edit List</string>
+    <string name="hidden_connections_rules">Hidden Connections Rules</string>
+    <string name="list_is_empty">List is empty</string>
+    <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
+    <string name="show_only_malicious">Only malicious connections</string>
+    <string name="security">Security</string>
+    <string name="malware_detection">Malware Detection</string>
+    <string name="malware_detection_summary">"Detect possibly malicious connections and trigger alerts. NOTE: the detection can produce false positives and is not a valid alternative to an antivirus."</string>
+    <string name="blacklists_status">Blacklists Status</string>
+    <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
+    <string name="reset">Reset</string>
+    <string name="malware_whitelist">Malware Whitelist</string>
+    <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
+    <string name="edit_hidden_connections">Edit Hidden Connections</string>
+    <string name="edit_malware_whitelist">Edit Malware Whitelist</string>
 </resources>
 

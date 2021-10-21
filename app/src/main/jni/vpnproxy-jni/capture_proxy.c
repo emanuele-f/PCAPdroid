@@ -132,7 +132,7 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
 
     if(!is_dns_server) {
         // try with known DNS servers
-        u_int32_t matched = 0;
+        u_int64_t matched = 0;
         ndpi_ip_addr_t addr = {0};
 
         if(tuple->ipver == 4)
@@ -239,6 +239,7 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
         data->update_type |= CONN_UPDATE_STATS;
         notify_connection(&proxy->conns_updates, tuple, data);
 
+        conn_end_ndpi_detection(data, proxy, tuple);
         data->status = zdtun_conn_get_status(conn_info);
         data->to_purge = true;
     } else

@@ -4,10 +4,13 @@
     <color name="colorTabText">@android:color/tertiary_text_light</color>
     <color name="colorTabTextSelected">@android:color/secondary_text_light</color>
     <color name="colorPrimary">#512da8</color>
-    <color name="colorPrimaryDark">#361e73</color>
+    <color name="colorPrimaryDark">#4D3294</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorBackgroundGray">#2C000000</color>
     <color name="navViewBackground">@color/design_default_color_surface</color>
     <color name="backgroundColor">@color/background_material_light</color>
     <color name="drawerItemColor">#404040</color>
+    <color name="statusOpen">#28BC36</color>
+    <color name="statusClosed">#AAAAAA</color>
+    <color name="statusError">#F20015</color>
 </resources>

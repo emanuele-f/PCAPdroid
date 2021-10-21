@@ -30,22 +30,36 @@ import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
-import com.emanuelef.remote_capture.fragments.WhitelistFragment;
+import com.emanuelef.remote_capture.adapters.ListEditAdapter;
+import com.emanuelef.remote_capture.fragments.EditListFragment;
+import com.emanuelef.remote_capture.model.ListInfo;
+import com.emanuelef.remote_capture.model.MatchList;
 
-public class WhitelistActivity extends BaseActivity {
-    private static final String TAG = "WhitelistActivity";
+/* An activity to edit a MatchList, specified via LIST_INFO_EXTRA */
+public class EditListActivity extends BaseActivity {
+    private static final String TAG = "EditListActivity";
+    public static final String LIST_TYPE_EXTRA = "list_type";
+    private ListInfo mListInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle(R.string.whitelist);
-        setContentView(R.layout.whitelist_activity);
+        assert(getIntent() != null);
+        ListInfo.Type ltype = (ListInfo.Type) getIntent().getSerializableExtra(LIST_TYPE_EXTRA);
+        assert(ltype != null);
+        mListInfo = new ListInfo(ltype);
+
+        setTitle(mListInfo.getTitle());
+        setContentView(R.layout.edit_list_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.whitelist_fragment, new WhitelistFragment())
+                .replace(R.id.fragment, new EditListFragment())
                 .commit();
+    }
+
+    public MatchList getList() {
+        return mListInfo.getList();
     }
 
     @Override
@@ -59,21 +73,21 @@ public class WhitelistActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        ListView lv = findViewById(R.id.whitelist);
+        ListView lv = findViewById(R.id.listview);
 
         if(lv == null)
             return false;
 
         if(id == R.id.copy_to_clipboard) {
-            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+            String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
             Utils.copyToClipboard(this, contents);
             return true;
         } else if(id == R.id.share) {
-            String contents = Utils.adapter2Text((WhitelistEditAdapter)lv.getAdapter());
+            String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
 
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.whitelist));
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(mListInfo.getShareSubject()));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
 
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));

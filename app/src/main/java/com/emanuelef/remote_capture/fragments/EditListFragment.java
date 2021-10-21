@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -36,42 +35,44 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.adapters.WhitelistEditAdapter;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
-import com.emanuelef.remote_capture.model.Whitelist;
+import com.emanuelef.remote_capture.activities.EditListActivity;
+import com.emanuelef.remote_capture.adapters.ListEditAdapter;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class WhitelistFragment extends Fragment {
-    private WhitelistEditAdapter mAdapter;
+public class EditListFragment extends Fragment {
+    private ListEditAdapter mAdapter;
     private TextView mEmptyText;
-    private ArrayList<ConnectionsMatcher.Item> mSelected = new ArrayList<>();
-    private Whitelist mWhitelist;
-    private ListView mWhitelistView;
-    private static final String TAG = "WhitelistFragment";
+    private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
+    private MatchList mList;
+    private ListView mListView;
+    private static final String TAG = "EditListFragment";
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.whitelist_fragment, container, false);
+        return inflater.inflate(R.layout.edit_list_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mWhitelistView = view.findViewById(R.id.whitelist);
-        mEmptyText = view.findViewById(R.id.whitelist_empty);
-        mWhitelist = new Whitelist(view.getContext());
-        mWhitelist.reload();
+        mListView = view.findViewById(R.id.listview);
+        mEmptyText = view.findViewById(R.id.list_empty);
+        mList = ((EditListActivity)requireActivity()).getList();
 
-        mAdapter = new WhitelistEditAdapter(requireContext(), mWhitelist.iterItems());
-        mWhitelistView.setAdapter(mAdapter);
-        mWhitelistView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        mWhitelistView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        mAdapter = new ListEditAdapter(requireContext(), mList.iterRules());
+        mListView.setAdapter(mAdapter);
+        mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                ConnectionsMatcher.Item item = mAdapter.getItem(position);
+                MatchList.Rule item = mAdapter.getItem(position);
 
                 if(checked)
                     mSelected.add(item);
@@ -84,7 +85,7 @@ public class WhitelistFragment extends Fragment {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 MenuInflater inflater = requireActivity().getMenuInflater();
-                inflater.inflate(R.menu.whitelist_cab, menu);
+                inflater.inflate(R.menu.list_edit_cab, menu);
                 return true;
             }
 
@@ -100,24 +101,30 @@ public class WhitelistFragment extends Fragment {
                 if(id == R.id.delete_entry) {
                     if(mSelected.size() >= mAdapter.getCount()) {
                         mAdapter.clear();
-                        mWhitelist.clear();
-                        mWhitelist.save();
+                        mList.clear();
+                        mList.save();
                     } else {
-                        for(ConnectionsMatcher.Item item : mSelected)
+                        for(MatchList.Rule item : mSelected)
                             mAdapter.remove(item);
-                        updateWhitelist();
+                        updateList();
+                    }
+
+                    if(mList == PCAPdroid.getInstance().getMalwareWhitelist()) {
+                        ConnectionsRegister reg = CaptureService.getConnsRegister();
+                        if(reg != null)
+                            reg.refreshConnectionsWhitelist();
                     }
 
                     mode.finish();
-                    recheckWhitelistSize();
+                    recheckListSize();
                     return true;
                 } else if(id == R.id.select_all) {
                     if(mSelected.size() >= mAdapter.getCount())
                         mode.finish();
                     else {
                         for(int i=0; i<mAdapter.getCount(); i++) {
-                            if(!mWhitelistView.isItemChecked(i))
-                                mWhitelistView.setItemChecked(i, true);
+                            if(!mListView.isItemChecked(i))
+                                mListView.setItemChecked(i, true);
                         }
                     }
 
@@ -132,29 +139,28 @@ public class WhitelistFragment extends Fragment {
             }
         });
 
-        recheckWhitelistSize();
+        recheckListSize();
     }
 
-    private void recheckWhitelistSize() {
+    private void recheckListSize() {
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
     }
 
-    private void updateWhitelist() {
-        ArrayList<ConnectionsMatcher.Item> toRemove = new ArrayList<>();
+    private void updateList() {
+        ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
+        Iterator<MatchList.Rule> iter = mList.iterRules();
 
-        Iterator<ConnectionsMatcher.Item> iter = mWhitelist.iterItems();
-
-        // Remove the whitelisted items which are not in the adapter dataset
+        // Remove the mList rules which are not in the adapter dataset
         while(iter.hasNext()) {
-            ConnectionsMatcher.Item item = iter.next();
+            MatchList.Rule rule = iter.next();
 
-            if (mAdapter.getPosition(item) < 0)
-                toRemove.add(item);
+            if (mAdapter.getPosition(rule) < 0)
+                toRemove.add(rule);
         }
 
         if(toRemove.size() > 0) {
-            mWhitelist.removeItems(toRemove);
-            mWhitelist.save();
+            mList.removeRules(toRemove);
+            mList.save();
         }
     }
 }

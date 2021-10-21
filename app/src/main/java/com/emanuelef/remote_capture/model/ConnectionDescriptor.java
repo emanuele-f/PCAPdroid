@@ -42,6 +42,14 @@ public class ConnectionDescriptor implements Serializable {
         CONN_STATUS_RESET = 7,
         CONN_STATUS_UNREACHABLE = 8;
 
+    public enum Status {
+        STATUS_INVALID,
+        STATUS_OPEN,
+        STATUS_CLOSED,
+        STATUS_UNREACHABLE,
+        STATUS_ERROR,
+    }
+
     /* Metadata */
     public int ipver;
     public int ipproto;
@@ -65,6 +73,14 @@ public class ConnectionDescriptor implements Serializable {
     public int incr_id;
     public int status;
     private int tcp_flags;
+    private boolean blacklisted_ip;
+    private boolean blacklisted_host;
+
+    /* Internal */
+    public boolean alerted;
+    private boolean whitelisted_ip;
+    private boolean whitelisted_host;
+    private boolean whitelisted_app;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
                                 int _src_port, int _dst_port, int _uid, long when) {
@@ -80,12 +96,15 @@ public class ConnectionDescriptor implements Serializable {
     }
 
     public void processUpdate(ConnectionUpdate update) {
+        // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
             sent_bytes = update.sent_bytes;
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
             rcvd_pkts = update.rcvd_pkts;
-            status = update.status;
+            status = (update.status & 0x00FF);
+            blacklisted_ip = (update.status & 0x0100) != 0;
+            blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
             tcp_flags = update.tcp_flags;
         }
@@ -97,24 +116,30 @@ public class ConnectionDescriptor implements Serializable {
         }
     }
 
-    public String getStatusLabel(Context ctx) {
-        int resid;
-
+    public Status getStatus() {
         if(status >= CONN_STATUS_CLOSED) {
             switch(status) {
                 case CONN_STATUS_CLOSED:
                 case CONN_STATUS_RESET:
-                    resid = R.string.conn_status_closed;
-                    break;
+                    return Status.STATUS_CLOSED;
                 case CONN_STATUS_UNREACHABLE:
-                    resid = R.string.conn_status_unreachable;
-                    break;
+                    return Status.STATUS_UNREACHABLE;
                 default:
-                    resid = R.string.error;
-                    break;
+                    return Status.STATUS_ERROR;
             }
-        } else
-            resid = R.string.conn_status_open;
+        }
+        return Status.STATUS_OPEN;
+    }
+
+    public String getStatusLabel(Context ctx) {
+        int resid;
+
+        switch (getStatus()) {
+            case STATUS_OPEN: resid = R.string.conn_status_open; break;
+            case STATUS_CLOSED: resid = R.string.conn_status_closed; break;
+            case STATUS_UNREACHABLE: resid = R.string.conn_status_unreachable; break;
+            default: resid = R.string.error;
+        }
 
         return(ctx.getString(resid));
     }
@@ -140,6 +165,18 @@ public class ConnectionDescriptor implements Serializable {
 
     public int getRcvdTcpFlags() {
         return (tcp_flags & 0xFF);
+    }
+
+    public boolean isBlacklistedIp() { return !whitelisted_app && !whitelisted_ip && blacklisted_ip; }
+    public boolean isBlacklistedHost() { return !whitelisted_app && !whitelisted_host && blacklisted_host; }
+    public boolean isBlacklisted() {
+        return isBlacklistedIp() || isBlacklistedHost();
+    }
+
+    public void updateWhitelist(MatchList whitelist) {
+        whitelisted_app = whitelist.matchesApp(uid);
+        whitelisted_ip = whitelist.matchesIP(dst_ip);
+        whitelisted_host = whitelist.matchesHost(info);
     }
 
     @Override

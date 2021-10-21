@@ -21,8 +21,6 @@ package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -35,10 +33,8 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class LogviewActivity extends BaseActivity {
     private static final String TAG = "LogviewActivity";
@@ -58,7 +54,7 @@ public class LogviewActivity extends BaseActivity {
 
     private String readLog() {
         try {
-            String logpath = CaptureService.getPcapdWorkingDir(this) + "/pcapd.log";
+            String logpath = getCacheDir().getPath() + "/pcapd.log";
             BufferedReader reader = new BufferedReader(new FileReader(logpath));
 
             StringBuilder builder = new StringBuilder();

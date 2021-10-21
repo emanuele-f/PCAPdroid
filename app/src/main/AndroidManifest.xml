@@ -16,7 +16,7 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
-        android:name=".MyApplication"
+        android:name=".PCAPdroid"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/pcapdroid_app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -35,7 +35,8 @@
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.SplashScreen"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -77,13 +78,17 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
-            android:name=".activities.WhitelistActivity"
+            android:name=".activities.EditListActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".activities.MainActivity" />
+            android:parentActivityName=".activities.EditFilterActivity" />
+        <activity
+            android:name=".activities.EditFilterActivity"
+            android:launchMode="singleTop" />
 
         <service
             android:name=".CaptureService"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>

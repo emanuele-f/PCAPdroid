@@ -18,6 +18,7 @@
  */
 
 #include <inttypes.h>
+#include <dirent.h>
 #include "vpnproxy.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
@@ -34,6 +35,7 @@ bool running = false;
 uint32_t new_dns_server = 0;
 
 static bool dump_capture_stats_now = false;
+static bool reload_blacklists_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
 
 /* ******************************************************* */
@@ -82,6 +84,11 @@ void conn_free_data(conn_data_t *data) {
 /* ******************************************************* */
 
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data) {
+    // End the detection when the connection is closed
+    // Always check this, even pending_notification are present
+    if(data->status >= CONN_STATUS_CLOSED)
+        conn_end_ndpi_detection(data, global_proxy, tuple);
+
     if(data->pending_notification)
         return;
 
@@ -272,7 +279,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
     NDPI_BITMASK_SET_ALL(protocols);
 
     ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
-    ndpi_finalize_initalization(ndpi);
+    ndpi_finalize_initialization(ndpi);
 
     return(ndpi);
 }
@@ -288,6 +295,21 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol
     }
 
     return ndpi_get_proto_name(mod, proto);
+}
+
+/* ******************************************************* */
+
+static bool check_blacklisted_domain(vpnproxy_data_t *proxy, conn_data_t *data, const zdtun_5tuple_t *tuple) {
+    if(proxy->malware_detection.bl && data->info && data->info[0] && !data->blacklisted_domain) {
+        data->blacklisted_domain = blacklist_match_domain(proxy->malware_detection.bl, data->info);
+        if(data->blacklisted_domain) {
+            char appbuf[64];
+            char buf[512];
+
+            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
+            log_w("Blacklisted domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+        }
+    }
 }
 
 /* ******************************************************* */
@@ -320,15 +342,15 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
     data->uid = uid;
 
     // Try to resolve host name via the LRU cache
-    zdtun_ip_t ip = tuple->dst_ip;
-    data->info = ip_lru_find(proxy->ip_to_host, &ip);
+    const zdtun_ip_t dst_ip = tuple->dst_ip;
+    data->info = ip_lru_find(proxy->ip_to_host, &dst_ip);
 
     if(data->info) {
         char resip[INET6_ADDRSTRLEN];
         int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
         resip[0] = '\0';
-        inet_ntop(family, &ip, resip, sizeof(resip));
+        inet_ntop(family, &dst_ip, resip, sizeof(resip));
 
         log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
 
@@ -358,6 +380,19 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
                     }
                 }
             }
+        }
+
+        check_blacklisted_domain(proxy, data, tuple);
+    }
+
+    if(proxy->malware_detection.bl && (tuple->ipver == 4)) {
+        data->blacklisted_ip = blacklist_match_ip(proxy->malware_detection.bl, tuple->dst_ip.ip4);
+        if(data->blacklisted_ip) {
+            char appbuf[64];
+            char buf[256];
+
+            get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
+            log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
     }
 
@@ -422,14 +457,17 @@ void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zd
 
             break;
         case NDPI_PROTOCOL_TLS:
-            if(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name[0]) {
+            if(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name[0]) {
                 if(data->info)
                     free(data->info);
 
-                data->info = strndup(data->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name, 256);
+                data->info = strndup(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name, 256);
             }
             break;
     }
+
+    // TODO early match
+    check_blacklisted_domain(proxy, data, tuple);
 
     data->update_type |= CONN_UPDATE_INFO;
     conn_free_ndpi(data);
@@ -574,12 +612,13 @@ static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
         process_request_data(data, pkt, from_tun);
 
-    if(!from_tun && ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
-            || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS)))
+    bool is_dns = ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) ||
+            (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS));
+    if(!from_tun && is_dns)
         process_dns_reply(data, proxy, pkt);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
-            (!ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow))))
+            !ndpi_extra_dissection_possible(proxy->ndpi, data->ndpi_flow)))
         conn_end_ndpi_detection(data, proxy, &pkt->tuple);
 }
 
@@ -642,7 +681,8 @@ static jobject getConnUpdate(vpnproxy_data_t *proxy, const vpn_conn_t *conn) {
     if(data->update_type & CONN_UPDATE_STATS) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts,
-                               (data->tcp_flags[0] << 8) | data->tcp_flags[1], data->status);
+                               (data->tcp_flags[0] << 8) | data->tcp_flags[1],
+                               (data->blacklisted_domain << 9) | (data->blacklisted_ip << 8) | (data->status & 0xFF));
     }
     if(data->update_type & CONN_UPDATE_INFO) {
         jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
@@ -866,6 +906,58 @@ void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock) {
 
 /* ******************************************************* */
 
+const char* get_cache_path(const char *subpath) {
+    strncpy(global_proxy->cachedir + global_proxy->cachedir_len, subpath,
+            sizeof(global_proxy->cachedir) - global_proxy->cachedir_len - 1);
+    global_proxy->cachedir[sizeof(global_proxy->cachedir) - 1] = 0;
+    return global_proxy->cachedir;
+}
+
+/* ******************************************************* */
+
+const char* get_file_path(const char *subpath) {
+    strncpy(global_proxy->filesdir + global_proxy->filesdir_len, subpath,
+            sizeof(global_proxy->filesdir) - global_proxy->filesdir_len - 1);
+    global_proxy->filesdir[sizeof(global_proxy->filesdir) - 1] = 0;
+    return global_proxy->filesdir;
+}
+
+/* ******************************************************* */
+
+static void reload_blacklists(vpnproxy_data_t *proxy) {
+    blacklist_t *bl = proxy->malware_detection.bl;
+    if(!bl)
+        return;
+
+    // unload the old rules
+    blacklist_clear(bl);
+
+    // load all the files in the malware_bl directory
+    DIR *dir = opendir(get_file_path("malware_bl"));
+    if(dir) {
+        struct dirent *dent;
+        char subpath[256];
+
+        while((dent = readdir(dir)) != NULL) {
+            if(dent->d_name[0] != '.') {
+                snprintf(subpath, sizeof(subpath), "malware_bl/%s", dent->d_name);
+                blacklist_load_file(bl, get_file_path(subpath));
+            }
+        }
+        closedir(dir);
+    }
+
+    // This is a domain to test domain blacklist match
+    blacklist_add_domain(bl, "internetbadguys.com");
+
+    blacklist_stats_t stats;
+    blacklist_get_stats(bl, &stats);
+    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,
+                                  stats.num_lists, stats.num_domains, stats.num_ips);
+}
+
+/* ******************************************************* */
+
 void run_housekeeping(vpnproxy_data_t *proxy) {
     if(proxy->capture_stats.new_stats
             && ((proxy->now_ms - proxy->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
@@ -887,6 +979,9 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
     } else if ((proxy->pcap_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
+    } else if(reload_blacklists_now) {
+        reload_blacklists_now = false;
+        reload_blacklists(proxy);
     }
 }
 
@@ -964,10 +1059,10 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
         // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
         process_ndpi_packet(data, proxy, pkt, from_tun);
 
-        if((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS)
+        if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
                 && (data->uid == UID_NETD)
                 && (data->sent_pkts + data->rcvd_pkts == 1)
-                && ((netd_resolve_waiting > 0) || (next_connections_dump > (proxy->now_ms - NETD_RESOLVE_DELAY_MS)))) {
+                && ((netd_resolve_waiting > 0) || ((next_connections_dump - NETD_RESOLVE_DELAY_MS) < proxy->now_ms))) {
             if(netd_resolve_waiting == 0) {
                 // Wait before sending the dump to possibly resolve netd DNS connections uid.
                 // Only delay for the first DNS request, to avoid excessive delay.
@@ -1025,6 +1120,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
+    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "(III)V");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
@@ -1058,8 +1154,19 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
             .ipv6 = {
                     .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
                     .dns_server = getIPv6Pref(env, vpn, "getIpv6DnsServer"),
+            },
+            .malware_detection = {
+                    .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
             }
     };
+
+    getStringPref(&proxy, "getWorkingDir", proxy.cachedir, sizeof(proxy.cachedir));
+    strcat(proxy.cachedir, "/");
+    proxy.cachedir_len = strlen(proxy.cachedir);
+
+    getStringPref(&proxy, "getPersistentDir", proxy.filesdir, sizeof(proxy.filesdir));
+    strcat(proxy.filesdir, "/");
+    proxy.filesdir_len = strlen(proxy.filesdir);
 
     // Enable or disable the PCAPdroid trailer
     pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
@@ -1073,10 +1180,25 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     /* nDPI */
     proxy.ndpi = init_ndpi();
     init_protocols_bitmask(&masterProtos);
-
     if(proxy.ndpi == NULL) {
         log_f("nDPI initialization failed");
         return(-1);
+    }
+
+    // Load blacklist
+    if(proxy.malware_detection.enabled) {
+        blacklist_t *bl = blacklist_init(proxy.ndpi);
+        if(bl == NULL) {
+            log_f("Blacklist initialization failed");
+            ndpi_exit_detection_module(proxy.ndpi);
+            return (-1);
+        }
+
+        proxy.malware_detection.bl = bl;
+        if(reload_blacklists_now) {
+            reload_blacklists_now = false;
+            reload_blacklists(&proxy);
+        }
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -1108,6 +1230,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     conns_clear(&proxy.new_conns, true);
     conns_clear(&proxy.conns_updates, true);
 
+    if(proxy.malware_detection.bl)
+        blacklist_destroy(proxy.malware_detection.bl);
     ndpi_exit_detection_module(proxy.ndpi);
 
     if(proxy.pcap_dump.buffer) {
@@ -1193,4 +1317,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jcl
     }
 
     return barray;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, jclass clazz) {
+    reload_blacklists_now = true;
 }

@@ -68,18 +68,20 @@ This is only available via [getCallingPackage](https://developer.android.com/ref
 As shown above, the capture settings can be specified by using intent extras. The updated list of all the supported parameters is available in
 [CaptureSettings.java](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/java/com/emanuelef/remote_capture/model/CaptureSettings.java).
 
-| Parameter            | Type   | Value                                                             |
-|----------------------|--------|-------------------------------------------------------------------|
-| dump_mode            | string | none \| http_server \| udp_exporter \| pcap_file                  |
-| app_filter           | string | the package name of the app to capture                            |
-| collector_address    | string | the IP address of the collector in udp_exporter mode              |
-| collector_port       | int    | the UDP port of the collector in udp_exporter mode                |
-| http_server_port     | int    | the HTTP server port in http_server mode                          |
-| pcap_uri             | string | the URI for the PCAP dump in pcap_file mode                       |
-| socks5_enabled       | bool   | true to enable the SOCKS5 proxy                                   |
-| socks5_proxy_address | string | the IP address of the SOCKS5 proxy                                |
-| socks5_proxy_port    | int    | the TCP port of the SOCKS5 proxy                                  |
-| ipv6_enabled         | bool   | true to enable IPv6 support in non-root mode                      |
-| root_capture         | bool   | true to capture packets in root mode, false to use the VPNService |
-| pcapdroid_trailer    | bool   | true to enable the PCAPdroid trailer                              |
-| capture_interface    | string | @inet \| any \| ifname - network interface to use in root mode    |
+| Parameter               | Type   | Value                                                             |
+|-------------------------|--------|-------------------------------------------------------------------|
+| pcap_dump_mode          | string | none \| http_server \| udp_exporter \| pcap_file                  |
+| app_filter              | string | the package name of the app to capture                            |
+| collector_ip_address    | string | the IP address of the collector in udp_exporter mode              |
+| collector_port          | int    | the UDP port of the collector in udp_exporter mode                |
+| http_server_port        | int    | the HTTP server port in http_server mode                          |
+| pcap_uri                | string | the URI for the PCAP dump in pcap_file mode                       |
+| tls_decryption_enabled  | bool   | true to enable the SOCKS5 proxy (e.g. for TLS decryption)         |
+| socks5_proxy_ip_address | string | the IP address of the SOCKS5 proxy                                |
+| socks5_proxy_port       | int    | the TCP port of the SOCKS5 proxy                                  |
+| ipv6_enabled            | bool   | true to enable IPv6 support in non-root mode                      |
+| root_capture            | bool   | true to capture packets in root mode, false to use the VPNService |
+| pcapdroid_trailer       | bool   | true to enable the PCAPdroid trailer                              |
+| capture_interface       | string | @inet \| any \| ifname - network interface to use in root mode    |
+
+*NOTE*: due to [file storage restrictions](https://developer.android.com/about/versions/11/privacy/storage), the `pcap_uri` must point to an app internal directory, e.g. `file:///data/user/0/com.emanuelef.remote_capture/cache/dump.pcap`.
