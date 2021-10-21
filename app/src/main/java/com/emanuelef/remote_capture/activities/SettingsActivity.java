@@ -32,8 +32,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
-import com.emanuelef.remote_capture.AD;
-import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
@@ -48,7 +46,6 @@ import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity {
     private static final String ACTION_LANG_RESTART = "lang_restart";
-    private AD mAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,22 +54,10 @@ public class SettingsActivity extends BaseActivity {
         displayBackAction();
         setContentView(R.layout.settings_activity);
 
-        PlayBilling billing = new PlayBilling(this);
-        mAd = new AD(this, "ca-app-pub-5059485193178567/9893032544");
-
-        if(!billing.isPurchased(PlayBilling.NO_ADS_SKU))
-            mAd.show();
-
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.settings_container, new SettingsFragment())
                 .commit();
-    }
-
-    @Override
-    protected void onDestroy() {
-        mAd.hide();
-        super.onDestroy();
     }
 
     @Override
