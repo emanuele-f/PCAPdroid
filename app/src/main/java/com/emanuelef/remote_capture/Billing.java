@@ -21,11 +21,17 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 
+import java.util.Arrays;
+import java.util.List;
+
 /* Billing stub */
 public class Billing {
     // SKUs
     public static final String NO_ADS_SKU = "no_ads";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
+    public static final List<String> ALL_SKUS = Arrays.asList(
+            NO_ADS_SKU, MALWARE_DETECTION_SKU
+    );
 
     protected final Context mContext;
 

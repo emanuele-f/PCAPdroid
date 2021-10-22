@@ -188,7 +188,7 @@
     <string name="show_only_malicious">Only malicious connections</string>
     <string name="security">Security</string>
     <string name="malware_detection">Malware Detection</string>
-    <string name="malware_detection_summary">"Detect possibly malicious connections and trigger alerts. NOTE: the detection can produce false positives and is not a valid alternative to an antivirus."</string>
+    <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists. The detection can produce false positives and is not a valid alternative to an antivirus.</string>
     <string name="blacklists_status">Blacklists Status</string>
     <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
     <string name="reset">Reset</string>
@@ -196,5 +196,7 @@
     <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
     <string name="edit_hidden_connections">Edit Hidden Connections</string>
     <string name="edit_malware_whitelist">Edit Malware Whitelist</string>
+    <string name="feature_not_available">This feature is currently unavailable for your device</string>
+    <string name="billing_connecting">The connection to Google Play is in progress, please retry in a while</string>
 </resources>
 
