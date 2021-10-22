@@ -60,10 +60,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.emanuelef.remote_capture.AD;
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
@@ -81,13 +80,11 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private AD mAd;
-    private boolean noAdsAvailable;
     private boolean showAdsNotice;
     private PlayBilling mIab;
     private ViewPager2 mPager;
@@ -129,67 +126,32 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         mAd = new AD(this, "ca-app-pub-5059485193178567/9939820922");
         mIab = new PlayBilling(this);
+        mIab.setPurchaseReadyListener(new PlayBilling.PurchaseReadyListener() {
+            @Override
+            public void onPurchasesReady() {
+                checkNoAdsAvailable();
+            }
+
+            @Override
+            public void onSKUStateUpdate(String sku, int state) {
+                if(sku.equals(Billing.NO_ADS_SKU)) {
+                    if(state == PurchaseState.PURCHASED) {
+                        mAd.hide();
+                        showAdsNotice = false;
+                    } else {
+                        mAd.show();
+
+                        if(state == PurchaseState.PENDING)
+                            Utils.showToastLong(MainActivity.this, R.string.pending_transaction);
+                    }
+                }
+            }
+        });
+        mIab.connectBilling();
 
         // Must show the AD here in the onCreate otherwise it will get stuck for some reason
         if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU))
             mAd.show();
-
-        if(!CaptureService.isServiceActive() && (getIntent() != null) &&
-                getIntent().hasCategory("android.intent.category.LAUNCHER")) {
-            // startPurchases will make Internet connections, only call it if capture is not running
-            // endPurchases will be called to stop the connections after the purchase has been validated
-            mIab.startPurchases(new PlayBilling.PurchaseReadyListener() {
-                @Override
-                public void onPurchasesReady(List<SkuDetails> availableSkus) {
-                    if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU)) {
-                        noAdsAvailable = false;
-
-                        for(SkuDetails sku: availableSkus) {
-                            if(sku.getSku().equals(PlayBilling.NO_ADS_SKU)) {
-                                noAdsAvailable = true;
-                                break;
-                            }
-                        }
-
-                        if(noAdsAvailable) {
-                            NavigationView navView = findViewById(R.id.nav_view);
-                            Menu menu = navView.getMenu();
-
-                            menu.findItem(R.id.action_donate)
-                                    .setTitle(R.string.remove_ads)
-                                    .setVisible(true);
-
-                            showAdsNotice = true;
-                        } else
-                            Log.d(PlayBilling.TAG, "Ads removal sku is not available");
-                    } else
-                        mIab.endPurchases();
-                }
-
-                @Override
-                public void onPurchasesError(BillingResult res) {
-                    mIab.endPurchases();
-                }
-
-                @Override
-                public void onSKUStateUpdate(String sku, int state) {
-                    if(sku.equals(PlayBilling.NO_ADS_SKU)) {
-                        if(state == PurchaseState.PURCHASED) {
-                            mAd.hide();
-                            mIab.endPurchases();
-                            showAdsNotice = false;
-
-                            Utils.showToastLong(MainActivity.this, R.string.purchased_feature_ok);
-                        } else {
-                            mAd.show();
-
-                            if(state == PurchaseState.PENDING)
-                                Utils.showToastLong(MainActivity.this, R.string.pending_transaction);
-                        }
-                    }
-                }
-            });
-        }
 
         initAppState();
         checkPermissions();
@@ -245,10 +207,25 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
+    private void checkNoAdsAvailable() {
+        if(!mIab.canPurchase(Billing.NO_ADS_SKU))
+            return;
+
+        NavigationView navView = findViewById(R.id.nav_view);
+        Menu menu = navView.getMenu();
+
+        menu.findItem(R.id.action_donate)
+                .setTitle(R.string.remove_ads)
+                .setVisible(true);
+
+        showAdsNotice = true;
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mAd.hide();
+        mIab.disconnectBilling();
 
         if(mReceiver != null)
             LocalBroadcastManager.getInstance(this)
@@ -299,6 +276,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             navMenu.findItem(R.id.open_root_log).setVisible(true);
 
         navMenu.findItem(R.id.action_donate).setVisible(false);
+        checkNoAdsAvailable();
     }
 
     @Override

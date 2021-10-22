@@ -73,7 +73,7 @@ public class PCAPdroid extends Application {
     }
 
     public Billing getBilling(Context ctx) {
-        return new Billing(ctx);
+        return new PlayBilling(ctx);
     }
 
     public MatchList getVisualizationMask() {

@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Patterns;
 
+import androidx.annotation.Nullable;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -33,7 +34,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Billing;
-import com.emanuelef.remote_capture.PCAPdroid;
+import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -81,12 +82,26 @@ public class SettingsActivity extends BaseActivity {
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
-        private Billing mIab;
+        private PlayBilling mIab;
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            mIab = new PlayBilling(requireContext());
+            mIab.connectBilling();
+
+            // Important: keep at the end
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
+        public void onDestroy() {
+            mIab.disconnectBilling();
+            super.onDestroy();
+        }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
-            mIab = PCAPdroid.getInstance().getBilling(requireContext());
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
@@ -171,6 +186,17 @@ public class SettingsActivity extends BaseActivity {
             }
 
             // Billing code here
+            mMalwareDetectionEnabled.setOnPreferenceClickListener(preference -> {
+                if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU)) {
+                    mMalwareDetectionEnabled.setChecked(false);
+                    mIab.purchase(requireActivity(), Billing.MALWARE_DETECTION_SKU);
+                    return true;
+                }
+
+                return false;
+            });
+            if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU))
+                mMalwareDetectionEnabled.setChecked(false);
         }
 
         private void setupSocks5ProxyPrefs() {

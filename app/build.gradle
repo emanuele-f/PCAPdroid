@@ -65,6 +65,6 @@ dependencies {
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
 
-    implementation 'com.google.android.gms:play-services-ads:20.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.4.0'
     implementation "com.android.billingclient:billing:$billing_version"
 }
