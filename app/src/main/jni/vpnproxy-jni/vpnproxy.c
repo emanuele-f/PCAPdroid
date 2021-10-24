@@ -375,7 +375,7 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
                         // If all the netd connections have been resolved, remove the dump delay
                         if((--netd_resolve_waiting) == 0) {
                             log_d("Removing netd resolution delay");
-                            next_connections_dump -= proxy->now_ms;
+                            next_connections_dump -= NETD_RESOLVE_DELAY_MS;
                         }
                     }
                 }
