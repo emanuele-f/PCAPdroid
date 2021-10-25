@@ -844,10 +844,40 @@ cleanup:
 
 /* ******************************************************* */
 
+#ifdef PCAPDROID_TRACK_ALLOCS
+
+static char allocs_buf[1024];
+
+static char* get_allocs_summary() {
+    char b1[16], b2[16], b3[16], b4[16];
+
+    snprintf(allocs_buf, sizeof(allocs_buf),
+             "*** Allocs Summary ***\n"
+             "  PCAPdroid: %s\n"
+             "  nDPI: %s\n"
+             "  Blacklist (domains): %s\n"
+             "  UTHash: %s\n",
+             humanSize(b1, 32, memtrack.scopes[MEMTRACK_PCAPDROID]),
+             humanSize(b2, 32, memtrack.scopes[MEMTRACK_NDPI]),
+             humanSize(b3, 32, memtrack.scopes[MEMTRACK_BLACKLIST]),
+             humanSize(b4, 32, memtrack.scopes[MEMTRACK_UTHASH]));
+    return allocs_buf;
+}
+
+#endif
+
+/* ******************************************************* */
+
 static void sendStatsDump(const vpnproxy_data_t *proxy) {
     JNIEnv *env = proxy->env;
     const capture_stats_t *capstats = &proxy->capture_stats;
     const zdtun_statistics_t *stats = &proxy->stats;
+    jstring allocs_summary =
+#ifdef PCAPDROID_TRACK_ALLOCS
+            (*proxy->env)->NewStringUTF(proxy->env, get_allocs_summary());
+#else
+    NULL;
+#endif
 
     int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
     int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);
@@ -860,16 +890,19 @@ static void sendStatsDump(const vpnproxy_data_t *proxy) {
     }
 
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
+            allocs_summary,
             capstats->sent_bytes, capstats->rcvd_bytes,
             capstats->sent_pkts, capstats->rcvd_pkts,
             min(proxy->num_dropped_pkts, INT_MAX), proxy->num_dropped_connections,
-            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns, proxy->num_dns_requests);
+            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
+            proxy->num_dns_requests);
 
     if(!jniCheckException(env)) {
         (*env)->CallVoidMethod(env, proxy->vpn_service, mids.sendStatsDump, stats_obj);
         jniCheckException(env);
     }
 
+    (*env)->DeleteLocalRef(env, allocs_summary);
     (*env)->DeleteLocalRef(env, stats_obj);
 }
 
@@ -958,24 +991,6 @@ static void reload_blacklists(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-#ifdef PCAPDROID_TRACK_ALLOCS
-
-static void print_allocs_summary() {
-    log_w("*** Allocs Summary ***\n"
-           "  PCAPdroid: %zu B\n"
-           "  nDPI: %zu B\n"
-           "  Blacklist (domains): %zu B\n"
-           "  UTHash: %zu B\n",
-           memtrack.scopes[MEMTRACK_PCAPDROID],
-           memtrack.scopes[MEMTRACK_NDPI],
-           memtrack.scopes[MEMTRACK_BLACKLIST],
-           memtrack.scopes[MEMTRACK_UTHASH]);
-}
-
-#endif
-
-/* ******************************************************* */
-
 void run_housekeeping(vpnproxy_data_t *proxy) {
     if(proxy->capture_stats.new_stats
             && ((proxy->now_ms - proxy->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
@@ -994,9 +1009,6 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
         last_connections_dump = proxy->now_ms;
         next_connections_dump = proxy->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
         netd_resolve_waiting = 0;
-#ifdef PCAPDROID_TRACK_ALLOCS
-        print_allocs_summary();
-#endif
     } else if ((proxy->pcap_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
@@ -1153,7 +1165,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJIIII)V");
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(JJIIIIIIIII)V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJIIIIIIIII)V");
 
     vpnproxy_data_t proxy = {
             .tunfd = tunfd,
@@ -1286,7 +1298,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     global_proxy = NULL;
 
 #ifdef PCAPDROID_TRACK_ALLOCS
-    print_allocs_summary();
+    log_i(get_allocs_summary());
 #endif
 
     return(rv);

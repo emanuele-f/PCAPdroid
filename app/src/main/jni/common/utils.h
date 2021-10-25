@@ -46,5 +46,6 @@ char loglvl2char(int lvl);
 jclass jniFindClass(JNIEnv *env, const char *name);
 jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
 int jniCheckException(JNIEnv *env);
+char* humanSize(char *buf, int bufsize, double bytes);
 
 #endif // __LOG_UTILS_H__
