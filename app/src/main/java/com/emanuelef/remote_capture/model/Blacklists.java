@@ -82,6 +82,7 @@ public class Blacklists {
         addList("feodotracker_ipblocklist.txt", "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"); // NOTE: some IPs are in emergingthreats, but not all
         addList("digitalsideit_ips.txt", "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestips.txt");
         // To review
+        //https://github.com/StevenBlack/hosts
         //https://phishing.army/download/phishing_army_blocklist.txt
         //https://snort.org/downloads/ip-block-list
         num_updated = mLists.size();
