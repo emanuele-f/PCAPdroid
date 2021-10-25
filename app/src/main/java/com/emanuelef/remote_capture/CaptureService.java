@@ -56,7 +56,7 @@ import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.BlacklistsStatus;
+import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
@@ -101,7 +101,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
-    private BlacklistsStatus mBlacklistsStatus;
+    private Blacklists mBlacklists;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -299,8 +299,8 @@ public class CaptureService extends VpnService implements Runnable {
             mCaptureThread.interrupt();
         }
 
-        mBlacklistsStatus = PCAPdroid.getInstance().getBlacklistsStatus();
-        if(mMalwareDetectionEnabled && !mBlacklistsStatus.needsUpdate())
+        mBlacklists = PCAPdroid.getInstance().getBlacklistsStatus();
+        if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
 
@@ -524,14 +524,14 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
 
-        if(mBlacklistsStatus.needsUpdate()) {
+        if(mBlacklists.needsUpdate()) {
             mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
             mBlacklistsUpdateThread.start();
         }
     }
 
     private void updateBlacklistsWork() {
-        mBlacklistsStatus.updateBlacklists();
+        mBlacklists.update();
         reloadBlacklists();
         mBlacklistsUpdateThread = null;
     }
@@ -618,7 +618,7 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         if(mMalwareDetectionEnabled)
-            mBlacklistsStatus.save();
+            mBlacklists.save();
     }
 
     /* The following methods are called from native code */
@@ -773,7 +773,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void notifyBlacklistsLoaded(int num_lists, int num_domains, int num_ips) {
-        mBlacklistsStatus.loaded(num_lists, num_domains, num_ips);
+        mBlacklists.onNativeLoaded(num_lists, num_domains, num_ips);
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

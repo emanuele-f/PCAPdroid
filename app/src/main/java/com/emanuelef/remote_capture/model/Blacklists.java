@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /* Represents the status of the blacklists loading */
-public class BlacklistsStatus {
+public class Blacklists {
     public static final String PREF_BLACKLISTS_STATUS = "blacklists_status";
     public static final int BLACKLISTS_UPDATE_SECONDS = 86400; // 1d
     private static final String TAG = "BlacklistsStatus";
@@ -66,7 +66,7 @@ public class BlacklistsStatus {
         }
     }
 
-    public BlacklistsStatus(Context ctx) {
+    public Blacklists(Context ctx) {
         num_up_to_date = 0;
         last_update = 0;
         num_domain_rules = 0;
@@ -74,10 +74,16 @@ public class BlacklistsStatus {
         mContext = ctx;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
+        // Domains
         addList("maltrail-malware-domains.txt", "https://raw.githubusercontent.com/stamparm/aux/master/maltrail-malware-domains.txt");
+        // IPs
         addList("emerging-Block-IPs.txt", "https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt");
         addList("abuse_sslipblacklist.txt", "https://sslbl.abuse.ch/blacklist/sslipblacklist.txt");
-        addList("feodotracker_ipblocklist.txt", "https://feodotracker.abuse.ch/downloads/ipblocklist.txt");
+        addList("feodotracker_ipblocklist.txt", "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"); // NOTE: some IPs are in emergingthreats, but not all
+        addList("digitalsideit_ips.txt", "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestips.txt");
+        // To review
+        //https://phishing.army/download/phishing_army_blocklist.txt
+        //https://snort.org/downloads/ip-block-list
         num_updated = mLists.size();
 
         deserialize();
@@ -100,9 +106,9 @@ public class BlacklistsStatus {
         }
     }
 
-    private static class Serializer implements JsonSerializer<BlacklistsStatus> {
+    private static class Serializer implements JsonSerializer<Blacklists> {
         @Override
-        public JsonElement serialize(BlacklistsStatus src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(Blacklists src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject rv = new JsonObject();
 
             rv.add("num_up_to_date", new JsonPrimitive(src.num_up_to_date));
@@ -172,7 +178,7 @@ public class BlacklistsStatus {
         return((now - last_update) >= BLACKLISTS_UPDATE_SECONDS * 1000);
     }
 
-    public void updateBlacklists() {
+    public void update() {
         // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
         if(!needsUpdate())
             return;
@@ -194,7 +200,7 @@ public class BlacklistsStatus {
     }
 
     // Called when the blacklists are loaded in memory
-    public void loaded(int num_loaded, int num_domains, int num_ips) {
+    public void onNativeLoaded(int num_loaded, int num_domains, int num_ips) {
         Log.d(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
 
         synchronized (this) {
