@@ -166,6 +166,10 @@ typedef struct vpnproxy_data {
     struct {
         bool enabled;
         blacklist_t *bl;
+        pthread_t reload_worker;
+        bool reload_in_progress;
+        volatile bool reload_done;
+        blacklist_t *new_bl;
     } malware_detection;
 
     capture_stats_t capture_stats;

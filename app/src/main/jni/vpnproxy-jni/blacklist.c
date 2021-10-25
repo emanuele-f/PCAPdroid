@@ -28,7 +28,7 @@ typedef struct string_entry {
 struct blacklist {
     string_entry_t *domains;
     struct ndpi_detection_module_struct *ndpi;
-    bool locked;
+    bool ready;
     blacklist_stats_t stats;
 };
 
@@ -79,7 +79,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
     int num_ip_ok = 0, num_ip_fail = 0;
     int max_file_rules = 500000;
 
-    if(bl->locked) {
+    if(bl->ready) {
         log_e("Blacklist is locked. Run blacklist_clear and load it again.");
         return -1;
     }
@@ -151,6 +151,16 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
 
 /* ******************************************************* */
 
+// Neded to properly load nDPI. Must be called on the capture thread.
+void blacklist_ready(blacklist_t *bl) {
+    if(!bl->ready) {
+        ndpi_enable_loaded_categories(bl->ndpi);
+        bl->ready = true;
+    }
+}
+
+/* ******************************************************* */
+
 void blacklist_clear(blacklist_t *bl) {
     string_entry_t *entry, *tmp;
 
@@ -160,10 +170,7 @@ void blacklist_clear(blacklist_t *bl) {
         bl_free(entry);
     }
     bl->domains = NULL;
-
-    // reload with an empty set to force release memory
-    ndpi_enable_loaded_categories(bl->ndpi);
-    bl->locked = false;
+    bl->ready = false;
     memset(&bl->stats, 0, sizeof(bl->stats));
 }
 
@@ -182,10 +189,8 @@ bool blacklist_match_ip(blacklist_t *bl, uint32_t ip) {
     ipstr[0] = '\0';
     ndpi_protocol_category_t cat = 0;
 
-    if(!bl->locked) {
-        ndpi_enable_loaded_categories(bl->ndpi);
-        bl->locked = true;
-    }
+    if(!bl->ready)
+        return false;
 
     addr.s_addr = ip;
     inet_ntop(AF_INET, &addr, ipstr, sizeof(ipstr));

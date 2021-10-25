@@ -957,13 +957,40 @@ const char* get_file_path(const char *subpath) {
 
 /* ******************************************************* */
 
-static void reload_blacklists(vpnproxy_data_t *proxy) {
-    blacklist_t *bl = proxy->malware_detection.bl;
-    if(!bl)
+// called after load_new_blacklists
+static void use_new_blacklists(vpnproxy_data_t *proxy) {
+    if(!proxy->malware_detection.new_bl)
         return;
 
-    // unload the old rules
-    blacklist_clear(bl);
+    if(proxy->malware_detection.bl)
+        blacklist_destroy(proxy->malware_detection.bl);
+    proxy->malware_detection.bl = proxy->malware_detection.new_bl;
+    proxy->malware_detection.new_bl = NULL;
+    blacklist_ready(proxy->malware_detection.bl);
+
+    // Notify
+    blacklist_stats_t stats;
+    blacklist_get_stats(proxy->malware_detection.bl, &stats);
+    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,
+                                  stats.num_lists, stats.num_domains, stats.num_ips);
+}
+
+/* ******************************************************* */
+
+// Loads the blacklists data into new_bl and sets reload_done.
+// use_new_blacklists needs to be called to use it.
+static void* load_new_blacklists(void *data) {
+    vpnproxy_data_t *proxy = (vpnproxy_data_t*) data;
+
+    // NOTE: proxy->ndpi is shared
+    // Calling ndpi_load_ip_category from another thread is safe
+    blacklist_t *bl = blacklist_init(proxy->ndpi);
+    if(!bl) {
+        proxy->malware_detection.reload_done = true;
+        return NULL;
+    }
+
+    clock_t start = clock();
 
     // load all the files in the malware_bl directory
     DIR *dir = opendir(get_file_path("malware_bl"));
@@ -982,11 +1009,11 @@ static void reload_blacklists(vpnproxy_data_t *proxy) {
 
     // This is a domain to test domain blacklist match
     blacklist_add_domain(bl, "internetbadguys.com");
+    log_d("Blacklists loaded in %.3f sec", ((double) (clock() - start)) / CLOCKS_PER_SEC);
 
-    blacklist_stats_t stats;
-    blacklist_get_stats(bl, &stats);
-    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,
-                                  stats.num_lists, stats.num_domains, stats.num_ips);
+    proxy->malware_detection.new_bl = bl;
+    proxy->malware_detection.reload_done = true;
+    return NULL;
 }
 
 /* ******************************************************* */
@@ -1012,9 +1039,22 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
     } else if ((proxy->pcap_dump.buffer_idx > 0)
                && (proxy->now_ms - proxy->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
         javaPcapDump(proxy);
-    } else if(reload_blacklists_now) {
-        reload_blacklists_now = false;
-        reload_blacklists(proxy);
+    } else if(proxy->malware_detection.enabled) {
+        // Malware detection
+        if(proxy->malware_detection.reload_in_progress) {
+            if(proxy->malware_detection.reload_done) {
+                pthread_join(proxy->malware_detection.reload_worker, NULL);
+                proxy->malware_detection.reload_in_progress = false;
+                use_new_blacklists(proxy);
+            }
+        } else if(reload_blacklists_now) {
+            reload_blacklists_now = false;
+            proxy->malware_detection.reload_done = false;
+            proxy->malware_detection.new_bl = NULL;
+            pthread_create(&proxy->malware_detection.reload_worker, NULL, load_new_blacklists,
+                           proxy);
+            proxy->malware_detection.reload_in_progress = true;
+        }
     }
 }
 
@@ -1223,20 +1263,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         return(-1);
     }
 
-    // Load blacklist
-    if(proxy.malware_detection.enabled) {
-        blacklist_t *bl = blacklist_init(proxy.ndpi);
-        if(bl == NULL) {
-            log_f("Blacklist initialization failed");
-            ndpi_exit_detection_module(proxy.ndpi);
-            return (-1);
-        }
-
-        proxy.malware_detection.bl = bl;
-        if(reload_blacklists_now) {
-            reload_blacklists_now = false;
-            reload_blacklists(&proxy);
-        }
+    // Load the blacklist before starting
+    if(proxy.malware_detection.enabled && reload_blacklists_now) {
+        reload_blacklists_now = false;
+        load_new_blacklists(&proxy);
+        use_new_blacklists(&proxy);
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -1268,8 +1299,14 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     conns_clear(&proxy.new_conns, true);
     conns_clear(&proxy.conns_updates, true);
 
-    if(proxy.malware_detection.bl)
-        blacklist_destroy(proxy.malware_detection.bl);
+    if(proxy.malware_detection.enabled) {
+        if(proxy.malware_detection.reload_in_progress) {
+            log_d("Joining blacklists reload_worker");
+            pthread_join(proxy.malware_detection.reload_worker, NULL);
+        }
+        if(proxy.malware_detection.bl)
+            blacklist_destroy(proxy.malware_detection.bl);
+    }
     ndpi_exit_detection_module(proxy.ndpi);
 
     if(proxy.pcap_dump.buffer) {
