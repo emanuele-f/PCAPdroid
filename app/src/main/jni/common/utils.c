@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include "utils.h"
 
+memtrack_t memtrack = {0};
 int loglevel = 0;
 const char *logtag = "VPNProxy";
 void (*logcallback)(int lvl, const char *msg) = NULL;

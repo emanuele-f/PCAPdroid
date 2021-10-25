@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <android/log.h>
 #include "zdtun.h"
+#include "memtrack.h"
 
 extern int loglevel;
 extern const char* logtag;

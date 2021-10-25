@@ -21,6 +21,7 @@
 // Inspired by https://jehiah.cz/a/uthash
 
 #include <stdlib.h>
+#include "utils.h"
 #include "uid_lru.h"
 #include "third_party/uthash.h"
 
@@ -38,7 +39,7 @@ struct uid_lru {
 /* ******************************************************* */
 
 uid_lru_t* uid_lru_init(int max_size) {
-    uid_lru_t *lru = (uid_lru_t*) malloc(sizeof(uid_lru_t));
+    uid_lru_t *lru = (uid_lru_t*) pd_malloc(sizeof(uid_lru_t));
 
     if(!lru)
         return NULL;
@@ -56,10 +57,10 @@ void uid_lru_destroy(uid_lru_t *lru) {
 
     HASH_ITER(hh, lru->cache, entry, tmp) {
         HASH_DELETE(hh, lru->cache, entry);
-        free(entry);
+        pd_free(entry);
     }
 
-    free(lru);
+    pd_free(lru);
 }
 
 /* ******************************************************* */
@@ -85,7 +86,7 @@ static struct cache_entry* uid_lru_find_entry(uid_lru_t *lru, const zdtun_5tuple
 void uid_lru_add(uid_lru_t *lru, const zdtun_5tuple_t *tuple, int uid) {
     struct cache_entry *entry, *tmp;
 
-    entry = malloc(sizeof(struct cache_entry));
+    entry = pd_malloc(sizeof(struct cache_entry));
 
     if(!entry)
         return;
@@ -101,7 +102,7 @@ void uid_lru_add(uid_lru_t *lru, const zdtun_5tuple_t *tuple, int uid) {
         HASH_ITER(hh, lru->cache, entry, tmp) {
             // delete the oldest entry
             HASH_DELETE(hh, lru->cache, entry);
-            free(entry);
+            pd_free(entry);
             break;
         }
     }

@@ -212,7 +212,7 @@ static jint get_uid_q(uid_resolver_t *resolver,
 /* ******************************************************* */
 
 uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
-    uid_resolver_t *rv = calloc(1, sizeof(uid_resolver_t));
+    uid_resolver_t *rv = pd_calloc(1, sizeof(uid_resolver_t));
 
     if(!rv) {
         log_e("calloc uid_resolver_t failed");
@@ -233,7 +233,7 @@ uid_resolver_t* init_uid_resolver_from_proc() {
 /* ******************************************************* */
 
 void destroy_uid_resolver(uid_resolver_t *resolver) {
-    free(resolver);
+    pd_free(resolver);
 }
 
 /* ******************************************************* */

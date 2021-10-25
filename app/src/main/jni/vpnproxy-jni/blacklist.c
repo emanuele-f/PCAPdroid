@@ -38,7 +38,7 @@ blacklist_t* blacklist_init(struct ndpi_detection_module_struct *ndpi) {
     if(!ndpi)
         return NULL;
 
-    blacklist_t *bl = (blacklist_t*) calloc(1, sizeof(blacklist_t));
+    blacklist_t *bl = (blacklist_t*) bl_calloc(1, sizeof(blacklist_t));
     if(!bl)
         return NULL;
 
@@ -55,13 +55,13 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
     if(blacklist_match_domain(bl, domain))
         return -EADDRINUSE; // duplicate domain
 
-    string_entry_t *entry = malloc(sizeof(string_entry_t));
+    string_entry_t *entry = bl_malloc(sizeof(string_entry_t));
     if(!entry)
         return -ENOMEM;
 
-    entry->key = strdup(domain);
+    entry->key = bl_strdup(domain);
     if(!entry->key) {
-        free(entry);
+        bl_free(entry);
         return -ENOMEM;
     }
 
@@ -156,8 +156,8 @@ void blacklist_clear(blacklist_t *bl) {
 
     HASH_ITER(hh, bl->domains, entry, tmp) {
         HASH_DELETE(hh, bl->domains, entry);
-        free(entry->key);
-        free(entry);
+        bl_free(entry->key);
+        bl_free(entry);
     }
     bl->domains = NULL;
 
@@ -171,7 +171,7 @@ void blacklist_clear(blacklist_t *bl) {
 
 void blacklist_destroy(blacklist_t *bl) {
     blacklist_clear(bl);
-    free(bl);
+    bl_free(bl);
 }
 
 /* ******************************************************* */

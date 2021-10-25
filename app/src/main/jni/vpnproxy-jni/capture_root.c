@@ -250,7 +250,7 @@ cleanup:
 
 /* ******************************************************* */
 
-static void remove_connection(vpnproxy_data_t *proxy, const pcap_conn_t *conn) {
+static void remove_connection(vpnproxy_data_t *proxy, pcap_conn_t *conn) {
     switch (conn->tuple.ipproto) {
         case IPPROTO_TCP:
             proxy->stats.num_tcp_conn--;
@@ -264,7 +264,7 @@ static void remove_connection(vpnproxy_data_t *proxy, const pcap_conn_t *conn) {
     }
 
     HASH_DELETE(hh, proxy->connections, conn);
-    free(conn);
+    pd_free(conn);
 }
 
 /* ******************************************************* */
@@ -387,7 +387,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
             if (!data)
                 return;
 
-            conn = malloc(sizeof(pcap_conn_t));
+            conn = pd_malloc(sizeof(pcap_conn_t));
 
             if (!conn) {
                 log_e("malloc(pcap_conn_t) failed with code %d/%s",
