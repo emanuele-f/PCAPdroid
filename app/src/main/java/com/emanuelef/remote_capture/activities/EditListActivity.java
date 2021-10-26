@@ -65,7 +65,7 @@ public class EditListActivity extends BaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.copy_share_menu, menu);
+        inflater.inflate(R.menu.list_edit_menu, menu);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -92,6 +92,9 @@ public class EditListActivity extends BaseActivity {
 
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
 
+            return true;
+        } else if(id == R.id.show_help) {
+            Utils.showToastLong(this, mListInfo.getHelpString());
             return true;
         }
 
