@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -96,6 +97,11 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mTcpFlags = findViewById(R.id.tcp_flags);
         mBlacklistedIp = findViewById(R.id.blacklisted_ip);
         mBlacklistedHost = findViewById(R.id.blacklisted_host);
+
+        findViewById(R.id.whois_ip).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://search.arin.net/rdap/?query=" + mConn.dst_ip));
+            startActivity(intent);
+        });
 
         String l4proto = Utils.proto2str(mConn.ipproto);
 

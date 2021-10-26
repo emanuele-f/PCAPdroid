@@ -6,6 +6,8 @@
     <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
+    <string name="whois_lookup" translatable="false">WHOIS</string>
+    <string name="virustotal" translatable="false">VIRUSTOTAL</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -200,7 +202,7 @@
     <string name="show_help">Show help</string>
     <string name="malware_whitelist_help">This user-defined whitelist is used to inhibit malware detection. Connections matching any of these rules will not be marked as malware. You can create rules by long pressing a malicious connection.</string>
     <string name="hidden_connections_help">This list contains rules to hide connections from the connections list. Hiding connections allows you to focus on the relevant ones.</string>
-    <string name="malicious_filter">Malicious</string>
+    <string name="malicious">Malicious</string>
     <string name="status_filter">Status: %1$s</string>
     <string name="not_hidden_filter">Not hidden</string>
     <string name="copy_action">Copy…</string>
