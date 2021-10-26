@@ -185,7 +185,7 @@
     <string name="hidden_connections_rules">Hidden Connections Rules</string>
     <string name="list_is_empty">List is empty</string>
     <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
-    <string name="show_only_malicious">Only malicious connections</string>
+    <string name="show_only_malicious">Malicious connections</string>
     <string name="security">Security</string>
     <string name="malware_detection">Malware Detection</string>
     <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists. The detection can produce false positives and is not a valid alternative to an antivirus.</string>
@@ -204,5 +204,7 @@
     <string name="malicious_filter">malicious</string>
     <string name="status_filter">status: %1$s</string>
     <string name="not_hidden_filter">not hidden</string>
+    <string name="copy_action">Copy…</string>
+    <string name="url_val">"URL: %1$s"</string>
 </resources>
 
