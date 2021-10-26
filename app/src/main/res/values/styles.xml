@@ -35,6 +35,7 @@
         <!--<item name="backgroundSplit">@color/colorActionBar</item>-->
     </style>
 
+    <style name="AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
     <style name="PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
     <style name="QuickSettings.Title" parent="AppTheme">
