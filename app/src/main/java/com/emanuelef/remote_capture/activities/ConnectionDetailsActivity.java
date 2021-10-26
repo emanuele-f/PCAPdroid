@@ -32,6 +32,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -56,6 +57,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mFirstSeen;
     private TextView mLastSeen;
     private TextView mTcpFlags;
+    private ImageView mBlacklistedIp;
+    private ImageView mBlacklistedHost;
     private Handler mHandler;
     private int mConnPos;
     private boolean mListenerSet;
@@ -91,6 +94,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mFirstSeen = findViewById(R.id.first_seen);
         mLastSeen = findViewById(R.id.last_seen);
         mTcpFlags = findViewById(R.id.tcp_flags);
+        mBlacklistedIp = findViewById(R.id.blacklisted_ip);
+        mBlacklistedHost = findViewById(R.id.blacklisted_host);
 
         String l4proto = Utils.proto2str(mConn.ipproto);
 
@@ -204,6 +209,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));
             mStatus.setText(conn.getStatusLabel(this));
             mTcpFlags.setText(Utils.tcpFlagsToStr(conn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(conn.getSentTcpFlags()));
+            mBlacklistedIp.setVisibility(conn.isBlacklistedIp() ? View.VISIBLE : View.GONE);
+            mBlacklistedHost.setVisibility(conn.isBlacklistedHost() ? View.VISIBLE : View.GONE);
 
             if(conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
                 unregisterConnsListener();

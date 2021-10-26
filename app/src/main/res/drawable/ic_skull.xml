@@ -1,6 +1,6 @@
-<vector android:height="24dp" android:tint="#FFFFFF"
+<vector android:height="20dp" android:tint="#FFFFFF"
     android:viewportHeight="512" android:viewportWidth="512"
-    android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    android:width="20dp" xmlns:android="http://schemas.android.com/apk/res/android">
 <!--
 All brand icons are trademarks of their respective owners.
 -->
