@@ -71,6 +71,7 @@ import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -89,6 +90,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private TextView mOldConnectionsText;
     private boolean autoScroll;
     private boolean listenerSet;
+    private ChipGroup mActiveFilter;
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
@@ -169,11 +171,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
         mApps = new AppsResolver(requireContext());
-        mEmptyText = view.findViewById(R.id.no_connections);
 
+        mEmptyText = view.findViewById(R.id.no_connections);
         if((requireActivity() instanceof MainActivity) &&
                 (((MainActivity) requireActivity()).getState() == AppState.running))
             mEmptyText.setText(R.string.no_connections);
+
+        mActiveFilter = view.findViewById(R.id.active_filter);
+        mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
+            if(mAdapter != null) {
+                mAdapter.mFilter.clear(checkedId);
+                refreshFilteredConnections();
+            }
+        });
 
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
@@ -248,6 +258,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(!fromIntent && savedInstanceState.containsKey("filter_desc"))
                 mAdapter.mFilter = (FilterDescriptor) savedInstanceState.getSerializable("filter_desc");
         }
+        refreshActiveFilter();
 
         if((search != null) && !search.isEmpty())
             mQueryToApply = search;
@@ -489,10 +500,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
+    private void refreshActiveFilter() {
+        if(mAdapter == null)
+            return;
+
+        mActiveFilter.removeAllViews();
+        mAdapter.mFilter.toChips(getLayoutInflater(), mActiveFilter);
+    }
+
     // This performs an unoptimized adapter refresh
     private void refreshFilteredConnections() {
         mAdapter.refreshFilteredConnections();
         refreshMenuIcons();
+        refreshActiveFilter();
         recheckScroll();
     }
 
@@ -675,9 +695,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
             FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
+            Log.d(TAG, "filter fra");
             if(descriptor != null) {
+                Log.d(TAG, "filter fre");
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();
+                refreshActiveFilter();
             }
         }
     }

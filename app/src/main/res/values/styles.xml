@@ -9,6 +9,7 @@
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
         <item name="alertDialogTheme">@style/AppAlertDialogTheme</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
 
     <!-- Make the Widget.MaterialComponents.Button.TextButton of AlertDialog use the accent color -->
@@ -28,7 +29,11 @@
         <item name="android:windowBackground">@drawable/splash_screen</item>
     </style>
 
-    <style name="AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@color/colorActionBar</item>
+        <!--<item name="backgroundStacked">@color/colorActionBar</item>-->
+        <!--<item name="backgroundSplit">@color/colorActionBar</item>-->
+    </style>
 
     <style name="PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 

@@ -10,6 +10,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/active_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            app:singleSelection="true">
+        </com.google.android.material.chip.ChipGroup>
+
         <TextView
             android:id="@+id/old_connections_notice"
             android:layout_width="match_parent"

@@ -19,12 +19,12 @@
             android:layout_marginBottom="15dp">
 
             <CheckBox
-                android:id="@+id/show_masked"
+                android:id="@+id/hide_masked"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@id/edit_mask"
-                android:text="@string/show_hidden_connections" />
+                android:text="@string/hide_connections" />
 
             <Button
                 android:id="@+id/edit_mask"
@@ -58,28 +58,28 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_open"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_open"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_closed"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_closed"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_unreachable"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_unreachable"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_error"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/error"/>
