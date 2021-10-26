@@ -34,23 +34,26 @@ public class FilterDescriptor implements Serializable {
     public Status status = Status.STATUS_INVALID;
     public boolean showMasked = true;
     public boolean onlyBlacklisted = false;
+    public boolean onlyPlaintext = false;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
                 || onlyBlacklisted
+                || onlyPlaintext
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
                 && (!onlyBlacklisted || conn.isBlacklisted())
+                && (!onlyPlaintext || !conn.request_plaintext.isEmpty())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)));
     }
 
     private void addChip(LayoutInflater inflater, ChipGroup group, int id, String text) {
         Chip chip = (Chip) inflater.inflate(R.layout.active_filter_chip, group, false);
         chip.setId(id);
-        chip.setText(text);
+        chip.setText(text.toLowerCase());
         group.addView(chip);
     }
 
@@ -58,9 +61,11 @@ public class FilterDescriptor implements Serializable {
         Context ctx = inflater.getContext();
 
         if(!showMasked)
-            addChip(inflater, group, R.id.hide_masked, ctx.getString(R.string.not_hidden_filter));
+            addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_filter));
+        if(onlyPlaintext)
+            addChip(inflater, group, R.id.only_plaintext, ctx.getString(R.string.plaintext));
         if(status != Status.STATUS_INVALID) {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
@@ -68,10 +73,12 @@ public class FilterDescriptor implements Serializable {
     }
 
     public void clear(int filter_id) {
-        if(filter_id == R.id.hide_masked)
+        if(filter_id == R.id.not_hidden)
             showMasked = true;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
+        else if(filter_id == R.id.only_plaintext)
+            onlyPlaintext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
     }

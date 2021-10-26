@@ -373,6 +373,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
         }
 
+        if(!conn.request_plaintext.isEmpty()) {
+            item = menu.findItem(R.id.copy_request_plaintext);
+            item.setVisible(true);
+        }
+
         String label = MatchList.getRuleLabel(ctx, RuleType.IP, conn.dst_ip);
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
@@ -444,6 +449,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Utils.copyToClipboard(ctx, conn.info);
         else if(id == R.id.copy_url)
             Utils.copyToClipboard(ctx, conn.url);
+        else if(id == R.id.copy_request_plaintext)
+            Utils.copyToClipboard(ctx, conn.request_plaintext);
         else
             return super.onContextItemSelected(item);
 

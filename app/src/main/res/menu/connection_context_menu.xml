@@ -78,6 +78,11 @@
                 android:id="@+id/copy_url"
                 android:title=""
                 android:visible="false" />
+
+            <item
+                android:id="@+id/copy_request_plaintext"
+                android:title="@string/request_plaintext"
+                android:visible="false" />
         </menu>
     </item>
 
