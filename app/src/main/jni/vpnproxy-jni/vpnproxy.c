@@ -1007,8 +1007,10 @@ static void* load_new_blacklists(void *data) {
         closedir(dir);
     }
 
-    // This is a domain to test domain blacklist match
+    // Test domain/IP to test blacklist match
     blacklist_add_domain(bl, "internetbadguys.com");
+    blacklist_add_ip(bl, "0.0.0.1");
+
     log_d("Blacklists loaded in %.3f sec", ((double) (clock() - start)) / CLOCKS_PER_SEC);
 
     proxy->malware_detection.new_bl = bl;

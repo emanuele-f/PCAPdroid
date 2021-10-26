@@ -72,6 +72,18 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
 
 /* ******************************************************* */
 
+int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net) {
+    if(ndpi_load_ip_category(bl->ndpi, ip_or_net, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0) {
+        // NOTE: duplicate IPs are not detected, so they will be counted multiple times.
+        // This could be fixed by using the ndpi_ptree_t API instead.
+        bl->stats.num_ips++;
+        return 0;
+    }
+    return -EINVAL;
+}
+
+/* ******************************************************* */
+
 int blacklist_load_file(blacklist_t *bl, const char *path) {
     FILE *f;
     char buffer[256];
@@ -117,7 +129,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
                 continue;
             }
 
-            if(ndpi_load_ip_category(bl->ndpi, item, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0)
+            if(blacklist_add_ip(bl, item) == 0)
                 num_ip_ok++;
             else
                 num_ip_fail++;
@@ -143,7 +155,6 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
           strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
 
     bl->stats.num_lists++;
-    bl->stats.num_ips += num_ip_ok;
     bl->stats.num_failed += num_ip_fail + num_dm_fail;
 
     return 0;
