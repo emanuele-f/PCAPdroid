@@ -243,7 +243,7 @@ public class MatchList {
         boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
         return(matchesApp(conn.uid) ||
                 matchesIP(conn.dst_ip) ||
-                matchesIP(conn.l7proto) ||
+                matchesProto(conn.l7proto) ||
                 (hasInfo && matchesHost(conn.info))) ||
                 (hasInfo && matchesRootDomain(Utils.getRootDomain(conn.info)));
     }
