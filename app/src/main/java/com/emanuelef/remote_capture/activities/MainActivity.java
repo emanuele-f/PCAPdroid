@@ -464,7 +464,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void appStateStarting() {
-        if(showAdsNotice && mAd.isShown()) {
+        if(showAdsNotice && mAd.isShownAdmob()) {
             new AlertDialog.Builder(MainActivity.this)
                     .setMessage(R.string.ads_notice)
                     .setPositiveButton(R.string.remove_ads, (dialog, whichButton) -> mIab.purchase(this, PlayBilling.NO_ADS_SKU))
