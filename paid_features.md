@@ -8,7 +8,7 @@ Malicious hosts are determined by using publicly available blacklists of malicio
 The blacklists have a specific focus on the Android-related malware and threat actors and they can detect common Internet threats, such as C&C (botnets), ramsonware and brute-forcers. Lists can contain false positives or can miss some threats so this feature cannot be considered a valid alternative to an antivirus.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/blacklists_status.jpg" width="200" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/blacklists_status.jpg" width="250" />
 </p>
 
 PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats. The blacklists status is shown in the `Stats` page:
@@ -24,12 +24,12 @@ When a malicious connection is detected, it is reported to the user via a notifi
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/malware_notification.jpg" width="300" />
 </p>
 
-The notification reports the app which generated the connection and the IP address or domain which triggered the detection. To avoid polluting the notifications area, the notification only reports the latest malicious contact for a given app.
+The notification reports the app which made the connection and the IP address or domain which triggered the detection. To avoid polluting the notifications area, the notification only reports the latest malicious contact for a given app.
 
 By clicking on the notification, it is possible to get the list of all the malicious connections made by the app.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/malicious_connections.jpg" width="200" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/malicious_connections.jpg" width="250" />
 </p>
 
 The malicious connection filter can be applied at any time from the "Edit Filter" dialog. The malicious connections data is lost once the capture is stopped.
