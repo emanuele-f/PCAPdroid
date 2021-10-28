@@ -40,19 +40,31 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/status_ind"
+            app:layout_constraintEnd_toStartOf="@+id/blacklisted"
             app:layout_constraintHorizontal_bias="0"
             tools:text="Android" />
 
         <TextView
             android:id="@+id/status_ind"
             android:textSize="12sp"
+            android:minEms="3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAlignment="textEnd"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:textColor="#FF28BC36"
             tools:text="@string/conn_status_open" />
+
+        <ImageView
+            android:id="@+id/blacklisted"
+            android:layout_width="wrap_content"
+            android:layout_height="12sp"
+            app:layout_constraintEnd_toStartOf="@id/status_ind"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/status_ind"
+            app:tint="@color/colorTabText"
+            android:src="@drawable/ic_skull" />
 
         <TextView
             android:id="@+id/last_seen"

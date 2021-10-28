@@ -2,7 +2,6 @@
     <string name="start_button">Начать</string>
     <string name="stop_button">Остановить</string>
     <string name="title_activity_settings">Настройки</string>
-    <string name="no_filter">Нет фильтра</string>
     <string name="collector_info">UDP сборщик: %1$s:%2$d</string>
     <string name="http_server_status">HTTP сервер: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s получено — %2$s отправлено</string>
@@ -34,13 +33,7 @@
     <string name="receiver_ip_address">IP адрес сборщика</string>
     <string name="receiver_port">Порт сборщика</string>
     <string name="dump_mode">Режим записи</string>
-    <string name="tls_proxy_ip_address">IP адрес "человек посередине" прокси</string>
-    <string name="tls_proxy_port">Порт "человек посередине" прокси</string>
-    <string name="enable_tls_decryption">Включить TLS дешифрование</string>
-    <string name="enable_tls_decryption_summary">Когда включено, весь TLS трафик будет перенаправлен на удалённый экземпляр "человек посередине" прокси для дешифрования.</string>
-    <string name="tls_decryption">TLS дешифрование</string>
     <string name="user_guide">Руководство пользователя</string>
-    <string name="rate_app">Оценить</string>
     <string name="open_telegram_group">Группа в Телеграме</string>
     <string name="source_code">Исходный код</string>
     <string name="yes">ДА</string>
@@ -64,13 +57,10 @@
     <string name="no_apps">Нет приложений</string>
     <string name="dns_server">DNS сервер</string>
     <string name="apps">Приложения</string>
-    <string name="remove_app_filter">Удалить фильтр приложений</string>
-    <string name="set_app_filter">Установить фильтр приложений</string>
     <string name="navigation_drawer_open">Открыть отрисовщик</string>
     <string name="navigation_drawer_close">Закрыть отрисовщик</string>
     <string name="pcap_file">PCAP файл</string>
     <string name="pcap_file_info">Создать PCAP файл в хранилище устройства</string>
-    <string name="cannot_write_pcap_file">Невозможно записать PCAP файл</string>
     <string name="cannot_write_file">Невозможно записать файл</string>
     <string name="share">Поделиться</string>
     <string name="delete">Удалить</string>
@@ -97,7 +87,6 @@
     <string name="get_app">Получить его:</string>
     <string name="tls_how_to">Как настроить TLS дешифрование</string>
     <string name="unknown_app">Неизвестное</string>
-    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">Включить IPv6</string>
     <string name="enable_ipv6_summary">Разрешить IPv6 Интернет соединения. Это следует включать только в сетях со шлюзом IPv6.</string>
     <string name="error">Ошибка</string>
@@ -117,9 +106,8 @@
     <string name="proxy_ip_address">IP-адрес прокси</string>
     <string name="proxy_port">Порт Прокси</string>
     <string name="root_capture">Захват в режиме Root</string>
-    <string name="root_capture_summary">Захват в Root-режиме позволит PCAPDroid работать в паре с другими VPN-приложениями.</string>
+    <string name="root_capture_summary">Захват в Root-режиме позволит PCAPdroid работать в паре с другими VPN-приложениями.</string>
     <string name="donate">Пожертвовать</string>
-    <string name="http_request">HTTP-запрос</string>
     <string name="root_log">Root-журнал</string>
     <string name="request_plaintext">Запрос в чистом виде</string>
 	<string name="search">Поиск</string>
@@ -127,15 +115,7 @@
     <string name="ip_address_val">IP адрес: %1$s</string>
     <string name="host_val">Хост: %1$s</string>
     <string name="protocol_val">Протокол: %1$s</string>
-    <string name="cancel">Отмена</string>
-    <string name="edit">Изменить</string>
-    <string name="delete_all">Удалить все</string>
-    <string name="show_whitelisted">Показать соединения из белого списка</string>
-    <string name="hide_whitelisted">Скрыть соединения из белого списка</string>
-    <string name="whitelist">Белый список</string>
-    <string name="edit_whitelist">Редактировать белый список</string>
     <string name="whitelist_action">В белый список</string>
-    <string name="whitelist_empty">Белый список пуст.\nИспользуйте долгое нажатие на строку соединения для добавления.</string>
     <string name="n_selected">%1$d выбран(о)</string>
     <string name="select_all">Выбрать все</string>
     <string name="app_details">Информация о приложении</string>
@@ -160,4 +140,14 @@
     <string name="remove_ads">Отключить рекламу</string>
     <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности.</string>
     <string name="purchased_feature_ok">Платная возможность теперь доступна!</string>
+    <string name="ctrl_consent">Внешнее приложение хочет начать захват трафика посредством PCAPdroid.\nЕсли вы не уверены (или это не вы), то отклоните запрос!</string>
+    <string name="deny">Отклонить</string>
+    <string name="allow">Разрешить</string>
+    <string name="ctrl_consent_title">PCAPdroid Контрольный запрос</string>
+    <string name="ctrl_consent_denied">Запрос был отклонен</string>
+    <string name="ctrl_consent_allowed">Запрос был разрешен</string>
+    <string name="capture_interface">Интерфейс для захвата</string>
+    <string name="internet">Интернет</string>
+    <string name="all_interfaces">Все интерфейсы</string>
+    <string name="capturing_from">Перехватываются пакеты с \"%1$s\"</string>
 </resources>

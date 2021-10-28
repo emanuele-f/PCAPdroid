@@ -6,12 +6,12 @@
     <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
+    <string name="whois_lookup" translatable="false">WHOIS</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="no_filter">No Filter</string>
     <string name="collector_info">UDP Collector: %1$s:%2$d</string>
     <string name="http_server_status">HTTP Server: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s received — %2$s sent</string>
@@ -43,13 +43,7 @@
     <string name="receiver_ip_address">Collector IP Address</string>
     <string name="receiver_port">Collector Port</string>
     <string name="dump_mode">Dump Mode</string>
-    <string name="tls_proxy_ip_address">mitmproxy IP Address</string>
-    <string name="tls_proxy_port">mitmproxy Port</string>
-    <string name="enable_tls_decryption">Enable TLS Decryption</string>
-    <string name="enable_tls_decryption_summary">When enabled, all the TLS traffic will be redirected to a remote mitmproxy instance for decryption.</string>
-    <string name="tls_decryption">TLS Decryption</string>
     <string name="user_guide">User Guide</string>
-    <string name="rate_app">Rate</string>
     <string name="open_telegram_group">Telegram Group</string>
     <string name="source_code">Source Code</string>
     <string name="yes">YES</string>
@@ -73,13 +67,10 @@
     <string name="no_apps">No apps</string>
     <string name="dns_server">DNS Server</string>
     <string name="apps">Apps</string>
-    <string name="remove_app_filter">Remove the app filter</string>
-    <string name="set_app_filter">Set the app filter</string>
     <string name="navigation_drawer_open">Drawer Open</string>
     <string name="navigation_drawer_close">Drawer Close</string>
     <string name="pcap_file">PCAP File</string>
     <string name="pcap_file_info">Create a PCAP file into the device storage</string>
-    <string name="cannot_write_pcap_file">Cannot write PCAP file</string>
     <string name="cannot_write_file">Cannot write file</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
@@ -106,7 +97,6 @@
     <string name="get_app">Get it:</string>
     <string name="tls_how_to">How to setup the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
-    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">Enable IPv6</string>
     <string name="enable_ipv6_summary">Allow IPv6 internet connections. This should only be enabled on networks with an IPv6 gateway.</string>
     <string name="error">Error</string>
@@ -128,7 +118,6 @@
     <string name="root_capture">Capture as Root</string>
     <string name="root_capture_summary">Capturing packets as root allows PCAPdroid to run with other VPN apps.</string>
     <string name="donate">Donate</string>
-    <string name="http_request">HTTP Request</string>
     <string name="root_log">Root Log</string>
     <string name="request_plaintext">Request Plaintext</string>
     <string name="search">Search…</string>
@@ -136,15 +125,8 @@
     <string name="ip_address_val">IP Address: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocol: %1$s</string>
-    <string name="cancel">Cancel</string>
-    <string name="edit">Edit</string>
-    <string name="delete_all">Delete all</string>
-    <string name="show_whitelisted">Show whitelisted connections</string>
-    <string name="hide_whitelisted">Hide whitelisted connections</string>
-    <string name="whitelist">Whitelist</string>
-    <string name="edit_whitelist">Edit Whitelist</string>
     <string name="whitelist_action">Whitelist…</string>
-    <string name="whitelist_empty">The whitelist is empty.\nYou can long press a connection to whitelist it.</string>
+    <string name="hide">Hide…</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
     <string name="app_details">App Details</string>
@@ -179,5 +161,36 @@
     <string name="internet">Internet</string>
     <string name="all_interfaces">All Interfaces</string>
     <string name="capturing_from">Capturing packets from \"%1$s\"</string>
+    <string name="edit_filter">Edit Filter</string>
+    <string name="edit_list">Edit List</string>
+    <string name="hidden_connections_rules">Hidden Connections Rules</string>
+    <string name="list_is_empty">List is empty</string>
+    <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
+    <string name="show_only_malicious">Malicious connections</string>
+    <string name="security">Security</string>
+    <string name="malware_detection">Malware Detection</string>
+    <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists. The detection can produce false positives and is not a valid alternative to an antivirus.</string>
+    <string name="blacklists_status">Blacklists Status</string>
+    <string name="blacklists_status_summary">Up-to-date: %1$d/%2$d ― Domain rules: %3$s ― IP rules: %4$s\nLast update: %5$s</string>
+    <string name="reset">Reset</string>
+    <string name="malware_whitelist">Malware Whitelist</string>
+    <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
+    <string name="edit_hidden_connections">Edit Hidden Connections</string>
+    <string name="edit_malware_whitelist">Edit Malware Whitelist</string>
+    <string name="feature_not_available">This feature is currently unavailable for your device</string>
+    <string name="billing_connecting">The connection to Google Play is in progress, please retry in a while</string>
+    <string name="show_help">Show help</string>
+    <string name="malware_whitelist_help">This user-defined whitelist is used to inhibit malware detection. Connections matching any of these rules will not be marked as malware. You can create rules by long pressing a malicious connection.</string>
+    <string name="hidden_connections_help">This list contains rules to hide connections from the connections list. Hiding connections allows you to focus on the relevant ones.</string>
+    <string name="malicious_connection_filter">Malicious</string>
+    <string name="status_filter">Status: %1$s</string>
+    <string name="not_hidden_filter">Not hidden</string>
+    <string name="copy_action">Copy…</string>
+    <string name="url_val">"URL: %1$s"</string>
+    <string name="show_only_plaintext">Plaintext connections</string>
+    <string name="plaintext">Plaintext</string>
+    <string name="malware_detection_ad0">Ready to enhance the security of your device?</string>
+    <string name="malware_detection_ad1">Meet the PCAPdroid malware detection!</string>
+    <string name="show_me">Show me</string>
 </resources>
 

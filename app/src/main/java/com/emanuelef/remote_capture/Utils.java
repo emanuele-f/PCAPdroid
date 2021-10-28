@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -69,23 +70,32 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class Utils {
     public static final int UID_UNKNOWN = -1;
@@ -156,6 +166,9 @@ public class Utils {
     }
 
     public static String formatEpochShort(Context context, long epoch) {
+        if(epoch == 0)
+            return "-";
+
         long now = Utils.now();
         Locale locale = getPrimaryLocale(context);
 
@@ -541,7 +554,10 @@ public class Utils {
             return null;
 
         try {
-            fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            if(idx < 0)
+                return null;
+            fname = cursor.getString(idx);
         } finally {
             cursor.close();
         }
@@ -602,6 +618,13 @@ public class Utils {
         return s;
     }
 
+    // www.example.org -> example.org
+    public static String cleanDomain(String domain) {
+        if(domain.startsWith("www."))
+            domain = domain.substring(4);
+        return domain;
+    }
+
     // a.example.org -> example.org
     public static String getRootDomain(String domain) {
         int tldPos = domain.lastIndexOf(".");
@@ -632,5 +655,92 @@ public class Utils {
         }
 
         return builder.toString();
+    }
+
+    public static int getIntentFlags(int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        return flags;
+    }
+
+    public static boolean unzip(InputStream is, String dstpath) {
+        try(ZipInputStream zipIn = new ZipInputStream(is)) {
+            ZipEntry entry = zipIn.getNextEntry();
+
+            while (entry != null) {
+                File dst = new File(dstpath + File.separator + entry.getName());
+
+                if (entry.isDirectory()) {
+                    if(!dst.mkdirs()) {
+                        Log.w("unzip", "Could not create directories");
+                        return false;
+                    }
+                } else {
+                    // Extract file
+                    try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                        byte[] bytesIn = new byte[4096];
+                        int read = 0;
+                        while ((read = zipIn.read(bytesIn)) != -1)
+                            bos.write(bytesIn, 0, read);
+                    }
+                }
+
+                zipIn.closeEntry();
+                entry = zipIn.getNextEntry();
+            }
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean downloadFile(String _url, String path) {
+        boolean has_contents = false;
+
+        try (FileOutputStream out = new FileOutputStream(path + ".tmp")) {
+            try (BufferedOutputStream bos = new BufferedOutputStream(out)) {
+                URL url = new URL(_url);
+
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+                try {
+                    // Necessary otherwise the connection will stay open
+                    con.setRequestProperty("Connection", "Close");
+
+                    try(InputStream in = new BufferedInputStream(con.getInputStream())) {
+                        byte[] bytesIn = new byte[4096];
+                        int read = 0;
+                        while ((read = in.read(bytesIn)) != -1) {
+                            bos.write(bytesIn, 0, read);
+                            has_contents |= (read > 0);
+                        }
+                    }
+                } finally {
+                    con.disconnect();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(!has_contents) {
+            try {
+                (new File(path + ".tmp")).delete(); // if exists
+            } catch (Exception e) {
+                // ignore
+            }
+            return false;
+        }
+
+        // Only write the target path if it was successful
+        return (new File(path + ".tmp")).renameTo(new File(path));
+    }
+
+    public static String shorten(String s, int maxlen) {
+        if(s.length() > maxlen)
+            s = s.substring(0, maxlen - 1) + "…";
+
+        return s;
     }
 }

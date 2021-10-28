@@ -302,7 +302,7 @@ static void finish_pcapd_capture(pcapd_runtime_t *rt) {
 
 static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   if(conf->daemonize) {
-    int pid = fork();
+    pid_t pid = fork();
 
     if(pid < 0) {
       fprintf(stderr, "fork failed[%d]: %s\n", errno, strerror(errno));
@@ -311,6 +311,10 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
       // parent
       exit(0);
     }
+
+    // SIGPIPE will be generated as in su_cmd PCAPdroid performs a dup2 stdout/stderr to a pipe
+    // which is then closed
+    signal(SIGPIPE, SIG_IGN);
   }
 
   rt->nlsock = -1;
@@ -414,7 +418,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   if(!pd) {
     log_i("pcap_open_offline(%s) failed: %s", READ_FROM_PCAP, errbuf);
-    return;
+    return -1;
   }
 
   strcpy(ifname, "pcap");

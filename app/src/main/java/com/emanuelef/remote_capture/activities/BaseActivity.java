@@ -16,6 +16,7 @@ class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void attachBaseContext(Context base) {
+        // Ensure that the selected locale is used
         applyOverrideConfiguration(Utils.getLocalizedConfig(base));
         super.attachBaseContext(base);
     }

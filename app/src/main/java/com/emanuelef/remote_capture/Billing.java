@@ -17,33 +17,33 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.model;
+package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
-import androidx.preference.PreferenceManager;
+import java.util.Arrays;
+import java.util.List;
 
-public class Whitelist extends ConnectionsMatcher {
-    private final SharedPreferences mPrefs;
+/* Billing stub */
+public class Billing {
+    // SKUs
+    public static final String NO_ADS_SKU = "no_ads";
+    public static final String MALWARE_DETECTION_SKU = "malware_detection";
+    public static final List<String> ALL_SKUS = Arrays.asList(
+            NO_ADS_SKU, MALWARE_DETECTION_SKU
+    );
 
-    public Whitelist(Context ctx) {
-        super(ctx);
+    protected final Context mContext;
 
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+    public Billing(Context ctx) {
+        mContext = ctx;
     }
 
-    public void reload() {
-        // Try to restore the whitelist
-        String serialized = mPrefs.getString(Prefs.PREF_WHITELIST, "");
-
-        if(!serialized.isEmpty())
-            fromJson(serialized);
+    public boolean isAvailable(String sku) {
+        return false;
     }
 
-    public void save() {
-        mPrefs.edit()
-            .putString(Prefs.PREF_WHITELIST, toJson())
-            .apply();
+    public boolean isPurchased(String sku) {
+        return false;
     }
 }

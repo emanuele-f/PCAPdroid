@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.CaptureService;
@@ -40,7 +41,8 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.model.Whitelist;
+import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +60,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Context mContext;
     private int mClickedPosition;
     private int mNumRemovedItems;
-    public boolean mWhitelistEnabled;
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
     // to provide an always increasing position even when items are removed. The correct unshifted
@@ -66,11 +67,13 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final HashMap<Integer, Integer> mIdToFilteredPos;
 
     private ArrayList<ConnectionDescriptor> mFilteredConn;
-    private String mFilter;
-    public final Whitelist mWhitelist;
+    private String mSearch;
+    public final MatchList mMask;
+    public FilterDescriptor mFilter = new FilterDescriptor();
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
+        ImageView blacklistedInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -89,6 +92,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             statusInd = itemView.findViewById(R.id.status_ind);
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
+            blacklistedInd = itemView.findViewById(R.id.blacklisted);
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
@@ -123,13 +127,17 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             lastSeen.setText(Utils.formatEpochShort(context, conn.last_seen / 1000));
             statusInd.setText(conn.getStatusLabel(context));
 
+            int color;
             if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
-                statusInd.setTextColor(0xFF28BC36); // Open
+                color = R.color.statusOpen;
             else if((conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                     || (conn.status == ConnectionDescriptor.CONN_STATUS_RESET))
-                statusInd.setTextColor(0xFFAAAAAA);
+                color = R.color.statusClosed;
             else
-                statusInd.setTextColor(0xFFF20015); // Error
+                color = R.color.statusError;
+            statusInd.setTextColor(context.getResources().getColor(color));
+
+            blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
@@ -143,12 +151,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mUnfilteredItemsCount = 0;
         mNumRemovedItems = 0;
         mIdToFilteredPos = new HashMap<>();
-        mWhitelistEnabled = true;
-        mWhitelist = new Whitelist(context);
-        mFilter = null;
+        mMask = PCAPdroid.getInstance().getVisualizationMask();
+        mSearch = null;
         setHasStableIds(true);
-
-        mWhitelist.reload();
     }
 
     @Override
@@ -198,8 +203,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     private boolean matches(ConnectionDescriptor conn) {
         return((conn != null)
-                && (!mWhitelistEnabled || !mWhitelist.matches(conn)))
-                && ((mFilter == null) || conn.matches(mApps, mFilter));
+                && mFilter.matches(conn)
+                && ((mSearch == null) || conn.matches(mApps, mSearch)));
     }
 
     private int getFilteredItemPos(int incrId) {
@@ -339,7 +344,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos.clear();
         mNumRemovedItems = 0;
 
-        if(hasWhitelistFilter() || (mFilter != null)) {
+        if(hasFilter()) {
             int pos = 0;
             mFilteredConn = new ArrayList<>();
 
@@ -373,8 +378,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return reg.getConn(pos);
     }
 
-    public void setFilter(String text) {
-        mFilter = text;
+    public void setSearch(String text) {
+        mSearch = text;
         refreshFilteredConnections();
     }
 
@@ -386,8 +391,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return getItem(mClickedPosition);
     }
 
-    public boolean hasWhitelistFilter() {
-        return (mWhitelistEnabled && !mWhitelist.isEmpty());
+    public boolean hasFilter() {
+        return (mSearch != null) || mFilter.isSet();
     }
 
     public synchronized String dumpConnectionsCsv() {

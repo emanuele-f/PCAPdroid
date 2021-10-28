@@ -1,0 +1,20 @@
+name: Debug build
+
+on: [push, pull_request]
+   
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+    - run: ./gradlew assembleDebug -PdoNotStrip
+    - uses: actions/upload-artifact@v2
+      with:
+        name: PCAPdroid build ${{github.sha}}
+        path: app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 7

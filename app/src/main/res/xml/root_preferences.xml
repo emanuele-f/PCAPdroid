@@ -16,7 +16,8 @@
 
 <PreferenceScreen
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <PreferenceCategory app:title="@string/http_server" app:iconSpaceReserved="false">
         <EditTextPreference
@@ -103,6 +104,15 @@
             <intent android:action="android.intent.action.VIEW"
                 android:data="https://emanuele-f.github.io/PCAPdroid/advanced_features#45-pcapdroid-trailer" />
         </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/security" app:iconSpaceReserved="false" app:key="security">
+        <SwitchPreference
+            app:key="malware_detection"
+            app:title="@string/malware_detection"
+            app:iconSpaceReserved="false"
+            app:summary="@string/malware_detection_summary"
+            app:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >

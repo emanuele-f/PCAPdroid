@@ -31,19 +31,19 @@ import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
-import com.emanuelef.remote_capture.model.ConnectionsMatcher;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.Iterator;
 
-public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> implements TextAdapter {
+public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
 
-    public WhitelistEditAdapter(Context context, Iterator<ConnectionsMatcher.Item> items) {
-        super(context, R.layout.whitelist_item);
+    public ListEditAdapter(Context context, Iterator<MatchList.Rule> items) {
+        super(context, R.layout.rule_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         while(items.hasNext()) {
-            ConnectionsMatcher.Item item = items.next();
+            MatchList.Rule item = items.next();
             add(item);
         }
     }
@@ -52,10 +52,10 @@ public class WhitelistEditAdapter extends ArrayAdapter<ConnectionsMatcher.Item> 
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if(convertView == null)
-            convertView = mLayoutInflater.inflate(R.layout.whitelist_item, parent, false);
+            convertView = mLayoutInflater.inflate(R.layout.rule_item, parent, false);
 
-        ConnectionsMatcher.Item item = getItem(position);
-        ((TextView)convertView.findViewById(R.id.item_label)).setText(item.getLabel());
+        MatchList.Rule rule = getItem(position);
+        ((TextView)convertView.findViewById(R.id.item_label)).setText(rule.getLabel());
 
         return convertView;
     }

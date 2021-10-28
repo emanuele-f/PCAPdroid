@@ -2,6 +2,14 @@
     <style name="AppTheme" parent="Base.AppTheme">
         <!--
         <item name="android:colorBackground">#ff000000</item>
+        <item name="materialThemeOverlay">@style/ButtonStyleTextColor</item>
         -->
     </style>
+
+    <!--
+    <style name="ButtonStyleTextColor">
+        <item name="colorOnPrimary">@color/colorTabText</item>
+        <item name="colorOnSecondary">@color/colorTabText</item>
+    </style>
+    -->
 </resources>

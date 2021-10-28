@@ -27,6 +27,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -49,12 +50,18 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
+import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
@@ -71,12 +78,14 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
+    private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
     private CaptureSettings mSettings;
     private Handler mHandler;
-    private Thread mThread;
+    private Thread mCaptureThread;
+    private Thread mBlacklistsUpdateThread;
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -86,10 +95,13 @@ public class CaptureService extends VpnService implements Runnable {
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
-    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mStatusBuilder;
+    private NotificationCompat.Builder mBlacklistedBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
+    private boolean mMalwareDetectionEnabled;
+    private Blacklists mBlacklists;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -135,7 +147,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int abortStart() {
         // NOTE: startForeground must be called before stopSelf, otherwise an exception will occur
         setupNotifications();
-        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
 
         stopSelf();
         sendServiceStatus(SERVICE_STATUS_STOPPED);
@@ -192,10 +204,8 @@ public class CaptureService extends VpnService implements Runnable {
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
             mDumper = new HTTPServer(this, mSettings.http_server_port);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
-            String path = intent.getStringExtra(Prefs.PREF_PCAP_URI);
-
-            if(path != null) {
-                mPcapUri = Uri.parse(path);
+            if(mSettings.pcap_uri != null) {
+                mPcapUri = Uri.parse(mSettings.pcap_uri);
                 mDumper = new FileDumper(this, mPcapUri);
             }
         } else if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
@@ -215,7 +225,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mDumper != null) {
             try {
                 mDumper.startDumper();
-            } catch (IOException e) {
+            } catch (IOException | SecurityException e) {
                 reportError(e.getLocalizedMessage());
                 e.printStackTrace();
                 mDumper = null;
@@ -232,6 +242,9 @@ public class CaptureService extends VpnService implements Runnable {
             }
         } else
             app_filter_uid = -1;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, prefs);
 
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
@@ -282,16 +295,21 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // Stop the previous session by interrupting the thread.
-        if (mThread != null) {
-            mThread.interrupt();
+        if (mCaptureThread != null) {
+            mCaptureThread.interrupt();
         }
 
+        mBlacklists = PCAPdroid.getInstance().getBlacklistsStatus();
+        if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
+            reloadBlacklists();
+        checkBlacklistsUpdates();
+
         // Start a new session by creating a new thread.
-        mThread = new Thread(this, "CaptureService Thread");
-        mThread.start();
+        mCaptureThread = new Thread(this, "CaptureService Thread");
+        mCaptureThread.start();
 
         setupNotifications();
-        startForeground(NOTIFY_ID_VPNSERVICE, getNotification());
+        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
         return START_STICKY;
     }
 
@@ -309,9 +327,10 @@ public class CaptureService extends VpnService implements Runnable {
         stop();
         INSTANCE = null;
 
-        if(mThread != null) {
-            mThread.interrupt();
-        }
+        if(mCaptureThread != null)
+            mCaptureThread.interrupt();
+        if(mBlacklistsUpdateThread != null)
+            mBlacklistsUpdateThread.interrupt();
         if(mDumper != null) {
             try {
                 mDumper.stopDumper();
@@ -329,16 +348,21 @@ public class CaptureService extends VpnService implements Runnable {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+            // VPN running notification channel
             NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
                     NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
             nm.createNotificationChannel(chan);
+
+            // Blacklisted connection notification channel
+            chan = new NotificationChannel(NOTIFY_CHAN_BLACKLISTED,
+                    NOTIFY_CHAN_BLACKLISTED, NotificationManager.IMPORTANCE_HIGH);
+            nm.createNotificationChannel(chan);
         }
 
-        // Notification builder
+        // Status notification builder
         PendingIntent pi = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mNotificationBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
+                new Intent(this, MainActivity.class), Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+        mStatusBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_VPNSERVICE)
                 .setSmallIcon(R.drawable.ic_logo)
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentIntent(pi)
@@ -346,38 +370,62 @@ public class CaptureService extends VpnService implements Runnable {
                 .setAutoCancel(false)
                 .setContentTitle(getResources().getString(R.string.capture_running))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
-        // CATEGORY_RECOMMENDATION makes the notification visible on the home screen of Android TVs.
-        // However this is not what CATEGORY_RECOMMENDATION is designed for, so it should be avoided.
-        /*
-        if(Utils.isTv(this)) {
-            // This is the icon which is visualized
-            Drawable banner = ContextCompat.getDrawable(this, R.drawable.banner);
-            BitmapDrawable largeIcon = Utils.scaleDrawable(getResources(), banner,
-                    banner.getIntrinsicWidth(), banner.getIntrinsicHeight());
-
-            if(largeIcon != null)
-                mNotificationBuilder.setLargeIcon(largeIcon.getBitmap());
-
-            // On Android TV it must be shown as a recommendation
-            mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_RECOMMENDATION);
-        } else*/
-        mNotificationBuilder.setCategory(NotificationCompat.CATEGORY_STATUS);
+        // Blacklisted notification builder
+        mBlacklistedBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_BLACKLISTED)
+                .setSmallIcon(R.drawable.ic_skull)
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setPriority(NotificationCompat.PRIORITY_HIGH); // see IMPORTANCE_HIGH
     }
 
-    private Notification getNotification() {
+    private Notification getStatusNotification() {
         String msg = String.format(getString(R.string.notification_msg),
                 Utils.formatBytes(last_bytes), Utils.formatNumber(this, last_connections));
 
-        mNotificationBuilder.setContentText(msg);
+        mStatusBuilder.setContentText(msg);
 
-        return mNotificationBuilder.build();
+        return mStatusBuilder.build();
     }
 
     private void updateNotification() {
-        Notification notification = getNotification();
+        Notification notification = getStatusNotification();
         NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
+    }
+
+    public void notifyBlacklistedConnection(ConnectionDescriptor conn) {
+        int uid = conn.uid;
+
+        AppDescriptor app = appsResolver.get(conn.uid, 0);
+        assert app != null;
+
+        FilterDescriptor filter = new FilterDescriptor();
+        filter.onlyBlacklisted = true;
+
+        Intent intent = new Intent(this, ConnectionsActivity.class)
+                .putExtra(ConnectionsFragment.FILTER_EXTRA, filter)
+                .putExtra(ConnectionsFragment.QUERY_EXTRA, app.getPackageName());
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                intent, Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+
+        String rule_label;
+        if(conn.isBlacklistedHost())
+            rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.HOST, conn.info);
+        else
+            rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.IP, conn.dst_ip);
+
+        mBlacklistedBuilder
+                .setContentIntent(pi)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(String.format(getResources().getString(R.string.malicious_connection_app), app.getName()))
+                .setContentText(rule_label);
+        Notification notification = mBlacklistedBuilder.build();
+
+        // Use the UID as the notification ID to group alerts from the same app
+        mHandler.post(() -> NotificationManagerCompat.from(this).notify(uid, notification));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -426,16 +474,16 @@ public class CaptureService extends VpnService implements Runnable {
     private void stop() {
         stopPacketLoop();
 
-        while((mThread != null) && (mThread.isAlive())) {
+        while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
                 Log.d(TAG, "Joining native thread...");
-                mThread.join();
+                mCaptureThread.join();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Joining native thread failed");
             }
         }
 
-        mThread = null;
+        mCaptureThread = null;
 
         if(mParcelFileDescriptor != null) {
             try {
@@ -462,14 +510,30 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void stopThread() {
-        mThread = null;
+        mCaptureThread = null;
         stop();
     }
 
     /* Check if the VPN service was launched */
     public static boolean isServiceActive() {
         return((INSTANCE != null) &&
-                (INSTANCE.mThread != null));
+                (INSTANCE.mCaptureThread != null));
+    }
+
+    private void checkBlacklistsUpdates() {
+        if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
+            return;
+
+        if(mBlacklists.needsUpdate()) {
+            mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
+            mBlacklistsUpdateThread.start();
+        }
+    }
+
+    private void updateBlacklistsWork() {
+        mBlacklists.update();
+        reloadBlacklists();
+        mBlacklistsUpdateThread = null;
     }
 
     public static String getAppFilter() {
@@ -533,25 +597,28 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isRootCapture() == 1));
     }
 
+    // Inside the mCaptureThread
     @Override
     public void run() {
         if(mSettings.root_capture) {
             runPacketLoop(-1, this, Build.VERSION.SDK_INT);
-            return;
-        }
+        } else {
+            if(mParcelFileDescriptor != null) {
+                int fd = mParcelFileDescriptor.getFd();
+                int fd_setsize = getFdSetSize();
 
-        if(mParcelFileDescriptor != null) {
-            int fd = mParcelFileDescriptor.getFd();
-            int fd_setsize = getFdSetSize();
-
-            if((fd > 0) && (fd < fd_setsize)) {
-                Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
-                runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-            } else {
-                Log.e(TAG, "Invalid VPN fd: " + fd);
-                stopThread();
+                if((fd > 0) && (fd < fd_setsize)) {
+                    Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
+                    runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+                } else {
+                    Log.e(TAG, "Invalid VPN fd: " + fd);
+                    stopThread();
+                }
             }
         }
+
+        if(mMalwareDetectionEnabled)
+            mBlacklists.save();
     }
 
     /* The following methods are called from native code */
@@ -579,6 +646,8 @@ public class CaptureService extends VpnService implements Runnable {
     public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
 
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
+
+    public int malwareDetectionEnabled() { return(mMalwareDetectionEnabled ? 1 : 0); }
 
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
@@ -629,6 +698,8 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
+        checkBlacklistsUpdates();
+
         // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
         // thus preventing the ConnectionsAdapter from interleaving other operations
         synchronized (conn_reg) {
@@ -655,6 +726,7 @@ public class CaptureService extends VpnService implements Runnable {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    // also called from native
     private void sendServiceStatus(String cur_status) {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);
@@ -689,17 +761,19 @@ public class CaptureService extends VpnService implements Runnable {
         });
     }
 
-    public static String getPcapdWorkingDir(Context ctx) {
-        return ctx.getCacheDir().getAbsolutePath();
+    public String getWorkingDir() {
+        return getCacheDir().getAbsolutePath();
     }
-    public String getPcapdWorkingDir() {
-        return getPcapdWorkingDir(this);
-    }
+    public String getPersistentDir() { return getFilesDir().getAbsolutePath(); }
 
     public String getLibprogPath(String prog_name) {
         // executable binaries are stored into the /lib folder of the app
         String dir = getApplicationInfo().nativeLibraryDir;
         return(dir + "/lib" + prog_name + ".so");
+    }
+
+    public void notifyBlacklistsLoaded(int num_lists, int num_domains, int num_ips) {
+        mBlacklists.onNativeLoaded(num_lists, num_domains, num_ips);
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
@@ -708,4 +782,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native int getFdSetSize();
     public static native void setDnsServer(String server);
     public static native byte[] getPcapHeader();
+    public static native void reloadBlacklists();
 }

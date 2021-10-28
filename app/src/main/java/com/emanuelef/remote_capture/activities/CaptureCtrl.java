@@ -1,6 +1,5 @@
 package com.emanuelef.remote_capture.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,16 +11,18 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 
-public class CaptureCtrl extends Activity {
+public class CaptureCtrl extends AppCompatActivity {
     private static final String TAG = "CaptureCtrl";
     private static String calling_package = null;
+    private CaptureHelper mCapHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,6 +30,12 @@ public class CaptureCtrl extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         super.onCreate(savedInstanceState);
+
+        mCapHelper = new CaptureHelper(this);
+        mCapHelper.setListener(success -> {
+            setResult(success ? RESULT_OK : RESULT_CANCELED, null);
+            finish();
+        });
 
         Intent intent = getIntent();
         String action = intent.getStringExtra("action");
@@ -59,6 +66,12 @@ public class CaptureCtrl extends Activity {
                 }, 1500);
     }
 
+    @Override
+    protected void onDestroy() {
+        mCapHelper = null;
+        super.onDestroy();
+    }
+
     private boolean isAlreadyAuthorized(@NonNull String action) {
         // Automatically authorize an app to stop the capture it started
         return !action.equals("start") && (calling_package != null)
@@ -87,10 +100,9 @@ public class CaptureCtrl extends Activity {
             calling_package = getCallingPackage();
             Log.d(TAG, "Starting capture, caller=" + calling_package);
 
-            final Intent intent = new Intent(this, CaptureService.class);
-            CaptureSettings settings = new CaptureSettings(req_intent);
-            intent.putExtra("settings", settings);
-            ContextCompat.startForegroundService(this, intent);
+            // will call the mCapHelper listener
+            mCapHelper.startCapture(new CaptureSettings(req_intent));
+            return;
         } else if(action.equals("stop")) {
             Log.d(TAG, "Stopping capture");
 

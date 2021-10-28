@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
 xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent">
 
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="8dp"
+    android:layout_height="wrap_content">
 <TableLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
     android:id="@+id/table">
 
     <TableRow
@@ -233,5 +238,37 @@ android:layout_height="fill_parent">
             android:textIsSelectable="true" />
     </TableRow>
 </TableLayout>
+
+<RelativeLayout
+    android:id="@+id/blacklists_status_row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp">
+
+    <TextView
+        android:id="@+id/blacklists_status_lbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/blacklists_status"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/blacklists_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/blacklists_status_lbl"
+        tools:text="Up-to-date: 4/4 ― Domain rules: 12k ― IP rules: 800\nLast update: 3h ago" />
+</RelativeLayout>
+
+<TextView
+    android:id="@+id/alloc_stats"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp"
+    android:visibility="gone"
+    tools:visibility="visible"
+    tools:text="Alloc Stats..."/>
+</LinearLayout>
 
 </ScrollView>

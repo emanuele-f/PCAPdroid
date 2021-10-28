@@ -68,13 +68,25 @@
                 android:layout_weight="0.25"
                 android:textStyle="bold"
                 android:text="@string/sni" />
-            <TextView
-                android:id="@+id/detail_info"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="0.75"
-                android:textIsSelectable="true"
-                tools:text="ssl.example.com" />
+                android:orientation="horizontal">
+                <ImageView
+                    android:id="@+id/blacklisted_host"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingVertical="3sp"
+                    android:src="@drawable/ic_skull"
+                    app:tint="@color/colorTabText"/>
+                <TextView
+                    android:id="@+id/detail_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    tools:text="ssl.example.com" />
+            </LinearLayout>
         </TableRow>
 
         <TableRow
@@ -107,13 +119,42 @@
                 android:layout_weight="0.25"
                 android:textStyle="bold"
                 android:text="@string/destination" />
-            <TextView
-                android:id="@+id/detail_destination"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="0.75"
-                android:textIsSelectable="true"
-                tools:text="5.6.7.8:443" />
+                android:orientation="horizontal">
+                <ImageView
+                    android:id="@+id/blacklisted_ip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingVertical="3sp"
+                    android:src="@drawable/ic_skull"
+                    app:tint="@color/colorTabText"
+                    android:contentDescription="@string/malicious_connection_filter" />
+                <TextView
+                    android:id="@+id/detail_destination"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    tools:text="5.6.7.8:443" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/whois_ip"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingVertical="0dp"
+                    android:paddingHorizontal="5dp"
+                    android:drawableEnd="@drawable/ic_external"
+                    app:drawableTint="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:textSize="12sp"
+                    android:text="@string/whois_lookup"/>
+            </LinearLayout>
         </TableRow>
 
         <TableRow

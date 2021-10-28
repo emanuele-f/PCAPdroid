@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:fillViewport="true"
-    android:padding="8dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:padding="8dp">
 
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
@@ -185,8 +185,8 @@
             android:layout_width="0dp"
             android:layout_height="42dip"
             android:layout_weight="1"
-            android:textSize="12sp"
-            tools:ignore="ButtonStyle" />
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="@color/colorTabText" />
 
         <Button
             android:id="@+id/show_connections"
@@ -194,9 +194,7 @@
             android:layout_marginStart="5dp"
             android:layout_width="0dp"
             android:layout_height="42dip"
-            android:layout_weight="1"
-            android:textSize="12sp"
-            tools:ignore="ButtonStyle"/>
+            android:layout_weight="1" />
     </LinearLayout>
 
     <TextView

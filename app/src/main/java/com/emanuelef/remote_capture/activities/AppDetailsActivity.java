@@ -119,7 +119,7 @@ public class AppDetailsActivity extends BaseActivity {
 
         findViewById(R.id.show_connections).setOnClickListener(v -> {
             Intent intent = new Intent(this, ConnectionsActivity.class);
-            intent.putExtra(ConnectionsFragment.FILTER_EXTRA, dsc.getPackageName());
+            intent.putExtra(ConnectionsFragment.QUERY_EXTRA, dsc.getPackageName());
             startActivity(intent);
         });
     }
