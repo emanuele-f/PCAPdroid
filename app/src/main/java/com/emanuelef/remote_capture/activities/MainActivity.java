@@ -645,7 +645,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
         long file_size = !cursor.isNull(sizeIndex) ? cursor.getLong(sizeIndex) : -1;
-        String fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        String fname = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
         cursor.close();
 
         // If file is empty, delete it
@@ -718,7 +719,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             if((cursor == null) || !cursor.moveToFirst())
                 return null;
 
-            String fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            String fname = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
             cursor.close();
 
             mPcapFname = fname;

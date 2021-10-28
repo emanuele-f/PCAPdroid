@@ -3,7 +3,6 @@
     <string name="start_button">開始</string>
     <string name="stop_button">終了</string>
     <string name="title_activity_settings">設定</string>
-    <string name="no_filter">フィルターがありません</string>
     <string name="collector_info">UDP コントローラー: %1$s:%2$d</string>
     <string name="http_server_status">HTTP サーバー: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s 受信 — %2$s 送信</string>
@@ -35,13 +34,7 @@
     <string name="receiver_ip_address">コントローラー IP アドレス</string>
     <string name="receiver_port">コントローラー ポート</string>
     <string name="dump_mode">ダンプ モード</string>
-    <string name="tls_proxy_ip_address">mitmproxy IP アドレス</string>
-    <string name="tls_proxy_port">mitmproxy ポート</string>
-    <string name="enable_tls_decryption">TLS 復号化を有効にする</string>
-    <string name="enable_tls_decryption_summary">有効にすると、すべての TLS トラフィックは復号化のためにリモートの mitmproxy インスタンスにリダイレクトされます。</string>
-    <string name="tls_decryption">TLS 復号化</string>
     <string name="user_guide">ユーザー ガイド</string>
-    <string name="rate_app">評価</string>
     <string name="open_telegram_group">Telegram グループ</string>
     <string name="source_code">ソース コード</string>
     <string name="yes">はい</string>
@@ -65,13 +58,10 @@
     <string name="no_apps">アプリはありません</string>
     <string name="dns_server">DNS サーバー</string>
     <string name="apps">アプリ</string>
-    <string name="remove_app_filter">アプリ フィルターを削除</string>
-    <string name="set_app_filter">アプリ フィルターをセット</string>
     <string name="navigation_drawer_open">ドロワーを開く</string>
     <string name="navigation_drawer_close">ドロワーを閉じる</string>
     <string name="pcap_file">PCAP ファイル</string>
     <string name="pcap_file_info">デバイスのストレージに PCAP ファイルを作成する</string>
-    <string name="cannot_write_pcap_file">PCAP ファイルに書き込むことができません</string>
     <string name="cannot_write_file">ファイルに書き込むことができません</string>
     <string name="share">共有</string>
     <string name="delete">削除</string>
@@ -98,7 +88,6 @@
     <string name="get_app">入手:</string>
     <string name="tls_how_to">TLS 復号化のセットアップ方法</string>
     <string name="unknown_app">不明</string>
-    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">IPv6 を有効にする</string>
     <string name="enable_ipv6_summary">IPv6 インターネット接続を許可します。IPv6 ゲートウェイを搭載したネットワークでのみ有効にする必要があります。</string>
     <string name="error">エラー</string>
@@ -120,7 +109,6 @@
     <string name="root_capture">ルートとしてキャプチャ</string>
     <string name="root_capture_summary">ルートとしてパケットをキャプチャすると、他の VPN アプリを使いながら実行することができます。</string>
     <string name="donate">寄付</string>
-    <string name="http_request">HTTP リクエスト</string>
     <string name="root_log">ルート ログ</string>
     <string name="request_plaintext">プレーンテキストをリクエスト</string>
     <string name="search">検索…</string>
@@ -128,13 +116,6 @@
     <string name="ip_address_val">IP アドレス: %1$s</string>
     <string name="host_val">ホスト: %1$s</string>
     <string name="protocol_val">プロトコル: %1$s</string>
-    <string name="cancel">キャンセル</string>
-    <string name="edit">編集</string>
-    <string name="delete_all">すべて削除</string>
-    <string name="show_whitelisted">ホワイトリストの接続を表示</string>
-    <string name="hide_whitelisted">ホワイトリストの接続を隠す</string>
-    <string name="whitelist">ホワイトリスト</string>
-    <string name="edit_whitelist">ホワイトリストを編集</string>
     <string name="whitelist_action">ホワイトリスト…</string>
     <string name="n_selected">%1$d 選択済み</string>
     <string name="select_all">すべて選択</string>

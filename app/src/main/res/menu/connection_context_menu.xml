@@ -61,6 +61,31 @@
         </menu>
     </item>
 
+    <item android:title="@string/copy_action">
+        <menu>
+            <item
+                android:id="@+id/copy_ip"
+                android:title=""
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/copy_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/copy_url"
+                android:title=""
+                android:visible="false" />
+
+            <item
+                android:id="@+id/copy_request_plaintext"
+                android:title="@string/request_plaintext"
+                android:visible="false" />
+        </menu>
+    </item>
+
     <item android:id="@+id/whitelist_menu" android:title="@string/whitelist_action">
         <menu>
             <item

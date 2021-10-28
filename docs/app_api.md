@@ -53,7 +53,7 @@ class YourActivity extends Activity {
 }
 ```
 
-The result code tells if the command succeded or not.
+The result code tells if the command succeded or not. Check out the [PCAPReceiver sample app](https://github.com/emanuele-f/PCAPReceiver) for a working example.
 
 ## User Consent
 

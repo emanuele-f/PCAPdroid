@@ -71,6 +71,7 @@ import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
@@ -89,6 +90,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private TextView mOldConnectionsText;
     private boolean autoScroll;
     private boolean listenerSet;
+    private ChipGroup mActiveFilter;
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
@@ -169,11 +171,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
         mApps = new AppsResolver(requireContext());
-        mEmptyText = view.findViewById(R.id.no_connections);
 
+        mEmptyText = view.findViewById(R.id.no_connections);
         if((requireActivity() instanceof MainActivity) &&
                 (((MainActivity) requireActivity()).getState() == AppState.running))
             mEmptyText.setText(R.string.no_connections);
+
+        mActiveFilter = view.findViewById(R.id.active_filter);
+        mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
+            if(mAdapter != null) {
+                mAdapter.mFilter.clear(checkedId);
+                refreshFilteredConnections();
+            }
+        });
 
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
@@ -248,6 +258,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(!fromIntent && savedInstanceState.containsKey("filter_desc"))
                 mAdapter.mFilter = (FilterDescriptor) savedInstanceState.getSerializable("filter_desc");
         }
+        refreshActiveFilter();
 
         if((search != null) && !search.isEmpty())
             mQueryToApply = search;
@@ -298,6 +309,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.connection_context_menu, menu);
+        int max_length = 32;
 
         ConnectionDescriptor conn = mAdapter.getClickedItem();
 
@@ -306,10 +318,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
+        MenuItem item;
 
         if(app != null) {
-            MenuItem item = menu.findItem(R.id.hide_app);
-            String label = MatchList.getRuleLabel(ctx, RuleType.APP, Integer.toString(app.getUid()));
+            item = menu.findItem(R.id.hide_app);
+            String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.APP, Integer.toString(app.getUid())), max_length);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -325,12 +338,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
-            MenuItem item = menu.findItem(R.id.hide_host);
-            String label = MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info);
+            item = menu.findItem(R.id.hide_host);
+            String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info), max_length);
             item.setTitle(label);
             item.setVisible(true);
 
             item = menu.findItem(R.id.search_host);
+            item.setTitle(label);
+            item.setVisible(true);
+
+            item = menu.findItem(R.id.copy_host);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -339,7 +356,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(!rootDomain.equals(dm_clean)) {
                 item = menu.findItem(R.id.hide_root_domain);
-                item.setTitle(MatchList.getRuleLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain));
+                item.setTitle(Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain), max_length));
                 item.setVisible(true);
             }
 
@@ -350,8 +367,20 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         }
 
+        if((conn.url != null) && !(conn.url.isEmpty())) {
+            item = menu.findItem(R.id.copy_url);
+            item.setTitle(Utils.shorten(String.format(getString(R.string.url_val), conn.url), max_length));
+            item.setVisible(true);
+        }
+
+        if(!conn.request_plaintext.isEmpty()) {
+            item = menu.findItem(R.id.copy_request_plaintext);
+            item.setVisible(true);
+        }
+
         String label = MatchList.getRuleLabel(ctx, RuleType.IP, conn.dst_ip);
         menu.findItem(R.id.hide_ip).setTitle(label);
+        menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.whitelist_ip).setTitle(label);
@@ -364,27 +393,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             menu.findItem(R.id.whitelist_menu).setVisible(false);
     }
 
-    private void setQuery(String query) {
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        // Delay otherwise the query won't be set when the activity is just started.
-        mSearchView.post(() -> {
-            mSearchView.setQuery(query, true);
-        });
-    }
-
-    private void recheckBlacklistedConnections() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg != null)
-            reg.refreshConnectionsWhitelist();
-    }
-
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
+        Context ctx = requireContext();
         ConnectionDescriptor conn = mAdapter.getClickedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         boolean mask_changed = false;
@@ -432,7 +443,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
             startActivity(intent);
-        } else
+        } else if(id == R.id.copy_ip)
+            Utils.copyToClipboard(ctx, conn.dst_ip);
+        else if(id == R.id.copy_host)
+            Utils.copyToClipboard(ctx, conn.info);
+        else if(id == R.id.copy_url)
+            Utils.copyToClipboard(ctx, conn.url);
+        else if(id == R.id.copy_request_plaintext)
+            Utils.copyToClipboard(ctx, conn.request_plaintext);
+        else
             return super.onContextItemSelected(item);
 
         if(mask_changed) {
@@ -445,6 +464,25 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         return true;
+    }
+
+    private void setQuery(String query) {
+        mSearchView.setIconified(false);
+        mMenuItemSearch.expandActionView();
+
+        mSearchView.setIconified(false);
+        mMenuItemSearch.expandActionView();
+
+        // Delay otherwise the query won't be set when the activity is just started.
+        mSearchView.post(() -> {
+            mSearchView.setQuery(query, true);
+        });
+    }
+
+    private void recheckBlacklistedConnections() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg != null)
+            reg.refreshConnectionsWhitelist();
     }
 
     private void recheckScroll() {
@@ -489,10 +527,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mOldConnectionsText.setVisibility(View.GONE);
     }
 
+    private void refreshActiveFilter() {
+        if(mAdapter == null)
+            return;
+
+        mActiveFilter.removeAllViews();
+        mAdapter.mFilter.toChips(getLayoutInflater(), mActiveFilter);
+    }
+
     // This performs an unoptimized adapter refresh
     private void refreshFilteredConnections() {
         mAdapter.refreshFilteredConnections();
         refreshMenuIcons();
+        refreshActiveFilter();
         recheckScroll();
     }
 
@@ -675,9 +722,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
             FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
+            Log.d(TAG, "filter fra");
             if(descriptor != null) {
+                Log.d(TAG, "filter fre");
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();
+                refreshActiveFilter();
             }
         }
     }

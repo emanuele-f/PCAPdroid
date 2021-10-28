@@ -16,15 +16,15 @@
             android:id="@+id/connections_mask"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_marginBottom="15dp">
+            android:layout_marginBottom="10dp">
 
             <CheckBox
-                android:id="@+id/show_masked"
+                android:id="@+id/not_hidden"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@id/edit_mask"
-                android:text="@string/show_hidden_connections" />
+                android:text="@string/not_hidden_filter" />
 
             <Button
                 android:id="@+id/edit_mask"
@@ -40,8 +40,15 @@
             android:id="@+id/only_blacklisted"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="10dp"
             android:text="@string/show_only_malicious" />
+
+        <CheckBox
+            android:id="@+id/only_plaintext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/show_only_plaintext" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -58,28 +65,28 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_open"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_open"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_closed"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_closed"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_unreachable"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/conn_status_unreachable"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_error"
-                style="@style/Widget.MaterialComponents.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/error"/>

@@ -28,7 +28,7 @@ typedef struct string_entry {
 struct blacklist {
     string_entry_t *domains;
     struct ndpi_detection_module_struct *ndpi;
-    bool locked;
+    bool ready;
     blacklist_stats_t stats;
 };
 
@@ -38,7 +38,7 @@ blacklist_t* blacklist_init(struct ndpi_detection_module_struct *ndpi) {
     if(!ndpi)
         return NULL;
 
-    blacklist_t *bl = (blacklist_t*) calloc(1, sizeof(blacklist_t));
+    blacklist_t *bl = (blacklist_t*) bl_calloc(1, sizeof(blacklist_t));
     if(!bl)
         return NULL;
 
@@ -55,19 +55,31 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
     if(blacklist_match_domain(bl, domain))
         return -EADDRINUSE; // duplicate domain
 
-    string_entry_t *entry = malloc(sizeof(string_entry_t));
+    string_entry_t *entry = bl_malloc(sizeof(string_entry_t));
     if(!entry)
         return -ENOMEM;
 
-    entry->key = strdup(domain);
+    entry->key = bl_strdup(domain);
     if(!entry->key) {
-        free(entry);
+        bl_free(entry);
         return -ENOMEM;
     }
 
     HASH_ADD_KEYPTR(hh, bl->domains, entry->key, strlen(entry->key), entry);
     bl->stats.num_domains++;
     return 0;
+}
+
+/* ******************************************************* */
+
+int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net) {
+    if(ndpi_load_ip_category(bl->ndpi, ip_or_net, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0) {
+        // NOTE: duplicate IPs are not detected, so they will be counted multiple times.
+        // This could be fixed by using the ndpi_ptree_t API instead.
+        bl->stats.num_ips++;
+        return 0;
+    }
+    return -EINVAL;
 }
 
 /* ******************************************************* */
@@ -79,7 +91,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
     int num_ip_ok = 0, num_ip_fail = 0;
     int max_file_rules = 500000;
 
-    if(bl->locked) {
+    if(bl->ready) {
         log_e("Blacklist is locked. Run blacklist_clear and load it again.");
         return -1;
     }
@@ -117,7 +129,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
                 continue;
             }
 
-            if(ndpi_load_ip_category(bl->ndpi, item, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0)
+            if(blacklist_add_ip(bl, item) == 0)
                 num_ip_ok++;
             else
                 num_ip_fail++;
@@ -143,10 +155,19 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
           strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
 
     bl->stats.num_lists++;
-    bl->stats.num_ips += num_ip_ok;
     bl->stats.num_failed += num_ip_fail + num_dm_fail;
 
     return 0;
+}
+
+/* ******************************************************* */
+
+// Neded to properly load nDPI. Must be called on the capture thread.
+void blacklist_ready(blacklist_t *bl) {
+    if(!bl->ready) {
+        ndpi_enable_loaded_categories(bl->ndpi);
+        bl->ready = true;
+    }
 }
 
 /* ******************************************************* */
@@ -156,14 +177,11 @@ void blacklist_clear(blacklist_t *bl) {
 
     HASH_ITER(hh, bl->domains, entry, tmp) {
         HASH_DELETE(hh, bl->domains, entry);
-        free(entry->key);
-        free(entry);
+        bl_free(entry->key);
+        bl_free(entry);
     }
     bl->domains = NULL;
-
-    // reload with an empty set to force release memory
-    ndpi_enable_loaded_categories(bl->ndpi);
-    bl->locked = false;
+    bl->ready = false;
     memset(&bl->stats, 0, sizeof(bl->stats));
 }
 
@@ -171,7 +189,7 @@ void blacklist_clear(blacklist_t *bl) {
 
 void blacklist_destroy(blacklist_t *bl) {
     blacklist_clear(bl);
-    free(bl);
+    bl_free(bl);
 }
 
 /* ******************************************************* */
@@ -182,10 +200,8 @@ bool blacklist_match_ip(blacklist_t *bl, uint32_t ip) {
     ipstr[0] = '\0';
     ndpi_protocol_category_t cat = 0;
 
-    if(!bl->locked) {
-        ndpi_enable_loaded_categories(bl->ndpi);
-        bl->locked = true;
-    }
+    if(!bl->ready)
+        return false;
 
     addr.s_addr = ip;
     inet_ntop(AF_INET, &addr, ipstr, sizeof(ipstr));

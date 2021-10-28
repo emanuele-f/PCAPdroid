@@ -21,6 +21,7 @@
 // Inspired by https://jehiah.cz/a/uthash
 
 #include <stdlib.h>
+#include "common/utils.h"
 #include "ip_lru.h"
 #include "third_party/uthash.h"
 
@@ -38,7 +39,7 @@ struct ip_lru {
 /* ******************************************************* */
 
 ip_lru_t* ip_lru_init(int max_size) {
-    ip_lru_t *lru = (ip_lru_t*) malloc(sizeof(ip_lru_t));
+    ip_lru_t *lru = (ip_lru_t*) pd_malloc(sizeof(ip_lru_t));
 
     if(!lru)
         return NULL;
@@ -56,11 +57,11 @@ void ip_lru_destroy(ip_lru_t *lru) {
 
     HASH_ITER(hh, lru->cache, entry, tmp) {
         HASH_DELETE(hh, lru->cache, entry);
-        free(entry->host);
-        free(entry);
+        pd_free(entry->host);
+        pd_free(entry);
     }
 
-    free(lru);
+    pd_free(lru);
 }
 
 /* ******************************************************* */
@@ -85,7 +86,7 @@ static struct cache_entry* ip_lru_find_entry(ip_lru_t *lru, const zdtun_ip_t *ip
 
 void ip_lru_add(ip_lru_t *lru, const zdtun_ip_t *ip, const char *hostname) {
     struct cache_entry *entry, *tmp;
-    char *host = strdup(hostname);
+    char *host = pd_strdup(hostname);
 
     if(!host)
         return;
@@ -95,15 +96,15 @@ void ip_lru_add(ip_lru_t *lru, const zdtun_ip_t *ip, const char *hostname) {
 
     if(entry != NULL) {
         // update existing
-        free(entry->host);
+        pd_free(entry->host);
         entry->host = host;
         return;
     }
 
-    entry = malloc(sizeof(struct cache_entry));
+    entry = pd_malloc(sizeof(struct cache_entry));
 
     if(!entry) {
-        free(host);
+        pd_free(host);
         return;
     }
 
@@ -118,8 +119,8 @@ void ip_lru_add(ip_lru_t *lru, const zdtun_ip_t *ip, const char *hostname) {
         HASH_ITER(hh, lru->cache, entry, tmp) {
             // delete the oldest entry
             HASH_DELETE(hh, lru->cache, entry);
-            free(entry->host);
-            free(entry);
+            pd_free(entry->host);
+            pd_free(entry);
             break;
         }
     }
@@ -130,7 +131,7 @@ void ip_lru_add(ip_lru_t *lru, const zdtun_ip_t *ip, const char *hostname) {
 char* ip_lru_find(ip_lru_t *lru, const zdtun_ip_t *ip) {
     struct cache_entry *entry = ip_lru_find_entry(lru, ip);
 
-    return(entry ? strdup(entry->host) : NULL);
+    return(entry ? pd_strdup(entry->host) : NULL);
 }
 
 /* ******************************************************* */

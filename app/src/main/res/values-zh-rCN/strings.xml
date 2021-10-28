@@ -11,7 +11,6 @@
     <string name="start_button">启动</string>
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
-    <string name="no_filter">无过滤器</string>
     <string name="collector_info">UDP 收集器: %1$s:%2$d</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
@@ -43,13 +42,7 @@
     <string name="receiver_ip_address">收集器 IP 地址</string>
     <string name="receiver_port">收集器端口</string>
     <string name="dump_mode">转储模式</string>
-    <string name="tls_proxy_ip_address">mitmproxy IP 地址</string>
-    <string name="tls_proxy_port">mitmproxy 端口</string>
-    <string name="enable_tls_decryption">启用 TLS 解密</string>
-    <string name="enable_tls_decryption_summary">启用后，所有 TLS 通信都将被重定向到远程 mitmproxy 实例进行解密。</string>
-    <string name="tls_decryption">TLS 解密</string>
     <string name="user_guide">用户指南</string>
-    <string name="rate_app">评分</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="source_code">源代码</string>
     <string name="yes">是</string>
@@ -73,13 +66,10 @@
     <string name="no_apps">无应用</string>
     <string name="dns_server">DNS 服务器</string>
     <string name="apps">应用程序</string>
-    <string name="remove_app_filter">移除应用过滤器</string>
-    <string name="set_app_filter">设置应用过滤器</string>
     <string name="navigation_drawer_open">抽屉打开</string>
     <string name="navigation_drawer_close">抽屉关闭</string>
     <string name="pcap_file">PCAP 文件</string>
     <string name="pcap_file_info">在设备存储中创建一个 PCAP 文件</string>
-    <string name="cannot_write_pcap_file">无法写 PCAP 文件</string>
     <string name="cannot_write_file">无法写文件</string>
     <string name="share">分享</string>
     <string name="delete">删除</string>
@@ -106,7 +96,6 @@
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
     <string name="unknown_app">未知</string>
-    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">启用 IPv6</string>
     <string name="enable_ipv6_summary">允许 IPv6 网络连接。这应该只在带有 IPv6 网关的网络上启用。</string>
     <string name="error">错误</string>
@@ -128,7 +117,6 @@
     <string name="root_capture">以根用户身份捕获流量</string>
     <string name="root_capture_summary">以根用户身份捕获数据包允许 PCAPdroid 与其他 VPN 应用程序一起运行。</string>
     <string name="donate">捐赠</string>
-    <string name="http_request">HTTP 请求</string>
     <string name="root_log">Root 日志</string>
     <string name="request_plaintext">请求明文</string>
     <string name="search">搜索…</string>
@@ -136,13 +124,6 @@
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
     <string name="protocol_val">协议: %1$s</string>
-    <string name="cancel">取消</string>
-    <string name="edit">编辑</string>
-    <string name="delete_all">删除全部</string>
-    <string name="show_whitelisted">显示加白的连接</string>
-    <string name="hide_whitelisted">隐藏加白的连接</string>
-    <string name="whitelist">白名单</string>
-    <string name="edit_whitelist">编辑白名单</string>
     <string name="whitelist_action">白名单…</string>
     <string name="n_selected">选中了 %1$d </string>
     <string name="select_all">选择全部</string>

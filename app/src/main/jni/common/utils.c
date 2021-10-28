@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include "utils.h"
 
+memtrack_t memtrack = {0};
 int loglevel = 0;
 const char *logtag = "VPNProxy";
 void (*logcallback)(int lvl, const char *msg) = NULL;
@@ -165,4 +166,18 @@ jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *
     }
 
     return method;
+}
+
+/* ******************************************************* */
+
+char* humanSize(char *buf, int bufsize, double bytes) {
+    static char *suffix[] = {"B", "KB", "MB", "GB", "TB"};
+    int num_suffix = sizeof(suffix) / sizeof(suffix[0]);
+    int i;
+
+    for(i = 0; (bytes >= 1024) && (i < num_suffix); i++)
+        bytes /= 1024;
+
+    snprintf(buf, bufsize, "%.02f %s", bytes, suffix[i]);
+    return buf;
 }

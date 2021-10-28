@@ -26,7 +26,7 @@ import android.content.res.Resources;
 
 import androidx.preference.PreferenceManager;
 
-import com.emanuelef.remote_capture.model.BlacklistsStatus;
+import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
@@ -35,7 +35,7 @@ import java.lang.ref.WeakReference;
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
-    private BlacklistsStatus mBlacklistsStatus;
+    private Blacklists mBlacklists;
     private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
 
@@ -83,11 +83,11 @@ public class PCAPdroid extends Application {
         return mVisMask;
     }
 
-    public BlacklistsStatus getBlacklistsStatus() {
-        if(mBlacklistsStatus == null)
-            mBlacklistsStatus = new BlacklistsStatus(this);
+    public Blacklists getBlacklistsStatus() {
+        if(mBlacklists == null)
+            mBlacklists = new Blacklists(this);
 
-        return mBlacklistsStatus;
+        return mBlacklists;
     }
 
     public MatchList getMalwareWhitelist() {

@@ -58,6 +58,7 @@ public class StatsActivity extends BaseActivity {
     private TextView mDnsQueries;
     private TableLayout mTable;
     private TextView mBlacklistsStatus;
+    private TextView mAllocStats;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,7 @@ public class StatsActivity extends BaseActivity {
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
         mBlacklistsStatus = findViewById(R.id.blacklists_status);
+        mAllocStats = findViewById(R.id.alloc_stats);
 
         if(CaptureService.isCapturingAsRoot()) {
             findViewById(R.id.dns_server_row).setVisibility(View.GONE);
@@ -139,6 +141,11 @@ public class StatsActivity extends BaseActivity {
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
+
+        if(stats.alloc_summary != null) {
+            mAllocStats.setVisibility(View.VISIBLE);
+            mAllocStats.setText(stats.alloc_summary);
+        }
     }
 
     @Override

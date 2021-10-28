@@ -131,10 +131,10 @@ public class ConnectionDescriptor implements Serializable {
         return Status.STATUS_OPEN;
     }
 
-    public String getStatusLabel(Context ctx) {
+    public static String getStatusLabel(Status status, Context ctx) {
         int resid;
 
-        switch (getStatus()) {
+        switch(status) {
             case STATUS_OPEN: resid = R.string.conn_status_open; break;
             case STATUS_CLOSED: resid = R.string.conn_status_closed; break;
             case STATUS_UNREACHABLE: resid = R.string.conn_status_unreachable; break;
@@ -142,6 +142,10 @@ public class ConnectionDescriptor implements Serializable {
         }
 
         return(ctx.getString(resid));
+    }
+
+    public String getStatusLabel(Context ctx) {
+        return getStatusLabel(getStatus(), ctx);
     }
 
     public boolean matches(AppsResolver res, String filter) {

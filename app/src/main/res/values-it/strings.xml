@@ -2,7 +2,6 @@
     <string name="start_button">Avvia</string>
     <string name="stop_button">Ferma</string>
     <string name="title_activity_settings">Impostazioni</string>
-    <string name="no_filter">Nessun Filtro</string>
     <string name="collector_info">Collettore UDP: %1$s:%2$d</string>
     <string name="http_server_status">Server HTTP: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s ricevuti — %2$s inviati</string>
@@ -34,13 +33,7 @@
     <string name="receiver_ip_address">IP del Collettore</string>
     <string name="receiver_port">Porta del Collettore</string>
     <string name="dump_mode">Modalità di Dump</string>
-    <string name="tls_proxy_ip_address">IP del mitmproxy</string>
-    <string name="tls_proxy_port">Porta del mitmproxy</string>
-    <string name="enable_tls_decryption">Abilita Decrittazione TLS</string>
-    <string name="enable_tls_decryption_summary">Quando abilitata, tutto il traffico TLS sarà rediretto a un\'istanza mitmproxy remota per la decrittazione.</string>
-    <string name="tls_decryption">Decrittazione TLS</string>
     <string name="user_guide">Guida Utente</string>
-    <string name="rate_app">Valuta</string>
     <string name="open_telegram_group">Gruppo Telegram</string>
     <string name="source_code">Codice Sorgente</string>
     <string name="yes">SI</string>
@@ -64,13 +57,10 @@
     <string name="no_apps">Nessuna app</string>
     <string name="dns_server">Server DNS</string>
     <string name="apps">App</string>
-    <string name="remove_app_filter">Rimuovi il filtro app</string>
-    <string name="set_app_filter">Imposta il filtro app</string>
     <string name="navigation_drawer_open">Apri Drawer</string>
     <string name="navigation_drawer_close">Chiudi Drawer</string>
     <string name="pcap_file">File PCAP</string>
     <string name="pcap_file_info">Crea un file PCAP nella memoria del dispositivo</string>
-    <string name="cannot_write_pcap_file">Impossibile scrivere il file PCAP</string>
     <string name="cannot_write_file">Impossibile scrivere il file</string>
     <string name="share">Condividi</string>
     <string name="delete">Elimina</string>
@@ -97,7 +87,6 @@
     <string name="get_app">Scaricala:</string>
     <string name="tls_how_to">Come impostare la Decrittazione TLS</string>
     <string name="unknown_app">Sconosciuta</string>
-    <string name="vpn_prefs">VPN</string>
     <string name="enable_ipv6">Abilita IPv6</string>
     <string name="enable_ipv6_summary">Permetti connessioni internet IPv6. Da abilitare soltanto in reti con gateway IPv6.</string>
     <string name="error">Errore</string>
@@ -119,7 +108,6 @@
     <string name="root_capture">Cattura come Root</string>
     <string name="root_capture_summary">Catturare i pacchetti come root permette a PCAPdroid di funzionare assieme ad altre app VPN.</string>
     <string name="donate">Donazioni</string>
-    <string name="http_request">Richiesta HTTP</string>
     <string name="root_log">Log Root</string>
     <string name="request_plaintext">Richiesta in Chiaro</string>
     <string name="search">Cerca…</string>
@@ -127,13 +115,6 @@
     <string name="ip_address_val">Indirizzo IP: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocollo: %1$s</string>
-    <string name="cancel">Annulla</string>
-    <string name="edit">Modifica</string>
-    <string name="delete_all">Elimina tutto</string>
-    <string name="show_whitelisted">Mostra esclusi</string>
-    <string name="hide_whitelisted">Nascondi esclusi</string>
-    <string name="whitelist">Esclusioni</string>
-    <string name="edit_whitelist">Modifica Esclusioni</string>
     <string name="whitelist_action">Escludi…</string>
     <string name="n_selected">%1$d selezionati</string>
     <string name="select_all">Seleziona tutto</string>

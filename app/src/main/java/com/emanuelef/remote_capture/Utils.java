@@ -554,7 +554,10 @@ public class Utils {
             return null;
 
         try {
-            fname = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            if(idx < 0)
+                return null;
+            fname = cursor.getString(idx);
         } finally {
             cursor.close();
         }
@@ -732,5 +735,12 @@ public class Utils {
 
         // Only write the target path if it was successful
         return (new File(path + ".tmp")).renameTo(new File(path));
+    }
+
+    public static String shorten(String s, int maxlen) {
+        if(s.length() > maxlen)
+            s = s.substring(0, maxlen - 1) + "…";
+
+        return s;
     }
 }

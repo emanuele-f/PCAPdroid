@@ -72,4 +72,16 @@ public class ListInfo {
         assert false;
         return 0;
     }
+
+    public int getHelpString() {
+        switch(mType) {
+            case VISUALIZATION_MASK:
+                return R.string.hidden_connections_help;
+            case MALWARE_WHITELIST:
+                return R.string.malware_whitelist_help;
+        }
+
+        assert false;
+        return 0;
+    }
 }
