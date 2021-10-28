@@ -6,12 +6,13 @@
     <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
+	<string name="whois_lookup" translatable="false">WHOIS</string>
 
     <!-- Localized -->
     <string name="start_button">启动</string>
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
-    <string name="collector_info">UDP 收集器: %1$s:%2$d</string>
+    <string name="no_filter">无过滤器</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
@@ -124,7 +125,8 @@
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
     <string name="protocol_val">协议: %1$s</string>
-    <string name="whitelist_action">白名单…</string>
+    <string name="whitelist_action">加入白名单…</string>
+	<string name="hide">隐藏…</string>
     <string name="n_selected">选中了 %1$d </string>
     <string name="select_all">选择全部</string>
     <string name="app_details">应用详情</string>
@@ -159,4 +161,36 @@
     <string name="internet">互联网</string>
     <string name="all_interfaces">所有接口</string>
     <string name="capturing_from">正从 \"%1$s\" 捕获数据包</string>
+	<string name="edit_filter">编辑过滤器</string>
+    <string name="edit_list">编辑列表</string>
+    <string name="hidden_connections_rules">隐藏的连接规则</string>
+    <string name="list_is_empty">列表为空</string>
+	<string name="malicious_connection_app">检测到恶意连接 (%1$s)</string>
+    <string name="show_only_malicious">恶意连接</string>
+    <string name="security">安全</string>
+    <string name="malware_detection">恶意软件检测</string>
+    <string name="malware_detection_summary">通过第三方黑名单检测到已知恶意主机的连接。这种检测可能产生误报，并不是反病毒软件的有效替代方案。</string>
+	<string name="blacklists_status">黑名单状态</string>
+    <string name="blacklists_status_summary">已是最新：%1$d/%2$d ― 域名规则：%3$s ― IP 规则：%4$s\n上次更新：%5$s</string>
+	<string name="reset">重置</string>
+	<string name="malware_whitelist">恶意软件白名单</string>
+    <string name="malware_whitelist_rules">恶意软件白名单规则</string>
+    <string name="edit_hidden_connections">编辑隐藏的连接</string>
+    <string name="edit_malware_whitelist">编辑恶意软件白名单</string>
+	<string name="feature_not_available">此功能目前在您的设备上不可用</string>
+    <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
+	<string name="show_help">显示帮助</string>
+    <string name="malware_whitelist_help">此用户定义白名单用于禁止恶意软件检测。只要命中这些规则中的任意一条，连接就不会被标记为恶意软件。您可以通过长按被标记为恶意的连接来创建规则。</string>
+    <string name="hidden_connections_help">此列表包含从连接列表中隐藏连接的规则。隐藏连接可以让你专注于相关的连接。</string>
+    <string name="malicious">恶意的</string>
+    <string name="status_filter">状态： %1$s</string>
+    <string name="not_hidden_filter">未隐藏</string>
+	<string name="copy_action">复制…</string>
+    <string name="url_val">"URL：%1$s"</string>
+	<string name="show_only_plaintext">明文连接</string>
+    <string name="plaintext">明文</string>
+	<string name="malware_detection_ad0">准备好增强设备安全性了吗？</string>
+    <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
+    <string name="show_me">让我看看</string>
 </resources>
+
