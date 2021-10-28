@@ -189,5 +189,8 @@
     <string name="url_val">"URL: %1$s"</string>
     <string name="show_only_plaintext">Plaintext connections</string>
     <string name="plaintext">Plaintext</string>
+    <string name="malware_detection_ad0">Ready to enhance your device security?</string>
+    <string name="malware_detection_ad1">Meet PCAPdroid malware detection!</string>
+    <string name="show_me">Show me</string>
 </resources>
 
