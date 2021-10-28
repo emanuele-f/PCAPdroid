@@ -182,15 +182,15 @@
     <string name="show_help">Show help</string>
     <string name="malware_whitelist_help">This user-defined whitelist is used to inhibit malware detection. Connections matching any of these rules will not be marked as malware. You can create rules by long pressing a malicious connection.</string>
     <string name="hidden_connections_help">This list contains rules to hide connections from the connections list. Hiding connections allows you to focus on the relevant ones.</string>
-    <string name="malicious">Malicious</string>
+    <string name="malicious_connection_filter">Malicious</string>
     <string name="status_filter">Status: %1$s</string>
     <string name="not_hidden_filter">Not hidden</string>
     <string name="copy_action">Copy…</string>
     <string name="url_val">"URL: %1$s"</string>
     <string name="show_only_plaintext">Plaintext connections</string>
     <string name="plaintext">Plaintext</string>
-    <string name="malware_detection_ad0">Ready to enhance your device security?</string>
-    <string name="malware_detection_ad1">Meet PCAPdroid malware detection!</string>
+    <string name="malware_detection_ad0">Ready to enhance the security of your device?</string>
+    <string name="malware_detection_ad1">Meet the PCAPdroid malware detection!</string>
     <string name="show_me">Show me</string>
 </resources>
 

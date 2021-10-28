@@ -63,7 +63,7 @@ public class FilterDescriptor implements Serializable {
         if(!showMasked)
             addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
         if(onlyBlacklisted)
-            addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious));
+            addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
         if(onlyPlaintext)
             addChip(inflater, group, R.id.only_plaintext, ctx.getString(R.string.plaintext));
         if(status != Status.STATUS_INVALID) {

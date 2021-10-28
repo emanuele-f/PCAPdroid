@@ -131,7 +131,7 @@
                     android:paddingVertical="3sp"
                     android:src="@drawable/ic_skull"
                     app:tint="@color/colorTabText"
-                    android:contentDescription="@string/malicious" />
+                    android:contentDescription="@string/malicious_connection_filter" />
                 <TextView
                     android:id="@+id/detail_destination"
                     android:layout_gravity="center_vertical"
