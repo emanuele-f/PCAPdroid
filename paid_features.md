@@ -1,4 +1,4 @@
-Paid features are only available in the Google Play version of the app. If you are an f-droid user and have suggestions on how to handle payments for the f-droid version please [reach me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid).
+Paid features are only available in the Google Play build of the app. If you are an F-Droid user and have suggestions on how to handle payments for the F-Droid build please [reach me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid).
 
 ## 5.1 Malware Detection
 
@@ -6,7 +6,7 @@ When this feature is enabled, PCAPdroid detects connections to malicious hosts a
 Malicious hosts are determined by using publicly available blacklists of malicious IPs and domains.
 The blacklists can detect common Internet threats, such as C&C (botnets), ramsonware, brute-forcers and they have a specific focus on the Android-related malware and threat actors.
 Lists can contain false positives or can miss some threats so this feature is not a valid alternative to an antivirus.
-
+f-
 PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats. The blacklists status is shown in the `Stats` page:
 
 - Up-to-date: reports the number of up-to-date blacklists. In the event a blacklist update fails, the previous one is still used.
