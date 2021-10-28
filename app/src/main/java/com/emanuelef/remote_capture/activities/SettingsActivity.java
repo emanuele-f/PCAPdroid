@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity {
     private static final String ACTION_LANG_RESTART = "lang_restart";
+    public static final String TARGET_PREF_EXTRA = "target_pref";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +113,13 @@ public class SettingsActivity extends BaseActivity {
 
             socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
             rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
+
+            Intent intent = requireActivity().getIntent();
+            if(intent != null) {
+                String target_pref = intent.getStringExtra(TARGET_PREF_EXTRA);
+                if(target_pref != null)
+                    scrollToPreference(target_pref);
+            }
         }
 
         private boolean validatePort(String value) {
