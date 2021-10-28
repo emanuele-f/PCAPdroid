@@ -1,4 +1,4 @@
-Paid features are only available in the Google Play build of the app. If you are an F-Droid user and have suggestions on how to handle payments for the F-Droid build please [reach me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid).
+Paid features are only available when the app is installed [via Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture). If you are an F-Droid user and have suggestions on how to handle payments in the F-Droid build, please [reach me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid).
 
 ## 5.1 Malware Detection
 
