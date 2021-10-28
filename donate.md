@@ -1,8 +1,6 @@
-PCAPdroid is brought to you free of charge and, most importantly, open source. This means that you can verify it, learn from it and modify it for your needs. This is the beauty of open source and free software. Our phones contain our life, so it is very important that people can audit what a critical app like PCAPdroid does.
+PCAPdroid is a FOSS project brought to you free of charge. You can make a free donation to foster future developements via one of the methods below.
 
-If you like the app and want to foster future developments, you can donate via one of the methods below. Please note that donations are fully voluntary and no refunds are allowed.
-
-You can get your name into the [donors file](https://github.com/emanuele-f/PCAPdroid/blob/master/DONORS.txt) by [reaching me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20donation) before making the donation.
+If you are an enterprise and find this app useful for your business, please consider becoming [an official sponsor of the project](https://github.com/emanuele-f/PCAPdroid/tree/master#sponsors).
 
 ### PayPal
 
