@@ -256,7 +256,10 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     @Override
     public boolean isPurchased(String sku) {
-        if(sku.equals(PlayBilling.NO_ADS_SKU)) {
+        if(!sku.equals(SUPPORTER_SKU) && isPurchased(SUPPORTER_SKU))
+            return true;
+
+        if(sku.equals(NO_ADS_SKU)) {
             // If the user purchases any other feature, then remove ads
             for(String other_sku: ALL_SKUS) {
                 if(!other_sku.equals(PlayBilling.NO_ADS_SKU) && isPurchased(other_sku))
