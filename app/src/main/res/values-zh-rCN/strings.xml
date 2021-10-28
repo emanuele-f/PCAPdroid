@@ -180,7 +180,7 @@
     <string name="feature_not_available">此功能目前在您的设备上不可用</string>
     <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
     <string name="show_help">显示帮助</string>
-    <string name="malware_whitelist_help">此用户定义白名单用于禁止恶意软件检测。只要命中这些规则中的任意一条，连接就不会被标记为恶意软件。您可以通过长按被标记为恶意的连接来创建规则。</string>
+    <string name="malware_whitelist_help">此用户定义白名单用于禁止恶意软件检测。只要命中这些规则中的任意一条，连接就不会被标记为恶意。通过长按连接，您可以将其标记为“非恶意”(加入白名单)</string>
     <string name="hidden_connections_help">此列表包含从连接列表中隐藏连接的规则。隐藏连接可以让你专注于相关的连接。</string>
     <string name="malicious">恶意的</string>
     <string name="status_filter">状态： %1$s</string>
