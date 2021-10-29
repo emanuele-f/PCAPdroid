@@ -175,8 +175,6 @@
     <string name="reset">Reset</string>
     <string name="malware_whitelist">Malware Whitelist</string>
     <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
-    <string name="edit_hidden_connections">Edit Hidden Connections</string>
-    <string name="edit_malware_whitelist">Edit Malware Whitelist</string>
     <string name="feature_not_available">This feature is currently unavailable for your device</string>
     <string name="billing_connecting">The connection to Google Play is in progress, please retry in a while</string>
     <string name="show_help">Show help</string>

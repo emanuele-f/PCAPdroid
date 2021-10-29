@@ -175,8 +175,6 @@
     <string name="reset">重置</string>
     <string name="malware_whitelist">恶意软件白名单</string>
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>
-    <string name="edit_hidden_connections">编辑隐藏的连接</string>
-    <string name="edit_malware_whitelist">编辑恶意软件白名单</string>
     <string name="feature_not_available">此功能目前在您的设备上不可用</string>
     <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
     <string name="show_help">显示帮助</string>
