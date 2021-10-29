@@ -155,7 +155,7 @@
     <string name="hidden_connections_rules">Regole Connessioni Nascoste</string>
     <string name="list_is_empty">La lista è vuota</string>
     <string name="malicious_connection_app">Rilevata connessione malevola (%1$s)</string>
-    <string name="show_only_malicious">Connessioni Malevole</string>
+    <string name="show_only_malicious">Connessioni malevole</string>
     <string name="security">Sicurezza</string>
     <string name="malware_detection">Rilevamento Malware</string>
     <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti. Il rilevamento potrebbe genare falsi positivi e non sostituisce un antivirus.</string>
