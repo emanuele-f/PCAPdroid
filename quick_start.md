@@ -88,9 +88,9 @@ The active filters are shown via chips above the connections list, which provide
 
 ## 1.4 Traffic Fidelity
 
-If you need to perform a low level analysis on the L3 or L4 headers of the packets or on the size/timing of packets, then the non-root capture may not be appropriate for your task. You should instead use the [Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture), which provides a 1:1 copy of the traffic of your device without any modifications.
+If you need to perform a low level analysis on the L3 or L4 headers of the packets or on the size/timing of packets, then the non-root capture may not be appropriate for your task. You should instead use the [Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture), which provides a 1:1 view on the traffic of your device without any modifications.
 
-When running in non-root mode, PCAPdroid alters the network traffic, which is required in order to capture it via the VPNService. The modifications only affect the L3 and L4 layers of the packets, whereas the L7 data is untouched. In particular:
+When running in non-root mode, PCAPdroid alters the network traffic, which is a required step in order to capture it via the VPNService. The modifications only affect the L3 and L4 layers of the packets, whereas the L7 data is untouched. In particular:
 
 - All packets coming from the Internet contain synthetic IP and TCP/UDP headers. Only the destination IP addresses and ports correspond to the actual connection.
 - While proxying connections, some IP and TCP features may be disabled or altered.
