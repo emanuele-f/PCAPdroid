@@ -33,3 +33,5 @@ By clicking on the notification, it is possible to get the list of all the malic
 </p>
 
 The malicious connection filter can be applied at any time from the "Edit Filter" dialog. The malicious connections data is lost once the capture is stopped.
+
+If the malware detection gets triggered by a false positive, you can long press a malicious connection and whitelist the genuine IP, domain or even the app. New connections matching any whitelist rule won't be detected as malware and the existing ones will be re-evaluated. You an edit the malware whitelist from the left drawer.
