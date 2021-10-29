@@ -16,7 +16,7 @@ PCAPdroid leverages the android [VpnService](https://developer.android.com/refer
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" />
 </p>
 
-In order to start using PCAPdroid, you just need to tap the start button.
+In order to start using PCAPdroid, you just need to tap the play button in the action bar.
 
 On the first start, a VPN confirmation dialog is shown. After accepting it, PCAPdroid will start capturing the traffic. PCAPdroid can be put in the background while operating with other apps as it continues to run as a service until the capture is stopped. As long as PCAPdroid is running, a key icon will be displayed into the android notification bar (this may vary depending on your system). Moreover, a persistent notification is shown, which includes the details about the captured traffic.
 
