@@ -2,6 +2,16 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.3] - 2021-10-30
+- Implement blacklist-based malware detection with alerts (paid feature)
+- Filter connections: only plaintext, state (e.g. only open), not hidden, malicious
+- Fix a bug which, in rare cases, caused the connections view to stop being updated
+- Fix some closed connections being marked with the Unknown protocol
+- Improve netd app resolution with root capture
+- Ability to copy host/IP/URL/plaintext on long press
+- Added whois IP lookup button
+- "Whitelist" is now called "Hidden Connections"
+
 ## [1.4.2] - 2021-09-11
 - Ability to select the capture interface in root mode
 - Ability to start/stop the capture from other apps via Intent
