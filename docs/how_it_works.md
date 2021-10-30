@@ -1,4 +1,4 @@
-This document complements the [Traffic Fidelity](https://emanuele-f.github.io/PCAPdroid/quick_start#14-traffic-fidelity) section of the user manual to explain how the traffic is managed by PCAPdroid in non-root mode.
+This document complements the [Packet Analysis](https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis) section of the user manual to explain how the traffic is managed by PCAPdroid in non-root mode.
 
 PCAPdroid uses the VPNService to capture the network traffic. When the VPNService is active, the traffic is routed to the PCAPdroid app,
 which implements a L4 proxy to connect it back to the Internet. The VPNService alone alters the traffic because it uses a different subnet and network interface.
