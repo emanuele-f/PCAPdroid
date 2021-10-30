@@ -12,6 +12,7 @@
     <string name="start_button">启动</string>
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
+    <string name="collector_info">UDP 收集器： %1$s:%2$d</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
@@ -174,8 +175,6 @@
     <string name="reset">重置</string>
     <string name="malware_whitelist">恶意软件白名单</string>
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>
-    <string name="edit_hidden_connections">编辑隐藏的连接</string>
-    <string name="edit_malware_whitelist">编辑恶意软件白名单</string>
     <string name="feature_not_available">此功能目前在您的设备上不可用</string>
     <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
     <string name="show_help">显示帮助</string>
@@ -192,4 +191,3 @@
     <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
     <string name="show_me">让我看看</string>
 </resources>
-

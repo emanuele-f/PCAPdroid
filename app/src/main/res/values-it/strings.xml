@@ -155,7 +155,7 @@
     <string name="hidden_connections_rules">Regole Connessioni Nascoste</string>
     <string name="list_is_empty">La lista è vuota</string>
     <string name="malicious_connection_app">Rilevata connessione malevola (%1$s)</string>
-    <string name="show_only_malicious">Connessioni Malevole</string>
+    <string name="show_only_malicious">Connessioni malevole</string>
     <string name="security">Sicurezza</string>
     <string name="malware_detection">Rilevamento Malware</string>
     <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti. Il rilevamento potrebbe genare falsi positivi e non sostituisce un antivirus.</string>
@@ -164,8 +164,6 @@
     <string name="reset">Reimposta</string>
     <string name="malware_whitelist">Whitelist Malware</string>
     <string name="malware_whitelist_rules">Regole della Whitelist Malware</string>
-    <string name="edit_hidden_connections">Modifica Connessioni Nascoste</string>
-    <string name="edit_malware_whitelist">Modifica Whitelist Malware</string>
     <string name="feature_not_available">Questa funzione non è attualmente disponibile per il tuo dispositivo</string>
     <string name="billing_connecting">La connessione a Google Play è in corso, riprovare tra poco</string>
     <string name="show_help">Mostra aiuto</string>

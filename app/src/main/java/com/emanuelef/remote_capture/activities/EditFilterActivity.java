@@ -27,6 +27,7 @@ import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
@@ -34,6 +35,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.chip.Chip;
 
 public class EditFilterActivity extends BaseActivity {
@@ -82,6 +84,9 @@ public class EditFilterActivity extends BaseActivity {
             editIntent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.VISUALIZATION_MASK);
             startActivity(editIntent);
         });
+
+        if(!Prefs.isMalwareDetectionEnabled(this, PreferenceManager.getDefaultSharedPreferences(this)))
+            mOnlyBlacklisted.setVisibility(View.GONE);
 
         model2view();
     }
