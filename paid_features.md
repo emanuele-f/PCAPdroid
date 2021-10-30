@@ -2,23 +2,32 @@ Paid features are only available when the app is installed [via Google Play](htt
 
 ## 5.1 Malware Detection
 
-When this feature is enabled, PCAPdroid detects connections to malicious hosts and alerts the user when such an event occurs. The detection is only active when the capture is running.
+**DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on its malware detection capabilities or accuracy and he can not be held liable for any direct or indirect damage caused by its use.*
 
-Malicious hosts are determined by using publicly available blacklists of malicious IPs and domains.
-The blacklists have a specific focus on the Android-related malware and threat actors and they can detect common Internet threats, such as C&C (botnets), ramsonware and brute-forcers. Lists can contain false positives or can miss some threats so this feature cannot be considered a valid alternative to an antivirus.
+The malware detection feature enables PCAPdroid to detect malicious hosts by the means of third-party blacklists. The detection is only active when the capture is running.
+
+Today our devices are exposed to a variety of threats: phishing, online scams, ransomware and spyware to name a few. When it comes to security, precautions are never enough and no solution will fit all the needs. The malware detection feature of PCAPdroid can help detecting malicious connections as they happen, bringing the possible threat to the user attention.
+
+Here are some contexts where it finds applicability:
+
+- The user browsers a known malicious website (e.g. phishing, scam)
+- The user installs a malicious app or addon (e.g. spyware) which connects to a known threat actor
+- The device is exploited and a malware is installed (e.g. spyware, ransonware or C&C), which connects to a known threat actor
+
+The blacklists used by PCAPdroid contain a list of domains and IP addresses with a bad reputation, being them scanners, brute-forcers or actors performing other malicious activities. These blacklists normally contain some static rules, which are based on the past infections data, and some dynamic rules, which are generated automatically via honeypots. PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/blacklists_status.jpg" width="250" />
 </p>
 
-PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats. The blacklists status is shown in the `Stats` page:
+The blacklists status is shown in the `Stats` page:
 
 - *Up-to-date*: reports the number of up-to-date blacklists. In the event a blacklist update fails, the previous one is still used.
 - *Domain rules*: reports the number of unique domain rules.
 - *IP rules*: reports the number of IP/subnet rules. Some IP addresses may be already included into other rules, so this count is just an upper bound.
 - *Last update*: reports the time of the last blacklists update.
 
-When a malicious connection is detected, it is reported to the user via a notification.
+When a malicious connection is detected, it is reported to the user via a notification. You can manually test the detection by visiting the legit website [www.internetbadguys.com](http://www.internetbadguys.com).
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/malware_notification.jpg" width="300" />
