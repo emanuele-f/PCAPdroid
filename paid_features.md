@@ -2,7 +2,7 @@ Paid features are only available when the app is installed [via Google Play](htt
 
 ## 5.1 Malware Detection
 
-**DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on its malware detection capabilities or accuracy and he can not be held liable for any direct or indirect damage caused by its use.*
+**DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on the malware detection capabilities or accuracy and he can not be held liable for any direct or indirect damage caused by its use.*
 
 The malware detection feature enables PCAPdroid to detect malicious hosts by the means of third-party blacklists. The detection is only active when the capture is running.
 
