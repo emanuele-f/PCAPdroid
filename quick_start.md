@@ -86,7 +86,7 @@ The "Edit Filter" dialog allows you to specify filters for the connections list:
 
 The active filters are shown via chips above the connections list, which provide a convenient way to remove existing filters.
 
-## 1.4 Traffic Fidelity
+## 1.4 Packet Analysis
 
 If you need to perform a low level analysis on the L3 or L4 headers of the packets or on the size/timing of packets, then the non-root capture may not be appropriate for your task. You should instead use the [Root Capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture), which provides a 1:1 view on the traffic of your device without any modifications.
 
