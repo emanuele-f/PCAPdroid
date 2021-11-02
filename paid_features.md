@@ -2,7 +2,7 @@ Paid features are only available when the app is installed [via Google Play](htt
 
 ## 5.1 Malware Detection
 
-**DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on the malware detection capabilities or accuracy of PCAPdroid and he can not be held liable for any direct or indirect damage caused by its use.*
+**DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on the malware detection capabilities or on the accuracy of PCAPdroid and he can not be held liable for any direct or indirect damage caused by its use.*
 
 The malware detection feature enables PCAPdroid to detect malicious hosts by the means of third-party blacklists. The detection is only active when the capture is running.
 
@@ -11,10 +11,10 @@ Today our devices are exposed to a variety of threats: phishing, online scams, r
 Here are some contexts where it finds applicability:
 
 - The user browsers a known malicious website (e.g. phishing, scam)
-- The user installs a malicious app or addon (e.g. spyware) which connects to a known threat actor
-- The device is exploited and a malware is installed (e.g. spyware, ransonware or C&C), which connects to a known threat actor
+- The user installs a malicious app or addon (e.g. spyware) which connects to a malicious domain/IP
+- The device is exploited and a malware is installed (e.g. spyware, ransonware or C&C), which connects to a malicious domain/IP
 
-The blacklists used by PCAPdroid contain a list of domains and IP addresses with a bad reputation, being them scanners, brute-forcers or actors performing other malicious activities. These blacklists normally contain some static rules, which are based on the past infections data, and some dynamic rules, which are generated automatically via honeypots. PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats.
+The blacklists used by PCAPdroid contain a list of domains and IP addresses with a bad reputation. This includes scanners, brute-forcers and known sources of malware. The blacklists normally contain some static rules, which are based on the past infections data, and some dynamic rules, which are generated automatically, usually via honeypots. PCAPdroid updates the blacklists once a day to ensure that it can catch the newest threats.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/blacklists_status.jpg" width="250" />
@@ -43,4 +43,4 @@ By clicking on the notification, it is possible to get the list of all the malic
 
 The malicious connection filter can be applied at any time from the "Edit Filter" dialog. The malicious connections data is lost once the capture is stopped.
 
-If the malware detection gets triggered by a false positive, you can long press a malicious connection and whitelist the genuine IP, domain or even the app. New connections matching any whitelist rule won't be detected as malware and the existing ones will be re-evaluated. You an edit the malware whitelist from the left drawer.
+If the malware detection gets triggered by a false positive, you can long press a malicious connection and whitelist the genuine IP, domain or even the app. The existing ones will be evaluated again and new connections matching any whitelist rule won't be detected as malware. The malware whitelist is accessible from the left drawer.
