@@ -1,4 +1,4 @@
-PCAPdroid is a FOSS project brought to you free of charge. You can make a free donation to foster future developements via one of the methods below.
+PCAPdroid is a FOSS project brought to you free of charge. You can make a donation to foster future developements via one of the methods below.
 
 If you are a business and find this app useful for your business, please consider becoming [an official sponsor of the project](https://github.com/emanuele-f/PCAPdroid/tree/master#sponsors).
 
