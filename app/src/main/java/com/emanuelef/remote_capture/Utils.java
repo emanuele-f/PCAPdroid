@@ -29,6 +29,7 @@ import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -389,6 +390,23 @@ public class Utils {
     public static void showToastLong(Context context, int id) {
         String msg = context.getResources().getString(id);
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+    }
+
+    public static void showHelpDialog(Context context, int id){
+        String msg = context.getResources().getString(id);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Help");
+        builder.setMessage(msg);
+        builder.setCancelable(true);
+        builder.setNeutralButton(android.R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert= builder.create();
+        alert.show();
     }
 
     public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
