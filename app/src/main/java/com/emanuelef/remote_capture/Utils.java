@@ -172,12 +172,12 @@ public class Utils {
         long now = Utils.now();
         Locale locale = getPrimaryLocale(context);
 
-        if((epoch - now) < (23 * 3600)) {
+        if((now - epoch) < (24 * 3600)) {
             final DateFormat fmt = new SimpleDateFormat("HH:mm:ss", locale);
             return fmt.format(new Date(epoch * 1000));
         }
 
-        DateFormat fmt = new SimpleDateFormat("dd MMM", locale);
+        DateFormat fmt = new SimpleDateFormat("dd MMM, HH:mm:ss", locale);
         return fmt.format(new Date(epoch * 1000));
     }
 
