@@ -94,7 +94,7 @@ public class EditListActivity extends BaseActivity {
 
             return true;
         } else if(id == R.id.show_help) {
-            Utils.showToastLong(this, mListInfo.getHelpString());
+            Utils.showHelpDialog(this, mListInfo.getHelpString());
             return true;
         }
 

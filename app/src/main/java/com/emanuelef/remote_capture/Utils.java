@@ -391,6 +391,19 @@ public class Utils {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
+    public static void showHelpDialog(Context context, int id){
+        String msg = context.getResources().getString(id);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.hint);
+        builder.setMessage(msg);
+        builder.setCancelable(true);
+        builder.setNeutralButton(R.string.ok,
+                (dialog, id1) -> dialog.cancel());
+
+        AlertDialog alert= builder.create();
+        alert.show();
+    }
+
     public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
         View dialogLayout = activity.getLayoutInflater().inflate(R.layout.apps_selector, null);
         SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
