@@ -166,7 +166,6 @@
     <string name="malware_whitelist_rules">Regole della Whitelist Malware</string>
     <string name="feature_not_available">Questa funzione non è attualmente disponibile per il tuo dispositivo</string>
     <string name="billing_connecting">La connessione a Google Play è in corso, riprovare tra poco</string>
-    <string name="show_help">Mostra aiuto</string>
     <string name="malware_whitelist_help">Questa whitelist, definita dall\'utente, è usata per inibire il rilevanto di malware. Le connessioni che matchano queste regole non sono considerate malevole. Puoi creare nuove regole tenendo premuta una connessione malevola.</string>
     <string name="hidden_connections_help">Questa lista contiene regole usate per nascondere connessioni dalla lista delle connessioni. Nascondere connessione permette di focalizzarsi su quelle rilevanti.</string>
     <string name="malicious_connection_filter">Malevola</string>

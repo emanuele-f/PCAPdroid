@@ -93,7 +93,7 @@ public class EditListActivity extends BaseActivity {
             startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
-        } else if(id == R.id.show_help) {
+        } else if(id == R.id.show_hint) {
             Utils.showHelpDialog(this, mListInfo.getHelpString());
             return true;
         }
