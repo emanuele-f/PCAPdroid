@@ -134,17 +134,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             @Override
             public void onSKUStateUpdate(String sku, int state) {
-                if(sku.equals(Billing.NO_ADS_SKU)) {
-                    if(state == PurchaseState.PURCHASED) {
-                        mAd.hide();
-                        showAdsNotice = false;
-                    } else {
-                        mAd.show();
-
-                        if(state == PurchaseState.PENDING)
-                            Utils.showToastLong(MainActivity.this, R.string.pending_transaction);
-                    }
-                }
+                // Any purchase
+                if(state == PurchaseState.PURCHASED) {
+                    mAd.hide();
+                    showAdsNotice = false;
+                } else
+                    mAd.show();
             }
         });
         mIab.connectBilling();
