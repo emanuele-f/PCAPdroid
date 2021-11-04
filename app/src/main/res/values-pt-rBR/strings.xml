@@ -146,8 +146,8 @@
     <string name="deny">Negar</string>
     <string name="allow">Permitir</string>
     <string name="ctrl_consent_title">Pedido de controle do PCAPdroid</string>
-    <string name="ctrl_consent_denied">O pedido de controle foi negado</string>
-    <string name="ctrl_consent_allowed">O pedido de controle foi permitido</string>
+    <string name="ctrl_consent_denied">PCAPdroid: o pedido de controle foi negado</string>
+    <string name="ctrl_consent_allowed">PCAPdroid: o pedido de controle foi permitido</string>
     <string name="capture_interface">Interface de captura</string>
     <string name="internet">Internet</string>
     <string name="all_interfaces">Todas as Interfaces</string>

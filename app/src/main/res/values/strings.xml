@@ -155,8 +155,8 @@
     <string name="deny">Deny</string>
     <string name="allow">Allow</string>
     <string name="ctrl_consent_title">PCAPdroid Control Request</string>
-    <string name="ctrl_consent_denied">The control request was denied</string>
-    <string name="ctrl_consent_allowed">The control request was allowed</string>
+    <string name="ctrl_consent_denied">PCAPdroid: the control request was denied</string>
+    <string name="ctrl_consent_allowed">PCAPdroid: the control request was allowed</string>
     <string name="capture_interface">Capture Interface</string>
     <string name="internet">Internet</string>
     <string name="all_interfaces">All Interfaces</string>
@@ -190,5 +190,10 @@
     <string name="malware_detection_ad1">Meet the PCAPdroid malware detection!</string>
     <string name="show_me">Show me</string>
     <string name="hint">Hint</string>
+    <string name="once">Once</string>
+    <string name="forever">Forever</string>
+    <string name="control_permissions">Control Permissions</string>
+    <string name="control_permissions_summary">Check which apps are allowed to control the PCAPdroid capture.</string>
+    <string name="control_permissions_item">%1$s: %2$s</string>
 </resources>
 

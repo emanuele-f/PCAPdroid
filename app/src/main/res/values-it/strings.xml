@@ -144,8 +144,8 @@
     <string name="deny">Nega</string>
     <string name="allow">Permetti</string>
     <string name="ctrl_consent_title">Richiesta di Controllo PCAPdroid</string>
-    <string name="ctrl_consent_denied">La richiesta di controllo è stata rifiutata</string>
-    <string name="ctrl_consent_allowed">La richiesta di controllo è stata accettata</string>
+    <string name="ctrl_consent_denied">PCAPdroid: la richiesta di controllo è stata rifiutata</string>
+    <string name="ctrl_consent_allowed">PCAPdroid: la richiesta di controllo è stata accettata</string>
     <string name="capture_interface">Interfaccia di Cattura</string>
     <string name="internet">Internet</string>
     <string name="all_interfaces">Tutte le Interfacce</string>

@@ -45,6 +45,9 @@
             android:theme="@style/AppTheme.Floating"
             android:launchMode="singleTop"
             android:exported="true" />
+        <activity
+            android:name=".activities.EditCtrlPermissions"
+            android:parentActivityName=".activities.SettingsActivity" />
 
         <activity
             android:name=".activities.ConnectionDetailsActivity" />

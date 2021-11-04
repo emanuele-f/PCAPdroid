@@ -145,8 +145,8 @@
     <string name="deny">Отклонить</string>
     <string name="allow">Разрешить</string>
     <string name="ctrl_consent_title">PCAPdroid Контрольный запрос</string>
-    <string name="ctrl_consent_denied">Запрос был отклонен</string>
-    <string name="ctrl_consent_allowed">Запрос был разрешен</string>
+    <string name="ctrl_consent_denied">PCAPdroid: Запрос был отклонен</string>
+    <string name="ctrl_consent_allowed">PCAPdroid: Запрос был разрешен</string>
     <string name="capture_interface">Интерфейс для захвата</string>
     <string name="internet">Интернет</string>
     <string name="all_interfaces">Все интерфейсы</string>

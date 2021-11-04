@@ -27,6 +27,7 @@ import android.content.res.Resources;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.model.Blacklists;
+import com.emanuelef.remote_capture.model.CtrlPermissions;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
@@ -38,6 +39,7 @@ public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
     private Blacklists mBlacklists;
+    private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
 
@@ -79,14 +81,18 @@ public class PCAPdroid extends Application {
     public Blacklists getBlacklistsStatus() {
         if(mBlacklists == null)
             mBlacklists = new Blacklists(mLocalizedContext);
-
         return mBlacklists;
     }
 
     public MatchList getMalwareWhitelist() {
         if(mMalwareWhitelist == null)
             mMalwareWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_MALWARE_WHITELIST);
-
         return mMalwareWhitelist;
+    }
+
+    public CtrlPermissions getCtrlPermissions() {
+        if(mCtrlPermissions == null)
+            mCtrlPermissions = new CtrlPermissions(this);
+        return mCtrlPermissions;
     }
 }

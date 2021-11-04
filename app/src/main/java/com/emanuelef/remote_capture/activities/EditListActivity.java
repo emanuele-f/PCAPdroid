@@ -51,7 +51,7 @@ public class EditListActivity extends BaseActivity {
         mListInfo = new ListInfo(ltype);
 
         setTitle(mListInfo.getTitle());
-        setContentView(R.layout.edit_list_activity);
+        setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment, new EditListFragment())

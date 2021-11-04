@@ -140,5 +140,12 @@
             app:iconSpaceReserved="false"
             app:summary="@string/enable_ipv6_summary"
             app:defaultValue="false" />
+
+        <Preference
+            app:key="control_permissions"
+            app:title="@string/control_permissions"
+            app:iconSpaceReserved="false"
+            android:summary="@string/control_permissions_summary">
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>
