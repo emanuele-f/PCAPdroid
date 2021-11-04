@@ -37,15 +37,9 @@ public class AD {
 
     public AD(Activity activity, String unitid) {
         ctx = activity;
-        unitId = BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" : unitid;
+        unitId = unitid;
         adSize = getAdSize(ctx);
         adContainer = ctx.findViewById(R.id.adContainer);
-
-        if(BuildConfig.DEBUG) {
-            RequestConfiguration configuration = new RequestConfiguration.Builder().setTestDeviceIds(
-                    Collections.singletonList("f4e7e555-760e-4a4e-a2e9-98fcdef94a09")).build();
-            MobileAds.setRequestConfiguration(configuration);
-        }
 
         Log.d(TAG, "ad size: " + adSize.toString());
 
