@@ -85,3 +85,18 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | capture_interface       | string | @inet \| any \| ifname - network interface to use in root mode    |
 
 *NOTE*: due to [file storage restrictions](https://developer.android.com/about/versions/11/privacy/storage), the `pcap_uri` must point to an app internal directory, e.g. `file:///data/user/0/com.emanuelef.remote_capture/cache/dump.pcap`.
+
+## Dumping PCAP to file
+
+Due to the restrictions introduced via the [scoped storage](https://developer.android.com/about/versions/11/privacy/storage), PCAPdroid can only create files inside its private directory, which is not accessible to you as a user. To dump the PCAP file to a publicly available directory, you must first perform the following steps:
+
+1. Open PCAPdroid and select the "PCAP File" dump mode
+2. Start the capture and select the path of the file to write. In this example I assume you select the `/sdcard/test.pcap` file
+3. Stop the capture and choose to keep the generated PCAP file (don't delete it!)
+4. Retrieve the internal URL which Android uses to reference this file. You can find this in the logcat output of PCAPdroid:
+
+```
+D/Main: PCAP URI to write: content://com.android.externalstorage.documents/document/primary%3Atest.pcap
+```
+
+You should now be able to write the `test.pcap` file by setting the `pcap_uri` to this URI. You must repeat the steps above if you delete the file.
