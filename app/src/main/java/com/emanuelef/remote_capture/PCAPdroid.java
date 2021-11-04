@@ -32,6 +32,8 @@ import com.emanuelef.remote_capture.model.Prefs;
 
 import java.lang.ref.WeakReference;
 
+// IMPORTANT: do not override getResources() with mLocalizedContext, otherwise the Webview used for ads will crash!
+// https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
@@ -59,15 +61,6 @@ public class PCAPdroid extends Application {
         Utils.setAppTheme(theme);
     }
 
-    @Override
-    public Resources getResources() {
-        if(mLocalizedContext == null)
-            return super.getResources();
-
-        // Ensure that the selected locale is used
-        return mLocalizedContext.getResources();
-    }
-
     public static PCAPdroid getInstance() {
         return mInstance.get();
     }
@@ -78,21 +71,21 @@ public class PCAPdroid extends Application {
 
     public MatchList getVisualizationMask() {
         if(mVisMask == null)
-            mVisMask = new MatchList(this, Prefs.PREF_VISUALIZATION_MASK);
+            mVisMask = new MatchList(mLocalizedContext, Prefs.PREF_VISUALIZATION_MASK);
 
         return mVisMask;
     }
 
     public Blacklists getBlacklistsStatus() {
         if(mBlacklists == null)
-            mBlacklists = new Blacklists(this);
+            mBlacklists = new Blacklists(mLocalizedContext);
 
         return mBlacklists;
     }
 
     public MatchList getMalwareWhitelist() {
         if(mMalwareWhitelist == null)
-            mMalwareWhitelist = new MatchList(this, Prefs.PREF_MALWARE_WHITELIST);
+            mMalwareWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_MALWARE_WHITELIST);
 
         return mMalwareWhitelist;
     }
