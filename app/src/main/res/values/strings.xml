@@ -17,6 +17,8 @@
         - nanohttpd: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
+        - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
         - Font Awesome: <a href='https://fontawesome.com/license/free'>License</a>\n\n
         - App icon made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         </string>
@@ -206,5 +208,7 @@
     <string name="control_permissions">Control Permissions</string>
     <string name="control_permissions_summary">Check which apps are allowed to control the PCAPdroid capture.</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="country">Country</string>
+    <string name="asn">ASN</string>
 </resources>
 

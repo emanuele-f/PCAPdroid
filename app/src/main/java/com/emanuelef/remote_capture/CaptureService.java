@@ -196,7 +196,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
         last_connections = 0;
-        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
+        conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
 

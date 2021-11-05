@@ -56,6 +56,16 @@
             tools:textColor="#FF28BC36"
             tools:text="@string/conn_status_open" />
 
+        <TextView
+            android:id="@+id/country_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@id/blacklisted"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="IT"/>
+
         <ImageView
             android:id="@+id/blacklisted"
             android:layout_width="wrap_content"
