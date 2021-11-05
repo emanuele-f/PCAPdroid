@@ -82,8 +82,6 @@
     <string name="file_saved">File salvato correttamente</string>
     <string name="older_connections_notice">%1$d connessioni precedenti nascoste</string>
     <string name="about_text">PCAPdroid è un software libero per la cattura e il monitoraggio di rete che funziona senza privilegi di root.</string>
-    <string name="app_no_warranty">PCAPdroid è distribuito nella speranza che sia utile, ma SENZA ALCUNA GARANZIA; senza neanche la garanzia implicita di COMMERCIABILITÀ o IDONEITÀ PER UNO SCOPO PARTICOLARE. Fare riferimento alla GNU General Public License per ulteriori dettagli.</string>
-    <string name="gpl_license_link">Licenza GPLv3</string>
     <string name="get_app">Scaricala:</string>
     <string name="tls_how_to">Come impostare la Decrittazione TLS</string>
     <string name="unknown_app">Sconosciuta</string>

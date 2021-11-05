@@ -7,6 +7,19 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
+    <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
+        ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
+        more details.</string>
+    <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br/>\n\n
+        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
+        - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
+        - nanohttpd: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
+        - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - Font Awesome: <a href='https://fontawesome.com/license/free'>License</a>\n\n
+        - App icon made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
+        </string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -92,8 +105,6 @@
     <string name="file_saved">File successfully saved</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges.</string>
-    <string name="app_no_warranty">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</string>
-    <string name="gpl_license_link">GPLv3 License</string>
     <string name="get_app">Get it:</string>
     <string name="tls_how_to">How to setup the TLS decryption</string>
     <string name="unknown_app">Unknown</string>

@@ -40,13 +40,11 @@ public class AboutActivity extends BaseActivity {
         TextView appVersion = findViewById(R.id.app_version);
         appVersion.setText(getString(R.string.pcapdroid_app_name) + " " + Utils.getAppVersion(this));
 
-        TextView gplLicense = findViewById(R.id.app_license_link);
-        String localized = gplLicense.getText().toString();
-        gplLicense.setText(HtmlCompat.fromHtml("<a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>" + localized + "</a>", HtmlCompat.FROM_HTML_MODE_LEGACY));
-        gplLicense.setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)findViewById(R.id.app_license)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)findViewById(R.id.opensource_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
 
         TextView sourceLink = findViewById(R.id.app_source_link);
-        localized = sourceLink.getText().toString();
+        String localized = sourceLink.getText().toString();
         sourceLink.setText(HtmlCompat.fromHtml("<a href='" + MainActivity.GITHUB_PROJECT_URL + "'>" + localized + "</a>", HtmlCompat.FROM_HTML_MODE_LEGACY));
         sourceLink.setMovementMethod(LinkMovementMethod.getInstance());
     }

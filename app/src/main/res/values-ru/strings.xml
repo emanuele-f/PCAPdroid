@@ -82,8 +82,6 @@
     <string name="file_saved">Файл успешно сохранён</string>
     <string name="older_connections_notice">%1$d старых соединений не показано</string>
     <string name="about_text">PCAPdroid это свободный инструмент захвата и отслеживания сетевого трафика, который работает без привелегий суперпользователя.</string>
-    <string name="app_no_warranty">PCAPdroid распространяется в надежде на то, что он будет полезен, но БЕЗ КАКОЙ-ЛИБО ГАРАНТИИ; даже без предполагаемой ТОВАРНОЙ гарантии или ПРИГОДНОСТИ ДЛЯ КОНКРЕТНОЙ ЦЕЛИ. Смотрите Генеральную Общественную Лицензию для более детальной информации.</string>
-    <string name="gpl_license_link">Генеральная общественная лицензия версии 3</string>
     <string name="get_app">Получить его:</string>
     <string name="tls_how_to">Как настроить TLS дешифрование</string>
     <string name="unknown_app">Неизвестное</string>
