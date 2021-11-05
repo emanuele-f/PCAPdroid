@@ -87,6 +87,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mRequestData = findViewById(R.id.request_data);
         TextView request_data_lbl = findViewById(R.id.request_data_label);
         TextView destination = findViewById(R.id.detail_destination);
+        TextView country = findViewById(R.id.country);
+        TextView asn = findViewById(R.id.asn);
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
@@ -147,6 +149,16 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 mRequestData.setVisibility(View.GONE);
                 request_data_lbl.setVisibility(View.GONE);
             }
+
+            if(!mConn.country.isEmpty())
+                country.setText(mConn.country);
+            else
+                findViewById(R.id.country_row).setVisibility(View.GONE);
+
+            if(mConn.asn.isKnown())
+                asn.setText(mConn.asn.toString());
+            else
+                findViewById(R.id.asn_row).setVisibility(View.GONE);
 
             updateStats(mConn);
         }

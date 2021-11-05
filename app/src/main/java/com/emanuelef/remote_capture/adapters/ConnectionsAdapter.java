@@ -80,6 +80,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         TextView traffic;
         TextView appName;
         TextView lastSeen;
+        TextView countryCode;
         final String mProtoAndPort;
 
         ViewHolder(View itemView) {
@@ -93,6 +94,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
+            countryCode = itemView.findViewById(R.id.country_code);
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
@@ -136,6 +138,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             else
                 color = R.color.statusError;
             statusInd.setTextColor(context.getResources().getColor(color));
+
+            if(conn.country.isEmpty())
+                countryCode.setText("");
+            else
+                countryCode.setText(conn.country);
 
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.INVISIBLE);
         }
