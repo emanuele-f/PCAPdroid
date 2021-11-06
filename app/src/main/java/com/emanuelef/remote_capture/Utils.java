@@ -141,7 +141,7 @@ public class Utils {
         return primaryLocale;
     }
 
-    public static String getLocalizedCountryName(Context context, String country_code) {
+    public static String getCountryName(Context context, String country_code) {
         Locale cur_locale = getPrimaryLocale(context);
         return(new Locale(cur_locale.getCountry(), country_code)).getDisplayCountry();
     }

@@ -61,7 +61,8 @@ public class MatchList {
         IP,
         HOST,
         ROOT_DOMAIN,
-        PROTOCOL
+        PROTOCOL,
+        COUNTRY
     }
 
     public class Rule {
@@ -129,6 +130,7 @@ public class MatchList {
             case ROOT_DOMAIN:   value = "*" + value; // fallthrough
             case HOST:          resid = R.string.host_val; break;
             case PROTOCOL:      resid = R.string.protocol_val; break;
+            case COUNTRY:       resid = R.string.country_val; break;
             default:
                 return "";
         }
@@ -141,6 +143,8 @@ public class MatchList {
                 value = app.getName();
         } else if(tp == RuleType.HOST)
             value = Utils.cleanDomain(value);
+        else if(tp == RuleType.COUNTRY)
+            value = Utils.getCountryName(ctx, value);
 
         return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
     }
@@ -192,7 +196,8 @@ public class MatchList {
     public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
     public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
     public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
-    public void addRootDomain(String domain) { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
+    public void addRootDomain(String domain)    { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
+    public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
 
     static private String matchKey(RuleType tp, Object val) {
         return tp + "@" + val;
@@ -236,6 +241,10 @@ public class MatchList {
         return mMatches.containsKey(matchKey(RuleType.ROOT_DOMAIN, root_domain));
     }
 
+    public boolean matchesCountry(String country_code) {
+        return mMatches.containsKey(matchKey(RuleType.COUNTRY, country_code));
+    }
+
     public boolean matches(ConnectionDescriptor conn) {
         if(mMatches.isEmpty())
             return false;
@@ -244,6 +253,7 @@ public class MatchList {
         return(matchesApp(conn.uid) ||
                 matchesIP(conn.dst_ip) ||
                 matchesProto(conn.l7proto) ||
+                matchesCountry(conn.country) ||
                 (hasInfo && matchesHost(conn.info))) ||
                 (hasInfo && matchesRootDomain(Utils.getRootDomain(conn.info)));
     }
