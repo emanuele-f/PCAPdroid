@@ -116,6 +116,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        setTitle("PCAPdroid");
 
         initAppState();
         checkPermissions();
