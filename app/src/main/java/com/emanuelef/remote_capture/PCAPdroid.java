@@ -22,16 +22,18 @@ package com.emanuelef.remote_capture;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.ErrorActivity;
 import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
 import java.lang.ref.WeakReference;
+
+import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 // IMPORTANT: do not override getResources() with mLocalizedContext, otherwise the Webview used for ads will crash!
 // https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
@@ -46,6 +48,12 @@ public class PCAPdroid extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        CaocConfig.Builder.create()
+                .errorDrawable(R.drawable.ic_app_crash)
+                .errorActivity(ErrorActivity.class)
+                .apply();
+
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
 
