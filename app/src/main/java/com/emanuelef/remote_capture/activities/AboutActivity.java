@@ -38,7 +38,7 @@ public class AboutActivity extends BaseActivity {
         setContentView(R.layout.about_activity);
 
         TextView appVersion = findViewById(R.id.app_version);
-        appVersion.setText(getString(R.string.pcapdroid_app_name) + " " + Utils.getAppVersion(this));
+        appVersion.setText("PCAPdroid " + Utils.getAppVersion(this));
 
         ((TextView)findViewById(R.id.app_license)).setMovementMethod(LinkMovementMethod.getInstance());
         ((TextView)findViewById(R.id.opensource_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
