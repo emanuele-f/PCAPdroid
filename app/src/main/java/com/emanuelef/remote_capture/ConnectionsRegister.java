@@ -132,7 +132,6 @@ public class ConnectionsRegister {
             }
 
             // Geolocation
-            // TODO: perform lookup in another thread
             InetAddress dstAddr = conn.getDstAddr();
             conn.country = mGeo.getCountryCode(dstAddr);
             conn.asn = mGeo.getASN(dstAddr);
