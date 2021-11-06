@@ -141,6 +141,11 @@ public class Utils {
         return primaryLocale;
     }
 
+    public static String getLocalizedCountryName(Context context, String country_code) {
+        Locale cur_locale = getPrimaryLocale(context);
+        return(new Locale(cur_locale.getCountry(), country_code)).getDisplayCountry();
+    }
+
     public static boolean isRTL(Context ctx) {
         Locale locale = getPrimaryLocale(ctx);
         final int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));

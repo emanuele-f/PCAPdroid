@@ -75,7 +75,7 @@ public class Geomodel {
         public String toString() {
             if(number == 0)
                 return "Unknown ASN";
-            return "ASN_" + number + " - " + asname;
+            return "AS" + number + " - " + asname;
         }
     }
 }
