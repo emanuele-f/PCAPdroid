@@ -373,6 +373,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
         }
 
+        if(!conn.country.isEmpty()) {
+            item = menu.findItem(R.id.hide_country);
+            item.setTitle(Utils.shorten(String.format(getString(R.string.country_val), Utils.getCountryName(ctx, conn.country)), max_length));
+            item.setVisible(true);
+        }
+
         if(!conn.request_plaintext.isEmpty()) {
             item = menu.findItem(R.id.copy_request_plaintext);
             item.setVisible(true);
@@ -420,6 +426,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mask_changed = true;
         } else if(id == R.id.hide_root_domain) {
             mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info));
+            mask_changed = true;
+        } else if(id == R.id.hide_country) {
+            mAdapter.mMask.addCountry(conn.country);
             mask_changed = true;
         } else if(id == R.id.search_app)
             setQuery(Objects.requireNonNull(

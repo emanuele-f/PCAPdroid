@@ -33,6 +33,12 @@
                 android:id="@+id/hide_proto"
                 android:title=""
                 tools:title="@string/protocol_val" />
+
+            <item
+                android:id="@+id/hide_country"
+                android:title=""
+                tools:title="@string/country_val"
+                android:visible="false" />
         </menu>
     </item>
 
