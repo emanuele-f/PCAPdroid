@@ -49,6 +49,7 @@ public class Prefs {
     public static final String PREF_VISUALIZATION_MASK = "vis_mask";
     public static final String PREF_MALWARE_WHITELIST = "maware_whitelist";
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
+    public static final String PREF_START_AT_BOOT = "start_at_boot";
 
     public enum DumpMode {
         NONE,
@@ -86,4 +87,6 @@ public class Prefs {
         return(PCAPdroid.getInstance().getBilling(ctx).isPurchased(Billing.MALWARE_DETECTION_SKU)
                 && p.getBoolean(PREF_MALWARE_DETECTION, false));
     }
+    public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
+    public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
 }

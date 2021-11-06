@@ -477,9 +477,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         /* Request a persistent permission to write this URI without invoking the system picker.
-         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents. */
+         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents
+         * or when starting the capture at boot. */
         if(!hasPermission)
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+        // Save the URI as a preference
+        mPrefs.edit().putString(Prefs.PREF_PCAP_URI, mPcapUri.toString()).apply();
 
         Log.d(TAG, "PCAP URI to write: " + mPcapUri.toString());
         toggleService();
@@ -496,9 +500,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void startCaptureService() {
         appStateStarting();
-
-        String pcap_uri = ((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) ? mPcapUri.toString() : "";
-        mCapHelper.startCapture(new CaptureSettings(mPrefs, pcap_uri));
+        mCapHelper.startCapture(new CaptureSettings(mPrefs));
     }
 
     public void toggleService() {

@@ -65,13 +65,12 @@ public class Geolocation {
             InputStream is = mContext.getResources().openRawResource(R.raw.dbip_country_lite_2021_11_mmdb_gz);
             GZIPInputStream gis = new GZIPInputStream(is);
             mCountryReader = new Reader(gis, cache);
-            Metadata meta = mCountryReader.getMetadata();
-            Log.d(TAG, "Country DB loaded: " + meta.toString());
+            Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
             is = mContext.getResources().openRawResource(R.raw.dbip_asn_lite_2021_11_mmdb_gz);
             gis = new GZIPInputStream(is);
             mAsnReader = new Reader(gis, cache);
-            Log.d(TAG, "ASN DB loaded: " + meta.toString());
+            Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalStateException();
