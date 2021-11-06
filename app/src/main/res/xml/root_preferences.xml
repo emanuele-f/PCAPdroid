@@ -91,6 +91,13 @@
             app:defaultValue="\@inet" />
 
         <SwitchPreference
+            app:key="start_at_boot"
+            android:title="@string/start_at_boot"
+            app:iconSpaceReserved="false"
+            app:summary="@string/start_at_boot_summary"
+            android:defaultValue="false" />
+
+        <SwitchPreference
             app:key="pcapdroid_trailer"
             app:title="@string/pcapdroid_trailer"
             app:iconSpaceReserved="false"

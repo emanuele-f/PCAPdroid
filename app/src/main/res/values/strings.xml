@@ -212,5 +212,7 @@
     <string name="asn">ASN</string>
     <string name="country_val">Country: %1$s</string>
     <string name="send_report">Send Report</string>
+    <string name="start_at_boot">Start at boot</string>
+    <string name="start_at_boot_summary">If enabled, the capture will start automatically when the device boots.</string>
 </resources>
 

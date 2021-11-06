@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_CLIPS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
@@ -95,6 +96,15 @@
             <meta-data android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
                 android:value="false"/>
         </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
