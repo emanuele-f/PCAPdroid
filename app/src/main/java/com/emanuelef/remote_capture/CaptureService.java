@@ -41,6 +41,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.util.Pair;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -73,6 +74,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
@@ -86,6 +88,8 @@ public class CaptureService extends VpnService implements Runnable {
     private Handler mHandler;
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
+    private Thread mConnUpdateThread;
+    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(16);
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -304,8 +308,11 @@ public class CaptureService extends VpnService implements Runnable {
             reloadBlacklists();
         checkBlacklistsUpdates();
 
-        // Start a new session by creating a new thread.
-        mCaptureThread = new Thread(this, "CaptureService Thread");
+        mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
+        mConnUpdateThread.start();
+
+        // Start the native capture thread
+        mCaptureThread = new Thread(this, "PacketCapture");
         mCaptureThread.start();
 
         setupNotifications();
@@ -473,6 +480,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void stop() {
         stopPacketLoop();
+        mPendingUpdates.push(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -482,8 +490,14 @@ public class CaptureService extends VpnService implements Runnable {
                 Log.e(TAG, "Joining native thread failed");
             }
         }
-
         mCaptureThread = null;
+
+        try {
+            mConnUpdateThread.join();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Joining conn update thread failed");
+        }
+        mConnUpdateThread = null;
 
         if(mParcelFileDescriptor != null) {
             try {
@@ -504,6 +518,7 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         mPcapUri = null;
+        mPendingUpdates.clear();
         unregisterNetworkCallbacks();
 
         stopForeground(true /* remove notification */);
@@ -621,6 +636,31 @@ public class CaptureService extends VpnService implements Runnable {
             mBlacklists.save();
     }
 
+    private void connUpdateWork() {
+        try {
+            while(true) {
+                Pair<ConnectionDescriptor[], ConnectionUpdate[]> item = mPendingUpdates.take();
+                if(item.first == null) // termination request
+                    break;
+
+                ConnectionDescriptor[] new_conns = item.first;
+                ConnectionUpdate[] conns_updates = item.second;
+
+                // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
+                // thus preventing the ConnectionsAdapter from interleaving other operations
+                synchronized (conn_reg) {
+                    if(new_conns.length > 0)
+                        conn_reg.newConnections(new_conns);
+
+                    if(conns_updates.length > 0)
+                        conn_reg.connectionsUpdates(conns_updates);
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     /* The following methods are called from native code */
 
     public String getVpnIPv4() {
@@ -700,15 +740,9 @@ public class CaptureService extends VpnService implements Runnable {
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
         checkBlacklistsUpdates();
 
-        // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
-        // thus preventing the ConnectionsAdapter from interleaving other operations
-        synchronized (conn_reg) {
-            if(new_conns.length > 0)
-                conn_reg.newConnections(new_conns);
-
-            if(conns_updates.length > 0)
-                conn_reg.connectionsUpdates(conns_updates);
-        }
+        // Put the update into a queue to avoid performing much work on the capture thread.
+        // This will be processed by mConnUpdateThread.
+        mPendingUpdates.push(new Pair<>(new_conns, conns_updates));
     }
 
     public void sendStatsDump(VPNStats stats) {
