@@ -151,7 +151,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             }
 
             if(!mConn.country.isEmpty())
-                country.setText(mConn.country);
+                country.setText(Utils.getLocalizedCountryName(this, mConn.country));
             else
                 findViewById(R.id.country_row).setVisibility(View.GONE);
 
