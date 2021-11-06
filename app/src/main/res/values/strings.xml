@@ -211,5 +211,6 @@
     <string name="country">Country</string>
     <string name="asn">ASN</string>
     <string name="country_val">Country: %1$s</string>
+    <string name="send_report">Send Report</string>
 </resources>
 

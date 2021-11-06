@@ -77,8 +77,6 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
 
-import cat.ereza.customactivityoncrash.config.CaocConfig;
-
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ViewPager2 mPager;
     private TabLayout mTabLayout;
@@ -130,10 +128,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 appStateReady();
             }
         });
-
-        CaocConfig.Builder.create()
-                .errorDrawable(R.drawable.ic_app_crash)
-                .apply();
 
         mTabLayout = findViewById(R.id.tablayout);
         mPager = findViewById(R.id.pager);
