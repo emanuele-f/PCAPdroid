@@ -115,16 +115,16 @@ public class Utils {
         return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
     }
 
-    public static String formatPkts(long pkts) {
+    public static String formatIntShort(long val) {
         long divisor;
         String suffix;
-        if(pkts < 1000) return Long.toString(pkts);
+        if(val < 1000) return Long.toString(val);
 
-        if(pkts < 1000*1000)               { divisor = 1000;           suffix = "K"; }
-        else if(pkts < 1000*1000*1000)     { divisor = 1000*1000;      suffix = "M"; }
+        if(val < 1000*1000)                { divisor = 1000;           suffix = "K"; }
+        else if(val < 1000*1000*1000)      { divisor = 1000*1000;      suffix = "M"; }
         else                               { divisor = 1000*1000*1000; suffix = "G"; }
 
-        return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
+        return String.format("%.1f %s", ((float)val) / divisor, suffix);
     }
 
     @SuppressWarnings("deprecation")
@@ -183,6 +183,22 @@ public class Utils {
         }
 
         DateFormat fmt = new SimpleDateFormat("dd MMM, HH:mm:ss", locale);
+        return fmt.format(new Date(epoch * 1000));
+    }
+
+    public static String formatEpochMin(Context context, long epoch) {
+        if(epoch == 0)
+            return "-";
+
+        long now = Utils.now();
+        Locale locale = getPrimaryLocale(context);
+
+        if((now - epoch) < (24 * 3600)) {
+            final DateFormat fmt = new SimpleDateFormat("HH:mm", locale);
+            return fmt.format(new Date(epoch * 1000));
+        }
+
+        DateFormat fmt = new SimpleDateFormat("dd MMM", locale);
         return fmt.format(new Date(epoch * 1000));
     }
 

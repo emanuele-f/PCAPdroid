@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingHorizontal="5dp"
+    android:paddingVertical="10dp">
+
+    <TextView
+        android:id="@+id/label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintEnd_toStartOf="@id/status"
+        android:ellipsize="end"
+        android:singleLine="true"
+        app:layout_constraintHorizontal_bias="0"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableRight="@drawable/ic_external"
+        android:drawablePadding="5dp"
+        android:clickable="true"
+        android:focusable="true"
+        tools:text="Blacklist Name" />
+
+    <TextView
+        android:id="@+id/status"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Up to date"
+        tools:textColor="@color/ok" />
+
+    <TextView
+        android:id="@+id/type"
+        app:layout_constraintStart_toStartOf="@id/label"
+        app:layout_constraintTop_toBottomOf="@id/label"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Type: IP blacklist" />
+
+    <TextView
+        android:id="@+id/rules"
+        app:layout_constraintStart_toStartOf="@id/type"
+        app:layout_constraintTop_toBottomOf="@id/type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="150k rules" />
+
+    <TextView
+        android:id="@+id/last_update"
+        app:layout_constraintStart_toStartOf="@id/rules"
+        app:layout_constraintTop_toBottomOf="@id/rules"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Last update: 12:02:11" />
+</androidx.constraintlayout.widget.ConstraintLayout>

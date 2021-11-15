@@ -38,7 +38,7 @@ void blacklist_destroy(blacklist_t *bl);
 void blacklist_clear(blacklist_t *bl);
 int blacklist_add_domain(blacklist_t *bl, const char *domain);
 int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net);
-int blacklist_load_file(blacklist_t *bl, const char *path);
+int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_stats_t *lstats);
 void blacklist_ready(blacklist_t *bl);
 bool blacklist_match_ip(blacklist_t *bl, uint32_t ip);
 bool blacklist_match_domain(blacklist_t *bl, const char *domain);

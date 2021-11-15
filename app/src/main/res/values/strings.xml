@@ -212,7 +212,25 @@
     <string name="asn">ASN</string>
     <string name="country_val">Country: %1$s</string>
     <string name="send_report">Send Report</string>
-    <string name="start_at_boot">Start at boot</string>
+    <string name="start_at_boot">Start at Boot</string>
     <string name="start_at_boot_summary">If enabled, the capture will start automatically when the device boots.</string>
+    <string name="malware_status_ok">No malicious traffic detected</string>
+    <string name="malware_status_detected">Malicious connections detected</string>
+    <string name="whitelist">Whitelist</string>
+    <string name="blacklists">Blacklists</string>
+    <string name="status_outdated">Outdated</string>
+    <string name="status_not_loaded">Not loaded</string>
+    <string name="status_uptodate">Up to date</string>
+    <string name="blacklist_type">"Type: %1$s"</string>
+    <string name="blacklist_type_ip">IP blacklist</string>
+    <string name="blacklist_type_domain">Domain blacklist</string>
+    <string name="n_rules">%1$s rules</string>
+    <string name="last_update_val">Last update: %1$s</string>
+    <string name="malicious_connections">Malicious connections</string>
+    <string name="blacklists_uptodate">Blacklists up to date</string>
+    <string name="connections_checked">Connections checked</string>
+    <string name="last_blacklists_update">Last update</string>
+    <string name="domain_rules">Domain rules</string>
+    <string name="ip_rules">IP rules</string>
 </resources>
 

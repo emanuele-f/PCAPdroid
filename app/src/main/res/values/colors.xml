@@ -14,4 +14,8 @@
     <color name="statusOpen">#28BC36</color>
     <color name="statusClosed">#AAAAAA</color>
     <color name="statusError">#F20015</color>
+    <color name="ok">#0CB350</color>
+    <color name="warning">#FF5722</color>
+    <color name="danger">#F80013</color>
+    <color name="highContrast">#000000</color>
 </resources>

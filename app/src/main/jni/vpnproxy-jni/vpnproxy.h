@@ -107,6 +107,18 @@ typedef struct {
     UT_hash_handle hh;
 } uid_to_app_t;
 
+typedef struct {
+    char *fname;
+    int num_domains;
+    int num_ips;
+} bl_status_t;
+
+typedef struct {
+    bl_status_t *items;
+    int size;
+    int cur_items;
+} bl_status_arr_t;
+
 typedef struct pcap_conn pcap_conn_t;
 
 typedef struct vpnproxy_data {
@@ -170,6 +182,7 @@ typedef struct vpnproxy_data {
         bool reload_in_progress;
         volatile bool reload_done;
         blacklist_t *new_bl;
+        bl_status_arr_t *status_arr;
     } malware_detection;
 
     capture_stats_t capture_stats;
@@ -207,6 +220,7 @@ typedef struct jni_methods {
     jmethodID statsSetData;
     jmethodID getLibprogPath;
     jmethodID notifyBlacklistsLoaded;
+    jmethodID blacklistStatusInit;
 } jni_methods_t;
 
 typedef struct jni_classes {
@@ -214,6 +228,7 @@ typedef struct jni_classes {
     jclass conn;
     jclass conn_update;
     jclass stats;
+    jclass blacklist_status;
 } jni_classes_t;
 
 /* ******************************************************* */

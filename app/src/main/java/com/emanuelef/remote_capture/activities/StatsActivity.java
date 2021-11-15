@@ -124,8 +124,8 @@ public class StatsActivity extends BaseActivity {
 
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
-        mPacketsSent.setText(Utils.formatPkts(stats.pkts_sent));
-        mPacketsRcvd.setText(Utils.formatPkts(stats.pkts_rcvd));
+        mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
+        mPacketsRcvd.setText(Utils.formatIntShort(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));
         mDroppedConns.setText(Utils.formatNumber(this, stats.num_dropped_conns));
         mDroppedPkts.setText(Utils.formatNumber(this, stats.pkts_dropped));
@@ -137,7 +137,7 @@ public class StatsActivity extends BaseActivity {
 
         // TODO use table
         if(mBlacklistsEnabled)
-            mBlacklistsStatus.setText(PCAPdroid.getInstance().getBlacklistsStatus().toString());
+            mBlacklistsStatus.setText(PCAPdroid.getInstance().getBlacklists().toString());
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);

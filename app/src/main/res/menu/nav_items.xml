@@ -8,15 +8,15 @@
         <item
             android:id="@+id/action_stats"
             android:title="@string/stats"
-            android:icon="@drawable/ic_list" />
+            android:icon="@drawable/ic_stacked_bar_chart" />
         <item
-            android:id="@+id/edit_malware_whitelist"
-            android:title="@string/malware_whitelist"
-            android:icon="@drawable/ic_checklist" />
+            android:id="@+id/malware_detection"
+            android:title="@string/malware_detection"
+            android:icon="@drawable/ic_bug" />
         <item
             android:id="@+id/open_root_log"
             android:title="@string/root_log"
-            android:icon="@drawable/ic_bug_report"
+            android:icon="@drawable/ic_text_snippet"
             android:visible="false" />
     </group>
     <group android:id="@+id/group_social">

@@ -303,7 +303,7 @@ public class CaptureService extends VpnService implements Runnable {
             mCaptureThread.interrupt();
         }
 
-        mBlacklists = PCAPdroid.getInstance().getBlacklistsStatus();
+        mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
@@ -492,10 +492,13 @@ public class CaptureService extends VpnService implements Runnable {
         }
         mCaptureThread = null;
 
-        try {
-            mConnUpdateThread.join();
-        } catch (InterruptedException e) {
-            Log.e(TAG, "Joining conn update thread failed");
+        while((mConnUpdateThread != null) && (mConnUpdateThread.isAlive())) {
+            try {
+                Log.d(TAG, "Joining conn update thread...");
+                mConnUpdateThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Joining conn update thread failed");
+            }
         }
         mConnUpdateThread = null;
 
@@ -806,8 +809,8 @@ public class CaptureService extends VpnService implements Runnable {
         return(dir + "/lib" + prog_name + ".so");
     }
 
-    public void notifyBlacklistsLoaded(int num_lists, int num_domains, int num_ips) {
-        mBlacklists.onNativeLoaded(num_lists, num_domains, num_ips);
+    public void notifyBlacklistsLoaded(Blacklists.NativeBlacklistStatus[] loaded_blacklists) {
+        mBlacklists.onNativeLoaded(loaded_blacklists);
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

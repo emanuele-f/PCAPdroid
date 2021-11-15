@@ -67,7 +67,6 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
-import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -79,7 +78,6 @@ import java.io.FileNotFoundException;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ViewPager2 mPager;
-    private TabLayout mTabLayout;
     private AppState mState;
     private AppStateListener mListener;
     private Uri mPcapUri;
@@ -129,9 +127,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         });
 
-        mTabLayout = findViewById(R.id.tablayout);
         mPager = findViewById(R.id.pager);
-
         setupTabs();
 
         /* Register for service status */
@@ -189,7 +185,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
-        navMenu.findItem(R.id.edit_malware_whitelist).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
+        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
     }
 
     private void setupNavigationDrawer() {
@@ -284,7 +280,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         final MainStateAdapter stateAdapter = new MainStateAdapter(this);
         mPager.setAdapter(stateAdapter);
 
-        new TabLayoutMediator(mTabLayout, mPager, (tab, position) ->
+        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
                 tab.setText(getString(stateAdapter.getPageTitle(position)))
         ).attach();
     }
@@ -344,9 +340,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
-        } else if(id == R.id.edit_malware_whitelist) {
-            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.MALWARE_WHITELIST);
+        } else if(id == R.id.malware_detection) {
+            Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);

@@ -86,7 +86,7 @@ public class PCAPdroid extends Application {
         return mVisMask;
     }
 
-    public Blacklists getBlacklistsStatus() {
+    public Blacklists getBlacklists() {
         if(mBlacklists == null)
             mBlacklists = new Blacklists(mLocalizedContext);
         return mBlacklists;

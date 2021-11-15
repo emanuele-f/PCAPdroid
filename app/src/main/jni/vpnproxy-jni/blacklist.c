@@ -84,7 +84,7 @@ int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net) {
 
 /* ******************************************************* */
 
-int blacklist_load_file(blacklist_t *bl, const char *path) {
+int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_stats_t *lstats) {
     FILE *f;
     char buffer[256];
     int num_dm_ok = 0, num_dm_fail = 0;
@@ -154,6 +154,14 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
     log_d("Blacklist loaded[%s]: %d domains (%d failed), %d IPs (%d failed)",
           strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
 
+    // current list stats
+    memset(lstats, 0, sizeof(*lstats));
+    lstats->num_failed = num_ip_fail + num_dm_fail;
+    lstats->num_ips = num_ip_ok;
+    lstats->num_domains = num_dm_ok;
+    lstats->num_lists = 1;
+
+    // cumulative stats
     bl->stats.num_lists++;
     bl->stats.num_failed += num_ip_fail + num_dm_fail;
 

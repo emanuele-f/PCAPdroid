@@ -47,6 +47,7 @@ public class ConnectionsRegister {
     private final int mSize;
     private int mNumItems;
     private int mUntrackedItems;
+    private int mNumMalicious;
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
     private final MatchList mWhitelist;
@@ -76,6 +77,7 @@ public class ConnectionsRegister {
         if(!conn.alerted && conn.isBlacklisted()) {
             CaptureService.requireInstance().notifyBlacklistedConnection(conn);
             conn.alerted = true;
+            mNumMalicious++;
         }
     }
 
@@ -109,6 +111,9 @@ public class ConnectionsRegister {
 
                     if(--stats.num_connections <= 0)
                         mAppsStats.remove(uid);
+
+                    if(conn.isBlacklisted())
+                        mNumMalicious--;
                 }
 
                 removedItems[i] = conn;
@@ -223,8 +228,13 @@ public class ConnectionsRegister {
                 boolean was_blacklisted = conn.isBlacklisted();
 
                 conn.updateWhitelist(mWhitelist);
-                if (conn.isBlacklisted() != was_blacklisted)
+                if(conn.isBlacklisted() != was_blacklisted) {
+                    if(was_blacklisted)
+                        mNumMalicious--;
+                    else
+                        mNumMalicious++;
                     changed_pos.add(i);
+                }
             }
         }
 
@@ -308,5 +318,9 @@ public class ConnectionsRegister {
         }
 
         return rv;
+    }
+
+    public int getNumMaliciousConnections() {
+        return mNumMalicious;
     }
 }
