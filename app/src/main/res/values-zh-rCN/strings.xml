@@ -168,8 +168,6 @@
     <string name="security">安全</string>
     <string name="malware_detection">恶意软件检测</string>
     <string name="malware_detection_summary">通过第三方黑名单检测到已知恶意主机的连接。这种检测可能产生误报，并不是反病毒软件的有效替代方案。</string>
-    <string name="blacklists_status">黑名单状态</string>
-    <string name="blacklists_status_summary">已是最新：%1$d/%2$d ― 域名规则：%3$s ― IP 规则：%4$s\n上次更新：%5$s</string>
     <string name="reset">重置</string>
     <string name="malware_whitelist">恶意软件白名单</string>
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>

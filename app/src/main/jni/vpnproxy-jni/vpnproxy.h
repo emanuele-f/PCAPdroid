@@ -47,7 +47,7 @@
 #define CONN_UPDATE_STATS 1
 #define CONN_UPDATE_INFO 2
 
-typedef struct capture_stats {
+typedef struct {
     jlong sent_bytes;
     jlong rcvd_bytes;
     jint sent_pkts;
@@ -57,7 +57,7 @@ typedef struct capture_stats {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
-typedef struct conn_data {
+typedef struct {
     jint incr_id; /* an incremental identifier */
 
     /* nDPI */
@@ -90,12 +90,12 @@ typedef struct conn_data {
     uint8_t update_type;
 } conn_data_t;
 
-typedef struct vpn_conn {
+typedef struct {
     zdtun_5tuple_t tuple;
     conn_data_t *data;
 } vpn_conn_t;
 
-typedef struct conn_array {
+typedef struct {
     vpn_conn_t *items;
     int size;
     int cur_items;
@@ -109,8 +109,12 @@ typedef struct {
 
 typedef struct {
     char *fname;
-    int num_domains;
-    int num_ips;
+    blacklist_type type;
+} bl_info_t;
+
+typedef struct {
+    char *fname;
+    int num_rules;
 } bl_status_t;
 
 typedef struct {
@@ -121,7 +125,7 @@ typedef struct {
 
 typedef struct pcap_conn pcap_conn_t;
 
-typedef struct vpnproxy_data {
+typedef struct {
     int tunfd;
     int incr_id;
     jint sdk;
@@ -183,6 +187,8 @@ typedef struct vpnproxy_data {
         volatile bool reload_done;
         blacklist_t *new_bl;
         bl_status_arr_t *status_arr;
+        bl_info_t *bls_info;
+        int num_bls;
     } malware_detection;
 
     capture_stats_t capture_stats;
@@ -190,7 +196,7 @@ typedef struct vpnproxy_data {
 
 /* ******************************************************* */
 
-typedef struct dns_packet {
+typedef struct {
     uint16_t transaction_id;
     uint16_t flags;
     uint16_t questions;
@@ -203,7 +209,7 @@ typedef struct dns_packet {
 
 /* ******************************************************* */
 
-typedef struct jni_methods {
+typedef struct {
     jmethodID reportError;
     jmethodID getApplicationByUid;
     jmethodID protect;
@@ -221,15 +227,22 @@ typedef struct jni_methods {
     jmethodID getLibprogPath;
     jmethodID notifyBlacklistsLoaded;
     jmethodID blacklistStatusInit;
+    jmethodID getBlacklistsInfo;
 } jni_methods_t;
 
-typedef struct jni_classes {
+typedef struct {
     jclass vpn_service;
     jclass conn;
     jclass conn_update;
     jclass stats;
     jclass blacklist_status;
+    jclass blacklist_descriptor;
 } jni_classes_t;
+
+typedef struct {
+    jfieldID bldescr_fname;
+    jfieldID bldescr_type;
+} jni_fields_t;
 
 /* ******************************************************* */
 

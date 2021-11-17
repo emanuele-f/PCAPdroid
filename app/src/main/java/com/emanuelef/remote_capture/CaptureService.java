@@ -57,6 +57,7 @@ import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.BlacklistDescriptor;
 import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -74,6 +75,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class CaptureService extends VpnService implements Runnable {
@@ -635,6 +637,7 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
+        // After the capture is stopped
         if(mMalwareDetectionEnabled)
             mBlacklists.save();
     }
@@ -810,7 +813,19 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void notifyBlacklistsLoaded(Blacklists.NativeBlacklistStatus[] loaded_blacklists) {
-        mBlacklists.onNativeLoaded(loaded_blacklists);
+        // this is invoked from the packet capture thread. Use the handler to save time.
+        mHandler.post(() -> mBlacklists.onNativeLoaded(loaded_blacklists));
+    }
+
+    public BlacklistDescriptor[] getBlacklistsInfo() {
+        BlacklistDescriptor[] blsinfo = new BlacklistDescriptor[mBlacklists.getNumBlacklists()];
+        int i = 0;
+
+        Iterator<BlacklistDescriptor> it = mBlacklists.iter();
+        while(it.hasNext())
+            blsinfo[i++] = it.next();
+
+        return blsinfo;
     }
 
     public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
@@ -820,4 +835,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void setDnsServer(String server);
     public static native byte[] getPcapHeader();
     public static native void reloadBlacklists();
+    public static native int getNumCheckedConnections();
 }

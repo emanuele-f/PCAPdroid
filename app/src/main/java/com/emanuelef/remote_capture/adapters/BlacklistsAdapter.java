@@ -31,6 +31,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.BlacklistDescriptor;
@@ -66,10 +67,11 @@ public class BlacklistsAdapter extends ArrayAdapter<BlacklistDescriptor> {
         TextView status = convertView.findViewById(R.id.status);
         status.setText(bl.getStatusLabel(ctx));
         status.setTextColor(bl.getStatusColor(ctx));
+        status.setVisibility(CaptureService.isServiceActive() ? View.VISIBLE : View.INVISIBLE);
 
         ((TextView)convertView.findViewById(R.id.type)).setText(String.format(ctx.getString(R.string.blacklist_type), bl.getTypeLabel(ctx)));
-        ((TextView)convertView.findViewById(R.id.rules)).setText(String.format(ctx.getString(R.string.n_rules), Utils.formatIntShort(bl.num_ip_rules + bl.num_domain_rules)));
-        ((TextView)convertView.findViewById(R.id.last_update)).setText(String.format(ctx.getString(R.string.last_update_val), Utils.formatEpochMin(ctx, bl.getLastUpdate())));
+        ((TextView)convertView.findViewById(R.id.rules)).setText(String.format(ctx.getString(R.string.n_rules), Utils.formatIntShort(bl.num_rules)));
+        ((TextView)convertView.findViewById(R.id.last_update)).setText(String.format(ctx.getString(R.string.last_update_val), Utils.formatEpochMin(ctx, bl.getLastUpdate() / 1000)));
 
         return convertView;
     }

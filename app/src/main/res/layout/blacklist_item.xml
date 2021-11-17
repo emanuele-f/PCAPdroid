@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingHorizontal="5dp"
-    android:paddingVertical="10dp">
+    android:paddingVertical="5dp">
 
     <TextView
         android:id="@+id/label"
@@ -17,7 +17,7 @@
         android:singleLine="true"
         app:layout_constraintHorizontal_bias="0"
         android:textStyle="bold"
-        android:textSize="18sp"
+        android:textSize="17sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:drawableRight="@drawable/ic_external"

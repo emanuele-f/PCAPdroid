@@ -389,7 +389,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
         if(conn.isBlacklistedIp())
-            menu.findItem(R.id.whitelist_ip).setTitle(label);
+            menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
 
         label = MatchList.getRuleLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
         menu.findItem(R.id.hide_proto).setTitle(label);

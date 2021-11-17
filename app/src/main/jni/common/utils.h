@@ -45,6 +45,8 @@ char loglvl2char(int lvl);
 
 jclass jniFindClass(JNIEnv *env, const char *name);
 jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
+jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type);
+jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key);
 int jniCheckException(JNIEnv *env);
 char* humanSize(char *buf, int bufsize, double bytes);
 

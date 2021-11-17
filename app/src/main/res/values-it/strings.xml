@@ -157,8 +157,6 @@
     <string name="security">Sicurezza</string>
     <string name="malware_detection">Rilevamento Malware</string>
     <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti. Il rilevamento potrebbe genare falsi positivi e non sostituisce un antivirus.</string>
-    <string name="blacklists_status">Stato delle Blacklist</string>
-    <string name="blacklists_status_summary">Aggiornate: %1$d/%2$d ― Regole dominio: %3$s ― Regole IP: %4$s\nUltimo aggiornamento: %5$s</string>
     <string name="reset">Reimposta</string>
     <string name="malware_whitelist">Whitelist Malware</string>
     <string name="malware_whitelist_rules">Regole della Whitelist Malware</string>

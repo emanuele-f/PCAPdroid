@@ -36,13 +36,11 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.VPNStats;
 
 public class StatsActivity extends BaseActivity {
-    private boolean mBlacklistsEnabled;
     private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
     private TextView mBytesRcvd;
@@ -57,7 +55,6 @@ public class StatsActivity extends BaseActivity {
     private TextView mDnsServer;
     private TextView mDnsQueries;
     private TableLayout mTable;
-    private TextView mBlacklistsStatus;
     private TextView mAllocStats;
 
     @Override
@@ -80,7 +77,6 @@ public class StatsActivity extends BaseActivity {
         mOpenSocks = findViewById(R.id.open_sockets);
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
-        mBlacklistsStatus = findViewById(R.id.blacklists_status);
         mAllocStats = findViewById(R.id.alloc_stats);
 
         if(CaptureService.isCapturingAsRoot()) {
@@ -91,10 +87,6 @@ public class StatsActivity extends BaseActivity {
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
         } else
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
-
-        mBlacklistsEnabled = (CaptureService.requireInstance().malwareDetectionEnabled() != 0);
-        if(!mBlacklistsEnabled)
-            findViewById(R.id.blacklists_status_row).setVisibility(View.GONE);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -135,10 +127,6 @@ public class StatsActivity extends BaseActivity {
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
         mDnsServer.setText(CaptureService.getDNSServer());
 
-        // TODO use table
-        if(mBlacklistsEnabled)
-            mBlacklistsStatus.setText(PCAPdroid.getInstance().getBlacklists().toString());
-
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
 
@@ -157,12 +145,7 @@ public class StatsActivity extends BaseActivity {
     }
 
     private String getContents() {
-        String rv = Utils.table2Text(mTable);
-
-        if(mBlacklistsEnabled)
-            rv += "\n" + getString(R.string.blacklists_status) + "\n" + mBlacklistsStatus.getText();
-
-        return rv;
+        return Utils.table2Text(mTable);
     }
 
     @Override

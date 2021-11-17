@@ -21,19 +21,21 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 
+import androidx.core.content.ContextCompat;
+
 import com.emanuelef.remote_capture.R;
 
 public class BlacklistDescriptor {
     public final String label;
-    public final Type tp;
-    public final String fname;
+    public final Type type;    // NOTE: used via JNI
+    public final String fname; // NOTE: used via JNI
     public final String url;
     long mLastUpdate = 0;
     boolean mUpToDate = false;
     public boolean loaded = false;
-    public int num_domain_rules = 0;
-    public int num_ip_rules = 0;
+    public int num_rules = 0;
 
+    // NOTE: used via JNI
     public enum Type {
         IP_BLACKLIST,
         DOMAIN_BLACKLIST,
@@ -45,9 +47,9 @@ public class BlacklistDescriptor {
         UP_TO_DATE
     }
 
-    public BlacklistDescriptor(String label, Type tp, String fname, String url) {
+    public BlacklistDescriptor(String label, Type type, String fname, String url) {
         this.label = label;
-        this.tp = tp;
+        this.type = type;
         this.fname = fname;
         this.url = url;
     }
@@ -58,7 +60,7 @@ public class BlacklistDescriptor {
 
     public void setUpdated(long now) {
         mLastUpdate = now;
-        mUpToDate = true;
+        mUpToDate = (mLastUpdate != 0);
     }
 
     public long getLastUpdate() {
@@ -110,11 +112,11 @@ public class BlacklistDescriptor {
                 break;
         }
 
-        return ctx.getResources().getColor(id);
+        return ContextCompat.getColor(ctx, id);
     }
 
     public String getTypeLabel(Context ctx) {
-        int id = (tp == Type.IP_BLACKLIST) ? R.string.blacklist_type_ip : R.string.blacklist_type_domain;
+        int id = (type == Type.IP_BLACKLIST) ? R.string.blacklist_type_ip : R.string.blacklist_type_domain;
         return ctx.getString(id);
     }
 }
