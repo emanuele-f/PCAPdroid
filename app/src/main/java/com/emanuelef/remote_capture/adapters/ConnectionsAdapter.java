@@ -140,10 +140,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             else
                 color = R.color.statusError;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                statusInd.setTextColor(context.getResources().getColor(color, null));
-            else
-                statusInd.setTextColor(context.getResources().getColor(color));
+            statusInd.setTextColor(ContextCompat.getColor(context, color));
 
             if(conn.country.isEmpty())
                 countryCode.setText("");
