@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -100,6 +101,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             mProtoAndPort = context.getString(R.string.proto_and_port);
         }
 
+        @SuppressWarnings("deprecation")
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
             AppDescriptor app = apps.get(conn.uid, 0);
             Drawable appIcon;
@@ -137,7 +139,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 color = R.color.statusClosed;
             else
                 color = R.color.statusError;
-            statusInd.setTextColor(context.getResources().getColor(color));
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                statusInd.setTextColor(context.getResources().getColor(color, null));
+            else
+                statusInd.setTextColor(context.getResources().getColor(color));
 
             if(conn.country.isEmpty())
                 countryCode.setText("");
