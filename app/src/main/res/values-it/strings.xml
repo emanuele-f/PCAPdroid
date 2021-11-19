@@ -156,7 +156,7 @@
     <string name="show_only_malicious">Connessioni malevole</string>
     <string name="security">Sicurezza</string>
     <string name="malware_detection">Rilevamento Malware</string>
-    <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti. Il rilevamento potrebbe genare falsi positivi e non sostituisce un antivirus.</string>
+    <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti.</string>
     <string name="reset">Reimposta</string>
     <string name="malware_whitelist">Whitelist Malware</string>
     <string name="malware_whitelist_rules">Regole della Whitelist Malware</string>

@@ -157,7 +157,7 @@
     <string name="show_only_malicious">Вредоносные соединения</string>
     <string name="security">Безопасность</string>
     <string name="malware_detection">Обнаружение вредоносных соединений</string>
-    <string name="malware_detection_summary">Обнаружение соединений с известными вредоносными хостами на основе использования сторонних черных списков. Данная опция может давать ложные срабатывания и не является альтернативой антивирусам.</string>
+    <string name="malware_detection_summary">Обнаружение соединений с известными вредоносными хостами на основе использования сторонних черных списков.</string>
     <string name="reset">Сбросить</string>
     <string name="malware_whitelist">Белый список вредоносов</string>
     <string name="malware_whitelist_rules">Правила игнорирования вредоносов</string>

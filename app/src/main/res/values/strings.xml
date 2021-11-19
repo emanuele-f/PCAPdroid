@@ -182,7 +182,7 @@
     <string name="show_only_malicious">Malicious connections</string>
     <string name="security">Security</string>
     <string name="malware_detection">Malware Detection</string>
-    <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists. The detection can produce false positives and is not a valid alternative to an antivirus.</string>
+    <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists.</string>
     <string name="reset">Reset</string>
     <string name="malware_whitelist">Malware Whitelist</string>
     <string name="malware_whitelist_rules">Malware Whitelist Rules</string>
@@ -233,5 +233,5 @@
     <string name="malware_status_update_failed">Some blacklists are outdated</string>
     <string name="update_now">Update now</string>
     <string name="status_updating">Updating…</string>
+    <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
 </resources>
-
