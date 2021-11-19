@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +43,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.haipq.android.flagkit.FlagImageView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +81,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         TextView traffic;
         TextView appName;
         TextView lastSeen;
-        TextView countryCode;
+        //FlagImageView countryFlag;
         final String mProtoAndPort;
 
         ViewHolder(View itemView) {
@@ -95,7 +95,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
-            countryCode = itemView.findViewById(R.id.country_code);
+            //countryFlag = itemView.findViewById(R.id.country_flag);
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
@@ -142,12 +142,14 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             statusInd.setTextColor(ContextCompat.getColor(context, color));
 
-            if(conn.country.isEmpty())
-                countryCode.setText("");
-            else
-                countryCode.setText(conn.country);
+            /*if(conn.country.isEmpty())
+                countryFlag.setVisibility(View.GONE);
+            else {
+                countryFlag.setVisibility(View.VISIBLE);
+                countryFlag.setCountryCode(conn.country);
+            }*/
 
-            blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.INVISIBLE);
+            blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
         }
     }
 

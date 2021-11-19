@@ -35,7 +35,9 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/status_ind"
+            app:layout_constraintEnd_toStartOf="@+id/status_placeholder"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
             android:layout_marginEnd="5dp"
             android:orientation="horizontal">
 
@@ -46,14 +48,13 @@
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:layout_width="0dp"
-                android:layout_weight="2"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 tools:text="Android" />
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -66,14 +67,23 @@
                     android:contentDescription="@string/malicious_connection_filter"
                     android:src="@drawable/ic_skull" />
 
-                <TextView
-                    android:id="@+id/country_code"
+                <!--<com.haipq.android.flagkit.FlagImageView
+                    android:id="@+id/country_flag"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    tools:text="IT"/>
+                    android:layout_height="12sp"
+                    android:layout_marginEnd="5dp"
+                    tools:src="@drawable/flag_it" />-->
             </LinearLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/status_placeholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="invisible"
+            android:text="@string/conn_status_unreachable"/>
 
         <TextView
             android:id="@+id/status_ind"
@@ -81,7 +91,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAlignment="textEnd"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/app_name_layout"
+            app:layout_constraintBottom_toBottomOf="@id/app_name_layout"
             app:layout_constraintEnd_toEndOf="parent"
             tools:textColor="#FF28BC36"
             tools:text="@string/conn_status_open" />
@@ -104,19 +115,26 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:text="HTTP, 80" />
 
-        <TextView
-            android:id="@+id/remote"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             app:layout_constrainedWidth="true"
-            android:ellipsize="end"
-            android:singleLine="true"
-            tools:text="example.org"
             app:layout_constraintHorizontal_bias="0"
-            android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/traffic"
-            app:layout_constraintTop_toBottomOf="@id/l7proto"/>
+            app:layout_constraintTop_toBottomOf="@id/l7proto"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/remote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                tools:text="example.org"
+                android:textSize="12sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/traffic"

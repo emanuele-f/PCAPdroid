@@ -26,6 +26,7 @@
         android:theme="@style/AppTheme"
         android:allowBackup="true"
         android:fullBackupContent="true"
+        tools:replace="android:label"
         tools:targetApi="m">
 
         <activity

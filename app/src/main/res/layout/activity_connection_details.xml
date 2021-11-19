@@ -207,13 +207,26 @@
                 android:layout_weight="0.25"
                 android:textStyle="bold"
                 android:text="@string/country" />
-            <TextView
-                android:id="@+id/country"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.75"
-                android:textIsSelectable="true"
-                tools:text="IT" />
+                android:gravity="center_vertical">
+
+                <com.haipq.android.flagkit.FlagImageView
+                    android:id="@+id/country_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="14sp"
+                    android:layout_marginEnd="5dp"
+                    tools:src="@drawable/flag_it" />
+
+                <TextView
+                    android:id="@+id/country_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    tools:text="Italy" />
+            </LinearLayout>
         </TableRow>
 
         <TableRow

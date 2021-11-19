@@ -43,6 +43,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.haipq.android.flagkit.FlagImageView;
 
 public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
@@ -87,7 +88,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mRequestData = findViewById(R.id.request_data);
         TextView request_data_lbl = findViewById(R.id.request_data_label);
         TextView destination = findViewById(R.id.detail_destination);
-        TextView country = findViewById(R.id.country);
+        TextView country = findViewById(R.id.country_name);
+        FlagImageView country_flag = findViewById(R.id.country_flag);
         TextView asn = findViewById(R.id.asn);
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
@@ -150,9 +152,10 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 request_data_lbl.setVisibility(View.GONE);
             }
 
-            if(!mConn.country.isEmpty())
+            if(!mConn.country.isEmpty()) {
                 country.setText(Utils.getCountryName(this, mConn.country));
-            else
+                country_flag.setCountryCode(mConn.country);
+            } else
                 findViewById(R.id.country_row).setVisibility(View.GONE);
 
             if(mConn.asn.isKnown())
