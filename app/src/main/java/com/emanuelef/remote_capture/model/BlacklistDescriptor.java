@@ -32,6 +32,7 @@ public class BlacklistDescriptor {
     public final String url;
     long mLastUpdate = 0;
     boolean mUpToDate = false;
+    boolean mUpdating = false;
     public boolean loaded = false;
     public int num_rules = 0;
 
@@ -44,6 +45,7 @@ public class BlacklistDescriptor {
     public enum Status {
         NOT_LOADED,
         OUTDATED,
+        UPDATING,
         UP_TO_DATE
     }
 
@@ -54,11 +56,18 @@ public class BlacklistDescriptor {
         this.url = url;
     }
 
+    public void setUpdating() {
+        mUpdating = true;
+        mUpToDate = false;
+    }
+
     public void setOutdated() {
+        mUpdating = false;
         mUpToDate = false;
     }
 
     public void setUpdated(long now) {
+        mUpdating = false;
         mLastUpdate = now;
         mUpToDate = (mLastUpdate != 0);
     }
@@ -72,6 +81,8 @@ public class BlacklistDescriptor {
     }
 
     public Status getStatus() {
+        if(mUpdating)
+            return Status.UPDATING;
         if(!loaded)
             return Status.NOT_LOADED;
         if(!mUpToDate)
@@ -88,6 +99,9 @@ public class BlacklistDescriptor {
                 break;
             case OUTDATED:
                 id = R.string.status_outdated;
+                break;
+            case UPDATING:
+                id = R.string.status_updating;
                 break;
             case UP_TO_DATE:
                 id = R.string.status_uptodate;
@@ -106,6 +120,9 @@ public class BlacklistDescriptor {
                 break;
             case OUTDATED:
                 id = R.color.warning;
+                break;
+            case UPDATING:
+                id = R.color.in_progress;
                 break;
             case UP_TO_DATE:
                 id = R.color.ok;

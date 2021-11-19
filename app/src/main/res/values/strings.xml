@@ -231,5 +231,7 @@
     <string name="domain_rules">Domain rules</string>
     <string name="ip_rules">IP rules</string>
     <string name="malware_status_update_failed">Some blacklists are outdated</string>
+    <string name="update_now">Update now</string>
+    <string name="status_updating">Updating…</string>
 </resources>
 

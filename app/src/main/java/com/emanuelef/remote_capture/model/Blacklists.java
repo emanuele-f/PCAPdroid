@@ -64,17 +64,19 @@ public class Blacklists {
     private final ArrayList<BlacklistsStateListener> mListeners = new ArrayList<>();
     private final SharedPreferences mPrefs;
     private final Context mContext;
-    long last_update;
-    boolean first_update;
-    int num_domain_rules;
-    int num_ip_rules;
+    private boolean mFirstUpdate;
+    private boolean mUpdateInProgress;
+    private long mLastUpdate;
+    private int mNumDomainRules;
+    private int mNumIPRules;
 
     public Blacklists(Context ctx) {
-        last_update = 0;
-        num_domain_rules = 0;
-        num_ip_rules = 0;
+        mLastUpdate = 0;
+        mNumDomainRules = 0;
+        mNumIPRules = 0;
         mContext = ctx;
-        first_update = true;
+        mFirstUpdate = true;
+        mUpdateInProgress = false;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
         // Domains
@@ -111,9 +113,9 @@ public class Blacklists {
         if(!serialized.isEmpty()) {
             JsonObject obj = JsonParser.parseString(serialized).getAsJsonObject();
 
-            last_update = obj.getAsJsonPrimitive("last_update").getAsLong();
-            num_domain_rules = obj.getAsJsonPrimitive("num_domain_rules").getAsInt();
-            num_ip_rules = obj.getAsJsonPrimitive("num_ip_rules").getAsInt();
+            mLastUpdate = obj.getAsJsonPrimitive("last_update").getAsLong();
+            mNumDomainRules = obj.getAsJsonPrimitive("num_domain_rules").getAsInt();
+            mNumIPRules = obj.getAsJsonPrimitive("num_ip_rules").getAsInt();
 
             JsonObject blacklists_obj = obj.getAsJsonObject("blacklists");
             if(blacklists_obj != null) { // support old format
@@ -144,9 +146,9 @@ public class Blacklists {
             }
 
             JsonObject rv = new JsonObject();
-            rv.add("last_update", new JsonPrimitive(src.last_update));
-            rv.add("num_domain_rules", new JsonPrimitive(src.num_domain_rules));
-            rv.add("num_ip_rules", new JsonPrimitive(src.num_ip_rules));
+            rv.add("last_update", new JsonPrimitive(src.mLastUpdate));
+            rv.add("num_domain_rules", new JsonPrimitive(src.mNumDomainRules));
+            rv.add("num_ip_rules", new JsonPrimitive(src.mNumIPRules));
             rv.add("blacklists", blacklists_obj);
 
             return rv;
@@ -179,7 +181,7 @@ public class Blacklists {
 
             if(!f.exists()) {
                 // must update
-                last_update = 0;
+                mLastUpdate = 0;
             }
         }
 
@@ -199,17 +201,19 @@ public class Blacklists {
 
     public boolean needsUpdate() {
         long now = System.currentTimeMillis();
-        return((now - last_update) >= BLACKLISTS_UPDATE_SECONDS * 1000)
-                || (first_update && (getNumUpdatedBlacklists() < getNumBlacklists()));
+        return((now - mLastUpdate) >= BLACKLISTS_UPDATE_SECONDS * 1000)
+                || (mFirstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
     }
 
+    // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
     public void update() {
-        // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
-        if(!needsUpdate())
-            return;
+        mUpdateInProgress = true;
+        for(BlacklistDescriptor bl: mLists)
+            bl.setUpdating();
+        notifyListeners();
 
         Log.d(TAG, "Updating " + mLists.size() + " blacklists...");
-        first_update = false;
+        mFirstUpdate = false;
 
         for(BlacklistDescriptor bl: mLists) {
             Log.d(TAG, "\tupdating " + bl.fname + "...");
@@ -220,7 +224,7 @@ public class Blacklists {
                 bl.setOutdated();
         }
 
-        last_update = System.currentTimeMillis();
+        mLastUpdate = System.currentTimeMillis();
         notifyListeners();
     }
 
@@ -239,6 +243,7 @@ public class Blacklists {
         int num_loaded = 0;
         int num_domains = 0;
         int num_ips = 0;
+        HashSet<String> loaded = new HashSet<>();
 
         for(NativeBlacklistStatus bl_status: loaded_blacklists) {
             if(bl_status == null)
@@ -249,6 +254,7 @@ public class Blacklists {
                 // Update the number of rules
                 bl.num_rules = bl_status.num_rules;
                 bl.loaded = true;
+                loaded.add(bl.fname);
 
                 if(bl.type == BlacklistDescriptor.Type.DOMAIN_BLACKLIST)
                     num_domains += bl_status.num_rules;
@@ -260,9 +266,17 @@ public class Blacklists {
                 Log.w(TAG, "Loaded unknown blacklist " + bl_status.fname);
         }
 
+        for(BlacklistDescriptor bl: mLists) {
+            if(!loaded.contains(bl.fname)) {
+                Log.w(TAG, "Blacklist not loaded: " + bl.fname);
+                bl.loaded = false;
+            }
+        }
+
         Log.d(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
-        num_domain_rules = num_domains;
-        num_ip_rules = num_ips;
+        mNumDomainRules = num_domains;
+        mNumIPRules = num_ips;
+        mUpdateInProgress = false;
         notifyListeners();
     }
 
@@ -271,15 +285,15 @@ public class Blacklists {
     }
 
     public int getNumLoadedDomainRules() {
-        return num_domain_rules;
+        return mNumDomainRules;
     }
 
     public int getNumLoadedIPRules() {
-        return num_ip_rules;
+        return mNumIPRules;
     }
 
     public long getLastUpdate() {
-        return last_update;
+        return mLastUpdate;
     }
 
     public int getNumBlacklists() {
@@ -308,6 +322,10 @@ public class Blacklists {
 
     public void removeOnChangeListener(BlacklistsStateListener listener) {
         mListeners.remove(listener);
+    }
+
+    public boolean isUpdateInProgress() {
+        return mUpdateInProgress;
     }
 }
 

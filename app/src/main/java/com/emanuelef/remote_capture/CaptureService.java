@@ -107,6 +107,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
+    private boolean mBlacklistsUpdateRequested;
     private Blacklists mBlacklists;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
@@ -544,13 +545,14 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
 
-        if(mBlacklists.needsUpdate()) {
+        if(mBlacklistsUpdateRequested || mBlacklists.needsUpdate()) {
             mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
             mBlacklistsUpdateThread.start();
         }
     }
 
     private void updateBlacklistsWork() {
+        mBlacklistsUpdateRequested = false;
         mBlacklists.update();
         reloadBlacklists();
         mBlacklistsUpdateThread = null;
@@ -617,6 +619,15 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isRootCapture() == 1));
     }
 
+    public static void requestBlacklistsUpdate() {
+        if(INSTANCE != null) {
+            INSTANCE.mBlacklistsUpdateRequested = true;
+
+            // Wake the update thread to run the blacklist thread
+            INSTANCE.mPendingUpdates.push(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
+        }
+    }
+
     // Inside the mCaptureThread
     @Override
     public void run() {
@@ -651,6 +662,8 @@ public class CaptureService extends VpnService implements Runnable {
 
                 ConnectionDescriptor[] new_conns = item.first;
                 ConnectionUpdate[] conns_updates = item.second;
+
+                checkBlacklistsUpdates();
 
                 // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
                 // thus preventing the ConnectionsAdapter from interleaving other operations
@@ -744,8 +757,6 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
-        checkBlacklistsUpdates();
-
         // Put the update into a queue to avoid performing much work on the capture thread.
         // This will be processed by mConnUpdateThread.
         mPendingUpdates.push(new Pair<>(new_conns, conns_updates));

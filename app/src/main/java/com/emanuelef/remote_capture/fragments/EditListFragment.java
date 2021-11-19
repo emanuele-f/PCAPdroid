@@ -192,7 +192,7 @@ public class EditListFragment extends Fragment {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private void recheckListSize() {
