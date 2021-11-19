@@ -7,3 +7,6 @@
 [submodule "submodules/libpcap"]
 	path = submodules/libpcap
 	url = https://github.com/the-tcpdump-group/libpcap
+[submodule "submodules/res"]
+	path = submodules/res
+	url = https://github.com/emanuele-f/PCAPdroid_res
