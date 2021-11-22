@@ -54,6 +54,7 @@ import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.CaptureCtrl;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
@@ -573,6 +574,7 @@ public class CaptureService extends VpnService implements Runnable {
         mPcapUri = null;
         mPendingUpdates.clear();
         unregisterNetworkCallbacks();
+        CaptureCtrl.notifyCaptureStopped(this);
 
         stopForeground(true /* remove notification */);
     }

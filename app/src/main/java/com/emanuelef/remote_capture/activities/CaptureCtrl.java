@@ -19,6 +19,8 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -53,8 +55,10 @@ public class CaptureCtrl extends AppCompatActivity {
     public static final String ACTION_START = "start";
     public static final String ACTION_STOP = "stop";
     public static final String ACTION_STATUS = "status";
+    public static final String ACTION_NOTIFY_STATUS = "com.emanuelef.remote_capture.CaptureStatus";
     private static final String TAG = "CaptureCtrl";
     private static AppDescriptor mStarterApp = null; // the app which started the capture, may be unknown
+    private static String mReceiverClass = null;
     private CaptureHelper mCapHelper;
     private CtrlPermissions mPermissions;
 
@@ -185,6 +189,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
         if(action.equals(ACTION_START)) {
             mStarterApp = getCallingApp();
+            mReceiverClass = req_intent.getStringExtra("broadcast_receiver");
             Log.d(TAG, "Starting capture, caller=" + mStarterApp);
 
             // will call the mCapHelper listener
@@ -207,5 +212,22 @@ public class CaptureCtrl extends AppCompatActivity {
 
         setResult(RESULT_OK, res);
         finish();
+    }
+
+    public static void notifyCaptureStopped(Context ctx) {
+        if((mStarterApp != null) && (mReceiverClass != null)) {
+            Intent intent = new Intent(ACTION_NOTIFY_STATUS);
+            intent.putExtra("running", false);
+            intent.setComponent(new ComponentName(mStarterApp.getPackageName(), mReceiverClass));
+
+            try {
+                ctx.sendBroadcast(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        mStarterApp = null;
+        mReceiverClass = null;
     }
 }
