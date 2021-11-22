@@ -52,6 +52,7 @@ import com.emanuelef.remote_capture.model.CtrlPermissions;
 public class CaptureCtrl extends AppCompatActivity {
     public static final String ACTION_START = "start";
     public static final String ACTION_STOP = "stop";
+    public static final String ACTION_STATUS = "status";
     private static final String TAG = "CaptureCtrl";
     private static AppDescriptor mStarterApp = null; // the app which started the capture, may be unknown
     private CaptureHelper mCapHelper;
@@ -63,9 +64,8 @@ public class CaptureCtrl extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             final WindowInsetsController insetsController = getWindow().getInsetsController();
-            if (insetsController != null) {
+            if (insetsController != null)
                 insetsController.hide(WindowInsets.Type.statusBars());
-            }
         } else {
             getWindow().setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -112,12 +112,8 @@ public class CaptureCtrl extends AppCompatActivity {
 
         // Show authorization window
         setContentView(R.layout.ctrl_consent);
-        findViewById(R.id.allow_btn).setOnClickListener(v -> {
-            controlAction(intent, action, true);
-        });
-        findViewById(R.id.deny_btn).setOnClickListener(v -> {
-            controlAction(intent, action, false);
-        });
+        findViewById(R.id.allow_btn).setOnClickListener(v -> controlAction(intent, action, true));
+        findViewById(R.id.deny_btn).setOnClickListener(v -> controlAction(intent, action, false));
 
         if(app != null) {
             ((TextView)findViewById(R.id.app_name)).setText(app.getName());
@@ -161,7 +157,7 @@ public class CaptureCtrl extends AppCompatActivity {
     }
 
     private boolean isControlApp(@NonNull String action) {
-        // Automatically authorize an app to stop the capture it started
+        // By default, only the app which started the capture can perform other actions
         return !action.equals(ACTION_START) && (mStarterApp != null)
                 && (mStarterApp.getPackageName().equals(getCallingPackage()));
     }
@@ -184,6 +180,7 @@ public class CaptureCtrl extends AppCompatActivity {
     }
 
     private void processRequest(Intent req_intent, @NonNull String action) {
+        Intent res = new Intent();
         Utils.showToast(this, R.string.ctrl_consent_allowed);
 
         if(action.equals(ACTION_START)) {
@@ -198,13 +195,17 @@ public class CaptureCtrl extends AppCompatActivity {
 
             CaptureService.stopService();
             mStarterApp = null;
+        } else if(action.equals(ACTION_STATUS)) {
+            Log.d(TAG, "Returning status");
+
+            res.putExtra("running", CaptureService.isServiceActive());
         } else {
             Log.e(TAG, "unknown action: " + action);
             abort();
             return;
         }
 
-        setResult(RESULT_OK, null);
+        setResult(RESULT_OK, res);
         finish();
     }
 }
