@@ -11,8 +11,9 @@ adb shell am start -e action [ACTION] -e [SETTINGS] -n com.emanuelef.remote_capt
 ```
 
 where ACTION is one of:
-  - `start`: starts the capture
+  - `start`: starts the capture with the specified parameters
   - `stop`: stops the capture
+  - `get_status`: get the capture status
 
 The capture parameters are specified via Intent extras, which are discussed below.
 A common task is to capture the traffic of a specific app to analyze it into your app. This can be easily accomplished by running PCAPdroid in the
@@ -57,11 +58,11 @@ The result code tells if the command succeded or not. Check out the [PCAPReceive
 
 ## User Consent
 
-To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started. If the user denies consent, then the request fails.
-Consent is also asked when a stop request is received from a different app from the one which started it.
+To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started. If the user denies consent, then the request fails. After an app is granted start permission, subsequent requests from that app are automatically granted. 
 
-Please note that AFAIK Android does not provide a consistent way to determine the source of an Intent.
-This is only available via [getCallingPackage](https://developer.android.com/reference/android/app/Activity#getCallingPackage()) when the caller app uses `startActivityForResult` (or the equivalent `ActivityResultLauncher`). So it's adviced to always invoke the API via `startActivityForResult`.
+From the permission dialog the user can choose to permanently grant or deny the capture permission to an app. The permanently granted/denied permissions can be edited from the `Control Permissions` entry in the PCAPdroid settings.
+
+Applications interfacing with PCAPdroid should use the `startActivityForResult` (or the equivalent `ActivityResultLauncher`) when calling its API, rather than `startActivity`. This ensures that the package name of the calling app can be retrieved via [getCallingPackage](https://developer.android.com/reference/android/app/Activity#getCallingPackage()).
 
 ## Capture Settings
 
@@ -85,6 +86,33 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | capture_interface       | string | @inet \| any \| ifname - network interface to use in root mode    |
 
 *NOTE*: due to [file storage restrictions](https://developer.android.com/about/versions/11/privacy/storage), the `pcap_uri` must point to an app internal directory, e.g. `file:///data/user/0/com.emanuelef.remote_capture/cache/dump.pcap`.
+
+## Query the Capture Status
+
+It is possible to check if the capture is currently running by sending an Intent with the `get_status` action. The response Intent contains the `running` extra, which is `true` if the capture is running.
+
+Other than via the API, the capture may be manually stopped by the user from the PCAPdroid app. In order to be notified when the capture is stopped, you can create a `BroadcastReceiver` and subscribe to the `com.emanuelef.remote_capture.CaptureStatus` action. Here is an example:
+
+```xml
+<receiver android:name=".MyBroadcastReceiver"
+    android:enabled="true"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="com.emanuelef.remote_capture.CaptureStatus" />
+    </intent-filter>
+</receiver>
+```
+
+To tell PCAPdroid to send the Intent to your receiver, you must specify its class name in the `broadcast_receiver` extra of the start intent:
+
+```java
+intent.putExtra("action", "start");
+intent.putExtra("broadcast_receiver", "com.emanuelef.pcap_receiver.MyBroadcastReceiver");
+...
+captureStartLauncher.launch(intent);
+```
+
+The receiver will get an intent with the `running` extra set to `false` when the capture is stopped.
 
 ## Dumping PCAP to file
 
