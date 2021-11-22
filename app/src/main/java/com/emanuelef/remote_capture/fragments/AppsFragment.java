@@ -40,12 +40,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
-import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
-import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 

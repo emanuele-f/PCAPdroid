@@ -35,6 +35,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -266,11 +267,15 @@ public class SettingsActivity extends BaseActivity {
 
             mIpv6Enabled = findPreference(Prefs.PREF_IPV6_ENABLED);
 
-            findPreference("control_permissions").setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
-                startActivity(intent);
-                return true;
-            });
+            Preference ctrlPerm = findPreference("control_permissions");
+            if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
+                ctrlPerm.setVisible(false);
+            else
+                ctrlPerm.setOnPreferenceClickListener(preference -> {
+                    Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
+                    startActivity(intent);
+                    return true;
+                });
         }
 
         private void rootCaptureHideShow(boolean enabled) {

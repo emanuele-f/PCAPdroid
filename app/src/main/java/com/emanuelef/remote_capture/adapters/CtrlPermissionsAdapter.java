@@ -36,8 +36,11 @@ import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class CtrlPermissionsAdapter extends ArrayAdapter<CtrlPermissions.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
@@ -56,14 +59,23 @@ public class CtrlPermissionsAdapter extends ArrayAdapter<CtrlPermissions.Rule> i
     private void load() {
         PackageManager pm = mContext.getPackageManager();
         Iterator<CtrlPermissions.Rule> it = mPermissions.iterRules();
+        List<CtrlPermissions.Rule> sorted = new ArrayList<>();
 
         while(it.hasNext()) {
             CtrlPermissions.Rule rule = it.next();
             AppDescriptor app = AppsResolver.resolve(pm, rule.package_name, 0);
             if(app != null)
                 mPkgToApp.put(rule.package_name, app);
-            add(rule);
+
+            sorted.add(rule);
         }
+
+        // sort by package name. It would be better to sort them via AppDescriptor.compareTo but
+        // some apps may be null.
+        Collections.sort(sorted, (o1, o2) -> {
+            return o1.package_name.compareTo(o2.package_name);
+        });
+        addAll(sorted);
     }
 
     @NonNull

@@ -140,6 +140,10 @@ public class CtrlPermissions {
         return mRules.values().iterator();
     }
 
+    public boolean hasRules() {
+        return !mRules.isEmpty();
+    }
+
     public ConsentType getConsent(String package_name) {
         Rule rule = mRules.get(package_name);
         if(rule == null)
