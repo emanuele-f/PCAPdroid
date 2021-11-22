@@ -637,6 +637,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.getDnsServer() : "");
     }
 
+    public static boolean isDNSEncrypted() {
+        return((INSTANCE != null) && INSTANCE.mDnsEncrypted);
+    }
+
     /* Stop a running VPN service */
     public static void stopService() {
         if (INSTANCE != null)

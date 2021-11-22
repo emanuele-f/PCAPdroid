@@ -236,4 +236,5 @@
     <string name="status_updating">Updating…</string>
     <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can disable it from the Android network settings.</string>
+    <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
 </resources>
