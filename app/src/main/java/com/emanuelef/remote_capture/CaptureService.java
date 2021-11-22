@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
@@ -108,6 +109,9 @@ public class CaptureService extends VpnService implements Runnable {
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
     private boolean mBlacklistsUpdateRequested;
+    private boolean mBlockPrivateDns;
+    private boolean mDnsEncrypted;
+    private boolean mStrictDnsNoticeShown;
     private Blacklists mBlacklists;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
@@ -180,19 +184,21 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
+        mBlockPrivateDns = false;
+        mStrictDnsNoticeShown = false;
+        mDnsEncrypted = false;
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
 
             if(net != null) {
-                dns_server = Utils.getDnsServer(cm, net);
+                handleLinkProperties(cm.getLinkProperties(net));
 
+                dns_server = Utils.getDnsServer(cm, net);
                 if(dns_server == null)
                     dns_server = FALLBACK_DNS_SERVER;
                 else {
-                    // If the network goes offline we roll back to the fallback DNS server to
-                    // avoid possibly using a private IP DNS server not reachable anymore
                     mMonitoredNetwork = net.getNetworkHandle();
                     registerNetworkCallbacks();
                 }
@@ -449,6 +455,8 @@ public class CaptureService extends VpnService implements Runnable {
             public void onLost(@NonNull Network network) {
                 Log.d(TAG, "onLost " + network);
 
+                // If the network goes offline we roll back to the fallback DNS server to
+                // avoid possibly using a private IP DNS server not reachable anymore
                 if(network.getNetworkHandle() == mMonitoredNetwork) {
                     Log.d(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
                     dns_server = FALLBACK_DNS_SERVER;
@@ -458,6 +466,15 @@ public class CaptureService extends VpnService implements Runnable {
                     // change native
                     setDnsServer(dns_server);
                 }
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.P)
+            @Override
+            public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
+                Log.d(TAG, "onLinkPropertiesChanged " + network);
+
+                if(network.getNetworkHandle() == mMonitoredNetwork)
+                    handleLinkProperties(linkProperties);
             }
         };
 
@@ -478,6 +495,36 @@ public class CaptureService extends VpnService implements Runnable {
             }
 
             mNetworkCallback = null;
+        }
+    }
+
+    private void handleLinkProperties(LinkProperties linkProperties) {
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
+            boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
+
+            Log.d(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
+            if(!mSettings.root_capture) {
+                mDnsEncrypted = strict_mode;
+
+                /* Private DNS can be in one of these modes:
+                 *  1. Off
+                 *  2. Automatic (default): also called "opportunistic", only use it if not blocked
+                 *  3. Strict: private DNS is enforced, Internet unavailable if blocked. User must set a specific DNS server.
+                 * When in opportunistic mode, PCAPdroid will block private DNS connections to force the use of plain-text
+                 * DNS queries, which can be extracted by PCAPdroid. */
+                if (mBlockPrivateDns != opportunistic_mode) {
+                    mBlockPrivateDns = opportunistic_mode;
+                    setPrivateDnsBlocked(mBlockPrivateDns);
+                }
+            } else
+                // in root capture we don't block private DNS requests in opportunistic mode
+                mDnsEncrypted = strict_mode || opportunistic_mode;
+
+            if(mDnsEncrypted && !mStrictDnsNoticeShown) {
+                mStrictDnsNoticeShown = true;
+                Utils.showToastLong(this, R.string.private_dns_message_notice);
+            }
         }
     }
 
@@ -839,12 +886,13 @@ public class CaptureService extends VpnService implements Runnable {
         return blsinfo;
     }
 
-    public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
-    public static native void stopPacketLoop();
+    private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
+    private static native void stopPacketLoop();
+    private static native int getFdSetSize();
+    private static native void setPrivateDnsBlocked(boolean to_block);
+    private static native void setDnsServer(String server);
+    private static native void reloadBlacklists();
     public static native void askStatsDump();
-    public static native int getFdSetSize();
-    public static native void setDnsServer(String server);
     public static native byte[] getPcapHeader();
-    public static native void reloadBlacklists();
     public static native int getNumCheckedConnections();
 }

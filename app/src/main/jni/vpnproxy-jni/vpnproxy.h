@@ -250,7 +250,7 @@ extern jni_methods_t mids;
 extern jni_classes_t cls;
 extern bool running;
 extern uint32_t new_dns_server;
-extern bool dump_vpn_stats_now;
+extern bool block_private_dns;
 
 struct pcapdroid_trailer;
 

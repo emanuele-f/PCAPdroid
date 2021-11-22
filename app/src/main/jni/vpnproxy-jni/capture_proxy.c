@@ -104,9 +104,10 @@ static void check_socks5_redirection(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, z
 /* ******************************************************* */
 
 /*
- * If the packet contains a DNS request then rewrite server address
- * with public DNS server. Non UDP DNS connections are dropped to block DoH queries which do not
- * allow us to extract the requested domain name.
+ * If the packet contains a DNS request directed to the IP address used internally by PCAPdroid,
+ * then rewrite the server address with the actual DNS server.
+ * Moreover, if a private DNS connection is detected in opportunistic mode (block_private_dns true),
+ * then block this connection to force the fallback to non-private DNS mode.
  */
 static bool check_dns_req_allowed(vpnproxy_data_t *proxy, zdtun_conn_t *conn) {
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
@@ -182,10 +183,13 @@ static bool check_dns_req_allowed(vpnproxy_data_t *proxy, zdtun_conn_t *conn) {
         }
     }
 
-    log_i("blocking packet directed to the DNS server");
+    if(block_private_dns) {
+        log_i("blocking packet directed to the DNS server");
+        return(false);
+    }
 
-    // block everything else (e.g. DoH)
-    return(false);
+    // allow
+    return(true);
 }
 
 /* ******************************************************* */

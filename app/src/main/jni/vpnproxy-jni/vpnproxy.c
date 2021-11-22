@@ -34,6 +34,7 @@ jni_methods_t mids;
 jni_fields_t fields;
 bool running = false;
 uint32_t new_dns_server = 0;
+bool block_private_dns = false;
 
 static bool dump_capture_stats_now = false;
 static bool reload_blacklists_now = false;
@@ -1540,7 +1541,11 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedConnections(JNIEnv *env,
-                                                                           jclass clazz) {
+Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedConnections(JNIEnv *env, jclass clazz) {
     return bl_num_checked_connections;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setPrivateDnsBlocked(JNIEnv *env, jclass clazz, jboolean to_block) {
+    block_private_dns = to_block;
 }
