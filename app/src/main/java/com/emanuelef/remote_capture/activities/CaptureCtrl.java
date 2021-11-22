@@ -54,7 +54,7 @@ import com.emanuelef.remote_capture.model.CtrlPermissions;
 public class CaptureCtrl extends AppCompatActivity {
     public static final String ACTION_START = "start";
     public static final String ACTION_STOP = "stop";
-    public static final String ACTION_STATUS = "status";
+    public static final String ACTION_STATUS = "get_status";
     public static final String ACTION_NOTIFY_STATUS = "com.emanuelef.remote_capture.CaptureStatus";
     private static final String TAG = "CaptureCtrl";
     private static AppDescriptor mStarterApp = null; // the app which started the capture, may be unknown
