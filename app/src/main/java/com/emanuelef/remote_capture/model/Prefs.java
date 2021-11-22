@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.emanuelef.remote_capture.Billing;
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
@@ -84,7 +83,7 @@ public class Prefs {
     public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
     public static boolean isMalwareDetectionEnabled(Context ctx, SharedPreferences p) {
-        return(PCAPdroid.getInstance().getBilling(ctx).isPurchased(Billing.MALWARE_DETECTION_SKU)
+        return(Billing.newInstance(ctx).isPurchased(Billing.MALWARE_DETECTION_SKU)
                 && p.getBoolean(PREF_MALWARE_DETECTION, false));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }

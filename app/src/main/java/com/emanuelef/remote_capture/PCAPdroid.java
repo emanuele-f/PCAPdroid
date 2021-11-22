@@ -23,6 +23,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.ErrorActivity;
@@ -35,8 +36,14 @@ import java.lang.ref.WeakReference;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-// IMPORTANT: do not override getResources() with mLocalizedContext, otherwise the Webview used for ads will crash!
-// https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
+/* The PCAPdroid app class.
+ * This class is instantiated before anything else, and its reference is stored in the mInstance.
+ * Global state is stored into this class via singletons. Contrary to static singletons, this does
+ * not require passing the localized Context to the singletons getters methods.
+ *
+ * IMPORTANT: do not override getResources() with mLocalizedContext, otherwise the Webview used for ads will crash!
+ * https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
+ */
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
@@ -71,12 +78,8 @@ public class PCAPdroid extends Application {
         Utils.setAppTheme(theme);
     }
 
-    public static PCAPdroid getInstance() {
+    public static @NonNull PCAPdroid getInstance() {
         return mInstance.get();
-    }
-
-    public Billing getBilling(Context ctx) {
-        return new Billing(ctx);
     }
 
     public MatchList getVisualizationMask() {
