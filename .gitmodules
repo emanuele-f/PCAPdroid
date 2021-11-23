@@ -10,3 +10,6 @@
 [submodule "submodules/res"]
 	path = submodules/res
 	url = https://github.com/emanuele-f/PCAPdroid_res
+[submodule "submodules/MaxMind-DB-Reader-java"]
+	path = submodules/MaxMind-DB-Reader-java
+	url = https://github.com/emanuele-f/MaxMind-DB-Reader-java
