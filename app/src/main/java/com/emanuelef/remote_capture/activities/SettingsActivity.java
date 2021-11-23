@@ -36,6 +36,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;

@@ -71,7 +71,7 @@ dependencies {
     implementation 'com.maxmind.db:maxmind-db:2.0.0'
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
 
-    implementation 'com.google.android.gms:play-services-ads:20.4.0'
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
     constraints {
         implementation('androidx.work:work-runtime:2.7.0') {
             // fixes crash in Android 11

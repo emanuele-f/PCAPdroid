@@ -56,9 +56,9 @@ public class PCAPdroid extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // Disabled to get reports via the Android system reporting facility
         CaocConfig.Builder.create()
-                .errorDrawable(R.drawable.ic_app_crash)
-                .errorActivity(ErrorActivity.class)
+                .enabled(false)
                 .apply();
 
         mInstance = new WeakReference<>(this);
