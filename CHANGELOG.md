@@ -2,6 +2,14 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.4] - 2021-11-23
+- New malware detection overview: show blacklists and detection status
+- Show destination country and ASN in the connection details
+- Add ability to start the capture at boot
+- Reduce packet processing delay during UI updates
+- Fix no Internet when a custom private DNS is set
+- Add ability to grant persistent capture control permissions
+
 ## [1.4.3] - 2021-10-30
 - Implement blacklist-based malware detection with alerts (paid feature)
 - Filter connections: only plaintext, state (e.g. only open), not hidden, malicious
