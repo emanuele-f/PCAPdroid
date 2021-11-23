@@ -7,6 +7,22 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
+	<string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
+        ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
+        more details.</string>
+    <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br/>\n\n
+        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
+        - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
+        - nanohttpd: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
+        - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
+        - Android-Flag-Kit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
+        - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
+        - Font Awesome: <a href='https://fontawesome.com/license/free'>License</a>\n\n
+        - App icon made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
+        </string>
 
     <!-- Localized -->
     <string name="start_button">启动</string>
@@ -185,4 +201,41 @@
     <string name="malware_detection_ad0">准备好增强设备安全性了吗？</string>
     <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
     <string name="show_me">让我看看</string>
+    <string name="hint">提示</string>
+    <string name="once">一次</string>
+    <string name="forever">永久</string>
+    <string name="control_permissions">控制权限</string>
+    <string name="control_permissions_summary">检查哪些应用被允许控制 PCAPdroid 捕获流量</string>
+    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="country">国家</string>
+    <string name="asn">ASN</string>
+    <string name="country_val">国家： %1$s</string>
+    <string name="send_report">发送报告</string>
+    <string name="start_at_boot">开机启动</string>
+    <string name="start_at_boot_summary">如果启用，捕获将在设备启动时自动启动。</string>
+    <string name="malware_status_ok">未检测到恶意流量</string>
+    <string name="malware_status_detected">检测到恶意连接</string>
+    <string name="whitelist">白名单</string>
+    <string name="blacklists">黑名单</string>
+    <string name="status_outdated">已过期</string>
+    <string name="status_not_loaded">未加载</string>
+    <string name="status_uptodate">最新</string>
+    <string name="blacklist_type">"类型：%1$s"</string>
+    <string name="blacklist_type_ip">IP 黑名单</string>
+    <string name="blacklist_type_domain">域名黑名单</string>
+    <string name="n_rules">%1$s 条规则</string>
+    <string name="last_update_val">上次更新： %1$s</string>
+    <string name="malicious_connections">恶意连接</string>
+    <string name="updated_blacklists">已更新黑名单</string>
+    <string name="connections_checked">已检查连接</string>
+    <string name="last_blacklists_update">上次更新</string>
+    <string name="domain_rules">域名规则</string>
+    <string name="ip_rules">IP 规则</string>
+    <string name="malware_status_update_failed">一些黑名单已过期</string>
+    <string name="update_now">立即更新</string>
+    <string name="status_updating">更新中…</string>
+    <string name="malware_detection_learn_more">了解恶意软件检测功能的更多信息</string>
+    <string name="private_dns_message_notice">私人 DNS 阻止 PCAPdroid 检查 DN S流量。你可以在 Android 网络设置中禁用它。</string>
+    <string name="private_dns_hinders_detection">私人 DNS 妨碍检测</string>
+    <string name="decryption_no_filter_warn">执行 TLS 解密时，您应该选择一个目标应用程序，以避免中断互联网连接。</string>
 </resources>
