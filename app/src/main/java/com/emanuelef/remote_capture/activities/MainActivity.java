@@ -60,6 +60,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
@@ -206,7 +207,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         String verStr = Utils.getAppVersion(this);
         appVer.setText(verStr);
         appVer.setOnClickListener((ev) -> {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
+            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
             startActivity(browserIntent);
         });
     }
