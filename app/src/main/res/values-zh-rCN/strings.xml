@@ -201,7 +201,7 @@
     <string name="malware_detection_ad0">准备好增强设备安全性了吗？</string>
     <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
     <string name="show_me">让我看看</string>
-	<string name="hint">提示</string>
+    <string name="hint">提示</string>
     <string name="once">一次</string>
     <string name="forever">永久</string>
     <string name="control_permissions">控制权限</string>
