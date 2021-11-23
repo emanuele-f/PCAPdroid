@@ -305,7 +305,7 @@ static void update_connection_status(vpnproxy_data_t *proxy, pcap_conn_t *conn, 
         conn->data->status = CONN_STATUS_CONNECTED;
 
       if((conn->tuple.ipproto == IPPROTO_UDP) &&
-            pkt->l7_len >= sizeof(struct dns_packet) &&
+            pkt->l7_len >= sizeof(dns_packet_t) &&
             (conn->tuple.dst_port == ntohs(53))) {
           const dns_packet_t *dns = (dns_packet_t *)pkt->l7;
 

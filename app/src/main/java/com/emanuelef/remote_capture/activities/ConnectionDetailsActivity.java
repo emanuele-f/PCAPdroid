@@ -43,6 +43,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.haipq.android.flagkit.FlagImageView;
 
 public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
@@ -87,6 +88,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mRequestData = findViewById(R.id.request_data);
         TextView request_data_lbl = findViewById(R.id.request_data_label);
         TextView destination = findViewById(R.id.detail_destination);
+        TextView country = findViewById(R.id.country_name);
+        FlagImageView country_flag = findViewById(R.id.country_flag);
+        TextView asn = findViewById(R.id.asn);
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
@@ -147,6 +151,17 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 mRequestData.setVisibility(View.GONE);
                 request_data_lbl.setVisibility(View.GONE);
             }
+
+            if(!mConn.country.isEmpty()) {
+                country.setText(Utils.getCountryName(this, mConn.country));
+                country_flag.setCountryCode(mConn.country);
+            } else
+                findViewById(R.id.country_row).setVisibility(View.GONE);
+
+            if(mConn.asn.isKnown())
+                asn.setText(mConn.asn.toString());
+            else
+                findViewById(R.id.asn_row).setVisibility(View.GONE);
 
             updateStats(mConn);
         }
@@ -209,7 +224,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private void updateStats(ConnectionDescriptor conn) {
         if(conn != null) {
             mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
-            mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatPkts(conn.rcvd_pkts), Utils.formatPkts(conn.sent_pkts)));
+            mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(conn.rcvd_pkts), Utils.formatIntShort(conn.sent_pkts)));
             mDurationView.setText(Utils.formatDuration((conn.last_seen - conn.first_seen) / 1000));
             mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));

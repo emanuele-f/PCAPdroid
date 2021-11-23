@@ -29,7 +29,7 @@ struct blacklist {
     string_entry_t *domains;
     struct ndpi_detection_module_struct *ndpi;
     bool ready;
-    blacklist_stats_t stats;
+    blacklists_stats_t stats;
 };
 
 /* ******************************************************* */
@@ -84,11 +84,10 @@ int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net) {
 
 /* ******************************************************* */
 
-int blacklist_load_file(blacklist_t *bl, const char *path) {
+int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype, blacklist_stats_t *bstats) {
     FILE *f;
     char buffer[256];
-    int num_dm_ok = 0, num_dm_fail = 0;
-    int num_ip_ok = 0, num_ip_fail = 0;
+    int num_ok = 0, num_fail = 0, num_dup = 0;
     int max_file_rules = 500000;
 
     if(bl->ready) {
@@ -113,49 +112,54 @@ int blacklist_load_file(blacklist_t *bl, const char *path) {
 
         item[strcspn(buffer, "\r\n")] = '\0';
         bool is_net = strchr(buffer, '/');
+        bool is_ipv6 = strchr(buffer, ':');
+        bool is_addr = (inet_pton(AF_INET, item, &in_addr) == 1);
 
-        if(strchr(buffer, ':')) {
-            // IPv6 not supported
-            num_ip_fail++;
+        if((num_ok >= max_file_rules)  // limit reached
+                || is_ipv6) {          // IPv6 not supported
+            num_fail++;
             continue;
-        } else if(is_net || inet_pton(AF_INET, item, &in_addr) == 1) {
+        }
+
+        if(btype == IP_BLACKLIST) {
+            if(!is_net && !is_addr) {
+                log_w("Invalid IP/net \"%s\" in blacklist %s", buffer, path);
+                num_fail++;
+                continue;
+            }
+
             // IPv4 Address/subnet
             if(!is_net && ((in_addr.s_addr == 0) || (in_addr.s_addr == 0xFFFFFFFF) || (in_addr.s_addr == 0x7F000001)))
                 continue; // invalid
 
-            if((num_ip_ok + num_dm_ok) >= max_file_rules) {
-                // limit reached
-                num_ip_fail++;
-                continue;
-            }
-
             if(blacklist_add_ip(bl, item) == 0)
-                num_ip_ok++;
+                num_ok++;
             else
-                num_ip_fail++;
-        } else {
-            if((num_ip_ok + num_dm_ok) >= max_file_rules) {
-                // limit reached
-                num_dm_fail++;
-                continue;
-            }
-
+                num_fail++;
+        } else { // DOMAIN_BLACKLIST
             int rv = blacklist_add_domain(bl, item);
-            if((rv != 0) && (rv != -EADDRINUSE)) {
-                num_dm_fail++;
-                continue;
-            }
 
-            num_dm_ok++;
+            if(rv == 0)
+                num_ok++;
+            else if(rv == -EADDRINUSE)
+                num_dup++;
+            else
+                num_fail++;
         }
     }
 
     fclose(f);
-    log_d("Blacklist loaded[%s]: %d domains (%d failed), %d IPs (%d failed)",
-          strrchr(path, '/') + 1, num_dm_ok, num_dm_fail, num_ip_ok, num_ip_fail);
+    log_d("Blacklist loaded[%s][%s]: %d ok, %d dups, %d failed",
+          strrchr(path, '/') + 1, (btype == IP_BLACKLIST ? "IP" : "domain"), num_ok, num_dup, num_fail);
 
+    // current list stats
+    memset(bstats, 0, sizeof(*bstats));
+    bstats->num_failed = num_fail;
+    bstats->num_rules = num_ok;
+
+    // cumulative stats
     bl->stats.num_lists++;
-    bl->stats.num_failed += num_ip_fail + num_dm_fail;
+    bl->stats.num_failed += num_fail;
 
     return 0;
 }
@@ -224,6 +228,6 @@ bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
 
 /* ******************************************************* */
 
-void blacklist_get_stats(const blacklist_t *bl, blacklist_stats_t *stats) {
+void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
     *stats = bl->stats;
 }

@@ -239,28 +239,6 @@ android:layout_height="fill_parent">
     </TableRow>
 </TableLayout>
 
-<RelativeLayout
-    android:id="@+id/blacklists_status_row"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="20dp">
-
-    <TextView
-        android:id="@+id/blacklists_status_lbl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:text="@string/blacklists_status"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/blacklists_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/blacklists_status_lbl"
-        tools:text="Up-to-date: 4/4 ― Domain rules: 12k ― IP rules: 800\nLast update: 3h ago" />
-</RelativeLayout>
-
 <TextView
     android:id="@+id/alloc_stats"
     android:layout_width="wrap_content"

@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -29,6 +30,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.MatchList;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,15 +47,18 @@ public class ConnectionsRegister {
     private final int mSize;
     private int mNumItems;
     private int mUntrackedItems;
+    private int mNumMalicious;
     private final Map<Integer, AppStats> mAppsStats;
     private final ArrayList<ConnectionsListener> mListeners;
     private final MatchList mWhitelist;
+    private final Geolocation mGeo;
 
-    public ConnectionsRegister(int _size) {
+    public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
         mNumItems = 0;
         mUntrackedItems = 0;
         mSize = _size;
+        mGeo = new Geolocation(ctx);
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
@@ -72,6 +77,7 @@ public class ConnectionsRegister {
         if(!conn.alerted && conn.isBlacklisted()) {
             CaptureService.requireInstance().notifyBlacklistedConnection(conn);
             conn.alerted = true;
+            mNumMalicious++;
         }
     }
 
@@ -105,6 +111,9 @@ public class ConnectionsRegister {
 
                     if(--stats.num_connections <= 0)
                         mAppsStats.remove(uid);
+
+                    if(conn.isBlacklisted())
+                        mNumMalicious--;
                 }
 
                 removedItems[i] = conn;
@@ -126,6 +135,12 @@ public class ConnectionsRegister {
                 stats = new AppStats(uid);
                 mAppsStats.put(uid, stats);
             }
+
+            // Geolocation
+            InetAddress dstAddr = conn.getDstAddr();
+            conn.country = mGeo.getCountryCode(dstAddr);
+            conn.asn = mGeo.getASN(dstAddr);
+            //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
             conn.updateWhitelist(mWhitelist);
             processConnectionStatus(conn);
@@ -213,8 +228,13 @@ public class ConnectionsRegister {
                 boolean was_blacklisted = conn.isBlacklisted();
 
                 conn.updateWhitelist(mWhitelist);
-                if (conn.isBlacklisted() != was_blacklisted)
+                if(conn.isBlacklisted() != was_blacklisted) {
+                    if(was_blacklisted)
+                        mNumMalicious--;
+                    else
+                        mNumMalicious++;
                     changed_pos.add(i);
+                }
             }
         }
 
@@ -298,5 +318,9 @@ public class ConnectionsRegister {
         }
 
         return rv;
+    }
+
+    public int getNumMaliciousConnections() {
+        return mNumMalicious;
     }
 }

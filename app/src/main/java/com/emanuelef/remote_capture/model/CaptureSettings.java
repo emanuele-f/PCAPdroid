@@ -21,7 +21,7 @@ public class CaptureSettings implements Serializable {
     public final String capture_interface;
     public final String pcap_uri;
 
-    public CaptureSettings(SharedPreferences prefs, String _pcap_uri) {
+    public CaptureSettings(SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
         app_filter = Prefs.getAppFilter(prefs);
         collector_address = Prefs.getCollectorIp(prefs);
@@ -34,7 +34,7 @@ public class CaptureSettings implements Serializable {
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         capture_interface = Prefs.getCaptureInterface(prefs);
-        pcap_uri = _pcap_uri;
+        pcap_uri = Prefs.getPCAPUri(prefs);
     }
 
     public CaptureSettings(Intent intent) {

@@ -52,18 +52,6 @@ public class ListInfo {
     public int getTitle() {
         switch(mType) {
             case VISUALIZATION_MASK:
-                return R.string.edit_hidden_connections;
-            case MALWARE_WHITELIST:
-                return R.string.edit_malware_whitelist;
-        }
-
-        assert false;
-        return 0;
-    }
-
-    public int getShareSubject() {
-        switch(mType) {
-            case VISUALIZATION_MASK:
                 return R.string.hidden_connections_rules;
             case MALWARE_WHITELIST:
                 return R.string.malware_whitelist_rules;

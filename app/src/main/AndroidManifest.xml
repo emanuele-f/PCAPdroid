@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_CLIPS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
@@ -25,6 +26,7 @@
         android:theme="@style/AppTheme"
         android:allowBackup="true"
         android:fullBackupContent="true"
+        tools:replace="android:label"
         tools:targetApi="m">
 
         <activity
@@ -45,7 +47,12 @@
             android:theme="@style/AppTheme.Floating"
             android:launchMode="singleTop"
             android:exported="true" />
+        <activity
+            android:name=".activities.EditCtrlPermissions"
+            android:parentActivityName=".activities.SettingsActivity" />
 
+        <activity
+            android:name=".activities.ErrorActivity" />
         <activity
             android:name=".activities.ConnectionDetailsActivity" />
         <activity
@@ -73,6 +80,10 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
+            android:name=".activities.MalwareDetection"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
+        <activity
             android:name=".activities.EditListActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.EditFilterActivity" />
@@ -87,7 +98,18 @@
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
+            <meta-data android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
+                android:value="false"/>
         </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

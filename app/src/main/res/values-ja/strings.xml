@@ -83,8 +83,6 @@
     <string name="file_saved">ファイルは正常に保存されました</string>
     <string name="older_connections_notice">%1$d より古い接続は表示されません</string>
     <string name="about_text">PCAPdroid はルート権限なしで動作するオープン ソースのネットワーク キャプチャ、モニタリング ツールです。</string>
-    <string name="app_no_warranty">PCAPdroid は役に立つことを願って配布していますが、暗黙の保証も含め一切の保証はありません。詳細は GNU General Public License をご覧ください。</string>
-    <string name="gpl_license_link">GPLv3 ライセンス</string>
     <string name="get_app">入手:</string>
     <string name="tls_how_to">TLS 復号化のセットアップ方法</string>
     <string name="unknown_app">不明</string>

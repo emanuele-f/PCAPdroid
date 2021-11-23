@@ -27,6 +27,8 @@ import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
 public class ConnectionDescriptor implements Serializable {
@@ -75,6 +77,8 @@ public class ConnectionDescriptor implements Serializable {
     private int tcp_flags;
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
+    public String country;
+    public Geomodel.ASN asn;
 
     /* Internal */
     public boolean alerted;
@@ -93,6 +97,8 @@ public class ConnectionDescriptor implements Serializable {
         dst_port = _dst_port;
         uid = _uid;
         first_seen = last_seen = when;
+        country = "";
+        asn = new Geomodel.ASN();
     }
 
     public void processUpdate(ConnectionUpdate update) {
@@ -113,6 +119,15 @@ public class ConnectionDescriptor implements Serializable {
             url = update.url;
             request_plaintext = update.request_plaintext;
             l7proto = update.l7proto;
+        }
+    }
+
+    public InetAddress getDstAddr() {
+        try {
+            return InetAddress.getByName(dst_ip);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

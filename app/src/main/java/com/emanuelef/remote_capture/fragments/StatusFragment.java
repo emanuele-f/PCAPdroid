@@ -85,6 +85,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
     private TextView mEmptyAppsView;
+    private TextView mFilterWarning;
     AppsListView mOpenAppsList;
 
     @Override
@@ -107,6 +108,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         if((mMenu != null) && (mActivity != null))
             appStateChanged(mActivity.getState());
+
+        recheckFilterWarning();
 
         /* Register for stats update */
         mReceiver = new BroadcastReceiver() {
@@ -145,6 +148,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mQuickSettings = view.findViewById(R.id.quick_settings);
+        mFilterWarning = view.findViewById(R.id.app_filter_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
 
@@ -232,6 +236,11 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             appStateChanged(mActivity.getState());
     }
 
+    private void recheckFilterWarning() {
+        boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
+        mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) && !hasFilter) ? View.VISIBLE : View.GONE);
+    }
+
     private void refreshFilterInfo() {
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.no_app_filter);
@@ -269,6 +278,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         editor.putString(Prefs.PREF_APP_FILTER, mAppFilter);
         editor.apply();
         refreshFilterInfo();
+        recheckFilterWarning();
     }
 
     private void processStatsUpdateIntent(Intent intent) {

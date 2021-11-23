@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.InetAddresses;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Patterns;
@@ -87,7 +89,7 @@ public class SettingsActivity extends BaseActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
-            mIab = PCAPdroid.getInstance().getBilling(requireContext());
+            mIab = Billing.newInstance(requireContext());
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
@@ -116,12 +118,17 @@ public class SettingsActivity extends BaseActivity {
             }
         }
 
+        @SuppressWarnings("deprecation")
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = findPreference(Prefs.PREF_COLLECTOR_IP_KEY);
             mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> {
-                Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                return(matcher.matches());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    return (InetAddresses.isNumericAddress(newValue.toString()));
+                else {
+                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
+                    return(matcher.matches());
+                }
             });
 
             /* Collector port validation */
@@ -181,6 +188,7 @@ public class SettingsActivity extends BaseActivity {
             // Billing code here
         }
 
+        @SuppressWarnings("deprecation")
         private void setupSocks5ProxyPrefs() {
             mProxyPrefs = findPreference("proxy_prefs");
             mTlsHelp = findPreference("tls_how_to");
@@ -194,8 +202,12 @@ public class SettingsActivity extends BaseActivity {
             /* TLS Proxy IP validation */
             mSocks5ProxyIp = findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
             mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
-                Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                return(matcher.matches());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    return (InetAddresses.isNumericAddress(newValue.toString()));
+                else {
+                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
+                    return(matcher.matches());
+                }
             });
 
             /* TLS Proxy port validation */
@@ -254,6 +266,16 @@ public class SettingsActivity extends BaseActivity {
                 mRootCaptureEnabled.setVisible(false);
 
             mIpv6Enabled = findPreference(Prefs.PREF_IPV6_ENABLED);
+
+            Preference ctrlPerm = findPreference("control_permissions");
+            if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
+                ctrlPerm.setVisible(false);
+            else
+                ctrlPerm.setOnPreferenceClickListener(preference -> {
+                    Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
+                    startActivity(intent);
+                    return true;
+                });
         }
 
         private void rootCaptureHideShow(boolean enabled) {
