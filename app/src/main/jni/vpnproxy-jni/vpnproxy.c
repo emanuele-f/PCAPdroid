@@ -31,12 +31,15 @@
 
 jni_classes_t cls;
 jni_methods_t mids;
+jni_fields_t fields;
 bool running = false;
 uint32_t new_dns_server = 0;
+bool block_private_dns = false;
 
 static bool dump_capture_stats_now = false;
 static bool reload_blacklists_now = false;
 static ndpi_protocol_bitmask_struct_t masterProtos;
+static int bl_num_checked_connections = 0;
 
 /* ******************************************************* */
 
@@ -394,6 +397,8 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
             get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
             log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
+
+        bl_num_checked_connections++;
     }
 
     return(data);
@@ -959,6 +964,8 @@ const char* get_file_path(const char *subpath) {
 
 // called after load_new_blacklists
 static void use_new_blacklists(vpnproxy_data_t *proxy) {
+    JNIEnv *env = proxy->env;
+
     if(!proxy->malware_detection.new_bl)
         return;
 
@@ -968,11 +975,98 @@ static void use_new_blacklists(vpnproxy_data_t *proxy) {
     proxy->malware_detection.new_bl = NULL;
     blacklist_ready(proxy->malware_detection.bl);
 
+    bl_status_arr_t *status_arr = proxy->malware_detection.status_arr;
+    proxy->malware_detection.status_arr = NULL;
+
+    jobject status_obj = (*env)->NewObjectArray(env, status_arr ? status_arr->cur_items : 0, cls.blacklist_status, NULL);
+    if((status_obj == NULL) || jniCheckException(env)) {
+        log_e("NewObjectArray() failed");
+        goto cleanup;
+    }
+
     // Notify
-    blacklist_stats_t stats;
-    blacklist_get_stats(proxy->malware_detection.bl, &stats);
-    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded,
-                                  stats.num_lists, stats.num_domains, stats.num_ips);
+    if(status_arr != NULL) {
+        for(int i=0; i<status_arr->cur_items; i++) {
+            bl_status_t *st = &status_arr->items[i];
+            jstring fname = (*env)->NewStringUTF(env, st->fname);
+            if((fname == NULL) || jniCheckException(env))
+                break;
+
+            jobject stats = (*env)->NewObject(env, cls.blacklist_status, mids.blacklistStatusInit,
+                                                  fname, st->num_rules);
+            if((stats == NULL) || jniCheckException(env)) {
+                (*env)->DeleteLocalRef(env, fname);
+                break;
+            }
+
+            (*env)->SetObjectArrayElement(env, status_obj, i, stats);
+            if(jniCheckException(env)) {
+                (*env)->DeleteLocalRef(env, stats);
+                break;
+            }
+        }
+    }
+    (*proxy->env)->CallVoidMethod(proxy->env, proxy->vpn_service, mids.notifyBlacklistsLoaded, status_obj);
+
+cleanup:
+    if(status_arr != NULL) {
+        for(int i = 0; i < status_arr->cur_items; i++) {
+            bl_status_t *st = &status_arr->items[i];
+            pd_free(st->fname);
+        }
+        pd_free(status_arr->items);
+        pd_free(status_arr);
+    }
+}
+
+/* ******************************************************* */
+
+// Load information about the blacklists to use (proxy->malware_detection.bls_info)
+int load_blacklists_info(vpnproxy_data_t *proxy) {
+    int rv = 0;
+    JNIEnv *env = proxy->env;
+    jobjectArray *arr = (*env)->CallObjectMethod(env, proxy->vpn_service, mids.getBlacklistsInfo);
+    proxy->malware_detection.bls_info = NULL;
+    proxy->malware_detection.num_bls = 0;
+
+    if((jniCheckException(proxy->env) != 0) || (arr == NULL))
+        return -1;
+
+    proxy->malware_detection.num_bls = (*env)->GetArrayLength(env, arr);
+    if(proxy->malware_detection.num_bls == 0)
+        goto cleanup;
+
+    proxy->malware_detection.bls_info = (bl_info_t*) pd_calloc(proxy->malware_detection.num_bls, sizeof(bl_info_t));
+    if(proxy->malware_detection.bls_info == NULL) {
+        proxy->malware_detection.num_bls = 0;
+        rv = -1;
+        goto cleanup;
+    }
+
+    jobject type_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");
+
+    for(int i = 0; i < proxy->malware_detection.num_bls; i++) {
+        jobject *bl_descr = (*env)->GetObjectArrayElement(env, arr, i);
+        if(bl_descr != NULL) {
+            bl_info_t *blinfo = &proxy->malware_detection.bls_info[i];
+
+            jstring fname_obj = (*env)->GetObjectField(env, bl_descr, fields.bldescr_fname);
+            const char *fname = (*env)->GetStringUTFChars(env, fname_obj, 0);
+            blinfo->fname = pd_strdup(fname);
+            (*env)->ReleaseStringUTFChars(env, fname_obj, fname);
+            (*proxy->env)->DeleteLocalRef(proxy->env, fname_obj);
+
+            jobject bl_type = (*env)->GetObjectField(env, bl_descr, fields.bldescr_type);
+            blinfo->type = (*env)->IsSameObject(env, bl_type, type_ip) ? IP_BLACKLIST : DOMAIN_BLACKLIST;
+            (*proxy->env)->DeleteLocalRef(proxy->env, bl_type);
+
+            //log_d("[+] Blacklist: %s (%s)", blinfo->fname, (blinfo->type == IP_BLACKLIST) ? "IP" : "domain");
+        }
+    }
+
+cleanup:
+    (*proxy->env)->DeleteLocalRef(proxy->env, arr);
+    return rv;
 }
 
 /* ******************************************************* */
@@ -981,30 +1075,52 @@ static void use_new_blacklists(vpnproxy_data_t *proxy) {
 // use_new_blacklists needs to be called to use it.
 static void* load_new_blacklists(void *data) {
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) data;
+    bl_status_arr_t *status_arr = pd_calloc(1, sizeof(bl_status_arr_t));
+    if(!status_arr) {
+        proxy->malware_detection.reload_done = true;
+        return NULL;
+    }
 
     // NOTE: proxy->ndpi is shared
     // Calling ndpi_load_ip_category from another thread is safe
     blacklist_t *bl = blacklist_init(proxy->ndpi);
     if(!bl) {
+        pd_free(status_arr);
         proxy->malware_detection.reload_done = true;
         return NULL;
     }
 
     clock_t start = clock();
 
-    // load all the files in the malware_bl directory
-    DIR *dir = opendir(get_file_path("malware_bl"));
-    if(dir) {
-        struct dirent *dent;
+    // load files in the malware_bl directory
+    for(int i = 0; i < proxy->malware_detection.num_bls; i++) {
+        bl_info_t *blinfo = &proxy->malware_detection.bls_info[i];
         char subpath[256];
+        blacklist_stats_t stats;
 
-        while((dent = readdir(dir)) != NULL) {
-            if(dent->d_name[0] != '.') {
-                snprintf(subpath, sizeof(subpath), "malware_bl/%s", dent->d_name);
-                blacklist_load_file(bl, get_file_path(subpath));
+        snprintf(subpath, sizeof(subpath), "malware_bl/%s", blinfo->fname);
+
+        if(blacklist_load_file(bl, get_file_path(subpath), blinfo->type, &stats) == 0) {
+            // NOTE: cannot invoke JNI from this thread, must use an intermediate storage
+            if(status_arr->size >= status_arr->cur_items) {
+                /* Extend array */
+                status_arr->size = (status_arr->size == 0) ? 8 : (status_arr->size * 2);
+                status_arr->items = pd_realloc(status_arr->items, status_arr->size * sizeof(bl_status_t));
+                if(!status_arr->items) {
+                    log_e("realloc(bl_status_arr_t) (%d items) failed", status_arr->size);
+                    status_arr->size = 0;
+                    continue;
+                }
             }
+
+            char *fname = pd_strdup(blinfo->fname);
+            if(!fname)
+                continue;
+
+            bl_status_t *status = &status_arr->items[status_arr->cur_items++];
+            status->fname = fname;
+            status->num_rules = stats.num_rules;
         }
-        closedir(dir);
     }
 
     // Test domain/IP to test blacklist match
@@ -1014,6 +1130,7 @@ static void* load_new_blacklists(void *data) {
     log_d("Blacklists loaded in %.3f sec", ((double) (clock() - start)) / CLOCKS_PER_SEC);
 
     proxy->malware_detection.new_bl = bl;
+    proxy->malware_detection.status_arr = status_arr;
     proxy->malware_detection.reload_done = true;
     return NULL;
 }
@@ -1053,6 +1170,7 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
             reload_blacklists_now = false;
             proxy->malware_detection.reload_done = false;
             proxy->malware_detection.new_bl = NULL;
+            proxy->malware_detection.status_arr = NULL;
             pthread_create(&proxy->malware_detection.reload_worker, NULL, load_new_blacklists,
                            proxy);
             proxy->malware_detection.reload_in_progress = true;
@@ -1190,6 +1308,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
     cls.conn_update = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionUpdate");
     cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
+    cls.blacklist_status = jniFindClass(env, "com/emanuelef/remote_capture/model/Blacklists$NativeBlacklistStatus");
+    cls.blacklist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor");
 
     /* Methods */
     mids.reportError = jniGetMethodID(env, vpn_class, "reportError", "(Ljava/lang/String;)V");
@@ -1200,7 +1320,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
-    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "(III)V");
+    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/model/Blacklists$NativeBlacklistStatus;)V");
+    mids.getBlacklistsInfo = jniGetMethodID(env, vpn_class, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
@@ -1208,6 +1329,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJIIIIIIIII)V");
+    mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
+
+    /* Fields */
+    fields.bldescr_fname = jniFieldID(env, cls.blacklist_descriptor, "fname", "Ljava/lang/String;");
+    fields.bldescr_type = jniFieldID(env, cls.blacklist_descriptor, "type", "Lcom/emanuelef/remote_capture/model/BlacklistDescriptor$Type;");
 
     vpnproxy_data_t proxy = {
             .tunfd = tunfd,
@@ -1265,6 +1391,9 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         return(-1);
     }
 
+    if(proxy.malware_detection.enabled)
+        load_blacklists_info(&proxy);
+
     // Load the blacklist before starting
     if(proxy.malware_detection.enabled && reload_blacklists_now) {
         reload_blacklists_now = false;
@@ -1290,6 +1419,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     refresh_time(&proxy);
     last_connections_dump = proxy.now_ms;
     next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
+    bl_num_checked_connections = 0;
 
     notifyServiceStatus(&proxy, "started");
 
@@ -1308,6 +1438,11 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         }
         if(proxy.malware_detection.bl)
             blacklist_destroy(proxy.malware_detection.bl);
+        if(proxy.malware_detection.bls_info) {
+            for(int i=0; i<proxy.malware_detection.num_bls; i++)
+                pd_free(proxy.malware_detection.bls_info[i].fname);
+            pd_free(proxy.malware_detection.bls_info);
+        }
     }
     ndpi_exit_detection_module(proxy.ndpi);
 
@@ -1403,4 +1538,14 @@ Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jcl
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, jclass clazz) {
     reload_blacklists_now = true;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedConnections(JNIEnv *env, jclass clazz) {
+    return bl_num_checked_connections;
+}
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setPrivateDnsBlocked(JNIEnv *env, jclass clazz, jboolean to_block) {
+    block_private_dns = to_block;
 }

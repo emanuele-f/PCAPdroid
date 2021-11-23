@@ -64,6 +64,7 @@ import com.android.billingclient.api.Purchase.PurchaseState;
 import com.emanuelef.remote_capture.AD;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
@@ -71,7 +72,6 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
-import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -81,14 +81,11 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.FileNotFoundException;
 
-import cat.ereza.customactivityoncrash.config.CaocConfig;
-
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private AD mAd;
     private boolean showAdsNotice;
     private PlayBilling mIab;
     private ViewPager2 mPager;
-    private TabLayout mTabLayout;
     private AppState mState;
     private AppStateListener mListener;
     private Uri mPcapUri;
@@ -108,8 +105,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
-    public static final String GITHUB_DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
+    public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
+    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#51-malware-detection";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
@@ -123,6 +121,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        setTitle("PCAPdroid");
 
         mAd = new AD(this, "ca-app-pub-5059485193178567/9939820922");
         mIab = new PlayBilling(this);
@@ -161,13 +160,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         });
 
-        CaocConfig.Builder.create()
-                .errorDrawable(R.drawable.ic_app_crash)
-                .apply();
-
-        mTabLayout = findViewById(R.id.tablayout);
         mPager = findViewById(R.id.pager);
-
         setupTabs();
 
         /* Register for service status */
@@ -241,7 +234,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
-        navMenu.findItem(R.id.edit_malware_whitelist).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
+        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
     }
 
     private void setupNavigationDrawer() {
@@ -261,7 +254,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         String verStr = Utils.getAppVersion(this);
         appVer.setText(verStr);
         appVer.setOnClickListener((ev) -> {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + verStr));
+            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
             startActivity(browserIntent);
         });
 
@@ -344,7 +338,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         final MainStateAdapter stateAdapter = new MainStateAdapter(this);
         mPager.setAdapter(stateAdapter);
 
-        new TabLayoutMediator(mTabLayout, mPager, (tab, position) ->
+        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
                 tab.setText(getString(stateAdapter.getPageTitle(position)))
         ).attach();
     }
@@ -404,9 +398,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
-        } else if(id == R.id.edit_malware_whitelist) {
-            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.MALWARE_WHITELIST);
+        } else if(id == R.id.malware_detection) {
+            Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
@@ -418,7 +411,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
         } else if (id == R.id.action_open_user_guide) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_DOCS_URL));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DOCS_URL));
             startActivity(browserIntent);
         } else if (id == R.id.action_stats) {
             if(mState == AppState.running) {
@@ -548,9 +541,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         /* Request a persistent permission to write this URI without invoking the system picker.
-         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents. */
+         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents
+         * or when starting the capture at boot. */
         if(!hasPermission)
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+        // Save the URI as a preference
+        mPrefs.edit().putString(Prefs.PREF_PCAP_URI, mPcapUri.toString()).apply();
 
         Log.d(TAG, "PCAP URI to write: " + mPcapUri.toString());
         toggleService();
@@ -567,9 +564,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void startCaptureService() {
         appStateStarting();
-
-        String pcap_uri = ((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) ? mPcapUri.toString() : "";
-        mCapHelper.startCapture(new CaptureSettings(mPrefs, pcap_uri));
+        mCapHelper.startCapture(new CaptureSettings(mPrefs));
     }
 
     public void toggleService() {

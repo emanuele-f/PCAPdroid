@@ -91,7 +91,7 @@ static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
 
 /* ******************************************************* */
 
-static void check_socks5_redirection(struct vpnproxy_data *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
+static void check_socks5_redirection(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     conn_data_t *data = zdtun_conn_get_userdata(conn);
 
     if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn)))
@@ -104,11 +104,12 @@ static void check_socks5_redirection(struct vpnproxy_data *proxy, zdtun_pkt_t *p
 /* ******************************************************* */
 
 /*
- * If the packet contains a DNS request then rewrite server address
- * with public DNS server. Non UDP DNS connections are dropped to block DoH queries which do not
- * allow us to extract the requested domain name.
+ * If the packet contains a DNS request directed to the IP address used internally by PCAPdroid,
+ * then rewrite the server address with the actual DNS server.
+ * Moreover, if a private DNS connection is detected in opportunistic mode (block_private_dns true),
+ * then block this connection to force the fallback to non-private DNS mode.
  */
-static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *conn) {
+static bool check_dns_req_allowed(vpnproxy_data_t *proxy, zdtun_conn_t *conn) {
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
 
     if(new_dns_server != 0) {
@@ -161,8 +162,8 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         zdtun_pkt_t *pkt = proxy->last_pkt;
         int dns_length = pkt->l7_len;
 
-        if(dns_length >= sizeof(struct dns_packet)) {
-            struct dns_packet *dns_data = (struct dns_packet*) pkt->l7;
+        if(dns_length >= sizeof(dns_packet_t)) {
+            dns_packet_t *dns_data = (dns_packet_t*) pkt->l7;
 
             if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
                 return(true);
@@ -182,10 +183,13 @@ static bool check_dns_req_allowed(struct vpnproxy_data *proxy, zdtun_conn_t *con
         }
     }
 
-    log_i("blocking packet directed to the DNS server");
+    if(block_private_dns) {
+        log_i("blocking packet directed to the DNS server");
+        return(false);
+    }
 
-    // block everything else (e.g. DoH)
-    return(false);
+    // allow
+    return(true);
 }
 
 /* ******************************************************* */

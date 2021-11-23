@@ -91,6 +91,13 @@
             app:defaultValue="\@inet" />
 
         <SwitchPreference
+            app:key="start_at_boot"
+            android:title="@string/start_at_boot"
+            app:iconSpaceReserved="false"
+            app:summary="@string/start_at_boot_summary"
+            android:defaultValue="false" />
+
+        <SwitchPreference
             app:key="pcapdroid_trailer"
             app:title="@string/pcapdroid_trailer"
             app:iconSpaceReserved="false"
@@ -113,6 +120,14 @@
             app:iconSpaceReserved="false"
             app:summary="@string/malware_detection_summary"
             app:defaultValue="false" />
+
+        <Preference
+            app:key="malware_detection_docs"
+            app:title="@string/malware_detection_learn_more"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/paid_features#51-malware-detection" />
+        </Preference>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
@@ -140,5 +155,12 @@
             app:iconSpaceReserved="false"
             app:summary="@string/enable_ipv6_summary"
             app:defaultValue="false" />
+
+        <Preference
+            app:key="control_permissions"
+            app:title="@string/control_permissions"
+            app:iconSpaceReserved="false"
+            android:summary="@string/control_permissions_summary">
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

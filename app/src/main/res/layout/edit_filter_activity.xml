@@ -28,11 +28,11 @@
 
             <Button
                 android:id="@+id/edit_mask"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:text="@string/edit_list"
-                style="?attr/materialButtonOutlinedStyle"
                 android:textColor="@color/colorTabText" />
         </RelativeLayout>
 

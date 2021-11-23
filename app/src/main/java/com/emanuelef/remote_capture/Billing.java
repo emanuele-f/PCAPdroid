@@ -36,8 +36,12 @@ public class Billing {
 
     protected final Context mContext;
 
-    public Billing(Context ctx) {
+    protected Billing(Context ctx) {
         mContext = ctx;
+    }
+
+    public static PlayBilling newInstance(Context ctx) {
+        return new PlayBilling(ctx);
     }
 
     public boolean isAvailable(String sku) {

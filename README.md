@@ -53,6 +53,11 @@ You can help the PCAPdroid project in many ways:
 - Of course provide code pull requests!
 
 You can [join the PCAPdroid community](https://t.me/PCAPdroid) on telegram.
+The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target this branch when making pull requests for new features. Here is the normal release cycle:
+
+1. Changes are developed and pushed to the dev branch.
+2. Once changes are stable enough, they are merged to the master branch. This is a good time to update translations.
+3. After about 2 days (or more in case of a major update), the new version is released.
 
 ## Integrating into your APP
 
@@ -66,7 +71,8 @@ Some features of PCAPdroid can be integrated into a third-party app to provide p
 - [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
 - [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
 - [nanohttpd](https://github.com/NanoHttpd/nanohttpd): tiny HTTP server
-- [CustomActivityOnCrash](https://github.com/Ereza/CustomActivityOnCrash): handles app crashes gracefully and allows to copy the crash log
+
+For the complete list of third party libraries and the corresponding licenses check out the "About" page in the app.
 
 ## Building
 

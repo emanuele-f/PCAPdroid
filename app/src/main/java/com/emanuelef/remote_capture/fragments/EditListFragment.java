@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -39,8 +40,9 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.activities.EditListActivity;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
+import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
@@ -51,12 +53,24 @@ public class EditListFragment extends Fragment {
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
     private MatchList mList;
+    private ListInfo mListInfo;
     private ListView mListView;
     private static final String TAG = "EditListFragment";
+    private static final String LIST_TYPE_ARG = "list_type";
+
+    public static EditListFragment newInstance(ListInfo.Type list) {
+        EditListFragment fragment = new EditListFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(LIST_TYPE_ARG, list);
+
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.edit_list_fragment, container, false);
     }
 
@@ -64,7 +78,10 @@ public class EditListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListView = view.findViewById(R.id.listview);
         mEmptyText = view.findViewById(R.id.list_empty);
-        mList = ((EditListActivity)requireActivity()).getList();
+
+        assert getArguments() != null;
+        mListInfo = new ListInfo((ListInfo.Type)getArguments().getSerializable(LIST_TYPE_ARG));
+        mList = mListInfo.getList();
 
         mAdapter = new ListEditAdapter(requireContext(), mList.iterRules());
         mListView.setAdapter(mAdapter);
@@ -140,6 +157,42 @@ public class EditListFragment extends Fragment {
         });
 
         recheckListSize();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.list_edit_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        ListView lv = requireActivity().findViewById(R.id.listview);
+
+        if(lv == null)
+            return false;
+
+        if(id == R.id.copy_to_clipboard) {
+            String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
+            Utils.copyToClipboard(requireContext(), contents);
+            return true;
+        } else if(id == R.id.share) {
+            String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
+
+            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(mListInfo.getTitle()));
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+
+            return true;
+        } else if(id == R.id.show_hint) {
+            Utils.showHelpDialog(requireContext(), mListInfo.getHelpString());
+            return true;
+        }
+
+        return false;
     }
 
     private void recheckListSize() {

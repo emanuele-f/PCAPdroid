@@ -61,6 +61,9 @@ public class CaptureHelper {
     }
 
     public void startCapture(CaptureSettings settings) {
+        if(CaptureService.isServiceActive())
+            CaptureService.stopService();
+
         mSettings = settings;
 
         if(settings.root_capture) {

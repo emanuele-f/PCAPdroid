@@ -197,6 +197,59 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/country_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/country" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:gravity="center_vertical">
+
+                <com.haipq.android.flagkit.FlagImageView
+                    android:id="@+id/country_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="14sp"
+                    android:layout_marginEnd="5dp"
+                    tools:src="@drawable/flag_it" />
+
+                <TextView
+                    android:id="@+id/country_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    tools:text="Italy" />
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/asn_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/asn" />
+            <TextView
+                android:id="@+id/asn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="ASN_1 - Public" />
+        </TableRow>
+
+        <TableRow
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="16dp"

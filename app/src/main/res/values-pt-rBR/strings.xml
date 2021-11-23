@@ -84,8 +84,6 @@
     <string name="file_saved">Arquivo salvo com sucesso</string>
     <string name="older_connections_notice">%1$d conexões mais antigas não mostradas</string>
     <string name="about_text">PCAPdroid é uma ferramenta de captura e monitoramento de rede de software livre que funciona sem acesso Root.</string>
-    <string name="app_no_warranty">PCAPdroid é distribuído na esperança de ser útil, mas SEM QUALQUER TIPO DE GARANTIA; nem mesmo a garantia implícita de COMERCIALIZAÇÃO ou ADEQUAÇÃO PARA UM PROPÓSITO PARTICULAR. Veja a Licença Pública Geral GNU para mais detalhes.</string>
-    <string name="gpl_license_link">Licença GPLv3</string>
     <string name="get_app">Obtenha-o:</string>
     <string name="tls_how_to">Como configurar a decriptação de TLS</string>
     <string name="unknown_app">Desconhecido</string>
@@ -146,8 +144,8 @@
     <string name="deny">Negar</string>
     <string name="allow">Permitir</string>
     <string name="ctrl_consent_title">Pedido de controle do PCAPdroid</string>
-    <string name="ctrl_consent_denied">O pedido de controle foi negado</string>
-    <string name="ctrl_consent_allowed">O pedido de controle foi permitido</string>
+    <string name="ctrl_consent_denied">PCAPdroid: o pedido de controle foi negado</string>
+    <string name="ctrl_consent_allowed">PCAPdroid: o pedido de controle foi permitido</string>
     <string name="capture_interface">Interface de captura</string>
     <string name="internet">Internet</string>
     <string name="all_interfaces">Todas as Interfaces</string>

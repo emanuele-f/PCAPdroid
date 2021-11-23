@@ -115,16 +115,16 @@ public class Utils {
         return String.format("%.1f %s", ((float)bytes) / divisor, suffix);
     }
 
-    public static String formatPkts(long pkts) {
+    public static String formatIntShort(long val) {
         long divisor;
         String suffix;
-        if(pkts < 1000) return Long.toString(pkts);
+        if(val < 1000) return Long.toString(val);
 
-        if(pkts < 1000*1000)               { divisor = 1000;           suffix = "K"; }
-        else if(pkts < 1000*1000*1000)     { divisor = 1000*1000;      suffix = "M"; }
+        if(val < 1000*1000)                { divisor = 1000;           suffix = "K"; }
+        else if(val < 1000*1000*1000)      { divisor = 1000*1000;      suffix = "M"; }
         else                               { divisor = 1000*1000*1000; suffix = "G"; }
 
-        return String.format("%.1f %s", ((float)pkts) / divisor, suffix);
+        return String.format("%.1f %s", ((float)val) / divisor, suffix);
     }
 
     @SuppressWarnings("deprecation")
@@ -139,6 +139,11 @@ public class Utils {
         }
 
         return primaryLocale;
+    }
+
+    public static String getCountryName(Context context, String country_code) {
+        Locale cur_locale = getPrimaryLocale(context);
+        return(new Locale(cur_locale.getCountry(), country_code)).getDisplayCountry();
     }
 
     public static boolean isRTL(Context ctx) {
@@ -172,8 +177,24 @@ public class Utils {
         long now = Utils.now();
         Locale locale = getPrimaryLocale(context);
 
-        if((epoch - now) < (23 * 3600)) {
+        if((now - epoch) < (24 * 3600)) {
             final DateFormat fmt = new SimpleDateFormat("HH:mm:ss", locale);
+            return fmt.format(new Date(epoch * 1000));
+        }
+
+        DateFormat fmt = new SimpleDateFormat("dd MMM, HH:mm:ss", locale);
+        return fmt.format(new Date(epoch * 1000));
+    }
+
+    public static String formatEpochMin(Context context, long epoch) {
+        if(epoch == 0)
+            return "-";
+
+        long now = Utils.now();
+        Locale locale = getPrimaryLocale(context);
+
+        if((now - epoch) < (24 * 3600)) {
+            final DateFormat fmt = new SimpleDateFormat("HH:mm", locale);
             return fmt.format(new Date(epoch * 1000));
         }
 
@@ -389,6 +410,19 @@ public class Utils {
     public static void showToastLong(Context context, int id) {
         String msg = context.getResources().getString(id);
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+    }
+
+    public static void showHelpDialog(Context context, int id){
+        String msg = context.getResources().getString(id);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.hint);
+        builder.setMessage(msg);
+        builder.setCancelable(true);
+        builder.setNeutralButton(R.string.ok,
+                (dialog, id1) -> dialog.cancel());
+
+        AlertDialog alert= builder.create();
+        alert.show();
     }
 
     public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {

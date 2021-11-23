@@ -149,7 +149,7 @@ int jniCheckException(JNIEnv *env) {
 jclass jniFindClass(JNIEnv *env, const char *name) {
     jclass cls = (*env)->FindClass(env, name);
     if (cls == NULL)
-        log_android(ANDROID_LOG_ERROR, "Class %s not found", name);
+        log_e("Class %s not found", name);
     else
         jniCheckException(env);
     return cls;
@@ -159,13 +159,50 @@ jclass jniFindClass(JNIEnv *env, const char *name) {
 
 jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature) {
     jmethodID method = (*env)->GetMethodID(env, cls, name, signature);
-
     if (method == NULL) {
-        log_android(ANDROID_LOG_ERROR, "Method %s %s not found", name, signature);
+        log_e("Method %s %s not found", name, signature);
         jniCheckException(env);
     }
 
     return method;
+}
+
+/* ******************************************************* */
+
+jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type) {
+    jfieldID field = (*env)->GetFieldID(env, cls, name, type);
+    if(field == NULL) {
+        log_e("Field %s(%s) not found", name, type);
+        jniCheckException(env);
+    }
+
+    return field;
+}
+
+/* ******************************************************* */
+
+jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key) {
+    char buf[512];
+
+    jclass cls = jniFindClass(env, class_name);
+    if(cls == NULL)
+        return NULL;
+
+    snprintf(buf, sizeof(buf), "L%s;", class_name);
+    jfieldID field = (*env)->GetStaticFieldID(env, cls, enum_key, buf);
+    if(field == NULL) {
+        log_e("Static field %s(%s) not found", enum_key, buf);
+        jniCheckException(env);
+        return NULL;
+    }
+
+    jobject val = (*env)->GetStaticObjectField(env, cls, field);
+    if(!val) {
+        log_e("Enum value %s not found in \"%s\"", enum_key, class_name);
+        jniCheckException(env);
+    }
+
+    return val;
 }
 
 /* ******************************************************* */

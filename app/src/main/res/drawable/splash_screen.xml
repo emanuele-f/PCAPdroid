@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:opacity="opaque">
 
-  <item android:drawable="@color/colorPrimary" />
+  <item android:drawable="@color/colorPrimaryDark" />
 
   <item
       android:drawable="@drawable/ic_logo"

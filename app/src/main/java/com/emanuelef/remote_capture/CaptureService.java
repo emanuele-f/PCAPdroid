@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
@@ -41,6 +42,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.util.Pair;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -52,10 +54,12 @@ import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.activities.CaptureCtrl;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.BlacklistDescriptor;
 import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -73,6 +77,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
@@ -86,6 +92,8 @@ public class CaptureService extends VpnService implements Runnable {
     private Handler mHandler;
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
+    private Thread mConnUpdateThread;
+    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(16);
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -101,6 +109,10 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
+    private boolean mBlacklistsUpdateRequested;
+    private boolean mBlockPrivateDns;
+    private boolean mDnsEncrypted;
+    private boolean mStrictDnsNoticeShown;
     private Blacklists mBlacklists;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
@@ -173,19 +185,21 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
+        mBlockPrivateDns = false;
+        mStrictDnsNoticeShown = false;
+        mDnsEncrypted = false;
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
 
             if(net != null) {
-                dns_server = Utils.getDnsServer(cm, net);
+                handleLinkProperties(cm.getLinkProperties(net));
 
+                dns_server = Utils.getDnsServer(cm, net);
                 if(dns_server == null)
                     dns_server = FALLBACK_DNS_SERVER;
                 else {
-                    // If the network goes offline we roll back to the fallback DNS server to
-                    // avoid possibly using a private IP DNS server not reachable anymore
                     mMonitoredNetwork = net.getNetworkHandle();
                     registerNetworkCallbacks();
                 }
@@ -196,7 +210,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
         last_connections = 0;
-        conn_reg = new ConnectionsRegister(CONNECTIONS_LOG_SIZE);
+        conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
 
@@ -299,13 +313,16 @@ public class CaptureService extends VpnService implements Runnable {
             mCaptureThread.interrupt();
         }
 
-        mBlacklists = PCAPdroid.getInstance().getBlacklistsStatus();
+        mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
 
-        // Start a new session by creating a new thread.
-        mCaptureThread = new Thread(this, "CaptureService Thread");
+        mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
+        mConnUpdateThread.start();
+
+        // Start the native capture thread
+        mCaptureThread = new Thread(this, "PacketCapture");
         mCaptureThread.start();
 
         setupNotifications();
@@ -439,6 +456,8 @@ public class CaptureService extends VpnService implements Runnable {
             public void onLost(@NonNull Network network) {
                 Log.d(TAG, "onLost " + network);
 
+                // If the network goes offline we roll back to the fallback DNS server to
+                // avoid possibly using a private IP DNS server not reachable anymore
                 if(network.getNetworkHandle() == mMonitoredNetwork) {
                     Log.d(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
                     dns_server = FALLBACK_DNS_SERVER;
@@ -448,6 +467,15 @@ public class CaptureService extends VpnService implements Runnable {
                     // change native
                     setDnsServer(dns_server);
                 }
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.P)
+            @Override
+            public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
+                Log.d(TAG, "onLinkPropertiesChanged " + network);
+
+                if(network.getNetworkHandle() == mMonitoredNetwork)
+                    handleLinkProperties(linkProperties);
             }
         };
 
@@ -471,8 +499,39 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
+    private void handleLinkProperties(LinkProperties linkProperties) {
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
+            boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
+
+            Log.d(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
+            if(!mSettings.root_capture) {
+                mDnsEncrypted = strict_mode;
+
+                /* Private DNS can be in one of these modes:
+                 *  1. Off
+                 *  2. Automatic (default): also called "opportunistic", only use it if not blocked
+                 *  3. Strict: private DNS is enforced, Internet unavailable if blocked. User must set a specific DNS server.
+                 * When in opportunistic mode, PCAPdroid will block private DNS connections to force the use of plain-text
+                 * DNS queries, which can be extracted by PCAPdroid. */
+                if (mBlockPrivateDns != opportunistic_mode) {
+                    mBlockPrivateDns = opportunistic_mode;
+                    setPrivateDnsBlocked(mBlockPrivateDns);
+                }
+            } else
+                // in root capture we don't block private DNS requests in opportunistic mode
+                mDnsEncrypted = strict_mode || opportunistic_mode;
+
+            if(mDnsEncrypted && !mStrictDnsNoticeShown) {
+                mStrictDnsNoticeShown = true;
+                Utils.showToastLong(this, R.string.private_dns_message_notice);
+            }
+        }
+    }
+
     private void stop() {
         stopPacketLoop();
+        mPendingUpdates.push(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -482,8 +541,17 @@ public class CaptureService extends VpnService implements Runnable {
                 Log.e(TAG, "Joining native thread failed");
             }
         }
-
         mCaptureThread = null;
+
+        while((mConnUpdateThread != null) && (mConnUpdateThread.isAlive())) {
+            try {
+                Log.d(TAG, "Joining conn update thread...");
+                mConnUpdateThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Joining conn update thread failed");
+            }
+        }
+        mConnUpdateThread = null;
 
         if(mParcelFileDescriptor != null) {
             try {
@@ -504,7 +572,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         mPcapUri = null;
+        mPendingUpdates.clear();
         unregisterNetworkCallbacks();
+        CaptureCtrl.notifyCaptureStopped(this);
 
         stopForeground(true /* remove notification */);
     }
@@ -524,13 +594,14 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
 
-        if(mBlacklists.needsUpdate()) {
+        if(mBlacklistsUpdateRequested || mBlacklists.needsUpdate()) {
             mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
             mBlacklistsUpdateThread.start();
         }
     }
 
     private void updateBlacklistsWork() {
+        mBlacklistsUpdateRequested = false;
         mBlacklists.update();
         reloadBlacklists();
         mBlacklistsUpdateThread = null;
@@ -568,6 +639,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.getDnsServer() : "");
     }
 
+    public static boolean isDNSEncrypted() {
+        return((INSTANCE != null) && INSTANCE.mDnsEncrypted);
+    }
+
     /* Stop a running VPN service */
     public static void stopService() {
         if (INSTANCE != null)
@@ -597,6 +672,15 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isRootCapture() == 1));
     }
 
+    public static void requestBlacklistsUpdate() {
+        if(INSTANCE != null) {
+            INSTANCE.mBlacklistsUpdateRequested = true;
+
+            // Wake the update thread to run the blacklist thread
+            INSTANCE.mPendingUpdates.push(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
+        }
+    }
+
     // Inside the mCaptureThread
     @Override
     public void run() {
@@ -617,8 +701,36 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
+        // After the capture is stopped
         if(mMalwareDetectionEnabled)
             mBlacklists.save();
+    }
+
+    private void connUpdateWork() {
+        try {
+            while(true) {
+                Pair<ConnectionDescriptor[], ConnectionUpdate[]> item = mPendingUpdates.take();
+                if(item.first == null) // termination request
+                    break;
+
+                ConnectionDescriptor[] new_conns = item.first;
+                ConnectionUpdate[] conns_updates = item.second;
+
+                checkBlacklistsUpdates();
+
+                // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
+                // thus preventing the ConnectionsAdapter from interleaving other operations
+                synchronized (conn_reg) {
+                    if(new_conns.length > 0)
+                        conn_reg.newConnections(new_conns);
+
+                    if(conns_updates.length > 0)
+                        conn_reg.connectionsUpdates(conns_updates);
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /* The following methods are called from native code */
@@ -698,17 +810,9 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
-        checkBlacklistsUpdates();
-
-        // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
-        // thus preventing the ConnectionsAdapter from interleaving other operations
-        synchronized (conn_reg) {
-            if(new_conns.length > 0)
-                conn_reg.newConnections(new_conns);
-
-            if(conns_updates.length > 0)
-                conn_reg.connectionsUpdates(conns_updates);
-        }
+        // Put the update into a queue to avoid performing much work on the capture thread.
+        // This will be processed by mConnUpdateThread.
+        mPendingUpdates.push(new Pair<>(new_conns, conns_updates));
     }
 
     public void sendStatsDump(VPNStats stats) {
@@ -772,15 +876,29 @@ public class CaptureService extends VpnService implements Runnable {
         return(dir + "/lib" + prog_name + ".so");
     }
 
-    public void notifyBlacklistsLoaded(int num_lists, int num_domains, int num_ips) {
-        mBlacklists.onNativeLoaded(num_lists, num_domains, num_ips);
+    public void notifyBlacklistsLoaded(Blacklists.NativeBlacklistStatus[] loaded_blacklists) {
+        // this is invoked from the packet capture thread. Use the handler to save time.
+        mHandler.post(() -> mBlacklists.onNativeLoaded(loaded_blacklists));
     }
 
-    public static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
-    public static native void stopPacketLoop();
+    public BlacklistDescriptor[] getBlacklistsInfo() {
+        BlacklistDescriptor[] blsinfo = new BlacklistDescriptor[mBlacklists.getNumBlacklists()];
+        int i = 0;
+
+        Iterator<BlacklistDescriptor> it = mBlacklists.iter();
+        while(it.hasNext())
+            blsinfo[i++] = it.next();
+
+        return blsinfo;
+    }
+
+    private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
+    private static native void stopPacketLoop();
+    private static native int getFdSetSize();
+    private static native void setPrivateDnsBlocked(boolean to_block);
+    private static native void setDnsServer(String server);
+    private static native void reloadBlacklists();
     public static native void askStatsDump();
-    public static native int getFdSetSize();
-    public static native void setDnsServer(String server);
     public static native byte[] getPcapHeader();
-    public static native void reloadBlacklists();
+    public static native int getNumCheckedConnections();
 }

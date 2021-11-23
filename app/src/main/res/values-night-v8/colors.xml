@@ -11,4 +11,5 @@
     <color name="navViewBackground">#FF202020</color>
     <color name="backgroundColor">@color/background_material_dark</color>
     <color name="drawerItemColor">@android:color/primary_text_dark</color>
+    <color name="highContrast">#FFFFFF</color>
 </resources>
