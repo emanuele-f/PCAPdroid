@@ -64,6 +64,10 @@ static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
         return 0;
 
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
+    conn_data_t *data = zdtun_conn_get_userdata(conn_info);
+
+    if(data->to_block) // NOTE: blocked_pkts accounted in account_packet
+        return 0;
 
     int rv = write(proxy->tunfd, pkt_buf, pkt_size);
 
@@ -252,6 +256,18 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
+static void refresh_pkt_timestamp(vpnproxy_data_t *proxy) {
+    struct timespec ts = {0};
+
+    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
+        proxy->last_pkt_ts.tv_sec = ts.tv_sec;
+        proxy->last_pkt_ts.tv_usec = ts.tv_nsec / 1000;
+    } else
+        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
+}
+
+/* ******************************************************* */
+
 static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
 
@@ -262,18 +278,16 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
 
     vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
-    struct timespec ts = {0};
 
-    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
-        proxy->last_pkt_ts.tv_sec = ts.tv_sec;
-        proxy->last_pkt_ts.tv_usec = ts.tv_nsec / 1000;
-    } else
-        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
-
+    refresh_pkt_timestamp(proxy);
     uint64_t pkt_ms = timeval2ms(&proxy->last_pkt_ts);
     data->status = zdtun_conn_get_status(conn_info);
 
-    if(shouldIgnoreConn(proxy, tuple)) {
+    if(data->to_block) {
+        data->blocked_pkts++;
+        data->last_seen = pkt_ms;
+        return;
+    } else if(shouldIgnoreConn(proxy, tuple)) {
         /* NOTE: account connection stats also for non-matched connections */
         if(from_tun) {
             data->sent_pkts++;
@@ -424,6 +438,16 @@ int run_proxy(vpnproxy_data_t *proxy) {
                         log_d("skipping established TCP: %s",
                                     zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
                     }
+                    goto housekeeping;
+                }
+
+                conn_data_t *data = zdtun_conn_get_userdata(conn);
+                if(data->to_block) {
+                    data->blocked_pkts++;
+                    refresh_pkt_timestamp(proxy);
+                    data->last_seen = timeval2ms(&proxy->last_pkt_ts);
+                    if(!data->first_seen)
+                        data->first_seen = data->last_seen;
                     goto housekeeping;
                 }
 

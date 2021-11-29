@@ -60,6 +60,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
@@ -68,6 +69,7 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
+import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -185,9 +187,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onResume() {
         super.onResume();
 
+        Billing billing = Billing.newInstance(this);
+
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
     }
 
     private void setupNavigationDrawer() {
@@ -345,6 +350,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToast(this, R.string.capture_not_started);
         } else if(id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
+            startActivity(intent);
+        } else if(id == R.id.firewall) {
+            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
+            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.BLOCKLIST);
             startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);

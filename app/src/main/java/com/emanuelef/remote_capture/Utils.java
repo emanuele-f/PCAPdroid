@@ -103,6 +103,10 @@ public class Utils {
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
 
+    public static String[] list2array(List<String> l) {
+        return l.toArray(new String[0]);
+    }
+
     public static String formatBytes(long bytes) {
         long divisor;
         String suffix;

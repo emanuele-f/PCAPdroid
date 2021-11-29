@@ -33,11 +33,13 @@ import java.io.Serializable;
 public class FilterDescriptor implements Serializable {
     public Status status = Status.STATUS_INVALID;
     public boolean showMasked = true;
+    public boolean onlyBLocked = false;
     public boolean onlyBlacklisted = false;
     public boolean onlyPlaintext = false;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
+                || onlyBLocked
                 || onlyBlacklisted
                 || onlyPlaintext
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
@@ -45,6 +47,7 @@ public class FilterDescriptor implements Serializable {
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
+                && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
                 && (!onlyPlaintext || !conn.request_plaintext.isEmpty())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)));
@@ -62,6 +65,8 @@ public class FilterDescriptor implements Serializable {
 
         if(!showMasked)
             addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
+        if(onlyBLocked)
+            addChip(inflater, group, R.id.blocked, ctx.getString(R.string.blocked_connection_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
         if(onlyPlaintext)
@@ -75,6 +80,8 @@ public class FilterDescriptor implements Serializable {
     public void clear(int filter_id) {
         if(filter_id == R.id.not_hidden)
             showMasked = true;
+        else if(filter_id == R.id.blocked)
+            onlyBLocked = false;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
         else if(filter_id == R.id.only_plaintext)

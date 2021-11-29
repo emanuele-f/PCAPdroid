@@ -55,6 +55,7 @@ public class EditListFragment extends Fragment {
     private MatchList mList;
     private ListInfo mListInfo;
     private ListView mListView;
+    private boolean mChanged;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 
@@ -126,10 +127,13 @@ public class EditListFragment extends Fragment {
                         updateList();
                     }
 
-                    if(mList == PCAPdroid.getInstance().getMalwareWhitelist()) {
+                    if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST) {
                         ConnectionsRegister reg = CaptureService.getConnsRegister();
                         if(reg != null)
                             reg.refreshConnectionsWhitelist();
+                    } else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
+                        if(CaptureService.isServiceActive())
+                            CaptureService.requireInstance().reloadBlocklist();
                     }
 
                     mode.finish();

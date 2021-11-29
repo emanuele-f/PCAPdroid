@@ -54,6 +54,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mPacketsView;
     private TextView mDurationView;
     private TextView mRequestData;
+    private TextView mBlockedPkts;
     private ConnectionDescriptor mConn;
     private TextView mStatus;
     private TextView mFirstSeen;
@@ -94,6 +95,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
+        mBlockedPkts = findViewById(R.id.blocked_pkts);
         mDurationView = findViewById(R.id.detail_duration);
         mStatus = findViewById(R.id.detail_status);
         mFirstSeen = findViewById(R.id.first_seen);
@@ -225,6 +227,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         if(conn != null) {
             mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
             mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(conn.rcvd_pkts), Utils.formatIntShort(conn.sent_pkts)));
+            mBlockedPkts.setText(String.format(getResources().getString(R.string.n_pkts), Utils.formatIntShort(conn.blocked_pkts)));
             mDurationView.setText(Utils.formatDuration((conn.last_seen - conn.first_seen) / 1000));
             mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));

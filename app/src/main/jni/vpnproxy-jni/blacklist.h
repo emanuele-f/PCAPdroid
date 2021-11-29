@@ -35,23 +35,26 @@ typedef struct {
     int num_lists;
     int num_domains;
     int num_ips;
+    int num_apps;
     int num_failed;
 } blacklists_stats_t;
 
 typedef enum {
     DOMAIN_BLACKLIST,
-    IP_BLACKLIST
+    IP_BLACKLIST,
+    UID_BLACKLIST
 } blacklist_type;
 
-blacklist_t* blacklist_init(struct ndpi_detection_module_struct *ndpi);
+blacklist_t* blacklist_init();
 void blacklist_destroy(blacklist_t *bl);
-void blacklist_clear(blacklist_t *bl);
 int blacklist_add_domain(blacklist_t *bl, const char *domain);
-int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net);
+int blacklist_add_ip(blacklist_t *bl, const ndpi_ip_addr_t *addr, uint8_t ipver);
+int blacklist_add_ipstr(blacklist_t *bl, const char *ip);
+int blacklist_add_uid(blacklist_t *bl, int uid);
 int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype, blacklist_stats_t *bstats);
-void blacklist_ready(blacklist_t *bl);
-bool blacklist_match_ip(blacklist_t *bl, uint32_t ip);
+bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver);
 bool blacklist_match_domain(blacklist_t *bl, const char *domain);
+bool blacklist_match_uid(blacklist_t *bl, int uid);
 void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats);
 
 #endif //PCAPDROID_BLACKLIST_H

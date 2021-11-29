@@ -19,6 +19,7 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -43,6 +45,7 @@ public class EditFilterActivity extends BaseActivity {
     private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;
     private CheckBox mHideMasked;
+    private CheckBox mOnlyBlocked;
     private CheckBox mOnlyBlacklisted;
     private CheckBox mOnlyPlaintext;
     private Chip mStatusOpen;
@@ -72,6 +75,7 @@ public class EditFilterActivity extends BaseActivity {
             mFilter = new FilterDescriptor();
 
         mHideMasked = findViewById(R.id.not_hidden);
+        mOnlyBlocked = findViewById(R.id.only_blocked);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
         mOnlyPlaintext = findViewById(R.id.only_plaintext);
         mStatusOpen = findViewById(R.id.status_open);
@@ -85,8 +89,14 @@ public class EditFilterActivity extends BaseActivity {
             startActivity(editIntent);
         });
 
-        if(!Prefs.isMalwareDetectionEnabled(this, PreferenceManager.getDefaultSharedPreferences(this)))
+        Billing billing = Billing.newInstance(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if(!Prefs.isMalwareDetectionEnabled(this, prefs))
             mOnlyBlacklisted.setVisibility(View.GONE);
+
+        if(!billing.isPurchased(Billing.FIREWALL_SKU) || Prefs.isRootCaptureEnabled(prefs))
+            mOnlyBlocked.setVisibility(View.GONE);
 
         model2view();
     }
@@ -101,6 +111,7 @@ public class EditFilterActivity extends BaseActivity {
 
     private void model2view() {
         mHideMasked.setChecked(!mFilter.showMasked);
+        mOnlyBlocked.setChecked(mFilter.onlyBLocked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
         mOnlyPlaintext.setChecked(mFilter.onlyPlaintext);
 
@@ -122,6 +133,7 @@ public class EditFilterActivity extends BaseActivity {
 
     private void view2model() {
         mFilter.showMasked = !mHideMasked.isChecked();
+        mFilter.onlyBLocked = mOnlyBlocked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
         mFilter.onlyPlaintext = mOnlyPlaintext.isChecked();
 

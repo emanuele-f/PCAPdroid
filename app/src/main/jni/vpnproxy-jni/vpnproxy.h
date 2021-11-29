@@ -72,6 +72,7 @@ typedef struct {
     jlong rcvd_bytes;
     jint sent_pkts;
     jint rcvd_pkts;
+    jint blocked_pkts;
     zdtun_conn_status_t status;
     char *info;
     jint uid;
@@ -85,6 +86,7 @@ typedef struct {
     bool request_done;
     bool blacklisted_ip;
     bool blacklisted_domain;
+    bool to_block;
     char *request_data;
     char *url;
     uint8_t update_type;
@@ -190,6 +192,11 @@ typedef struct {
         bl_info_t *bls_info;
         int num_bls;
     } malware_detection;
+
+    struct {
+        blacklist_t *blocklist;
+        blacklist_t *new_blocklist;
+    } firewall;
 
     capture_stats_t capture_stats;
 } vpnproxy_data_t;

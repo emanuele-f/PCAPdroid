@@ -75,6 +75,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         ImageView blacklistedInd;
+        ImageView blockedInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -95,6 +96,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
+            blockedInd = itemView.findViewById(R.id.blocked);
             //countryFlag = itemView.findViewById(R.id.country_flag);
 
             Context context = itemView.getContext();
@@ -150,6 +152,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             }*/
 
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
+            blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
         }
     }
 

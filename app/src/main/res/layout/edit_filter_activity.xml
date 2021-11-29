@@ -37,6 +37,13 @@
         </RelativeLayout>
 
         <CheckBox
+            android:id="@+id/only_blocked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/show_only_blocked" />
+
+        <CheckBox
             android:id="@+id/only_blacklisted"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

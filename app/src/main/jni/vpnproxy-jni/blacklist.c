@@ -20,29 +20,36 @@
 #include "vpnproxy.h"
 #include "common/utils.h"
 
-typedef struct string_entry {
+typedef struct {
     char *key;
     UT_hash_handle hh;
 } string_entry_t;
 
+typedef struct {
+    int key;
+    UT_hash_handle hh;
+} int_entry_t;
+
 struct blacklist {
     string_entry_t *domains;
-    struct ndpi_detection_module_struct *ndpi;
-    bool ready;
+    int_entry_t *uids;
+    ndpi_ptree_t *ptree;
     blacklists_stats_t stats;
 };
 
 /* ******************************************************* */
 
-blacklist_t* blacklist_init(struct ndpi_detection_module_struct *ndpi) {
-    if(!ndpi)
-        return NULL;
-
+blacklist_t* blacklist_init() {
     blacklist_t *bl = (blacklist_t*) bl_calloc(1, sizeof(blacklist_t));
     if(!bl)
         return NULL;
 
-    bl->ndpi = ndpi;
+    bl->ptree = ndpi_ptree_create();
+    if(!bl->ptree) {
+        bl_free(bl);
+        return NULL;
+    }
+
     return bl;
 }
 
@@ -72,14 +79,43 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
 
 /* ******************************************************* */
 
-int blacklist_add_ip(blacklist_t *bl, const char *ip_or_net) {
-    if(ndpi_load_ip_category(bl->ndpi, ip_or_net, PCAPDROID_NDPI_CATEGORY_MALWARE) == 0) {
-        // NOTE: duplicate IPs are not detected, so they will be counted multiple times.
-        // This could be fixed by using the ndpi_ptree_t API instead.
-        bl->stats.num_ips++;
-        return 0;
-    }
-    return -EINVAL;
+int blacklist_add_ip(blacklist_t *bl, const ndpi_ip_addr_t *addr, uint8_t bits) {
+    int rv = ndpi_ptree_insert(bl->ptree, addr, bits, PCAPDROID_NDPI_CATEGORY_MALWARE);
+    if(rv != 0)
+        return (rv == -2) ? -EADDRINUSE : -EINVAL; // -2 means IP already in ptree
+
+    bl->stats.num_ips++;
+    return 0;
+}
+
+/* ******************************************************* */
+
+int blacklist_add_ipstr(blacklist_t *bl, const char *ip) {
+    ndpi_ip_addr_t addr;
+    int ipver = ndpi_parse_ip_string(ip, &addr);
+
+    if((ipver != 4) && (ipver != 6))
+        return -EINVAL;
+
+    int bits = (ipver == 4) ? 32 : 128;
+    return blacklist_add_ip(bl, &addr, bits);
+}
+
+/* ******************************************************* */
+
+int blacklist_add_uid(blacklist_t *bl, int uid) {
+    if(blacklist_match_uid(bl, uid))
+        return -EADDRINUSE; // duplicate uid
+
+    int_entry_t *entry = bl_malloc(sizeof(int_entry_t));
+    if(!entry)
+        return -ENOMEM;
+
+    entry->key = uid;
+    HASH_ADD_INT(bl->uids, key, entry);
+
+    bl->stats.num_apps++;
+    return 0;
 }
 
 /* ******************************************************* */
@@ -90,11 +126,6 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
     int num_ok = 0, num_fail = 0, num_dup = 0;
     int max_file_rules = 500000;
 
-    if(bl->ready) {
-        log_e("Blacklist is locked. Run blacklist_clear and load it again.");
-        return -1;
-    }
-
     f = fopen(path, "r");
     if(!f) {
         log_e("Could not open blacklist file \"%s\" [%d]: %s", path, errno, strerror(errno));
@@ -102,7 +133,6 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
     }
 
     while(1) {
-        struct in_addr in_addr;
         char *item = fgets(buffer, sizeof(buffer), f);
         if(!item)
             break;
@@ -111,34 +141,56 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
             continue;
 
         item[strcspn(buffer, "\r\n")] = '\0';
-        bool is_net = strchr(buffer, '/');
-        bool is_ipv6 = strchr(buffer, ':');
-        bool is_addr = (inet_pton(AF_INET, item, &in_addr) == 1);
+        char *slash = strchr(buffer, '/');
+        if(slash)
+            *slash = 0;
 
-        if((num_ok >= max_file_rules)  // limit reached
-                || is_ipv6) {          // IPv6 not supported
+        ndpi_ip_addr_t ip_addr;
+        int ipver = ndpi_parse_ip_string(buffer, &ip_addr);
+        bool is_ip_addr = (ipver == 4) || (ipver == 6);
+
+        if(num_ok >= max_file_rules) {  // limit reached
             num_fail++;
             continue;
         }
 
         if(btype == IP_BLACKLIST) {
-            if(!is_net && !is_addr) {
+            if(!is_ip_addr) {
                 log_w("Invalid IP/net \"%s\" in blacklist %s", buffer, path);
                 num_fail++;
                 continue;
             }
 
-            // IPv4 Address/subnet
-            if(!is_net && ((in_addr.s_addr == 0) || (in_addr.s_addr == 0xFFFFFFFF) || (in_addr.s_addr == 0x7F000001)))
+            int bits;
+            if(slash)
+                bits = atoi(slash + 1); // subnet
+            else if(ipver == 4)
+                bits = 32;
+            else
+                bits = 128;
+
+            // Validate IPv4
+            if(((ipver == 4) && (bits == 32)) &&
+                    ((ip_addr.ipv4 == 0) || (ip_addr.ipv4 == 0xFFFFFFFF) || (ip_addr.ipv4 == 0x7F000001)))
                 continue; // invalid
 
-            if(blacklist_add_ip(bl, item) == 0)
+            // TODO validate IPv6
+
+            int rv = blacklist_add_ip(bl, &ip_addr, bits);
+            if(rv == 0)
                 num_ok++;
+            else if(rv == -EADDRINUSE)
+                num_dup++;
             else
                 num_fail++;
         } else { // DOMAIN_BLACKLIST
-            int rv = blacklist_add_domain(bl, item);
+            if(is_ip_addr) {
+                log_w("IP/net \"%s\" found instead of domain in %s", buffer, path);
+                num_fail++;
+                continue;
+            }
 
+            int rv = blacklist_add_domain(bl, item);
             if(rv == 0)
                 num_ok++;
             else if(rv == -EADDRINUSE)
@@ -166,52 +218,37 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
 
 /* ******************************************************* */
 
-// Neded to properly load nDPI. Must be called on the capture thread.
-void blacklist_ready(blacklist_t *bl) {
-    if(!bl->ready) {
-        ndpi_enable_loaded_categories(bl->ndpi);
-        bl->ready = true;
-    }
-}
-
-/* ******************************************************* */
-
-void blacklist_clear(blacklist_t *bl) {
+void blacklist_destroy(blacklist_t *bl) {
     string_entry_t *entry, *tmp;
-
     HASH_ITER(hh, bl->domains, entry, tmp) {
         HASH_DELETE(hh, bl->domains, entry);
         bl_free(entry->key);
         bl_free(entry);
     }
-    bl->domains = NULL;
-    bl->ready = false;
-    memset(&bl->stats, 0, sizeof(bl->stats));
-}
 
-/* ******************************************************* */
+    int_entry_t *entry_i, *tmp_i;
+    HASH_ITER(hh, bl->uids, entry_i, tmp_i) {
+        HASH_DELETE(hh, bl->uids, entry_i);
+        bl_free(entry_i);
+    }
 
-void blacklist_destroy(blacklist_t *bl) {
-    blacklist_clear(bl);
+    ndpi_ptree_destroy(bl->ptree);
     bl_free(bl);
 }
 
 /* ******************************************************* */
 
-bool blacklist_match_ip(blacklist_t *bl, uint32_t ip) {
-    char ipstr[INET_ADDRSTRLEN];
-    struct in_addr addr;
-    ipstr[0] = '\0';
-    ndpi_protocol_category_t cat = 0;
+bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver) {
+    ndpi_ip_addr_t addr = {0};
+    if(ipver == 4)
+        addr.ipv4 = ip->ip4;
+    else
+        memcpy(&addr.ipv6, &ip->ip6, 16);
 
-    if(!bl->ready)
-        return false;
+    u_int64_t res = 0;
+    ndpi_ptree_match_addr(bl->ptree, &addr, &res);
 
-    addr.s_addr = ip;
-    inet_ntop(AF_INET, &addr, ipstr, sizeof(ipstr));
-
-    ndpi_get_custom_category_match(bl->ndpi, ipstr, strlen(ipstr), &cat);
-    return(cat == PCAPDROID_NDPI_CATEGORY_MALWARE);
+    return(res == PCAPDROID_NDPI_CATEGORY_MALWARE);
 }
 
 /* ******************************************************* */
@@ -223,6 +260,15 @@ bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
         domain += 4;
 
     HASH_FIND_STR(bl->domains, domain, entry);
+    return(entry != NULL);
+}
+
+/* ******************************************************* */
+
+bool blacklist_match_uid(blacklist_t *bl, int uid) {
+    int_entry_t *entry = NULL;
+
+    HASH_FIND_INT(bl->uids, &uid, entry);
     return(entry != NULL);
 }
 

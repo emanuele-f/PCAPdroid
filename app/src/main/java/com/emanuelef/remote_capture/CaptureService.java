@@ -77,6 +77,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -89,6 +90,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
     private CaptureSettings mSettings;
+    private Billing mBilling;
     private Handler mHandler;
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
@@ -114,6 +116,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mDnsEncrypted;
     private boolean mStrictDnsNoticeShown;
     private Blacklists mBlacklists;
+    private MatchList mBlocklist;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -169,6 +172,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mHandler = new Handler(Looper.getMainLooper());
+        mBilling = Billing.newInstance(this);
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
@@ -309,14 +313,15 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // Stop the previous session by interrupting the thread.
-        if (mCaptureThread != null) {
+        if(mCaptureThread != null)
             mCaptureThread.interrupt();
-        }
 
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
+
+        mBlocklist = PCAPdroid.getInstance().getBlocklist();
 
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
@@ -835,6 +840,9 @@ public class CaptureService extends VpnService implements Runnable {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        if(cur_status.equals(SERVICE_STATUS_STARTED))
+            reloadBlocklist();
     }
 
     public String getApplicationByUid(int uid) {
@@ -892,12 +900,39 @@ public class CaptureService extends VpnService implements Runnable {
         return blsinfo;
     }
 
+    public void reloadBlocklist() {
+        if(!mBilling.isPurchased(Billing.FIREWALL_SKU) || mSettings.root_capture)
+            return;
+
+        final ArrayList<String> blocked_apps = new ArrayList<>();
+        final ArrayList<String> blocked_domains = new ArrayList<>();
+        final ArrayList<String> blocked_ips = new ArrayList<>();
+
+        Iterator<MatchList.Rule> it = mBlocklist.iterRules();
+
+        while(it.hasNext()) {
+            MatchList.Rule rule = it.next();
+            MatchList.RuleType tp = rule.getType();
+            String val = rule.getValue().toString();
+
+            if(tp.equals(MatchList.RuleType.APP))
+                blocked_apps.add(val);
+            else if(tp.equals(MatchList.RuleType.HOST))
+                blocked_domains.add(val);
+            else if(tp.equals(MatchList.RuleType.IP))
+                blocked_ips.add(val);
+        }
+
+        reloadBlocklist(Utils.list2array(blocked_apps), Utils.list2array(blocked_domains), Utils.list2array(blocked_ips));
+    }
+
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();
     private static native void setPrivateDnsBlocked(boolean to_block);
     private static native void setDnsServer(String server);
     private static native void reloadBlacklists();
+    private static native boolean reloadBlocklist(String[] apps, String[] domains, String[] ips);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native int getNumCheckedConnections();

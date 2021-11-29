@@ -67,6 +67,7 @@ public class ConnectionDescriptor implements Serializable {
     public long rcvd_bytes;
     public int sent_pkts;
     public int rcvd_pkts;
+    public int blocked_pkts;
     public String info;
     public String url;
     public String request_plaintext;
@@ -77,6 +78,7 @@ public class ConnectionDescriptor implements Serializable {
     private int tcp_flags;
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
+    public boolean is_blocked;
     public String country;
     public Geomodel.ASN asn;
 
@@ -108,7 +110,9 @@ public class ConnectionDescriptor implements Serializable {
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
             rcvd_pkts = update.rcvd_pkts;
+            blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            is_blocked = (update.status & 0x0400) != 0;
             blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;

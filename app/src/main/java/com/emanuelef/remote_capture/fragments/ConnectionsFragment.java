@@ -53,6 +53,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -312,13 +313,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int max_length = 32;
 
         ConnectionDescriptor conn = mAdapter.getClickedItem();
-
         if(conn == null)
             return;
 
         AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
+        Billing billing = Billing.newInstance(ctx);
         MenuItem item;
+
+        menu.findItem(R.id.block_menu).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot());
 
         if(app != null) {
             item = menu.findItem(R.id.hide_app);
@@ -327,6 +330,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
 
             item = menu.findItem(R.id.search_app);
+            item.setTitle(label);
+            item.setVisible(true);
+
+            item = menu.findItem(R.id.block_app);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -340,6 +347,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if((conn.info != null) && (!conn.info.isEmpty())) {
             item = menu.findItem(R.id.hide_host);
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info), max_length);
+            item.setTitle(label);
+            item.setVisible(true);
+
+            item = menu.findItem(R.id.block_host);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -388,6 +399,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
+        menu.findItem(R.id.block_ip).setTitle(label);
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
 
@@ -404,8 +416,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         ConnectionDescriptor conn = mAdapter.getClickedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean mask_changed = false;
         boolean whitelist_changed = false;
+        boolean blocklist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -418,7 +432,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.hide_host) {
             mAdapter.mMask.addHost(conn.info);
             mask_changed = true;
-        }  else if(id == R.id.hide_ip) {
+        } else if(id == R.id.hide_ip) {
             mAdapter.mMask.addIp(conn.dst_ip);
             mask_changed = true;
         } else if(id == R.id.hide_proto) {
@@ -448,6 +462,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.whitelist_host)  {
             whitelist.addHost(conn.info);
             whitelist_changed = true;
+        } else if(id == R.id.block_app) {
+            blocklist.addApp(conn.uid);
+            blocklist_changed = true;
+        } else if(id == R.id.block_ip) {
+            blocklist.addIp(conn.dst_ip);
+            blocklist_changed = true;
+        } else if(id == R.id.block_host) {
+            blocklist.addHost(conn.info);
+            blocklist_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
@@ -470,6 +493,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(whitelist_changed) {
             whitelist.save();
             recheckBlacklistedConnections();
+        } else if(blocklist_changed) {
+            blocklist.save();
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadBlocklist();
         }
 
         return true;
