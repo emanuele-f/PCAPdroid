@@ -118,12 +118,13 @@ public class Billing {
     }
 
     public String getSystemId() {
+        // NOTE: On Android >= O, the ID is unique to each combination of package, key, user and device
         String system_id = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
                 Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID) :
                 Build.SERIAL;
 
         try {
-            // Calculate the MD5 to increase privacy
+            // Calculate the MD5 to provide a consistent output and to increase privacy on Android < O
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] digest = md5.digest(system_id.getBytes());
             system_id = "M" + Utils.byteArrayToHex(digest, 8);
@@ -145,20 +146,20 @@ public class Billing {
         int r_extra = (signature[offset] < 0) ? 1 : 0;
         int n_extra = (signature[offset + r_len] < 0) ? 1 : 0;
         int tot_len = 2*r_len + 6 + r_extra + n_extra;
-        byte[] der = new byte[tot_len];
+        byte[] rv = new byte[tot_len];
         int i = 0;
 
-        der[i++] = 0x30; der[i++] = (byte)(tot_len - 2);
+        rv[i++] = 0x30; rv[i++] = (byte)(tot_len - 2);
 
-        der[i++] = 0x02; der[i++] = (byte)(r_len + r_extra);
-        if(r_extra > 0) der[i++] = 0x00;
-        System.arraycopy(signature, offset, der, i, r_len);
+        rv[i++] = 0x02; rv[i++] = (byte)(r_len + r_extra);
+        if(r_extra > 0) rv[i++] = 0x00;
+        System.arraycopy(signature, offset, rv, i, r_len);
         i += 28;
 
-        der[i++] = 0x02; der[i++] = (byte)(r_len + n_extra);
-        if(n_extra > 0) der[i++] = 0x00;
-        System.arraycopy(signature, offset + r_len, der, i, r_len);
+        rv[i++] = 0x02; rv[i++] = (byte)(r_len + n_extra);
+        if(n_extra > 0) rv[i++] = 0x00;
+        System.arraycopy(signature, offset + r_len, rv, i, r_len);
 
-        return der;
+        return rv;
     }
 }
