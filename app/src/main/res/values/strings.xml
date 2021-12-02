@@ -246,4 +246,9 @@
     <string name="n_pkts">%1$s pkts</string>
     <string name="show_only_blocked">Blocked by firewall</string>
     <string name="blocked_connection_filter">blocked</string>
+    <string name="unlock_code">Unlock Code</string>
+    <string name="validate">Validate</string>
+    <string name="valid">Valid</string>
+    <string name="invalid">Invalid</string>
+    <string name="system_id">System ID</string>
 </resources>

@@ -164,6 +164,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+
+        Billing billing = Billing.newInstance(this);
+        billing.setLicense(billing.getLicense());
     }
 
     @Override
