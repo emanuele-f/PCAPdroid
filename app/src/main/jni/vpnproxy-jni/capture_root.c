@@ -339,12 +339,15 @@ static void update_connection_status(vpnproxy_data_t *proxy, pcap_conn_t *conn, 
 static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *buffer) {
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
-    uint8_t from_tun = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
+    uint8_t is_tx = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
 
     if(zdtun_parse_pkt(proxy->tun, buffer, hdr->len, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
         return;
     }
+
+    struct timeval tv = hdr->ts;
+    set_current_packet(proxy, &pkt, is_tx, &tv);
 
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
             (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
@@ -357,7 +360,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
         return;
     }
 
-    if(!from_tun) {
+    if(!is_tx) {
         // Packet from the internet, swap src and dst
         tupleSwapPeers(&pkt.tuple);
     }
@@ -365,8 +368,8 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
     HASH_FIND(hh, proxy->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
     if(!conn) {
-        // from_tun may be wrong, search in the other direction
-        from_tun = !from_tun;
+        // is_tx may be wrong, search in the other direction
+        is_tx = !is_tx;
         tupleSwapPeers(&pkt.tuple);
 
         HASH_FIND(hh, proxy->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
@@ -378,8 +381,8 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
                 return;
             }
 
-            // assume from_tun was correct
-            from_tun = !from_tun;
+            // assume is_tx was correct
+            is_tx = !is_tx;
             tupleSwapPeers(&pkt.tuple);
 
             conn_data_t *data = new_connection(proxy, &pkt.tuple, hdr->uid);
@@ -420,13 +423,10 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
         }
     }
 
-    proxy->last_pkt_ts = hdr->ts;
     conn->data->last_update_ms = proxy->now_ms;
 
-    uint64_t pkt_ms = (uint64_t)hdr->ts.tv_sec * 1000 + hdr->ts.tv_usec / 1000;
-    account_packet(proxy, &pkt, from_tun, &conn->tuple, conn->data, pkt_ms);
-
-    update_connection_status(proxy, conn, &pkt, !from_tun);
+    account_stats(proxy, &conn->tuple, conn->data);
+    update_connection_status(proxy, conn, &pkt, !is_tx);
 }
 
 /* ******************************************************* */

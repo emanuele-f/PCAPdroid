@@ -115,12 +115,6 @@ ssize_t xread(int fd, void *buf, size_t count) {
 
 /* ******************************************************* */
 
-uint64_t timeval2ms(struct timeval *tv) {
-    return (uint64_t)tv->tv_sec * 1000 + tv->tv_usec / 1000;
-}
-
-/* ******************************************************* */
-
 void tupleSwapPeers(zdtun_5tuple_t *tuple) {
     uint16_t tmp = tuple->dst_port;
     tuple->dst_port = tuple->src_port;

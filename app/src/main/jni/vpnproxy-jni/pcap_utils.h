@@ -60,6 +60,6 @@ typedef struct pcapdroid_trailer {
 void pcap_set_pcapdroid_trailer(uint8_t enabled);
 void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr);
 int pcap_rec_size(int pkt_len);
-void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *proxy, conn_data_t *conn);
+void pcap_dump_rec(u_char *buffer, vpnproxy_data_t *proxy, conn_data_t *conn);
 
 #endif // __MY_PCAP_H__

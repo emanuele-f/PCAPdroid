@@ -40,17 +40,37 @@ static void add_known_dns_server(vpnproxy_data_t *proxy, const char *ip) {
 
 /* ******************************************************* */
 
-static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t *conn_info) {
+static struct timeval* get_pkt_timestamp(vpnproxy_data_t *proxy, struct timeval *tv) {
+    struct timespec ts;
+
+    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
+        tv->tv_sec = ts.tv_sec;
+        tv->tv_usec = ts.tv_nsec / 1000;
+        return tv;
+    }
+
+    // use the last pkt timestamp
+    log_w("clock_gettime failed[%d]: %s", errno, strerror(errno));
+    return &proxy->cur_pkt.tv;
+}
+
+/* ******************************************************* */
+
+static int net2tun(zdtun_t *tun, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info) {
     if(!running)
         return 0;
 
     vpnproxy_data_t *proxy = (vpnproxy_data_t*) zdtun_userdata(tun);
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
 
-    if(data->to_block) // NOTE: blocked_pkts accounted in account_packet
+    struct timeval tv;
+    refresh_time(proxy);
+    set_current_packet(proxy, pkt, false, get_pkt_timestamp(proxy, &tv));
+
+    if(data->to_block) // NOTE: blocked_pkts accounted in account_stats
         return 0;
 
-    int rv = write(proxy->tunfd, pkt_buf, pkt_size);
+    int rv = write(proxy->tunfd, pkt->buf, pkt->len);
 
     if(rv < 0) {
         if(errno == ENOBUFS) {
@@ -62,11 +82,11 @@ static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
             log_i("Got I/O error (terminating?)");
             running = false;
         } else {
-            log_f("tun write (%d) failed [%d]: %s", pkt_size, errno, strerror(errno));
+            log_f("tun write (%d) failed [%d]: %s", pkt->len, errno, strerror(errno));
             running = false;
         }
-    } else if(rv != pkt_size) {
-        log_f("partial tun write (%d / %d)", rv, pkt_size);
+    } else if(rv != pkt->len) {
+        log_f("partial tun write (%d / %d)", rv, pkt->len);
         rv = -1;
     } else
         rv = 0;
@@ -140,8 +160,8 @@ static bool check_dns_req_allowed(vpnproxy_data_t *proxy, zdtun_conn_t *conn) {
     if(!is_dns_server)
         return(true);
 
-    if((tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53) && (proxy->last_pkt != NULL)) {
-        zdtun_pkt_t *pkt = proxy->last_pkt;
+    if((tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53)) {
+        zdtun_pkt_t *pkt = proxy->cur_pkt.pkt;
         int dns_length = pkt->l7_len;
 
         if(dns_length >= sizeof(dns_packet_t)) {
@@ -221,40 +241,25 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void refresh_pkt_timestamp(vpnproxy_data_t *proxy) {
-    struct timespec ts = {0};
-
-    if(!clock_gettime(CLOCK_REALTIME, &ts)) {
-        proxy->last_pkt_ts.tv_sec = ts.tv_sec;
-        proxy->last_pkt_ts.tv_usec = ts.tv_nsec / 1000;
-    } else
-        log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
-}
-
-/* ******************************************************* */
-
 static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
-    conn_data_t *data = zdtun_conn_get_userdata(conn_info);
+    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
+    conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     if(!data) {
         log_e("Missing data in connection");
         return;
     }
 
-    vpnproxy_data_t *proxy = ((vpnproxy_data_t*)zdtun_userdata(tun));
-    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
-
-    refresh_pkt_timestamp(proxy);
-    uint64_t pkt_ms = timeval2ms(&proxy->last_pkt_ts);
     data->status = zdtun_conn_get_status(conn_info);
 
     if(data->to_block) {
         data->blocked_pkts++;
-        data->last_seen = pkt_ms;
+        data->last_seen = proxy->cur_pkt.ms;
         return;
     }
 
-    account_packet(proxy, pkt, from_tun, tuple, data, pkt_ms);
+    account_stats(proxy, tuple, data);
 
     if(data->status >= CONN_STATUS_CLOSED)
         data->to_purge = true;
@@ -337,14 +342,12 @@ int run_proxy(vpnproxy_data_t *proxy) {
         if(!running)
             break;
 
-        refresh_time(proxy);
-
         if(FD_ISSET(proxy->tunfd, &fdset)) {
             /* Packet from VPN */
             size = read(proxy->tunfd, buffer, sizeof(buffer));
-
-            if (size > 0) {
+            if(size > 0) {
                 zdtun_pkt_t pkt;
+                refresh_time(proxy);
 
                 if(zdtun_parse_pkt(tun, buffer, size, &pkt) != 0) {
                     log_d("zdtun_parse_pkt failed");
@@ -357,7 +360,8 @@ int run_proxy(vpnproxy_data_t *proxy) {
                     goto housekeeping;
                 }
 
-                proxy->last_pkt = &pkt;
+                struct timeval tv;
+                set_current_packet(proxy, &pkt, true, get_pkt_timestamp(proxy, &tv));
 
                 if((pkt.tuple.ipver == 6) && (!proxy->ipv6.enabled)) {
                     char buf[512];
@@ -391,8 +395,7 @@ int run_proxy(vpnproxy_data_t *proxy) {
                 conn_data_t *data = zdtun_conn_get_userdata(conn);
                 if(data->to_block) {
                     data->blocked_pkts++;
-                    refresh_pkt_timestamp(proxy);
-                    data->last_seen = timeval2ms(&proxy->last_pkt_ts);
+                    data->last_seen = proxy->cur_pkt.ms;
                     if(!data->first_seen)
                         data->first_seen = data->last_seen;
                     goto housekeeping;
@@ -411,12 +414,16 @@ int run_proxy(vpnproxy_data_t *proxy) {
                     zdtun_destroy_conn(tun, conn);
                     goto housekeeping;
                 }
-            } else if (size < 0)
-                log_e("recv(tunfd) returned error [%d]: %s", errno,
-                            strerror(errno));
-        } else
+            } else {
+                refresh_time(proxy);
+                if(size < 0)
+                    log_e("recv(tunfd) returned error [%d]: %s", errno,
+                          strerror(errno));
+            }
+        } else {
+            refresh_time(proxy);
             zdtun_handle_fd(tun, &fdset, &wrfds);
-
+        }
 
         housekeeping:
             run_housekeeping(proxy);

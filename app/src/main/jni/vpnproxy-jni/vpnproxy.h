@@ -57,6 +57,15 @@ typedef struct {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
+// This tracks the packet processing phases, to ensure that the vpnproxy functions are called in
+// the correct order.
+typedef enum {
+    PKT_PHASE_REFRESH_TIME = 0,     // refresh_time
+    PKT_PHASE_PKT_SET,              // set_current_packet
+    PKT_PHASE_ACCOUNT_STATS,        // account_stats
+    PKT_PHASE_HOUSEKEEPING,         // run_housekeeping
+} pkt_processing_phase_t;
+
 typedef struct {
     jint incr_id; /* an incremental identifier */
 
@@ -145,7 +154,6 @@ typedef struct {
     char filesdir[PATH_MAX];
     int cachedir_len;
     int filesdir_len;
-    struct timeval last_pkt_ts; // Packet timestamp, reported into the exported PCAP
     uint64_t now_ms;            // Monotonic timestamp, see refresh_time
     u_int num_dropped_pkts;
     long num_discarded_fragments;
@@ -153,12 +161,20 @@ typedef struct {
     u_int32_t num_dns_requests;
     conn_array_t new_conns;
     conn_array_t conns_updates;
-    zdtun_pkt_t *last_pkt;
     zdtun_t *tun;
     bool root_capture;
     zdtun_statistics_t stats;
     uid_to_app_t *uid2app;
     pcap_conn_t *connections;   // root only
+    pkt_processing_phase_t pkt_phase;
+
+    // populated via set_current_packet
+    struct {
+        zdtun_pkt_t *pkt;
+        struct timeval tv; // Packet timestamp, need by pcap_dump_rec
+        uint64_t ms;       // Packet timestamp in ms
+        bool is_tx;
+    } cur_pkt;
 
     struct {
         bool enabled;
@@ -265,8 +281,8 @@ void conn_free_data(conn_data_t *data);
 void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
 void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
 void run_housekeeping(vpnproxy_data_t *proxy);
-void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
-                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data, uint64_t pkt_ms);
+void set_current_packet(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv);
+void account_stats(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
 int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
 void refresh_time(vpnproxy_data_t *proxy);
 void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);

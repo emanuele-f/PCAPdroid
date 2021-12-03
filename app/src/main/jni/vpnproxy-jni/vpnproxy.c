@@ -18,7 +18,7 @@
  */
 
 #include <inttypes.h>
-#include <dirent.h>
+#include <assert.h> // NOTE: look for "assertion" in logcat
 #include "vpnproxy.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
@@ -527,9 +527,11 @@ static int is_plaintext(char c) {
 
 /* ******************************************************* */
 
-static void process_request_data(conn_data_t *data, const struct zdtun_pkt *pkt, uint8_t from_tun) {
+static void process_request_data(vpnproxy_data_t *proxy, conn_data_t *data) {
+    const zdtun_pkt_t *pkt = proxy->cur_pkt.pkt;
+
     if(pkt->l7_len > 0) {
-        if(from_tun && is_plaintext(pkt->l7[0])) {
+        if(proxy->cur_pkt.is_tx && is_plaintext(pkt->l7[0])) {
             int request_len = data->request_data ? (int)strlen(data->request_data) : 0;
             int num_chars = min(MAX_PLAINTEXT_LENGTH - request_len, pkt->l7_len);
 
@@ -642,25 +644,26 @@ static void process_dns_reply(conn_data_t *data, vpnproxy_data_t *proxy, const s
 
 /* ******************************************************* */
 
-static void process_ndpi_packet(conn_data_t *data, vpnproxy_data_t *proxy,
-                                const struct zdtun_pkt *pkt, uint8_t from_tun) {
+static void process_ndpi_packet(vpnproxy_data_t *proxy, conn_data_t *data) {
     bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
+    zdtun_pkt_t *pkt = proxy->cur_pkt.pkt;
+    bool is_tx = proxy->cur_pkt.is_tx;
 
     u_int16_t old_proto = data->l7proto.master_protocol;
     data->l7proto = ndpi_detection_process_packet(proxy->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
             pkt->len, data->last_seen,
-            from_tun ? data->src_id : data->dst_id,
-            from_tun ? data->dst_id : data->src_id);
+            is_tx ? data->src_id : data->dst_id,
+            is_tx ? data->dst_id : data->src_id);
 
     if(old_proto != data->l7proto.master_protocol)
         data->update_type |= CONN_UPDATE_INFO;
 
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
-        process_request_data(data, pkt, from_tun);
+        process_request_data(proxy, data);
 
     bool is_dns = ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) ||
             (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS));
-    if(!from_tun && is_dns)
+    if(!is_tx && is_dns)
         process_dns_reply(data, proxy, pkt);
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
@@ -1201,6 +1204,10 @@ static int check_blocked_conn_cb(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
 /* ******************************************************* */
 
 void run_housekeeping(vpnproxy_data_t *proxy) {
+    // can reach housekeeping from any state except housekeeping
+    assert(proxy->pkt_phase != PKT_PHASE_HOUSEKEEPING);
+    proxy->pkt_phase = PKT_PHASE_HOUSEKEEPING;
+
     if(proxy->capture_stats.new_stats
             && ((proxy->now_ms - proxy->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
             dump_capture_stats_now) {
@@ -1250,12 +1257,18 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
         if(proxy->tun)
             zdtun_iter_connections(proxy->tun, check_blocked_conn_cb, proxy);
     }
+
+    // avoid using freed data
+    proxy->cur_pkt.pkt = NULL;
 }
 
 /* ******************************************************* */
 
 void refresh_time(vpnproxy_data_t *proxy) {
     struct timespec ts;
+
+    // can be reached by any phase
+    proxy->pkt_phase = PKT_PHASE_REFRESH_TIME;
 
     if(clock_gettime(CLOCK_MONOTONIC_COARSE, &ts)) {
         log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
@@ -1296,20 +1309,29 @@ void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, c
 
 /* ******************************************************* */
 
-void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from_tun,
-                    const zdtun_5tuple_t *conn_tuple, conn_data_t *data, uint64_t pkt_ms) {
-#if 0
-    if(from_tun)
-        log_d("tun2net: %ld B", size);
-    else
-        log_d("net2tun: %lu B", size);
-#endif
+void set_current_packet(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv) {
+    assert(proxy->pkt_phase == PKT_PHASE_REFRESH_TIME);
+    proxy->pkt_phase = PKT_PHASE_PKT_SET;
 
-    if((data->sent_pkts + data->rcvd_pkts) == 0)
-        data->first_seen = pkt_ms;
-    data->last_seen = pkt_ms;
+    proxy->cur_pkt.pkt = pkt;
+    proxy->cur_pkt.tv = *tv;
+    proxy->cur_pkt.ms = (uint64_t)tv->tv_sec * 1000 + tv->tv_usec / 1000;
+    proxy->cur_pkt.is_tx = is_tx;
+}
 
-    if(from_tun) {
+/* ******************************************************* */
+
+void account_stats(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_tuple, conn_data_t *data) {
+    zdtun_pkt_t *pkt = proxy->cur_pkt.pkt;
+
+    assert(proxy->pkt_phase == PKT_PHASE_PKT_SET);
+    proxy->pkt_phase = PKT_PHASE_ACCOUNT_STATS;
+
+    data->last_seen = proxy->cur_pkt.ms;
+    if(!data->first_seen)
+        data->first_seen = data->last_seen;
+
+    if(proxy->cur_pkt.is_tx) {
         data->sent_pkts++;
         data->sent_bytes += pkt->len;
         proxy->capture_stats.sent_pkts++;
@@ -1324,7 +1346,7 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
     if(data->ndpi_flow &&
             (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {
         // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
-        process_ndpi_packet(data, proxy, pkt, from_tun);
+        process_ndpi_packet(proxy, data);
 
         if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
                 && (data->uid == UID_NETD)
@@ -1358,7 +1380,7 @@ void account_packet(vpnproxy_data_t *proxy, const zdtun_pkt_t *pkt, uint8_t from
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
                   JAVA_PCAP_BUFFER_SIZE, proxy->pcap_dump.buffer_idx, rec_size);
         else {
-            pcap_dump_rec(pkt, (u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
+            pcap_dump_rec((u_char *) proxy->pcap_dump.buffer + proxy->pcap_dump.buffer_idx,
                     proxy, data);
 
             proxy->pcap_dump.buffer_idx += rec_size;
@@ -1490,6 +1512,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
 
     memset(&proxy.stats, 0, sizeof(proxy.stats));
 
+    proxy.pkt_phase = PKT_PHASE_HOUSEKEEPING;
     refresh_time(&proxy);
     last_connections_dump = proxy.now_ms;
     next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;

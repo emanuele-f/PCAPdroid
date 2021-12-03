@@ -66,12 +66,13 @@ int pcap_rec_size(int pkt_len) {
 
 /* Dumps a packet into the provided buffer. The buffer must have at least pcap_rec_size()
  * bytes available */
-void pcap_dump_rec(const zdtun_pkt_t *pkt, u_char *buffer, vpnproxy_data_t *proxy, conn_data_t *conn) {
+void pcap_dump_rec(u_char *buffer, vpnproxy_data_t *proxy, conn_data_t *conn) {
+    const zdtun_pkt_t *pkt = proxy->cur_pkt.pkt;
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
     int offset = 0;
 
-    pcap_rec->ts_sec = proxy->last_pkt_ts.tv_sec;
-    pcap_rec->ts_usec = proxy->last_pkt_ts.tv_usec;
+    pcap_rec->ts_sec = proxy->cur_pkt.tv.tv_sec;
+    pcap_rec->ts_usec = proxy->cur_pkt.tv.tv_usec;
     pcap_rec->incl_len = pcap_rec_size(pkt->len) - (int)sizeof(struct pcaprec_hdr_s);
     pcap_rec->orig_len = pkt->len;
     buffer += sizeof(struct pcaprec_hdr_s);
