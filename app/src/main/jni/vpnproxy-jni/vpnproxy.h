@@ -155,7 +155,6 @@ typedef struct {
     conn_array_t conns_updates;
     zdtun_pkt_t *last_pkt;
     zdtun_t *tun;
-    bool last_conn_blocked;
     bool root_capture;
     zdtun_statistics_t stats;
     uid_to_app_t *uid2app;

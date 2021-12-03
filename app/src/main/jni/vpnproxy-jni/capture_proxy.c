@@ -27,25 +27,6 @@ static void protectSocketCallback(zdtun_t *tun, socket_t sock) {
 
 /* ******************************************************* */
 
-static bool shouldIgnoreConn(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple) {
-#if 0
-    int uid = data.uid;
-    bool is_unknown_app = ((uid == UID_UNKNOWN) || (uid == 1051 /* netd DNS resolver */));
-
-    if(((proxy->uid_filter != UID_UNKNOWN) && (proxy->uid_filter != uid))
-        && (!is_unknown_app || !proxy->capture_unknown_app_traffic))
-        return true;
-#endif
-
-    // ignore some internal communications, e.g. DNS-over-TLS check on port 853
-    if((tuple->ipver == 4) && (tuple->dst_ip.ip4 == proxy->vpn_dns) && (ntohs(tuple->dst_port) != 53))
-        return true;
-
-    return false;
-}
-
-/* ******************************************************* */
-
 static void add_known_dns_server(vpnproxy_data_t *proxy, const char *ip) {
     ndpi_ip_addr_t parsed;
 
@@ -97,9 +78,6 @@ static int net2tun(zdtun_t *tun, char *pkt_buf, int pkt_size, const zdtun_conn_t
 
 static void check_socks5_redirection(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
     conn_data_t *data = zdtun_conn_get_userdata(conn);
-
-    if(shouldIgnoreConn(proxy, zdtun_conn_get_5tuple(conn)))
-        return;
 
     if((pkt->tuple.ipproto == IPPROTO_TCP) && (((data->sent_pkts + data->rcvd_pkts) == 0)))
         zdtun_conn_proxy(conn);
@@ -202,12 +180,6 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     vpnproxy_data_t *proxy = ((vpnproxy_data_t *) zdtun_userdata(tun));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
-    if(!check_dns_req_allowed(proxy, conn_info)) {
-        // block connection
-        proxy->last_conn_blocked = true;
-        return (1);
-    }
-
     conn_data_t *data = new_connection(proxy, tuple, resolve_uid(proxy, tuple));
     if(!data) {
         /* reject connection */
@@ -215,14 +187,10 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
     }
 
     zdtun_conn_set_userdata(conn_info, data);
+    data->to_block = !check_dns_req_allowed(proxy, conn_info);
 
-    if(!shouldIgnoreConn(proxy, tuple)) {
-        // Important: only set the incr_id on registered connections since
-        // ConnectionsRegister::connectionsUpdates does not allow gaps
-        data->incr_id = proxy->incr_id++;
-
-        notify_connection(&proxy->new_conns, tuple, data);
-    }
+    data->incr_id = proxy->incr_id++;
+    notify_connection(&proxy->new_conns, tuple, data);
 
     /* accept connection */
     return(0);
@@ -241,17 +209,14 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
-    if(!shouldIgnoreConn(proxy, tuple)) {
-        // Send last notification
-        // Will free the data in sendConnectionsDump
-        data->update_type |= CONN_UPDATE_STATS;
-        notify_connection(&proxy->conns_updates, tuple, data);
+    // Send last notification
+    // Will free the data in sendConnectionsDump
+    data->update_type |= CONN_UPDATE_STATS;
+    notify_connection(&proxy->conns_updates, tuple, data);
 
-        conn_end_ndpi_detection(data, proxy, tuple);
-        data->status = zdtun_conn_get_status(conn_info);
-        data->to_purge = true;
-    } else
-        conn_free_data(data);
+    conn_end_ndpi_detection(data, proxy, tuple);
+    data->status = zdtun_conn_get_status(conn_info);
+    data->to_purge = true;
 }
 
 /* ******************************************************* */
@@ -286,20 +251,6 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
     if(data->to_block) {
         data->blocked_pkts++;
         data->last_seen = pkt_ms;
-        return;
-    } else if(shouldIgnoreConn(proxy, tuple)) {
-        /* NOTE: account connection stats also for non-matched connections */
-        if(from_tun) {
-            data->sent_pkts++;
-            data->sent_bytes += pkt->len;
-        } else {
-            data->rcvd_pkts++;
-            data->rcvd_bytes += pkt->len;
-        }
-
-        data->last_seen = pkt_ms;
-
-        //log_d("Ignoring connection: UID=%d [filter=%d]", data->uid, proxy->uid_filter);
         return;
     }
 
@@ -407,7 +358,6 @@ int run_proxy(vpnproxy_data_t *proxy) {
                 }
 
                 proxy->last_pkt = &pkt;
-                proxy->last_conn_blocked = false;
 
                 if((pkt.tuple.ipver == 6) && (!proxy->ipv6.enabled)) {
                     char buf[512];
@@ -422,11 +372,8 @@ int run_proxy(vpnproxy_data_t *proxy) {
                                               (!(pkt.tcp->th_flags & TH_SYN) || (pkt.tcp->th_flags & TH_ACK)));
 
                 zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, !is_tcp_established);
-
                 if (!conn) {
-                    if(proxy->last_conn_blocked) {
-                        ;
-                    } else if(!is_tcp_established) {
+                    if(!is_tcp_established) {
                         char buf[512];
 
                         proxy->num_dropped_connections++;
