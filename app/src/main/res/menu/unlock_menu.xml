@@ -5,8 +5,7 @@
 
     <item
         android:id="@+id/unlock_code"
-        android:title="@string/unlock_code"
+        android:title="@string/paid_features"
         android:orderInCategory="10"
-        android:icon="@drawable/ic_checklist"
         app:showAsAction="never" />
 </menu>

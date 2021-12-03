@@ -48,7 +48,7 @@ public class Prefs {
     public static final String PREF_VISUALIZATION_MASK = "vis_mask";
     public static final String PREF_MALWARE_WHITELIST = "maware_whitelist";
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
-    public static final String PREF_BLOCKLIST = "blocklist";
+    public static final String PREF_BLOCKLIST = "bl";
     public static final String PREF_START_AT_BOOT = "start_at_boot";
 
     public enum DumpMode {

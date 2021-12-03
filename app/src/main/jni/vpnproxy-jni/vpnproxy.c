@@ -319,9 +319,9 @@ static void check_blacklisted_domain(vpnproxy_data_t *proxy, conn_data_t *data, 
                 data->to_block = true;
             }
         }
-        if(proxy->firewall.blocklist && !data->to_block) {
+        if(proxy->firewall.bl && !data->to_block) {
             // Check if the domain is explicitly blocked
-            data->to_block = blacklist_match_domain(proxy->firewall.blocklist, data->info);
+            data->to_block = blacklist_match_domain(proxy->firewall.bl, data->info);
             if(data->to_block) {
                 char appbuf[64];
                 char buf[512];
@@ -329,6 +329,8 @@ static void check_blacklisted_domain(vpnproxy_data_t *proxy, conn_data_t *data, 
                 get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
                 log_w("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
+
+            log_d("Domain check: %s -> %d", data->info, data->to_block);
         }
     }
 }
@@ -420,8 +422,8 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
 
         bl_num_checked_connections++;
     }
-    if(proxy->firewall.blocklist && !data->to_block) {
-        data->to_block = blacklist_match_ip(proxy->firewall.blocklist, &dst_ip, tuple->ipver);
+    if(proxy->firewall.bl && !data->to_block) {
+        data->to_block = blacklist_match_ip(proxy->firewall.bl, &dst_ip, tuple->ipver);
         if(data->to_block) {
             char appbuf[64];
             char buf[256];
@@ -429,7 +431,7 @@ conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple,
             get_appname_by_uid(proxy, data->uid, appbuf, sizeof(appbuf));
             log_w("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         } else {
-            data->to_block = blacklist_match_uid(proxy->firewall.blocklist, data->uid);
+            data->to_block = blacklist_match_uid(proxy->firewall.bl, data->uid);
             if(data->to_block) {
                 char appbuf[64];
                 char buf[256];
@@ -1179,7 +1181,7 @@ static int check_blocked_conn_cb(zdtun_t *tun, const zdtun_conn_t *conn_info, vo
     conn_data_t *data = zdtun_conn_get_userdata(conn_info);
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
     zdtun_ip_t dst_ip = tuple->dst_ip;
-    blacklist_t *bl = proxy->firewall.blocklist;
+    blacklist_t *bl = proxy->firewall.bl;
     bool old_block = data->to_block;
 
     data->to_block = (data->blacklisted_ip || data->blacklisted_domain) ||
@@ -1238,12 +1240,12 @@ void run_housekeeping(vpnproxy_data_t *proxy) {
         }
     }
 
-    if(proxy->firewall.new_blocklist) {
-        // Load new blocklist
-        if(proxy->firewall.blocklist)
-            blacklist_destroy(proxy->firewall.blocklist);
-        proxy->firewall.blocklist = proxy->firewall.new_blocklist;
-        proxy->firewall.new_blocklist = NULL;
+    if(proxy->firewall.new_bl) {
+        // Load new bl
+        if(proxy->firewall.bl)
+            blacklist_destroy(proxy->firewall.bl);
+        proxy->firewall.bl = proxy->firewall.new_bl;
+        proxy->firewall.new_bl = NULL;
 
         if(proxy->tun)
             zdtun_iter_connections(proxy->tun, check_blocked_conn_cb, proxy);
@@ -1503,10 +1505,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     conns_clear(&proxy.new_conns, true);
     conns_clear(&proxy.conns_updates, true);
 
-    if(proxy.firewall.blocklist)
-        blacklist_destroy(proxy.firewall.blocklist);
-    if(proxy.firewall.new_blocklist)
-        blacklist_destroy(proxy.firewall.new_blocklist);
+    if(proxy.firewall.bl)
+        blacklist_destroy(proxy.firewall.bl);
+    if(proxy.firewall.new_bl)
+        blacklist_destroy(proxy.firewall.new_bl);
 
     if(proxy.malware_detection.enabled) {
         if(proxy.malware_detection.reload_in_progress) {
@@ -1652,7 +1654,7 @@ static int bl_add_array(JNIEnv *env, blacklist_t *bl, jobjectArray arr, blacklis
             (*env)->ReleaseStringUTFChars(env, obj, val);
 
             if(rv != 0) {
-                log_e("blocklist add %s failed", val);
+                log_e("bl add %s failed", val);
                 return -1;
             }
         }
@@ -1663,7 +1665,7 @@ static int bl_add_array(JNIEnv *env, blacklist_t *bl, jobjectArray arr, blacklis
 
 JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, jclass clazz,
-                                                                  jobjectArray apps, jobjectArray domains, jobjectArray ips) {
+        jobjectArray apps, jobjectArray domains, jobjectArray ips) {
     vpnproxy_data_t *proxy = global_proxy;
     if(!proxy) {
         log_e("NULL proxy instance");
@@ -1675,8 +1677,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
         return false;
     }
 
-    if(proxy->firewall.new_blocklist != NULL) {
-        log_e("previous blocklist not loaded yet");
+    if(proxy->firewall.new_bl != NULL) {
+        log_e("previous bl not loaded yet");
         return false;
     }
 
@@ -1688,7 +1690,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
 
     // NOTE: add new types to check_blocked_conn_cb
     int num_apps = bl_add_array(env, bl, apps, UID_BLACKLIST);
-    int num_domains = bl_add_array(env, bl, ips, DOMAIN_BLACKLIST);
+    int num_domains = bl_add_array(env, bl, domains, DOMAIN_BLACKLIST);
     int num_ips = bl_add_array(env, bl, ips, IP_BLACKLIST);
 
     if((num_apps == -1) || (num_ips == -1) || (num_domains == -1)) {
@@ -1696,7 +1698,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
         return false;
     }
 
-    log_d("reloadBlocklist: %d apps, %d domains, %d IPs", num_apps, num_ips, num_domains);
-    proxy->firewall.new_blocklist = bl;
+    log_d("reloadBlocklist: %d apps, %d domains, %d IPs", num_apps, num_domains, num_ips);
+    proxy->firewall.new_bl = bl;
     return true;
 }

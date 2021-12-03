@@ -137,7 +137,7 @@ public class Billing {
         return system_id;
     }
 
-    public byte[] getASN1(byte[] signature, int offset) {
+    private byte[] getASN1(byte[] signature, int offset) {
         int r_len = 28;
 
         if((signature.length - offset) != 2*r_len)

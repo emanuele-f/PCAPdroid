@@ -194,8 +194,8 @@ typedef struct {
     } malware_detection;
 
     struct {
-        blacklist_t *blocklist;
-        blacklist_t *new_blocklist;
+        blacklist_t *bl;
+        blacklist_t *new_bl;
     } firewall;
 
     capture_stats_t capture_stats;
