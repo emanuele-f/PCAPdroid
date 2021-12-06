@@ -27,7 +27,7 @@
 // Minimum length (e.g. of "GET") to avoid reporting non-requests
 #define MIN_REQ_PLAINTEXT_CHARS 3
 
-extern int run_vpn(pcapdroid_t *pd);
+extern int run_vpn(pcapdroid_t *pd, int tunfd);
 extern int run_root(pcapdroid_t *pd);
 
 /* ******************************************************* */
@@ -146,7 +146,7 @@ char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize) {
     JNIEnv *env = pd->env;
 
     jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
-    jstring obj = (*env)->CallObjectMethod(env, pd->vpn_service, midMethod);
+    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, midMethod);
     char *rv = NULL;
 
     if(!jniCheckException(env)) {
@@ -231,7 +231,7 @@ static void getApplicationByUidJava(pcapdroid_t *pd, jint uid, char *buf, int bu
     JNIEnv *env = pd->env;
     const char *value = NULL;
 
-    jstring obj = (*env)->CallObjectMethod(env, pd->vpn_service, mids.getApplicationByUid, uid);
+    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getApplicationByUid, uid);
     jniCheckException(env);
 
     if(obj)
@@ -372,7 +372,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
     }
 
     data->uid = uid;
-    data->incr_id = pd->incr_id++;
+    data->incr_id = pd->new_conn_id++;
 
     // Try to resolve host name via the LRU cache
     const zdtun_ip_t dst_ip = tuple->dst_ip;
@@ -696,7 +696,7 @@ static void javaPcapDump(pcapdroid_t *pd) {
         return;
 
     (*env)->SetByteArrayRegion(env, barray, 0, pd->pcap_dump.buffer_idx, pd->pcap_dump.buffer);
-    (*env)->CallVoidMethod(env, pd->vpn_service, mids.dumpPcapData, barray);
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.dumpPcapData, barray);
     jniCheckException(env);
 
     pd->pcap_dump.buffer_idx = 0;
@@ -872,7 +872,7 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
     //log_d("avg cpu_time_used per update: %f sec", cpu_time_used / pd->conns_updates.cur_items);
 
     /* Send the dump */
-    (*env)->CallVoidMethod(env, pd->vpn_service, mids.updateConnections, new_conns, conns_updates);
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.updateConnections, new_conns, conns_updates);
     jniCheckException(env);
 
 cleanup:
@@ -939,7 +939,7 @@ static void sendStatsDump(const pcapdroid_t *pd) {
                            pd->num_dns_requests);
 
     if(!jniCheckException(env)) {
-        (*env)->CallVoidMethod(env, pd->vpn_service, mids.sendStatsDump, stats_obj);
+        (*env)->CallVoidMethod(env, pd->capture_service, mids.sendStatsDump, stats_obj);
         jniCheckException(env);
     }
 
@@ -955,7 +955,7 @@ static void notifyServiceStatus(pcapdroid_t *pd, const char *status) {
 
     status_str = (*env)->NewStringUTF(env, status);
 
-    (*env)->CallVoidMethod(env, pd->vpn_service, mids.sendServiceStatus, status_str);
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.sendServiceStatus, status_str);
     jniCheckException(env);
 
     (*env)->DeleteLocalRef(env, status_str);
@@ -1024,7 +1024,7 @@ static void use_new_blacklists(pcapdroid_t *pd) {
             }
         }
     }
-    (*pd->env)->CallVoidMethod(pd->env, pd->vpn_service, mids.notifyBlacklistsLoaded, status_obj);
+    (*pd->env)->CallVoidMethod(pd->env, pd->capture_service, mids.notifyBlacklistsLoaded, status_obj);
 
 cleanup:
     if(status_arr != NULL) {
@@ -1043,7 +1043,7 @@ cleanup:
 int load_blacklists_info(pcapdroid_t *pd) {
     int rv = 0;
     JNIEnv *env = pd->env;
-    jobjectArray *arr = (*env)->CallObjectMethod(env, pd->vpn_service, mids.getBlacklistsInfo);
+    jobjectArray *arr = (*env)->CallObjectMethod(env, pd->capture_service, mids.getBlacklistsInfo);
     pd->malware_detection.bls_info = NULL;
     pd->malware_detection.num_bls = 0;
 
@@ -1153,7 +1153,7 @@ static void* load_new_blacklists(void *data) {
 
 /* ******************************************************* */
 
-static int check_blocked_conn_cb(zdtun_t *tun, const zdtun_conn_t *conn_info, void *userdata) {
+static int check_blocked_conn_cb(zdtun_t *zdt, const zdtun_conn_t *conn_info, void *userdata) {
     pcapdroid_t *pd = (pcapdroid_t*) userdata;
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
@@ -1190,7 +1190,7 @@ void pd_housekeeping(pcapdroid_t *pd) {
         dump_capture_stats_now = false;
 
         if(!pd->root_capture)
-            zdtun_get_stats(pd->tun, &pd->stats);
+            zdtun_get_stats(pd->zdt, &pd->stats);
 
         sendStatsDump(pd);
 
@@ -1230,8 +1230,8 @@ void pd_housekeeping(pcapdroid_t *pd) {
         pd->firewall.bl = pd->firewall.new_bl;
         pd->firewall.new_bl = NULL;
 
-        if(pd->tun)
-            zdtun_iter_connections(pd->tun, check_blocked_conn_cb, pd);
+        if(pd->zdt)
+            zdtun_iter_connections(pd->zdt, check_blocked_conn_cb, pd);
     }
 
     // avoid using freed data
@@ -1267,7 +1267,7 @@ static void log_callback(int lvl, const char *line) {
         if((jniCheckException(pd->env) != 0) || (info_string == NULL))
             return;
 
-        (*pd->env)->CallVoidMethod(pd->env, pd->vpn_service, mids.reportError, info_string);
+        (*pd->env)->CallVoidMethod(pd->env, pd->capture_service, mids.reportError, info_string);
         jniCheckException(pd->env);
 
         (*pd->env)->DeleteLocalRef(pd->env, info_string);
@@ -1412,19 +1412,13 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     fields.bldescr_type = jniFieldID(env, cls.blacklist_descriptor, "type", "Lcom/emanuelef/remote_capture/model/BlacklistDescriptor$Type;");
 
     pcapdroid_t pd = {
-            .tunfd = tunfd,
-            .sdk = sdk,
+            .sdk_ver = sdk,
             .env = env,
-            .vpn_service = vpn,
-            .resolver = init_uid_resolver(sdk, env, vpn),
-            .known_dns_servers = ndpi_ptree_create(),
+            .capture_service = vpn,
             .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
-            .vpn_ipv4 = getIPv4Pref(env, vpn, "getVpnIPv4"),
-            .vpn_dns = getIPv4Pref(env, vpn, "getVpnDns"),
-            .dns_server = getIPv4Pref(env, vpn, "getDnsServer"),
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
-            .incr_id = 0,
+            .new_conn_id = 0,
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
             },
@@ -1501,7 +1495,7 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     notifyServiceStatus(&pd, "started");
 
     // Run the capture
-    int rv = pd.root_capture ? run_root(&pd) : run_vpn(&pd);
+    int rv = pd.root_capture ? run_root(&pd) : run_vpn(&pd, tunfd);
 
     log_d("Stopped packet loop");
 
@@ -1543,8 +1537,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     }
 
     notifyServiceStatus(&pd, "stopped");
-    destroy_uid_resolver(pd.resolver);
-    ndpi_ptree_destroy(pd.known_dns_servers);
 
     log_d("Host LRU cache size: %d", ip_lru_size(pd.ip_to_host));
     log_d("Discarded fragments: %ld", pd.num_discarded_fragments);

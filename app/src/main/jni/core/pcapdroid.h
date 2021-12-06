@@ -121,36 +121,48 @@ typedef struct {
 typedef struct pcap_conn pcap_conn_t;
 
 typedef struct {
-    int tunfd;
-    int incr_id;
-    jint sdk;
     JNIEnv *env;
-    jobject vpn_service;
-    jint app_filter;
-    u_int32_t vpn_dns;
-    u_int32_t dns_server;
-    u_int32_t vpn_ipv4;
+    jobject capture_service;
+    jint sdk_ver;
+    pkt_processing_phase_t pkt_phase;
+    int new_conn_id;
+    uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     struct ndpi_detection_module_struct *ndpi;
-    ndpi_ptree_t *known_dns_servers;
-    uid_resolver_t *resolver;
+    zdtun_t *zdt;
     ip_lru_t *ip_to_host;
+    conn_array_t new_conns;
+    conn_array_t conns_updates;
+    uid_to_app_t *uid2app;
     char cachedir[PATH_MAX];
     char filesdir[PATH_MAX];
     int cachedir_len;
     int filesdir_len;
-    uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
+
+    // config
+    jint app_filter;
+    bool root_capture;
+
+    // stats
     u_int num_dropped_pkts;
     long num_discarded_fragments;
-    u_int32_t num_dropped_connections;
-    u_int32_t num_dns_requests;
-    conn_array_t new_conns;
-    conn_array_t conns_updates;
-    zdtun_t *tun;
-    bool root_capture;
+    uint32_t num_dropped_connections;
+    uint32_t num_dns_requests;
     zdtun_statistics_t stats;
-    uid_to_app_t *uid2app;
-    pcap_conn_t *connections;   // root only
-    pkt_processing_phase_t pkt_phase;
+    capture_stats_t capture_stats;
+
+    union {
+        struct {
+            int tunfd;
+            uint32_t dns_server;
+            uint32_t internal_dns;
+            uint32_t internal_ipv4;
+            ndpi_ptree_t *known_dns_servers;
+            uid_resolver_t *resolver;
+        } vpn;
+        struct {
+            pcap_conn_t *connections;
+        } root;
+    };
 
     // populated via pd_set_current_packet
     struct {
@@ -196,8 +208,6 @@ typedef struct {
         blacklist_t *bl;
         blacklist_t *new_bl;
     } firewall;
-
-    capture_stats_t capture_stats;
 } pcapdroid_t;
 
 /* ******************************************************* */

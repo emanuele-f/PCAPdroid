@@ -128,7 +128,7 @@ static void get_libprog_path(pcapdroid_t *pd, const char *prog_name, char *buf, 
         return;
     }
 
-    jstring obj = (*env)->CallObjectMethod(env, pd->vpn_service, mids.getLibprogPath, prog_str);
+    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getLibprogPath, prog_str);
 
     if(!jniCheckException(env)) {
         const char *value = (*env)->GetStringUTFChars(env, obj, 0);
@@ -263,7 +263,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
             break;
     }
 
-    HASH_DELETE(hh, pd->connections, conn);
+    HASH_DELETE(hh, pd->root.connections, conn);
     pd_free(conn);
 }
 
@@ -341,7 +341,7 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
     pcap_conn_t *conn = NULL;
     uint8_t is_tx = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
 
-    if(zdtun_parse_pkt(pd->tun, buffer, hdr->len, &pkt) != 0) {
+    if(zdtun_parse_pkt(pd->zdt, buffer, hdr->len, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
         return;
     }
@@ -365,14 +365,14 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
         tupleSwapPeers(&pkt.tuple);
     }
 
-    HASH_FIND(hh, pd->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+    HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
     if(!conn) {
         // is_tx may be wrong, search in the other direction
         is_tx = !is_tx;
         tupleSwapPeers(&pkt.tuple);
 
-        HASH_FIND(hh, pd->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+        HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
         if(!conn) {
             if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) && !(pkt.flags & ZDTUN_PKT_IS_FIRST_FRAGMENT)) {
@@ -400,7 +400,7 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
 
             conn->tuple = pkt.tuple;
             conn->data = data;
-            HASH_ADD(hh, pd->connections, tuple, sizeof(zdtun_5tuple_t), conn);
+            HASH_ADD(hh, pd->root.connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
@@ -430,7 +430,7 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
 static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, pd->connections, conn, tmp) {
+    HASH_ITER(hh, pd->root.connections, conn, tmp) {
         uint64_t timeout = 0;
 
         switch(conn->tuple.ipproto) {
@@ -476,7 +476,7 @@ int run_root(pcapdroid_t *pd) {
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
-    if((pd->tun = zdtun_init(&callbacks, NULL)) == NULL)
+    if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
     if((sock = connectPcapd(pd)) < 0) {
@@ -540,7 +540,7 @@ int run_root(pcapdroid_t *pd) {
 cleanup:
     purge_expired_connections(pd, 1 /* purge_all */);
 
-    if(pd->tun) zdtun_finalize(pd->tun);
+    if(pd->zdt) zdtun_finalize(pd->zdt);
     if(sock > 0) close(sock);
 
     return rv;

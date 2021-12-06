@@ -28,7 +28,7 @@ static void vpn_protect_socket(pcapdroid_t *pd, socket_t sock) {
 
     /* Call VpnService protect */
     jboolean isProtected = (*env)->CallBooleanMethod(
-            env, pd->vpn_service, mids.protect, sock);
+            env, pd->capture_service, mids.protect, sock);
     jniCheckException(env);
 
     if (!isProtected)
@@ -42,7 +42,7 @@ static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
     jint uid;
 
     zdtun_5tuple2str(conn_info, buf, sizeof(buf));
-    uid = get_uid(pd->resolver, conn_info);
+    uid = get_uid(pd->vpn.resolver, conn_info);
 
     if(uid >= 0) {
         char appbuf[64];
@@ -57,8 +57,8 @@ static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
     return(uid);
 }
 
-static void protectSocketCallback(zdtun_t *tun, socket_t sock) {
-    pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(tun));
+static void protectSocketCallback(zdtun_t *zdt, socket_t sock) {
+    pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
     vpn_protect_socket(pd, sock);
 }
 
@@ -72,7 +72,7 @@ static void add_known_dns_server(pcapdroid_t *pd, const char *ip) {
         return;
     }
 
-    ndpi_ptree_insert(pd->known_dns_servers, &parsed, ndpi_is_ipv6(&parsed) ? 128 : 32, 1);
+    ndpi_ptree_insert(pd->vpn.known_dns_servers, &parsed, ndpi_is_ipv6(&parsed) ? 128 : 32, 1);
 }
 
 /* ******************************************************* */
@@ -93,11 +93,12 @@ static struct timeval* get_pkt_timestamp(pcapdroid_t *pd, struct timeval *tv) {
 
 /* ******************************************************* */
 
-static int net2tun(zdtun_t *tun, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info) {
+static int net2tun(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info) {
     if(!running)
+        // e.g. during zdtun_finalize
         return 0;
 
-    pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(tun);
+    pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(zdt);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
     struct timeval tv;
@@ -107,7 +108,7 @@ static int net2tun(zdtun_t *tun, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info
     if(data->to_block) // NOTE: blocked_pkts accounted in pd_account_stats
         return 0;
 
-    int rv = write(pd->tunfd, pkt->buf, pkt->len);
+    int rv = write(pd->vpn.tunfd, pkt->buf, pkt->len);
 
     if(rv < 0) {
         if(errno == ENOBUFS) {
@@ -119,11 +120,11 @@ static int net2tun(zdtun_t *tun, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info
             log_i("Got I/O error (terminating?)");
             running = false;
         } else {
-            log_f("tun write (%d) failed [%d]: %s", pkt->len, errno, strerror(errno));
+            log_f("zdt write (%d) failed [%d]: %s", pkt->len, errno, strerror(errno));
             running = false;
         }
     } else if(rv != pkt->len) {
-        log_f("partial tun write (%d / %d)", rv, pkt->len);
+        log_f("partial zdt write (%d / %d)", rv, pkt->len);
         rv = -1;
     } else
         rv = 0;
@@ -153,12 +154,12 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
 
     if(new_dns_server != 0) {
         // Reload DNS server
-        pd->dns_server = new_dns_server;
+        pd->vpn.dns_server = new_dns_server;
         new_dns_server = 0;
 
         zdtun_ip_t ip = {0};
-        ip.ip4 = pd->dns_server;
-        zdtun_set_dnat_info(pd->tun, &ip, htons(53), 4);
+        ip.ip4 = pd->vpn.dns_server;
+        zdtun_set_dnat_info(pd->zdt, &ip, htons(53), 4);
 
         log_d("Using new DNS server");
     }
@@ -166,7 +167,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
     if(zdtun_conn_get_5tuple(conn)->ipproto == IPPROTO_ICMP)
         return true;
 
-    bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == pd->vpn_dns);
+    bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == pd->vpn.internal_dns);
     bool is_dns_server = is_internal_dns
                          || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &pd->ipv6.dns_server, 16) == 0));
 
@@ -180,7 +181,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
         else
             memcpy(&addr.ipv6, &tuple->dst_ip.ip6, 16);
 
-        ndpi_ptree_match_addr(pd->known_dns_servers, &addr, &matched);
+        ndpi_ptree_match_addr(pd->vpn.known_dns_servers, &addr, &matched);
 
         if(matched) {
             char ip[INET6_ADDRSTRLEN];
@@ -233,8 +234,8 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
 
 /* ******************************************************* */
 
-static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
-    pcapdroid_t *pd = ((pcapdroid_t *) zdtun_userdata(tun));
+static int handle_new_connection(zdtun_t *zdt, zdtun_conn_t *conn_info) {
+    pcapdroid_t *pd = ((pcapdroid_t *) zdtun_userdata(zdt));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
     pd_conn_t *data = pd_new_connection(pd, tuple, resolve_uid(pd, tuple));
@@ -252,8 +253,8 @@ static int handle_new_connection(zdtun_t *tun, zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
-    pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(tun);
+static void destroy_connection(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
+    pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(zdt);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
     if(!data) {
@@ -275,8 +276,12 @@ static void destroy_connection(zdtun_t *tun, const zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
-    pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(tun));
+static void on_packet(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
+    if(!running)
+        // e.g. during zdtun_finalize
+        return;
+
+    pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
 
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
@@ -301,17 +306,24 @@ static void on_packet(zdtun_t *tun, const zdtun_pkt_t *pkt, uint8_t from_tun, co
 
 /* ******************************************************* */
 
-int run_vpn(pcapdroid_t *pd) {
-    zdtun_t *tun;
+int run_vpn(pcapdroid_t *pd, int tunfd) {
+    zdtun_t *zdt;
     char buffer[32768];
     u_int64_t next_purge_ms;
 
-    int flags = fcntl(pd->tunfd, F_GETFL, 0);
-    if (flags < 0 || fcntl(pd->tunfd, F_SETFL, flags & ~O_NONBLOCK) < 0) {
+    int flags = fcntl(pd->vpn.tunfd, F_GETFL, 0);
+    if (flags < 0 || fcntl(pd->vpn.tunfd, F_SETFL, flags & ~O_NONBLOCK) < 0) {
         log_f("fcntl ~O_NONBLOCK error [%d]: %s", errno,
                     strerror(errno));
         return (-1);
     }
+
+    pd->vpn.tunfd = tunfd;
+    pd->vpn.internal_ipv4 = getIPv4Pref(pd->env, pd->capture_service, "getVpnIPv4");
+    pd->vpn.internal_dns = getIPv4Pref(pd->env, pd->capture_service, "getVpnDns");
+    pd->vpn.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
+    pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
+    pd->vpn.known_dns_servers = ndpi_ptree_create();
 
     zdtun_callbacks_t callbacks = {
         .send_client = net2tun,
@@ -331,30 +343,30 @@ int run_vpn(pcapdroid_t *pd) {
     add_known_dns_server(pd, "2606:4700:4700::64");
     add_known_dns_server(pd, "2606:4700:4700::6400");
 
-    tun = zdtun_init(&callbacks, pd);
+    zdt = zdtun_init(&callbacks, pd);
 
-    if(tun == NULL) {
+    if(zdt == NULL) {
         log_f("zdtun_init failed");
         return(-2);
     }
 
-    pd->tun = tun;
+    pd->zdt = zdt;
     new_dns_server = 0;
 
     if(pd->socks5.enabled) {
         zdtun_ip_t dnatip = {0};
         dnatip.ip4 = pd->socks5.proxy_ip;
-        zdtun_set_socks5_proxy(tun, &dnatip, pd->socks5.proxy_port, 4);
+        zdtun_set_socks5_proxy(zdt, &dnatip, pd->socks5.proxy_port, 4);
     }
 
     zdtun_ip_t ip = {0};
-    ip.ip4 = pd->dns_server;
-    zdtun_set_dnat_info(tun, &ip, ntohs(53), 4);
+    ip.ip4 = pd->vpn.dns_server;
+    zdtun_set_dnat_info(zdt, &ip, ntohs(53), 4);
 
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
-    log_d("Starting packet loop [tunfd=%d]", pd->tunfd);
+    log_d("Starting packet loop [tunfd=%d]", pd->vpn.tunfd);
 
     while(running) {
         int max_fd;
@@ -363,10 +375,10 @@ int run_vpn(pcapdroid_t *pd) {
         int size;
         struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
 
-        zdtun_fds(tun, &max_fd, &fdset, &wrfds);
+        zdtun_fds(zdt, &max_fd, &fdset, &wrfds);
 
-        FD_SET(pd->tunfd, &fdset);
-        max_fd = max(max_fd, pd->tunfd);
+        FD_SET(pd->vpn.tunfd, &fdset);
+        max_fd = max(max_fd, pd->vpn.tunfd);
 
         if(select(max_fd + 1, &fdset, &wrfds, NULL, &timeout) < 0) {
             log_e("select failed[%d]: %s", errno, strerror(errno));
@@ -376,14 +388,14 @@ int run_vpn(pcapdroid_t *pd) {
         if(!running)
             break;
 
-        if(FD_ISSET(pd->tunfd, &fdset)) {
+        if(FD_ISSET(pd->vpn.tunfd, &fdset)) {
             /* Packet from VPN */
-            size = read(pd->tunfd, buffer, sizeof(buffer));
+            size = read(pd->vpn.tunfd, buffer, sizeof(buffer));
             if(size > 0) {
                 zdtun_pkt_t pkt;
                 pd_refresh_time(pd);
 
-                if(zdtun_parse_pkt(tun, buffer, size, &pkt) != 0) {
+                if(zdtun_parse_pkt(zdt, buffer, size, &pkt) != 0) {
                     log_d("zdtun_parse_pkt failed");
                     goto housekeeping;
                 }
@@ -409,7 +421,7 @@ int run_vpn(pcapdroid_t *pd) {
                 uint8_t is_tcp_established = ((pkt.tuple.ipproto == IPPROTO_TCP) &&
                                               (!(pkt.tcp->th_flags & TH_SYN) || (pkt.tcp->th_flags & TH_ACK)));
 
-                zdtun_conn_t *conn = zdtun_lookup(tun, &pkt.tuple, !is_tcp_established);
+                zdtun_conn_t *conn = zdtun_lookup(zdt, &pkt.tuple, !is_tcp_established);
                 if (!conn) {
                     if(!is_tcp_established) {
                         char buf[512];
@@ -438,14 +450,14 @@ int run_vpn(pcapdroid_t *pd) {
                 if(pd->socks5.enabled)
                     check_socks5_redirection(pd, &pkt, conn);
 
-                if(zdtun_forward(tun, &pkt, conn) != 0) {
+                if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
 
                     log_e("zdtun_forward failed: %s",
                                 zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
 
                     pd->num_dropped_connections++;
-                    zdtun_destroy_conn(tun, conn);
+                    zdtun_destroy_conn(zdt, conn);
                     goto housekeeping;
                 }
             } else {
@@ -456,19 +468,22 @@ int run_vpn(pcapdroid_t *pd) {
             }
         } else {
             pd_refresh_time(pd);
-            zdtun_handle_fd(tun, &fdset, &wrfds);
+            zdtun_handle_fd(zdt, &fdset, &wrfds);
         }
 
         housekeeping:
         pd_housekeeping(pd);
 
-            if(pd->now_ms >= next_purge_ms) {
-                zdtun_purge_expired(tun);
-                next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
-            }
+        if(pd->now_ms >= next_purge_ms) {
+            zdtun_purge_expired(zdt);
+            next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+        }
     }
 
-    zdtun_finalize(tun);
+    zdtun_finalize(zdt);
+    destroy_uid_resolver(pd->vpn.resolver);
+    ndpi_ptree_destroy(pd->vpn.known_dns_servers);
+
     return(0);
 }
 
