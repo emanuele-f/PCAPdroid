@@ -45,6 +45,22 @@ typedef enum {
     UID_BLACKLIST
 } blacklist_type;
 
+typedef struct {
+    char *fname;
+    blacklist_type type;
+} bl_info_t;
+
+typedef struct {
+    char *fname;
+    int num_rules;
+} bl_status_t;
+
+typedef struct {
+    bl_status_t *items;
+    int size;
+    int cur_items;
+} bl_status_arr_t;
+
 blacklist_t* blacklist_init();
 void blacklist_destroy(blacklist_t *bl);
 int blacklist_add_domain(blacklist_t *bl, const char *domain);

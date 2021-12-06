@@ -142,7 +142,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     static {
         /* Load native library */
-        System.loadLibrary("vpnproxy-jni");
+        System.loadLibrary("capture");
     }
 
     @Override

@@ -24,7 +24,7 @@
 
 memtrack_t memtrack = {0};
 int loglevel = 0;
-const char *logtag = "VPNProxy";
+const char *logtag = "pcapdroid-native";
 void (*logcallback)(int lvl, const char *msg) = NULL;
 
 /* ******************************************************* */

@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
+/* Equivalent of zdtun_conn_t from zdtun and pd_conn_t from pcapdroid.c */
 public class ConnectionDescriptor implements Serializable {
     // sync with zdtun_conn_status_t
 

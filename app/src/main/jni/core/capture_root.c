@@ -21,7 +21,7 @@
 #include <linux/limits.h>
 #include <sys/wait.h>
 #include <paths.h>
-#include "vpnproxy.h"
+#include "pcapdroid.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
@@ -35,7 +35,7 @@
 
 struct pcap_conn {
     zdtun_5tuple_t tuple;
-    conn_data_t *data;
+    pd_conn_t *data;
 
     UT_hash_handle hh;
 };
@@ -117,8 +117,8 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
 
 /* ******************************************************* */
 
-static void get_libprog_path(vpnproxy_data_t *proxy, const char *prog_name, char *buf, int bufsize) {
-    JNIEnv *env = proxy->env;
+static void get_libprog_path(pcapdroid_t *pd, const char *prog_name, char *buf, int bufsize) {
+    JNIEnv *env = pd->env;
     jobject prog_str = (*env)->NewStringUTF(env, prog_name);
 
     buf[0] = '\0';
@@ -128,7 +128,7 @@ static void get_libprog_path(vpnproxy_data_t *proxy, const char *prog_name, char
         return;
     }
 
-    jstring obj = (*env)->CallObjectMethod(env, proxy->vpn_service, mids.getLibprogPath, prog_str);
+    jstring obj = (*env)->CallObjectMethod(env, pd->vpn_service, mids.getLibprogPath, prog_str);
 
     if(!jniCheckException(env)) {
         const char *value = (*env)->GetStringUTFChars(env, obj, 0);
@@ -144,7 +144,7 @@ static void get_libprog_path(vpnproxy_data_t *proxy, const char *prog_name, char
 
 /* ******************************************************* */
 
-static void kill_pcapd(vpnproxy_data_t *proxy) {
+static void kill_pcapd(pcapdroid_t *nc) {
     int pid;
     char pid_s[8];
     FILE *f = fopen(PCAPD_PID, "r");
@@ -165,16 +165,16 @@ static void kill_pcapd(vpnproxy_data_t *proxy) {
 
 /* ******************************************************* */
 
-static int connectPcapd(vpnproxy_data_t *proxy) {
+static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
     char bpf[256];
     char pcapd[PATH_MAX];
     char capture_interface[16];
 
-    getStringPref(proxy, "getPcapDumperBpf", bpf, sizeof(bpf));
-    getStringPref(proxy, "getCaptureInterface", capture_interface, sizeof(capture_interface));
-    get_libprog_path(proxy, "pcapd", pcapd, sizeof(pcapd));
+    getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
+    getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+    get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
 
     if(!pcapd[0])
         return(-1);
@@ -198,7 +198,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, PCAPD_SOCKET_PATH);
 
-    kill_pcapd(proxy);
+    kill_pcapd(pd);
     unlink(PCAPD_PID);
     unlink(PCAPD_SOCKET_PATH);
 
@@ -217,7 +217,7 @@ static int connectPcapd(vpnproxy_data_t *proxy) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, proxy->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, pd->app_filter, bpf);
     if(su_cmd(pcapd, args, true) != 0)
         goto cleanup;
 
@@ -250,27 +250,27 @@ cleanup:
 
 /* ******************************************************* */
 
-static void remove_connection(vpnproxy_data_t *proxy, pcap_conn_t *conn) {
+static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
     switch (conn->tuple.ipproto) {
         case IPPROTO_TCP:
-            proxy->stats.num_tcp_conn--;
+            pd->stats.num_tcp_conn--;
             break;
         case IPPROTO_UDP:
-            proxy->stats.num_udp_conn--;
+            pd->stats.num_udp_conn--;
             break;
         case IPPROTO_ICMP:
-            proxy->stats.num_icmp_conn--;
+            pd->stats.num_icmp_conn--;
             break;
     }
 
-    HASH_DELETE(hh, proxy->connections, conn);
+    HASH_DELETE(hh, pd->connections, conn);
     pd_free(conn);
 }
 
 /* ******************************************************* */
 
 // Determines when a connection gets closed
-static void update_connection_status(vpnproxy_data_t *proxy, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
+static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
 
@@ -322,7 +322,7 @@ static void update_connection_status(vpnproxy_data_t *proxy, pcap_conn_t *conn, 
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
                   conn->data->to_purge = true;
-                  remove_connection(proxy, conn);
+                  remove_connection(nc, conn);
               }
           }
       }
@@ -330,24 +330,24 @@ static void update_connection_status(vpnproxy_data_t *proxy, pcap_conn_t *conn, 
 
   if(old_status != conn->data->status) {
       conn->data->update_type |= CONN_UPDATE_STATS;
-      notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
+      pd_notify_connection_update(nc, &conn->tuple, conn->data);
   }
 }
 
 /* ******************************************************* */
 
-static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *buffer) {
+static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer) {
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
     uint8_t is_tx = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
 
-    if(zdtun_parse_pkt(proxy->tun, buffer, hdr->len, &pkt) != 0) {
+    if(zdtun_parse_pkt(pd->tun, buffer, hdr->len, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
         return;
     }
 
     struct timeval tv = hdr->ts;
-    set_current_packet(proxy, &pkt, is_tx, &tv);
+    pd_set_current_packet(pd, &pkt, is_tx, &tv);
 
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
             (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
@@ -356,7 +356,7 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
         // In such a case, we can only ignore the packet as we cannot determine the connection it belongs to.
 
         //log_d("unmatched IP fragment (ID = 0x%04x)", pkt.ip4->id);
-        proxy->num_discarded_fragments++;
+        pd->num_discarded_fragments++;
         return;
     }
 
@@ -365,19 +365,19 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
         tupleSwapPeers(&pkt.tuple);
     }
 
-    HASH_FIND(hh, proxy->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+    HASH_FIND(hh, pd->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
     if(!conn) {
         // is_tx may be wrong, search in the other direction
         is_tx = !is_tx;
         tupleSwapPeers(&pkt.tuple);
 
-        HASH_FIND(hh, proxy->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+        HASH_FIND(hh, pd->connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
         if(!conn) {
             if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) && !(pkt.flags & ZDTUN_PKT_IS_FIRST_FRAGMENT)) {
                 log_d("ignoring fragment as it cannot start a connection");
-                proxy->num_discarded_fragments++;
+                pd->num_discarded_fragments++;
                 return;
             }
 
@@ -385,56 +385,52 @@ static void handle_packet(vpnproxy_data_t *proxy, pcapd_hdr_t *hdr, const char *
             is_tx = !is_tx;
             tupleSwapPeers(&pkt.tuple);
 
-            conn_data_t *data = new_connection(proxy, &pkt.tuple, hdr->uid);
-
-            if (!data)
-                return;
-
             conn = pd_malloc(sizeof(pcap_conn_t));
-
-            if (!conn) {
+            if(!conn) {
                 log_e("malloc(pcap_conn_t) failed with code %d/%s",
                       errno, strerror(errno));
                 return;
             }
 
+            pd_conn_t *data = pd_new_connection(pd, &pkt.tuple, hdr->uid);
+            if(!data) {
+                pd_free(conn);
+                return;
+            }
+
             conn->tuple = pkt.tuple;
             conn->data = data;
-
-            HASH_ADD(hh, proxy->connections, tuple, sizeof(zdtun_5tuple_t), conn);
-
-            data->incr_id = proxy->incr_id++;
-            notify_connection(&proxy->new_conns, &pkt.tuple, data);
+            HASH_ADD(hh, pd->connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
-                    proxy->stats.num_tcp_conn++;
-                    proxy->stats.num_tcp_opened++;
+                    pd->stats.num_tcp_conn++;
+                    pd->stats.num_tcp_opened++;
                     break;
                 case IPPROTO_UDP:
-                    proxy->stats.num_udp_conn++;
-                    proxy->stats.num_udp_opened++;
+                    pd->stats.num_udp_conn++;
+                    pd->stats.num_udp_opened++;
                     break;
                 case IPPROTO_ICMP:
-                    proxy->stats.num_icmp_conn++;
-                    proxy->stats.num_icmp_opened++;
+                    pd->stats.num_icmp_conn++;
+                    pd->stats.num_icmp_opened++;
                     break;
             }
         }
     }
 
-    conn->data->last_update_ms = proxy->now_ms;
+    conn->data->last_update_ms = pd->now_ms;
 
-    account_stats(proxy, &conn->tuple, conn->data);
-    update_connection_status(proxy, conn, &pkt, !is_tx);
+    pd_account_stats(pd, &conn->tuple, conn->data);
+    update_connection_status(pd, conn, &pkt, !is_tx);
 }
 
 /* ******************************************************* */
 
-static void purge_expired_connections(vpnproxy_data_t *proxy, uint8_t purge_all) {
+static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, proxy->connections, conn, tmp) {
+    HASH_ITER(hh, pd->connections, conn, tmp) {
         uint64_t timeout = 0;
 
         switch(conn->tuple.ipproto) {
@@ -449,7 +445,7 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, uint8_t purge_all)
                 break;
         }
 
-        if(purge_all || (proxy->now_ms >= (conn->data->last_update_ms + timeout))) {
+        if(purge_all || (pd->now_ms >= (conn->data->last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // The connection data will be purged
@@ -462,34 +458,34 @@ static void purge_expired_connections(vpnproxy_data_t *proxy, uint8_t purge_all)
 
             if(conn->data->update_type != 0) {
                 // Will free the data in sendConnectionsDump
-                notify_connection(&proxy->conns_updates, &conn->tuple, conn->data);
+                pd_notify_connection_update(pd, &conn->tuple, conn->data);
             } else
-                conn_free_data(conn->data);
+                pd_destroy_connection(conn->data);
 
-            remove_connection(proxy, conn);
+            remove_connection(pd, conn);
         }
     }
 }
 
 /* ******************************************************* */
 
-int run_root(vpnproxy_data_t *proxy) {
+int run_root(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
     char buffer[65535];
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
-    if((proxy->tun = zdtun_init(&callbacks, NULL)) == NULL)
+    if((pd->tun = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
-    if((sock = connectPcapd(proxy)) < 0) {
+    if((sock = connectPcapd(pd)) < 0) {
         rv = -1;
         goto cleanup;
     }
 
-    refresh_time(proxy);
-    next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+    pd_refresh_time(pd);
+    next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_d("Starting packet loop");
 
@@ -506,7 +502,7 @@ int run_root(vpnproxy_data_t *proxy) {
             goto cleanup;
         }
 
-        refresh_time(proxy);
+        pd_refresh_time(pd);
 
         if(!running)
             break;
@@ -527,24 +523,24 @@ int run_root(vpnproxy_data_t *proxy) {
             goto cleanup;
         }
 
-        proxy->num_dropped_pkts = hdr.pkt_drops;
-        handle_packet(proxy, &hdr, buffer);
+        pd->num_dropped_pkts = hdr.pkt_drops;
+        handle_packet(pd, &hdr, buffer);
 
     housekeeping:
-        run_housekeeping(proxy);
+        pd_housekeeping(pd);
 
-        if(proxy->now_ms >= next_purge_ms) {
-            purge_expired_connections(proxy, 0);
-            next_purge_ms = proxy->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
+        if(pd->now_ms >= next_purge_ms) {
+            purge_expired_connections(pd, 0);
+            next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
         }
     }
 
     rv = 0;
 
 cleanup:
-    purge_expired_connections(proxy, 1 /* purge_all */);
+    purge_expired_connections(pd, 1 /* purge_all */);
 
-    if(proxy->tun) zdtun_finalize(proxy->tun);
+    if(pd->tun) zdtun_finalize(pd->tun);
     if(sock > 0) close(sock);
 
     return rv;

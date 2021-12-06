@@ -57,17 +57,17 @@ typedef struct {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
-// This tracks the packet processing phases, to ensure that the vpnproxy functions are called in
+// This tracks the packet processing phases, to ensure that the API functions are called in
 // the correct order.
 typedef enum {
-    PKT_PHASE_REFRESH_TIME = 0,     // refresh_time
-    PKT_PHASE_PKT_SET,              // set_current_packet
-    PKT_PHASE_ACCOUNT_STATS,        // account_stats
-    PKT_PHASE_HOUSEKEEPING,         // run_housekeeping
+    PKT_PHASE_REFRESH_TIME = 0,     // pd_refresh_time
+    PKT_PHASE_PKT_SET,              // pd_set_current_packet
+    PKT_PHASE_ACCOUNT_STATS,        // pd_account_stats
+    PKT_PHASE_HOUSEKEEPING,         // pd_housekeeping
 } pkt_processing_phase_t;
 
 typedef struct {
-    jint incr_id; /* an incremental identifier */
+    jint incr_id; // an incremental number which identifies a specific connection
 
     /* nDPI */
     struct ndpi_flow_struct *ndpi_flow;
@@ -99,15 +99,15 @@ typedef struct {
     char *request_data;
     char *url;
     uint8_t update_type;
-} conn_data_t;
+} pd_conn_t;
 
 typedef struct {
     zdtun_5tuple_t tuple;
-    conn_data_t *data;
-} vpn_conn_t;
+    pd_conn_t *data;
+} conn_and_tuple_t;
 
 typedef struct {
-    vpn_conn_t *items;
+    conn_and_tuple_t *items;
     int size;
     int cur_items;
 } conn_array_t;
@@ -117,22 +117,6 @@ typedef struct {
     char appname[64];
     UT_hash_handle hh;
 } uid_to_app_t;
-
-typedef struct {
-    char *fname;
-    blacklist_type type;
-} bl_info_t;
-
-typedef struct {
-    char *fname;
-    int num_rules;
-} bl_status_t;
-
-typedef struct {
-    bl_status_t *items;
-    int size;
-    int cur_items;
-} bl_status_arr_t;
 
 typedef struct pcap_conn pcap_conn_t;
 
@@ -154,7 +138,7 @@ typedef struct {
     char filesdir[PATH_MAX];
     int cachedir_len;
     int filesdir_len;
-    uint64_t now_ms;            // Monotonic timestamp, see refresh_time
+    uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     u_int num_dropped_pkts;
     long num_discarded_fragments;
     u_int32_t num_dropped_connections;
@@ -168,7 +152,7 @@ typedef struct {
     pcap_conn_t *connections;   // root only
     pkt_processing_phase_t pkt_phase;
 
-    // populated via set_current_packet
+    // populated via pd_set_current_packet
     struct {
         zdtun_pkt_t *pkt;
         struct timeval tv; // Packet timestamp, need by pcap_dump_rec
@@ -214,7 +198,7 @@ typedef struct {
     } firewall;
 
     capture_stats_t capture_stats;
-} vpnproxy_data_t;
+} pcapdroid_t;
 
 /* ******************************************************* */
 
@@ -274,32 +258,31 @@ extern bool running;
 extern uint32_t new_dns_server;
 extern bool block_private_dns;
 
-struct pcapdroid_trailer;
+// capture API
+void pd_refresh_time(pcapdroid_t *pd);
+void pd_set_current_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv);
+void pd_account_stats(pcapdroid_t *pd, const zdtun_5tuple_t *conn_tuple, pd_conn_t *data);
+void pd_housekeeping(pcapdroid_t *pd);
+pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
+void pd_destroy_connection(pd_conn_t *data);
+void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
+void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
 
-conn_data_t* new_connection(vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple, int uid);
-void conn_free_data(conn_data_t *data);
-void notify_connection(conn_array_t *arr, const zdtun_5tuple_t *tuple, conn_data_t *data);
-void conn_end_ndpi_detection(conn_data_t *data, vpnproxy_data_t *proxy, const zdtun_5tuple_t *tuple);
-void run_housekeeping(vpnproxy_data_t *proxy);
-void set_current_packet(vpnproxy_data_t *proxy, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv);
-void account_stats(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_tuple, conn_data_t *data);
-int resolve_uid(vpnproxy_data_t *proxy, const zdtun_5tuple_t *conn_info);
-void refresh_time(vpnproxy_data_t *proxy);
-void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
-void vpn_protect_socket(vpnproxy_data_t *proxy, socket_t sock);
-void fill_custom_data(struct pcapdroid_trailer *cdata, vpnproxy_data_t *proxy, conn_data_t *conn);
-uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
+// Utility
 const char* get_cache_path(const char *subpath);
 const char* get_file_path(const char *subpath);
 static inline const char* get_cache_dir() { return get_cache_path(""); }
 static inline const char* get_files_dir() { return get_file_path(""); }
-
-char* getStringPref(vpnproxy_data_t *proxy, const char *key, char *buf, int bufsize);
+char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
+char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 
-int run_proxy(vpnproxy_data_t *proxy);
-int run_root(vpnproxy_data_t *proxy);
+// Internals
+struct pcapdroid_trailer;
+void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, pd_conn_t *conn);
+void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 #endif //__PCAPDROID_H__

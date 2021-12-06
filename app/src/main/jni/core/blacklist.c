@@ -17,7 +17,7 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-#include "vpnproxy.h"
+#include "pcapdroid.h"
 #include "common/utils.h"
 
 typedef struct {
