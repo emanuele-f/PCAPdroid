@@ -114,6 +114,8 @@ static int remote2vpn(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_i
     pd_process_packet(pd, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
     if(data->to_block) {
         data->blocked_pkts++;
+        data->update_type |= CONN_UPDATE_STATS;
+        pd_notify_connection_update(pd, tuple, data);
 
         // Returning -1 will result into an error condition on the connection, forcing a connection
         // close. Closing the connection is mandatory as it's not possible to handle dropped packets
@@ -258,7 +260,7 @@ static int handle_new_connection(zdtun_t *zdt, zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void destroy_connection(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
+static void connnection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
     pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(zdt);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
@@ -318,7 +320,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
         .account_packet = update_conn_status,
         .on_socket_open = protectSocketCallback,
         .on_connection_open = handle_new_connection,
-        .on_connection_close = destroy_connection,
+        .on_connection_close = connnection_closed,
     };
 
     // List of known DNS servers
@@ -441,6 +443,8 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
 
                 if(data->to_block) {
                     data->blocked_pkts++;
+                    data->update_type |= CONN_UPDATE_STATS;
+                    pd_notify_connection_update(pd, tuple, data);
                     goto housekeeping;
                 }
 

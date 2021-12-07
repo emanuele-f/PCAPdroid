@@ -448,7 +448,6 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
         if(purge_all || (pd->now_ms >= (conn->data->root.last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
-            // The connection data will be purged
             conn->data->to_purge = true;
 
             if(conn->data->status < CONN_STATUS_CLOSED) {
@@ -457,10 +456,13 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
             }
 
             if(conn->data->update_type != 0) {
-                // Will free the data in sendConnectionsDump
+                // The connection data cannot be free now as it is enqueued in a conn_array_t.
+                // It will be free in sendConnectionsDump.
                 pd_notify_connection_update(pd, &conn->tuple, conn->data);
-            } else
-                pd_destroy_connection(conn->data);
+            } else {
+                pd_purge_connection(conn->data);
+                conn->data = NULL;
+            }
 
             remove_connection(pd, conn);
         }

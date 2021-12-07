@@ -71,7 +71,16 @@ static void conn_free_ndpi(pd_conn_t *data) {
 
 /* ******************************************************* */
 
-void pd_destroy_connection(pd_conn_t *data) {
+static uint16_t ndpi2proto(ndpi_protocol proto) {
+    // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
+    // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
+    // in the app protocols, so just take the one that's not unknown.
+    return((proto.master_protocol != NDPI_PROTOCOL_UNKNOWN) ? proto.master_protocol : proto.app_protocol);
+}
+
+/* ******************************************************* */
+
+void pd_purge_connection(pd_conn_t *data) {
     if(!data)
         return;
 
@@ -129,7 +138,7 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
             conn_and_tuple_t *slot = &arr->items[i];
 
             if(slot->data && (slot->data->to_purge || free_all))
-                pd_destroy_connection(slot->data);
+                pd_purge_connection(slot->data);
         }
 
         pd_free(arr->items);
@@ -298,9 +307,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
 
 /* ******************************************************* */
 
-const char *getProtoName(struct ndpi_detection_module_struct *mod, ndpi_protocol l7proto, int ipproto) {
-    int proto = l7proto.master_protocol;
-
+const char *getProtoName(struct ndpi_detection_module_struct *mod, uint16_t proto, int ipproto) {
     if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
         // Return the L3 protocol
         return zdtun_proto2str(ipproto);
@@ -325,7 +332,7 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
                       zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
 
                 // Block all the blacklisted domains
-                data->to_block = true;
+                data->to_block = (pd->firewall.bl != NULL);
             }
         }
         if(pd->firewall.bl && !data->to_block) {
@@ -427,7 +434,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
             log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
 
-            data->to_block = true;
+            data->to_block = (pd->firewall.bl != NULL);
         }
 
         bl_num_checked_connections++;
@@ -480,7 +487,7 @@ static bool is_numeric_host(const char *host) {
 static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     char *found_info = NULL;
 
-    switch(data->l7proto.master_protocol) {
+    switch(data->l7proto) {
         case NDPI_PROTOCOL_DNS:
             if(data->ndpi_flow->host_server_name[0])
                 found_info = (char*)data->ndpi_flow->host_server_name;
@@ -520,18 +527,14 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
     if(!data->ndpi_flow)
         return;
 
-    if(data->l7proto.app_protocol == NDPI_PROTOCOL_UNKNOWN) {
+    if(data->l7proto == NDPI_PROTOCOL_UNKNOWN) {
         uint8_t proto_guessed;
-
-        data->l7proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
-                                              &proto_guessed);
+        data->l7proto = ndpi2proto(ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
+                                              &proto_guessed));
     }
 
-    if(data->l7proto.master_protocol == 0)
-        data->l7proto.master_protocol = data->l7proto.app_protocol;
-
-    log_d("nDPI completed[ipver=%d, proto=%d] -> l7proto: app=%d, master=%d",
-                tuple->ipver, tuple->ipproto, data->l7proto.app_protocol, data->l7proto.master_protocol);
+    log_d("nDPI completed[ipver=%d, proto=%d] -> l7proto: %d",
+                tuple->ipver, tuple->ipproto, data->l7proto);
 
     process_ndpi_data(pd, tuple, data);
     conn_free_ndpi(data);
@@ -669,30 +672,28 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     zdtun_pkt_t *pkt = pctx->pkt;
     bool is_tx = pctx->is_tx;
 
-    u_int16_t old_proto = data->l7proto.master_protocol;
-    data->l7proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-                                                  pkt->len, data->last_seen,
+    uint16_t old_proto = data->l7proto;
+    data->l7proto = ndpi2proto(ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
+            pkt->len, data->last_seen,
             is_tx ? data->src_id : data->dst_id,
-            is_tx ? data->dst_id : data->src_id);
+            is_tx ? data->dst_id : data->src_id));
 
-    if(old_proto != data->l7proto.master_protocol)
+    if(old_proto != data->l7proto)
         data->update_type |= CONN_UPDATE_INFO;
 
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
         process_request_data(pd, pctx);
 
-    bool is_dns = ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) ||
-            (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS));
-    if(!is_tx && is_dns)
+    if(!is_tx && (data->l7proto == NDPI_PROTOCOL_DNS))
         process_dns_reply(data, pd, pkt);
 
-    if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
+    if(giveup || ((data->l7proto != NDPI_PROTOCOL_UNKNOWN) &&
             !ndpi_extra_dissection_possible(pd->ndpi, data->ndpi_flow)))
         pd_giveup_dpi(pd, data, &pkt->tuple); // calls process_ndpi_data
     else
         process_ndpi_data(pd, &pkt->tuple, data);
 
-    if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
+    if((data->l7proto == NDPI_PROTOCOL_DNS)
        && (data->uid == UID_NETD)
        && (data->sent_pkts + data->rcvd_pkts == 0)
        && ((netd_resolve_waiting > 0) || ((next_connections_dump - NETD_RESOLVE_DELAY_MS) < pd->now_ms))) {
@@ -1308,9 +1309,10 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
     pctx->tuple = tuple;
     pctx->data = data;
 
+    // NOTE: pd_account_stats will not be called for blocked connections
     data->last_seen = pctx->ms;
     if(!data->first_seen)
-        data->first_seen = data->last_seen;
+        data->first_seen = pctx->ms;
 
     if(data->ndpi_flow &&
        (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {

@@ -63,7 +63,7 @@ typedef struct {
     /* nDPI */
     struct ndpi_flow_struct *ndpi_flow;
     struct ndpi_id_struct *src_id, *dst_id;
-    ndpi_protocol l7proto;
+    uint16_t l7proto;
 
     union {
         struct {
@@ -90,7 +90,7 @@ typedef struct {
         uint8_t pending_dns_queries;
     };
     bool pending_notification;
-    bool to_purge;
+    bool to_purge; // if true, free this pd_conn_t during the next sendConnectionsDump
     bool info_from_lru;
     bool request_done;
     bool blacklisted_ip;
@@ -275,7 +275,7 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
-void pd_destroy_connection(pd_conn_t *data);
+void pd_purge_connection(pd_conn_t *data);
 void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
 
