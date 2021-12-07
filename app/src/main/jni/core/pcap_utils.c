@@ -66,13 +66,13 @@ int pcap_rec_size(int pkt_len) {
 
 /* Dumps a packet into the provided buffer. The buffer must have at least pcap_rec_size()
  * bytes available */
-void pcap_dump_rec(u_char *buffer, pcapdroid_t *pd, pd_conn_t *conn) {
-    const zdtun_pkt_t *pkt = pd->cur_pkt.pkt;
+void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx) {
+    const zdtun_pkt_t *pkt = pctx->pkt;
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
     int offset = 0;
 
-    pcap_rec->ts_sec = pd->cur_pkt.tv.tv_sec;
-    pcap_rec->ts_usec = pd->cur_pkt.tv.tv_usec;
+    pcap_rec->ts_sec = pctx->tv.tv_sec;
+    pcap_rec->ts_usec = pctx->tv.tv_usec;
     pcap_rec->incl_len = pcap_rec_size(pkt->len) - (int)sizeof(struct pcaprec_hdr_s);
     pcap_rec->orig_len = pkt->len;
     buffer += sizeof(struct pcaprec_hdr_s);
@@ -107,7 +107,7 @@ void pcap_dump_rec(u_char *buffer, pcapdroid_t *pd, pd_conn_t *conn) {
         // Populate the custom data
         pcapdroid_trailer_t *cdata = (pcapdroid_trailer_t*)(buffer + offset);
 
-        fill_custom_data(cdata, pd, conn);
+        fill_custom_data(cdata, pd, pctx->data);
 
         //clock_t start = clock();
         cdata->fcs = crc32(buffer, pcap_rec->incl_len - 4, 0);

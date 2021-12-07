@@ -86,36 +86,48 @@ static struct timeval* get_pkt_timestamp(pcapdroid_t *pd, struct timeval *tv) {
         return tv;
     }
 
-    // use the last pkt timestamp
     log_w("clock_gettime failed[%d]: %s", errno, strerror(errno));
-    return &pd->cur_pkt.tv;
+    return tv;
 }
 
 /* ******************************************************* */
 
-static int net2tun(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info) {
+static int remote2vpn(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info) {
     if(!running)
         // e.g. during zdtun_finalize
         return 0;
 
     pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(zdt);
+    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
-    struct timeval tv;
-    pd_refresh_time(pd);
-    pd_set_current_packet(pd, pkt, false, get_pkt_timestamp(pd, &tv));
+    // if this is called inside zdtun_forward, account the egress packet first
+    if(data->vpn.fw_pctx) {
+        pd_account_stats(pd, data->vpn.fw_pctx);
+        data->vpn.fw_pctx = NULL;
+    }
 
-    if(data->to_block) // NOTE: blocked_pkts accounted in pd_account_stats
-        return 0;
+    struct timeval tv;
+    pkt_context_t pctx;
+    pd_refresh_time(pd);
+
+    pd_process_packet(pd, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+    if(data->to_block) {
+        data->blocked_pkts++;
+
+        // Returning -1 will result into an error condition on the connection, forcing a connection
+        // close. Closing the connection is mandatory as it's not possible to handle dropped packets
+        // via zdtun, since data received via the zdtun TCP sockets must be delivered to the client.
+        return -1;
+    }
 
     int rv = write(pd->vpn.tunfd, pkt->buf, pkt->len);
-
     if(rv < 0) {
         if(errno == ENOBUFS) {
             char buf[256];
 
             // Do not abort, the connection will be terminated
-            log_e("Got ENOBUFS %s", zdtun_5tuple2str(zdtun_conn_get_5tuple(conn_info), buf, sizeof(buf)));
+            log_e("Got ENOBUFS %s", zdtun_5tuple2str(tuple, buf, sizeof(buf)));
         } else if(errno == EIO) {
             log_i("Got I/O error (terminating?)");
             running = false;
@@ -126,19 +138,13 @@ static int net2tun(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_info
     } else if(rv != pkt->len) {
         log_f("partial zdt write (%d / %d)", rv, pkt->len);
         rv = -1;
-    } else
+    } else {
+        // Success
         rv = 0;
+        pd_account_stats(pd, &pctx);
+    }
 
     return rv;
-}
-
-/* ******************************************************* */
-
-static void check_socks5_redirection(pcapdroid_t *pd, zdtun_pkt_t *pkt, zdtun_conn_t *conn) {
-    pd_conn_t *data = zdtun_conn_get_userdata(conn);
-
-    if((pkt->tuple.ipproto == IPPROTO_TCP) && (((data->sent_pkts + data->rcvd_pkts) == 0)))
-        zdtun_conn_proxy(conn);
 }
 
 /* ******************************************************* */
@@ -149,8 +155,8 @@ static void check_socks5_redirection(pcapdroid_t *pd, zdtun_pkt_t *pkt, zdtun_co
  * Moreover, if a private DNS connection is detected in opportunistic mode (block_private_dns true),
  * then block this connection to force the fallback to non-private DNS mode.
  */
-static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
-    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
+static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_context_t *pctx) {
+    const zdtun_5tuple_t *tuple = pctx->tuple;
 
     if(new_dns_server != 0) {
         // Reload DNS server
@@ -164,7 +170,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
         log_d("Using new DNS server");
     }
 
-    if(zdtun_conn_get_5tuple(conn)->ipproto == IPPROTO_ICMP)
+    if(pctx->tuple->ipproto == IPPROTO_ICMP)
         return true;
 
     bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == pd->vpn.internal_dns);
@@ -199,7 +205,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn) {
         return(true);
 
     if((tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53)) {
-        zdtun_pkt_t *pkt = pd->cur_pkt.pkt;
+        zdtun_pkt_t *pkt = pctx->pkt;
         int dns_length = pkt->l7_len;
 
         if(dns_length >= sizeof(dns_packet_t)) {
@@ -245,7 +251,6 @@ static int handle_new_connection(zdtun_t *zdt, zdtun_conn_t *conn_info) {
     }
 
     zdtun_conn_set_userdata(conn_info, data);
-    data->to_block = !check_dns_req_allowed(pd, conn_info);
 
     /* accept connection */
     return(0);
@@ -276,30 +281,13 @@ static void destroy_connection(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void on_packet(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
-    if(!running)
-        // e.g. during zdtun_finalize
-        return;
-
-    pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
-    const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
-
+// This is called after remote2vpn or zdtun_forward
+// No need to call pd_notify_connection_update, pd_account_stats is executed before
+static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t from_tun, const zdtun_conn_t *conn_info) {
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
-    if(!data) {
-        log_e("Missing data in connection");
-        return;
-    }
 
+    // Update the connection status
     data->status = zdtun_conn_get_status(conn_info);
-
-    if(data->to_block) {
-        data->blocked_pkts++;
-        data->last_seen = pd->cur_pkt.ms;
-        return;
-    }
-
-    pd_account_stats(pd, tuple, data);
-
     if(data->status >= CONN_STATUS_CLOSED)
         data->to_purge = true;
 }
@@ -326,8 +314,8 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
     pd->vpn.known_dns_servers = ndpi_ptree_create();
 
     zdtun_callbacks_t callbacks = {
-        .send_client = net2tun,
-        .account_packet = on_packet,
+        .send_client = remote2vpn,
+        .account_packet = update_conn_status,
         .on_socket_open = protectSocketCallback,
         .on_connection_open = handle_new_connection,
         .on_connection_close = destroy_connection,
@@ -406,9 +394,6 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                     goto housekeeping;
                 }
 
-                struct timeval tv;
-                pd_set_current_packet(pd, &pkt, true, get_pkt_timestamp(pd, &tv));
-
                 if((pkt.tuple.ipver == 6) && (!pd->ipv6.enabled)) {
                     char buf[512];
 
@@ -438,18 +423,28 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                     goto housekeeping;
                 }
 
+                // Process the packet
+                struct timeval tv;
+                const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
+                pkt_context_t pctx;
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
+
+                pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+                data->vpn.fw_pctx = &pctx;
+
+                if(data->sent_pkts == 0) {
+                    data->to_block |= !check_dns_req_allowed(pd, conn, &pctx);
+
+                    if(pd->socks5.enabled && !data->to_block && (tuple->ipproto == IPPROTO_TCP))
+                        zdtun_conn_proxy(conn);
+                }
+
                 if(data->to_block) {
                     data->blocked_pkts++;
-                    data->last_seen = pd->cur_pkt.ms;
-                    if(!data->first_seen)
-                        data->first_seen = data->last_seen;
                     goto housekeeping;
                 }
 
-                if(pd->socks5.enabled)
-                    check_socks5_redirection(pd, &pkt, conn);
-
+                // NOTE: zdtun_forward may cause nested calls to remote2vpn
                 if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
 
@@ -459,6 +454,10 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                     pd->num_dropped_connections++;
                     zdtun_destroy_conn(zdt, conn);
                     goto housekeeping;
+                } else if(data->vpn.fw_pctx) {
+                    // not accounted in remote2vpn, account here
+                    pd_account_stats(pd, data->vpn.fw_pctx);
+                    data->vpn.fw_pctx = NULL;
                 }
             } else {
                 pd_refresh_time(pd);

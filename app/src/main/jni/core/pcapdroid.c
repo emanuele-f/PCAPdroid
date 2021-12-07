@@ -348,7 +348,6 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
 
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid) {
     pd_conn_t *data = pd_calloc(1, sizeof(pd_conn_t));
-
     if(!data) {
         log_e("calloc(pd_conn_t) failed with code %d/%s",
                     errno, strerror(errno));
@@ -386,6 +385,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         inet_ntop(family, &dst_ip, resip, sizeof(resip));
 
         log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
+        data->info_from_lru = true;
 
         if(data->uid != UID_UNKNOWN) {
             // When a DNS request is followed by a TLS connection or similar, mark the DNS request
@@ -477,6 +477,44 @@ static bool is_numeric_host(const char *host) {
 
 /* ******************************************************* */
 
+static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    char *found_info = NULL;
+
+    switch(data->l7proto.master_protocol) {
+        case NDPI_PROTOCOL_DNS:
+            if(data->ndpi_flow->host_server_name[0])
+                found_info = (char*)data->ndpi_flow->host_server_name;
+            break;
+        case NDPI_PROTOCOL_HTTP:
+            if(data->ndpi_flow->host_server_name[0] &&
+               !is_numeric_host((char*)data->ndpi_flow->host_server_name))
+                found_info = (char*)data->ndpi_flow->host_server_name;
+
+            if(!data->url && data->ndpi_flow->http.url) {
+                data->url = pd_strndup(data->ndpi_flow->http.url, 256);
+                data->update_type |= CONN_UPDATE_INFO;
+            }
+
+            break;
+        case NDPI_PROTOCOL_TLS:
+            if(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name[0])
+                found_info = (char*)data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name;
+            break;
+    }
+
+    if(found_info && (!data->info || data->info_from_lru)) {
+        if(data->info)
+            pd_free(data->info);
+        data->info = pd_strndup(found_info, 256);
+        data->info_from_lru = false;
+
+        check_blacklisted_domain(pd, data, tuple);
+        data->update_type |= CONN_UPDATE_INFO;
+    }
+}
+
+/* ******************************************************* */
+
 /* Stop the DPI detection and determine the l7proto of the connection. */
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple) {
     if(!data->ndpi_flow)
@@ -495,40 +533,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
     log_d("nDPI completed[ipver=%d, proto=%d] -> l7proto: app=%d, master=%d",
                 tuple->ipver, tuple->ipproto, data->l7proto.app_protocol, data->l7proto.master_protocol);
 
-    switch (data->l7proto.master_protocol) {
-        case NDPI_PROTOCOL_DNS:
-            if(data->ndpi_flow->host_server_name[0]) {
-                if(data->info)
-                    pd_free(data->info);
-                data->info = pd_strndup((char*)data->ndpi_flow->host_server_name, 256);
-            }
-            break;
-        case NDPI_PROTOCOL_HTTP:
-            if(data->ndpi_flow->host_server_name[0] &&
-                    (!data->info || !is_numeric_host((char*)data->ndpi_flow->host_server_name))) {
-                if(data->info)
-                    pd_free(data->info);
-                data->info = pd_strndup((char*) data->ndpi_flow->host_server_name, 256);
-            }
-
-            if(data->ndpi_flow->http.url)
-                data->url = pd_strndup(data->ndpi_flow->http.url, 256);
-
-            break;
-        case NDPI_PROTOCOL_TLS:
-            if(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name[0]) {
-                if(data->info)
-                    pd_free(data->info);
-
-                data->info = pd_strndup(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name, 256);
-            }
-            break;
-    }
-
-    // TODO early match
-    check_blacklisted_domain(pd, data, tuple);
-
-    data->update_type |= CONN_UPDATE_INFO;
+    process_ndpi_data(pd, tuple, data);
     conn_free_ndpi(data);
 }
 
@@ -540,11 +545,12 @@ static int is_plaintext(char c) {
 
 /* ******************************************************* */
 
-static void process_request_data(pcapdroid_t *pd, pd_conn_t *data) {
-    const zdtun_pkt_t *pkt = pd->cur_pkt.pkt;
+static void process_request_data(pcapdroid_t *pd, pkt_context_t *pctx) {
+    const zdtun_pkt_t *pkt = pctx->pkt;
+    pd_conn_t *data = pctx->data;
 
     if(pkt->l7_len > 0) {
-        if(pd->cur_pkt.is_tx && is_plaintext(pkt->l7[0])) {
+        if(pctx->is_tx && is_plaintext(pkt->l7[0])) {
             int request_len = data->request_data ? (int)strlen(data->request_data) : 0;
             int num_chars = min(MAX_PLAINTEXT_LENGTH - request_len, pkt->l7_len);
 
@@ -657,10 +663,11 @@ static void process_dns_reply(pd_conn_t *data, pcapdroid_t *pd, const struct zdt
 
 /* ******************************************************* */
 
-static void process_ndpi_packet(pcapdroid_t *pd, pd_conn_t *data) {
-    bool giveup = ((data->sent_pkts + data->rcvd_pkts) >= MAX_DPI_PACKETS);
-    zdtun_pkt_t *pkt = pd->cur_pkt.pkt;
-    bool is_tx = pd->cur_pkt.is_tx;
+static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
+    pd_conn_t *data = pctx->data;
+    bool giveup = ((data->sent_pkts + data->rcvd_pkts + 1) >= MAX_DPI_PACKETS);
+    zdtun_pkt_t *pkt = pctx->pkt;
+    bool is_tx = pctx->is_tx;
 
     u_int16_t old_proto = data->l7proto.master_protocol;
     data->l7proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
@@ -672,7 +679,7 @@ static void process_ndpi_packet(pcapdroid_t *pd, pd_conn_t *data) {
         data->update_type |= CONN_UPDATE_INFO;
 
     if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
-        process_request_data(pd, data);
+        process_request_data(pd, pctx);
 
     bool is_dns = ((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) ||
             (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS));
@@ -681,7 +688,22 @@ static void process_ndpi_packet(pcapdroid_t *pd, pd_conn_t *data) {
 
     if(giveup || ((data->l7proto.app_protocol != NDPI_PROTOCOL_UNKNOWN) &&
             !ndpi_extra_dissection_possible(pd->ndpi, data->ndpi_flow)))
-        pd_giveup_dpi(pd, data, &pkt->tuple);
+        pd_giveup_dpi(pd, data, &pkt->tuple); // calls process_ndpi_data
+    else
+        process_ndpi_data(pd, &pkt->tuple, data);
+
+    if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
+       && (data->uid == UID_NETD)
+       && (data->sent_pkts + data->rcvd_pkts == 0)
+       && ((netd_resolve_waiting > 0) || ((next_connections_dump - NETD_RESOLVE_DELAY_MS) < pd->now_ms))) {
+        if(netd_resolve_waiting == 0) {
+            // Wait before sending the dump to possibly resolve netd DNS connections uid.
+            // Only delay for the first DNS request, to avoid excessive delay.
+            log_d("Adding netd resolution delay");
+            next_connections_dump += NETD_RESOLVE_DELAY_MS;
+        }
+        netd_resolve_waiting++;
+    }
 }
 
 /* ******************************************************* */
@@ -1178,12 +1200,8 @@ static int check_blocked_conn_cb(zdtun_t *zdt, const zdtun_conn_t *conn_info, vo
 /* ******************************************************* */
 
 /* Perfom periodic tasks. This should be called after processing a packet or after some time has
- * passed (e.g. after a select with no packet). pd->cur_pkt.pkt is invalidated after this call. */
+ * passed (e.g. after a select with no packet). */
 void pd_housekeeping(pcapdroid_t *pd) {
-    // can reach housekeeping from any state except housekeeping
-    assert(pd->pkt_phase != PKT_PHASE_HOUSEKEEPING);
-    pd->pkt_phase = PKT_PHASE_HOUSEKEEPING;
-
     if(pd->capture_stats.new_stats
        && ((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
        dump_capture_stats_now) {
@@ -1233,9 +1251,6 @@ void pd_housekeeping(pcapdroid_t *pd) {
         if(pd->zdt)
             zdtun_iter_connections(pd->zdt, check_blocked_conn_cb, pd);
     }
-
-    // avoid using freed data
-    pd->cur_pkt.pkt = NULL;
 }
 
 /* ******************************************************* */
@@ -1243,9 +1258,6 @@ void pd_housekeeping(pcapdroid_t *pd) {
 /* Refresh the monotonic time. This must be called before any call to pd_housekeeping. */
 void pd_refresh_time(pcapdroid_t *pd) {
     struct timespec ts;
-
-    // can be reached by any phase
-    pd->pkt_phase = PKT_PHASE_REFRESH_TIME;
 
     if(clock_gettime(CLOCK_MONOTONIC_COARSE, &ts)) {
         log_d("clock_gettime failed[%d]: %s", errno, strerror(errno));
@@ -1286,32 +1298,35 @@ void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, pd_conn_
 
 /* ******************************************************* */
 
-/* Set the current packet data. The packet pointer is available via pd->cur_pkt.pkt until the next
- * call to pd_housekeeping. This must be called after pd_refresh_time. */
-void pd_set_current_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv) {
-    assert(pd->pkt_phase == PKT_PHASE_REFRESH_TIME);
-    pd->pkt_phase = PKT_PHASE_PKT_SET;
+/* Process the packet (e.g. perform DPI) and fill the packet context. */
+void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
+                       pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx) {
+    pctx->pkt = pkt;
+    pctx->tv = *tv;
+    pctx->ms = (uint64_t)tv->tv_sec * 1000 + tv->tv_usec / 1000;
+    pctx->is_tx = is_tx;
+    pctx->tuple = tuple;
+    pctx->data = data;
 
-    pd->cur_pkt.pkt = pkt;
-    pd->cur_pkt.tv = *tv;
-    pd->cur_pkt.ms = (uint64_t)tv->tv_sec * 1000 + tv->tv_usec / 1000;
-    pd->cur_pkt.is_tx = is_tx;
+    data->last_seen = pctx->ms;
+    if(!data->first_seen)
+        data->first_seen = data->last_seen;
+
+    if(data->ndpi_flow &&
+       (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {
+        // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
+        perform_dpi(pd, pctx);
+    }
 }
 
 /* ******************************************************* */
 
-/* Update the stats for the current packet. */
-void pd_account_stats(pcapdroid_t *pd, const zdtun_5tuple_t *conn_tuple, pd_conn_t *data) {
-    zdtun_pkt_t *pkt = pd->cur_pkt.pkt;
+/* Update the stats for the current packet and dump it if requested. */
+void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
+    zdtun_pkt_t *pkt = pctx->pkt;
+    pd_conn_t *data = pctx->data;
 
-    assert(pd->pkt_phase == PKT_PHASE_PKT_SET);
-    pd->pkt_phase = PKT_PHASE_ACCOUNT_STATS;
-
-    data->last_seen = pd->cur_pkt.ms;
-    if(!data->first_seen)
-        data->first_seen = data->last_seen;
-
-    if(pd->cur_pkt.is_tx) {
+    if(pctx->is_tx) {
         data->sent_pkts++;
         data->sent_bytes += pkt->len;
         pd->capture_stats.sent_pkts++;
@@ -1323,32 +1338,13 @@ void pd_account_stats(pcapdroid_t *pd, const zdtun_5tuple_t *conn_tuple, pd_conn
         pd->capture_stats.rcvd_bytes += pkt->len;
     }
 
-    if(data->ndpi_flow &&
-            (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {
-        // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
-        process_ndpi_packet(pd, data);
-
-        if(((data->l7proto.master_protocol == NDPI_PROTOCOL_DNS) || (data->l7proto.app_protocol == NDPI_PROTOCOL_DNS))
-                && (data->uid == UID_NETD)
-                && (data->sent_pkts + data->rcvd_pkts == 1)
-                && ((netd_resolve_waiting > 0) || ((next_connections_dump - NETD_RESOLVE_DELAY_MS) < pd->now_ms))) {
-            if(netd_resolve_waiting == 0) {
-                // Wait before sending the dump to possibly resolve netd DNS connections uid.
-                // Only delay for the first DNS request, to avoid excessive delay.
-                log_d("Adding netd resolution delay");
-                next_connections_dump += NETD_RESOLVE_DELAY_MS;
-            }
-            netd_resolve_waiting++;
-        }
-    }
-
     /* New stats to notify */
     pd->capture_stats.new_stats = true;
 
     data->update_type |= CONN_UPDATE_STATS;
-    pd_notify_connection_update(pd, conn_tuple, data);
+    pd_notify_connection_update(pd, pctx->tuple, pctx->data);
 
-    if (pd->pcap_dump.buffer) {
+    if(pd->pcap_dump.buffer) {
         int rec_size = pcap_rec_size(pkt->len);
 
         if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size) {
@@ -1360,8 +1356,8 @@ void pd_account_stats(pcapdroid_t *pd, const zdtun_5tuple_t *conn_tuple, pd_conn
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
                   JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
         else {
-            pcap_dump_rec((u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
-                          pd, data);
+            pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
+                          pctx);
 
             pd->pcap_dump.buffer_idx += rec_size;
         }
@@ -1486,7 +1482,6 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
 
     memset(&pd.stats, 0, sizeof(pd.stats));
 
-    pd.pkt_phase = PKT_PHASE_HOUSEKEEPING;
     pd_refresh_time(&pd);
     last_connections_dump = pd.now_ms;
     next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;

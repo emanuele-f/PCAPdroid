@@ -57,15 +57,6 @@ typedef struct {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
-// This tracks the packet processing phases, to ensure that the API functions are called in
-// the correct order.
-typedef enum {
-    PKT_PHASE_REFRESH_TIME = 0,     // pd_refresh_time
-    PKT_PHASE_PKT_SET,              // pd_set_current_packet
-    PKT_PHASE_ACCOUNT_STATS,        // pd_account_stats
-    PKT_PHASE_HOUSEKEEPING,         // pd_housekeeping
-} pkt_processing_phase_t;
-
 typedef struct {
     jint incr_id; // an incremental number which identifies a specific connection
 
@@ -74,7 +65,15 @@ typedef struct {
     struct ndpi_id_struct *src_id, *dst_id;
     ndpi_protocol l7proto;
 
-    uint64_t last_update_ms; // like last_seen but monotonic (only root)
+    union {
+        struct {
+            uint64_t last_update_ms; // like last_seen but monotonic
+        } root;
+        struct {
+            struct pkt_context *fw_pctx; // context for the forwarded packet
+        } vpn;
+    };
+
     jlong first_seen;
     jlong last_seen;
     jlong sent_bytes;
@@ -92,6 +91,7 @@ typedef struct {
     };
     bool pending_notification;
     bool to_purge;
+    bool info_from_lru;
     bool request_done;
     bool blacklisted_ip;
     bool blacklisted_domain;
@@ -118,13 +118,21 @@ typedef struct {
     UT_hash_handle hh;
 } uid_to_app_t;
 
+typedef struct pkt_context {
+    zdtun_pkt_t *pkt;
+    struct timeval tv; // Packet timestamp, need by pcap_dump_rec
+    uint64_t ms;       // Packet timestamp in ms
+    bool is_tx;
+    const zdtun_5tuple_t *tuple;
+    pd_conn_t *data;
+} pkt_context_t;
+
 typedef struct pcap_conn pcap_conn_t;
 
 typedef struct {
     JNIEnv *env;
     jobject capture_service;
     jint sdk_ver;
-    pkt_processing_phase_t pkt_phase;
     int new_conn_id;
     uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     struct ndpi_detection_module_struct *ndpi;
@@ -163,14 +171,6 @@ typedef struct {
             pcap_conn_t *connections;
         } root;
     };
-
-    // populated via pd_set_current_packet
-    struct {
-        zdtun_pkt_t *pkt;
-        struct timeval tv; // Packet timestamp, need by pcap_dump_rec
-        uint64_t ms;       // Packet timestamp in ms
-        bool is_tx;
-    } cur_pkt;
 
     struct {
         bool enabled;
@@ -270,8 +270,9 @@ extern bool block_private_dns;
 
 // capture API
 void pd_refresh_time(pcapdroid_t *pd);
-void pd_set_current_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, struct timeval *tv);
-void pd_account_stats(pcapdroid_t *pd, const zdtun_5tuple_t *conn_tuple, pd_conn_t *data);
+void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
+                       pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
+void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_destroy_connection(pd_conn_t *data);

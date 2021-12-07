@@ -271,67 +271,66 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
 
 // Determines when a connection gets closed
 static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
+  // NOTE: pcap_conn_t neeeded below in remove_connection
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
 
-  zdtun_conn_status_t old_status = conn->data->status;
+  zdtun_5tuple_t *tuple = &conn->tuple;
+  pd_conn_t *data = conn->data;
 
-  if(conn->tuple.ipproto == IPPROTO_TCP) {
+  if(tuple->ipproto == IPPROTO_TCP) {
       struct tcphdr *tcp = pkt->tcp;
 
-      conn->data->tcp_flags[dir] |= tcp->th_flags;
-      uint8_t seen_flags = conn->data->tcp_flags[0] & conn->data->tcp_flags[1];
+      data->tcp_flags[dir] |= tcp->th_flags;
+      uint8_t seen_flags = data->tcp_flags[0] & data->tcp_flags[1];
 
       if(tcp->th_flags & TH_RST)
-          conn->data->status = CONN_STATUS_RESET;
+          data->status = CONN_STATUS_RESET;
       else if(seen_flags & TH_FIN) {
           // closed when both the peers have sent FIN and the last FIN was acknowledged
-          if(!conn->data->last_ack)
-              conn->data->last_ack = true; // wait for the last ACK
+          if(!data->last_ack)
+              data->last_ack = true; // wait for the last ACK
           else if(tcp->th_flags & TH_ACK)
-              conn->data->status = CONN_STATUS_CLOSED;
-      } else if(conn->data->status < CONN_STATUS_CONNECTED) {
+              data->status = CONN_STATUS_CLOSED;
+      } else if(data->status < CONN_STATUS_CONNECTED) {
           const uint8_t syn_ack_flags = TH_SYN | TH_ACK;
 
           // the 3-way-handshake is complete when both the peers have sent the SYN+ACK flags
           if((pkt->l7_len > 0) ||
                 ((seen_flags & syn_ack_flags) == syn_ack_flags))
-              conn->data->status = CONN_STATUS_CONNECTED;
+              data->status = CONN_STATUS_CONNECTED;
           else
-              conn->data->status = CONN_STATUS_CONNECTING;
+              data->status = CONN_STATUS_CONNECTING;
       }
   } else {
-      if(conn->data->status < CONN_STATUS_CONNECTED)
-        conn->data->status = CONN_STATUS_CONNECTED;
+      if(data->status < CONN_STATUS_CONNECTED)
+        data->status = CONN_STATUS_CONNECTED;
 
-      if((conn->tuple.ipproto == IPPROTO_UDP) &&
+      if((tuple->ipproto == IPPROTO_UDP) &&
             pkt->l7_len >= sizeof(dns_packet_t) &&
-            (conn->tuple.dst_port == ntohs(53))) {
+            (tuple->dst_port == ntohs(53))) {
           const dns_packet_t *dns = (dns_packet_t *)pkt->l7;
 
           if((dns->flags & DNS_FLAGS_MASK) == DNS_TYPE_REQUEST)
-              conn->data->pending_dns_queries++;
+              data->pending_dns_queries++;
           else if((dns->flags & DNS_FLAGS_MASK) == DNS_TYPE_RESPONSE) {
-              conn->data->pending_dns_queries--;
+              data->pending_dns_queries--;
 
               // Close the connection as soon as all the responses arrive
-              if(conn->data->pending_dns_queries == 0) {
-                  conn->data->status = CONN_STATUS_CLOSED;
+              if(data->pending_dns_queries == 0) {
+                  data->status = CONN_STATUS_CLOSED;
 
                   // Remove the connection from the hash to ensure that if the DNS connection is
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
-                  conn->data->to_purge = true;
+                  data->to_purge = true;
                   remove_connection(nc, conn);
               }
           }
       }
   }
 
-  if(old_status != conn->data->status) {
-      conn->data->update_type |= CONN_UPDATE_STATS;
-      pd_notify_connection_update(nc, &conn->tuple, conn->data);
-  }
+  // no need to call pd_notify_connection_update, it will be called as part of pd_account_stats
 }
 
 /* ******************************************************* */
@@ -345,9 +344,6 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
         log_d("zdtun_parse_pkt failed");
         return;
     }
-
-    struct timeval tv = hdr->ts;
-    pd_set_current_packet(pd, &pkt, is_tx, &tv);
 
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
             (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
@@ -366,7 +362,6 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
     }
 
     HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
-
     if(!conn) {
         // is_tx may be wrong, search in the other direction
         is_tx = !is_tx;
@@ -419,10 +414,15 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
         }
     }
 
-    conn->data->last_update_ms = pd->now_ms;
+    // like last_seen but monotonic
+    conn->data->root.last_update_ms = pd->now_ms;
 
-    pd_account_stats(pd, &conn->tuple, conn->data);
+    struct timeval tv = hdr->ts;
+    pkt_context_t pinfo;
+    pd_process_packet(pd, &pkt, is_tx, &conn->tuple, conn->data, &tv, &pinfo);
+
     update_connection_status(pd, conn, &pkt, !is_tx);
+    pd_account_stats(pd, &pinfo);
 }
 
 /* ******************************************************* */
@@ -445,7 +445,7 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
                 break;
         }
 
-        if(purge_all || (pd->now_ms >= (conn->data->last_update_ms + timeout))) {
+        if(purge_all || (pd->now_ms >= (conn->data->root.last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             // The connection data will be purged
