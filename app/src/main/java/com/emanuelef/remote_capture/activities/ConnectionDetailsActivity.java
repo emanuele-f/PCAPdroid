@@ -106,7 +106,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
         findViewById(R.id.whois_ip).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://search.arin.net/rdap/?query=" + mConn.dst_ip));
-            startActivity(intent);
+            Utils.startActivity(this, intent);
         });
 
         String l4proto = Utils.proto2str(mConn.ipproto);
@@ -278,7 +278,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connection_details));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
             return true;
         }
 

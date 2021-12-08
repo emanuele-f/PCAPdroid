@@ -217,7 +217,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         appVer.setOnClickListener((ev) -> {
             String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
-            startActivity(browserIntent);
+            Utils.startActivity(this, browserIntent);
         });
     }
 
@@ -249,7 +249,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     // Needed to write file on devices which do not support ACTION_CREATE_DOCUMENT
                     if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        try {
+                            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        } catch (ActivityNotFoundException e) {
+                            Utils.showToastLong(this, R.string.no_intent_handler_found);
+                        }
                     }
                 }
             }
@@ -363,12 +367,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             startActivity(intent);
         } else if (id == R.id.action_donate) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
-            startActivity(browserIntent);
+            Utils.startActivity(this, browserIntent);
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
         } else if (id == R.id.action_open_user_guide) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DOCS_URL));
-            startActivity(browserIntent);
+            Utils.startActivity(this, browserIntent);
         } else if (id == R.id.action_stats) {
             if(mState == AppState.running) {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
@@ -387,7 +391,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             intent.setType("text/plain");
             intent.putExtra(android.content.Intent.EXTRA_TEXT, description + "\n" + getApp + "\n" + url);
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
         }
 
         return false;
@@ -435,7 +439,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://t.me/" + TELEGRAM_GROUP_NAME));
         }
 
-        startActivity(intent);
+        Utils.startActivity(this, intent);
     }
 
     /*private void rateApp() {
@@ -610,7 +614,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent sendIntent = new Intent(Intent.ACTION_SEND);
             sendIntent.setType("application/cap");
             sendIntent.putExtra(Intent.EXTRA_STREAM, pcapUri);
-            startActivity(Intent.createChooser(sendIntent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(sendIntent, getResources().getString(R.string.share)));
         });
         builder.setNegativeButton(R.string.delete, (dialog, which) -> {
             Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());

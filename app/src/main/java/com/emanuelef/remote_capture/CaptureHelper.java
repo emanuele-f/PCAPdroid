@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.VpnService;
 
@@ -72,9 +73,14 @@ public class CaptureHelper {
         }
 
         Intent vpnPrepareIntent = VpnService.prepare(mActivity);
-        if(vpnPrepareIntent != null)
-            mLauncher.launch(vpnPrepareIntent);
-        else
+        if(vpnPrepareIntent != null) {
+            try {
+                mLauncher.launch(vpnPrepareIntent);
+            } catch (ActivityNotFoundException e) {
+                Utils.showToastLong(mActivity, R.string.no_intent_handler_found);
+                mListener.onCaptureStartResult(false);
+            }
+        } else
             startCaptureOk();
     }
 

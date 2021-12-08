@@ -161,7 +161,7 @@ public class StatsActivity extends BaseActivity {
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.stats));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
         }

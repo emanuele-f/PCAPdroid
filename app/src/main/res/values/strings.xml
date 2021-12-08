@@ -252,4 +252,5 @@
     <string name="valid">Valid</string>
     <string name="invalid">Invalid</string>
     <string name="system_id">System ID</string>
+    <string name="no_intent_handler_found">No app found to perform this action</string>
 </resources>

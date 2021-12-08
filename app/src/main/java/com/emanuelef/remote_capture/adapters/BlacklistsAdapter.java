@@ -78,6 +78,6 @@ public class BlacklistsAdapter extends ArrayAdapter<BlacklistDescriptor> {
 
     private void openUrl(Context ctx, String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        ctx.startActivity(intent);
+        Utils.startActivity(ctx, intent);
     }
 }

@@ -188,7 +188,7 @@ public class EditListFragment extends Fragment {
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(mListInfo.getTitle()));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(requireContext(), Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
         } else if(id == R.id.show_hint) {

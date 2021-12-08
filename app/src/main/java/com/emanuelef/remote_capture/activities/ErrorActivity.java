@@ -36,6 +36,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.emanuelef.remote_capture.Utils;
+
 import java.util.Arrays;
 
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
@@ -129,7 +131,7 @@ public final class ErrorActivity extends AppCompatActivity {
             emailButton.setOnClickListener(v -> {
                 String errorInformation = CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
                 emailIntent.putExtra(Intent.EXTRA_TEXT, errorInformation);
-                startActivity(emailIntent);
+                Utils.startActivity(this, emailIntent);
             });
         } else
             emailButton.setVisibility(View.GONE);

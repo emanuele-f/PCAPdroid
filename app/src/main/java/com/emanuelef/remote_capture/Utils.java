@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -832,5 +833,13 @@ public class Utils {
             rv[i] = curByte;
 
         return rv;
+    }
+
+    public static void startActivity(Context ctx, Intent intent) {
+        try {
+            ctx.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            showToastLong(ctx, R.string.no_intent_handler_found);
+        }
     }
 }

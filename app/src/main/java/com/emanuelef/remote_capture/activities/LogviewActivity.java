@@ -94,7 +94,7 @@ public class LogviewActivity extends BaseActivity {
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.root_log));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, mLogText);
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
         }

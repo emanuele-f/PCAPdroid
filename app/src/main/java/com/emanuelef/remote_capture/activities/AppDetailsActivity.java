@@ -114,7 +114,7 @@ public class AppDetailsActivity extends BaseActivity {
         findViewById(R.id.app_settings).setOnClickListener(v -> {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.fromParts("package", dsc.getPackageName(), null));
-            startActivity(intent);
+            Utils.startActivity(this, intent);
         });
 
         findViewById(R.id.show_connections).setOnClickListener(v -> {
@@ -156,7 +156,7 @@ public class AppDetailsActivity extends BaseActivity {
             intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_details));
             intent.putExtra(android.content.Intent.EXTRA_TEXT, asString());
 
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
 
             return true;
         }
