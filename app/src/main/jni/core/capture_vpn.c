@@ -101,7 +101,7 @@ static int remote2vpn(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_i
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
-    // if this is called inside zdtun_forward, account the egress packet first
+    // if this is called inside zdtun_forward, account the egress packet before the subsequent ingress packet
     if(data->vpn.fw_pctx) {
         pd_account_stats(pd, data->vpn.fw_pctx);
         data->vpn.fw_pctx = NULL;
@@ -518,7 +518,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                         // spoof a reply with an invalid IP.
                         if((data->l7proto == NDPI_PROTOCOL_DNS) && (tuple->ipproto == IPPROTO_UDP)) {
                             spoof_dns_reply(pd, conn, &pctx);
-                            zdtun_destroy_conn(zdt, conn);
+                            zdtun_conn_close(zdt, conn, CONN_STATUS_CLOSED);
                         }
                     } else if(pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP))
                         zdtun_conn_proxy(conn);
@@ -531,7 +531,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                     goto housekeeping;
                 }
 
-                // NOTE: zdtun_forward may cause nested calls to remote2vpn
+                // NOTE: zdtun_forward will call remote2vpn
                 data->vpn.fw_pctx = &pctx;
                 if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
@@ -540,7 +540,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                                 zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
 
                     pd->num_dropped_connections++;
-                    zdtun_destroy_conn(zdt, conn);
+                    zdtun_conn_close(zdt, conn, CONN_STATUS_ERROR);
                     goto housekeeping;
                 } else if(data->vpn.fw_pctx) {
                     // not accounted in remote2vpn, account here
