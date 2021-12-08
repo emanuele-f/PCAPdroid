@@ -49,5 +49,6 @@ jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type)
 jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key);
 int jniCheckException(JNIEnv *env);
 char* humanSize(char *buf, int bufsize, double bytes);
+void hexdump(const char *buf, size_t bufsize);
 
 #endif // __LOG_UTILS_H__

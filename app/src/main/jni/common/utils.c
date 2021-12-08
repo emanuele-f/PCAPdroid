@@ -212,3 +212,38 @@ char* humanSize(char *buf, int bufsize, double bytes) {
     snprintf(buf, bufsize, "%.02f %s", bytes, suffix[i]);
     return buf;
 }
+
+/* ******************************************************* */
+
+/* Dumps packets in the hex format of "od -A x -t x1", which makes it compatible with
+ * text2pcap. */
+void hexdump(const char *buf, size_t bufsize) {
+    size_t off = 0;
+    char out[64];
+    int idx = 0;
+    static const char hex[] = "0123456789abcdef";
+
+    while(off < bufsize) {
+        if((off % 16) == 0) {
+            if(off > 0) {
+                out[idx] = '\0';
+                log_d("%s", out);
+            }
+            idx = sprintf(out, "%06x", off);
+        }
+
+        out[idx++] = ' ';
+        out[idx++] = hex[(buf[off] & 0xF0) >> 4];
+        out[idx++] = hex[buf[off] & 0x0F];
+        off++;
+    }
+
+    if((off % 16) != 0) {
+        out[idx] = '\0';
+        log_d("%s", out);
+        idx = sprintf(out, "%06x", off);
+    }
+
+    out[idx] = '\0';
+    log_d("%s", out);
+}

@@ -242,6 +242,82 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
 
 /* ******************************************************* */
 
+static bool spoof_dns_reply(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_context_t *pctx) {
+    // Step 1: ensure that this is a valid query
+    zdtun_pkt_t *pkt = pctx->pkt;
+    if(pkt->l7_len < (sizeof(dns_packet_t) + 5))
+        return false;
+
+    dns_packet_t *req = (dns_packet_t*) pkt->l7;
+    if(ntohs(req->questions) != 1)
+        return false;
+
+    int remaining = pkt->l7_len - sizeof(dns_packet_t);
+    int qlen=0;
+    while(remaining >= 5) {
+        if(!req->queries[qlen])
+            break;
+        qlen++;
+        remaining--;
+    }
+
+    if((req->queries[qlen] != 0) || (req->queries[qlen + 1] != 0) ||
+       (req->queries[qlen + 3] != 0) || (req->queries[qlen + 4] != 1))
+        return false; // invalid
+
+    uint8_t qtype = req->queries[qlen + 2];
+    if((qtype != 0x01) && (qtype != 0x1c))
+        return false; // invalid query type
+
+    // Step 2: spoof the reply
+    log_d("Spoofing %s DNS reply", (qtype == 0x01) ? "A" : "AAAA");
+
+    const zdtun_5tuple_t *tuple = pctx->tuple;
+    uint8_t alen = (qtype == 0x01) ? 4 : 16;
+    int iplen = zdtun_iphdr_len(pd->zdt, conn);
+    unsigned int len = iplen + 8 /* UDP */ + sizeof(dns_packet_t) + qlen + 5 /* type, ... */ + 12 /* answer */ + alen;
+    char buf[len];
+    memset(buf, 0, len);
+
+    zdtun_make_iphdr(pd->zdt, conn, buf, len - iplen);
+
+    struct udphdr *udp = (struct udphdr*)(buf + iplen);
+    udp->uh_sport = tuple->dst_port;
+    udp->uh_dport = tuple->src_port;
+    udp->len = htons(len - iplen);
+
+    dns_packet_t *dns = (dns_packet_t*)(buf + iplen + 8);
+    dns->transaction_id = req->transaction_id;
+    dns->flags = htons(0x8180);
+    dns->questions = req->questions;
+    dns->answ_rrs = dns->questions;
+    dns->auth_rrs = dns->additional_rrs = 0;
+
+    // Queries
+    memcpy(dns->queries, req->queries, qlen + 5);
+
+    // Answers
+    uint8_t *answ = dns->queries + qlen + 5;
+
+    answ[0] = 0xc0, answ[1] = 0x0c;        // name ptr
+    answ[2] = 0x00, answ[3] = qtype;       // type
+    answ[4] = 0x00, answ[5] = 0x01;        // class IN
+    *(uint32_t*)(answ + 6) = htonl(10); // TTL: 10s
+    answ[10] = 0x00, answ[11] = alen;      // addr length
+    memset(answ + 12, 0, alen);      // addr: 0.0.0.0/::
+
+    // checksum
+    udp->uh_sum = 0;
+    udp->uh_sum = zdtun_l3_checksum(pd->zdt, conn, buf, (char*)udp, len - iplen);
+
+    //hexdump(buf, len);
+    write(pd->vpn.tunfd, buf, len);
+
+    return true;
+}
+
+/* ******************************************************* */
+
 static int handle_new_connection(zdtun_t *zdt, zdtun_conn_t *conn_info) {
     pcapdroid_t *pd = ((pcapdroid_t *) zdtun_userdata(zdt));
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
@@ -260,7 +336,7 @@ static int handle_new_connection(zdtun_t *zdt, zdtun_conn_t *conn_info) {
 
 /* ******************************************************* */
 
-static void connnection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
+static void connection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
     pcapdroid_t *pd = (pcapdroid_t*) zdtun_userdata(zdt);
     pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
 
@@ -320,7 +396,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
         .account_packet = update_conn_status,
         .on_socket_open = protectSocketCallback,
         .on_connection_open = handle_new_connection,
-        .on_connection_close = connnection_closed,
+        .on_connection_close = connection_closed,
     };
 
     // List of known DNS servers
@@ -437,7 +513,14 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                 if(data->sent_pkts == 0) {
                     data->to_block |= !check_dns_req_allowed(pd, conn, &pctx);
 
-                    if(pd->socks5.enabled && !data->to_block && (tuple->ipproto == IPPROTO_TCP))
+                    if(data->to_block) {
+                        // blocking a DNS query can cause multiple requests to be spammed. Better to
+                        // spoof a reply with an invalid IP.
+                        if((data->l7proto == NDPI_PROTOCOL_DNS) && (tuple->ipproto == IPPROTO_UDP)) {
+                            spoof_dns_reply(pd, conn, &pctx);
+                            zdtun_destroy_conn(zdt, conn);
+                        }
+                    } else if(pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP))
                         zdtun_conn_proxy(conn);
                 }
 

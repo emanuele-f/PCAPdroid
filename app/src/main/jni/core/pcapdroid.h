@@ -219,7 +219,6 @@ typedef struct {
     uint16_t answ_rrs;
     uint16_t auth_rrs;
     uint16_t additional_rrs;
-    uint8_t initial_dot; // just skip
     uint8_t queries[];
 } __attribute__((packed)) dns_packet_t;
 
