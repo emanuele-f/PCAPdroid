@@ -332,12 +332,12 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
                       zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
 
                 // Block all the blacklisted domains
-                data->to_block = (pd->firewall.bl != NULL);
+                data->to_block |= (pd->firewall.bl != NULL);
             }
         }
         if(pd->firewall.bl && !data->to_block) {
             // Check if the domain is explicitly blocked
-            data->to_block = blacklist_match_domain(pd->firewall.bl, data->info);
+            data->to_block |= blacklist_match_domain(pd->firewall.bl, data->info);
             if(data->to_block) {
                 char appbuf[64];
                 char buf[512];
@@ -434,13 +434,13 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
             log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
 
-            data->to_block = (pd->firewall.bl != NULL);
+            data->to_block |= (pd->firewall.bl != NULL);
         }
 
         bl_num_checked_connections++;
     }
     if(pd->firewall.bl && !data->to_block) {
-        data->to_block = blacklist_match_ip(pd->firewall.bl, &dst_ip, tuple->ipver);
+        data->to_block |= blacklist_match_ip(pd->firewall.bl, &dst_ip, tuple->ipver);
         if(data->to_block) {
             char appbuf[64];
             char buf[256];
@@ -448,7 +448,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
             log_w("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         } else {
-            data->to_block = blacklist_match_uid(pd->firewall.bl, data->uid);
+            data->to_block |= blacklist_match_uid(pd->firewall.bl, data->uid);
             if(data->to_block) {
                 char appbuf[64];
                 char buf[256];
@@ -1184,7 +1184,7 @@ static int check_blocked_conn_cb(zdtun_t *zdt, const zdtun_conn_t *conn_info, vo
     blacklist_t *bl = pd->firewall.bl;
     bool old_block = data->to_block;
 
-    data->to_block = (data->blacklisted_ip || data->blacklisted_domain) ||
+    data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain) ||
             blacklist_match_uid(bl, data->uid) ||
             blacklist_match_ip(bl, &dst_ip, tuple->ipver) ||
             (data->info && data->info[0] && blacklist_match_domain(bl, data->info));

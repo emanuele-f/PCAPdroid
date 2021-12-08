@@ -93,6 +93,7 @@ typedef struct {
     bool to_purge; // if true, free this pd_conn_t during the next sendConnectionsDump
     bool info_from_lru;
     bool request_done;
+    bool blacklisted_internal;
     bool blacklisted_ip;
     bool blacklisted_domain;
     bool to_block;

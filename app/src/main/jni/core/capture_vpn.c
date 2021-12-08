@@ -511,7 +511,8 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                 data->vpn.fw_pctx = &pctx;
 
                 if(data->sent_pkts == 0) {
-                    data->to_block |= !check_dns_req_allowed(pd, conn, &pctx);
+                    data->blacklisted_internal = !check_dns_req_allowed(pd, conn, &pctx);
+                    data->to_block |= data->blacklisted_internal;
 
                     if(data->to_block) {
                         // blocking a DNS query can cause multiple requests to be spammed. Better to
