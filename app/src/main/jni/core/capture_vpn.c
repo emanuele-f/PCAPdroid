@@ -508,9 +508,8 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
 
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
-                data->vpn.fw_pctx = &pctx;
-
                 if(data->sent_pkts == 0) {
+                    // Newly created connections
                     data->blacklisted_internal = !check_dns_req_allowed(pd, conn, &pctx);
                     data->to_block |= data->blacklisted_internal;
 
@@ -533,6 +532,7 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
                 }
 
                 // NOTE: zdtun_forward may cause nested calls to remote2vpn
+                data->vpn.fw_pctx = &pctx;
                 if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
 

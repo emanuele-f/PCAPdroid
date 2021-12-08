@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -117,6 +118,7 @@ public class Billing {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public String getSystemId() {
         // NOTE: On Android >= O, the ID is unique to each combination of package, key, user and device
         String system_id = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
