@@ -25,8 +25,12 @@ import android.util.Log;
 import com.emanuelef.remote_capture.model.Geomodel;
 import com.maxmind.db.Reader;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.zip.GZIPInputStream;
 
@@ -58,18 +62,30 @@ public class Geolocation {
 
     private void openDb() {
         try {
-            InputStream is = mContext.getResources().openRawResource(R.raw.dbip_country_lite_2021_11_mmdb_gz);
-            GZIPInputStream gis = new GZIPInputStream(is);
-            mCountryReader = new Reader(gis);
+            File countryFile = new File(mContext.getCacheDir() + "/dbip_country_lite.mmdb");
+            ungzip(R.raw.dbip_country_lite_2021_11_mmdb_gz, countryFile);
+            mCountryReader = new Reader(countryFile);
             Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
-            is = mContext.getResources().openRawResource(R.raw.dbip_asn_lite_2021_11_mmdb_gz);
-            gis = new GZIPInputStream(is);
-            mAsnReader = new Reader(gis);
+            File asnFile = new File(mContext.getCacheDir() + "/dbip_asn_lite.mmdb");
+            ungzip(R.raw.dbip_asn_lite_2021_11_mmdb_gz, asnFile);
+            mAsnReader = new Reader(asnFile);
             Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalStateException();
+        }
+    }
+
+    private void ungzip(int resid, File dst) throws IOException {
+        try(InputStream is = new GZIPInputStream(mContext.getResources().openRawResource(resid))) {
+            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                byte[] bytesIn = new byte[4096];
+                int read = 0;
+
+                while ((read = is.read(bytesIn)) != -1)
+                    bos.write(bytesIn, 0, read);
+            }
         }
     }
 
