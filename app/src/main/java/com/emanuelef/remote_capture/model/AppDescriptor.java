@@ -26,6 +26,8 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
+import com.emanuelef.remote_capture.interfaces.DrawableLoader;
+
 import java.io.Serializable;
 
 public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
@@ -34,15 +36,17 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final int mUid;
     private final boolean mIsSystem;
     private Drawable mIcon;
+    private final DrawableLoader mIconLoader;
     private String mDescription;
 
     // NULL for virtual apps
     PackageManager mPm;
     PackageInfo mPackageInfo;
 
-    public AppDescriptor(String name, Drawable icon, String package_name, int uid, boolean is_system) {
+    public AppDescriptor(String name, DrawableLoader icon_loader, String package_name, int uid, boolean is_system) {
         this.mName = name;
-        this.mIcon = icon;
+        this.mIcon = null;
+        this.mIconLoader = icon_loader;
         this.mPackageName = package_name;
         this.mUid = uid;
         this.mIsSystem = is_system;
@@ -74,6 +78,11 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     public @Nullable Drawable getIcon() {
         if(mIcon != null)
             return mIcon;
+
+        if(mIconLoader != null) {
+            mIcon = mIconLoader.getDrawable();
+            return mIcon;
+        }
 
         if((mPackageInfo == null) || (mPm == null))
             return null;

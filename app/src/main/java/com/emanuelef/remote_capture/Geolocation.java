@@ -23,8 +23,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.emanuelef.remote_capture.model.Geomodel;
-import com.maxmind.db.CHMCache;
-import com.maxmind.db.Metadata;
 import com.maxmind.db.Reader;
 
 import java.io.IOException;
@@ -60,16 +58,14 @@ public class Geolocation {
 
     private void openDb() {
         try {
-            CHMCache cache = new CHMCache();
-
             InputStream is = mContext.getResources().openRawResource(R.raw.dbip_country_lite_2021_11_mmdb_gz);
             GZIPInputStream gis = new GZIPInputStream(is);
-            mCountryReader = new Reader(gis, cache);
+            mCountryReader = new Reader(gis);
             Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
             is = mContext.getResources().openRawResource(R.raw.dbip_asn_lite_2021_11_mmdb_gz);
             gis = new GZIPInputStream(is);
-            mAsnReader = new Reader(gis, cache);
+            mAsnReader = new Reader(gis);
             Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
             e.printStackTrace();

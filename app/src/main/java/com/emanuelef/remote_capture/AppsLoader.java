@@ -42,7 +42,6 @@ import java.util.List;
 public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDescriptor>> {
     private static final String TAG = "AppsLoader";
     private static final int OPERATION_LOAD_APPS_INFO = 23;
-    private static final int OPERATION_LOAD_APPS_ICONS = 24;
     private AppsLoadListener mListener;
     private final AppCompatActivity mContext;
 
@@ -115,22 +114,6 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
 
                 if(opid == OPERATION_LOAD_APPS_INFO)
                     return asyncLoadAppsInfo();
-                else if (opid == OPERATION_LOAD_APPS_ICONS) {
-                    if(args == null) {
-                        Log.e(TAG, "Bad bundle");
-                        return empty_res;
-                    }
-
-                    ArrayList<AppDescriptor> apps = (ArrayList<AppDescriptor>) args.getSerializable("apps");
-
-                    if(apps == null) {
-                        Log.e(TAG, "Bad apps");
-                        return empty_res;
-                    }
-
-                    asyncLoadAppsIcons(apps);
-                    return apps;
-                }
 
                 Log.e(TAG, "unknown loader op: " + opid);
                 return empty_res;
@@ -140,17 +123,10 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
 
     @Override
     public void onLoadFinished(@NonNull Loader<ArrayList<AppDescriptor>> loader, ArrayList<AppDescriptor> data) {
-        boolean load_finished = (loader.getId() == OPERATION_LOAD_APPS_ICONS);
+        if(mListener != null)
+            mListener.onAppsInfoLoaded(data);
 
-        if(mListener != null) {
-            if(load_finished)
-                mListener.onAppsIconsLoaded();
-            else
-                mListener.onAppsInfoLoaded(data);
-        }
-
-        if(!load_finished)
-            runLoader(OPERATION_LOAD_APPS_ICONS, data);
+        finishLoader();
     }
 
     @Override
@@ -171,8 +147,14 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         loader.forceLoad();
     }
 
+    private void finishLoader() {
+        // Destroy the loader to reduce the memory usage and also to possibly load new apps on next run
+        LoaderManager lm = LoaderManager.getInstance(mContext);
+        lm.destroyLoader(OPERATION_LOAD_APPS_INFO);
+    }
+
     public AppsLoader loadAllApps() {
-        // will run OPERATION_LOAD_APPS_ICONS when finished
+        // IMPORTANT: loading all the icons is not a good idea, as they consume much memory
         runLoader(OPERATION_LOAD_APPS_INFO, null);
         return this;
     }

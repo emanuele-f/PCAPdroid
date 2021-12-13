@@ -426,10 +426,4 @@ private void refreshPcapDumpInfo() {
         Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
         mOpenAppsList.setApps(installedApps);
     }
-
-    @Override
-    public void onAppsIconsLoaded() {
-        // Icons automatically loaded, no need to call loadInstalledApps again
-        Log.d(TAG, "apps icons loaded");
-    }
 }

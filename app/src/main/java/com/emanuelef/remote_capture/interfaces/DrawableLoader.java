@@ -19,11 +19,8 @@
 
 package com.emanuelef.remote_capture.interfaces;
 
-import com.emanuelef.remote_capture.model.AppDescriptor;
+import android.graphics.drawable.Drawable;
 
-import java.util.List;
-
-public interface AppsLoadListener {
-    // uid -> AppDescriptor
-    void onAppsInfoLoaded(List<AppDescriptor> apps);
+public interface DrawableLoader {
+    Drawable getDrawable();
 }

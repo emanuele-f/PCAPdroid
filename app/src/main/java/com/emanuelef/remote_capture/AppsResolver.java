@@ -25,6 +25,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import java.util.HashMap;
@@ -38,6 +39,7 @@ public class AppsResolver {
     private final Map<Integer, AppDescriptor> mApps;
     private final PackageManager mPm;
     private final Context mContext;
+    private Drawable mVirtualAppIcon;
 
     public AppsResolver(Context context) {
         mApps = new HashMap<>();
@@ -48,32 +50,38 @@ public class AppsResolver {
     }
 
     private void initVirtualApps() {
-        final Drawable mVirtualAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.sym_def_app_icon);
-        final Drawable mUnknownAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
+        // Use loaders to only load the bitmap in memory if requested via AppDescriptor.getIcon()
+        final DrawableLoader virtualIconLoader = () -> {
+            // cache this to avoid copies
+            if(mVirtualAppIcon == null)
+                mVirtualAppIcon = ContextCompat.getDrawable(mContext, android.R.drawable.sym_def_app_icon);
+            return mVirtualAppIcon;
+        };
+        final DrawableLoader unknownIconLoader = () -> ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
 
         // https://android.googlesource.com/platform/system/core/+/master/libcutils/include/private/android_filesystem_config.h
         // NOTE: these virtual apps cannot be used as a permanent filter (via addAllowedApplication)
         // as they miss a valid package name
         mApps.put(Utils.UID_UNKNOWN, new AppDescriptor(mContext.getString(R.string.unknown_app),
-            mUnknownAppIcon, "unknown", Utils.UID_UNKNOWN, true)
+             unknownIconLoader, "unknown", Utils.UID_UNKNOWN, true)
             .setDescription(mContext.getString(R.string.unknown_app_info)));
         mApps.put(0, new AppDescriptor("Root",
-                mVirtualAppIcon,"root", 0, true)
+                virtualIconLoader,"root", 0, true)
                 .setDescription(mContext.getString(R.string.root_app_info)));
         mApps.put(1000, new AppDescriptor("Android",
-                mVirtualAppIcon,"android", 1000, true)
+                virtualIconLoader,"android", 1000, true)
                 .setDescription(mContext.getString(R.string.android_app_info)));
         mApps.put(1013, new AppDescriptor("MediaServer",
-                mVirtualAppIcon,"mediaserver", 1013, true));
+                virtualIconLoader,"mediaserver", 1013, true));
         mApps.put(1020, new AppDescriptor("MulticastDNSResponder",
-                 mVirtualAppIcon,"multicastdnsresponder", 1020, true));
+                virtualIconLoader,"multicastdnsresponder", 1020, true));
         mApps.put(1021, new AppDescriptor("GPS",
-                 mVirtualAppIcon,"gps", 1021, true));
+                virtualIconLoader,"gps", 1021, true));
         mApps.put(1051, new AppDescriptor("netd",
-                 mVirtualAppIcon,"netd", 1051, true)
+                virtualIconLoader,"netd", 1051, true)
                  .setDescription(mContext.getString(R.string.netd_app_info)));
         mApps.put(9999, new AppDescriptor("Nobody",
-                 mVirtualAppIcon,"nobody", 9999, true));
+                virtualIconLoader,"nobody", 9999, true));
     }
 
     public static AppDescriptor resolve(PackageManager pm, String packageName, int pm_flags) {
