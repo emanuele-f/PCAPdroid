@@ -758,9 +758,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
             FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
-            Log.d(TAG, "filter fra");
             if(descriptor != null) {
-                Log.d(TAG, "filter fre");
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();
                 refreshActiveFilter();

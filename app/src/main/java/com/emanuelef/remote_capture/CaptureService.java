@@ -43,6 +43,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -76,8 +77,11 @@ import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -117,6 +121,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mStrictDnsNoticeShown;
     private Blacklists mBlacklists;
     private MatchList mBlocklist;
+    private SparseArray<String> mIfIndexToName;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -192,6 +197,18 @@ public class CaptureService extends VpnService implements Runnable {
         mBlockPrivateDns = false;
         mStrictDnsNoticeShown = false;
         mDnsEncrypted = false;
+
+        // Map network interfaces
+        mIfIndexToName = new SparseArray<>();
+        try {
+            Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+            while(ifaces.hasMoreElements()) {
+                NetworkInterface iface = ifaces.nextElement();
+
+                Log.d(TAG, "ifidx " + iface.getIndex() + " -> " + iface.getName());
+                mIfIndexToName.put(iface.getIndex(), iface.getName());
+            }
+        } catch (SocketException ignored) {}
 
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
@@ -474,7 +491,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.P)
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
                 Log.d(TAG, "onLinkPropertiesChanged " + network);
@@ -612,6 +629,26 @@ public class CaptureService extends VpnService implements Runnable {
         mBlacklistsUpdateThread = null;
     }
 
+    private String getIfname(int ifidx) {
+        if(ifidx <= 0)
+            return "";
+
+        String rv = mIfIndexToName.get(ifidx);
+        if(rv != null)
+            return rv;
+
+        // Not found, try to retrieve it
+        NetworkInterface iface = null;
+        try {
+            iface = NetworkInterface.getByIndex(ifidx);
+        } catch (SocketException ignored) {}
+        rv = (iface != null) ? iface.getName() : "";
+
+        // store it even if not found, to avoid looking up it again
+        mIfIndexToName.put(ifidx, rv);
+        return rv;
+    }
+
     public static String getAppFilter() {
         return((INSTANCE != null) ? INSTANCE.mSettings.app_filter : null);
     }
@@ -684,6 +721,14 @@ public class CaptureService extends VpnService implements Runnable {
             // Wake the update thread to run the blacklist thread
             INSTANCE.mPendingUpdates.push(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
         }
+    }
+
+    public static String getInterfaceName(int ifidx) {
+        String ifname = null;
+
+        if(INSTANCE != null)
+            ifname = INSTANCE.getIfname(ifidx);
+        return (ifname != null) ? ifname : "";
     }
 
     // Inside the mCaptureThread

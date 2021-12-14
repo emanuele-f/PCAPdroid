@@ -53,12 +53,12 @@ public class ConnectionDescriptor implements Serializable {
     }
 
     /* Metadata */
-    public int ipver;
-    public int ipproto;
-    public String src_ip;
-    public String dst_ip;
-    public int src_port;
-    public int dst_port;
+    public final int ipver;
+    public final int ipproto;
+    public final String src_ip;
+    public final String dst_ip;
+    public final int src_port;
+    public final int dst_port;
 
     /* Data */
     public long first_seen;
@@ -72,8 +72,9 @@ public class ConnectionDescriptor implements Serializable {
     public String url;
     public String request_plaintext;
     public String l7proto;
-    public int uid;
-    public int incr_id;
+    public final int uid;
+    public final int ifidx;
+    public final int incr_id;
     public int status;
     private int tcp_flags;
     private boolean blacklisted_ip;
@@ -89,7 +90,7 @@ public class ConnectionDescriptor implements Serializable {
     private boolean whitelisted_app;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
-                                int _src_port, int _dst_port, int _uid, long when) {
+                                int _src_port, int _dst_port, int _uid, int _ifidx, long when) {
         incr_id = _incr_id;
         ipver = _ipver;
         ipproto = _ipproto;
@@ -98,6 +99,7 @@ public class ConnectionDescriptor implements Serializable {
         src_port = _src_port;
         dst_port = _dst_port;
         uid = _uid;
+        ifidx = _ifidx;
         first_seen = last_seen = when;
         country = "";
         asn = new Geomodel.ASN();

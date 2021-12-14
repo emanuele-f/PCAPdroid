@@ -68,6 +68,7 @@ typedef struct {
     union {
         struct {
             uint64_t last_update_ms; // like last_seen but monotonic
+            u_int ifidx;             // the 1-based interface index
         } root;
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet

@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.view.LayoutInflater;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -36,9 +37,11 @@ public class FilterDescriptor implements Serializable {
     public boolean onlyBLocked = false;
     public boolean onlyBlacklisted = false;
     public boolean onlyPlaintext = false;
+    public String iface;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
+                || (iface != null)
                 || onlyBLocked
                 || onlyBlacklisted
                 || onlyPlaintext
@@ -50,7 +53,8 @@ public class FilterDescriptor implements Serializable {
                 && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
                 && (!onlyPlaintext || !conn.request_plaintext.isEmpty())
-                && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)));
+                && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
+                && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)));
     }
 
     private void addChip(LayoutInflater inflater, ChipGroup group, int id, String text) {
@@ -75,6 +79,8 @@ public class FilterDescriptor implements Serializable {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
         }
+        if(iface != null)
+            addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
     }
 
     public void clear(int filter_id) {
@@ -88,5 +94,7 @@ public class FilterDescriptor implements Serializable {
             onlyPlaintext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
+        else if(filter_id == R.id.capture_interface)
+            iface = null;
     }
 }

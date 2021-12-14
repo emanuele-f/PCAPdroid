@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 
@@ -33,6 +34,7 @@ import com.emanuelef.remote_capture.model.MatchList;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +50,8 @@ public class ConnectionsRegister {
     private int mNumItems;
     private int mUntrackedItems;
     private int mNumMalicious;
-    private final Map<Integer, AppStats> mAppsStats;
+    private final Map<Integer, AppStats> mAppsStats; // TODO use a SparseArray
+    private final SparseArray<Integer> mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
     private final MatchList mWhitelist;
     private final Geolocation mGeo;
@@ -62,6 +65,7 @@ public class ConnectionsRegister {
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
         mAppsStats = new HashMap<>(); // uid -> AppStats
+        mConnsByIface = new SparseArray<>();
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
     }
 
@@ -107,10 +111,17 @@ public class ConnectionsRegister {
                 if(conn != null) {
                     int uid = conn.uid;
                     AppStats stats = mAppsStats.get(uid);
+                    assert stats != null;
                     stats.bytes -= conn.rcvd_bytes + conn.sent_bytes;
 
                     if(--stats.num_connections <= 0)
                         mAppsStats.remove(uid);
+
+                    if(conn.ifidx > 0) {
+                        Integer num_conn = mConnsByIface.get(conn.ifidx);
+                        assert num_conn != null;
+                        mConnsByIface.put(conn.ifidx, num_conn - 1);
+                    }
 
                     if(conn.isBlacklisted())
                         mNumMalicious--;
@@ -130,10 +141,16 @@ public class ConnectionsRegister {
             // update the apps stats
             int uid = conn.uid;
             AppStats stats = mAppsStats.get(uid);
-
             if(stats == null) {
                 stats = new AppStats(uid);
                 mAppsStats.put(uid, stats);
+            }
+
+            if(conn.ifidx > 0) {
+                Integer num_conn = mConnsByIface.get(conn.ifidx);
+                if(num_conn == null)
+                    num_conn = 0;
+                mConnsByIface.put(conn.ifidx, num_conn);
             }
 
             // Geolocation
@@ -322,5 +339,25 @@ public class ConnectionsRegister {
 
     public int getNumMaliciousConnections() {
         return mNumMalicious;
+    }
+
+    public boolean hasSeenMultipleInterfaces() {
+        return(mConnsByIface.size() > 1);
+    }
+
+    // Returns a sorted list of seen network interfaces
+    public List<String> getSeenInterfaces() {
+        List<String> rv = new ArrayList<>();
+
+        for(int i=0; i<mConnsByIface.size(); i++) {
+            int ifidx = mConnsByIface.keyAt(i);
+            String ifname = CaptureService.getInterfaceName(ifidx);
+
+            if(!ifname.isEmpty())
+                rv.add(ifname);
+        }
+
+        Collections.sort(rv);
+        return rv;
     }
 }

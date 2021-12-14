@@ -217,7 +217,7 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -b \"%s\"", capture_interface, pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -t -b \"%s\"", capture_interface, pd->app_filter, bpf);
     if(su_cmd(pcapd, args, true) != 0)
         goto cleanup;
 
@@ -339,8 +339,32 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
     uint8_t is_tx = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
+    int ipoffset;
 
-    if(zdtun_parse_pkt(pd->zdt, buffer, hdr->len, &pkt) != 0) {
+    switch(hdr->linktype) {
+        case PCAPD_DLT_RAW:
+            ipoffset = 0;
+            break;
+        case PCAPD_DLT_ETHERNET:
+            ipoffset = 14;
+            break;
+        case PCAPD_DLT_LINUX_SLL:
+            ipoffset = 16;
+            break;
+        case PCAPD_DLT_LINUX_SLL2:
+            ipoffset = 20;
+            break;
+        default:
+            log_e("invalid datalink: %d", hdr->linktype);
+            return;
+    }
+
+    if(hdr->len < ipoffset) {
+        log_e("invalid length: %d, expected at least %d", hdr->len, ipoffset);
+        return;
+    }
+
+    if(zdtun_parse_pkt(pd->zdt, buffer + ipoffset, hdr->len - ipoffset, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
         return;
     }
@@ -392,6 +416,9 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
                 pd_free(conn);
                 return;
             }
+
+            if(hdr->linktype == PCAPD_DLT_LINUX_SLL2)
+                data->root.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
 
             conn->tuple = pkt.tuple;
             conn->data = data;

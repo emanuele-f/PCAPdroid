@@ -165,6 +165,15 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             else
                 findViewById(R.id.asn_row).setVisibility(View.GONE);
 
+            if(mConn.ifidx > 0) {
+                String ifname = CaptureService.getInterfaceName(mConn.ifidx);
+
+                if(!ifname.isEmpty()) {
+                    findViewById(R.id.interface_row).setVisibility(View.VISIBLE);
+                    ((TextView) findViewById(R.id.capture_interface)).setText(ifname);
+                }
+            }
+
             updateStats(mConn);
         }
 

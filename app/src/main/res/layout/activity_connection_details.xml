@@ -178,6 +178,28 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/interface_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/network_interface" />
+            <TextView
+                android:id="@+id/capture_interface"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="wlan0" />
+        </TableRow>
+
+        <TableRow
             android:id="@+id/detail_url_row"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -326,7 +348,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.75"
                 android:textIsSelectable="true"
-                tools:text="1.1 K down - 98 down" />
+                tools:text="11 pkts" />
         </TableRow>
 
         <TableRow

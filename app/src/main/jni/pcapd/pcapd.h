@@ -18,10 +18,11 @@
 #include <time.h>
 #include <stdint.h>
 
-// https://www.tcpdump.org/linktypes.html
+// pcap/dlt.h
 #define PCAPD_DLT_ETHERNET    1
-#define PCAPD_DLT_RAW         101
+#define PCAPD_DLT_RAW         12
 #define PCAPD_DLT_LINUX_SLL   113
+#define PCAPD_DLT_LINUX_SLL2  276
 
 typedef struct {
   struct timeval ts;        // the packet timestamp
@@ -31,6 +32,7 @@ typedef struct {
   uint16_t linktype;        // the link type, see PCAPD_DLT_*
   uint8_t flags;            // packet flags, see PCAPD_FLAG_*
   uint8_t ifid;             // the interface id, which is the interface position in the -i args
+  uint8_t pad[2];           // padding for 64bit alignment of the payload
 } __attribute__((packed)) pcapd_hdr_t;
 
 #endif

@@ -253,4 +253,6 @@
     <string name="invalid">Invalid</string>
     <string name="system_id">System ID</string>
     <string name="no_intent_handler_found">No app found to perform this action</string>
+    <string name="network_interface">Interface</string>
+    <string name="interface_filter">Interface: %1$s</string>
 </resources>
