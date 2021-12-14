@@ -241,7 +241,7 @@ void hexdump(const char *buf, size_t bufsize) {
     if((off % 16) != 0) {
         out[idx] = '\0';
         log_d("%s", out);
-        idx = sprintf(out, "%06x", off);
+        idx = sprintf(out, "%06zx", off);
     }
 
     out[idx] = '\0';

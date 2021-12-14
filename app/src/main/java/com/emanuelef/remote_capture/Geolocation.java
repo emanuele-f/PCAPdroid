@@ -30,9 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.zip.GZIPInputStream;
 
 /* A class to query geolocation info from IP addresses. */
 public class Geolocation {
@@ -63,12 +61,12 @@ public class Geolocation {
     private void openDb() {
         try {
             File countryFile = new File(mContext.getCacheDir() + "/dbip_country_lite.mmdb");
-            ungzip(R.raw.dbip_country_lite_2021_11_mmdb_gz, countryFile);
+            res_to_file(R.raw.dbip_country_lite, countryFile);
             mCountryReader = new Reader(countryFile);
             Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
             File asnFile = new File(mContext.getCacheDir() + "/dbip_asn_lite.mmdb");
-            ungzip(R.raw.dbip_asn_lite_2021_11_mmdb_gz, asnFile);
+            res_to_file(R.raw.dbip_asn_lite, asnFile);
             mAsnReader = new Reader(asnFile);
             Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
@@ -77,13 +75,14 @@ public class Geolocation {
         }
     }
 
-    private void ungzip(int resid, File dst) throws IOException {
-        try(InputStream is = new GZIPInputStream(mContext.getResources().openRawResource(resid))) {
+    // We need to get a File from the resource so that the Reader can mmap it
+    private void res_to_file(int resid, File dst) throws IOException {
+        try(InputStream is = mContext.getResources().openRawResource(resid)) {
             try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
                 byte[] bytesIn = new byte[4096];
-                int read = 0;
+                int read;
 
-                while ((read = is.read(bytesIn)) != -1)
+                while((read = is.read(bytesIn)) != -1)
                     bos.write(bytesIn, 0, read);
             }
         }
