@@ -657,6 +657,15 @@ public class Utils {
         Utils.showToast(ctx, R.string.copied_to_clipboard);
     }
 
+    public static void shareText(Context ctx, String subject, String contents) {
+        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+        startActivity(ctx, Intent.createChooser(intent, ctx.getResources().getString(R.string.share)));
+    }
+
     // Formats a string resource like "text: %1s" by applying the specified style to the "text:" and "value" ("%1s")
     public static SpannableString formatTextValue(Context ctx, StyleSpan textStyle, StyleSpan valStyle, int resid, String value) {
         String fmt = ctx.getResources().getString(resid);

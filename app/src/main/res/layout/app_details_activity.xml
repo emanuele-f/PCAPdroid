@@ -191,6 +191,7 @@
         <Button
             android:id="@+id/show_connections"
             android:text="@string/connections_view"
+            android:nextFocusDown="@id/permissions"
             android:layout_marginStart="5dp"
             android:layout_width="0dp"
             android:layout_height="42dip"
@@ -217,25 +218,28 @@
         app:layout_constraintTop_toBottomOf="@id/buttons"
         android:text="@string/permissions"/>
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/permissions_label"
-            android:background="@color/colorBackgroundGray"
-            android:layout_marginTop="8dp">
+    <HorizontalScrollView
+        android:id="@+id/permissionsSv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/permissions_label"
+        android:background="@color/colorBackgroundGray"
+        android:layout_marginTop="8dp">
 
-            <TextView
-                android:id="@+id/permissions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="0sp"
-                android:textIsSelectable="true"
-                android:fontFamily="monospace"
-                android:textSize="12sp"
-                android:scrollHorizontally="true"
-                tools:text="android.permission.INTERNET\nandroid.permission.FOREGROUND_SERVICE"/>
-        </HorizontalScrollView>
+        <TextView
+            android:id="@+id/permissions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0sp"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:nextFocusUp="@id/show_connections"
+            android:fontFamily="monospace"
+            android:textSize="12sp"
+            android:scrollHorizontally="true"
+            tools:text="android.permission.INTERNET\nandroid.permission.FOREGROUND_SERVICE"/>
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

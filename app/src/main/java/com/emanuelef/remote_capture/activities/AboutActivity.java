@@ -86,6 +86,9 @@ public class AboutActivity extends BaseActivity {
         String systemId = billing.getSystemId();
         TextView systemIdText = content.findViewById(R.id.system_id);
         systemIdText.setText(systemId);
+        if(Utils.isTv(this)) {
+            systemIdText.setOnClickListener(v -> Utils.shareText(this, getString(R.string.system_id), systemId));
+        }
 
         TextView validationRc = content.findViewById(R.id.validation_rc);
         EditText unlockCode = content.findViewById(R.id.unlock_code);

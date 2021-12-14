@@ -167,6 +167,10 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
             updateStats(mConn);
         }
+
+        if(Utils.isTv(this)) {
+            mRequestData.setOnClickListener(v -> Utils.shareText(this, getString(R.string.request_plaintext), mRequestData.getText().toString()));
+        }
     }
 
     @Override
@@ -273,12 +277,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             Utils.showToast(this, R.string.copied_to_clipboard);
             return true;
         } else if(id == R.id.share) {
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connection_details));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
-
-            Utils.startActivity(this, Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.shareText(this, getString(R.string.connection_details), getContents());
             return true;
         }
 

@@ -24,6 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
+            android:focusable="true"
             tools:text="A127ADC1245" />
 
         <ImageView
