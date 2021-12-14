@@ -276,6 +276,10 @@ public class Utils {
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
+    // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
+    // Using the deprecated API instead to keep things simple.
+    // https://developer.android.com/reference/android/net/wifi/WifiManager#getConnectionInfo()
+    @SuppressWarnings("deprecation")
     public static String getLocalWifiIpAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo connInfo = wifiManager.getConnectionInfo();
@@ -335,7 +339,7 @@ public class Utils {
                                 && !addr.equals(vpn_ip)) {
                             String sAddr = addr.getHostAddress();
 
-                            if ((addr instanceof Inet4Address) && !sAddr.equals("0.0.0.0")) {
+                            if ((sAddr != null) && (addr instanceof Inet4Address) && !sAddr.equals("0.0.0.0")) {
                                 Log.d("getLocalIPAddress", "Using interface '" + intf.getName() + "' IP: " + sAddr);
                                 return sAddr;
                             }
@@ -401,9 +405,12 @@ public class Utils {
         };
     }
 
+    // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
+    // Using the deprecated API instead to keep things simple.
+    // https://developer.android.com/reference/android/net/ConnectivityManager#getAllNetworks()
+    @SuppressWarnings("deprecation")
     public static boolean hasVPNRunning(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
         if(cm != null) {
             Network[] networks = cm.getAllNetworks();
 
