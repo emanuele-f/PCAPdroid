@@ -80,8 +80,6 @@ public class StatsActivity extends BaseActivity {
         mAllocStats = findViewById(R.id.alloc_stats);
 
         if(CaptureService.isCapturingAsRoot()) {
-            findViewById(R.id.dns_server_row).setVisibility(View.GONE);
-            findViewById(R.id.dns_queries_row).setVisibility(View.GONE);
             findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
             findViewById(R.id.max_fd_row).setVisibility(View.GONE);
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
@@ -125,7 +123,15 @@ public class StatsActivity extends BaseActivity {
         mMaxFd.setText(Utils.formatNumber(this, stats.max_fd));
         mOpenSocks.setText(Utils.formatNumber(this, stats.num_open_sockets));
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
-        mDnsServer.setText(CaptureService.getDNSServer());
+
+        if(!CaptureService.isDNSEncrypted()) {
+            findViewById(R.id.dns_server_row).setVisibility(View.VISIBLE);
+            findViewById(R.id.dns_queries_row).setVisibility(View.VISIBLE);
+            mDnsServer.setText(CaptureService.getDNSServer());
+        } else {
+            findViewById(R.id.dns_server_row).setVisibility(View.GONE);
+            findViewById(R.id.dns_queries_row).setVisibility(View.GONE);
+        }
 
         if(stats.num_dropped_conns > 0)
             mDroppedConns.setTextColor(Color.RED);
