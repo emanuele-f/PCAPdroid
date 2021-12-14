@@ -120,7 +120,10 @@ public class ConnectionsRegister {
                     if(conn.ifidx > 0) {
                         Integer num_conn = mConnsByIface.get(conn.ifidx);
                         assert num_conn != null;
-                        mConnsByIface.put(conn.ifidx, num_conn - 1);
+                        if(--num_conn <= 0)
+                            mConnsByIface.remove(conn.ifidx);
+                        else
+                            mConnsByIface.put(conn.ifidx, num_conn);
                     }
 
                     if(conn.isBlacklisted())
