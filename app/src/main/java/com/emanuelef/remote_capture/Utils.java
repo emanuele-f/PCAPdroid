@@ -282,8 +282,10 @@ public class Utils {
     @SuppressWarnings("deprecation")
     public static String getLocalWifiIpAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo connInfo = wifiManager.getConnectionInfo();
+        if(wifiManager == null)
+            return(null);
 
+        WifiInfo connInfo = wifiManager.getConnectionInfo();
         if(connInfo != null) {
             int ipAddress = connInfo.getIpAddress();
 
