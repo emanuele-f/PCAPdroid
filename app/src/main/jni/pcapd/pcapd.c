@@ -399,8 +399,8 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
     log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
   }
 
-  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL): 16 B */
-  int snaplen = mtu + SLL_HDR_LEN;
+  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
+  int snaplen = mtu + SLL2_HDR_LEN;
   log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
 
   pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
