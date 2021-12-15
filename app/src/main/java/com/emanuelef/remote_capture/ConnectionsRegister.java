@@ -22,8 +22,10 @@ package com.emanuelef.remote_capture;
 import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
@@ -35,10 +37,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class ConnectionsRegister {
@@ -50,8 +49,8 @@ public class ConnectionsRegister {
     private int mNumItems;
     private int mUntrackedItems;
     private int mNumMalicious;
-    private final Map<Integer, AppStats> mAppsStats; // TODO use a SparseArray
-    private final SparseArray<Integer> mConnsByIface;
+    private final SparseArray<AppStats> mAppsStats;
+    private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
     private final MatchList mWhitelist;
     private final Geolocation mGeo;
@@ -64,8 +63,8 @@ public class ConnectionsRegister {
         mGeo = new Geolocation(ctx);
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
-        mAppsStats = new HashMap<>(); // uid -> AppStats
-        mConnsByIface = new SparseArray<>();
+        mAppsStats = new SparseArray<>(); // uid -> AppStats
+        mConnsByIface = new SparseIntArray();
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
     }
 
@@ -118,10 +117,9 @@ public class ConnectionsRegister {
                         mAppsStats.remove(uid);
 
                     if(conn.ifidx > 0) {
-                        Integer num_conn = mConnsByIface.get(conn.ifidx);
-                        assert num_conn != null;
+                        int num_conn = mConnsByIface.get(conn.ifidx);
                         if(--num_conn <= 0)
-                            mConnsByIface.remove(conn.ifidx);
+                            mConnsByIface.delete(conn.ifidx);
                         else
                             mConnsByIface.put(conn.ifidx, num_conn);
                     }
@@ -150,10 +148,8 @@ public class ConnectionsRegister {
             }
 
             if(conn.ifidx > 0) {
-                Integer num_conn = mConnsByIface.get(conn.ifidx);
-                if(num_conn == null)
-                    num_conn = 0;
-                mConnsByIface.put(conn.ifidx, num_conn);
+                int num_conn = mConnsByIface.get(conn.ifidx);
+                mConnsByIface.put(conn.ifidx, num_conn + 1);
             }
 
             // Geolocation
@@ -320,9 +316,9 @@ public class ConnectionsRegister {
     public synchronized List<AppStats> getAppsStats() {
         ArrayList<AppStats> rv = new ArrayList<>(mAppsStats.size());
 
-        for (Map.Entry<Integer, AppStats> pair : mAppsStats.entrySet()) {
+        for(int i=0; i<mAppsStats.size(); i++) {
             // Create a clone to avoid concurrency issues
-            AppStats stats = pair.getValue().clone();
+            AppStats stats = mAppsStats.valueAt(i).clone();
 
             rv.add(stats);
         }
@@ -331,11 +327,10 @@ public class ConnectionsRegister {
     }
 
     public synchronized Set<Integer> getSeenUids() {
-        HashSet<Integer> rv = new HashSet<>();
+        ArraySet<Integer> rv = new ArraySet<>();
 
-        for (Map.Entry<Integer, AppStats> pair : mAppsStats.entrySet()) {
-            rv.add(pair.getKey());
-        }
+        for(int i=0; i<mAppsStats.size(); i++)
+            rv.add(mAppsStats.keyAt(i));
 
         return rv;
     }

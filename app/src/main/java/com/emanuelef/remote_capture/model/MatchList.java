@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
+import android.util.ArrayMap;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
@@ -42,7 +43,6 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class MatchList {
     private final SharedPreferences mPrefs;
     private final String mPrefName;
     private final ArrayList<Rule> mRules = new ArrayList<>();
-    private final HashMap<String, Rule> mMatches = new HashMap<>();
+    private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
 
     public enum RuleType {
         APP,

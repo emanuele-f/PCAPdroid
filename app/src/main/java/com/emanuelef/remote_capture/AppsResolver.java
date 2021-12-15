@@ -24,25 +24,23 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
-    private final Map<Integer, AppDescriptor> mApps;
+    private final SparseArray<AppDescriptor> mApps;
     private final PackageManager mPm;
     private final Context mContext;
     private Drawable mVirtualAppIcon;
 
     public AppsResolver(Context context) {
-        mApps = new HashMap<>();
+        mApps = new SparseArray<>();
         mContext = context;
         mPm = context.getPackageManager();
 
@@ -99,7 +97,6 @@ public class AppsResolver {
 
     public @Nullable AppDescriptor get(int uid, int pm_flags) {
         AppDescriptor app = mApps.get(uid);
-
         if(app != null)
             return app;
 
@@ -113,7 +110,6 @@ public class AppsResolver {
         String packageName = packages[0];
 
         app = resolve(mPm, packageName, pm_flags);
-
         if(app != null)
             mApps.put(uid, app);
 

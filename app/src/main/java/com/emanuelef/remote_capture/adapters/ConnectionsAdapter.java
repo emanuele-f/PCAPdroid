@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,11 +44,9 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
-import com.haipq.android.flagkit.FlagImageView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder>
@@ -64,8 +63,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
     // to provide an always increasing position even when items are removed. The correct unshifted
-    // position is returned by getFilteredItemPos.
-    private final HashMap<Integer, Integer> mIdToFilteredPos;
+    // position is returned by getFilteredItemPos. SparseIntArray is less efficient than an HashMap
+    // on large collections, but takes much less memory.
+    private final SparseIntArray mIdToFilteredPos;
 
     private ArrayList<ConnectionDescriptor> mFilteredConn;
     private String mSearch;
@@ -165,7 +165,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mFilteredConn = null;
         mUnfilteredItemsCount = 0;
         mNumRemovedItems = 0;
-        mIdToFilteredPos = new HashMap<>();
+        mIdToFilteredPos = new SparseIntArray();
         mMask = PCAPdroid.getInstance().getVisualizationMask();
         mSearch = null;
         setHasStableIds(true);
@@ -223,9 +223,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     }
 
     private int getFilteredItemPos(int incrId) {
-        Integer pos = mIdToFilteredPos.get(incrId);
-
-        if(pos == null)
+        int pos = mIdToFilteredPos.get(incrId, -1);
+        if(pos == -1)
             return -1;
 
         return(pos - mNumRemovedItems);
@@ -235,7 +234,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         int incr_id = mFilteredConn.get(pos).incr_id;
 
         mFilteredConn.remove(pos);
-        mIdToFilteredPos.remove(incr_id);
+        mIdToFilteredPos.delete(incr_id);
         notifyItemRemoved(pos);
     }
 
@@ -290,7 +289,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 continue;
 
             int pos = getFilteredItemPos(conn.incr_id);
-
             if(pos != -1) {
                 // Assume that connections are only removed from the start of the dataset
                 removeItemAt(0);
@@ -321,7 +319,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             if(conn != null) {
                 int pos = getFilteredItemPos(conn.incr_id);
-
                 if(pos != -1) {
                     pos -= num_just_removed;
 

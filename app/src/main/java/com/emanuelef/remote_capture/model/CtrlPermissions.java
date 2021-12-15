@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.ArrayMap;
 
 import androidx.preference.PreferenceManager;
 
@@ -34,22 +35,21 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class CtrlPermissions {
     private static final String PREF_NAME = "ctrl_perms";
-    private final HashMap<String, Rule> mRules = new HashMap<>();
+    private final ArrayMap<String, Rule> mRules = new ArrayMap<>();
     private final SharedPreferences mPrefs;
 
     public enum ConsentType {
         UNSPECIFIED,
         ALLOW,
         DENY,
-    };
+    }
 
-    public class Rule {
+    public static class Rule {
         public final String package_name;
         public final ConsentType consent;
 

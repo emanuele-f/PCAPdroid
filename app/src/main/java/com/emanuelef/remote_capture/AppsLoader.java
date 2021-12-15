@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.ArraySet;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
@@ -36,7 +38,6 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDescriptor>> {
@@ -57,10 +58,10 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
     private ArrayList<AppDescriptor> asyncLoadAppsInfo() {
         final PackageManager pm = mContext.getPackageManager();
         ArrayList<AppDescriptor> apps = new ArrayList<>();
-        HashSet<Integer> uids = new HashSet<>();
+        ArraySet<Integer> uids = new ArraySet<>();
 
         Log.d(TAG, "Loading APPs...");
-        List<PackageInfo> packs = pm.getInstalledPackages(0);
+        @SuppressLint("QueryPermissionsNeeded") List<PackageInfo> packs = pm.getInstalledPackages(0);
         String app_package = mContext.getApplicationContext().getPackageName();
 
         Log.d(TAG, "num apps (system+user): " + packs.size());
