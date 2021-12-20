@@ -80,7 +80,6 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -949,26 +948,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mBilling.isPurchased(Billing.FIREWALL_SKU) || mSettings.root_capture)
             return;
 
-        final ArrayList<String> blocked_apps = new ArrayList<>();
-        final ArrayList<String> blocked_domains = new ArrayList<>();
-        final ArrayList<String> blocked_ips = new ArrayList<>();
-
-        Iterator<MatchList.Rule> it = mBlocklist.iterRules();
-
-        while(it.hasNext()) {
-            MatchList.Rule rule = it.next();
-            MatchList.RuleType tp = rule.getType();
-            String val = rule.getValue().toString();
-
-            if(tp.equals(MatchList.RuleType.APP))
-                blocked_apps.add(val);
-            else if(tp.equals(MatchList.RuleType.HOST))
-                blocked_domains.add(val);
-            else if(tp.equals(MatchList.RuleType.IP))
-                blocked_ips.add(val);
-        }
-
-        reloadBlocklist(Utils.list2array(blocked_apps), Utils.list2array(blocked_domains), Utils.list2array(blocked_ips));
+        reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
@@ -977,7 +957,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native void setPrivateDnsBlocked(boolean to_block);
     private static native void setDnsServer(String server);
     private static native void reloadBlacklists();
-    private static native boolean reloadBlocklist(String[] apps, String[] domains, String[] ips);
+    private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native int getNumCheckedConnections();

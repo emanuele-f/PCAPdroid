@@ -277,3 +277,60 @@ bool blacklist_match_uid(blacklist_t *bl, int uid) {
 void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
     *stats = bl->stats;
 }
+
+/* ******************************************************* */
+
+static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blacklist_type tp) {
+    int num_items = (*env)->CallIntMethod(env, list, mids.listSize);
+
+    for(int i=0; i<num_items; i++) {
+        jstring *obj = (*env)->CallObjectMethod(env, list, mids.listGet, i);
+        if(obj != NULL) {
+            int rv;
+            const char *val = (*env)->GetStringUTFChars(env, obj, NULL);
+
+            switch (tp) {
+                case IP_BLACKLIST:
+                    rv = blacklist_add_ipstr(bl, val);
+                    break;
+                case DOMAIN_BLACKLIST:
+                    rv = blacklist_add_domain(bl, val);
+                    break;
+                case UID_BLACKLIST:
+                    rv = blacklist_add_uid(bl, atoi(val));
+                    break;
+                default:
+                    rv = -1;
+            }
+            (*env)->ReleaseStringUTFChars(env, obj, val);
+            (*env)->DeleteLocalRef(env, obj);
+
+            if(rv != 0) {
+                log_e("bl add %s failed: %d", val, rv);
+                return -1;
+            }
+        }
+    }
+
+    return num_items;
+}
+
+/* ******************************************************* */
+
+int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld) {
+    jobject apps = (*env)->GetObjectField(env, ld, fields.ld_apps);
+    jobject hosts = (*env)->GetObjectField(env, ld, fields.ld_hosts);
+    jobject ips = (*env)->GetObjectField(env, ld, fields.ld_ips);
+
+    int num_apps = bl_load_list_of_type(bl, env, apps, UID_BLACKLIST);
+    int num_domains = bl_load_list_of_type(bl, env, hosts, DOMAIN_BLACKLIST);
+    int num_ips = bl_load_list_of_type(bl, env, ips, IP_BLACKLIST);
+
+    if((num_apps == -1) || (num_ips == -1) || (num_domains == -1))
+        return -1;
+
+    (*env)->DeleteLocalRef(env, apps);
+    (*env)->DeleteLocalRef(env, hosts);
+    (*env)->DeleteLocalRef(env, ips);
+    return 0;
+}

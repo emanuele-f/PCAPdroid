@@ -245,6 +245,8 @@ typedef struct {
     jmethodID notifyBlacklistsLoaded;
     jmethodID blacklistStatusInit;
     jmethodID getBlacklistsInfo;
+    jmethodID listSize;
+    jmethodID listGet;
 } jni_methods_t;
 
 typedef struct {
@@ -254,17 +256,23 @@ typedef struct {
     jclass stats;
     jclass blacklist_status;
     jclass blacklist_descriptor;
+    jclass matchlist_descriptor;
+    jclass list;
 } jni_classes_t;
 
 typedef struct {
     jfieldID bldescr_fname;
     jfieldID bldescr_type;
+    jfieldID ld_apps;
+    jfieldID ld_hosts;
+    jfieldID ld_ips;
 } jni_fields_t;
 
 /* ******************************************************* */
 
 extern jni_methods_t mids;
 extern jni_classes_t cls;
+extern jni_fields_t fields;
 extern bool running;
 extern uint32_t new_dns_server;
 extern bool block_private_dns;

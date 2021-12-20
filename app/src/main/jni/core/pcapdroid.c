@@ -1385,6 +1385,8 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
     cls.blacklist_status = jniFindClass(env, "com/emanuelef/remote_capture/model/Blacklists$NativeBlacklistStatus");
     cls.blacklist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor");
+    cls.matchlist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/MatchList$ListDescriptor");
+    cls.list = jniFindClass(env, "java/util/List");
 
     /* Methods */
     mids.reportError = jniGetMethodID(env, vpn_class, "reportError", "(Ljava/lang/String;)V");
@@ -1405,10 +1407,15 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJIIIIIIIII)V");
     mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
+    mids.listSize = jniGetMethodID(env, cls.list, "size", "()I");
+    mids.listGet = jniGetMethodID(env, cls.list, "get", "(I)Ljava/lang/Object;");
 
     /* Fields */
     fields.bldescr_fname = jniFieldID(env, cls.blacklist_descriptor, "fname", "Ljava/lang/String;");
     fields.bldescr_type = jniFieldID(env, cls.blacklist_descriptor, "type", "Lcom/emanuelef/remote_capture/model/BlacklistDescriptor$Type;");
+    fields.ld_apps = jniFieldID(env, cls.matchlist_descriptor, "apps", "Ljava/util/List;");
+    fields.ld_hosts = jniFieldID(env, cls.matchlist_descriptor, "hosts", "Ljava/util/List;");
+    fields.ld_ips = jniFieldID(env, cls.matchlist_descriptor, "ips", "Ljava/util/List;");
 
     pcapdroid_t pd = {
             .sdk_ver = sdk,
@@ -1622,43 +1629,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_setPrivateDnsBlocked(JNIEnv *e
     block_private_dns = to_block;
 }
 
-static int bl_add_array(JNIEnv *env, blacklist_t *bl, jobjectArray arr, blacklist_type tp) {
-    int num_items = (*env)->GetArrayLength(env, arr);
-
-    for(int i=0; i<num_items; i++) {
-        jstring *obj = (*env)->GetObjectArrayElement(env, arr, i);
-        if(obj != NULL) {
-            int rv;
-            const char *val = (*env)->GetStringUTFChars(env, obj, 0);
-
-            switch (tp) {
-                case IP_BLACKLIST:
-                    rv = blacklist_add_ipstr(bl, val);
-                    break;
-                case DOMAIN_BLACKLIST:
-                    rv = blacklist_add_domain(bl, val);
-                    break;
-                case UID_BLACKLIST:
-                    rv = blacklist_add_uid(bl, atoi(val));
-                    break;
-                default:
-                    rv = -1;
-            }
-            (*env)->ReleaseStringUTFChars(env, obj, val);
-
-            if(rv != 0) {
-                log_e("bl add %s failed", val);
-                return -1;
-            }
-        }
-    }
-
-    return num_items;
-}
-
 JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, jclass clazz,
-        jobjectArray apps, jobjectArray domains, jobjectArray ips) {
+        jobject ld) {
     pcapdroid_t *pd = global_pd;
     if(!pd) {
         log_e("NULL pd instance");
@@ -1681,17 +1654,15 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
         return false;
     }
 
-    // NOTE: add new types to check_blocked_conn_cb
-    int num_apps = bl_add_array(env, bl, apps, UID_BLACKLIST);
-    int num_domains = bl_add_array(env, bl, domains, DOMAIN_BLACKLIST);
-    int num_ips = bl_add_array(env, bl, ips, IP_BLACKLIST);
-
-    if((num_apps == -1) || (num_ips == -1) || (num_domains == -1)) {
+    if(blacklist_load_list_descriptor(bl, env, ld) < 0) {
         blacklist_destroy(bl);
         return false;
     }
 
-    log_d("reloadBlocklist: %d apps, %d domains, %d IPs", num_apps, num_domains, num_ips);
+    blacklists_stats_t stats;
+    blacklist_get_stats(bl, &stats);
+    log_d("reloadBlocklist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
+
     pd->firewall.new_bl = bl;
     return true;
 }
