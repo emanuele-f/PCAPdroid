@@ -25,6 +25,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 // Adapter from https://gist.github.com/AlexZhukovich/537eaa1e3c82ef9f5d5cd22efdc80c54#file-emptyrecyclerview-java
 public class EmptyRecyclerView extends RecyclerView {
@@ -32,14 +33,26 @@ public class EmptyRecyclerView extends RecyclerView {
 
     public EmptyRecyclerView(Context context) {
         super(context);
+        init();
     }
 
     public EmptyRecyclerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public EmptyRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init();
+    }
+
+    private void init() {
+        // Disable the item change animation since it cancels the touch event, making it impossible
+        // to long click a continuously refreshed item.
+        // https://stackoverflow.com/questions/58628885/handle-touch-events-for-recyclerview-with-frequently-changing-data
+        ItemAnimator animator = getItemAnimator();
+        if(animator instanceof SimpleItemAnimator)
+            ((SimpleItemAnimator)animator).setSupportsChangeAnimations(false);
     }
 
     private void initEmptyView() {
