@@ -120,6 +120,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mStrictDnsNoticeShown;
     private Blacklists mBlacklists;
     private MatchList mBlocklist;
+    private MatchList mWhitelist;
     private SparseArray<String> mIfIndexToName;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
@@ -332,6 +333,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
 
+        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
@@ -885,8 +887,11 @@ public class CaptureService extends VpnService implements Runnable {
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
-        if(cur_status.equals(SERVICE_STATUS_STARTED))
+        if(cur_status.equals(SERVICE_STATUS_STARTED)) {
+            if(mMalwareDetectionEnabled)
+                reloadMalwareWhitelist();
             reloadBlocklist();
+        }
     }
 
     public String getApplicationByUid(int uid) {
@@ -951,6 +956,13 @@ public class CaptureService extends VpnService implements Runnable {
         reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
+    public static void reloadMalwareWhitelist() {
+        if((INSTANCE == null) || !INSTANCE.mMalwareDetectionEnabled)
+            return;
+
+        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
+    }
+
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();
@@ -958,6 +970,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native void setDnsServer(String server);
     private static native void reloadBlacklists();
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
+    private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native int getNumCheckedConnections();

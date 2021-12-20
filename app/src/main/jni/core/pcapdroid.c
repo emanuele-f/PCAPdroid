@@ -29,6 +29,7 @@
 
 extern int run_vpn(pcapdroid_t *pd, int tunfd);
 extern int run_root(pcapdroid_t *pd);
+extern void root_iter_connections(pcapdroid_t *pd, conn_cb cb);
 
 /* ******************************************************* */
 
@@ -320,23 +321,28 @@ const char *getProtoName(struct ndpi_detection_module_struct *mod, uint16_t prot
 
 static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple) {
     if(data->info && data->info[0]) {
-        if(pd->malware_detection.bl && !data->blacklisted_domain) {
-            data->blacklisted_domain = blacklist_match_domain(pd->malware_detection.bl,
-                                                              data->info);
-            if (data->blacklisted_domain) {
+        if(pd->malware_detection.bl && !data->blacklisted_domain && !data->whitelisted_app) {
+            bool blacklisted = blacklist_match_domain(pd->malware_detection.bl, data->info);
+            if(blacklisted) {
                 char appbuf[64];
                 char buf[512];
-
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_w("Blacklisted domain [%s]: %s [%s]", data->info,
-                      zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
 
-                // Block all the blacklisted domains
-                data->to_block |= (pd->firewall.bl != NULL);
+                // Check if whitelisted
+                if(pd->malware_detection.whitelist && blacklist_match_domain(pd->malware_detection.whitelist, data->info))
+                    log_d("Whitelisted domain [%s]: %s [%s]", data->info,
+                          zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                else {
+                    log_w("Blacklisted domain [%s]: %s [%s]", data->info,
+                          zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                    data->blacklisted_domain = true;
+                    data->to_block = true;
+                }
             }
         }
+
         if(pd->firewall.bl && !data->to_block) {
-            // Check if the domain is explicitly blocked
+            // Check if the domain is explicitly blocked by the firewall
             data->to_block |= blacklist_match_domain(pd->firewall.bl, data->info);
             if(data->to_block) {
                 char appbuf[64];
@@ -345,8 +351,6 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
                 log_w("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
-
-            log_d("Domain check: %s -> %d", data->info, data->to_block);
         }
     }
 }
@@ -379,6 +383,19 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
     data->uid = uid;
     data->incr_id = pd->new_conn_id++;
+
+    if(pd->malware_detection.whitelist) {
+        // NOTE: if app is whitelisted, no need to check for blacklisted IP/domains
+        data->whitelisted_app = blacklist_match_uid(pd->malware_detection.whitelist, uid);
+
+        if(data->whitelisted_app) {
+            char appbuf[64];
+            char buf[256];
+            get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
+
+            log_d("Whitelisted app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+        }
+    }
 
     // Try to resolve host name via the LRU cache
     const zdtun_ip_t dst_ip = tuple->dst_ip;
@@ -426,19 +443,27 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
     }
 
     if(pd->malware_detection.bl) {
-        data->blacklisted_ip = blacklist_match_ip(pd->malware_detection.bl, &dst_ip, tuple->ipver);
-        if(data->blacklisted_ip) {
-            char appbuf[64];
-            char buf[256];
+        if(!data->whitelisted_app) {
+            bool blacklisted = blacklist_match_ip(pd->malware_detection.bl, &dst_ip, tuple->ipver);
+            if (blacklisted) {
+                char appbuf[64];
+                char buf[256];
+                get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
 
-            get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
-
-            data->to_block |= (pd->firewall.bl != NULL);
+                if(pd->malware_detection.whitelist && blacklist_match_ip(pd->malware_detection.whitelist, &dst_ip, tuple->ipver))
+                    log_d("Whitelisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)),
+                          appbuf);
+                else {
+                    log_w("Blacklisted dst ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                    data->blacklisted_ip = true;
+                    data->to_block = true;
+                }
+            }
         }
 
         bl_num_checked_connections++;
     }
+
     if(pd->firewall.bl && !data->to_block) {
         data->to_block |= blacklist_match_ip(pd->firewall.bl, &dst_ip, tuple->ipver);
         if(data->to_block) {
@@ -742,10 +767,12 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     }
 
     if(data->update_type & CONN_UPDATE_STATS) {
+        bool blocked = data->to_block && !pd->root_capture; // currently can only block connections in non-root mode
+
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->to_block << 10) | (data->blacklisted_domain << 9) |
+                               (blocked << 10) | (data->blacklisted_domain << 9) |
                                     (data->blacklisted_ip << 8) | (data->status & 0xFF));
     }
     if(data->update_type & CONN_UPDATE_INFO) {
@@ -1177,20 +1204,80 @@ static void* load_new_blacklists(void *data) {
 
 /* ******************************************************* */
 
-static int check_blocked_conn_cb(zdtun_t *zdt, const zdtun_conn_t *conn_info, void *userdata) {
-    pcapdroid_t *pd = (pcapdroid_t*) userdata;
-    pd_conn_t *data = zdtun_conn_get_userdata(conn_info);
+struct iter_conn_data {
+    pcapdroid_t *pd;
+    conn_cb cb;
+};
+
+static int zdtun_iter_adapter(zdtun_t *zdt, const zdtun_conn_t *conn_info, void *data) {
+    struct iter_conn_data *idata = (struct iter_conn_data*) data;
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn_info);
+    pd_conn_t *conn = zdtun_conn_get_userdata(conn_info);
+
+    return idata->cb(idata->pd, tuple, conn);
+}
+
+static void iter_active_connections(pcapdroid_t *pd, conn_cb cb) {
+    if(pd->root_capture)
+        root_iter_connections(pd, cb);
+    else {
+        struct iter_conn_data idata = {
+                .pd = pd,
+                .cb = cb,
+        };
+        zdtun_iter_connections(pd->zdt, zdtun_iter_adapter, &idata);
+    }
+}
+
+/* ******************************************************* */
+
+static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     zdtun_ip_t dst_ip = tuple->dst_ip;
-    blacklist_t *bl = pd->firewall.bl;
+    blacklist_t *fw_bl = pd->firewall.bl;
     bool old_block = data->to_block;
 
     data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain) ||
-            blacklist_match_uid(bl, data->uid) ||
-            blacklist_match_ip(bl, &dst_ip, tuple->ipver) ||
-            (data->info && data->info[0] && blacklist_match_domain(bl, data->info));
+            blacklist_match_uid(fw_bl, data->uid) ||
+            blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
+            (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
 
     if(old_block != data->to_block) {
+        data->update_type |= CONN_UPDATE_STATS;
+        pd_notify_connection_update(pd, tuple, data);
+    }
+
+    // continue
+    return 0;
+}
+
+/* ******************************************************* */
+
+// Check if a previously blacklisted connection is now whitelisted
+static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    blacklist_t *whitelist = pd->malware_detection.whitelist;
+    bool changed = false;
+
+    data->whitelisted_app = blacklist_match_uid(whitelist, data->uid);
+
+    if(data->blacklisted_ip) {
+        const zdtun_ip_t dst_ip = tuple->dst_ip;
+        if(data->whitelisted_app || blacklist_match_ip(whitelist, &dst_ip, tuple->ipver)) {
+            data->blacklisted_ip = false;
+            changed = true;
+        }
+    }
+
+    if(data->blacklisted_domain &&
+            (data->whitelisted_app || blacklist_match_domain(whitelist, data->info))) {
+        data->blacklisted_domain = false;
+        changed = true;
+    }
+
+    if(changed) {
+        // Possibly unblock the connection
+        if(pd->firewall.bl)
+            check_blocked_conn_cb(pd, tuple, data);
+
         data->update_type |= CONN_UPDATE_STATS;
         pd_notify_connection_update(pd, tuple, data);
     }
@@ -1243,15 +1330,24 @@ void pd_housekeeping(pcapdroid_t *pd) {
         }
     }
 
+    if(pd->malware_detection.new_wl) {
+        // Load new whitelist
+        if(pd->malware_detection.whitelist)
+            blacklist_destroy(pd->malware_detection.whitelist);
+        pd->malware_detection.whitelist = pd->malware_detection.new_wl;
+        pd->malware_detection.new_wl = NULL;
+
+        // Check the active (blacklisted) connections to possibly whitelist (and unblock) them
+        iter_active_connections(pd, check_blacklisted_conn_cb);
+    }
+
     if(pd->firewall.new_bl) {
-        // Load new bl
+        // Load new blocklist
         if(pd->firewall.bl)
             blacklist_destroy(pd->firewall.bl);
         pd->firewall.bl = pd->firewall.new_bl;
         pd->firewall.new_bl = NULL;
-
-        if(pd->zdt)
-            zdtun_iter_connections(pd->zdt, check_blocked_conn_cb, pd);
+        iter_active_connections(pd, check_blocked_conn_cb);
     }
 }
 
@@ -1369,7 +1465,7 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
 
 /* ******************************************************* */
 
-static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
+static int run_loop(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
     netd_resolve_waiting = 0;
     jclass vpn_class = (*env)->GetObjectClass(env, vpn);
 
@@ -1519,6 +1615,10 @@ static int run_tun(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
         }
         if(pd.malware_detection.bl)
             blacklist_destroy(pd.malware_detection.bl);
+        if(pd.malware_detection.whitelist)
+            blacklist_destroy(pd.malware_detection.whitelist);
+        if(pd.malware_detection.new_wl)
+            blacklist_destroy(pd.malware_detection.new_wl);
         if(pd.malware_detection.bls_info) {
             for(int i=0; i < pd.malware_detection.num_bls; i++)
                 pd_free(pd.malware_detection.bls_info[i].fname);
@@ -1570,7 +1670,7 @@ JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
                                                               jobject vpn, jint sdk) {
 
-    run_tun(env, vpn, tunfd, sdk);
+    run_loop(env, vpn, tunfd, sdk);
 }
 
 JNIEXPORT void JNICALL
@@ -1644,7 +1744,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
     }
 
     if(pd->firewall.new_bl != NULL) {
-        log_e("previous bl not loaded yet");
+        log_e("previous blocklist not loaded yet");
         return false;
     }
 
@@ -1664,5 +1764,43 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
     log_d("reloadBlocklist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
 
     pd->firewall.new_bl = bl;
+    return true;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv *env, jclass clazz,
+                                                                         jobject whitelist) {
+    pcapdroid_t *pd = global_pd;
+    if(!pd) {
+        log_e("NULL pd instance");
+        return false;
+    }
+
+    if(!pd->malware_detection.enabled) {
+        log_e("malware detection not enabled");
+        return false;
+    }
+
+    if(pd->malware_detection.new_wl != NULL) {
+        log_e("previous whitelist not loaded yet");
+        return false;
+    }
+
+    blacklist_t *wl = blacklist_init();
+    if(!wl) {
+        log_e("blacklist_init failed");
+        return false;
+    }
+
+    if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        blacklist_destroy(wl);
+        return false;
+    }
+
+    blacklists_stats_t stats;
+    blacklist_get_stats(wl, &stats);
+    log_d("reloadMalwareWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
+
+    pd->malware_detection.new_wl = wl;
     return true;
 }

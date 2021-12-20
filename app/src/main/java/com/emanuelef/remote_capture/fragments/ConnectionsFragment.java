@@ -492,7 +492,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             refreshFilteredConnections();
         } else if(whitelist_changed) {
             whitelist.save();
-            recheckBlacklistedConnections();
+            CaptureService.reloadMalwareWhitelist();
         } else if(blocklist_changed) {
             blocklist.save();
             if(CaptureService.isServiceActive())
@@ -513,12 +513,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSearchView.post(() -> {
             mSearchView.setQuery(query, true);
         });
-    }
-
-    private void recheckBlacklistedConnections() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg != null)
-            reg.refreshConnectionsWhitelist();
     }
 
     private void recheckScroll() {

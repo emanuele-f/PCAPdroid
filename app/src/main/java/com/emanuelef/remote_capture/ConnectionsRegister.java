@@ -31,7 +31,6 @@ import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
-import com.emanuelef.remote_capture.model.MatchList;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ public class ConnectionsRegister {
     private final SparseArray<AppStats> mAppsStats;
     private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
-    private final MatchList mWhitelist;
     private final Geolocation mGeo;
 
     public ConnectionsRegister(Context ctx, int _size) {
@@ -65,7 +63,6 @@ public class ConnectionsRegister {
         mListeners = new ArrayList<>();
         mAppsStats = new SparseArray<>(); // uid -> AppStats
         mConnsByIface = new SparseIntArray();
-        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
     }
 
     private int firstPos() {
@@ -77,10 +74,16 @@ public class ConnectionsRegister {
     }
 
     private void processConnectionStatus(ConnectionDescriptor conn) {
-        if(!conn.alerted && conn.isBlacklisted()) {
+        boolean is_blacklisted = conn.isBlacklisted();
+
+        if(!conn.alerted && is_blacklisted) {
             CaptureService.requireInstance().notifyBlacklistedConnection(conn);
             conn.alerted = true;
             mNumMalicious++;
+        } else if(conn.alerted && !is_blacklisted) {
+            // the connection was whitelisted
+            conn.alerted = false;
+            mNumMalicious--;
         }
     }
 
@@ -158,7 +161,6 @@ public class ConnectionsRegister {
             conn.asn = mGeo.getASN(dstAddr);
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
-            conn.updateWhitelist(mWhitelist);
             processConnectionStatus(conn);
 
             stats.num_connections++;
@@ -200,10 +202,7 @@ public class ConnectionsRegister {
                 stats.bytes += bytes_delta;
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
-                boolean host_changed = (update.info != null) && (!update.info.equals(conn.info));
                 conn.processUpdate(update);
-                if(host_changed)
-                    conn.updateWhitelist(mWhitelist);
                 processConnectionStatus(conn);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
@@ -232,39 +231,6 @@ public class ConnectionsRegister {
 
         for(ConnectionsListener listener: mListeners)
             listener.connectionsChanges(mNumItems);
-    }
-
-    public synchronized void refreshConnectionsWhitelist() {
-        ArrayList<Integer>changed_pos = new ArrayList<>();
-
-        for(int i = 0; i< mNumItems; i++) {
-            ConnectionDescriptor conn = mItemsRing[i];
-
-            if(conn != null) {
-                boolean was_blacklisted = conn.isBlacklisted();
-
-                conn.updateWhitelist(mWhitelist);
-                if(conn.isBlacklisted() != was_blacklisted) {
-                    if(was_blacklisted)
-                        mNumMalicious--;
-                    else
-                        mNumMalicious++;
-                    changed_pos.add(i);
-                }
-            }
-        }
-
-        // Notify listeners
-        if(changed_pos.size() > 0) {
-            int[] changed = new int[changed_pos.size()];
-            int i = 0;
-
-            for(Integer item: changed_pos)
-                changed[i++] = item;
-
-            for(ConnectionsListener listener: mListeners)
-                listener.connectionsUpdated(changed);
-        }
     }
 
     public synchronized void addListener(ConnectionsListener listener) {

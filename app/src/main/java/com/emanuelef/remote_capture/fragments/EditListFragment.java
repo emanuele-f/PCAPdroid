@@ -127,11 +127,9 @@ public class EditListFragment extends Fragment {
                         updateList();
                     }
 
-                    if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST) {
-                        ConnectionsRegister reg = CaptureService.getConnsRegister();
-                        if(reg != null)
-                            reg.refreshConnectionsWhitelist();
-                    } else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
+                    if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST)
+                        CaptureService.reloadMalwareWhitelist();
+                    else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
                         if(CaptureService.isServiceActive())
                             CaptureService.requireInstance().reloadBlocklist();
                     }

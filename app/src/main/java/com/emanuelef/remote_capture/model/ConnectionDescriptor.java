@@ -85,9 +85,6 @@ public class ConnectionDescriptor implements Serializable {
 
     /* Internal */
     public boolean alerted;
-    private boolean whitelisted_ip;
-    private boolean whitelisted_host;
-    private boolean whitelisted_app;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
                                 int _src_port, int _dst_port, int _uid, int _ifidx, long when) {
@@ -192,16 +189,10 @@ public class ConnectionDescriptor implements Serializable {
         return (tcp_flags & 0xFF);
     }
 
-    public boolean isBlacklistedIp() { return !whitelisted_app && !whitelisted_ip && blacklisted_ip; }
-    public boolean isBlacklistedHost() { return !whitelisted_app && !whitelisted_host && blacklisted_host; }
+    public boolean isBlacklistedIp() { return blacklisted_ip; }
+    public boolean isBlacklistedHost() { return blacklisted_host; }
     public boolean isBlacklisted() {
         return isBlacklistedIp() || isBlacklistedHost();
-    }
-
-    public void updateWhitelist(MatchList whitelist) {
-        whitelisted_app = whitelist.matchesApp(uid);
-        whitelisted_ip = whitelist.matchesIP(dst_ip);
-        whitelisted_host = whitelist.matchesHost(info);
     }
 
     @Override

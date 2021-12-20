@@ -498,6 +498,17 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
 
 /* ******************************************************* */
 
+void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
+    pcap_conn_t *conn, *tmp;
+
+    HASH_ITER(hh, pd->root.connections, conn, tmp) {
+        if(cb(pd, &conn->tuple, conn->data) != 0)
+            return;
+    }
+}
+
+/* ******************************************************* */
+
 int run_root(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;

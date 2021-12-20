@@ -97,6 +97,7 @@ typedef struct {
     bool blacklisted_internal;
     bool blacklisted_ip;
     bool blacklisted_domain;
+    bool whitelisted_app;
     bool to_block;
     char *request_data;
     char *url;
@@ -196,11 +197,13 @@ typedef struct {
 
     struct {
         bool enabled;
-        blacklist_t *bl;
+        blacklist_t *bl; // blacklist
+        blacklist_t *whitelist;
         pthread_t reload_worker;
         bool reload_in_progress;
         volatile bool reload_done;
         blacklist_t *new_bl;
+        blacklist_t *new_wl;
         bl_status_arr_t *status_arr;
         bl_info_t *bls_info;
         int num_bls;
@@ -211,6 +214,9 @@ typedef struct {
         blacklist_t *new_bl;
     } firewall;
 } pcapdroid_t;
+
+// return 0 to continue, anything else to break
+typedef int (*conn_cb)(pcapdroid_t*, const zdtun_5tuple_t*, pd_conn_t*);
 
 /* ******************************************************* */
 
