@@ -200,7 +200,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ConnectionDescriptor conn = getItem(position);
-
         if(conn == null) {
             Log.w(TAG, "bad position: " + position);
             return;
@@ -222,6 +221,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 && ((mSearch == null) || conn.matches(mApps, mSearch)));
     }
 
+    // Given an incrId, return the position of the connection into the mFilteredConn array
     private int getFilteredItemPos(int incrId) {
         int pos = mIdToFilteredPos.get(incrId, -1);
         if(pos == -1)
@@ -230,11 +230,13 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return(pos - mNumRemovedItems);
     }
 
-    private void removeItemAt(int pos) {
-        int incr_id = mFilteredConn.get(pos).incr_id;
+    private void removeFilteredItemAt(int pos) {
+        ConnectionDescriptor item = getItem(pos);
+        if(item == null)
+            return;
 
         mFilteredConn.remove(pos);
-        mIdToFilteredPos.delete(incr_id);
+        mIdToFilteredPos.delete(item.incr_id);
         notifyItemRemoved(pos);
     }
 
@@ -284,6 +286,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
+        // Here dealing with filtered connections
         for(ConnectionDescriptor conn: conns) {
             if(conn == null)
                 continue;
@@ -291,7 +294,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             int pos = getFilteredItemPos(conn.incr_id);
             if(pos != -1) {
                 // Assume that connections are only removed from the start of the dataset
-                removeItemAt(0);
+                removeFilteredItemAt(0);
 
                 // by incrementing mNumRemovedItems we can shift the position of subsequent items
                 mNumRemovedItems++;
@@ -307,6 +310,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
+        // Here dealing with filtered connections
         ConnectionsRegister reg = CaptureService.requireConnsRegister();
         int first_removed_pos = -1;
         int num_just_removed = 0;
@@ -318,8 +322,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             ConnectionDescriptor conn = reg.getConn(reg_pos);
 
             if(conn != null) {
+                // reg_pos is the position in the ConnectionsRegister, whereas pos is the position
+                // in mFilteredConn
                 int pos = getFilteredItemPos(conn.incr_id);
                 if(pos != -1) {
+                    // Need to shift by num_just_removed due to the removeFilteredItemAt below until
+                    // fixFilteredPositions is called
                     pos -= num_just_removed;
 
                     if(matches(conn)) {
@@ -331,7 +339,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                         // A previously matching connection may not match anymore. This happens, for
                         // example, when its info or protocol is updated. In this case, the connection
                         // must be removed.
-                        removeItemAt(pos);
+                        removeFilteredItemAt(pos);
                         num_just_removed++;
 
                         if(first_removed_pos == -1)
@@ -377,11 +385,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     }
 
     public ConnectionDescriptor getItem(int pos) {
-        if(mFilteredConn != null)
+        if(mFilteredConn != null) {
+            if((pos < 0) || (pos >= mFilteredConn.size())) {
+                Log.w(TAG, "getItem(filtered): bad position: " + pos);
+                return null;
+            }
             return mFilteredConn.get(pos);
+        }
 
         ConnectionsRegister reg = CaptureService.getConnsRegister();
-
         if((pos < 0) || (pos >= mUnfilteredItemsCount) || (reg == null)) {
             Log.w(TAG, "getItem: bad position: " + pos);
             return null;

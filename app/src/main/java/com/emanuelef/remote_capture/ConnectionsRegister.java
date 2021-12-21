@@ -257,7 +257,7 @@ public class ConnectionsRegister {
     }
 
     public @Nullable ConnectionDescriptor getConn(int i) {
-        if(i >= mNumItems)
+        if((i < 0) || (i >= mNumItems))
             return null;
 
         int pos = (firstPos() + i) % mSize;
