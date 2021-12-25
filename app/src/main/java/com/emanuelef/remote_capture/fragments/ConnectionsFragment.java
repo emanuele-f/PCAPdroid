@@ -510,9 +510,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mMenuItemSearch.expandActionView();
 
         // Delay otherwise the query won't be set when the activity is just started.
-        mSearchView.post(() -> {
-            mSearchView.setQuery(query, true);
-        });
+        mSearchView.post(() -> mSearchView.setQuery(query, true));
     }
 
     private void recheckScroll() {
@@ -614,7 +612,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void connectionsRemoved(int start,ConnectionDescriptor []conns) {
+    public void connectionsRemoved(int start, ConnectionDescriptor []conns) {
         mHandler.post(() -> {
             Log.d(TAG, "Remove " + conns.length + " connections at " + start);
             mAdapter.connectionsRemoved(start, conns);

@@ -39,6 +39,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+/* A container for the connections. This is used to store active/closed connections until the capture
+ * is stopped. Active connections are also kept in the native side.
+ *
+ * The ConnectionsRegister can store up to _size items, after which rollover occurs and older
+ * connections are replaced with the new ones. Via the addListener method it's possible to listen
+ * for connections changes (connections added/removed/updated). The usual listener for such events
+ * is the ConnectionsFragment, which then forwards them to the ConnectionsAdapter.
+ *
+ * Connections are added/updated by the CaptureService in a separate thread. The getter methods are
+ * instead called on the UI thread, usually by the ConnectionsAdapter. Methods are synchronized to
+ * provide threads safety on this class. Concurrent access to the ConnectionDescriptors fields can
+ * occur during connectionsUpdates but it's not protected, check out the ConnectionDescriptor class
+ * for more details.
+ */
 public class ConnectionsRegister {
     private static final String TAG = "ConnectionsRegister";
 
@@ -46,7 +60,7 @@ public class ConnectionsRegister {
     private int mTail;
     private final int mSize;
     private int mNumItems;
-    private int mUntrackedItems;
+    private int mUntrackedItems; // number of old connections which were discarded due to the rollover
     private int mNumMalicious;
     private final SparseArray<AppStats> mAppsStats;
     private final SparseIntArray mConnsByIface;
@@ -65,11 +79,13 @@ public class ConnectionsRegister {
         mConnsByIface = new SparseIntArray();
     }
 
-    private int firstPos() {
+    // returns the position in mItemsRing of the oldest connection
+    private synchronized int firstPos() {
         return (mNumItems < mSize) ? 0 : mTail;
     }
 
-    private int lastPos() {
+    // returns the position in mItemsRing of the newest connection
+    private synchronized int lastPos() {
         return (mTail - 1 + mSize) % mSize;
     }
 
@@ -87,6 +103,7 @@ public class ConnectionsRegister {
         }
     }
 
+    // called by the CaptureService in a separate thread when new connections should be added to the register
     public synchronized void newConnections(ConnectionDescriptor[] conns) {
         if(conns.length > mSize) {
             // take the most recent
@@ -178,6 +195,7 @@ public class ConnectionsRegister {
         }
     }
 
+    // called by the CaptureService in a separate thread when connections should be updated
     public synchronized void connectionsUpdates(ConnectionUpdate[] updates) {
         int first_pos = firstPos();
         int first_id = mItemsRing[first_pos].incr_id;
@@ -256,7 +274,8 @@ public class ConnectionsRegister {
         return mUntrackedItems;
     }
 
-    public @Nullable ConnectionDescriptor getConn(int i) {
+    // get the i-th oldest connection
+    public synchronized @Nullable ConnectionDescriptor getConn(int i) {
         if((i < 0) || (i >= mNumItems))
             return null;
 
@@ -271,9 +290,8 @@ public class ConnectionsRegister {
             int pos = (first + i) % mSize;
             ConnectionDescriptor item = mItemsRing[pos];
 
-            if((item != null) && (item.incr_id == incr_id)) {
+            if((item != null) && (item.incr_id == incr_id))
                 return pos;
-            }
         }
 
         return -1;
@@ -305,12 +323,12 @@ public class ConnectionsRegister {
         return mNumMalicious;
     }
 
-    public boolean hasSeenMultipleInterfaces() {
+    public synchronized boolean hasSeenMultipleInterfaces() {
         return(mConnsByIface.size() > 1);
     }
 
     // Returns a sorted list of seen network interfaces
-    public List<String> getSeenInterfaces() {
+    public synchronized List<String> getSeenInterfaces() {
         List<String> rv = new ArrayList<>();
 
         for(int i=0; i<mConnsByIface.size(); i++) {

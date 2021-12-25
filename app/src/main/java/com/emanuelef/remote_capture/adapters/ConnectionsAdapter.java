@@ -231,6 +231,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     }
 
     private void removeFilteredItemAt(int pos) {
+        // get the previous item which was now removed
         ConnectionDescriptor item = getItem(pos);
         if(item == null)
             return;
@@ -321,7 +322,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
         for(int reg_pos : positions) {
             ConnectionDescriptor conn = reg.getConn(reg_pos);
-
             if(conn != null) {
                 // reg_pos is the position in the ConnectionsRegister, whereas pos is the position
                 // in mFilteredConn
@@ -357,7 +357,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public void refreshFilteredConnections() {
         final ConnectionsRegister reg = CaptureService.getConnsRegister();
-
         if(reg == null)
             return;
 
@@ -369,12 +368,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             int pos = 0;
             mFilteredConn = new ArrayList<>();
 
-            for(int i=0; i<mUnfilteredItemsCount; i++) {
-                ConnectionDescriptor conn = reg.getConn(i);
+            // Synchronize to improve performance of getConn
+            synchronized(reg) {
+                for(int i = 0; i < mUnfilteredItemsCount; i++) {
+                    ConnectionDescriptor conn = reg.getConn(i);
 
-                if(matches(conn)) {
-                    mFilteredConn.add(conn);
-                    mIdToFilteredPos.put(conn.incr_id, pos++);
+                    if(matches(conn)) {
+                        mFilteredConn.add(conn);
+                        mIdToFilteredPos.put(conn.incr_id, pos++);
+                    }
                 }
             }
 
@@ -420,7 +422,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return (mSearch != null) || mFilter.isSet();
     }
 
-    public synchronized String dumpConnectionsCsv() {
+    public String dumpConnectionsCsv() {
         StringBuilder builder = new StringBuilder();
         AppsResolver resolver = new AppsResolver(mContext);
 

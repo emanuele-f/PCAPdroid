@@ -30,10 +30,16 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/* Equivalent of zdtun_conn_t from zdtun and pd_conn_t from pcapdroid.c */
+/* Holds the information about a single connection.
+ * Equivalent of zdtun_conn_t from zdtun and pd_conn_t from pcapdroid.c .
+ *
+ * Connections are normally stored into the ConnectionsRegister. Concurrent access to the connection
+ * fields can happen when a connection is updated and, at the same time, it is retrieved by the UI
+ * thread. However this does not create concurrency problems as the update only increments counters
+ * or sets a previously null field to a non-null value.
+ */
 public class ConnectionDescriptor implements Serializable {
     // sync with zdtun_conn_status_t
-
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
         CONN_STATUS_CONNECTED = 2,
@@ -44,6 +50,7 @@ public class ConnectionDescriptor implements Serializable {
         CONN_STATUS_RESET = 7,
         CONN_STATUS_UNREACHABLE = 8;
 
+    // This is an high level status which abstracts the zdtun_conn_status_t
     public enum Status {
         STATUS_INVALID,
         STATUS_OPEN,

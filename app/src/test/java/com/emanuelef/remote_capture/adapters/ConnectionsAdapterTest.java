@@ -170,6 +170,8 @@ public class ConnectionsAdapterTest {
                 newConnection(true),
                 newConnection(false),
         });
+        assertEvent(ChangeType.ITEMS_INSERTED, 0, 6);
+
         // add 4 connections, 2 of which replace the first 2
         reg.newConnections(new ConnectionDescriptor[] {
                 newConnection(false),
