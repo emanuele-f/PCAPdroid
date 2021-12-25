@@ -52,9 +52,20 @@ android {
     sourceSets {
         main.java.srcDirs += '../submodules/MaxMind-DB-Reader-java/src/main/java'
     }
+
+    testOptions {
+        // needed by robolectric
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
+// Tests
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'androidx.test:core:1.4.0'
+    testImplementation "org.robolectric:robolectric:4.7.3"
+    testImplementation 'org.mockito:mockito-core:1.10.19'
+
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'

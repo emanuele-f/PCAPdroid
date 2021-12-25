@@ -98,6 +98,7 @@ public class ConnectionDescriptor implements Serializable {
         uid = _uid;
         ifidx = _ifidx;
         first_seen = last_seen = when;
+        l7proto = "";
         country = "";
         asn = new Geomodel.ASN();
     }

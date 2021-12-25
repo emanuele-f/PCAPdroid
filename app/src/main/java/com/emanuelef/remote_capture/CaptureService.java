@@ -147,7 +147,12 @@ public class CaptureService extends VpnService implements Runnable {
 
     static {
         /* Load native library */
-        System.loadLibrary("capture");
+        try {
+            System.loadLibrary("capture");
+        } catch (UnsatisfiedLinkError e) {
+            // This should only happen while running tests
+            //e.printStackTrace();
+        }
     }
 
     @Override

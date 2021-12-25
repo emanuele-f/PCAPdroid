@@ -70,7 +70,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private ArrayList<ConnectionDescriptor> mFilteredConn;
     private String mSearch;
     public final MatchList mMask;
-    public FilterDescriptor mFilter = new FilterDescriptor();
+    public FilterDescriptor mFilter = new FilterDescriptor(); // must call refreshFilteredConnections to apply changes
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -261,6 +261,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
+        // Here dealing with filtered connections
         int numNew = 0;
         int pos = mNumRemovedItems + mFilteredConn.size();
 
