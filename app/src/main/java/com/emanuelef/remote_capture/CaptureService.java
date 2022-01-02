@@ -98,7 +98,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
-    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(16);
+    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -118,6 +118,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mBlockPrivateDns;
     private boolean mDnsEncrypted;
     private boolean mStrictDnsNoticeShown;
+    private boolean mQueueFull;
     private Blacklists mBlacklists;
     private MatchList mBlocklist;
     private MatchList mWhitelist;
@@ -350,6 +351,7 @@ public class CaptureService extends VpnService implements Runnable {
         mConnUpdateThread.start();
 
         // Start the native capture thread
+        mQueueFull = false;
         mCaptureThread = new Thread(this, "PacketCapture");
         mCaptureThread.start();
 
@@ -559,7 +561,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void stop() {
         stopPacketLoop();
-        mPendingUpdates.push(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
+        mPendingUpdates.offer(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -577,6 +579,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mConnUpdateThread.join();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Joining conn update thread failed");
+                mPendingUpdates.offer(new Pair<>(null, null));
             }
         }
         mConnUpdateThread = null;
@@ -725,7 +728,7 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.mBlacklistsUpdateRequested = true;
 
             // Wake the update thread to run the blacklist thread
-            INSTANCE.mPendingUpdates.push(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
+            INSTANCE.mPendingUpdates.offer(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
         }
     }
 
@@ -866,9 +869,17 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
+        if(mQueueFull)
+            // if the queue is full, stop receiving updates to avoid inconsistent incr_ids
+            return;
+
         // Put the update into a queue to avoid performing much work on the capture thread.
         // This will be processed by mConnUpdateThread.
-        mPendingUpdates.push(new Pair<>(new_conns, conns_updates));
+        if(!mPendingUpdates.offer(new Pair<>(new_conns, conns_updates))) {
+            Log.e(TAG, "The updates queue is full, this should never happen!");
+            mQueueFull = true;
+            mHandler.post(this::stop);
+        }
     }
 
     public void sendStatsDump(VPNStats stats) {

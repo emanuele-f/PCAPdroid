@@ -59,7 +59,7 @@ public class ConnectionsRegister {
     private final ConnectionDescriptor[] mItemsRing;
     private int mTail;
     private final int mSize;
-    private int mNumItems;
+    private int mCurItems;
     private int mUntrackedItems; // number of old connections which were discarded due to the rollover
     private int mNumMalicious;
     private final SparseArray<AppStats> mAppsStats;
@@ -69,7 +69,7 @@ public class ConnectionsRegister {
 
     public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
-        mNumItems = 0;
+        mCurItems = 0;
         mUntrackedItems = 0;
         mSize = _size;
         mGeo = new Geolocation(ctx);
@@ -81,7 +81,7 @@ public class ConnectionsRegister {
 
     // returns the position in mItemsRing of the oldest connection
     private synchronized int firstPos() {
-        return (mNumItems < mSize) ? 0 : mTail;
+        return (mCurItems < mSize) ? 0 : mTail;
     }
 
     // returns the position in mItemsRing of the newest connection
@@ -106,13 +106,14 @@ public class ConnectionsRegister {
     // called by the CaptureService in a separate thread when new connections should be added to the register
     public synchronized void newConnections(ConnectionDescriptor[] conns) {
         if(conns.length > mSize) {
-            // take the most recent
+            // this should only occur while testing with small register sizes
+            // take the most recent connections
             mUntrackedItems += conns.length - mSize;
             conns = Arrays.copyOfRange(conns, conns.length - mSize, conns.length);
         }
 
-        int out_items = conns.length - Math.min((mSize - mNumItems), conns.length);
-        int insert_pos = mNumItems;
+        int out_items = conns.length - Math.min((mSize - mCurItems), conns.length);
+        int insert_pos = mCurItems;
         ConnectionDescriptor []removedItems = null;
 
         //Log.d(TAG, "newConnections[" + mNumItems + "/" + mSize +"]: insert " + conns.length +
@@ -157,7 +158,7 @@ public class ConnectionsRegister {
         for(ConnectionDescriptor conn: conns) {
             mItemsRing[mTail] = conn;
             mTail = (mTail + 1) % mSize;
-            mNumItems = Math.min(mNumItems + 1, mSize);
+            mCurItems = Math.min(mCurItems + 1, mSize);
 
             // update the apps stats
             int uid = conn.uid;
@@ -197,13 +198,17 @@ public class ConnectionsRegister {
 
     // called by the CaptureService in a separate thread when connections should be updated
     public synchronized void connectionsUpdates(ConnectionUpdate[] updates) {
+        if(mCurItems == 0)
+            return;
+
         int first_pos = firstPos();
+        int last_pos = lastPos();
         int first_id = mItemsRing[first_pos].incr_id;
-        int last_id = mItemsRing[lastPos()].incr_id;
+        int last_id = mItemsRing[last_pos].incr_id;
         int []changed_pos = new int[updates.length];
         int k = 0;
 
-        Log.d(TAG, "connectionsUpdates: items=" + mNumItems + ", first_id=" + first_id + ", last_id=" + last_id);
+        Log.d(TAG, "connectionsUpdates: items=" + mCurItems + ", first_id=" + first_id + ", last_id=" + last_id);
 
         for(ConnectionUpdate update: updates) {
             int id = update.incr_id;
@@ -227,35 +232,36 @@ public class ConnectionsRegister {
             }
         }
 
-        for(ConnectionsListener listener: mListeners) {
-            if(k != updates.length) {
-                // some untracked items where skipped, shrink the array
-                changed_pos = Arrays.copyOf(changed_pos, k);
-                k = updates.length;
-            }
+        if(k == 0)
+            // no updates for items in the ring
+            return;
 
+        if(k != updates.length)
+            // some untracked items where skipped, shrink the array
+            changed_pos = Arrays.copyOf(changed_pos, k);
+
+        for(ConnectionsListener listener: mListeners)
             listener.connectionsUpdated(changed_pos);
-        }
     }
 
     public synchronized void reset() {
         for(int i = 0; i< mSize; i++)
             mItemsRing[i] = null;
 
-        mNumItems = 0;
+        mCurItems = 0;
         mUntrackedItems = 0;
         mTail = 0;
         mAppsStats.clear();
 
         for(ConnectionsListener listener: mListeners)
-            listener.connectionsChanges(mNumItems);
+            listener.connectionsChanges(mCurItems);
     }
 
     public synchronized void addListener(ConnectionsListener listener) {
         mListeners.add(listener);
 
         // Send the first update to sync it
-        listener.connectionsChanges(mNumItems);
+        listener.connectionsChanges(mCurItems);
 
         Log.d(TAG, "(add) new connections listeners size: " + mListeners.size());
     }
@@ -267,7 +273,7 @@ public class ConnectionsRegister {
     }
 
     public int getConnCount() {
-        return mNumItems;
+        return mCurItems;
     }
 
     public int getUntrackedConnCount() {
@@ -276,7 +282,7 @@ public class ConnectionsRegister {
 
     // get the i-th oldest connection
     public synchronized @Nullable ConnectionDescriptor getConn(int i) {
-        if((i < 0) || (i >= mNumItems))
+        if((i < 0) || (i >= mCurItems))
             return null;
 
         int pos = (firstPos() + i) % mSize;
@@ -286,7 +292,7 @@ public class ConnectionsRegister {
     public synchronized int getConnPositionById(int incr_id) {
         int first = firstPos();
 
-        for(int i = 0; i < mNumItems; i++) {
+        for(int i = 0; i < mCurItems; i++) {
             int pos = (first + i) % mSize;
             ConnectionDescriptor item = mItemsRing[pos];
 
