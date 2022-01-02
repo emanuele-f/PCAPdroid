@@ -60,9 +60,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
-import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
@@ -97,7 +95,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private MenuItem mSave;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
-    private boolean hasUntrackedConnections;
     private AppsResolver mApps;
     private SearchView mSearchView;
     private String mQueryToApply;
@@ -222,7 +219,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         autoScroll = true;
         showFabDown(false);
-        mOldConnectionsText.setVisibility(View.GONE);
 
         mFabDown.setOnClickListener(v -> scrollToBottom());
 
@@ -283,7 +279,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     autoScroll = true;
                     showFabDown(false);
                     mOldConnectionsText.setVisibility(View.GONE);
-                    hasUntrackedConnections = false;
                     mEmptyText.setText(R.string.no_connections);
                     mApps.clear();
                 }
@@ -535,11 +530,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         } else
             showFabDown(false);
-
-        if((first_visibile_pos == 0) && hasUntrackedConnections)
-            mOldConnectionsText.setVisibility(View.VISIBLE);
-        else
-            mOldConnectionsText.setVisibility(View.GONE);
     }
 
     private void showFabDown(boolean visible) {
@@ -555,7 +545,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.scrollToPosition(last_pos);
 
         showFabDown(false);
-        mOldConnectionsText.setVisibility(View.GONE);
     }
 
     private void refreshActiveFilter() {
@@ -574,6 +563,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         recheckScroll();
     }
 
+    private void recheckUntrackedConnections() {
+        ConnectionsRegister reg = CaptureService.requireConnsRegister();
+        if(reg.getUntrackedConnCount() > 0) {
+            String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
+            mOldConnectionsText.setText(info);
+            mOldConnectionsText.setVisibility(View.VISIBLE);
+        } else
+            mOldConnectionsText.setVisibility(View.GONE);
+    }
+
     @Override
     public void connectionsChanges(int num_connections) {
         // Important: must use the provided num_connections rather than accessing the register
@@ -584,10 +583,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Log.d(TAG, "New connections size: " + num_connections);
 
             mAdapter.connectionsChanges(num_connections);
-            recheckScroll();
 
+            recheckScroll();
             if(autoScroll)
                 scrollToBottom();
+            recheckUntrackedConnections();
         }, mHandler);
     }
 
@@ -600,18 +600,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(autoScroll)
                 scrollToBottom();
-
-            ConnectionsRegister reg = CaptureService.requireConnsRegister();
-
-            if(reg.getUntrackedConnCount() > 0) {
-                String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
-                mOldConnectionsText.setText(info);
-
-                if(!hasUntrackedConnections) {
-                    hasUntrackedConnections = true;
-                    recheckScroll();
-                }
-            }
+            recheckUntrackedConnections();
         });
     }
 
