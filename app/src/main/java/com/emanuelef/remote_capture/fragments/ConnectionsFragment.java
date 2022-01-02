@@ -111,7 +111,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
+        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
+            mEmptyText.setText(R.string.no_connections);
+        else
+            mEmptyText.setText(R.string.capture_not_running);
+
         registerConnsListener();
+        mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+
         refreshMenuIcons();
     }
 
@@ -120,6 +127,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onPause();
 
         unregisterConnsListener();
+        mRecyclerView.setEmptyView(null);
 
         if(mSearchView != null)
             mQueryToApply = mSearchView.getQuery().toString();
@@ -174,10 +182,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mApps = new AppsResolver(requireContext());
 
         mEmptyText = view.findViewById(R.id.no_connections);
-        if((requireActivity() instanceof MainActivity) &&
-                (((MainActivity) requireActivity()).getState() == AppState.running))
-            mEmptyText.setText(R.string.no_connections);
-
         mActiveFilter = view.findViewById(R.id.active_filter);
         mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
             if(mAdapter != null) {
@@ -189,7 +193,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
-        mRecyclerView.setEmptyView(mEmptyText);
         registerForContextMenu(mRecyclerView);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
@@ -576,7 +579,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         // Important: must use the provided num_connections rather than accessing the register
         // in order to avoid desyncs
 
-        mHandler.post(() -> {
+        // using runOnUi to populate the adapter as soon as registerConnsListener is called
+        Utils.runOnUi(() -> {
             Log.d(TAG, "New connections size: " + num_connections);
 
             mAdapter.connectionsChanges(num_connections);
@@ -584,7 +588,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(autoScroll)
                 scrollToBottom();
-        });
+        }, mHandler);
     }
 
     @Override

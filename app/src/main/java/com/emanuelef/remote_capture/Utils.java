@@ -50,6 +50,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.SpannableString;
@@ -859,5 +861,13 @@ public class Utils {
         } catch (ActivityNotFoundException e) {
             showToastLong(ctx, R.string.no_intent_handler_found);
         }
+    }
+
+    // Runs the specified runnable now if on the UI thread, otherwise enqueue it to the Handler
+    public static void runOnUi(Runnable r, Handler h) {
+        if(Looper.getMainLooper().getThread() == Thread.currentThread())
+            r.run();
+        else
+            h.post(r);
     }
 }
