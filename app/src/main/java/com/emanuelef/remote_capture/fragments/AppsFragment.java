@@ -35,7 +35,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -78,8 +77,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = view.findViewById(R.id.apps_stats_view);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(getContext());
-        mRecyclerView.setLayoutManager(layoutMan);
+        mRecyclerView.setLayoutManager(new EmptyRecyclerView.MyLinearLayoutManager(getContext()));
 
         mAdapter = new AppsStatsAdapter(getContext());
         doRefreshApps();

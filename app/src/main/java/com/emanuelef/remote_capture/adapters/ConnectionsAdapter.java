@@ -112,7 +112,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
             icon.setImageDrawable(appIcon);
 
-            if(conn.info.length() > 0)
+            if((conn.info != null) && (conn.info.length() > 0))
                 remote.setText(conn.info);
             else
                 remote.setText(conn.dst_ip);
@@ -249,12 +249,14 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsChanges(int num_connetions) {
+        //Log.d(TAG, "connectionsChanges: " + num_connetions + " connections");
         mUnfilteredItemsCount = num_connetions;
         refreshFilteredConnections();
     }
 
     @Override
     public void connectionsAdded(int start, ConnectionDescriptor []conns) {
+        //Log.d(TAG, "connectionsAdded: at " + start + ", " + conns.length + " connections");
         mUnfilteredItemsCount += conns.length;
 
         if(mFilteredConn == null) {
@@ -281,6 +283,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsRemoved(int start, ConnectionDescriptor []conns) {
+        //Log.d(TAG, "connectionsRemoved: at " + start + ", " + conns.length + " connections");
         mUnfilteredItemsCount -= conns.length;
 
         if(mFilteredConn == null) {
@@ -306,6 +309,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsUpdated(int[] positions) {
+        //Log.d(TAG, "connectionsUpdated: " + positions.length + " connections");
+
         if(mFilteredConn == null) {
             for(int pos : positions)
                 notifyItemChanged(pos);

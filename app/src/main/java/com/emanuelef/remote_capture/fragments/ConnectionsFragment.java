@@ -49,7 +49,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsResolver;
@@ -174,7 +173,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
         mOldConnectionsText = view.findViewById(R.id.old_connections_notice);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
+        EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
         mApps = new AppsResolver(requireContext());
 
@@ -512,7 +511,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void recheckScroll() {
-        final LinearLayoutManager layoutMan = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        final EmptyRecyclerView.MyLinearLayoutManager layoutMan = (EmptyRecyclerView.MyLinearLayoutManager) mRecyclerView.getLayoutManager();
         assert layoutMan != null;
         int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
         int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
