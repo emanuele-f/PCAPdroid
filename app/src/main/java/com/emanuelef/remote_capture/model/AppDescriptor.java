@@ -89,6 +89,7 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
 
         // NOTE: this call is expensive
         mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
+        //Log.d("Icon size", mIcon.getIntrinsicWidth() + "x" + mIcon.getIntrinsicHeight());
 
         return mIcon;
     }

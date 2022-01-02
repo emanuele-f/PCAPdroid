@@ -90,20 +90,6 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         return apps;
     }
 
-    private void asyncLoadAppsIcons(ArrayList<AppDescriptor> apps) {
-        final PackageManager pm = mContext.getPackageManager();
-        long tstart = Utils.now();
-
-        Log.d(TAG, "Loading " + apps.size() + " app icons...");
-
-        for (AppDescriptor app : apps) {
-            // Force icon load
-            app.getIcon();
-        }
-
-        Log.d(TAG, apps.size() + " apps icons loaded in " + (Utils.now() - tstart) +" seconds");
-    }
-
     @NonNull
     @Override
     public Loader<ArrayList<AppDescriptor>> onCreateLoader(int opid, @Nullable Bundle args) {

@@ -109,7 +109,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             Drawable appIcon;
             String l7Text;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
+            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
             icon.setImageDrawable(appIcon);
 
             if((conn.info != null) && (conn.info.length() > 0))
