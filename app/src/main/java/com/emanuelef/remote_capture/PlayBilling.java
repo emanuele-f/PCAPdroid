@@ -24,11 +24,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.PreferenceManager;
+import androidx.collection.ArraySet;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
@@ -44,15 +45,12 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, SkuDetailsResponseListener {
     public static final String TAG = "PlayBilling";
-    private final SharedPreferences mPrefs;
     private final Handler mHandler;
-    private final HashMap<String, SkuDetails> mDetails;
+    private final ArrayMap<String, SkuDetails> mDetails;
     private BillingClient mBillingClient;
     private PurchaseReadyListener mListener;
     private boolean mWaitingStart;
@@ -70,8 +68,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     public PlayBilling(Context ctx) {
         super(ctx);
         mHandler = new Handler(Looper.getMainLooper());
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        mDetails = new HashMap<>();
+        mDetails = new ArrayMap<>();
         mAvailability = SkusAvailability.load(mPrefs);
         mWaitingStart = false;
     }
@@ -87,7 +84,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     private void processPurchases(BillingResult billingResult, @Nullable List<Purchase> purchases) {
         if((billingResult.getResponseCode() == BillingResponseCode.OK) && (purchases != null)) {
-            HashSet<String> purchased = new HashSet<>();
+            ArraySet<String> purchased = new ArraySet<>();
             boolean show_toast = true;
 
             for(Purchase purchase : purchases) {
@@ -170,6 +167,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
         if((billingResult.getResponseCode() == BillingResponseCode.OK) && (list != null)) {
             mAvailability.update(list, mPrefs);
+            Log.d(TAG, "Num available SKUs: " + list.size());
 
             mDetails.clear();
             for(SkuDetails sku: list) {
@@ -277,6 +275,14 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         // is established
         return mAvailability.isAvailable(sku);
     }
+
+    @Override
+    public boolean isPlayStore() {
+        return true;
+    }
+
+    @Override
+    public void setLicense(String license) {}
 
     public boolean canPurchase(String sku) {
         return isAvailable(sku) && !isPurchased(sku);

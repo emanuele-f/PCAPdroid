@@ -20,8 +20,8 @@ android {
         }
         debug {
             // Use a different app ID for debug to allow its coexistence with release builds
-            applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
+            //applicationIdSuffix '.debug'
+            versionNameSuffix '-play'
 
             if(project.hasProperty("doNotStrip")) {
                 // NOTE: packagingOptions will also affect the "release" build, so the "doNotStrip"

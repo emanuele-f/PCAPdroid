@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.SharedPreferences;
 
+import androidx.collection.ArraySet;
+
 import com.android.billingclient.api.SkuDetails;
 import com.google.gson.Gson;
 
@@ -31,10 +33,10 @@ import java.util.List;
 
 public class SkusAvailability implements Serializable {
     private final static String PREF_KEY = "available_skus";
-    private final HashSet<String> mSkus;
+    private final ArraySet<String> mSkus;
 
     private SkusAvailability() {
-        mSkus = new HashSet<>();
+        mSkus = new ArraySet<>();
     }
 
     public static SkusAvailability load(SharedPreferences prefs) {

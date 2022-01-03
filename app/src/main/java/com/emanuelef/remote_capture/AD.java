@@ -52,7 +52,7 @@ public class AD {
             return;
 
         Random rand = new Random();
-        if((rand.nextInt() % 5) == 0) {
+        if(rand.nextInt(5) == 0) {
             // show self promotion 1/5th of the times (or if admob loading fails)
             if(showSelfPromotion())
                 return;
@@ -88,6 +88,9 @@ public class AD {
 
     private boolean showSelfPromotion() {
         PlayBilling billing = new PlayBilling(ctx);
+        if(billing.isPurchased(Billing.NO_ADS_SKU))
+            return true;
+
         if(!billing.isAvailable(Billing.MALWARE_DETECTION_SKU))
             return false;
 

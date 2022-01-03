@@ -144,7 +144,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         });
         mIab.connectBilling();
 
-        // Must show the AD here in the onCreate otherwise it will get stuck for some reason
+        // Must show the AD here in the onCreate otherwise it will get stuck for some reason (generates exception)
+        // This causes the ad to be shown the first time the app is installed, regardless of the SKUs
         if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU))
             mAd.show();
 
@@ -200,6 +201,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void checkNoAdsAvailable() {
+        if(mIab.isPurchased(Billing.NO_ADS_SKU)) {
+            mAd.hide();
+            showAdsNotice = false;
+            return;
+        }
+
         if(!mIab.canPurchase(Billing.NO_ADS_SKU))
             return;
 
