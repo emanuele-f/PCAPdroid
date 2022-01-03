@@ -399,8 +399,8 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
     log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
   }
 
-  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL): 16 B */
-  int snaplen = mtu + SLL_HDR_LEN;
+  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
+  int snaplen = mtu + SLL2_HDR_LEN;
   log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
 
   pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
@@ -426,16 +426,30 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   int dlink = pcap_datalink(pd);
   int ipoffset;
+  const char *dlink_s;
+
+  if(dlink == DLT_LINUX_SLL) {
+    // try to upgrade to DLT_LINUX_SLL2
+    pcap_set_datalink(pd, DLT_LINUX_SLL2);
+    dlink = pcap_datalink(pd);
+  }
 
   switch(dlink) {
     case DLT_RAW:
       ipoffset = 0;
+      dlink_s = "raw";
       break;
     case DLT_EN10MB:
       ipoffset = 14;
+      dlink_s = "ethernet";
       break;
     case DLT_LINUX_SLL:
       ipoffset = SLL_HDR_LEN;
+      dlink_s = "SLL";
+      break;
+    case DLT_LINUX_SLL2:
+      ipoffset = SLL2_HDR_LEN;
+      dlink_s = "SLL2";
       break;
     default:
       log_i("[%s] unsupported datalink: %d", ifname, dlink);
@@ -486,6 +500,8 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   rt->maxfd = max(rt->maxfd, iface->pf);
   strncpy(iface->name, ifname, IFNAMSIZ);
   iface->name[IFNAMSIZ - 1] = '\0';
+
+  log_d("%s(%d): datalink=%s(%d)", iface->name, iface->ifidx, dlink_s, dlink);
 
   return 0;
 }
@@ -658,6 +674,17 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
 
     len -= SLL_HDR_LEN;
     pkt += SLL_HDR_LEN;
+  } else if((iface->dlink == DLT_LINUX_SLL2) && (len >= SLL2_HDR_LEN)) {
+    struct sll2_header *sll2 = (struct sll2_header*) pkt;
+    uint16_t pkttype = ntohs(sll2->sll2_pkttype);
+
+    if(pkttype == LINUX_SLL_HOST)
+      return 0; // RX
+    else if(pkttype == LINUX_SLL_OUTGOING)
+      return 1; // TX
+
+    len -= SLL2_HDR_LEN;
+    pkt += SLL2_HDR_LEN;
   }
 
   // NOTE: this must be IPv4/IPv6 traffic due to the PCAP filter

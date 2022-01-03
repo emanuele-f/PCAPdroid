@@ -70,7 +70,7 @@
                 android:text="@string/sni" />
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.75"
                 android:orientation="horizontal">
                 <ImageView
@@ -121,7 +121,7 @@
                 android:text="@string/destination" />
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.75"
                 android:orientation="horizontal">
                 <ImageView
@@ -152,6 +152,7 @@
                     android:drawableEnd="@drawable/ic_external"
                     app:drawableTint="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:nextFocusDown="@id/request_data"
                     android:textSize="12sp"
                     android:text="@string/whois_lookup"/>
             </LinearLayout>
@@ -174,6 +175,28 @@
                 android:layout_weight="0.75"
                 android:textIsSelectable="true"
                 tools:text="Open" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/interface_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/network_interface" />
+            <TextView
+                android:id="@+id/capture_interface"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="wlan0" />
         </TableRow>
 
         <TableRow
@@ -310,6 +333,28 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/blocked_row"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/blocked_pkts" />
+            <TextView
+                android:id="@+id/blocked_pkts"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="11 pkts" />
+        </TableRow>
+
+        <TableRow
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="4dp">
@@ -378,18 +423,20 @@
         android:text="@string/request_plaintext"/>
 
         <TextView
+            android:id="@+id/request_data"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorBackgroundGray"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/request_data_label"
             android:layout_marginTop="8dp"
-            android:id="@+id/request_data"
             android:padding="6sp"
             android:textIsSelectable="true"
             android:fontFamily="monospace"
             android:textSize="12sp"
             android:scrollHorizontally="true"
+            android:focusable="true"
+            android:nextFocusUp="@id/whois_ip"
             tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -89,13 +89,7 @@ public class LogviewActivity extends BaseActivity {
             Utils.copyToClipboard(this, mLogText);
             return true;
         } else if(id == R.id.share) {
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.root_log));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, mLogText);
-
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
-
+            Utils.shareText(this, getString(R.string.root_log), mLogText);
             return true;
         }
 

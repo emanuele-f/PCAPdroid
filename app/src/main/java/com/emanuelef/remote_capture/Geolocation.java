@@ -23,14 +23,14 @@ import android.content.Context;
 import android.util.Log;
 
 import com.emanuelef.remote_capture.model.Geomodel;
-import com.maxmind.db.CHMCache;
-import com.maxmind.db.Metadata;
 import com.maxmind.db.Reader;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.zip.GZIPInputStream;
 
 /* A class to query geolocation info from IP addresses. */
 public class Geolocation {
@@ -60,20 +60,31 @@ public class Geolocation {
 
     private void openDb() {
         try {
-            CHMCache cache = new CHMCache();
-
-            InputStream is = mContext.getResources().openRawResource(R.raw.dbip_country_lite_2021_11_mmdb_gz);
-            GZIPInputStream gis = new GZIPInputStream(is);
-            mCountryReader = new Reader(gis, cache);
+            File countryFile = new File(mContext.getCacheDir() + "/dbip_country_lite.mmdb");
+            res_to_file(R.raw.dbip_country_lite, countryFile);
+            mCountryReader = new Reader(countryFile);
             Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
-            is = mContext.getResources().openRawResource(R.raw.dbip_asn_lite_2021_11_mmdb_gz);
-            gis = new GZIPInputStream(is);
-            mAsnReader = new Reader(gis, cache);
+            File asnFile = new File(mContext.getCacheDir() + "/dbip_asn_lite.mmdb");
+            res_to_file(R.raw.dbip_asn_lite, asnFile);
+            mAsnReader = new Reader(asnFile);
             Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalStateException();
+        }
+    }
+
+    // We need to get a File from the resource so that the Reader can mmap it
+    private void res_to_file(int resid, File dst) throws IOException {
+        try(InputStream is = mContext.getResources().openRawResource(resid)) {
+            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                byte[] bytesIn = new byte[4096];
+                int read;
+
+                while((read = is.read(bytesIn)) != -1)
+                    bos.write(bytesIn, 0, read);
+            }
         }
     }
 

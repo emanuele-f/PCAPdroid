@@ -47,6 +47,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
+    private MatchList mBlocklist;
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
@@ -99,6 +100,12 @@ public class PCAPdroid extends Application {
         if(mMalwareWhitelist == null)
             mMalwareWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_MALWARE_WHITELIST);
         return mMalwareWhitelist;
+    }
+
+    public MatchList getBlocklist() {
+        if(mBlocklist == null)
+            mBlocklist = new MatchList(mLocalizedContext, Prefs.PREF_BLOCKLIST);
+        return mBlocklist;
     }
 
     public CtrlPermissions getCtrlPermissions() {

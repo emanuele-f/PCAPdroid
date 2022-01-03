@@ -30,10 +30,16 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/* Equivalent of zdtun_conn_t from zdtun and conn_data_t from vpnproxy.c */
+/* Holds the information about a single connection.
+ * Equivalent of zdtun_conn_t from zdtun and pd_conn_t from pcapdroid.c .
+ *
+ * Connections are normally stored into the ConnectionsRegister. Concurrent access to the connection
+ * fields can happen when a connection is updated and, at the same time, it is retrieved by the UI
+ * thread. However this does not create concurrency problems as the update only increments counters
+ * or sets a previously null field to a non-null value.
+ */
 public class ConnectionDescriptor implements Serializable {
     // sync with zdtun_conn_status_t
-
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
         CONN_STATUS_CONNECTED = 2,
@@ -44,6 +50,7 @@ public class ConnectionDescriptor implements Serializable {
         CONN_STATUS_RESET = 7,
         CONN_STATUS_UNREACHABLE = 8;
 
+    // This is an high level status which abstracts the zdtun_conn_status_t
     public enum Status {
         STATUS_INVALID,
         STATUS_OPEN,
@@ -53,12 +60,12 @@ public class ConnectionDescriptor implements Serializable {
     }
 
     /* Metadata */
-    public int ipver;
-    public int ipproto;
-    public String src_ip;
-    public String dst_ip;
-    public int src_port;
-    public int dst_port;
+    public final int ipver;
+    public final int ipproto;
+    public final String src_ip;
+    public final String dst_ip;
+    public final int src_port;
+    public final int dst_port;
 
     /* Data */
     public long first_seen;
@@ -67,27 +74,27 @@ public class ConnectionDescriptor implements Serializable {
     public long rcvd_bytes;
     public int sent_pkts;
     public int rcvd_pkts;
+    public int blocked_pkts;
     public String info;
     public String url;
     public String request_plaintext;
     public String l7proto;
-    public int uid;
-    public int incr_id;
+    public final int uid;
+    public final int ifidx;
+    public final int incr_id;
     public int status;
     private int tcp_flags;
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
+    public boolean is_blocked;
     public String country;
     public Geomodel.ASN asn;
 
     /* Internal */
     public boolean alerted;
-    private boolean whitelisted_ip;
-    private boolean whitelisted_host;
-    private boolean whitelisted_app;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
-                                int _src_port, int _dst_port, int _uid, long when) {
+                                int _src_port, int _dst_port, int _uid, int _ifidx, long when) {
         incr_id = _incr_id;
         ipver = _ipver;
         ipproto = _ipproto;
@@ -96,7 +103,9 @@ public class ConnectionDescriptor implements Serializable {
         src_port = _src_port;
         dst_port = _dst_port;
         uid = _uid;
+        ifidx = _ifidx;
         first_seen = last_seen = when;
+        l7proto = "";
         country = "";
         asn = new Geomodel.ASN();
     }
@@ -108,7 +117,9 @@ public class ConnectionDescriptor implements Serializable {
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
             rcvd_pkts = update.rcvd_pkts;
+            blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            is_blocked = (update.status & 0x0400) != 0;
             blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
@@ -186,16 +197,10 @@ public class ConnectionDescriptor implements Serializable {
         return (tcp_flags & 0xFF);
     }
 
-    public boolean isBlacklistedIp() { return !whitelisted_app && !whitelisted_ip && blacklisted_ip; }
-    public boolean isBlacklistedHost() { return !whitelisted_app && !whitelisted_host && blacklisted_host; }
+    public boolean isBlacklistedIp() { return blacklisted_ip; }
+    public boolean isBlacklistedHost() { return blacklisted_host; }
     public boolean isBlacklisted() {
         return isBlacklistedIp() || isBlacklistedHost();
-    }
-
-    public void updateWhitelist(MatchList whitelist) {
-        whitelisted_app = whitelist.matchesApp(uid);
-        whitelisted_ip = whitelist.matchesIP(dst_ip);
-        whitelisted_host = whitelist.matchesHost(info);
     }
 
     @Override

@@ -1,0 +1,15 @@
+name: Windows build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+    - run: ./gradlew.bat assembleDebug

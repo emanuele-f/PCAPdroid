@@ -55,6 +55,7 @@ public class EditListFragment extends Fragment {
     private MatchList mList;
     private ListInfo mListInfo;
     private ListView mListView;
+    private boolean mChanged;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 
@@ -126,10 +127,11 @@ public class EditListFragment extends Fragment {
                         updateList();
                     }
 
-                    if(mList == PCAPdroid.getInstance().getMalwareWhitelist()) {
-                        ConnectionsRegister reg = CaptureService.getConnsRegister();
-                        if(reg != null)
-                            reg.refreshConnectionsWhitelist();
+                    if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST)
+                        CaptureService.reloadMalwareWhitelist();
+                    else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
+                        if(CaptureService.isServiceActive())
+                            CaptureService.requireInstance().reloadBlocklist();
                     }
 
                     mode.finish();
@@ -178,14 +180,7 @@ public class EditListFragment extends Fragment {
             return true;
         } else if(id == R.id.share) {
             String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
-
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(mListInfo.getTitle()));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
-
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
-
+            Utils.shareText(requireContext(), getString(mListInfo.getTitle()), contents);
             return true;
         } else if(id == R.id.show_hint) {
             Utils.showHelpDialog(requireContext(), mListInfo.getHelpString());

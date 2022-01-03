@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.view.LayoutInflater;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -33,11 +34,15 @@ import java.io.Serializable;
 public class FilterDescriptor implements Serializable {
     public Status status = Status.STATUS_INVALID;
     public boolean showMasked = true;
+    public boolean onlyBLocked = false;
     public boolean onlyBlacklisted = false;
     public boolean onlyPlaintext = false;
+    public String iface;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
+                || (iface != null)
+                || onlyBLocked
                 || onlyBlacklisted
                 || onlyPlaintext
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
@@ -45,9 +50,11 @@ public class FilterDescriptor implements Serializable {
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
+                && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
                 && (!onlyPlaintext || !conn.request_plaintext.isEmpty())
-                && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)));
+                && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
+                && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)));
     }
 
     private void addChip(LayoutInflater inflater, ChipGroup group, int id, String text) {
@@ -62,6 +69,8 @@ public class FilterDescriptor implements Serializable {
 
         if(!showMasked)
             addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
+        if(onlyBLocked)
+            addChip(inflater, group, R.id.blocked, ctx.getString(R.string.blocked_connection_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
         if(onlyPlaintext)
@@ -70,16 +79,22 @@ public class FilterDescriptor implements Serializable {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
         }
+        if(iface != null)
+            addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
     }
 
     public void clear(int filter_id) {
         if(filter_id == R.id.not_hidden)
             showMasked = true;
+        else if(filter_id == R.id.blocked)
+            onlyBLocked = false;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
         else if(filter_id == R.id.only_plaintext)
             onlyPlaintext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
+        else if(filter_id == R.id.capture_interface)
+            iface = null;
     }
 }

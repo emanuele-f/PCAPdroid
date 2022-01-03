@@ -70,7 +70,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             // NOTE: can be null
             AppDescriptor app = (apps != null) ? apps.get(stats.getUid(), 0) : null;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
+            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
             icon.setImageDrawable(appIcon);
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(stats.getUid());

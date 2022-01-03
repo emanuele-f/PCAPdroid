@@ -1,8 +1,8 @@
-project(vpnproxy-jni)
+project(core)
 
-add_library(vpnproxy-jni SHARED
-        vpnproxy.c
-        capture_proxy.c
+add_library(capture SHARED
+        pcapdroid.c
+        capture_vpn.c
         capture_root.c
         ip_lru.c
         ndpi_master_protos.c
@@ -27,7 +27,7 @@ ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
 
 find_library(log-lib log)
 
-target_link_libraries(vpnproxy-jni
+target_link_libraries(capture
         zdtun
         ndpi
         common

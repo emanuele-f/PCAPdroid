@@ -21,75 +21,99 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
-import com.emanuelef.remote_capture.model.MatchList;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+/* A container for the connections. This is used to store active/closed connections until the capture
+ * is stopped. Active connections are also kept in the native side.
+ *
+ * The ConnectionsRegister can store up to _size items, after which rollover occurs and older
+ * connections are replaced with the new ones. Via the addListener method it's possible to listen
+ * for connections changes (connections added/removed/updated). The usual listener for such events
+ * is the ConnectionsFragment, which then forwards them to the ConnectionsAdapter.
+ *
+ * Connections are added/updated by the CaptureService in a separate thread. The getter methods are
+ * instead called on the UI thread, usually by the ConnectionsAdapter. Methods are synchronized to
+ * provide threads safety on this class. Concurrent access to the ConnectionDescriptors fields can
+ * occur during connectionsUpdates but it's not protected, check out the ConnectionDescriptor class
+ * for more details.
+ */
 public class ConnectionsRegister {
     private static final String TAG = "ConnectionsRegister";
 
     private final ConnectionDescriptor[] mItemsRing;
     private int mTail;
     private final int mSize;
-    private int mNumItems;
-    private int mUntrackedItems;
+    private int mCurItems;
+    private int mUntrackedItems; // number of old connections which were discarded due to the rollover
     private int mNumMalicious;
-    private final Map<Integer, AppStats> mAppsStats;
+    private final SparseArray<AppStats> mAppsStats;
+    private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
-    private final MatchList mWhitelist;
     private final Geolocation mGeo;
 
     public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
-        mNumItems = 0;
+        mCurItems = 0;
         mUntrackedItems = 0;
         mSize = _size;
         mGeo = new Geolocation(ctx);
         mItemsRing = new ConnectionDescriptor[mSize];
         mListeners = new ArrayList<>();
-        mAppsStats = new HashMap<>(); // uid -> AppStats
-        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        mAppsStats = new SparseArray<>(); // uid -> AppStats
+        mConnsByIface = new SparseIntArray();
     }
 
-    private int firstPos() {
-        return (mNumItems < mSize) ? 0 : mTail;
+    // returns the position in mItemsRing of the oldest connection
+    private synchronized int firstPos() {
+        return (mCurItems < mSize) ? 0 : mTail;
     }
 
-    private int lastPos() {
+    // returns the position in mItemsRing of the newest connection
+    private synchronized int lastPos() {
         return (mTail - 1 + mSize) % mSize;
     }
 
     private void processConnectionStatus(ConnectionDescriptor conn) {
-        if(!conn.alerted && conn.isBlacklisted()) {
+        boolean is_blacklisted = conn.isBlacklisted();
+
+        if(!conn.alerted && is_blacklisted) {
             CaptureService.requireInstance().notifyBlacklistedConnection(conn);
             conn.alerted = true;
             mNumMalicious++;
+        } else if(conn.alerted && !is_blacklisted) {
+            // the connection was whitelisted
+            conn.alerted = false;
+            mNumMalicious--;
         }
     }
 
+    // called by the CaptureService in a separate thread when new connections should be added to the register
     public synchronized void newConnections(ConnectionDescriptor[] conns) {
         if(conns.length > mSize) {
-            // take the most recent
+            // this should only occur while testing with small register sizes
+            // take the most recent connections
             mUntrackedItems += conns.length - mSize;
             conns = Arrays.copyOfRange(conns, conns.length - mSize, conns.length);
         }
 
-        int out_items = conns.length - Math.min((mSize - mNumItems), conns.length);
-        int insert_pos = mNumItems;
+        int out_items = conns.length - Math.min((mSize - mCurItems), conns.length);
+        int insert_pos = mCurItems;
         ConnectionDescriptor []removedItems = null;
 
         //Log.d(TAG, "newConnections[" + mNumItems + "/" + mSize +"]: insert " + conns.length +
@@ -107,10 +131,19 @@ public class ConnectionsRegister {
                 if(conn != null) {
                     int uid = conn.uid;
                     AppStats stats = mAppsStats.get(uid);
+                    assert stats != null;
                     stats.bytes -= conn.rcvd_bytes + conn.sent_bytes;
 
                     if(--stats.num_connections <= 0)
                         mAppsStats.remove(uid);
+
+                    if(conn.ifidx > 0) {
+                        int num_conn = mConnsByIface.get(conn.ifidx);
+                        if(--num_conn <= 0)
+                            mConnsByIface.delete(conn.ifidx);
+                        else
+                            mConnsByIface.put(conn.ifidx, num_conn);
+                    }
 
                     if(conn.isBlacklisted())
                         mNumMalicious--;
@@ -125,15 +158,19 @@ public class ConnectionsRegister {
         for(ConnectionDescriptor conn: conns) {
             mItemsRing[mTail] = conn;
             mTail = (mTail + 1) % mSize;
-            mNumItems = Math.min(mNumItems + 1, mSize);
+            mCurItems = Math.min(mCurItems + 1, mSize);
 
             // update the apps stats
             int uid = conn.uid;
             AppStats stats = mAppsStats.get(uid);
-
             if(stats == null) {
                 stats = new AppStats(uid);
                 mAppsStats.put(uid, stats);
+            }
+
+            if(conn.ifidx > 0) {
+                int num_conn = mConnsByIface.get(conn.ifidx);
+                mConnsByIface.put(conn.ifidx, num_conn + 1);
             }
 
             // Geolocation
@@ -142,7 +179,6 @@ public class ConnectionsRegister {
             conn.asn = mGeo.getASN(dstAddr);
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
-            conn.updateWhitelist(mWhitelist);
             processConnectionStatus(conn);
 
             stats.num_connections++;
@@ -160,14 +196,19 @@ public class ConnectionsRegister {
         }
     }
 
+    // called by the CaptureService in a separate thread when connections should be updated
     public synchronized void connectionsUpdates(ConnectionUpdate[] updates) {
+        if(mCurItems == 0)
+            return;
+
         int first_pos = firstPos();
+        int last_pos = lastPos();
         int first_id = mItemsRing[first_pos].incr_id;
-        int last_id = mItemsRing[lastPos()].incr_id;
+        int last_id = mItemsRing[last_pos].incr_id;
         int []changed_pos = new int[updates.length];
         int k = 0;
 
-        Log.d(TAG, "connectionsUpdates: items=" + mNumItems + ", first_id=" + first_id + ", last_id=" + last_id);
+        Log.d(TAG, "connectionsUpdates: items=" + mCurItems + ", first_id=" + first_id + ", last_id=" + last_id);
 
         for(ConnectionUpdate update: updates) {
             int id = update.incr_id;
@@ -184,78 +225,43 @@ public class ConnectionsRegister {
                 stats.bytes += bytes_delta;
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
-                boolean host_changed = (update.info != null) && (!update.info.equals(conn.info));
                 conn.processUpdate(update);
-                if(host_changed)
-                    conn.updateWhitelist(mWhitelist);
                 processConnectionStatus(conn);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }
         }
 
-        for(ConnectionsListener listener: mListeners) {
-            if(k != updates.length) {
-                // some untracked items where skipped, shrink the array
-                changed_pos = Arrays.copyOf(changed_pos, k);
-                k = updates.length;
-            }
+        if(k == 0)
+            // no updates for items in the ring
+            return;
 
+        if(k != updates.length)
+            // some untracked items where skipped, shrink the array
+            changed_pos = Arrays.copyOf(changed_pos, k);
+
+        for(ConnectionsListener listener: mListeners)
             listener.connectionsUpdated(changed_pos);
-        }
     }
 
     public synchronized void reset() {
         for(int i = 0; i< mSize; i++)
             mItemsRing[i] = null;
 
-        mNumItems = 0;
+        mCurItems = 0;
         mUntrackedItems = 0;
         mTail = 0;
         mAppsStats.clear();
 
         for(ConnectionsListener listener: mListeners)
-            listener.connectionsChanges(mNumItems);
-    }
-
-    public synchronized void refreshConnectionsWhitelist() {
-        ArrayList<Integer>changed_pos = new ArrayList<>();
-
-        for(int i = 0; i< mNumItems; i++) {
-            ConnectionDescriptor conn = mItemsRing[i];
-
-            if(conn != null) {
-                boolean was_blacklisted = conn.isBlacklisted();
-
-                conn.updateWhitelist(mWhitelist);
-                if(conn.isBlacklisted() != was_blacklisted) {
-                    if(was_blacklisted)
-                        mNumMalicious--;
-                    else
-                        mNumMalicious++;
-                    changed_pos.add(i);
-                }
-            }
-        }
-
-        // Notify listeners
-        if(changed_pos.size() > 0) {
-            int[] changed = new int[changed_pos.size()];
-            int i = 0;
-
-            for(Integer item: changed_pos)
-                changed[i++] = item;
-
-            for(ConnectionsListener listener: mListeners)
-                listener.connectionsUpdated(changed);
-        }
+            listener.connectionsChanges(mCurItems);
     }
 
     public synchronized void addListener(ConnectionsListener listener) {
         mListeners.add(listener);
 
         // Send the first update to sync it
-        listener.connectionsChanges(mNumItems);
+        listener.connectionsChanges(mCurItems);
 
         Log.d(TAG, "(add) new connections listeners size: " + mListeners.size());
     }
@@ -267,15 +273,16 @@ public class ConnectionsRegister {
     }
 
     public int getConnCount() {
-        return mNumItems;
+        return mCurItems;
     }
 
     public int getUntrackedConnCount() {
         return mUntrackedItems;
     }
 
-    public @Nullable ConnectionDescriptor getConn(int i) {
-        if(i >= mNumItems)
+    // get the i-th oldest connection
+    public synchronized @Nullable ConnectionDescriptor getConn(int i) {
+        if((i < 0) || (i >= mCurItems))
             return null;
 
         int pos = (firstPos() + i) % mSize;
@@ -285,13 +292,12 @@ public class ConnectionsRegister {
     public synchronized int getConnPositionById(int incr_id) {
         int first = firstPos();
 
-        for(int i = 0; i < mNumItems; i++) {
+        for(int i = 0; i < mCurItems; i++) {
             int pos = (first + i) % mSize;
             ConnectionDescriptor item = mItemsRing[pos];
 
-            if((item != null) && (item.incr_id == incr_id)) {
+            if((item != null) && (item.incr_id == incr_id))
                 return pos;
-            }
         }
 
         return -1;
@@ -300,9 +306,9 @@ public class ConnectionsRegister {
     public synchronized List<AppStats> getAppsStats() {
         ArrayList<AppStats> rv = new ArrayList<>(mAppsStats.size());
 
-        for (Map.Entry<Integer, AppStats> pair : mAppsStats.entrySet()) {
+        for(int i=0; i<mAppsStats.size(); i++) {
             // Create a clone to avoid concurrency issues
-            AppStats stats = pair.getValue().clone();
+            AppStats stats = mAppsStats.valueAt(i).clone();
 
             rv.add(stats);
         }
@@ -311,16 +317,35 @@ public class ConnectionsRegister {
     }
 
     public synchronized Set<Integer> getSeenUids() {
-        HashSet<Integer> rv = new HashSet<>();
+        ArraySet<Integer> rv = new ArraySet<>();
 
-        for (Map.Entry<Integer, AppStats> pair : mAppsStats.entrySet()) {
-            rv.add(pair.getKey());
-        }
+        for(int i=0; i<mAppsStats.size(); i++)
+            rv.add(mAppsStats.keyAt(i));
 
         return rv;
     }
 
     public int getNumMaliciousConnections() {
         return mNumMalicious;
+    }
+
+    public synchronized boolean hasSeenMultipleInterfaces() {
+        return(mConnsByIface.size() > 1);
+    }
+
+    // Returns a sorted list of seen network interfaces
+    public synchronized List<String> getSeenInterfaces() {
+        List<String> rv = new ArrayList<>();
+
+        for(int i=0; i<mConnsByIface.size(); i++) {
+            int ifidx = mConnsByIface.keyAt(i);
+            String ifname = CaptureService.getInterfaceName(ifidx);
+
+            if(!ifname.isEmpty())
+                rv.add(ifname);
+        }
+
+        Collections.sort(rv);
+        return rv;
     }
 }

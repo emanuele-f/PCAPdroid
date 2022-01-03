@@ -27,7 +27,6 @@ import android.widget.Filterable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.emanuelef.remote_capture.adapters.AppsAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -57,7 +56,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
 
     private void initialize(Context context) {
         mAllApps = null;
-        setLayoutManager(new LinearLayoutManager(context));
+        setLayoutManager(new MyLinearLayoutManager(context));
         setHasFixedSize(true);
     }
 

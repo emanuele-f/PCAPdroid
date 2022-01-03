@@ -87,7 +87,12 @@ public class AppDetailsActivity extends BaseActivity {
                     builder.append(perm);
                 }
 
-                ((TextView)findViewById(R.id.permissions)).setText(builder.toString());
+                TextView perms = findViewById(R.id.permissions);
+                perms.setText(builder.toString());
+
+                if(Utils.isTv(this)) {
+                    perms.setOnClickListener(v -> Utils.shareText(this, getString(R.string.permissions), perms.getText().toString()));
+                }
             } else {
                 findViewById(R.id.permissions_label).setVisibility(View.GONE);
                 findViewById(R.id.permissions).setVisibility(View.GONE);
@@ -114,7 +119,7 @@ public class AppDetailsActivity extends BaseActivity {
         findViewById(R.id.app_settings).setOnClickListener(v -> {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.fromParts("package", dsc.getPackageName(), null));
-            startActivity(intent);
+            Utils.startActivity(this, intent);
         });
 
         findViewById(R.id.show_connections).setOnClickListener(v -> {
@@ -151,13 +156,7 @@ public class AppDetailsActivity extends BaseActivity {
             Utils.copyToClipboard(this, asString());
             return true;
         } else if(id == R.id.share) {
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_details));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, asString());
-
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
-
+            Utils.shareText(this, getString(R.string.app_details), asString());
             return true;
         }
 
