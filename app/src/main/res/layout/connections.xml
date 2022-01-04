@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <com.google.android.material.chip.ChipGroup
@@ -19,15 +19,6 @@
         </com.google.android.material.chip.ChipGroup>
 
         <TextView
-            android:id="@+id/old_connections_notice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:textSize="15sp"
-            android:textStyle="italic"
-            tools:text="74 older connections not shown" />
-
-        <TextView
             android:id="@+id/no_connections"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -36,7 +27,7 @@
             android:layout_marginTop="40dp"
             android:textStyle="italic"
             android:textSize="15sp"
-            android:text="@string/capture_not_started">
+            tools:text="@string/capture_not_started">
         </TextView>
 
         <com.emanuelef.remote_capture.views.EmptyRecyclerView
@@ -47,6 +38,17 @@
             android:scrollbars="vertical"
             android:scrollbarStyle="outsideOverlay"
             android:fillViewport="true" />
+
+        <TextView
+            android:id="@+id/old_connections_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textSize="15sp"
+            android:textStyle="italic"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="74 older connections not shown" />
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

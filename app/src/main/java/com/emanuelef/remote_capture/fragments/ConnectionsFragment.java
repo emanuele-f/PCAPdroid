@@ -49,19 +49,17 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
-import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
@@ -96,7 +94,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private MenuItem mSave;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
-    private boolean hasUntrackedConnections;
     private AppsResolver mApps;
     private SearchView mSearchView;
     private String mQueryToApply;
@@ -110,7 +107,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
+        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
+            mEmptyText.setText(R.string.no_connections);
+        else
+            mEmptyText.setText(R.string.capture_not_running);
+
         registerConnsListener();
+        mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+
         refreshMenuIcons();
     }
 
@@ -119,6 +123,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onPause();
 
         unregisterConnsListener();
+        mRecyclerView.setEmptyView(null);
 
         if(mSearchView != null)
             mQueryToApply = mSearchView.getQuery().toString();
@@ -168,15 +173,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mFabDown = view.findViewById(R.id.fabDown);
         mRecyclerView = view.findViewById(R.id.connections_view);
         mOldConnectionsText = view.findViewById(R.id.old_connections_notice);
-        LinearLayoutManager layoutMan = new LinearLayoutManager(requireContext());
+        EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
         mApps = new AppsResolver(requireContext());
 
         mEmptyText = view.findViewById(R.id.no_connections);
-        if((requireActivity() instanceof MainActivity) &&
-                (((MainActivity) requireActivity()).getState() == AppState.running))
-            mEmptyText.setText(R.string.no_connections);
-
         mActiveFilter = view.findViewById(R.id.active_filter);
         mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
             if(mAdapter != null) {
@@ -188,7 +189,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
         listenerSet = false;
-        mRecyclerView.setEmptyView(mEmptyText);
         registerForContextMenu(mRecyclerView);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
@@ -218,7 +218,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         autoScroll = true;
         showFabDown(false);
-        mOldConnectionsText.setVisibility(View.GONE);
 
         mFabDown.setOnClickListener(v -> scrollToBottom());
 
@@ -279,7 +278,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     autoScroll = true;
                     showFabDown(false);
                     mOldConnectionsText.setVisibility(View.GONE);
-                    hasUntrackedConnections = false;
                     mEmptyText.setText(R.string.no_connections);
                     mApps.clear();
                 }
@@ -312,13 +310,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         int max_length = 32;
 
         ConnectionDescriptor conn = mAdapter.getClickedItem();
-
         if(conn == null)
             return;
 
         AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
+        Billing billing = Billing.newInstance(ctx);
         MenuItem item;
+
+        menu.findItem(R.id.block_menu).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot());
 
         if(app != null) {
             item = menu.findItem(R.id.hide_app);
@@ -327,6 +327,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
 
             item = menu.findItem(R.id.search_app);
+            item.setTitle(label);
+            item.setVisible(true);
+
+            item = menu.findItem(R.id.block_app);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -340,6 +344,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if((conn.info != null) && (!conn.info.isEmpty())) {
             item = menu.findItem(R.id.hide_host);
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info), max_length);
+            item.setTitle(label);
+            item.setVisible(true);
+
+            item = menu.findItem(R.id.block_host);
             item.setTitle(label);
             item.setVisible(true);
 
@@ -388,6 +396,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
+        menu.findItem(R.id.block_ip).setTitle(label);
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
 
@@ -404,8 +413,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         ConnectionDescriptor conn = mAdapter.getClickedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean mask_changed = false;
         boolean whitelist_changed = false;
+        boolean blocklist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -418,7 +429,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.hide_host) {
             mAdapter.mMask.addHost(conn.info);
             mask_changed = true;
-        }  else if(id == R.id.hide_ip) {
+        } else if(id == R.id.hide_ip) {
             mAdapter.mMask.addIp(conn.dst_ip);
             mask_changed = true;
         } else if(id == R.id.hide_proto) {
@@ -448,6 +459,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.whitelist_host)  {
             whitelist.addHost(conn.info);
             whitelist_changed = true;
+        } else if(id == R.id.block_app) {
+            blocklist.addApp(conn.uid);
+            blocklist_changed = true;
+        } else if(id == R.id.block_ip) {
+            blocklist.addIp(conn.dst_ip);
+            blocklist_changed = true;
+        } else if(id == R.id.block_host) {
+            blocklist.addHost(conn.info);
+            blocklist_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
@@ -469,7 +489,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             refreshFilteredConnections();
         } else if(whitelist_changed) {
             whitelist.save();
-            recheckBlacklistedConnections();
+            CaptureService.reloadMalwareWhitelist();
+        } else if(blocklist_changed) {
+            blocklist.save();
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadBlocklist();
         }
 
         return true;
@@ -483,19 +507,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mMenuItemSearch.expandActionView();
 
         // Delay otherwise the query won't be set when the activity is just started.
-        mSearchView.post(() -> {
-            mSearchView.setQuery(query, true);
-        });
-    }
-
-    private void recheckBlacklistedConnections() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg != null)
-            reg.refreshConnectionsWhitelist();
+        mSearchView.post(() -> mSearchView.setQuery(query, true));
     }
 
     private void recheckScroll() {
-        final LinearLayoutManager layoutMan = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        final EmptyRecyclerView.MyLinearLayoutManager layoutMan = (EmptyRecyclerView.MyLinearLayoutManager) mRecyclerView.getLayoutManager();
         assert layoutMan != null;
         int first_visibile_pos = layoutMan.findFirstCompletelyVisibleItemPosition();
         int last_visible_pos = layoutMan.findLastCompletelyVisibleItemPosition();
@@ -513,11 +529,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
         } else
             showFabDown(false);
-
-        if((first_visibile_pos == 0) && hasUntrackedConnections)
-            mOldConnectionsText.setVisibility(View.VISIBLE);
-        else
-            mOldConnectionsText.setVisibility(View.GONE);
     }
 
     private void showFabDown(boolean visible) {
@@ -533,7 +544,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.scrollToPosition(last_pos);
 
         showFabDown(false);
-        mOldConnectionsText.setVisibility(View.GONE);
     }
 
     private void refreshActiveFilter() {
@@ -552,20 +562,32 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         recheckScroll();
     }
 
+    private void recheckUntrackedConnections() {
+        ConnectionsRegister reg = CaptureService.requireConnsRegister();
+        if(reg.getUntrackedConnCount() > 0) {
+            String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
+            mOldConnectionsText.setText(info);
+            mOldConnectionsText.setVisibility(View.VISIBLE);
+        } else
+            mOldConnectionsText.setVisibility(View.GONE);
+    }
+
     @Override
     public void connectionsChanges(int num_connections) {
         // Important: must use the provided num_connections rather than accessing the register
         // in order to avoid desyncs
 
-        mHandler.post(() -> {
+        // using runOnUi to populate the adapter as soon as registerConnsListener is called
+        Utils.runOnUi(() -> {
             Log.d(TAG, "New connections size: " + num_connections);
 
             mAdapter.connectionsChanges(num_connections);
-            recheckScroll();
 
+            recheckScroll();
             if(autoScroll)
                 scrollToBottom();
-        });
+            recheckUntrackedConnections();
+        }, mHandler);
     }
 
     @Override
@@ -577,23 +599,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(autoScroll)
                 scrollToBottom();
-
-            ConnectionsRegister reg = CaptureService.requireConnsRegister();
-
-            if(reg.getUntrackedConnCount() > 0) {
-                String info = String.format(getString(R.string.older_connections_notice), reg.getUntrackedConnCount());
-                mOldConnectionsText.setText(info);
-
-                if(!hasUntrackedConnections) {
-                    hasUntrackedConnections = true;
-                    recheckScroll();
-                }
-            }
+            recheckUntrackedConnections();
         });
     }
 
     @Override
-    public void connectionsRemoved(int start,ConnectionDescriptor []conns) {
+    public void connectionsRemoved(int start, ConnectionDescriptor []conns) {
         mHandler.post(() -> {
             Log.d(TAG, "Remove " + conns.length + " connections at " + start);
             mAdapter.connectionsRemoved(start, conns);
@@ -731,9 +742,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
             FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
-            Log.d(TAG, "filter fra");
             if(descriptor != null) {
-                Log.d(TAG, "filter fre");
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();
                 refreshActiveFilter();

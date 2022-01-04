@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -49,6 +50,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.SpannableString;
@@ -102,6 +105,10 @@ public class Utils {
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
+
+    public static String[] list2array(List<String> l) {
+        return l.toArray(new String[0]);
+    }
 
     public static String formatBytes(long bytes) {
         long divisor;
@@ -271,10 +278,16 @@ public class Utils {
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
+    // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
+    // Using the deprecated API instead to keep things simple.
+    // https://developer.android.com/reference/android/net/wifi/WifiManager#getConnectionInfo()
+    @SuppressWarnings("deprecation")
     public static String getLocalWifiIpAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo connInfo = wifiManager.getConnectionInfo();
+        if(wifiManager == null)
+            return(null);
 
+        WifiInfo connInfo = wifiManager.getConnectionInfo();
         if(connInfo != null) {
             int ipAddress = connInfo.getIpAddress();
 
@@ -330,7 +343,7 @@ public class Utils {
                                 && !addr.equals(vpn_ip)) {
                             String sAddr = addr.getHostAddress();
 
-                            if ((addr instanceof Inet4Address) && !sAddr.equals("0.0.0.0")) {
+                            if ((sAddr != null) && (addr instanceof Inet4Address) && !sAddr.equals("0.0.0.0")) {
                                 Log.d("getLocalIPAddress", "Using interface '" + intf.getName() + "' IP: " + sAddr);
                                 return sAddr;
                             }
@@ -361,6 +374,19 @@ public class Utils {
         return data;
     }
 
+    // https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    public static String byteArrayToHex(byte[] bytes, int size) {
+        char[] hexChars = new char[size * 2];
+
+        for (int j = 0; j < size; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     // Splits the provided data into individual PCAP records. Intended to be used with data received
     // via CaptureService::dumpPcapData
     public static Iterator<Integer> iterPcapRecords(byte[] data) {
@@ -383,9 +409,12 @@ public class Utils {
         };
     }
 
+    // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
+    // Using the deprecated API instead to keep things simple.
+    // https://developer.android.com/reference/android/net/ConnectivityManager#getAllNetworks()
+    @SuppressWarnings("deprecation")
     public static boolean hasVPNRunning(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
         if(cm != null) {
             Network[] networks = cm.getAllNetworks();
 
@@ -421,7 +450,7 @@ public class Utils {
         builder.setNeutralButton(R.string.ok,
                 (dialog, id1) -> dialog.cancel());
 
-        AlertDialog alert= builder.create();
+        AlertDialog alert = builder.create();
         alert.show();
     }
 
@@ -630,6 +659,15 @@ public class Utils {
         Utils.showToast(ctx, R.string.copied_to_clipboard);
     }
 
+    public static void shareText(Context ctx, String subject, String contents) {
+        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+        startActivity(ctx, Intent.createChooser(intent, ctx.getResources().getString(R.string.share)));
+    }
+
     // Formats a string resource like "text: %1s" by applying the specified style to the "text:" and "value" ("%1s")
     public static SpannableString formatTextValue(Context ctx, StyleSpan textStyle, StyleSpan valStyle, int resid, String value) {
         String fmt = ctx.getResources().getString(resid);
@@ -776,5 +814,60 @@ public class Utils {
             s = s.substring(0, maxlen - 1) + "…";
 
         return s;
+    }
+
+    // NOTE: base32 padding not supported
+    public static byte[] base32Decode(String s) {
+        s = s.toUpperCase().replace("\n", "");
+        byte[] rv = new byte[s.length() * 5 / 8];
+        int i = 0;
+        int bitsRemaining = 8;
+        byte curByte = 0;
+
+        for(int k=0; k<s.length(); k++) {
+            int val;
+            char c = s.charAt(k);
+
+            if((c >= '2') && (c <= '7'))
+                val = 26 + (c - '2');
+            else if((c >= 'A') && (c <= 'Z'))
+                val = (c - 'A');
+            else
+                throw new IllegalArgumentException("invalid BASE32 string or unsupported padding");
+
+            // https://stackoverflow.com/questions/641361/base32-decoding
+            if(bitsRemaining > 5) {
+                int mask = val << (bitsRemaining - 5);
+                curByte = (byte)(curByte | mask);
+                bitsRemaining -= 5;
+            } else {
+                int mask = val >> (5 - bitsRemaining);
+                curByte = (byte)(curByte | mask);
+                rv[i++] = curByte;
+                curByte = (byte)(val << (3 + bitsRemaining));
+                bitsRemaining += 3;
+            }
+        }
+
+        if(i < rv.length)
+            rv[i] = curByte;
+
+        return rv;
+    }
+
+    public static void startActivity(Context ctx, Intent intent) {
+        try {
+            ctx.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            showToastLong(ctx, R.string.no_intent_handler_found);
+        }
+    }
+
+    // Runs the specified runnable now if on the UI thread, otherwise enqueue it to the Handler
+    public static void runOnUi(Runnable r, Handler h) {
+        if(Looper.getMainLooper().getThread() == Thread.currentThread())
+            r.run();
+        else
+            h.post(r);
     }
 }

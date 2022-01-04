@@ -42,6 +42,26 @@
         </menu>
     </item>
 
+    <item android:id="@+id/block_menu" android:title="@string/block">
+        <menu>
+            <item
+                android:id="@+id/block_app"
+                android:title=""
+                tools:title="@string/app_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/block_ip"
+                android:title=""
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/block_host"
+                android:title=""
+                tools:title="@string/host_val" />
+        </menu>
+    </item>
+
     <item android:title="@string/search">
         <menu>
             <item

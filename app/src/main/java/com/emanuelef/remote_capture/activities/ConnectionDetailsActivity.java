@@ -54,6 +54,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mPacketsView;
     private TextView mDurationView;
     private TextView mRequestData;
+    private TextView mBlockedPkts;
+    private View mBlockedPktsRow;
     private ConnectionDescriptor mConn;
     private TextView mStatus;
     private TextView mFirstSeen;
@@ -94,6 +96,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mTable = findViewById(R.id.table);
         mBytesView = findViewById(R.id.detail_bytes);
         mPacketsView = findViewById(R.id.detail_packets);
+        mBlockedPkts = findViewById(R.id.blocked_pkts);
+        mBlockedPktsRow = findViewById(R.id.blocked_row);
         mDurationView = findViewById(R.id.detail_duration);
         mStatus = findViewById(R.id.detail_status);
         mFirstSeen = findViewById(R.id.first_seen);
@@ -104,7 +108,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
         findViewById(R.id.whois_ip).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://search.arin.net/rdap/?query=" + mConn.dst_ip));
-            startActivity(intent);
+            Utils.startActivity(this, intent);
         });
 
         String l4proto = Utils.proto2str(mConn.ipproto);
@@ -163,7 +167,20 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             else
                 findViewById(R.id.asn_row).setVisibility(View.GONE);
 
+            if(mConn.ifidx > 0) {
+                String ifname = CaptureService.getInterfaceName(mConn.ifidx);
+
+                if(!ifname.isEmpty()) {
+                    findViewById(R.id.interface_row).setVisibility(View.VISIBLE);
+                    ((TextView) findViewById(R.id.capture_interface)).setText(ifname);
+                }
+            }
+
             updateStats(mConn);
+        }
+
+        if(Utils.isTv(this)) {
+            mRequestData.setOnClickListener(v -> Utils.shareText(this, getString(R.string.request_plaintext), mRequestData.getText().toString()));
         }
     }
 
@@ -225,6 +242,10 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         if(conn != null) {
             mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
             mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(conn.rcvd_pkts), Utils.formatIntShort(conn.sent_pkts)));
+            if(conn.blocked_pkts > 0) {
+                mBlockedPkts.setText(String.format(getResources().getString(R.string.n_pkts), Utils.formatIntShort(conn.blocked_pkts)));
+                mBlockedPktsRow.setVisibility(View.VISIBLE);
+            }
             mDurationView.setText(Utils.formatDuration((conn.last_seen - conn.first_seen) / 1000));
             mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
             mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));
@@ -270,12 +291,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             Utils.showToast(this, R.string.copied_to_clipboard);
             return true;
         } else if(id == R.id.share) {
-            Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.connection_details));
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, getContents());
-
-            startActivity(Intent.createChooser(intent, getResources().getString(R.string.share)));
+            Utils.shareText(this, getString(R.string.connection_details), getContents());
             return true;
         }
 

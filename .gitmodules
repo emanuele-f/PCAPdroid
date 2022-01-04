@@ -7,6 +7,9 @@
 [submodule "submodules/libpcap"]
 	path = submodules/libpcap
 	url = https://github.com/the-tcpdump-group/libpcap
-[submodule "submodules/res"]
-	path = submodules/res
+[submodule "app/src/main/res/raw"]
+	path = app/src/main/res/raw
 	url = https://github.com/emanuele-f/PCAPdroid_res
+[submodule "submodules/MaxMind-DB-Reader-java"]
+	path = submodules/MaxMind-DB-Reader-java
+	url = https://github.com/emanuele-f/MaxMind-DB-Reader-java

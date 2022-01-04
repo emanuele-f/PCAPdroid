@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,11 +44,9 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
-import com.haipq.android.flagkit.FlagImageView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder>
@@ -64,17 +63,19 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
     // to provide an always increasing position even when items are removed. The correct unshifted
-    // position is returned by getFilteredItemPos.
-    private final HashMap<Integer, Integer> mIdToFilteredPos;
+    // position is returned by getFilteredItemPos. SparseIntArray is less efficient than an HashMap
+    // on large collections, but takes much less memory.
+    private final SparseIntArray mIdToFilteredPos;
 
     private ArrayList<ConnectionDescriptor> mFilteredConn;
     private String mSearch;
     public final MatchList mMask;
-    public FilterDescriptor mFilter = new FilterDescriptor();
+    public FilterDescriptor mFilter = new FilterDescriptor(); // must call refreshFilteredConnections to apply changes
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         ImageView blacklistedInd;
+        ImageView blockedInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -95,6 +96,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
+            blockedInd = itemView.findViewById(R.id.blocked);
             //countryFlag = itemView.findViewById(R.id.country_flag);
 
             Context context = itemView.getContext();
@@ -107,10 +109,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             Drawable appIcon;
             String l7Text;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? Objects.requireNonNull(app.getIcon().getConstantState()).newDrawable() : unknownIcon;
+            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
             icon.setImageDrawable(appIcon);
 
-            if(conn.info.length() > 0)
+            if((conn.info != null) && (conn.info.length() > 0))
                 remote.setText(conn.info);
             else
                 remote.setText(conn.dst_ip);
@@ -150,6 +152,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             }*/
 
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
+            blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -162,7 +165,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mFilteredConn = null;
         mUnfilteredItemsCount = 0;
         mNumRemovedItems = 0;
-        mIdToFilteredPos = new HashMap<>();
+        mIdToFilteredPos = new SparseIntArray();
         mMask = PCAPdroid.getInstance().getVisualizationMask();
         mSearch = null;
         setHasStableIds(true);
@@ -197,7 +200,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ConnectionDescriptor conn = getItem(position);
-
         if(conn == null) {
             Log.w(TAG, "bad position: " + position);
             return;
@@ -219,20 +221,23 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 && ((mSearch == null) || conn.matches(mApps, mSearch)));
     }
 
+    // Given an incrId, return the position of the connection into the mFilteredConn array
     private int getFilteredItemPos(int incrId) {
-        Integer pos = mIdToFilteredPos.get(incrId);
-
-        if(pos == null)
+        int pos = mIdToFilteredPos.get(incrId, -1);
+        if(pos == -1)
             return -1;
 
         return(pos - mNumRemovedItems);
     }
 
-    private void removeItemAt(int pos) {
-        int incr_id = mFilteredConn.get(pos).incr_id;
+    private void removeFilteredItemAt(int pos) {
+        // get the previous item which was now removed
+        ConnectionDescriptor item = getItem(pos);
+        if(item == null)
+            return;
 
         mFilteredConn.remove(pos);
-        mIdToFilteredPos.remove(incr_id);
+        mIdToFilteredPos.delete(item.incr_id);
         notifyItemRemoved(pos);
     }
 
@@ -244,12 +249,14 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsChanges(int num_connetions) {
+        //Log.d(TAG, "connectionsChanges: " + num_connetions + " connections");
         mUnfilteredItemsCount = num_connetions;
         refreshFilteredConnections();
     }
 
     @Override
     public void connectionsAdded(int start, ConnectionDescriptor []conns) {
+        //Log.d(TAG, "connectionsAdded: at " + start + ", " + conns.length + " connections");
         mUnfilteredItemsCount += conns.length;
 
         if(mFilteredConn == null) {
@@ -257,6 +264,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
+        // Here dealing with filtered connections
         int numNew = 0;
         int pos = mNumRemovedItems + mFilteredConn.size();
 
@@ -275,6 +283,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsRemoved(int start, ConnectionDescriptor []conns) {
+        //Log.d(TAG, "connectionsRemoved: at " + start + ", " + conns.length + " connections");
         mUnfilteredItemsCount -= conns.length;
 
         if(mFilteredConn == null) {
@@ -282,15 +291,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
+        // Here dealing with filtered connections
         for(ConnectionDescriptor conn: conns) {
             if(conn == null)
                 continue;
 
             int pos = getFilteredItemPos(conn.incr_id);
-
             if(pos != -1) {
                 // Assume that connections are only removed from the start of the dataset
-                removeItemAt(0);
+                removeFilteredItemAt(0);
 
                 // by incrementing mNumRemovedItems we can shift the position of subsequent items
                 mNumRemovedItems++;
@@ -300,12 +309,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     @Override
     public void connectionsUpdated(int[] positions) {
+        //Log.d(TAG, "connectionsUpdated: " + positions.length + " connections");
+
         if(mFilteredConn == null) {
             for(int pos : positions)
                 notifyItemChanged(pos);
             return;
         }
 
+        // Here dealing with filtered connections
         ConnectionsRegister reg = CaptureService.requireConnsRegister();
         int first_removed_pos = -1;
         int num_just_removed = 0;
@@ -315,11 +327,13 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
         for(int reg_pos : positions) {
             ConnectionDescriptor conn = reg.getConn(reg_pos);
-
             if(conn != null) {
+                // reg_pos is the position in the ConnectionsRegister, whereas pos is the position
+                // in mFilteredConn
                 int pos = getFilteredItemPos(conn.incr_id);
-
                 if(pos != -1) {
+                    // Need to shift by num_just_removed due to the removeFilteredItemAt below until
+                    // fixFilteredPositions is called
                     pos -= num_just_removed;
 
                     if(matches(conn)) {
@@ -331,7 +345,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                         // A previously matching connection may not match anymore. This happens, for
                         // example, when its info or protocol is updated. In this case, the connection
                         // must be removed.
-                        removeItemAt(pos);
+                        removeFilteredItemAt(pos);
                         num_just_removed++;
 
                         if(first_removed_pos == -1)
@@ -348,7 +362,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public void refreshFilteredConnections() {
         final ConnectionsRegister reg = CaptureService.getConnsRegister();
-
         if(reg == null)
             return;
 
@@ -360,12 +373,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             int pos = 0;
             mFilteredConn = new ArrayList<>();
 
-            for(int i=0; i<mUnfilteredItemsCount; i++) {
-                ConnectionDescriptor conn = reg.getConn(i);
+            // Synchronize to improve performance of getConn
+            synchronized(reg) {
+                for(int i = 0; i < mUnfilteredItemsCount; i++) {
+                    ConnectionDescriptor conn = reg.getConn(i);
 
-                if(matches(conn)) {
-                    mFilteredConn.add(conn);
-                    mIdToFilteredPos.put(conn.incr_id, pos++);
+                    if(matches(conn)) {
+                        mFilteredConn.add(conn);
+                        mIdToFilteredPos.put(conn.incr_id, pos++);
+                    }
                 }
             }
 
@@ -377,11 +393,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     }
 
     public ConnectionDescriptor getItem(int pos) {
-        if(mFilteredConn != null)
+        if(mFilteredConn != null) {
+            if((pos < 0) || (pos >= mFilteredConn.size())) {
+                Log.w(TAG, "getItem(filtered): bad position: " + pos);
+                return null;
+            }
             return mFilteredConn.get(pos);
+        }
 
         ConnectionsRegister reg = CaptureService.getConnsRegister();
-
         if((pos < 0) || (pos >= mUnfilteredItemsCount) || (reg == null)) {
             Log.w(TAG, "getItem: bad position: " + pos);
             return null;
@@ -407,7 +427,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return (mSearch != null) || mFilter.isSet();
     }
 
-    public synchronized String dumpConnectionsCsv() {
+    public String dumpConnectionsCsv() {
         StringBuilder builder = new StringBuilder();
         AppsResolver resolver = new AppsResolver(mContext);
 

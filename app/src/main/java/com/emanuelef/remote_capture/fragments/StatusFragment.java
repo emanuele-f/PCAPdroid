@@ -105,11 +105,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @Override
     public void onResume() {
         super.onResume();
-
-        if((mMenu != null) && (mActivity != null))
-            appStateChanged(mActivity.getState());
-
-        recheckFilterWarning();
+        refreshStatus();
 
         /* Register for stats update */
         mReceiver = new BroadcastReceiver() {
@@ -219,9 +215,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
-
-        if((mMenu != null) && (mActivity != null))
-            appStateChanged(mActivity.getState());
+        refreshStatus();
     }
 
     @Override
@@ -231,9 +225,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mMenu = menu;
         mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
-
-        if(mActivity != null)
-            appStateChanged(mActivity.getState());
+        refreshStatus();
     }
 
     private void recheckFilterWarning() {
@@ -395,6 +387,12 @@ private void refreshPcapDumpInfo() {
         }
     }
 
+    private void refreshStatus() {
+        if(mActivity != null)
+            appStateChanged(mActivity.getState());
+        recheckFilterWarning();
+    }
+
     private void openAppFilterSelector() {
         Dialog dialog = Utils.getAppSelectionDialog(mActivity, new ArrayList<>(), this::setAppFilter);
         dialog.setOnCancelListener(dialog1 -> setAppFilter(null));
@@ -425,11 +423,5 @@ private void refreshPcapDumpInfo() {
         // Load the apps/icons
         Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
         mOpenAppsList.setApps(installedApps);
-    }
-
-    @Override
-    public void onAppsIconsLoaded() {
-        // Icons automatically loaded, no need to call loadInstalledApps again
-        Log.d(TAG, "apps icons loaded");
     }
 }

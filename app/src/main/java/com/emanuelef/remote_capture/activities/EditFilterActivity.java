@@ -19,7 +19,9 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +31,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -37,18 +42,21 @@ import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 public class EditFilterActivity extends BaseActivity {
     public static final String FILTER_DESCRIPTOR = "filter";
     private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;
     private CheckBox mHideMasked;
+    private CheckBox mOnlyBlocked;
     private CheckBox mOnlyBlacklisted;
     private CheckBox mOnlyPlaintext;
     private Chip mStatusOpen;
     private Chip mStatusClosed;
     private Chip mStatusUnreachable;
     private Chip mStatusError;
+    private ChipGroup mInterfaceGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +80,14 @@ public class EditFilterActivity extends BaseActivity {
             mFilter = new FilterDescriptor();
 
         mHideMasked = findViewById(R.id.not_hidden);
+        mOnlyBlocked = findViewById(R.id.only_blocked);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
         mOnlyPlaintext = findViewById(R.id.only_plaintext);
         mStatusOpen = findViewById(R.id.status_open);
         mStatusClosed = findViewById(R.id.status_closed);
         mStatusUnreachable = findViewById(R.id.status_unreachable);
         mStatusError = findViewById(R.id.status_error);
+        mInterfaceGroup = findViewById(R.id.interfaces);
 
         findViewById(R.id.edit_mask).setOnClickListener(v -> {
             Intent editIntent = new Intent(this, EditListActivity.class);
@@ -85,8 +95,29 @@ public class EditFilterActivity extends BaseActivity {
             startActivity(editIntent);
         });
 
-        if(!Prefs.isMalwareDetectionEnabled(this, PreferenceManager.getDefaultSharedPreferences(this)))
+        Billing billing = Billing.newInstance(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if(!Prefs.isMalwareDetectionEnabled(this, prefs))
             mOnlyBlacklisted.setVisibility(View.GONE);
+
+        if(!billing.isPurchased(Billing.FIREWALL_SKU) || Prefs.isRootCaptureEnabled(prefs))
+            mOnlyBlocked.setVisibility(View.GONE);
+
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if((reg != null) && (reg.hasSeenMultipleInterfaces())) {
+            LayoutInflater inflater = getLayoutInflater();
+
+            // Create the chips
+            for(String ifname: reg.getSeenInterfaces()) {
+                Chip chip = (Chip) inflater.inflate(R.layout.choice_chip, mInterfaceGroup, false);
+                chip.setText(ifname);
+                mInterfaceGroup.addView(chip);
+            }
+
+            mInterfaceGroup.setVisibility(View.VISIBLE);
+            findViewById(R.id.interfaces_label).setVisibility(View.VISIBLE);
+        }
 
         model2view();
     }
@@ -101,6 +132,7 @@ public class EditFilterActivity extends BaseActivity {
 
     private void model2view() {
         mHideMasked.setChecked(!mFilter.showMasked);
+        mOnlyBlocked.setChecked(mFilter.onlyBLocked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
         mOnlyPlaintext.setChecked(mFilter.onlyPlaintext);
 
@@ -118,10 +150,22 @@ public class EditFilterActivity extends BaseActivity {
         }
         if(selected_status != null)
             selected_status.setChecked(true);
+
+        if(mFilter.iface != null) {
+            int num_chips = mInterfaceGroup.getChildCount();
+            for(int i=0; i<num_chips; i++) {
+                Chip chip = (Chip) mInterfaceGroup.getChildAt(i);
+                if(chip.getText().equals(mFilter.iface)) {
+                    chip.setChecked(true);
+                    break;
+                }
+            }
+        }
     }
 
     private void view2model() {
         mFilter.showMasked = !mHideMasked.isChecked();
+        mFilter.onlyBLocked = mOnlyBlocked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
         mFilter.onlyPlaintext = mOnlyPlaintext.isChecked();
 
@@ -135,6 +179,15 @@ public class EditFilterActivity extends BaseActivity {
             mFilter.status = Status.STATUS_ERROR;
         else
             mFilter.status = Status.STATUS_INVALID;
+
+        int num_chips = mInterfaceGroup.getChildCount();
+        for(int i=0; i<num_chips; i++) {
+            Chip chip = (Chip) mInterfaceGroup.getChildAt(i);
+            if(chip.isChecked()) {
+                mFilter.iface = chip.getText().toString();
+                break;
+            }
+        }
     }
 
     private void finishOk() {

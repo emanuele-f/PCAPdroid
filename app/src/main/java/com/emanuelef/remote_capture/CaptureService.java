@@ -43,6 +43,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -76,7 +77,10 @@ import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -89,11 +93,12 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
     private CaptureSettings mSettings;
+    private Billing mBilling;
     private Handler mHandler;
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
-    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(16);
+    private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -113,7 +118,11 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mBlockPrivateDns;
     private boolean mDnsEncrypted;
     private boolean mStrictDnsNoticeShown;
+    private boolean mQueueFull;
     private Blacklists mBlacklists;
+    private MatchList mBlocklist;
+    private MatchList mWhitelist;
+    private SparseArray<String> mIfIndexToName;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -139,7 +148,12 @@ public class CaptureService extends VpnService implements Runnable {
 
     static {
         /* Load native library */
-        System.loadLibrary("vpnproxy-jni");
+        try {
+            System.loadLibrary("capture");
+        } catch (UnsatisfiedLinkError e) {
+            // This should only happen while running tests
+            //e.printStackTrace();
+        }
     }
 
     @Override
@@ -169,6 +183,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mHandler = new Handler(Looper.getMainLooper());
+        mBilling = Billing.newInstance(this);
 
         if (intent == null) {
             Log.d(CaptureService.TAG, "NULL intent onStartCommand");
@@ -188,6 +203,18 @@ public class CaptureService extends VpnService implements Runnable {
         mBlockPrivateDns = false;
         mStrictDnsNoticeShown = false;
         mDnsEncrypted = false;
+
+        // Map network interfaces
+        mIfIndexToName = new SparseArray<>();
+        try {
+            Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+            while(ifaces.hasMoreElements()) {
+                NetworkInterface iface = ifaces.nextElement();
+
+                Log.d(TAG, "ifidx " + iface.getIndex() + " -> " + iface.getName());
+                mIfIndexToName.put(iface.getIndex(), iface.getName());
+            }
+        } catch (SocketException ignored) {}
 
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
@@ -309,19 +336,22 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // Stop the previous session by interrupting the thread.
-        if (mCaptureThread != null) {
+        if(mCaptureThread != null)
             mCaptureThread.interrupt();
-        }
 
+        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
 
+        mBlocklist = PCAPdroid.getInstance().getBlocklist();
+
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
 
         // Start the native capture thread
+        mQueueFull = false;
         mCaptureThread = new Thread(this, "PacketCapture");
         mCaptureThread.start();
 
@@ -469,7 +499,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.P)
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
                 Log.d(TAG, "onLinkPropertiesChanged " + network);
@@ -531,7 +561,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void stop() {
         stopPacketLoop();
-        mPendingUpdates.push(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
+        mPendingUpdates.offer(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -549,6 +579,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mConnUpdateThread.join();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Joining conn update thread failed");
+                mPendingUpdates.offer(new Pair<>(null, null));
             }
         }
         mConnUpdateThread = null;
@@ -605,6 +636,26 @@ public class CaptureService extends VpnService implements Runnable {
         mBlacklists.update();
         reloadBlacklists();
         mBlacklistsUpdateThread = null;
+    }
+
+    private String getIfname(int ifidx) {
+        if(ifidx <= 0)
+            return "";
+
+        String rv = mIfIndexToName.get(ifidx);
+        if(rv != null)
+            return rv;
+
+        // Not found, try to retrieve it
+        NetworkInterface iface = null;
+        try {
+            iface = NetworkInterface.getByIndex(ifidx);
+        } catch (SocketException ignored) {}
+        rv = (iface != null) ? iface.getName() : "";
+
+        // store it even if not found, to avoid looking up it again
+        mIfIndexToName.put(ifidx, rv);
+        return rv;
     }
 
     public static String getAppFilter() {
@@ -677,8 +728,16 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.mBlacklistsUpdateRequested = true;
 
             // Wake the update thread to run the blacklist thread
-            INSTANCE.mPendingUpdates.push(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
+            INSTANCE.mPendingUpdates.offer(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
         }
+    }
+
+    public static String getInterfaceName(int ifidx) {
+        String ifname = null;
+
+        if(INSTANCE != null)
+            ifname = INSTANCE.getIfname(ifidx);
+        return (ifname != null) ? ifname : "";
     }
 
     // Inside the mCaptureThread
@@ -810,9 +869,17 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {
+        if(mQueueFull)
+            // if the queue is full, stop receiving updates to avoid inconsistent incr_ids
+            return;
+
         // Put the update into a queue to avoid performing much work on the capture thread.
         // This will be processed by mConnUpdateThread.
-        mPendingUpdates.push(new Pair<>(new_conns, conns_updates));
+        if(!mPendingUpdates.offer(new Pair<>(new_conns, conns_updates))) {
+            Log.e(TAG, "The updates queue is full, this should never happen!");
+            mQueueFull = true;
+            mHandler.post(this::stop);
+        }
     }
 
     public void sendStatsDump(VPNStats stats) {
@@ -835,6 +902,12 @@ public class CaptureService extends VpnService implements Runnable {
         Intent intent = new Intent(ACTION_SERVICE_STATUS);
         intent.putExtra(SERVICE_STATUS_KEY, cur_status);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        if(cur_status.equals(SERVICE_STATUS_STARTED)) {
+            if(mMalwareDetectionEnabled)
+                reloadMalwareWhitelist();
+            reloadBlocklist();
+        }
     }
 
     public String getApplicationByUid(int uid) {
@@ -892,12 +965,28 @@ public class CaptureService extends VpnService implements Runnable {
         return blsinfo;
     }
 
+    public void reloadBlocklist() {
+        if(!mBilling.isPurchased(Billing.FIREWALL_SKU) || mSettings.root_capture)
+            return;
+
+        reloadBlocklist(mBlocklist.toListDescriptor());
+    }
+
+    public static void reloadMalwareWhitelist() {
+        if((INSTANCE == null) || !INSTANCE.mMalwareDetectionEnabled)
+            return;
+
+        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
+    }
+
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();
     private static native void setPrivateDnsBlocked(boolean to_block);
     private static native void setDnsServer(String server);
     private static native void reloadBlacklists();
+    private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
+    private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native int getNumCheckedConnections();

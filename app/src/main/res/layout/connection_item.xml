@@ -67,6 +67,13 @@
                     android:contentDescription="@string/malicious_connection_filter"
                     android:src="@drawable/ic_skull" />
 
+                <ImageView
+                    android:id="@+id/blocked"
+                    android:layout_width="wrap_content"
+                    android:layout_height="12sp"
+                    app:tint="@color/colorTabText"
+                    android:src="@drawable/ic_block" />
+
                 <!--<com.haipq.android.flagkit.FlagImageView
                     android:id="@+id/country_flag"
                     android:layout_width="wrap_content"

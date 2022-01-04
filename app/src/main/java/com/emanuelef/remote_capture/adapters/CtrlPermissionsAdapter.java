@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.util.ArrayMap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,6 @@ import com.emanuelef.remote_capture.model.CtrlPermissions;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class CtrlPermissionsAdapter extends ArrayAdapter<CtrlPermissions.Rule> i
     private final LayoutInflater mLayoutInflater;
     private final CtrlPermissions mPermissions;
     private final Context mContext;
-    private final HashMap<String, AppDescriptor> mPkgToApp = new HashMap<>();
+    private final ArrayMap<String, AppDescriptor> mPkgToApp = new ArrayMap<>();
 
     public CtrlPermissionsAdapter(Context context, CtrlPermissions perms) {
         super(context, R.layout.rule_item);

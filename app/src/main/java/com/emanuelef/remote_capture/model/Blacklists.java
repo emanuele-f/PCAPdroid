@@ -21,8 +21,10 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.ArrayMap;
 import android.util.Log;
 
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Utils;
@@ -39,8 +41,6 @@ import com.google.gson.JsonSerializer;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -60,7 +60,7 @@ public class Blacklists {
     public static final int BLACKLISTS_UPDATE_SECONDS = 86400; // 1d
     private static final String TAG = "Blacklists";
     private final ArrayList<BlacklistDescriptor> mLists = new ArrayList<>();
-    private final HashMap<String, BlacklistDescriptor> mListByFname = new HashMap<>();
+    private final ArrayMap<String, BlacklistDescriptor> mListByFname = new ArrayMap<>();
     private final ArrayList<BlacklistsStateListener> mListeners = new ArrayList<>();
     private final SharedPreferences mPrefs;
     private final Context mContext;
@@ -172,7 +172,7 @@ public class Blacklists {
     }
 
     private void checkFiles() {
-        HashSet<File> validLists = new HashSet<>();
+        ArraySet<File> validLists = new ArraySet<>();
 
         // Ensure that all the lists files exist, otherwise force update
         for(BlacklistDescriptor bl: mLists) {
@@ -243,7 +243,7 @@ public class Blacklists {
         int num_loaded = 0;
         int num_domains = 0;
         int num_ips = 0;
-        HashSet<String> loaded = new HashSet<>();
+        ArraySet<String> loaded = new ArraySet<>();
 
         for(NativeBlacklistStatus bl_status: loaded_blacklists) {
             if(bl_status == null)

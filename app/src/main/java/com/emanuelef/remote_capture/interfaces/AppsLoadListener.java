@@ -26,5 +26,4 @@ import java.util.List;
 public interface AppsLoadListener {
     // uid -> AppDescriptor
     void onAppsInfoLoaded(List<AppDescriptor> apps);
-    void onAppsIconsLoaded();
 }

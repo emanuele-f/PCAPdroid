@@ -10,6 +10,10 @@
             android:title="@string/stats"
             android:icon="@drawable/ic_stacked_bar_chart" />
         <item
+            android:id="@+id/firewall"
+            android:title="@string/firewall"
+            android:icon="@drawable/ic_shield" />
+        <item
             android:id="@+id/malware_detection"
             android:title="@string/malware_detection"
             android:icon="@drawable/ic_bug" />
@@ -18,6 +22,11 @@
             android:title="@string/root_log"
             android:icon="@drawable/ic_text_snippet"
             android:visible="false" />
+        <item
+            android:id="@+id/paid_features"
+            android:visible="false"
+            android:title="@string/paid_features"
+            android:icon="@drawable/ic_money" />
     </group>
     <group android:id="@+id/group_social">
         <item

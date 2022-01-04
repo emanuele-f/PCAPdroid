@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
+import android.util.ArrayMap;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
@@ -42,7 +44,6 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class MatchList {
     private final SharedPreferences mPrefs;
     private final String mPrefName;
     private final ArrayList<Rule> mRules = new ArrayList<>();
-    private final HashMap<String, Rule> mMatches = new HashMap<>();
+    private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
 
     public enum RuleType {
         APP,
@@ -96,6 +97,12 @@ public class MatchList {
             Rule other = (Rule) obj;
             return((mType == other.mType) && (mValue.equals(other.mValue)));
         }
+    }
+
+    public static class ListDescriptor {
+        public final List<String> apps = new ArrayList<>();
+        public final List<String> hosts = new ArrayList<>();
+        public final List<String> ips = new ArrayList<>();
     }
 
     public MatchList(Context ctx, String pref_name) {
@@ -284,5 +291,30 @@ public class MatchList {
     public void fromJson(String json_str) {
         JsonObject obj = JsonParser.parseString(json_str).getAsJsonObject();
         deserialize(obj);
+    }
+
+    /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
+     * Only the following RuleTypes are supported: APP, IP, HOST.
+     */
+    public ListDescriptor toListDescriptor() {
+        final ListDescriptor rv = new ListDescriptor();
+
+        Iterator<MatchList.Rule> it = iterRules();
+        while(it.hasNext()) {
+            MatchList.Rule rule = it.next();
+            MatchList.RuleType tp = rule.getType();
+            String val = rule.getValue().toString();
+
+            if(tp.equals(MatchList.RuleType.APP))
+                rv.apps.add(val);
+            else if(tp.equals(MatchList.RuleType.HOST))
+                rv.hosts.add(val);
+            else if(tp.equals(MatchList.RuleType.IP))
+                rv.ips.add(val);
+            else
+                Log.w(TAG, "ListDescriptor does not support RuleType " + tp.name());
+        }
+
+        return rv;
     }
 }

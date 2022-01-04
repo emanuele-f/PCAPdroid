@@ -7,6 +7,7 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
+    <string name="system_id" translatable="false">System ID</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
@@ -161,7 +162,6 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">A trailer containing additional metadata, such as the app name, will be added to the dumped packets.</string>
     <string name="trailer_how_to">How to display the trailer data in Wireshark</string>
-    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by paying a small fee.</string>
     <string name="remove_ads">Remove Ads</string>
     <string name="pending_transaction">Please complete your transaction to redeem this feature</string>
     <string name="purchased_feature_ok">The purchased feature is now available!</string>
@@ -238,4 +238,28 @@
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can disable it from the Android network settings.</string>
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
     <string name="decryption_no_filter_warn">When performing TLS decryption you should select a target app to avoid breaking Internet connectivity</string>
+    <string name="block">Block…</string>
+    <string name="firewall">Firewall</string>
+    <string name="firewall_rules">Firewall Rules</string>
+    <string name="firewall_help">This list contains rules to block connections</string>
+    <string name="blocked_pkts">Blocked</string>
+    <string name="n_pkts">%1$s pkts</string>
+    <string name="show_only_blocked">Blocked by firewall</string>
+    <string name="blocked_connection_filter">blocked</string>
+    <string name="paid_features">Paid Features</string>
+    <string name="unlock_code">Unlock Code</string>
+    <string name="validate">Validate</string>
+    <string name="valid">Valid</string>
+    <string name="invalid">Invalid</string>
+    <string name="no_intent_handler_found">No app found to perform this action</string>
+    <string name="network_interface">Interface</string>
+    <string name="interface_filter">Interface: %1$s</string>
+    <string name="loading">Loading…</string>
+    <string name="purchased">Purchased</string>
+    <string name="no_items_for_purchase">No items available for purchase</string>
+    <string name="billing_failure">Connection to Google Play failed, please retry in a while</string>
+    <string name="learn_more">Learn more</string>
+    <string name="buy_action">Buy</string>
+    <string name="remove_ads_description">Remove ads from this app.</string>
+    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by purchasing a paid feature.</string>
 </resources>
