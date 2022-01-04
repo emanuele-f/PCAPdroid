@@ -135,7 +135,6 @@
     <string name="pcapdroid_trailer">Tráiler PCAPdroid</string>
     <string name="pcapdroid_trailer_summary">A los paquetes volcados se les añadirá un tráiler con metadatos adicionales, como el nombre de la aplicación.</string>
     <string name="trailer_how_to">Cómo mostrar los datos del remolque en Wireshark</string>
-    <string name="ads_notice">Los anuncios in-app hacen que PCAPdroid genere tráfico hacia servidores externos. Puedes eliminar los anuncios pagando una pequeña cuota.</string>
     <string name="remove_ads">Remover Ads</string>
     <string name="pending_transaction">Por favor, complete su transacción para canjear esta función</string>
     <string name="purchased_feature_ok">¡La función de compra ya está disponible!</string>

@@ -84,6 +84,9 @@ public class Billing {
         return mPrefs.getString("license", "");
     }
 
+    public void connectBilling() {}
+    public void disconnectBilling() {}
+
     public void setLicense(String license) {
         if(!isValidLicense(license))
             license = "";

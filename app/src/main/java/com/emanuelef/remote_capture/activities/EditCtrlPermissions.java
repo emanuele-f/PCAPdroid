@@ -48,7 +48,7 @@ public class EditCtrlPermissions extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setTitle(R.string.control_permissions);
-        setContentView(R.layout.edit_list_fragment);
+        setContentView(R.layout.simple_list);
 
         mEmptyText = findViewById(R.id.list_empty);
         mListView = findViewById(R.id.listview);
