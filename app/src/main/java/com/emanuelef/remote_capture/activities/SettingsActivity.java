@@ -86,11 +86,11 @@ public class SettingsActivity extends BaseActivity {
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
-        private PlayBilling mIab;
+        private Billing mIab;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
-            mIab = new PlayBilling(requireContext());
+            mIab = Billing.newInstance(requireContext());
             mIab.connectBilling();
 
             // Important: keep at the end
@@ -106,7 +106,6 @@ public class SettingsActivity extends BaseActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
-            mIab = Billing.newInstance(requireContext());
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
@@ -206,7 +205,8 @@ public class SettingsActivity extends BaseActivity {
             mMalwareDetectionEnabled.setOnPreferenceClickListener(preference -> {
                 if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU)) {
                     mMalwareDetectionEnabled.setChecked(false);
-                    mIab.purchase(requireActivity(), Billing.MALWARE_DETECTION_SKU);
+                    Intent intent = new Intent(requireActivity(), IABActivity.class);
+                    startActivity(intent);
                     return true;
                 }
 

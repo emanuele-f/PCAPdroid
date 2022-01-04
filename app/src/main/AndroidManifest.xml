@@ -60,6 +60,8 @@
         <activity
             android:name=".activities.ErrorActivity" />
         <activity
+            android:name=".activities.IABActivity" />
+        <activity
             android:name=".activities.ConnectionDetailsActivity" />
         <activity
             android:name=".activities.AppDetailsActivity" />

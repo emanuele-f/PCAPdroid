@@ -129,8 +129,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mIab.setPurchaseReadyListener(new PlayBilling.PurchaseReadyListener() {
             @Override
             public void onPurchasesReady() {
-                checkNoAdsAvailable();
+                checkPurchasesAvailable();
             }
+
+            @Override
+            public void onPurchasesError() {}
 
             @Override
             public void onSKUStateUpdate(String sku, int state) {
@@ -146,6 +149,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         // Must show the AD here in the onCreate otherwise it will get stuck for some reason (generates exception)
         // This causes the ad to be shown the first time the app is installed, regardless of the SKUs
+        // TODO (check if this is fixed after the Handler usage in PlayBilling)
         if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU))
             mAd.show();
 
@@ -200,24 +204,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         billing.setLicense(billing.getLicense());
     }
 
-    private void checkNoAdsAvailable() {
+    private void checkPurchasesAvailable() {
+        if(!mIab.isAvailable(Billing.NO_ADS_SKU))
+            // purchases not available
+            return;
+
         if(mIab.isPurchased(Billing.NO_ADS_SKU)) {
             mAd.hide();
             showAdsNotice = false;
-            return;
-        }
+        } else
+            showAdsNotice = true;
 
-        if(!mIab.canPurchase(Billing.NO_ADS_SKU))
-            return;
-
+        // Show the paid features menu entry
         NavigationView navView = findViewById(R.id.nav_view);
         Menu menu = navView.getMenu();
-
-        menu.findItem(R.id.action_donate)
-                .setTitle(R.string.remove_ads)
-                .setVisible(true);
-
-        showAdsNotice = true;
+        menu.findItem(R.id.paid_features).setVisible(true);
     }
 
     @Override
@@ -279,7 +280,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             navMenu.findItem(R.id.open_root_log).setVisible(true);
 
         navMenu.findItem(R.id.action_donate).setVisible(false);
-        checkNoAdsAvailable();
+        checkPurchasesAvailable();
     }
 
     @Override
@@ -410,26 +411,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.item_apps) {
-            if(CaptureService.getConnsRegister() != null) {
+        if (id == R.id.item_apps) {
+            if (CaptureService.getConnsRegister() != null) {
                 Intent intent = new Intent(MainActivity.this, AppsActivity.class);
                 startActivity(intent);
             } else
                 Utils.showToast(this, R.string.capture_not_started);
-        } else if(id == R.id.malware_detection) {
+        } else if (id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
-        } else if(id == R.id.firewall) {
+        } else if (id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, EditListActivity.class);
             intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.BLOCKLIST);
             startActivity(intent);
-        } else if(id == R.id.open_root_log) {
+        } else if (id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
             startActivity(intent);
         } else if (id == R.id.action_donate) {
-            //Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
-            //Utils.startActivity(this, browserIntent);
-            mIab.purchase(this, PlayBilling.NO_ADS_SKU);
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DONATE_URL));
+            Utils.startActivity(this, browserIntent);
+        } else if (id == R.id.paid_features) {
+            Intent intent = new Intent(MainActivity.this, IABActivity.class);
+            startActivity(intent);
         } else if (id == R.id.action_open_telegram) {
             openTelegram();
         } else if (id == R.id.action_open_user_guide) {
@@ -477,7 +480,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(showAdsNotice && mAd.isShownAdmob()) {
             new AlertDialog.Builder(MainActivity.this)
                     .setMessage(R.string.ads_notice)
-                    .setPositiveButton(R.string.remove_ads, (dialog, whichButton) -> mIab.purchase(this, PlayBilling.NO_ADS_SKU))
+                    .setPositiveButton(R.string.show_me, (dialog, whichButton) -> {
+                        Intent intent = new Intent(MainActivity.this, IABActivity.class);
+                        startActivity(intent);
+                    })
                     .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
                     .show();
 

@@ -62,6 +62,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
      */
     public interface PurchaseReadyListener {
         void onPurchasesReady();
+        void onPurchasesError();
         void onSKUStateUpdate(String sku, int state);
     }
 
@@ -73,7 +74,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         mWaitingStart = false;
     }
 
-    private static String purchstate2Str(int state) {
+    public static String purchstate2Str(int state) {
         switch (state) {
             case PurchaseState.PENDING: return "PENDING";
             case PurchaseState.PURCHASED: return "PURCHASED";
@@ -101,7 +102,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                             }
 
                             if((mListener != null) && !mWaitingStart)
-                                mListener.onSKUStateUpdate(sku, PurchaseState.PENDING);
+                                // NOTE: using mHandler.post because otherwise any exceptions are caught (and hidden) by the billing library!
+                                mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.PENDING));
                             break;
                         case PurchaseState.PURCHASED:
                             if(!isPurchased(sku) && setPurchased(sku, true)) {
@@ -113,7 +115,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                 }
 
                                 if((mListener != null) && !mWaitingStart)
-                                    mListener.onSKUStateUpdate(sku, PurchaseState.PURCHASED);
+                                    mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.PURCHASED));
                             }
 
                             purchased.add(sku);
@@ -141,14 +143,14 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                     Log.w(TAG, "Previously purchased SKU " + sku + " was voided");
 
                     if(setPurchased(sku, false) && (mListener != null) && !mWaitingStart)
-                        mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE);
+                        mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE));
                 }
             }
         }
 
         if(mWaitingStart && (mListener != null)) {
             if(billingResult.getResponseCode() == BillingResponseCode.OK)
-                mListener.onPurchasesReady();
+                mHandler.post(() -> mListener.onPurchasesReady());
             else
                 onPurchasesError(billingResult);
 
@@ -158,6 +160,10 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     private void onPurchasesError(@NonNull BillingResult billingResult) {
         Log.e(TAG, "Billing returned error " + billingResult + ", disconnecting");
+
+        if(mListener != null)
+            mHandler.post(() -> mListener.onPurchasesError());
+
         disconnectBilling();
     }
 
@@ -217,6 +223,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
      * Starts the connection to Google Play.
      * IMPORTANT: the client must call disconnectBilling to prevent leaks
      * */
+    @Override
     public void connectBilling() {
         mWaitingStart = true;
 
@@ -232,6 +239,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         mBillingClient.startConnection(this);
     }
 
+    @Override
     public void disconnectBilling() {
         // Use post to avoid unsetting one of the variables below while a client is working on them
         mHandler.post(() -> {
@@ -299,6 +307,11 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
         editor.apply();
         return true;
+    }
+
+    @Nullable
+    public SkuDetails getSkuDetails(String sku) {
+        return mDetails.get(sku);
     }
 
     public boolean purchase(Activity activity, String sku) {
