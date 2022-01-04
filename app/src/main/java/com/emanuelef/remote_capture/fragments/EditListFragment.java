@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -37,8 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.ConnectionsRegister;
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
@@ -72,7 +69,7 @@ public class EditListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        return inflater.inflate(R.layout.edit_list_fragment, container, false);
+        return inflater.inflate(R.layout.simple_list, container, false);
     }
 
     @Override

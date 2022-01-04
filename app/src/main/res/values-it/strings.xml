@@ -135,7 +135,6 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti dumpati.</string>
     <string name="trailer_how_to">Come visualizare le info del trailer su Wireshark</string>
-    <string name="ads_notice">Gli annunci in-app generano traffico verso server esterni. Puoi rimuovere gli annunci pagando una piccola tassa.</string>
     <string name="remove_ads">Rimuovi Annunci</string>
     <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
     <string name="purchased_feature_ok">La funzionalità acquistata è ora disponibile!</string>

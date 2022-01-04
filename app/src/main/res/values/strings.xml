@@ -161,7 +161,6 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">A trailer containing additional metadata, such as the app name, will be added to the dumped packets.</string>
     <string name="trailer_how_to">How to display the trailer data in Wireshark</string>
-    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by paying a small fee.</string>
     <string name="remove_ads">Remove Ads</string>
     <string name="pending_transaction">Please complete your transaction to redeem this feature</string>
     <string name="purchased_feature_ok">The purchased feature is now available!</string>
@@ -255,4 +254,12 @@
     <string name="no_intent_handler_found">No app found to perform this action</string>
     <string name="network_interface">Interface</string>
     <string name="interface_filter">Interface: %1$s</string>
+    <string name="loading">Loading…</string>
+    <string name="purchased">Purchased</string>
+    <string name="no_items_for_purchase">No items available for purchase</string>
+    <string name="billing_failure">Connection to Google Play failed, please retry in a while</string>
+    <string name="learn_more">Learn more</string>
+    <string name="buy_action">Buy</string>
+    <string name="remove_ads_description">Remove ads from this app.</string>
+    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by purchasing a paid feature.</string>
 </resources>
