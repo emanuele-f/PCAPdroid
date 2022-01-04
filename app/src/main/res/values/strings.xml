@@ -7,6 +7,7 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
+    <string name="system_id" translatable="false">System ID</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
@@ -250,7 +251,6 @@
     <string name="validate">Validate</string>
     <string name="valid">Valid</string>
     <string name="invalid">Invalid</string>
-    <string name="system_id">System ID</string>
     <string name="no_intent_handler_found">No app found to perform this action</string>
     <string name="network_interface">Interface</string>
     <string name="interface_filter">Interface: %1$s</string>

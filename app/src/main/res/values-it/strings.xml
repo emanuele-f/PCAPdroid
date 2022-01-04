@@ -88,7 +88,7 @@
     <string name="enable_ipv6">Abilita IPv6</string>
     <string name="enable_ipv6_summary">Permetti connessioni internet IPv6. Da abilitare soltanto in reti con gateway IPv6.</string>
     <string name="error">Errore</string>
-    <string name="conn_status_unreachable">Irraggiungibile</string>
+    <string name="conn_status_unreachable">Non raggiungibile</string>
     <string name="other_prefs">Altro</string>
     <string name="app_language">Lingua</string>
     <string name="lang_english">Inglese</string>
@@ -211,5 +211,29 @@
     <string name="private_dns_message_notice">IL DNS privato impedisce a PCAPdroid di ispezionare il traffico DNS. Puoi disattivarlo dalle impostazioni di rete di Android.</string>
     <string name="private_dns_hinders_detection">Il DNS privato ostacola il rilevamento</string>
     <string name="decryption_no_filter_warn">Per decifrare il traffico TLS è necessario impostare un filtro app per evitare di perdere la connettività di rete</string>
+    <string name="block">Blocca…</string>
+    <string name="firewall">Firewall</string>
+    <string name="firewall_rules">Regole del Firewall</string>
+    <string name="firewall_help">Questa lista contiene regole per bloccare le connessioni</string>
+    <string name="blocked_pkts">Bloccata</string>
+    <string name="n_pkts">%1$s pacchetti</string>
+    <string name="show_only_blocked">Bloccate dal firewall</string>
+    <string name="blocked_connection_filter">bloccate</string>
+    <string name="paid_features">Funzioni a Pagamento</string>
+    <string name="unlock_code">Codice di Sblocco</string>
+    <string name="validate">Convalida</string>
+    <string name="valid">Valido</string>
+    <string name="invalid">Invalido</string>
+    <string name="no_intent_handler_found">Nessuna app è in grado di eseguire questa azione</string>
+    <string name="network_interface">Interfaccia</string>
+    <string name="interface_filter">Interfaccia: %1$s</string>
+    <string name="loading">Caricamento…</string>
+    <string name="purchased">Acquistato</string>
+    <string name="no_items_for_purchase">Non ci sono elementi disponibili per l\'acquisto</string>
+    <string name="billing_failure">La connessione a Google Play è fallita, attendere e riprovare</string>
+    <string name="learn_more">Scopri di più</string>
+    <string name="buy_action">Acquista</string>
+    <string name="remove_ads_description">Rimuove gli annunci da questa app.</string>
+    <string name="ads_notice">Gli annunci in-app generano traffico da PCAPdroid verso server terzi. Puoi rimuoverli acquistando una funzione a pagamento.</string>
 </resources>
 
