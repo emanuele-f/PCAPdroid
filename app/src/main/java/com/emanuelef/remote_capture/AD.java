@@ -20,10 +20,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.RequestConfiguration;
 
-import java.util.Collections;
 import java.util.Random;
 
 public class AD {
@@ -88,7 +85,7 @@ public class AD {
 
     private boolean showSelfPromotion() {
         PlayBilling billing = new PlayBilling(ctx);
-        if(billing.isPurchased(Billing.NO_ADS_SKU))
+        if(billing.isRedeemed(Billing.NO_ADS_SKU))
             return true;
 
         if(!billing.isAvailable(Billing.MALWARE_DETECTION_SKU))

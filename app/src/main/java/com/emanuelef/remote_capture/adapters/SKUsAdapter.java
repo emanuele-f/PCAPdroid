@@ -29,15 +29,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.android.billingclient.api.SkuDetails;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.google.android.material.button.MaterialButton;
 
 public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
     private static final String TAG = "SKUsAdapter";
+    private static final boolean TEST_MODE = false;
     private final Context mCtx;
     private final LayoutInflater mLayoutInflater;
     private final PlayBilling mIab;
@@ -49,14 +52,12 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         public final String description;
         public final String price;
         public final String docs_url;
-        public final boolean purchased;
 
-        SKUItem(String _sku, String _label, String _descr, String _price, boolean _purchased, String _docs_url) {
+        SKUItem(String _sku, String _label, String _descr, String _price, String _docs_url) {
             sku = _sku;
             label = _label;
             description = _descr;
             price = _price;
-            purchased = _purchased;
             docs_url = _docs_url;
         }
     }
@@ -80,18 +81,38 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         if(view == null)
             view = mLayoutInflater.inflate(R.layout.sku_item, parent, false);
 
-        SKUItem sku = getItem(position);
-        ((TextView)view.findViewById(R.id.label)).setText(sku.label);
-        ((TextView)view.findViewById(R.id.description)).setText(sku.description);
-        ((TextView)view.findViewById(R.id.price)).setText(sku.purchased ? mCtx.getString(R.string.purchased) : sku.price);
+        SKUItem item = getItem(position);
+        boolean purchased = mIab.isPurchased(item.sku);
+        boolean redeemed = mIab.isRedeemed(item.sku);
 
-        View purchaseBtn = view.findViewById(R.id.purchase);
-        purchaseBtn.setEnabled(!sku.purchased);
-        purchaseBtn.setOnClickListener(v -> mListener.onPurchaseClick(sku));
+        ((TextView)view.findViewById(R.id.label)).setText(item.label);
+        ((TextView)view.findViewById(R.id.description)).setText(item.description);
+
+        String text;
+        if(purchased)
+            text = mCtx.getString(R.string.purchased);
+        else if(redeemed)
+            text = mCtx.getString(R.string.item_redeemed);
+        else
+            text = item.price;
+        ((TextView)view.findViewById(R.id.price)).setText(text);
+
+        MaterialButton purchaseBtn = view.findViewById(R.id.purchase);
+        purchaseBtn.setEnabled(!redeemed);
+        purchaseBtn.setOnClickListener(v -> mListener.onPurchaseClick(item));
 
         View moreBtn = view.findViewById(R.id.learn_more);
-        moreBtn.setVisibility((sku.docs_url == null) ? View.INVISIBLE : View.VISIBLE);
-        moreBtn.setOnClickListener(v -> mListener.onLearnMoreClick(sku));
+        moreBtn.setVisibility((item.docs_url == null) ? View.INVISIBLE : View.VISIBLE);
+        moreBtn.setOnClickListener(v -> mListener.onLearnMoreClick(item));
+
+        // Only for testing
+        if(TEST_MODE && purchased) {
+            purchaseBtn.setIcon(AppCompatResources.getDrawable(mCtx, R.drawable.ic_block));
+            purchaseBtn.setOnClickListener(v -> {
+                mIab.consumePurchase(item.sku);
+                purchaseBtn.setEnabled(false);
+            });
+        }
 
         return view;
     }
@@ -110,7 +131,6 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
                 mCtx.getString(title),
                 (descr > 0) ? mCtx.getString(descr) : "",
                 sd.getPrice(),
-                mIab.isPurchased(sku),
                 docs_url));
     }
 
@@ -118,9 +138,9 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         Log.d(TAG, "Populating SKUs...");
         clear();
 
+        addIfAvailable(Billing.NO_ADS_SKU, R.string.remove_ads, R.string.remove_ads_description, null);
+
         addIfAvailable(Billing.MALWARE_DETECTION_SKU, R.string.malware_detection,
                 R.string.malware_detection_summary, MainActivity.DOCS_URL + "/paid_features#51-malware-detection");
-
-        addIfAvailable(Billing.NO_ADS_SKU, R.string.remove_ads, R.string.remove_ads_description, null);
     }
 }

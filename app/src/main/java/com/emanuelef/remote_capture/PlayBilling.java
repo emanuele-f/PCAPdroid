@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +38,7 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -51,6 +53,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     public static final String TAG = "PlayBilling";
     private final Handler mHandler;
     private final ArrayMap<String, SkuDetails> mDetails;
+    private final ArrayMap<String, String> mSkuToPurchToken;
     private BillingClient mBillingClient;
     private PurchaseReadyListener mListener;
     private boolean mWaitingStart;
@@ -59,6 +62,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     /** setPurchaseListener() -> connectBilling() -> PurchaseReadyListener.onPurchasesReady()
      *   -> the client can now call purchase
      *   -> PurchaseReadyListener.onSKUStateUpdate() may be called in the future
+     *
+     *  Clear billing cache: adb shell pm clear com.android.vending
      */
     public interface PurchaseReadyListener {
         void onPurchasesReady();
@@ -70,6 +75,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         super(ctx);
         mHandler = new Handler(Looper.getMainLooper());
         mDetails = new ArrayMap<>();
+        mSkuToPurchToken = new ArrayMap<>();
         mAvailability = SkusAvailability.load(mPrefs);
         mWaitingStart = false;
     }
@@ -87,6 +93,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         if((billingResult.getResponseCode() == BillingResponseCode.OK) && (purchases != null)) {
             ArraySet<String> purchased = new ArraySet<>();
             boolean show_toast = true;
+            mSkuToPurchToken.clear();
 
             for(Purchase purchase : purchases) {
                 boolean newPurchase = false;
@@ -101,9 +108,12 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                 show_toast = false;
                             }
 
-                            if((mListener != null) && !mWaitingStart)
+                            if(!mWaitingStart)
                                 // NOTE: using mHandler.post because otherwise any exceptions are caught (and hidden) by the billing library!
-                                mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.PENDING));
+                                mHandler.post(() -> {
+                                    if(mListener != null)
+                                        mListener.onSKUStateUpdate(sku, PurchaseState.PENDING);
+                                });
                             break;
                         case PurchaseState.PURCHASED:
                             if(!isPurchased(sku) && setPurchased(sku, true)) {
@@ -114,10 +124,14 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                     show_toast = false;
                                 }
 
-                                if((mListener != null) && !mWaitingStart)
-                                    mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.PURCHASED));
+                                if(!mWaitingStart)
+                                    mHandler.post(() -> {
+                                        if(mListener != null)
+                                            mListener.onSKUStateUpdate(sku, PurchaseState.PURCHASED);
+                                    });
                             }
 
+                            mSkuToPurchToken.put(sku, purchase.getPurchaseToken());
                             purchased.add(sku);
                             break;
                         case PurchaseState.UNSPECIFIED_STATE:
@@ -142,15 +156,21 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 if(!purchased.contains(sku) && isPurchased(sku)) {
                     Log.w(TAG, "Previously purchased SKU " + sku + " was voided");
 
-                    if(setPurchased(sku, false) && (mListener != null) && !mWaitingStart)
-                        mHandler.post(() -> mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE));
+                    if(setPurchased(sku, false) && !mWaitingStart)
+                        mHandler.post(() -> {
+                            if(mListener != null)
+                                mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE);
+                        });
                 }
             }
         }
 
-        if(mWaitingStart && (mListener != null)) {
+        if(mWaitingStart) {
             if(billingResult.getResponseCode() == BillingResponseCode.OK)
-                mHandler.post(() -> mListener.onPurchasesReady());
+                mHandler.post(() -> {
+                    if(mListener != null)
+                        mListener.onPurchasesReady();
+                });
             else
                 onPurchasesError(billingResult);
 
@@ -161,8 +181,10 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     private void onPurchasesError(@NonNull BillingResult billingResult) {
         Log.e(TAG, "Billing returned error " + billingResult + ", disconnecting");
 
-        if(mListener != null)
-            mHandler.post(() -> mListener.onPurchasesError());
+        mHandler.post(() -> {
+            if(mListener != null)
+                mListener.onPurchasesError();
+        });
 
         disconnectBilling();
     }
@@ -256,25 +278,36 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         processPurchases(billingResult, purchases);
     }
 
+    /* For testing purposes */
+    public void consumePurchase(String sku) {
+        String token = mSkuToPurchToken.get(sku);
+        if(token == null) {
+            Toast.makeText(mContext, "Purchase token not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(token).build(), (billingResult, s) ->
+                Log.d(TAG, "consumeAsync response: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage()));
+    }
+
     private String sku2pref(String sku) {
         return "SKU:" + sku;
     }
 
     @Override
-    public boolean isPurchased(String sku) {
-        if(!sku.equals(SUPPORTER_SKU) && isPurchased(SUPPORTER_SKU))
+    public boolean isRedeemed(String sku) {
+        if(isPurchased(SUPPORTER_SKU))
             return true;
 
         if(sku.equals(NO_ADS_SKU)) {
-            // If the user purchases any other feature, then remove ads
-            for(String other_sku: ALL_SKUS) {
-                if(!other_sku.equals(PlayBilling.NO_ADS_SKU) && isPurchased(other_sku))
+            // If the user purchases any feature, then remove ads
+            for(String other_sku: ALL_SKUS)
+                if(isPurchased(other_sku))
                     return true;
-            }
+            return false;
         }
 
-        long purchaseTime = mPrefs.getLong(sku2pref(sku), 0);
-        return(purchaseTime != 0);
+        return isPurchased(sku);
     }
 
     @Override
@@ -292,8 +325,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     @Override
     public void setLicense(String license) {}
 
-    public boolean canPurchase(String sku) {
-        return isAvailable(sku) && !isPurchased(sku);
+    public boolean isPurchased(String sku) {
+        long purchaseTime = mPrefs.getLong(sku2pref(sku), 0);
+        return(purchaseTime != 0);
     }
 
     public boolean setPurchased(String sku, boolean purchased) {
