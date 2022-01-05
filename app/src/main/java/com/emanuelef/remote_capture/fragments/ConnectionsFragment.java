@@ -318,7 +318,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Billing billing = Billing.newInstance(ctx);
         MenuItem item;
 
-        menu.findItem(R.id.block_menu).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot());
+        menu.findItem(R.id.block_menu).setVisible(billing.isRedeemed(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot());
 
         if(app != null) {
             item = menu.findItem(R.id.hide_app);
