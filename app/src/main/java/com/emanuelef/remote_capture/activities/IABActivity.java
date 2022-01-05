@@ -55,12 +55,17 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
         mListView.setAdapter(mAdapter);
 
         mIab.setPurchaseReadyListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         mIab.connectBilling();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         mIab.disconnectBilling();
     }
 

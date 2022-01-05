@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -69,10 +68,10 @@ public class Billing {
     }
 
     public boolean isAvailable(String sku) {
-        return isPurchased(sku);
+        return isRedeemed(sku);
     }
 
-    public boolean isPurchased(String sku) {
+    public boolean isRedeemed(String sku) {
         return !getLicense().isEmpty();
     }
 

@@ -145,7 +145,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     mAd.show();
             }
         });
-        mIab.connectBilling();
 
         // Must show the AD here in the onCreate otherwise it will get stuck for some reason (generates exception)
         // This causes the ad to be shown the first time the app is installed, regardless of the SKUs
@@ -199,9 +198,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-
-        Billing billing = Billing.newInstance(this);
-        billing.setLicense(billing.getLicense());
     }
 
     private void checkPurchasesAvailable() {
@@ -225,7 +221,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onDestroy() {
         super.onDestroy();
         mAd.hide();
-        mIab.disconnectBilling();
 
         if(mReceiver != null)
             LocalBroadcastManager.getInstance(this)
@@ -243,13 +238,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onResume() {
         super.onResume();
-
-        Billing billing = Billing.newInstance(this);
+        mIab.connectBilling();
+        if(mIab.isRedeemed(Billing.NO_ADS_SKU)) {
+            // May have just purchased it
+            mAd.hide();
+            showAdsNotice = false;
+        }
 
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mIab.disconnectBilling();
     }
 
     private void setupNavigationDrawer() {

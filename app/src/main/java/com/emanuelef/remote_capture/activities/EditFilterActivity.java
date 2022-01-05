@@ -101,7 +101,7 @@ public class EditFilterActivity extends BaseActivity {
         if(!Prefs.isMalwareDetectionEnabled(this, prefs))
             mOnlyBlacklisted.setVisibility(View.GONE);
 
-        if(!billing.isPurchased(Billing.FIREWALL_SKU) || Prefs.isRootCaptureEnabled(prefs))
+        if(!billing.isRedeemed(Billing.FIREWALL_SKU) || Prefs.isRootCaptureEnabled(prefs))
             mOnlyBlocked.setVisibility(View.GONE);
 
         ConnectionsRegister reg = CaptureService.getConnsRegister();

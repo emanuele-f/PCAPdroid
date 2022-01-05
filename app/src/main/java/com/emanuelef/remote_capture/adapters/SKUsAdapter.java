@@ -40,7 +40,7 @@ import com.google.android.material.button.MaterialButton;
 
 public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
     private static final String TAG = "SKUsAdapter";
-    private static final boolean TEST_MODE = false;
+    private static final boolean TEST_MODE = true;
     private final Context mCtx;
     private final LayoutInflater mLayoutInflater;
     private final PlayBilling mIab;

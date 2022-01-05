@@ -203,7 +203,7 @@ public class SettingsActivity extends BaseActivity {
 
             // Billing code here
             mMalwareDetectionEnabled.setOnPreferenceClickListener(preference -> {
-                if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU)) {
+                if(!mIab.isRedeemed(Billing.MALWARE_DETECTION_SKU)) {
                     mMalwareDetectionEnabled.setChecked(false);
                     Intent intent = new Intent(requireActivity(), IABActivity.class);
                     startActivity(intent);
@@ -212,7 +212,7 @@ public class SettingsActivity extends BaseActivity {
 
                 return false;
             });
-            if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU))
+            if(!mIab.isRedeemed(Billing.MALWARE_DETECTION_SKU))
                 mMalwareDetectionEnabled.setChecked(false);
         }
 

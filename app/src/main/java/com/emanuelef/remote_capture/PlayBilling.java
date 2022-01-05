@@ -118,6 +118,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                         case PurchaseState.PURCHASED:
                             if(!isPurchased(sku) && setPurchased(sku, true)) {
                                 newPurchase = true;
+                                Log.d(TAG, "New purchase: " + sku);
 
                                 if(show_toast) {
                                     Utils.showToastLong(mContext, R.string.purchased_feature_ok);
