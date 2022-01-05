@@ -57,6 +57,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     private BillingClient mBillingClient;
     private PurchaseReadyListener mListener;
     private boolean mWaitingStart;
+    private static boolean mPendingNoticeShown = false; // static to make it work across the app
     private final SkusAvailability mAvailability;
 
     /** setPurchaseListener() -> connectBilling() -> PurchaseReadyListener.onPurchasesReady()
@@ -103,9 +104,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
                     switch (purchase.getPurchaseState()) {
                         case PurchaseState.PENDING:
-                            if(show_toast) {
-                                Utils.showToastLong(mContext, R.string.pending_transaction);
-                                show_toast = false;
+                            if(!mPendingNoticeShown) {
+                                mHandler.post(() -> Utils.showToastLong(mContext, R.string.pending_transaction));
+                                mPendingNoticeShown = true;
                             }
 
                             if(!mWaitingStart)
@@ -121,15 +122,16 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                 Log.d(TAG, "New purchase: " + sku);
 
                                 if(show_toast) {
-                                    Utils.showToastLong(mContext, R.string.purchased_feature_ok);
+                                    mHandler.post(() -> Utils.showToastLong(mContext, R.string.purchased_feature_ok));
                                     show_toast = false;
                                 }
 
-                                if(!mWaitingStart)
+                                if(!mWaitingStart) {
                                     mHandler.post(() -> {
-                                        if(mListener != null)
+                                        if (mListener != null)
                                             mListener.onSKUStateUpdate(sku, PurchaseState.PURCHASED);
                                     });
+                                }
                             }
 
                             mSkuToPurchToken.put(sku, purchase.getPurchaseToken());
@@ -283,7 +285,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     public void consumePurchase(String sku) {
         String token = mSkuToPurchToken.get(sku);
         if(token == null) {
-            Toast.makeText(mContext, "Purchase token not found", Toast.LENGTH_SHORT).show();
+            mHandler.post(() ->Toast.makeText(mContext, "Purchase token not found", Toast.LENGTH_SHORT).show());
             return;
         }
 
@@ -351,13 +353,13 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     public boolean purchase(Activity activity, String sku) {
         if((mBillingClient == null) || (!mBillingClient.isReady())) {
-            Utils.showToast(mContext, R.string.billing_connecting);
+            mHandler.post(() -> Utils.showToast(mContext, R.string.billing_connecting));
             return false;
         }
 
         SkuDetails details = mDetails.get(sku);
         if(details == null) {
-            Utils.showToast(mContext, R.string.feature_not_available);
+            mHandler.post(() -> Utils.showToast(mContext, R.string.feature_not_available));
             return false;
         }
 
@@ -368,6 +370,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 .build();
 
         // will call onPurchasesUpdated when done
+        mPendingNoticeShown = false;
         BillingResult res = mBillingClient.launchBillingFlow(activity, billingFlowParams);
         Log.d(TAG, "BillingFlow result: " + res.getResponseCode() + " " + res.getDebugMessage());
 

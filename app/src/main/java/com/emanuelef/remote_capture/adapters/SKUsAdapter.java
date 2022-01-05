@@ -40,7 +40,7 @@ import com.google.android.material.button.MaterialButton;
 
 public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
     private static final String TAG = "SKUsAdapter";
-    private static final boolean TEST_MODE = true;
+    private static final boolean TEST_MODE = false;
     private final Context mCtx;
     private final LayoutInflater mLayoutInflater;
     private final PlayBilling mIab;
@@ -108,6 +108,8 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         // Only for testing
         if(TEST_MODE && purchased) {
             purchaseBtn.setIcon(AppCompatResources.getDrawable(mCtx, R.drawable.ic_block));
+            purchaseBtn.setText("Consume");
+            purchaseBtn.setEnabled(true);
             purchaseBtn.setOnClickListener(v -> {
                 mIab.consumePurchase(item.sku);
                 purchaseBtn.setEnabled(false);
