@@ -9,8 +9,8 @@ android {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 40
-        versionName "1.4.4"
+        versionCode 42
+        versionName "1.4.5"
     }
 
     buildTypes {

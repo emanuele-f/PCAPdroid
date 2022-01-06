@@ -2,6 +2,19 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.5] - 2022-01-06
+- Reduce the memory usage, in particular during the capture
+- Malware detection now blocks malicious connections in non-root mode (paid feature)
+- Add ability to filter connections by capture interface in root mode
+- Add spanish translation (credits: sguinetti)
+- Improve stability: add tests, bounds checks, synchronization
+- Fix crashes when no activity is available to handle intents
+- Fix crash in root mode when the internet interface goes down
+- Workaround for crash due to IndexOutOfBoundsException in RecyclerView
+- Fix long press on a connection which is being updated
+- Re-enable always-on VPN support
+- Improve Android TV support, support devices with no wifi
+
 ## [1.4.4] - 2021-11-23
 - New malware detection overview: show blacklists and detection status
 - Show destination country and ASN in the connection details
