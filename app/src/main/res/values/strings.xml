@@ -262,4 +262,5 @@
     <string name="buy_action">Buy</string>
     <string name="remove_ads_description">Remove ads from this app.</string>
     <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by purchasing a paid feature.</string>
+    <string name="item_redeemed">Redeemed</string>
 </resources>

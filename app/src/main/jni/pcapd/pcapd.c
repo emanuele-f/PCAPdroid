@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021 - Emanuele Faranda
+ * Copyright 2021-22 - Emanuele Faranda
  */
 
 /*
@@ -94,12 +94,13 @@ typedef struct {
   uid_resolver_t *resolver;
   pcapd_iface_t *inet_iface;
   pcapd_iface_t ifaces[MAX_IFACES];
+  fd_set sel_fds;
   int maxfd;
   pcapd_conf_t *conf;
 } pcapd_runtime_t;
 
 static void init_interface(pcapd_iface_t *iface);
-static void close_interface(pcapd_iface_t *iface);
+static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface);
 
 /* ******************************************************* */
 
@@ -293,7 +294,7 @@ static void finish_pcapd_capture(pcapd_runtime_t *rt) {
     destroy_uid_resolver(rt->resolver);
 
   for(int i=0; i<rt->conf->num_interfaces; i++)
-    close_interface(&rt->ifaces[i]);
+    close_interface(rt, &rt->ifaces[i]);
 
   unlink(PCAPD_PID);
 }
@@ -508,10 +509,11 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
 /* ******************************************************* */
 
-static void close_interface(pcapd_iface_t *iface) {
+static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface) {
   if(!iface->pd)
     return;
 
+  FD_CLR(iface->pf, &rt->sel_fds);
   pcap_close(iface->pd);
   iface->pd = NULL;
   iface->pf = -1;
@@ -628,7 +630,7 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
           if(rt->inet_iface && (iface->ifidx == rt->inet_iface->ifidx))
             recheck_inet = 1;
 
-          close_interface(iface);
+          close_interface(rt, iface);
         }
         break;
     }
@@ -728,14 +730,21 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
   struct pcap_pkthdr *hdr;
   const u_char *pkt;
   int to_skip = iface->ipoffset;
-  int rv1 = pcap_next_ex(iface->pd, &hdr, &pkt);
+  int rv = pcap_next_ex(iface->pd, &hdr, &pkt);
 
-  if(rv1 == PCAP_ERROR) {
+  if(rv == PCAP_ERROR) {
     log_i("pcap_next_ex failed: %s", pcap_geterr(iface->pd));
+    close_interface(rt, iface);
 
-    // Do not abort, just wait for route changes
-    close_interface(iface);
-  } else if((rv1 == 1) && (hdr->caplen >= to_skip)) {
+    if(iface == rt->inet_iface)
+      // Do not abort, just wait for route/interface changes
+      return 0;
+
+    // abort, resuming other interfaces is not supported yet
+    return -1;
+  }
+
+  if((rv == 1) && (hdr->caplen >= to_skip)) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
     int len = hdr->caplen;
@@ -811,7 +820,6 @@ static int run_pcap_dump(pcapd_conf_t *conf) {
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
   zdtun_callbacks_t callbacks = {.send_client = (void*)1};
-  fd_set all_fds;
 
   if(!(rt.tun = zdtun_init(&callbacks, NULL)))
     goto cleanup;
@@ -836,11 +844,11 @@ static int run_pcap_dump(pcapd_conf_t *conf) {
 
   rv = 0;
   running = 1;
-  get_selectable_fds(&rt, &all_fds);
+  get_selectable_fds(&rt, &rt.sel_fds);
 
   while(running) {
     struct timeval timeout = {.tv_sec = 1, .tv_usec = 0};
-    fd_set fds = all_fds;
+    fd_set fds = rt.sel_fds;
 
     if(select(rt.maxfd + 1, &fds, NULL, NULL, &timeout) < 0) {
       if(errno != EINTR) {
@@ -864,12 +872,13 @@ static int run_pcap_dump(pcapd_conf_t *conf) {
       }
 
       // Interfaces may have changed, refresh fds
-      get_selectable_fds(&rt, &all_fds);
+      get_selectable_fds(&rt, &rt.sel_fds);
     } else {
       for(int i=0; i<rt.conf->num_interfaces; i++) {
         if((rt.ifaces[i].pf != -1) && FD_ISSET(rt.ifaces[i].pf, &fds)) {
           if(read_pkt(&rt, &rt.ifaces[i], now) < 0) {
             rv = -1;
+            running = 0;
             break;
           }
         }

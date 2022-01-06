@@ -235,5 +235,6 @@
     <string name="buy_action">Acquista</string>
     <string name="remove_ads_description">Rimuove gli annunci da questa app.</string>
     <string name="ads_notice">Gli annunci in-app generano traffico da PCAPdroid verso server terzi. Puoi rimuoverli acquistando una funzione a pagamento.</string>
+    <string name="item_redeemed">Riscosso</string>
 </resources>
 

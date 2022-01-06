@@ -966,7 +966,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reloadBlocklist() {
-        if(!mBilling.isPurchased(Billing.FIREWALL_SKU) || mSettings.root_capture)
+        if(!mBilling.isRedeemed(Billing.FIREWALL_SKU) || mSettings.root_capture)
             return;
 
         reloadBlocklist(mBlocklist.toListDescriptor());
