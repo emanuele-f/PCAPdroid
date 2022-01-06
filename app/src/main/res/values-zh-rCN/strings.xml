@@ -262,4 +262,5 @@
     <string name="buy_action">购买</string>
     <string name="remove_ads_description">移除应用广告</string>
     <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过购买付费功能来移除广告。</string>
+    <string name="item_redeemed">已兑换</string>
 </resources>
