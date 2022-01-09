@@ -1,16 +1,18 @@
-<i>PCAPdroid</i> is an open source app which lets you monitor and export the network traffic of your device. The app simulates a VPN to achieve non-root capture but, contrary to a VPN, the traffic is processed locally into the device.
+A copylefted libre app to monitor and export the network traffic of your device. \
+The app simulates a VPN to achieve non-root capture but, contrary to a VPN processes the traffic locally on the device.
 
 <b>Features:</b>
 
-* Log and examine the connections made by user and system apps
-* Extract the SNI, DNS query, HTTP request, HTTP URL and the remote IP address
-* Create rules to filter out the good traffic and easily spot anomalies
-* Dump the traffic into a PCAP file, download it from a browser, or stream it to a remote receiver for real time analysis (e.g. wireshark)
-* Use the app in combination with mitmproxy to decrypt HTTPS/TLS traffic (technical knowledge required)
-* On rooted devices, capture the traffic while other VPN apps are running
+* Log and examine the connections made by user and system apps.
+* Extract the SNI, DNS query, HTTP request, HTTP URL, and the remote IP address.
+* Create rules to filter out the good traffic and easily spot anomalies.
+* Dump traffic into a PCAP file, download it from a web browser, or stream it to a remote receiver for real-time analysis (e.g. Wireshark).
+* Use the app in combination with mitmproxy to decrypt HTTPS/TLS traffic (technical knowledge required).
+* On rooted devices, capture the traffic while other VPN apps are running.
+* Not only Open Source, but also copyleft. Use, inspect, change, and share — with all.
 
-If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
+Using PCAPdroid to perform packet analysis, is documented in <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the manual</a>.
 
-Visit <a href='https://github.com/emanuele-f/PCAPdroid'>the project’s Github repo</a> for more details.
+<a href='https://github.com/emanuele-f/PCAPdroid'>Visit the project’s GitHub repo</a> for more details.
 
-You can <a href="https://t.me/PCAPdroid">join the PCAPdroid community</a> on telegram to discuss and receive updates on the latest features.
+<a href="https://t.me/PCAPdroid">Join the PCAPdroid community</a> on Telegram to discuss and receive updates on the latest features.
