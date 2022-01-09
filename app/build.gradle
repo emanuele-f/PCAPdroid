@@ -30,7 +30,7 @@ android {
                     // NOTE: unstripped nDPI library takes up about 4 MB!
                     //doNotStrip '**.so'
                     doNotStrip '**/libpcapd.so'
-                    doNotStrip '**/libvpnproxy-jni.so'
+                    doNotStrip '**/libcapture.so'
                 }
             }
         }
