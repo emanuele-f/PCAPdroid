@@ -13,7 +13,7 @@
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License version 3 or later</a> for
         more details.</string>
     <string name="opensource_licenses" translatable="false"><b>Libre libraries and resources:</b><br/>\n\n
-        - Zero Dep Tunnel: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
+        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
         - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
         - NanoHTTPD: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
@@ -51,14 +51,14 @@
     <string name="packets">Packets</string>
     <string name="duration">Duration</string>
     <string name="http_server">HTTP server</string>
-    <string name="udp_exporter">UDP exporter collector</string>
+    <string name="udp_exporter">UDP exporter</string>
     <string name="no_dump">None</string>
     <string name="no_dump_info">PCAP will not be dumped</string>
     <string name="http_server_info">Start an HTTP server for the PCAP download</string>
     <string name="udp_exporter_info">Sends the PCAP to a remote UDP receiver</string>
     <string name="http_server_port">Port</string>
-    <string name="receiver_ip_address">IP address</string>
-    <string name="receiver_port">Port</string>
+    <string name="receiver_ip_address">Collector IP address</string>
+    <string name="receiver_port">Collector port</string>
     <string name="dump_mode">Dumping mode</string>
     <string name="user_guide">User guide</string>
     <string name="open_telegram_group">Telegram group</string>
@@ -104,7 +104,7 @@
     <string name="conn_status_closed">Closed</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied</string>
-    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
+    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">Save as file</string>
     <string name="file_saved">Saved</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
@@ -113,7 +113,7 @@
     <string name="tls_how_to">How to set up the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
     <string name="enable_ipv6">IPv6</string>
-    <string name="enable_ipv6_summary">Allow IPv6 internet connections.\nUse this on networks with an IPv6 gateway.</string>
+    <string name="enable_ipv6_summary">Allow IPv6 connections to the Internet.\nUse this on networks with an IPv6 gateway.</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Unreachable</string>
     <string name="other_prefs">Other</string>
@@ -189,8 +189,8 @@
     <string name="malware_whitelist_rules">Rules for malware whitelisting</string>
     <string name="feature_not_available">This feature is currently unavailable for your device</string>
     <string name="billing_connecting">Trying to connect to Google Play… Please try again in a while.</string>
-    <string name="malware_whitelist_help">User-defined whitelist inhibiting malware detection. Long-press malicious connections to create rules unmarking them as malware.</string>
-    <string name="hidden_connections_help">List of rules to hide entries in the connections list so you can focus on relevant ones.</string>
+    <string name="malware_whitelist_help">User-defined whitelist to inhibit malware detection. Long-press malicious connections to create rules unmarking them as malware.</string>
+    <string name="hidden_connections_help">List of rules to hide hide connection-list entries so you can focus on relevant ones.</string>
     <string name="malicious_connection_filter">Malicious</string>
     <string name="status_filter">Status: %1$s</string>
     <string name="not_hidden_filter">Not hidden</string>
@@ -237,7 +237,7 @@
     <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can turn it off from the Android network settings.</string>
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
-    <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid breaking Internet connectivity</string>
+    <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall rules</string>
@@ -262,4 +262,5 @@
     <string name="buy_action">Buy</string>
     <string name="remove_ads_description">Remove ads from this app.</string>
     <string name="ads_notice">In-app ads causes PCAPdroid to generate traffic to external servers. You can remove the ads by purchasing a paid feature.</string>
+    <string name="item_redeemed">Redeemed</string>
 </resources>

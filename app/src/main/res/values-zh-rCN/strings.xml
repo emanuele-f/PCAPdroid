@@ -7,6 +7,7 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
+	<string name="system_id" translatable="false">System ID</string>
 	<string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
@@ -237,4 +238,29 @@
     <string name="private_dns_message_notice">私人 DNS 阻止 PCAPdroid 检查 DN S流量。你可以在 Android 网络设置中禁用它。</string>
     <string name="private_dns_hinders_detection">私人 DNS 妨碍检测</string>
     <string name="decryption_no_filter_warn">执行 TLS 解密时，您应该选择一个目标应用程序，以避免中断互联网连接。</string>
+    <string name="block">拦截…</string>
+    <string name="firewall">防火墙</string>
+    <string name="firewall_rules">防火墙规则</string>
+    <string name="firewall_help">此列表包含拦截连接的规则</string>
+    <string name="blocked_pkts">已拦截</string>
+    <string name="n_pkts">%1$s 个数据包</string>
+    <string name="show_only_blocked">由防火墙拦截</string>
+    <string name="blocked_connection_filter">已拦截</string>
+    <string name="paid_features">付费功能</string>
+    <string name="unlock_code">解锁码</string>
+    <string name="validate">验证</string>
+    <string name="valid">有效</string>
+    <string name="invalid">无效</string>
+    <string name="no_intent_handler_found">未找到执行此操作的应用</string>
+    <string name="network_interface">接口</string>
+    <string name="interface_filter">接口: %1$s</string>
+    <string name="loading">加载中…</string>
+    <string name="purchased">已购买</string>
+    <string name="no_items_for_purchase">没有可供购买的项目</string>
+    <string name="billing_failure">未能连接到 Google Play，请稍后再试</string>
+    <string name="learn_more">了解更多</string>
+    <string name="buy_action">购买</string>
+    <string name="remove_ads_description">移除应用广告</string>
+    <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过购买付费功能来移除广告。</string>
+    <string name="item_redeemed">已兑换</string>
 </resources>

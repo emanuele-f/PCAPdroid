@@ -80,6 +80,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.io.FileNotFoundException;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private Billing mIab;
     private ViewPager2 mPager;
     private AppState mState;
     private AppStateListener mListener;
@@ -117,6 +118,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
+
+        mIab = Billing.newInstance(this);
+        mIab.setLicense(mIab.getLicense());
 
         initAppState();
         checkPermissions();
@@ -164,9 +168,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-
-        Billing billing = Billing.newInstance(this);
-        billing.setLicense(billing.getLicense());
     }
 
     @Override
@@ -190,12 +191,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onResume() {
         super.onResume();
 
-        Billing billing = Billing.newInstance(this);
-
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(billing.isPurchased(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
     }
 
     private void setupNavigationDrawer() {

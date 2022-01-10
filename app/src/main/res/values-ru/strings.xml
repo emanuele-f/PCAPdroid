@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="start_button">Начать</string>
     <string name="stop_button">Остановить</string>
@@ -41,7 +42,7 @@
     <string name="existing_vpn_confirm">Текущее активное VPN приложение будет отсоединено. Вы хотите продолжить?</string>
     <string name="vpn_setup_failed">Настройка VPN провалена</string>
     <string name="app_not_found">Приложение "%1$s" не найдено</string>
-    <string name="apps_loading_please_wait">Идёт загрузка приложений, пожалуйста, подождите.</string>
+    <string name="apps_loading_please_wait">Идёт загрузка приложений, пожалуйста, подождите</string>
     <string name="stats">Показатели</string>
     <string name="active_connections">Активные соединения</string>
     <string name="dropped_connections">Оборванные соединения</string>
@@ -108,12 +109,12 @@
     <string name="donate">Пожертвовать</string>
     <string name="root_log">Root-журнал</string>
     <string name="request_plaintext">Запрос в чистом виде</string>
-	<string name="search">Поиск</string>
+    <string name="search">Поиск…</string>
     <string name="app_val">Приложение: %1$s</string>
     <string name="ip_address_val">IP адрес: %1$s</string>
     <string name="host_val">Хост: %1$s</string>
     <string name="protocol_val">Протокол: %1$s</string>
-    <string name="whitelist_action">В белый список</string>
+    <string name="whitelist_action">В белый список…</string>
     <string name="hide">Скрыть…</string>
     <string name="n_selected">%1$d выбран(о)</string>
     <string name="select_all">Выбрать все</string>
@@ -136,7 +137,7 @@
     <string name="pcapdroid_trailer_summary">Trailer содержит дополнительные мета-данные, такие как название приложения и его идентификатор в системе(UID), которые будут добавлены в дамп.</string>
     <string name="trailer_how_to">Как отобразить данные из Trailer в Wireshark</string>
     <string name="remove_ads">Отключить рекламу</string>
-    <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности.</string>
+    <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности</string>
     <string name="purchased_feature_ok">Платная возможность теперь доступна!</string>
     <string name="ctrl_consent">Внешнее приложение хочет начать захват трафика посредством PCAPdroid.\nЕсли вы не уверены (или это не вы), то отклоните запрос!</string>
     <string name="deny">Отклонить</string>
@@ -211,4 +212,29 @@
     <string name="private_dns_message_notice">Частный DNS препятствует наблюдению PCAPdroid за DNS трафиком. Вы можете выключить его в сетевый настройках ОС Android.</string>
     <string name="private_dns_hinders_detection">Частный DNS препятствует обнаружению</string>
     <string name="decryption_no_filter_warn">При расшифровке TLS необходимо выбирать целевое приложение во избежание проблем с интернет соединением</string>
+    <string name="firewall">Файрвол</string>
+    <string name="paid_features">Платные возможности</string>
+    <string name="show_only_blocked">Заблокировано файрволом</string>
+    <string name="blocked_pkts">Заблокировано</string>
+    <string name="n_pkts">%1$s пакетов</string>
+    <string name="valid">Подтвержден</string>
+    <string name="network_interface">Интерфейс</string>
+    <string name="interface_filter">Интерфейс: %1$s</string>
+    <string name="invalid">Недействителен</string>
+    <string name="purchased">Приобретено</string>
+    <string name="learn_more">Узнать больше</string>
+    <string name="no_items_for_purchase">Отсутствуют опции доступные для покупки</string>
+    <string name="buy_action">Купить</string>
+    <string name="item_redeemed">Погашено</string>
+    <string name="blocked_connection_filter">заблокировано</string>
+    <string name="block">Заблокировать…</string>
+    <string name="firewall_rules">Правила для файрвола</string>
+    <string name="firewall_help">Этот список содержит правила блокировки соединений</string>
+    <string name="validate">Подтвердить</string>
+    <string name="unlock_code">Код разблокировки</string>
+    <string name="billing_failure">Не удалось подключиться к Google Play, пожалуйста повторите позже</string>
+    <string name="remove_ads_description">Отключить рекламу в приложении.</string>
+    <string name="loading">Загрузка…</string>
+    <string name="no_intent_handler_found">Не найдено приложения для выполнения этого действия</string>
+    <string name="ads_notice">Реклама в PCAPdroid генерирует траффик, идущий на внешние сервера. Вы можете отключить рекламу, купив соответствующую платную опцию.</string>
 </resources>
