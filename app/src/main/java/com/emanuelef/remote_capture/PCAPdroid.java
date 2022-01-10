@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -45,6 +46,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
  * https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
  */
 public class PCAPdroid extends Application {
+    private static final String TAG = "PCAPdroid";
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
     private MatchList mBlocklist;
@@ -57,10 +59,18 @@ public class PCAPdroid extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Disabled to get reports via the Android system reporting facility
-        CaocConfig.Builder.create()
-                .enabled(false)
-                .apply();
+        Utils.BuildType buildtp = Utils.getBuildType(this);
+        Log.d(TAG, "Build type: " + buildtp);
+
+        CaocConfig.Builder builder = CaocConfig.Builder.create();
+        if((buildtp == Utils.BuildType.PLAYSTORE) || (buildtp == Utils.BuildType.UNKNOWN)) {
+            // Disabled to get reports via the Android system reporting facility and for unsupported builds
+            builder.enabled(false);
+        } else {
+            builder.errorDrawable(R.drawable.ic_app_crash)
+                    .errorActivity(ErrorActivity.class);
+        }
+        builder.apply();
 
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));

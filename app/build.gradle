@@ -9,8 +9,8 @@ android {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 40
-        versionName "1.4.4"
+        versionCode 42
+        versionName "1.4.5"
     }
 
     buildTypes {
@@ -30,7 +30,7 @@ android {
                     // NOTE: unstripped nDPI library takes up about 4 MB!
                     //doNotStrip '**.so'
                     doNotStrip '**/libpcapd.so'
-                    doNotStrip '**/libvpnproxy-jni.so'
+                    doNotStrip '**/libcapture.so'
                 }
             }
         }

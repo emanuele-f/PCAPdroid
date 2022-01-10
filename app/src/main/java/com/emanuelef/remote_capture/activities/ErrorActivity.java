@@ -102,7 +102,7 @@ public final class ErrorActivity extends AppCompatActivity {
 
                     AlertDialog dialog = new AlertDialog.Builder(ErrorActivity.this)
                             .setTitle(R.string.customactivityoncrash_error_activity_error_details_title)
-                            .setMessage(CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent()))
+                            .setMessage(getErrorDetails())
                             .setPositiveButton(R.string.customactivityoncrash_error_activity_error_details_close, null)
                             .setNeutralButton(R.string.customactivityoncrash_error_activity_error_details_copy,
                                     new DialogInterface.OnClickListener() {
@@ -129,7 +129,7 @@ public final class ErrorActivity extends AppCompatActivity {
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "PCAPdroid crash");
         if(emailIntent.resolveActivity(getPackageManager()) != null) {
             emailButton.setOnClickListener(v -> {
-                String errorInformation = CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
+                String errorInformation = getErrorDetails();
                 emailIntent.putExtra(Intent.EXTRA_TEXT, errorInformation);
                 Utils.startActivity(this, emailIntent);
             });
@@ -145,7 +145,7 @@ public final class ErrorActivity extends AppCompatActivity {
     }
 
     private void copyErrorToClipboard() {
-        String errorInformation = CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
+        String errorInformation = getErrorDetails();
 
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
@@ -155,5 +155,10 @@ public final class ErrorActivity extends AppCompatActivity {
             clipboard.setPrimaryClip(clip);
             Toast.makeText(ErrorActivity.this, R.string.customactivityoncrash_error_activity_error_details_copied, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String getErrorDetails() {
+        return "Build type: " + Utils.getBuildType(this).toString().toLowerCase() + "\n" +
+                CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
     }
 }
