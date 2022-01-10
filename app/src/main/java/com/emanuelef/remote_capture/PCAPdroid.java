@@ -64,7 +64,7 @@ public class PCAPdroid extends Application {
 
         CaocConfig.Builder builder = CaocConfig.Builder.create();
         if((buildtp == Utils.BuildType.PLAYSTORE) || (buildtp == Utils.BuildType.UNKNOWN)) {
-            // Disabled to get reports via the Android system reporting facility
+            // Disabled to get reports via the Android system reporting facility and for unsupported builds
             builder.enabled(false);
         } else {
             builder.errorDrawable(R.drawable.ic_app_crash)

@@ -888,6 +888,7 @@ public class Utils {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     public static BuildType getBuildType(Context ctx) {
         try {
             Signature[] signatures;
@@ -895,13 +896,14 @@ public class Utils {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 // NOTE: PCAPdroid does not use multiple signatures
                 PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
-                signatures = pInfo.signingInfo.getSigningCertificateHistory();
+                signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
             } else {
                 PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
                 signatures = pInfo.signatures;
             }
 
-            if(signatures.length < 1)
+            // can be null in robolectric tests
+            if((signatures == null) || (signatures.length < 1))
                 return BuildType.UNKNOWN;
 
             MessageDigest sha1 = MessageDigest.getInstance("SHA");
