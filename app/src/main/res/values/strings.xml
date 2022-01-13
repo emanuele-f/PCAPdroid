@@ -188,7 +188,7 @@
     <string name="malware_whitelist">Malware whitelist</string>
     <string name="malware_whitelist_rules">Rules for malware whitelisting</string>
     <string name="feature_not_available">This feature is currently unavailable for your device</string>
-    <string name="billing_connecting">Trying to connect to Google Play… Please try again in a while.</string>
+    <string name="billing_connecting">The connection to Google Play is in progress, please retry in a while</string>
     <string name="malware_whitelist_help">User-defined whitelist to inhibit malware detection. Long-press malicious connections to create rules unmarking them as malware.</string>
     <string name="hidden_connections_help">List of rules to hide hide connection-list entries so you can focus on relevant ones.</string>
     <string name="malicious_connection_filter">Malicious</string>
