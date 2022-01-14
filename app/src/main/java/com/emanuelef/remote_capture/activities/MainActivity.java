@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setSupportActionBar(toolbar);
 
         mDrawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.open_nav_drawer, R.string.close_nav_drawer);
         mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -353,7 +353,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Intent intent = new Intent(MainActivity.this, AppsActivity.class);
                 startActivity(intent);
             } else
-                Utils.showToast(this, R.string.capture_not_started);
+                Utils.showToast(this, R.string.start_capture_first);
         } else if(id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
@@ -377,7 +377,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 startActivity(intent);
             } else
-                Utils.showToast(this, R.string.capture_not_running);
+                Utils.showToast(this, R.string.start_capture_first);
         } else if (id == R.id.action_about) {
             Intent intent = new Intent(MainActivity.this, AboutActivity.class);
             startActivity(intent);
@@ -528,7 +528,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
                 new AlertDialog.Builder(this)
-                        .setMessage(R.string.existing_vpn_confirm)
+                        .setMessage(R.string.disconnect_vpn_confirm)
                         .setPositiveButton(R.string.yes, (dialog, whichButton) -> startCaptureService())
                         .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
                         .show();

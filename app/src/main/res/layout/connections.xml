@@ -27,7 +27,7 @@
             android:layout_marginTop="40dp"
             android:textStyle="italic"
             android:textSize="15sp"
-            tools:text="@string/capture_not_started">
+            tools:text="@string/start_capture_first">
         </TextView>
 
         <com.emanuelef.remote_capture.views.EmptyRecyclerView

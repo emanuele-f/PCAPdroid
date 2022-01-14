@@ -34,8 +34,6 @@
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
     <string name="host">主机</string>
-    <string name="capture_not_running">流量捕获未在运行!</string>
-    <string name="capture_not_started">流量捕获未启动!</string>
     <string name="app_filter">目标应用</string>
     <string name="ready">就绪</string>
     <string name="about">关于</string>
@@ -65,10 +63,8 @@
     <string name="source_code">源代码</string>
     <string name="yes">是</string>
     <string name="no">否</string>
-    <string name="existing_vpn_confirm">当前处于活跃状态的 VPN 应用将被断开。你想继续吗？</string>
     <string name="vpn_setup_failed">VPN 设置失败</string>
     <string name="app_not_found">未找到应用 "%1$s"</string>
-    <string name="apps_loading_please_wait">应用加载正在进行，请等待</string>
     <string name="stats">统计数据</string>
     <string name="active_connections">活动连接</string>
     <string name="dropped_connections">丢失连接</string>
@@ -84,8 +80,6 @@
     <string name="no_apps">无应用</string>
     <string name="dns_server">DNS 服务器</string>
     <string name="apps">应用程序</string>
-    <string name="navigation_drawer_open">抽屉打开</string>
-    <string name="navigation_drawer_close">抽屉关闭</string>
     <string name="pcap_file">PCAP 文件</string>
     <string name="pcap_file_info">在设备存储中创建一个 PCAP 文件</string>
     <string name="cannot_write_file">无法写文件</string>
@@ -96,17 +90,14 @@
     <string name="delete_error">无法删除文件</string>
     <string name="capture_running">流量捕获运行中</string>
     <string name="notification_msg">%1$s 已捕获, %2$s 连接</string>
-    <string name="no_app_filter">未选中目标应用</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">已打开</string>
     <string name="first_seen">第一次见</string>
     <string name="last_seen">最后一次见</string>
     <string name="conn_status_closed">已关闭</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
-    <string name="copied_to_clipboard">已复制到剪贴板！</string>
     <string name="connections_csv_fields_v1">IP协议,源IP,源端口,目标IP,目标端口,Uid,应用,协议,状态,信息,已发送字节数,已接收字节数,已发送数据包,已接收数据包,第一次见,最后一次见</string>
     <string name="save_to_file">保存到文件</string>
-    <string name="file_saved">文件保存成功</string>
     <string name="older_connections_notice">未显示 %1$d 个较旧连接</string>
     <string name="about_text">PCAPdroid 是一款无需获取根权限便可进行网络捕获和监视的开源工具</string>
     <string name="get_app">获取应用:</string>
@@ -121,17 +112,14 @@
     <string name="lang_english">英语</string>
     <string name="system_default">系统默认</string>
     <string name="no_activity_file_selection">没有找到应用来处理选中的文件</string>
-    <string name="file_saved_with_name">文件 %1$s 已成功保存</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
     <string name="app_theme">主题</string>
     <string name="enable_socks5_proxy">启用 SOCKS5 代理</string>
-    <string name="enable_socks5_proxy_summary">启用后，所有 TCP 连接将被重定向到指定的 SOCKS5 代理。</string>
     <string name="proxy">代理</string>
     <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>
     <string name="root_capture">以根用户身份捕获流量</string>
-    <string name="root_capture_summary">以根用户身份捕获数据包允许 PCAPdroid 与其他 VPN 应用程序一起运行。</string>
     <string name="donate">捐赠</string>
     <string name="root_log">Root 日志</string>
     <string name="request_plaintext">请求明文</string>
@@ -164,7 +152,6 @@
     <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
     <string name="remove_ads">去除广告</string>
     <string name="pending_transaction">请完成您的交易以兑换此功能</string>
-    <string name="purchased_feature_ok">购买的功能现在可用！</string>
     <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。\n如果你不确定，最好拒绝！</string>
     <string name="deny">拒绝</string>
     <string name="allow">允许</string>
@@ -189,8 +176,6 @@
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>
     <string name="feature_not_available">此功能目前在您的设备上不可用</string>
     <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
-    <string name="malware_whitelist_help">此用户定义白名单用于禁止恶意软件检测。只要命中这些规则中的任意一条，连接就不会被标记为恶意。通过长按连接，您可以将其标记为“非恶意”</string>
-    <string name="hidden_connections_help">此列表包含从连接列表中隐藏连接的规则。隐藏连接可以让你专注于相关的连接。</string>
     <string name="malicious_connection_filter">恶意的</string>
     <string name="status_filter">状态： %1$s</string>
     <string name="not_hidden_filter">未隐藏</string>
@@ -212,7 +197,6 @@
     <string name="country_val">国家： %1$s</string>
     <string name="send_report">发送报告</string>
     <string name="start_at_boot">开机启动</string>
-    <string name="start_at_boot_summary">如果启用，捕获将在设备启动时自动启动。</string>
     <string name="malware_status_ok">未检测到恶意流量</string>
     <string name="malware_status_detected">检测到恶意连接</string>
     <string name="whitelist">白名单</string>
@@ -237,7 +221,6 @@
     <string name="malware_detection_learn_more">了解恶意软件检测功能的更多信息</string>
     <string name="private_dns_message_notice">私人 DNS 阻止 PCAPdroid 检查 DN S流量。你可以在 Android 网络设置中禁用它。</string>
     <string name="private_dns_hinders_detection">私人 DNS 妨碍检测</string>
-    <string name="decryption_no_filter_warn">执行 TLS 解密时，您应该选择一个目标应用程序，以避免中断互联网连接。</string>
     <string name="block">拦截…</string>
     <string name="firewall">防火墙</string>
     <string name="firewall_rules">防火墙规则</string>

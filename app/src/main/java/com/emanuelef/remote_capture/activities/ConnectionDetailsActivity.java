@@ -288,7 +288,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             ClipData clip = ClipData.newPlainText(getString(R.string.connection_details), getContents());
             clipboard.setPrimaryClip(clip);
 
-            Utils.showToast(this, R.string.copied_to_clipboard);
+            Utils.showToast(this, R.string.copied);
             return true;
         } else if(id == R.id.share) {
             Utils.shareText(this, getString(R.string.connection_details), getContents());

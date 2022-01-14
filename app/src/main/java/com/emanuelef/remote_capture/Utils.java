@@ -668,7 +668,7 @@ public class Utils {
         ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
         clipboard.setPrimaryClip(clip);
 
-        Utils.showToast(ctx, R.string.copied_to_clipboard);
+        Utils.showToast(ctx, R.string.copied);
     }
 
     public static void shareText(Context ctx, String subject, String contents) {

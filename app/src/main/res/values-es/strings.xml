@@ -7,8 +7,6 @@
     <string name="rcvd_and_sent">%1$s recibidos — %2$s enviados</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
-    <string name="capture_not_running">¡La captura no se ejecuta!</string>
-    <string name="capture_not_started">¡La captura no se inicia!</string>
     <string name="app_filter">App objetivo</string>
     <string name="ready">Listo</string>
     <string name="about">Acerca de</string>
@@ -38,10 +36,8 @@
     <string name="source_code">Código fuente</string>
     <string name="yes">SÍ</string>
     <string name="no">NO</string>
-    <string name="existing_vpn_confirm">El actual app de VPN activado se desactivará. ¿Deseas desactivar?</string>
     <string name="vpn_setup_failed">Error en ajustar VPN</string>
     <string name="app_not_found">No se encontró el app "%1$s"</string>
-    <string name="apps_loading_please_wait">Carga de apps en proceso, por favor espere</string>
     <string name="stats">Estado</string>
     <string name="active_connections">Conexiones activadas</string>
     <string name="dropped_connections">Conexiones desperdiciadas</string>
@@ -57,8 +53,6 @@
     <string name="no_apps">Sin apps</string>
     <string name="dns_server">Servidor DNS</string>
     <string name="apps">Apps</string>
-    <string name="navigation_drawer_open">Abrir caja</string>
-    <string name="navigation_drawer_close">Cerrar caja</string>
     <string name="pcap_file">Archivo PCAP</string>
     <string name="pcap_file_info">Crea un archivo PCAP en el almacenamiento de dispositivo</string>
     <string name="cannot_write_file">No se puede escribir el archivo</string>
@@ -69,17 +63,14 @@
     <string name="delete_error">No se puede borrar el archivo</string>
     <string name="capture_running">Ejecutando captura</string>
     <string name="notification_msg">%1$s capturado, %2$s conexiones</string>
-    <string name="no_app_filter">App objetivo no está seleccionado</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_open">Abrir</string>
     <string name="first_seen">Primera vez</string>
     <string name="last_seen">Última vez</string>
     <string name="conn_status_closed">Cerrado</string>
     <string name="copy_to_clipboard">Copiar al portapapeles</string>
-    <string name="copied_to_clipboard">¡Copiado al portapapeles!</string>
     <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">Guardar al archivo</string>
-    <string name="file_saved">Archivo guardado con éxtio</string>
     <string name="older_connections_notice">%1$d conexiones antiguas no mostradas</string>
     <string name="about_text">PCAPdroid es una herramienta de captura y monitorización de red de código abierto que funciona sin privilegios root.</string>
     <string name="get_app">Obténgalo:</string>
@@ -94,17 +85,14 @@
     <string name="lang_english">Inglés</string>
     <string name="system_default">Establecido por el sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como gestor de archivos</string>
-    <string name="file_saved_with_name">Archivo %1$s guardado con éxito</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="app_theme">Tema</string>
     <string name="enable_socks5_proxy">Activar Proxy SOCKS5</string>
-    <string name="enable_socks5_proxy_summary">Cuando se activa, todas las conexiones TCP serán redirigidas al proxy SOCKS5 especificado.</string>
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Dirección Proxy IP</string>
     <string name="proxy_port">Puerto Proxy</string>
     <string name="root_capture">Capturar como Root</string>
-    <string name="root_capture_summary">La captura de paquetes como root permite que PCAPdroid funcione con otras aplicaciones VPN.</string>
     <string name="donate">Donar</string>
     <string name="root_log">Registro Root</string>
     <string name="request_plaintext">Solicitar texto sin formato</string>
@@ -137,8 +125,7 @@
     <string name="trailer_how_to">Cómo mostrar los datos del remolque en Wireshark</string>
     <string name="remove_ads">Remover Ads</string>
     <string name="pending_transaction">Por favor, complete su transacción para canjear esta función</string>
-    <string name="purchased_feature_ok">¡La función de compra ya está disponible!</string>
-    <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.\n¡Recházala si no estás seguro!</string>
+    <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.\n¡Recházala si no estás seguro</string>
     <string name="deny">Denegar</string>
     <string name="allow">Permitir</string>
     <string name="ctrl_consent_title">Solicitud de control por PCAPdroid</string>
@@ -162,8 +149,6 @@
     <string name="malware_whitelist_rules">Reglas de lista blanca de malware</string>
     <string name="feature_not_available">Esta función no está disponible actualmente para su dispositivo</string>
     <string name="billing_connecting">La conexión con Google Play está en curso, por favor reintente más tarde</string>
-    <string name="malware_whitelist_help">Esta lista blanca definida por el usuario se utiliza para inhibir la detección de malware. Las conexiones que coincidan con alguna de estas reglas no serán marcadas como malware. Puede crear reglas pulsando prolongadamente una conexión maliciosa.</string>
-    <string name="hidden_connections_help">Esta lista contiene reglas para ocultar conexiones de la lista de conexiones. Ocultar las conexiones le permite centrarse en las relevantes.</string>
     <string name="malicious_connection_filter">Malicioso</string>
     <string name="status_filter">Estado: %1$s</string>
     <string name="not_hidden_filter">No oculto</string>
@@ -185,7 +170,6 @@
     <string name="country_val">País: %1$s</string>
     <string name="send_report">Enviar reporte</string>
     <string name="start_at_boot">Iniciar al arrancar</string>
-    <string name="start_at_boot_summary">Si está activada, la captura se iniciará automáticamente al arrancar el dispositivo.</string>
     <string name="malware_status_ok">No se ha detectado tráfico malicioso</string>
     <string name="malware_status_detected">Conexiones maliciosas detectadas</string>
     <string name="whitelist">Lista blanca</string>
@@ -210,5 +194,4 @@
     <string name="malware_detection_learn_more">Más información sobre la función de detección de malware</string>
     <string name="private_dns_message_notice">El DNS privado evita que PCAPdroid inspeccione el tráfico DNS. Puedes desactivarlo desde los ajustes de red de Android.</string>
     <string name="private_dns_hinders_detection">Los DNS privados dificultan la detección</string>
-    <string name="decryption_no_filter_warn">Al realizar el descifrado TLS debes seleccionar una aplicación de destino para no romper la conectividad a Internet</string>
 </resources>
