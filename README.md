@@ -46,13 +46,13 @@ If you are a business and want to sponsor this project, you can [reach me via em
 You can help the PCAPdroid project in many ways:
 
 - [Make a donation](https://emanuele-f.github.io/PCAPdroid/donate)
-- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests against the [master branch](https://github.com/emanuele-f/PCAPdroid/tree/master).
+- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests against the [master branch](https://github.com/emanuele-f/PCAPdroid/tree/master)
 <a href="https://hosted.weblate.org/engage/pcapdroid/">
   <img src="https://hosted.weblate.org/widgets/pcapdroid/-/app/multi-auto.svg" alt="Translation status" />
 </a>
 
 - Improve the app theme and layout
-- Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
+- Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
 You can [join the PCAPdroid community](https://t.me/PCAPdroid) on telegram.
