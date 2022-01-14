@@ -65,7 +65,11 @@ public class CaptureCtrl extends AppCompatActivity {
     @Override
     @SuppressWarnings("deprecation")
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Important: calls must occur in the following order:
+        //  requestWindowFeature -> setContentView -> getInsetsController()
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.ctrl_consent);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             final WindowInsetsController insetsController = getWindow().getInsetsController();
             if (insetsController != null)
@@ -115,7 +119,6 @@ public class CaptureCtrl extends AppCompatActivity {
         }
 
         // Show authorization window
-        setContentView(R.layout.ctrl_consent);
         findViewById(R.id.allow_btn).setOnClickListener(v -> controlAction(intent, action, true));
         findViewById(R.id.deny_btn).setOnClickListener(v -> controlAction(intent, action, false));
 

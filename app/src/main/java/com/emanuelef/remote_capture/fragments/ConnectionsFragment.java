@@ -110,7 +110,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
             mEmptyText.setText(R.string.no_connections);
         else
-            mEmptyText.setText(R.string.capture_not_running);
+            mEmptyText.setText(R.string.capture_not_running_status);
 
         registerConnsListener();
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
@@ -685,7 +685,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     String msg = String.format(getString(R.string.file_saved_with_name), fname);
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
                 } else
-                    Utils.showToast(requireContext(), R.string.file_saved);
+                    Utils.showToast(requireContext(), R.string.save_ok);
 
                 error = false;
             } catch (IOException e) {

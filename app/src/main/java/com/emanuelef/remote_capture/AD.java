@@ -104,6 +104,7 @@ public class AD {
     }
 
     // https://developers.google.com/admob/android/banner/adaptive
+    @SuppressWarnings("deprecation")
     private static AdSize getAdSize(Activity ctx) {
         Display display = ctx.getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics();

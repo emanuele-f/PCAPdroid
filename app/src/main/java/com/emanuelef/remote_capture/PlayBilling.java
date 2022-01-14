@@ -122,7 +122,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                 Log.d(TAG, "New purchase: " + sku);
 
                                 if(show_toast) {
-                                    mHandler.post(() -> Utils.showToastLong(mContext, R.string.purchased_feature_ok));
+                                    mHandler.post(() -> Utils.showToastLong(mContext, R.string.can_use_purchased_feature));
                                     show_toast = false;
                                 }
 

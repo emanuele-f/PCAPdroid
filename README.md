@@ -1,6 +1,7 @@
 # PCAPdroid
 
-PCAPdroid is an open source app which lets you monitor and export the network traffic of your device. The app simulates a VPN to achieve non-root capture but, contrary to a VPN, the traffic is processed locally into the device.
+PCAPdroid is an open source app which lets you monitor and export the network traffic of your device. \
+The app simulates a VPN to achieve non-root capture but, contrary to a VPN, the traffic is processed locally into the device.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="190" />
@@ -44,11 +45,13 @@ If you are a business and want to sponsor this project, you can [reach me via em
 
 You can help the PCAPdroid project in many ways:
 
-- Translate the app in your language
-- Improve the app theme and layout
-- Propose and discuss new features
-- Open bug reports with detailed information
 - [Make a donation](https://emanuele-f.github.io/PCAPdroid/donate)
+- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests
+<a href="https://hosted.weblate.org/engage/pcapdroid/">
+  <img src="https://hosted.weblate.org/widgets/pcapdroid/-/app/multi-auto.svg" alt="Translation status" />
+</a>
+
+- Improve the app theme and layout
 - Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
