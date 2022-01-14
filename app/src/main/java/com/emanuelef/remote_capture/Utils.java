@@ -922,7 +922,7 @@ public class Utils {
                     return BuildType.WORKFLOW;
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            Log.e("Utils", "Could not retrieve package version");
+            Log.e("Utils", "Could not determine the build type");
         }
         return BuildType.UNKNOWN;
     }
