@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="start_button">Avvia</string>
     <string name="stop_button">Ferma</string>
@@ -27,7 +28,7 @@
     <string name="no_dump_info">Il PCAP non sarà dumpato</string>
     <string name="http_server_info">Avvia un server HTTP per il download del PCAP</string>
     <string name="udp_exporter_info">Invia il PCAP a un collettore UDP remoto</string>
-    <string name="http_server_port">Porta del Server HTTP</string>
+    <string name="http_server_port">Porta del server HTTP</string>
     <string name="receiver_ip_address">IP del collettore</string>
     <string name="receiver_port">Porta del collettore</string>
     <string name="dump_mode">Modalità di dump</string>
@@ -37,7 +38,7 @@
     <string name="yes">Sì</string>
     <string name="no">No</string>
     <string name="vpn_setup_failed">Setup della VPN fallito</string>
-    <string name="app_not_found">L\'app "%1$s" non è stata trovata</string>
+    <string name="app_not_found">L\'app %1$s non è stata trovata</string>
     <string name="stats">Statistiche</string>
     <string name="active_connections">Connessioni attive</string>
     <string name="dropped_connections">Connessioni droppate</string>
@@ -230,5 +231,10 @@
     <string name="close_nav_drawer">Chiudi menù</string>
     <string name="capture_all_apps">Cattura il traffico di tutte le app</string>
     <string name="save_ok">Salvato</string>
+    <string name="hidden_connections_help">Lista di regole per nascondere elementi dalla lista connessioni, per concentrarsi sulle connessioni rilevanti</string>
+    <string name="file_saved_with_name">File salvato come \"%1$s\"</string>
+    <string name="start_at_boot_summary">Avvia la cattura in automatico all\'avvio del dispositivo</string>
+    <string name="malware_whitelist_help">Whitelist definita dall\'utente per inibire il rilevamento di malware. Tieni premuto su una connessione malevola per creare una regola</string>
+    <string name="enable_socks5_proxy_summary">Redirigi tutte le connessioni TCP verso il proxy SOCKS5</string>
+    <string name="decryption_no_filter_warn">Quando la decrittazione TLS è abilitata, è necessario selezionare un filtro app per evitare di perdere la connessione a Internet</string>
 </resources>
-
