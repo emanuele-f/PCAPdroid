@@ -46,7 +46,7 @@ If you are a business and want to sponsor this project, you can [reach me via em
 You can help the PCAPdroid project in many ways:
 
 - [Make a donation](https://emanuele-f.github.io/PCAPdroid/donate)
-- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests.
+- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests
 <a href="https://hosted.weblate.org/engage/pcapdroid/">
   <img src="https://hosted.weblate.org/widgets/pcapdroid/-/app/multi-auto.svg" alt="Translation status" />
 </a>
