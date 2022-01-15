@@ -46,21 +46,21 @@ If you are a business and want to sponsor this project, you can [reach me via em
 You can help the PCAPdroid project in many ways:
 
 - [Make a donation](https://emanuele-f.github.io/PCAPdroid/donate)
-- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/) or provide translation pull requests
+- Translate the app on [Weblate](https://hosted.weblate.org/engage/pcapdroid/)
 <a href="https://hosted.weblate.org/engage/pcapdroid/">
   <img src="https://hosted.weblate.org/widgets/pcapdroid/-/app/multi-auto.svg" alt="Translation status" />
 </a>
 
 - Improve the app theme and layout
-- Star the project on github and on the [Play Store](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
+- Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
 You can [join the PCAPdroid community](https://t.me/PCAPdroid) on telegram.
-The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target this branch when making pull requests for new features. Here is the normal release cycle:
+The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target the dev branch when making pull requests for new features. Here is the normal release cycle:
 
-1. Changes are developed and pushed to the dev branch.
-2. Once changes are stable enough, they are merged to the master branch. This is a good time to update translations.
-3. After about 2 days (or more in case of a major update), the new version is released.
+1. Changes are developed and pushed to the dev branch
+2. Once changes are stable enough, they are merged to the [master branch](https://github.com/emanuele-f/PCAPdroid/tree/master)
+3. After about 2 days (or more in case of a major update), the new version is released
 
 ## Integrating into your APP
 
