@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -87,6 +88,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -105,6 +108,15 @@ public class Utils {
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
+
+    public enum BuildType {
+        UNKNOWN,
+        DEBUG,
+        WORKFLOW,   // debug build from the Github workflow
+        GITHUB,     // Github release
+        FDROID,     // F-droid release
+        PLAYSTORE,  // Google play release
+    }
 
     public static String[] list2array(List<String> l) {
         return l.toArray(new String[0]);
@@ -656,7 +668,7 @@ public class Utils {
         ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
         clipboard.setPrimaryClip(clip);
 
-        Utils.showToast(ctx, R.string.copied_to_clipboard);
+        Utils.showToast(ctx, R.string.copied);
     }
 
     public static void shareText(Context ctx, String subject, String contents) {
@@ -869,5 +881,49 @@ public class Utils {
             r.run();
         else
             h.post(r);
+    }
+
+    // Returns true on the playstore branch
+    public static boolean isPlaystore() {
+        return false;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static BuildType getBuildType(Context ctx) {
+        try {
+            Signature[] signatures;
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // NOTE: PCAPdroid does not use multiple signatures
+                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+                signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
+            } else {
+                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
+                signatures = pInfo.signatures;
+            }
+
+            // can be null in robolectric tests
+            if((signatures == null) || (signatures.length < 1))
+                return BuildType.UNKNOWN;
+
+            MessageDigest sha1 = MessageDigest.getInstance("SHA");
+            sha1.update(signatures[0].toByteArray());
+
+            // keytool -printcert -jarfile file.apk
+            String hex = byteArrayToHex(sha1.digest(), sha1.getDigestLength());
+            switch(hex) {
+                case "511140392BFF2CFB4BD825895DD6510CE1807F6D":
+                    return BuildType.DEBUG;
+                case "EE953D4F988C8AC17575DFFAA1E3BBCE2E29E81D":
+                    return isPlaystore() ? BuildType.PLAYSTORE : BuildType.GITHUB;
+                case "72777D6939EF150099219BBB68C17220DB28EA8E":
+                    return BuildType.FDROID;
+                case "9F030FABC158A428CFDB90570A426EA88B39A153":
+                    return BuildType.WORKFLOW;
+            }
+        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
+            Log.e("Utils", "Could not determine the build type");
+        }
+        return BuildType.UNKNOWN;
     }
 }

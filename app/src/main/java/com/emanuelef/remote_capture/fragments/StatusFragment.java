@@ -235,7 +235,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
     private void refreshFilterInfo() {
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
-            mFilterDescription.setText(R.string.no_app_filter);
+            mFilterDescription.setText(R.string.capture_all_apps);
             mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
             mAppFilterSwitch.setChecked(false);
             return;
@@ -406,7 +406,7 @@ private void refreshPcapDumpInfo() {
         // NOTE: run this after dialog.show
         mOpenAppsList = (AppsListView) dialog.findViewById(R.id.apps_list);
         mEmptyAppsView = dialog.findViewById(R.id.no_apps);
-        mEmptyAppsView.setText(R.string.apps_loading_please_wait);
+        mEmptyAppsView.setText(R.string.loading_apps);
 
         (new AppsLoader((AppCompatActivity) requireActivity()))
                 .setAppsLoadListener(this)
