@@ -7,24 +7,23 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
-	<string name="system_id" translatable="false">System ID</string>
-	<string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
+    <string name="system_id" translatable="false">System ID</string>
+    <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-        See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License</a> for
+        See the <a href="https://www.gnu.org/licenses/gpl-3.0-standalone.html">GNU General Public License</a> for
         more details.</string>
     <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br/>\n\n
-        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
-        - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
-        - nanohttpd: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
-        - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
-        - gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
-        - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
-        - Android-Flag-Kit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
-        - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
-        - Font Awesome: <a href='https://fontawesome.com/license/free'>License</a>\n\n
+        - zdtun: <a href="https://github.com/emanuele-f/zdtun/blob/master/COPYING">GPL-3.0</a>\n\n
+        - nDPI: <a href="https://github.com/ntop/nDPI/blob/dev/COPYING">LGPL-3.0</a>\n\n
+        - nanohttpd: <a href="https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md">BSD-3-Clause</a>\n\n
+        - CustomActivityOnCrash: <a href="https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE">Apache-2.0</a>\n\n
+        - gson: <a href="https://github.com/google/gson/blob/master/LICENSE">Apache-2.0</a>\n\n
+        - MaxMind DB Reader: <a href="https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE">Apache-2.0</a>\n\n
+        - Android-Flag-Kit: <a href="https://github.com/madebybowtie/FlagKit/blob/master/LICENSE">MIT</a>\n\n
+        - IP Geolocation by <a href="https://db-ip.com">DB-IP</a>\n\n
+        - Font Awesome: <a href="https://fontawesome.com/license/free">License</a>\n\n
         - App icon made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         </string>
-
     <!-- Localized -->
     <string name="start_button">启动</string>
     <string name="stop_button">停止</string>
@@ -63,18 +62,18 @@
     <string name="source_code">源代码</string>
     <string name="yes">是</string>
     <string name="no">否</string>
-    <string name="vpn_setup_failed">VPN 设置失败</string>
-    <string name="app_not_found">未找到应用 "%1$s"</string>
+    <string name="vpn_setup_failed">无法设置 VPN</string>
+    <string name="app_not_found">找不到应用 %1$s</string>
     <string name="stats">统计数据</string>
     <string name="active_connections">活动连接</string>
-    <string name="dropped_connections">丢失连接</string>
+    <string name="dropped_connections">丢失的连接</string>
     <string name="tot_connections">总连接</string>
     <string name="open_sockets">开放套接字</string>
     <string name="max_file_descriptor">最大 FD</string>
-    <string name="bytes_sent">发送字节数</string>
-    <string name="bytes_rcvd">接收字节数</string>
-    <string name="packets_sent">发送数据包</string>
-    <string name="packets_rcvd">接收数据包</string>
+    <string name="bytes_sent">已发送字节数</string>
+    <string name="bytes_rcvd">已接收字节数</string>
+    <string name="packets_sent">已发送数据包</string>
+    <string name="packets_rcvd">已接收数据包</string>
     <string name="dns_queries">DNS 查询</string>
     <string name="search_apps">搜索应用</string>
     <string name="no_apps">无应用</string>
@@ -86,7 +85,7 @@
     <string name="share">分享</string>
     <string name="delete">删除</string>
     <string name="ok">好的</string>
-    <string name="pcap_file_action">已保存流量到文件 %1$s (%2$s).</string>
+    <string name="pcap_file_action">已保存流量到文件\" %1$s \"(%2$s)</string>
     <string name="delete_error">无法删除文件</string>
     <string name="capture_running">流量捕获运行中</string>
     <string name="notification_msg">%1$s 已捕获, %2$s 连接</string>
@@ -96,7 +95,7 @@
     <string name="last_seen">最后一次见</string>
     <string name="conn_status_closed">已关闭</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
-    <string name="connections_csv_fields_v1">IP协议,源IP,源端口,目标IP,目标端口,Uid,应用,协议,状态,信息,已发送字节数,已接收字节数,已发送数据包,已接收数据包,第一次见,最后一次见</string>
+    <string name="connections_csv_fields_v1">IP协议,源IP,源端口,目标IP,目标端口,UID,应用,协议,状态,信息,已发送字节数,已接收字节数,已发送数据包,已接收数据包,第一次见,最后一次见</string>
     <string name="save_to_file">保存到文件</string>
     <string name="older_connections_notice">未显示 %1$d 个较旧连接</string>
     <string name="about_text">PCAPdroid 是一款无需获取根权限便可进行网络捕获和监视的开源工具</string>
@@ -104,7 +103,7 @@
     <string name="tls_how_to">如何设置 TLS 解密</string>
     <string name="unknown_app">未知</string>
     <string name="enable_ipv6">启用 IPv6</string>
-    <string name="enable_ipv6_summary">允许 IPv6 网络连接。这应该只在带有 IPv6 网关的网络上启用。</string>
+    <string name="enable_ipv6_summary">允许 IPv6 网络连接。仅在带有 IPv6 网关的网络中使用</string>
     <string name="error">错误</string>
     <string name="conn_status_unreachable">不可达</string>
     <string name="other_prefs">其他</string>
@@ -119,7 +118,7 @@
     <string name="proxy">代理</string>
     <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>
-    <string name="root_capture">以根用户身份捕获流量</string>
+    <string name="root_capture">以 root 用户身份捕获流量</string>
     <string name="donate">捐赠</string>
     <string name="root_log">Root 日志</string>
     <string name="request_plaintext">请求明文</string>
@@ -141,18 +140,19 @@
     <string name="installed_on">安装时间</string>
     <string name="last_update">上次更新</string>
     <string name="permissions">权限</string>
-    <string name="root_app_info">以最高权限运行的系统守护进程。</string>
-    <string name="netd_app_info">执行 DNS 解析的系统守护进程。</string>
-    <string name="android_app_info">安卓系统。</string>
-    <string name="unknown_app_info">\"未知\" 标记无法确定来自什么应用的连接。</string>
+    <string name="root_app_info">以最高权限运行的系统守护进程</string>
+    <string name="netd_app_info">执行 DNS 解析的系统守护进程</string>
+    <string name="android_app_info">安卓系统</string>
+    <string name="unknown_app_info">\"未知\" 标记无法确定来自什么应用的连接</string>
     <string name="packets_dropped">丢弃的数据包</string>
     <string name="capture_prefs">捕获</string>
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
-    <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中。</string>
+    <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中</string>
     <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
     <string name="remove_ads">去除广告</string>
     <string name="pending_transaction">请完成您的交易以兑换此功能</string>
-    <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。\n如果你不确定，最好拒绝！</string>
+    <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。
+\n如果你不确定，最好拒绝</string>
     <string name="deny">拒绝</string>
     <string name="allow">允许</string>
     <string name="ctrl_consent_title">PCAPdroid 控制请求</string>
@@ -170,7 +170,7 @@
     <string name="show_only_malicious">恶意连接</string>
     <string name="security">安全</string>
     <string name="malware_detection">恶意软件检测</string>
-    <string name="malware_detection_summary">通过第三方黑名单检测到已知恶意主机的连接。</string>
+    <string name="malware_detection_summary">通过第三方黑名单检测到已知恶意主机的连接</string>
     <string name="reset">重置</string>
     <string name="malware_whitelist">恶意软件白名单</string>
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>
@@ -203,7 +203,7 @@
     <string name="blacklists">黑名单</string>
     <string name="status_outdated">已过期</string>
     <string name="status_not_loaded">未加载</string>
-    <string name="status_uptodate">最新</string>
+    <string name="status_uptodate">已是最新</string>
     <string name="blacklist_type">"类型：%1$s"</string>
     <string name="blacklist_type_ip">IP 黑名单</string>
     <string name="blacklist_type_domain">域名黑名单</string>
@@ -219,7 +219,7 @@
     <string name="update_now">立即更新</string>
     <string name="status_updating">更新中…</string>
     <string name="malware_detection_learn_more">了解恶意软件检测功能的更多信息</string>
-    <string name="private_dns_message_notice">私人 DNS 阻止 PCAPdroid 检查 DN S流量。你可以在 Android 网络设置中禁用它。</string>
+    <string name="private_dns_message_notice">私人 DNS 阻止 PCAPdroid 检查 DN S流量。你可以在 Android 网络设置中关闭它</string>
     <string name="private_dns_hinders_detection">私人 DNS 妨碍检测</string>
     <string name="block">拦截…</string>
     <string name="firewall">防火墙</string>
@@ -244,6 +244,23 @@
     <string name="learn_more">了解更多</string>
     <string name="buy_action">购买</string>
     <string name="remove_ads_description">移除应用广告</string>
-    <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过购买付费功能来移除广告。</string>
+    <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过购买付费功能来移除广告</string>
     <string name="item_redeemed">已兑换</string>
+    <string name="start_at_boot_summary">开机后自动开始流量捕获</string>
+    <string name="capture_not_running_status">流量捕获未在运行</string>
+    <string name="start_capture_first">先开始流量捕获</string>
+    <string name="copied">已复制</string>
+    <string name="can_use_purchased_feature">你现在可以使用购买的功能</string>
+    <string name="disconnect_vpn_confirm">断开活动的 VPN 应用程序并继续？</string>
+    <string name="loading_apps">正在加载应用…</string>
+    <string name="open_nav_drawer">打开抽屉</string>
+    <string name="close_nav_drawer">关闭抽屉</string>
+    <string name="capture_all_apps">捕获所有应用的流量</string>
+    <string name="save_ok">已保存</string>
+    <string name="file_saved_with_name">已将文件另存为 \"%1$s\"</string>
+    <string name="enable_socks5_proxy_summary">将所有 TCP 连接重定向到指定的 SOCKS5 代理</string>
+    <string name="root_capture_summary">允许 PCAPdroid 与其他 VPN 应用程序一起运行</string>
+    <string name="malware_whitelist_help">用户自定义白名单，禁止恶意软件检测。长按“恶意连接”创建取消将它们标记为恶意软件的规则</string>
+    <string name="hidden_connections_help">隐藏连接列表条目的规则列表，以便关注相关的规则</string>
+    <string name="decryption_no_filter_warn">解密 TLS 时，请选择目标应用程序，以免失去 Internet 连接</string>
 </resources>
