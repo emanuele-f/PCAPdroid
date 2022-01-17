@@ -146,8 +146,10 @@ static int get_uid_slow(const zdtun_5tuple_t *conn_info) {
             rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
         }
     } else {
-        const uint32_t *src = conn_info->src_ip.ip6.s6_addr32;
-        const uint32_t *dst = conn_info->dst_ip.ip6.s6_addr32;
+        struct in6_addr srcip6 = conn_info->src_ip.ip6;
+        struct in6_addr dstip6 = conn_info->dst_ip.ip6;
+        const uint32_t *src = srcip6.s6_addr32;
+        const uint32_t *dst = dstip6.s6_addr32;
 
         sprintf(shex, "%08X%08X%08X%08X", src[0], src[1], src[2], src[3]);
         sprintf(dhex, "%08X%08X%08X%08X", dst[0], dst[1], dst[2], dst[3]);
