@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include "utils.h"
 
 memtrack_t memtrack = {0};
@@ -44,7 +45,23 @@ void log_android(int lvl, const char *fmt, ...) {
         vsnprintf(line, sizeof(line), fmt, argptr);
         va_end(argptr);
 
+#ifdef ANDROID
         __android_log_print(lvl, logtag, "%s", line);
+#else
+        {
+            char ch = '?';
+
+            switch(lvl) {
+                case ANDROID_LOG_DEBUG: ch = 'D'; break;
+                case ANDROID_LOG_INFO:  ch = 'I'; break;
+                case ANDROID_LOG_WARN:  ch = 'W'; break;
+                case ANDROID_LOG_ERROR: ch = 'E'; break;
+                case ANDROID_LOG_FATAL: ch = 'F'; break;
+            }
+
+            fprintf(lvl >= ANDROID_LOG_WARN ? stderr : stdout, "[%c] %s\n", ch, line);
+        }
+#endif
 
         if(logcallback != NULL)
             logcallback(lvl, line);
@@ -123,80 +140,6 @@ void tupleSwapPeers(zdtun_5tuple_t *tuple) {
     zdtun_ip_t tmp1 = tuple->dst_ip;
     tuple->dst_ip = tuple->src_ip;
     tuple->src_ip = tmp1;
-}
-
-/* ******************************************************* */
-
-int jniCheckException(JNIEnv *env) {
-    jthrowable ex = (*env)->ExceptionOccurred(env);
-    if (ex) {
-        (*env)->ExceptionDescribe(env);
-        (*env)->ExceptionClear(env);
-        (*env)->DeleteLocalRef(env, ex);
-        return 1;
-    }
-    return 0;
-}
-
-/* ******************************************************* */
-
-jclass jniFindClass(JNIEnv *env, const char *name) {
-    jclass cls = (*env)->FindClass(env, name);
-    if (cls == NULL)
-        log_e("Class %s not found", name);
-    else
-        jniCheckException(env);
-    return cls;
-}
-
-/* ******************************************************* */
-
-jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature) {
-    jmethodID method = (*env)->GetMethodID(env, cls, name, signature);
-    if (method == NULL) {
-        log_e("Method %s %s not found", name, signature);
-        jniCheckException(env);
-    }
-
-    return method;
-}
-
-/* ******************************************************* */
-
-jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type) {
-    jfieldID field = (*env)->GetFieldID(env, cls, name, type);
-    if(field == NULL) {
-        log_e("Field %s(%s) not found", name, type);
-        jniCheckException(env);
-    }
-
-    return field;
-}
-
-/* ******************************************************* */
-
-jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key) {
-    char buf[512];
-
-    jclass cls = jniFindClass(env, class_name);
-    if(cls == NULL)
-        return NULL;
-
-    snprintf(buf, sizeof(buf), "L%s;", class_name);
-    jfieldID field = (*env)->GetStaticFieldID(env, cls, enum_key, buf);
-    if(field == NULL) {
-        log_e("Static field %s(%s) not found", enum_key, buf);
-        jniCheckException(env);
-        return NULL;
-    }
-
-    jobject val = (*env)->GetStaticObjectField(env, cls, field);
-    if(!val) {
-        log_e("Enum value %s not found in \"%s\"", enum_key, class_name);
-        jniCheckException(env);
-    }
-
-    return val;
 }
 
 /* ******************************************************* */

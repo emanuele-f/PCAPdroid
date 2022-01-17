@@ -20,11 +20,29 @@
 #ifndef __LOG_UTILS_H__
 #define __LOG_UTILS_H__
 
-#include <jni.h>
 #include <sys/types.h>
-#include <android/log.h>
 #include "zdtun.h"
 #include "memtrack.h"
+
+#ifdef ANDROID
+#include <android/log.h>
+#else
+
+#define ANDROID_LOG_DEBUG 1
+#define ANDROID_LOG_INFO  2
+#define ANDROID_LOG_WARN  3
+#define ANDROID_LOG_ERROR 4
+#define ANDROID_LOG_FATAL 5
+
+#endif
+
+#ifndef __unused
+#define __unused  __attribute__((unused))
+#endif
+
+#ifndef __packed
+#define __packed  __attribute__((packed))
+#endif
 
 extern int loglevel;
 extern const char* logtag;
@@ -42,12 +60,6 @@ ssize_t xread(int fd, void *buf, size_t count);
 uint64_t timeval2ms(struct timeval *tv);
 void tupleSwapPeers(zdtun_5tuple_t *tuple);
 char loglvl2char(int lvl);
-
-jclass jniFindClass(JNIEnv *env, const char *name);
-jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature);
-jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type);
-jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key);
-int jniCheckException(JNIEnv *env);
 char* humanSize(char *buf, int bufsize, double bytes);
 void hexdump(const char *buf, size_t bufsize);
 

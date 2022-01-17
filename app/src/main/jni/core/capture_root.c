@@ -26,6 +26,9 @@
 #include "common/utils.h"
 #include "third_party/uthash.h"
 
+// Needed for local compilation, don't remove
+extern char **environ;
+
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
 #define TCP_CLOSED_TIMEOUT_SEC 60   // some servers keep sending FIN+ACK after close
@@ -117,33 +120,6 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
 
 /* ******************************************************* */
 
-static void get_libprog_path(pcapdroid_t *pd, const char *prog_name, char *buf, int bufsize) {
-    JNIEnv *env = pd->env;
-    jobject prog_str = (*env)->NewStringUTF(env, prog_name);
-
-    buf[0] = '\0';
-
-    if((prog_str == NULL) || jniCheckException(env)) {
-        log_e("could not allocate get_libprog_path string");
-        return;
-    }
-
-    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getLibprogPath, prog_str);
-
-    if(!jniCheckException(env)) {
-        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
-
-        strncpy(buf, value, bufsize);
-        buf[bufsize - 1] = '\0';
-
-        (*env)->ReleaseStringUTFChars(env, obj, value);
-    }
-
-    (*env)->DeleteLocalRef(env, obj);
-}
-
-/* ******************************************************* */
-
 static void kill_pcapd(pcapdroid_t *nc) {
     int pid;
     char pid_s[8];
@@ -170,17 +146,22 @@ static int connectPcapd(pcapdroid_t *pd) {
     int client = -1;
     char bpf[256];
     char pcapd[PATH_MAX];
-    char capture_interface[16];
+    char capture_interface[16] = "@inet";
+    bpf[0] = '\0';
 
+#if ANDROID
     getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
     getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
-    get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
+#endif
+
+    if(pd->cb.get_libprog_path)
+        pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
 
     if(!pcapd[0])
         return(-1);
 
-    if(chdir(get_cache_dir()) < 0) {
-        log_f("chdir to %s failed [%d]: %s", get_cache_dir(),
+    if(chdir(get_cache_dir(pd)) < 0) {
+        log_f("chdir to %s failed [%d]: %s", get_cache_dir(pd),
                     errno, strerror(errno));
         return (-1);
     }

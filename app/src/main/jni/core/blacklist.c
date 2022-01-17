@@ -280,6 +280,8 @@ void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
 
 /* ******************************************************* */
 
+#if ANDROID
+
 static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blacklist_type tp) {
     int num_items = (*env)->CallIntMethod(env, list, mids.listSize);
 
@@ -334,3 +336,5 @@ int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld) {
     (*env)->DeleteLocalRef(env, ips);
     return 0;
 }
+
+#endif // ANDROID

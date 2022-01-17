@@ -37,8 +37,10 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <signal.h>
 #include <linux/if_ether.h>
 #include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <net/if.h>
 #include <time.h>
 #include <pcap.h>
@@ -229,7 +231,7 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
   if(f == NULL)
     return -1;
 
-  __be32 *ip6 = ip->in6_u.u6_addr32;
+  __be32 *ip6 = ip->s6_addr32;
 
   while(fgets(line, sizeof(line), f)) {
     if((strstr(line, iface) != NULL) &&
@@ -237,8 +239,8 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
       for(int i=0; i<4; i++)
         ip6[i] = htonl(ip6[i]);
 
-      if((ip->in6_u.u6_addr8[0] == 0xfe) &&
-         ((ip->in6_u.u6_addr8[1] & 0xC0) == 0x80)) // link local address
+      if((ip->s6_addr[0] == 0xfe) &&
+         ((ip->s6_addr[1] & 0xC0) == 0x80)) // link local address
         continue;
 
       char addr[INET6_ADDRSTRLEN];

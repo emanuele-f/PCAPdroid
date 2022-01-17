@@ -20,21 +20,6 @@
 #include "pcapdroid.h"
 #include "common/utils.h"
 
-static void vpn_protect_socket(pcapdroid_t *pd, socket_t sock) {
-    JNIEnv *env = pd->env;
-
-    if(pd->root_capture)
-        return;
-
-    /* Call VpnService protect */
-    jboolean isProtected = (*env)->CallBooleanMethod(
-            env, pd->capture_service, mids.protect, sock);
-    jniCheckException(env);
-
-    if (!isProtected)
-        log_e("socket protect failed");
-}
-
 /* ******************************************************* */
 
 static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
@@ -58,8 +43,21 @@ static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
 }
 
 static void protectSocketCallback(zdtun_t *zdt, socket_t sock) {
+#if ANDROID
     pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
-    vpn_protect_socket(pd, sock);
+    JNIEnv *env = pd->env;
+
+    if(pd->root_capture)
+        return;
+
+    /* Call VpnService protect */
+    jboolean isProtected = (*env)->CallBooleanMethod(
+            env, pd->capture_service, mids.protect, sock);
+    jniCheckException(env);
+
+    if(!isProtected)
+        log_e("socket protect failed");
+#endif
 }
 
 /* ******************************************************* */
@@ -372,7 +370,7 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-int run_vpn(pcapdroid_t *pd, int tunfd) {
+int run_vpn(pcapdroid_t *pd) {
     zdtun_t *zdt;
     char buffer[32768];
     u_int64_t next_purge_ms;
@@ -384,12 +382,13 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
         return (-1);
     }
 
-    pd->vpn.tunfd = tunfd;
+#if ANDROID
     pd->vpn.internal_ipv4 = getIPv4Pref(pd->env, pd->capture_service, "getVpnIPv4");
     pd->vpn.internal_dns = getIPv4Pref(pd->env, pd->capture_service, "getVpnDns");
     pd->vpn.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.known_dns_servers = ndpi_ptree_create();
+#endif
 
     zdtun_callbacks_t callbacks = {
         .send_client = remote2vpn,
@@ -568,8 +567,11 @@ int run_vpn(pcapdroid_t *pd, int tunfd) {
     }
 
     zdtun_finalize(zdt);
+
+#if ANDROID
     destroy_uid_resolver(pd->vpn.resolver);
     ndpi_ptree_destroy(pd->vpn.known_dns_servers);
+#endif
 
     return(0);
 }

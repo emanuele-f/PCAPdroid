@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include "common/utils.h"
 
 typedef struct pcap_hdr_s {
     uint32_t magic_number;
