@@ -76,6 +76,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
 int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld);
 #endif
 bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver);
+bool blacklist_match_ipstr(blacklist_t *bl, const char *ip);
 bool blacklist_match_domain(blacklist_t *bl, const char *domain);
 bool blacklist_match_uid(blacklist_t *bl, int uid);
 void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats);

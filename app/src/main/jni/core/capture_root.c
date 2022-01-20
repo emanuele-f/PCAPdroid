@@ -45,7 +45,7 @@ struct pcap_conn {
 
 /* ******************************************************* */
 
-static int su_cmd(const char *prog, const char *args, bool check_error) {
+static int run_cmd(const char *prog, const char *args, bool as_root, bool check_error) {
     int in_p[2], out_p[2];
     int rv = -1;
     pid_t pid;
@@ -57,7 +57,7 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
 
     if((pid = fork()) == 0) {
         // child
-        char *argp[] = {"sh", "-c", "su", NULL};
+        char *argp[] = {"sh", "-c", as_root ? "su" : "sh", NULL};
 
         close(in_p[1]);
         close(out_p[0]);
@@ -76,7 +76,7 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
         close(out_p[1]);
 
         // write "su" command input
-        log_d("su_cmd[%d]: %s %s", pid, prog, args);
+        log_d("run_cmd[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);
         write(in_p[1], args, strlen(args));
@@ -133,7 +133,7 @@ static void kill_pcapd(pcapdroid_t *nc) {
 
     if(pid != 0) {
         log_d("Killing old pcapd with pid %d", pid);
-        su_cmd("kill", pid_s, false);
+        run_cmd("kill", pid_s, true, false);
     }
 
     fclose(f);
@@ -144,15 +144,8 @@ static void kill_pcapd(pcapdroid_t *nc) {
 static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
-    char bpf[256];
     char pcapd[PATH_MAX];
-    char capture_interface[16] = "@inet";
-    bpf[0] = '\0';
-
-#if ANDROID
-    getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
-    getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
-#endif
+    char *bpf = pd->root.bpf ? pd->root.bpf : "";
 
     if(pd->cb.get_libprog_path)
         pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
@@ -198,8 +191,8 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -t -b \"%s\"", capture_interface, pd->app_filter, bpf);
-    if(su_cmd(pcapd, args, true) != 0)
+    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -t -b \"%s\"", pd->root.capture_interface, pd->app_filter, bpf);
+    if(run_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
     // Wait for pcapd to start
@@ -497,6 +490,16 @@ int run_root(pcapdroid_t *pd) {
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
+#if ANDROID
+    char capture_interface[16] = "@inet";
+    char bpf[256];
+    bpf[0] = '\0';
+
+    pd->root.as_root = true; // TODO support read from PCAP file
+    pd->root.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
+    pd->root.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+#endif
+
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
@@ -531,15 +534,17 @@ int run_root(pcapdroid_t *pd) {
         if(!FD_ISSET(sock, &fdset))
             goto housekeeping;
 
-        if(xread(sock, &hdr, sizeof(hdr)) < 0) {
-            log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
+        ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
+        if(xrv != sizeof(hdr)) {
+            if(xrv < 0)
+                log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
         if(hdr.len > sizeof(buffer)) {
             log_e("packet too big (%d B)", hdr.len);
             goto cleanup;
         }
-        if(xread(sock, buffer, hdr.len) < 0) {
+        if(xread(sock, buffer, hdr.len) != hdr.len) {
             log_e("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
             goto cleanup;
         }

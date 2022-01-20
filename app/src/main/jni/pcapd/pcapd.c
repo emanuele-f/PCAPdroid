@@ -73,6 +73,7 @@ typedef struct {
   char name[IFNAMSIZ];
   int ifidx;
   uint8_t ifid;       // positional interface index
+  uint8_t is_file;
   pcap_t *pd;
   int pf;
   int dlink;
@@ -395,22 +396,28 @@ static void init_interface(pcapd_iface_t *iface) {
 
 static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
+  int is_file = 0;
   int mtu = get_iface_mtu(ifname);
-
-  if(mtu < 0) {
-    mtu = 1500;
-    log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
-  }
 
   /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
   int snaplen = mtu + SLL2_HDR_LEN;
-  log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
 
   pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
-
   if(!pd) {
-    log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
-    return -1;
+    // try to open as file
+    pd = pcap_open_offline(ifname, errbuf);
+
+    if(!pd) {
+      log_i("pcap_open(%s) failed: %s", ifname, errbuf);
+      return -1;
+    }
+    is_file = 1;
+  } else {
+    if(mtu < 0) {
+      mtu = 1500;
+      log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
+    }
+    log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
   }
 
   // Fixes pcap_next_ex sometimes hanging on interface down
@@ -479,20 +486,21 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   // Success
   iface->pd = pd;
+  iface->is_file = is_file;
   iface->mac = 0;
   iface->ifid = ifid;
   iface->ifidx = if_nametoindex(ifname);
 
   errno = 0;
-  if((dlink == DLT_EN10MB) && (get_iface_mac(ifname, &iface->mac) < 0))
+  if(!is_file && (dlink == DLT_EN10MB) && (get_iface_mac(ifname, &iface->mac) < 0))
     log_i("Could not get interface \"%s\" MAC[%d]: %s", ifname, errno, strerror(errno));
 
   uint32_t netmask;
   iface->ip = 0;
-  if(get_iface_ip(ifname, &iface->ip, &netmask) < 0)
+  if(!is_file && get_iface_ip(ifname, &iface->ip, &netmask) < 0)
     log_i("Could not get interface \"%s\" IP[%d]: %s", ifname, errno, strerror(errno));
 
-  if(get_iface_ip6(ifname, &iface->ip6) < 0) {
+  if(!is_file && get_iface_ip6(ifname, &iface->ip6) < 0) {
     log_i("Could not get interface \"%s\" IPv6[%d]: %s", ifname, errno, strerror(errno));
     memset(&iface->ip6, 0, sizeof(iface->ip6));
   }
@@ -744,9 +752,12 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
 
     // abort, resuming other interfaces is not supported yet
     return -1;
+  } else if(rv != 1) {
+    // TODO handle EOF without error
+    return -1;
   }
 
-  if((rv == 1) && (hdr->caplen >= to_skip)) {
+  if(hdr->caplen >= to_skip) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
     int len = hdr->caplen;
@@ -764,11 +775,15 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         tupleSwapPeers(&zpkt.tuple);
       }
 
-      int uid = uid_lru_find(rt->lru, &zpkt.tuple);
+      int uid = UID_UNKNOWN;
 
-      if(uid == -2) {
-        uid = get_uid(rt->resolver, &zpkt.tuple);
-        uid_lru_add(rt->lru, &zpkt.tuple, uid);
+      if(!iface->is_file) {
+        uid = uid_lru_find(rt->lru, &zpkt.tuple);
+
+        if(uid == -2) {
+          uid = get_uid(rt->resolver, &zpkt.tuple);
+          uid_lru_add(rt->lru, &zpkt.tuple, uid);
+        }
       }
 
       if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
@@ -1010,6 +1025,9 @@ int main(int argc, char *argv[]) {
 
   rv = run_pcap_dump(&conf);
   unlink(PCAPD_PID);
+
+  for(int i=0; i<conf.num_interfaces; i++)
+    free(conf.ifnames[i]);
 
   if(conf.bpf)
     free(conf.bpf);

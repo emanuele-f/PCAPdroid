@@ -13,6 +13,10 @@ set(ZDTUN_ROOT ${ROOTDIR}/submodules/zdtun)
 include_directories(${ZDTUN_ROOT})
 add_subdirectory(${ZDTUN_ROOT} zdtun_build)
 
+# nDPI
+set(NDPI_ROOT ${ROOTDIR}/submodules/nDPI)
+include_directories(${NDPI_ROOT}/src/include ${NDPI_ROOT}/src/lib/third_party/include)
+
 # base
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

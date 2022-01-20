@@ -138,7 +138,7 @@ struct pcapdroid;
 // Used to decouple pcapdroid.c from the JNI calls
 typedef struct {
     void (*get_libprog_path)(struct pcapdroid *pd, const char *prog_name, char *buf, int bufsize);
-    int (*load_blacklists_info)(struct pcapdroid *pd);
+     int (*load_blacklists_info)(struct pcapdroid *pd);
     void (*send_stats_dump)(struct pcapdroid *pd);
     void (*send_connections_dump)(struct pcapdroid *pd);
     void (*send_pcap_dump)(struct pcapdroid *pd);
@@ -193,7 +193,10 @@ typedef struct pcapdroid {
         } vpn;
         struct {
             pcap_conn_t *connections;
-        } root;
+            bool as_root;
+            char *bpf;
+            char *capture_interface;
+        } root; // TODO rename: it can run without root to read a PCAP file
     };
 
     struct {

@@ -108,6 +108,7 @@ ssize_t xwrite(int fd, const void *buf, size_t count) {
 
 /* ******************************************************* */
 
+// returns < 0 on error, 0 if fd is closed
 ssize_t xread(int fd, void *buf, size_t count) {
     size_t sofar = 0;
     ssize_t rv;
@@ -125,9 +126,9 @@ ssize_t xread(int fd, void *buf, size_t count) {
     } while((sofar != count) && (rv != 0));
 
     if(sofar != count)
-        return -1;
+        return (rv == 0) ? 0 : -1;
 
-    return 0;
+    return count;
 }
 
 /* ******************************************************* */

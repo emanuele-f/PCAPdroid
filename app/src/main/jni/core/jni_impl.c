@@ -473,10 +473,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_service_status = notifyServiceStatus,
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
             },
-            .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
-            .new_conn_id = 0,
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
             },

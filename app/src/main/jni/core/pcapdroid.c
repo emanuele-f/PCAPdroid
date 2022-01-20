@@ -1039,6 +1039,8 @@ int pd_run(pcapdroid_t *pd) {
         return(-1);
     }
 
+    pd->ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE);
+
     if(pd->malware_detection.enabled && pd->cb.load_blacklists_info)
         pd->cb.load_blacklists_info(pd);
 
@@ -1074,6 +1076,10 @@ int pd_run(pcapdroid_t *pd) {
     int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
 
     log_d("Stopped packet loop");
+
+    // send last dump
+    if(pd->cb.send_connections_dump)
+        pd->cb.send_connections_dump(pd);
 
     conns_clear(&pd->new_conns, true);
     conns_clear(&pd->conns_updates, true);

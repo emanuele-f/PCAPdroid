@@ -253,6 +253,23 @@ bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver) {
 
 /* ******************************************************* */
 
+bool blacklist_match_ipstr(blacklist_t *bl, const char *ip_str) {
+    ndpi_ip_addr_t addr;
+    int ipver = ndpi_parse_ip_string(ip_str, &addr);
+    zdtun_ip_t ip;
+
+    if(ipver == 4)
+        ip.ip4 = addr.ipv4;
+    else if(ipver == 6)
+        memcpy(&ip.ip6, &addr.ipv6, 16);
+    else
+        return false;
+
+    return blacklist_match_ip(bl, &ip, ipver);
+}
+
+/* ******************************************************* */
+
 bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
     string_entry_t *entry = NULL;
 
