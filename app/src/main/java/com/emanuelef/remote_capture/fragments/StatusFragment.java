@@ -338,6 +338,7 @@ private void refreshPcapDumpInfo() {
                             ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_media_play));
                     mMenuItemStartBtn.setTitle(R.string.start_button);
                     mMenuItemStartBtn.setEnabled(true);
+                    mMenuItemStartBtn.setVisible(true);
                     mMenuSettings.setEnabled(true);
                 }
 
@@ -359,6 +360,7 @@ private void refreshPcapDumpInfo() {
                             ContextCompat.getDrawable(requireContext(), R.drawable.ic_media_stop));
                     mMenuItemStartBtn.setTitle(R.string.stop_button);
                     mMenuItemStartBtn.setEnabled(true);
+                    mMenuItemStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                     mMenuSettings.setEnabled(false);
                 }
 

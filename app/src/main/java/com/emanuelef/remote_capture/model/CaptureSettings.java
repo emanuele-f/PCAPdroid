@@ -7,19 +7,19 @@ import android.os.Bundle;
 import java.io.Serializable;
 
 public class CaptureSettings implements Serializable {
-    public final Prefs.DumpMode dump_mode;
-    public final String app_filter;
-    public final String collector_address;
-    public final int collector_port;
-    public final int http_server_port;
-    public final boolean socks5_enabled;
-    public final String socks5_proxy_address;
-    public final int socks5_proxy_port;
-    public final boolean ipv6_enabled;
-    public final boolean root_capture;
-    public final boolean pcapdroid_trailer;
-    public final String capture_interface;
-    public final String pcap_uri;
+    public Prefs.DumpMode dump_mode;
+    public String app_filter;
+    public String collector_address;
+    public int collector_port;
+    public int http_server_port;
+    public boolean socks5_enabled;
+    public String socks5_proxy_address;
+    public int socks5_proxy_port;
+    public boolean ipv6_enabled;
+    public boolean root_capture;
+    public boolean pcapdroid_trailer;
+    public String capture_interface;
+    public String pcap_uri;
 
     public CaptureSettings(SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
