@@ -1,3 +1,7 @@
+# Build with address/leak sanitizer
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+
 project(test)
 cmake_minimum_required(VERSION 3.18.1)
 
