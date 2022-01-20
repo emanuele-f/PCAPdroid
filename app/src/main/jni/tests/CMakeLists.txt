@@ -20,10 +20,7 @@ macro(build_tests)
   add_dependencies(${ARGV0} libpcapd.so)
   add_dependencies(run_tests ${ARGV0})
 
-  target_link_libraries(${ARGV0}
-    capture
-    pthread
-    m)
+  target_link_libraries(${ARGV0} capture)
 endmacro()
 
 build_tests(pcap_reader)

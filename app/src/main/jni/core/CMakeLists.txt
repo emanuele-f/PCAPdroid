@@ -27,12 +27,13 @@ ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
 
 if(ANDROID)
         find_library(log-lib log)
+        set(extra-libs ${log-lib})
 else()
-        set(log-lib "")
+        set(extra-libs "pthread" "m")
 endif()
 
 target_link_libraries(capture
         zdtun
         ndpi
         common
-        ${log-lib})
+        ${extra-libs})
