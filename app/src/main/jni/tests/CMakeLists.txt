@@ -14,10 +14,9 @@ include_directories(${ROOTDIR}/submodules/zdtun)
 include_directories(${ROOTDIR}/submodules/nDPI/src/include)
 
 include(CTest)
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 # Target to run tests and build them if necessary
-add_custom_target(run_tests COMMAND ${CMAKE_CTEST_COMMAND})
+add_custom_target(run_tests COMMAND CTEST_OUTPUT_ON_FAILURE=1 ${CMAKE_CTEST_COMMAND})
 
 # build_tests(target)
 macro(build_tests)
@@ -30,5 +29,9 @@ endmacro()
 
 build_tests(pcap_reader)
 
+add_test(NAME dpi_extract COMMAND ./dpi extract)
+build_tests(dpi)
+
 add_test(NAME blacklist_match COMMAND ./blacklist match)
+add_test(NAME blacklist_detection COMMAND ./blacklist detection)
 build_tests(blacklist)

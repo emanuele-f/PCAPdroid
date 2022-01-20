@@ -88,3 +88,36 @@ pcapdroid_t* pd_init(const char *ifname) {
 
   return pd;
 }
+
+/* ******************************************************* */
+
+/* To be called during send_connections_dump. Looks up a connection
+ * matching the specified protocol, IP port and info (if not NULL).
+ * If no connection is found, abort is called. Only the first match is
+ * returned.
+ */
+conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip,
+          uint16_t dst_port, const char *info) {
+  conn_and_tuple_t *found = NULL;
+  zdtun_ip_t ip;
+  dst_port = htons(dst_port);
+
+  int ipver = zdtun_parse_ip(dst_ip, &ip);
+  assert((ipver == 4) || (ipver == 6));
+
+  for(int i=0; i < pd->new_conns.cur_items; i++) {
+    conn_and_tuple_t *conn = &pd->new_conns.items[i];
+
+    if((conn->tuple.ipproto == ipproto) &&
+       (conn->tuple.dst_port == dst_port) &&
+       (conn->tuple.ipver == ipver) &&
+       (!zdtun_cmp_ip(ipver, &conn->tuple.dst_ip, &ip)) &&
+       ((info == NULL) || ((conn->data->info != NULL) && !strcmp(info, conn->data->info)))) {
+      found = conn;
+      break;
+    }
+  }
+
+  assert(found);
+  return found;
+}

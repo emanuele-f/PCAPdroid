@@ -26,13 +26,14 @@
 #define assert0(x) assert((x) == 0)
 #define assert1(x) assert((x) == 1)
 
+#define PCAP_PATH "../pcap"
+
 void add_test(const char *name, void (*test_cb)());
 void run_test(int argc, char **argv);
 
 pcapdroid_t* pd_init(const char *ifname);
+static inline void pd_free(pcapdroid_t *pd) { free(pd); }
 
-static inline void pd_free(pcapdroid_t *pd) {
-  free(pd);
-}
+conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip, uint16_t dst_port, const char *info);
 
 #endif

@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
   log_i("Capturing packets from %s", ifname);
   pd_run(pd);
 
-  log_i("Terminated");
+  log_i("Cleanup...");
   pd_free(pd);
   free(ifname);
 }
