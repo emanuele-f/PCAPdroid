@@ -124,7 +124,9 @@ Due to the restrictions introduced via the [scoped storage](https://developer.an
 4. Retrieve the internal URL which Android uses to reference this file. You can find this in the logcat output of PCAPdroid:
 
 ```
-D/Main: PCAP URI to write: content://com.android.externalstorage.documents/document/primary%3Atest.pcap
+D/Main: PCAP URI to write [persistable=true]: content://com.android.externalstorage.documents/document/primary%3Atest.pcap
 ```
 
 You should now be able to write the `test.pcap` file by setting the `pcap_uri` to this URI. You must repeat the steps above if you delete the file.
+
+*NOTE*: if the messages shows `[persistable=false]` then it was not possible to get the permissions on the URI, so the `pcap_uri` paramter won't work. This occurs on devices without a file manager to select the PCAP destination path (e.g. on Android TV).

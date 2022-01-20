@@ -469,19 +469,20 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void pcapFileResult(final ActivityResult result) {
         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-            startWithPcapFile(result.getData().getData());
+            startWithPcapFile(result.getData().getData(),
+                    (result.getData().getFlags() & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0);
         } else {
             mPcapUri = null;
         }
     }
 
-    private void startWithPcapFile(Uri uri) {
+    private void startWithPcapFile(Uri uri, boolean persistable) {
         mPcapUri = uri;
         mPcapFname = null;
         boolean hasPermission = false;
 
         // Revoke the previous permissions
-        for(UriPermission permission : getContentResolver ().getPersistedUriPermissions()) {
+        for(UriPermission permission : getContentResolver().getPersistedUriPermissions()) {
             if(!permission.getUri().equals(uri)) {
                 Log.d(TAG, "Releasing URI permission: " + permission.getUri().toString());
                 getContentResolver().releasePersistableUriPermission(permission.getUri(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -492,13 +493,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         /* Request a persistent permission to write this URI without invoking the system picker.
          * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents
          * or when starting the capture at boot. */
-        if(!hasPermission)
-            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        if(persistable && !hasPermission) {
+            try {
+                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (SecurityException e) {
+                // This should never occur
+                Log.e(TAG, "Could not get PersistableUriPermission");
+                e.printStackTrace();
+                persistable = false;
+            }
+        }
 
         // Save the URI as a preference
         mPrefs.edit().putString(Prefs.PREF_PCAP_URI, mPcapUri.toString()).apply();
 
-        Log.d(TAG, "PCAP URI to write: " + mPcapUri.toString());
+        // NOTE: part of app_api.md
+        Log.d(TAG, "PCAP URI to write [persistable=" + persistable + "]: " + mPcapUri.toString());
+
         toggleService();
     }
 
@@ -562,7 +573,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             if(uri != null) {
                 usingMediaStore = true;
-                startWithPcapFile(uri);
+
+                // NOTE: cannot be persisted as it was not invoked via Intent
+                startWithPcapFile(uri, false);
             } else
                 Utils.showToastLong(this, R.string.no_activity_file_selection);
         }
@@ -589,7 +602,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         cursor.close();
 
         // If file is empty, delete it
-        if(file_size == 0) {
+        // NOTE: the user may want to get a PersistableUriPermission, so don't auto delete the file
+        /*if(file_size == 0) {
             Log.d(TAG, "PCAP file is empty, deleting");
 
             try {
@@ -602,7 +616,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
 
             return;
-        }
+        }*/
 
         String message = String.format(getResources().getString(R.string.pcap_file_action), fname, Utils.formatBytes(file_size));
 
