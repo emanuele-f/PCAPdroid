@@ -5,6 +5,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 project(test)
 cmake_minimum_required(VERSION 3.18.1)
 
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../..)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_BINARY_DIR}/main)
