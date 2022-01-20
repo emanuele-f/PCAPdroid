@@ -3,15 +3,15 @@ Tests in PCAPdroid can be split in the following categories:
 - [Java tests](https://github.com/emanuele-f/PCAPdroid/tree/dev/app/src/test/java):
   they can be run via `./gradlew test`. They use the
   [robolectric framework](https://github.com/robolectric/robolectric)
-  to mock the Android API, allowing them to be run locally (without an emulator)
+  to mock the Android API, allowing them to be run locally (without an Android device).
 
 - [Native tests](https://github.com/emanuele-f/PCAPdroid/tree/dev/app/src/main/jni/tests):
   they can be run with `./run_tests.sh` on a linux host. They are built
   with the [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html)
-  to detect memory issues and leaks
+  to detect memory issues and leaks.
 
 The tests are executed on every push via the
-[Github workflows](https://github.com/emanuele-f/PCAPdroid/tree/dev/.github/workflows)
+[Github workflows](https://github.com/emanuele-f/PCAPdroid/tree/dev/.github/workflows).
 
 Apart from automatic tests, the following manual tests should be performed
 before every release:
