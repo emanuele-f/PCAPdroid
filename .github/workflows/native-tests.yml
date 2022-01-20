@@ -9,7 +9,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
-    - uses: KyleMayes/install-llvm-action@v1
     - name: Run native tests
       working-directory: ./app/src/main/jni/tests
       run: ./run_tests.sh
