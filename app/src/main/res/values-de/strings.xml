@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_activity_settings">Einstellungen</string>
+    <string name="ready">Bereit</string>
+    <string name="connections_view">Verbindungen</string>
+    <string name="no_connections">Keine Verbindungen</string>
+    <string name="connection_details">Verbindungsdetails</string>
+    <string name="protocol">Protokoll</string>
+    <string name="source">Quelle</string>
+    <string name="packets">Pakete</string>
+    <string name="duration">Dauer</string>
+    <string name="stop_button">Stoppen</string>
+    <string name="start_button">Starten</string>
+    <string name="destination">Ziel</string>
+</resources>
