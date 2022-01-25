@@ -35,8 +35,14 @@ PCAP_HDR_BYTES_TRAILER = bytes.fromhex("d4c3b2a1020004000000000000000000ffff0000
 PCAPDROID_TRAILER_MAGIC = bytes.fromhex("01072021")
 PCAPDROID_TRAILER_SIZE = 32
 
+example = '''example:
+  udp_receiver.py -p 1234 | wireshark -k -i -
+'''
+
 parser = argparse.ArgumentParser(
-    description='''Receives data from the PCAPdroid app and outputs it to stdout.''')
+    description='''Receives data from the PCAPdroid app and outputs it to stdout.''',
+    epilog=example,
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-p', '--port', type=int, help='The UDP port to listen', default=1234)
 parser.add_argument('-v', '--verbose', help='Enable verbose log to stderr', action='store_true')

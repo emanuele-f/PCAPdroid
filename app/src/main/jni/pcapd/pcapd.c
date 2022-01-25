@@ -97,6 +97,7 @@ typedef struct {
   uid_resolver_t *resolver;
   pcapd_iface_t *inet_iface;
   pcapd_iface_t ifaces[MAX_IFACES];
+  struct pcap_stat stats;
   fd_set sel_fds;
   int maxfd;
   pcapd_conf_t *conf;
@@ -255,6 +256,14 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
 
   fclose(f);
   return(found ? 0 : -1);
+}
+
+/* ******************************************************* */
+
+static void sum_stats(struct pcap_stat *out, const struct pcap_stat *to_sum) {
+  out->ps_drop += to_sum->ps_drop;
+  out->ps_ifdrop += to_sum->ps_ifdrop;
+  out->ps_recv += to_sum->ps_recv;
 }
 
 /* ******************************************************* */
@@ -424,6 +433,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   // https://github.com/the-tcpdump-group/libpcap/issues/899
   pcap_setnonblock(pd, 1, errbuf);
 #else
+  int is_file = 1;
   pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
 
   if(!pd) {
@@ -523,6 +533,10 @@ static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface) {
   if(!iface->pd)
     return;
 
+  // Account the stats
+  pcap_stats(iface->pd, &iface->stats);
+  sum_stats(&rt->stats, &iface->stats);
+
   FD_CLR(iface->pf, &rt->sel_fds);
   pcap_close(iface->pd);
   iface->pd = NULL;
@@ -559,8 +573,12 @@ static void check_inet_interface(pcapd_runtime_t *rt) {
     return;
 
   // Success
-  if(old_pd)
+  if(old_pd) {
+    // Account the stats before closing the interface
+    pcap_stats(old_pd, &rt->inet_iface->stats);
+    sum_stats(&rt->stats, &rt->inet_iface->stats);
     pcap_close(old_pd);
+  }
 
   log_i("\"%s\" is the new internet interface", ifname);
 }
@@ -814,7 +832,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
           char buf[512];
           zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-          printf("[%s:%d] %s [%cX]\n", iface->name, iface->ifid, buf, is_tx ? 'T' : 'R');
+          printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
         }
       }
     }
@@ -915,6 +933,8 @@ cleanup:
 
   if(rt.tun)
     zdtun_finalize(rt.tun);
+
+  log_i("Pkts: %u rcvd, %u drops, %u iface_drops", rt.stats.ps_recv, rt.stats.ps_drop, rt.stats.ps_ifdrop);
 
   return rv;
 }
