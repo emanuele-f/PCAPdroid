@@ -839,6 +839,12 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
 
           printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
         }
+
+        if(iface->is_file) {
+          // libpcap does not provide stats for savefiles
+          // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
+          iface->stats.ps_recv++;
+        }
       }
     }
   }
