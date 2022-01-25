@@ -51,13 +51,12 @@ static void extract_metadata_cb(pcapdroid_t *pd) {
 }
 
 static void test_metadata_extraction() {
-  conn_and_tuple_t *conn;
-  pcapdroid_t *pd = pd_init(PCAP_PATH "/metadata.pcap");
+  pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
 
   pd->cb.send_connections_dump = extract_metadata_cb;
   pd_run(pd);
 
-  pd_free(pd);
+  pd_free_test(pd);
 }
 
 /* ******************************************************* */

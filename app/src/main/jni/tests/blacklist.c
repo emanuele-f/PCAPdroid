@@ -82,7 +82,7 @@ static void detection_cb(pcapdroid_t *pd) {
 }
 
 static void test_detection() {
-  pcapdroid_t *pd = pd_init(PCAP_PATH "/metadata.pcap");
+  pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
 
   blacklist_t *bl = blacklist_init();
   assert(bl != NULL);
@@ -109,7 +109,7 @@ static void test_detection() {
   pd->cb.send_connections_dump = detection_cb;
   pd_run(pd);
 
-  pd_free(pd);
+  pd_free_test(pd);
 }
 
 /* ******************************************************* */

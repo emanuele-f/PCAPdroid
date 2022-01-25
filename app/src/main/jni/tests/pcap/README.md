@@ -25,3 +25,13 @@ Connections:
 [UDP4] 192.168.1.10:41011 -> 8.8.8.8:53 [f-droid.org]
 [TCP4] 192.168.1.10:52782 -> 149.202.95.241:80 [f-droid.org]
 ```
+
+## two_flows.pcap
+
+Contains two flows. The first 20 packets of the PCAP are part of the first flow, whereas
+the last 29 packets are from the second flow.
+
+```
+[TCP4] 192.168.1.10:36922 -> 216.58.208.164:80 [www.google.com]
+[TCP4] 192.168.1.10:51588 -> 142.250.180.131:443 [google.it]
+```

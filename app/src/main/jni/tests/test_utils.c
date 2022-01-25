@@ -28,6 +28,10 @@ typedef struct {
 } test_spec;
 
 static test_spec all_tests[MAX_TESTS] = {0};
+static FILE *out_fp = NULL;
+static u_char pcap_read_buf[65535];
+
+/* ******************************************************* */
 
 static void getPcapdPath(struct pcapdroid *pd, const char *prog_name, char *buf, int bufsize) {
   snprintf(buf, bufsize, "main/pcapd/libpcapd.so");
@@ -73,7 +77,7 @@ void run_test(int argc, char **argv) {
 
 /* ******************************************************* */
 
-pcapdroid_t* pd_init(const char *ifname) {
+pcapdroid_t* pd_init_test(const char *ifname) {
   pcapdroid_t *pd = calloc(1, sizeof(pcapdroid_t));
   assert(pd != NULL);
 
@@ -87,6 +91,15 @@ pcapdroid_t* pd_init(const char *ifname) {
   pd->cachedir_len = 1;
 
   return pd;
+}
+
+/* ******************************************************* */
+
+void pd_free_test(pcapdroid_t *pd) {
+  free(pd);
+
+  if(out_fp)
+    fclose(out_fp);
 }
 
 /* ******************************************************* */
@@ -120,4 +133,76 @@ conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip,
 
   assert(found);
   return found;
+}
+
+/* ******************************************************* */
+
+static void dump_to_file_cb(struct pcapdroid *pd) {
+  uint8_t *buf = (uint8_t*) pd->pcap_dump.buffer;
+  int len = pd->pcap_dump.buffer_idx;
+
+  if(out_fp == NULL) {
+    out_fp = fopen(PCAP_OUT_PATH, "wb+");
+
+    if(!out_fp) {
+      perror("Could not create PCAP file");
+      exit(1);
+    }
+
+    // write the PCAP header
+    struct pcap_hdr_s hdr;
+    pcap_build_hdr(pd->pcap_dump.snaplen, &hdr);
+    assert(fwrite(&hdr, sizeof(hdr), 1, out_fp) == 1);
+  }
+
+  assert(fwrite(buf, len, 1, out_fp) == 1);
+  fflush(out_fp);
+}
+
+/* Dump the packets to PCAP_OUT_PATH */
+void pd_dump_to_file(pcapdroid_t *pd) {
+  pd->cb.send_pcap_dump = dump_to_file_cb;
+  pd->pcap_dump.enabled = 1;
+}
+
+/* ******************************************************* */
+
+/* To be called with pd_dump_to_file after finishing dumping the file,
+ * before any assert_pcap_*. */
+void pd_done_dump() {
+  assert(out_fp != NULL);
+
+  fseek(out_fp, 0, SEEK_SET);
+}
+
+/* ******************************************************* */
+
+/* Reads the PCAP header from the dump file and verify that is valid. */
+void assert_pcap_header(pcap_hdr_s *hdr) {
+  assert(out_fp != NULL);
+
+  assert(fread(hdr, sizeof(pcap_hdr_s), 1, out_fp) == 1);
+
+  assert(hdr->magic_number == 0xa1b2c3d4);
+  assert(hdr->version_major == 2);
+  assert(hdr->version_minor == 4);
+}
+
+/* ******************************************************* */
+
+/* Reads a PCAP record and returns a buffer pointing to its data.
+ * The data length available in the buffer is rec->incl_len.
+ * Returns NULL on EOF. */
+u_char* next_pcap_record(pcaprec_hdr_s *rec) {
+  int rv = fread(rec, sizeof(pcaprec_hdr_s), 1, out_fp);
+
+  if((rv != 1) && feof(out_fp))
+    return NULL;
+
+  assert(rv == 1);
+  assert(rec->incl_len <= rec->orig_len);
+  assert(rec->incl_len <= sizeof(pcap_read_buf));
+
+  assert(fread(pcap_read_buf, rec->incl_len, 1, out_fp) == 1);
+  return pcap_read_buf;
 }

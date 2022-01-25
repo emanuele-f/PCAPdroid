@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
   loglevel = verbose ? ANDROID_LOG_DEBUG : ANDROID_LOG_INFO;
 
-  pcapdroid_t *pd = pd_init(ifname);
+  pcapdroid_t *pd = pd_init_test(ifname);
   pd->cb.send_connections_dump = dump_connections;
 
   signal(SIGINT, sig_handler);
@@ -99,6 +99,6 @@ int main(int argc, char *argv[]) {
   pd_run(pd);
 
   log_i("Cleanup...");
-  pd_free(pd);
+  pd_free_test(pd);
   free(ifname);
 }
