@@ -408,6 +408,12 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   int is_file = 0;
   int mtu = get_iface_mtu(ifname);
 
+  if(mtu < 0) {
+    mtu = 1500;
+    if(!strstr(ifname, ".pcap"))
+      log_d("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
+  }
+
   /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
   int snaplen = mtu + SLL2_HDR_LEN;
 
@@ -421,13 +427,8 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
       return -1;
     }
     is_file = 1;
-  } else {
-    if(mtu < 0) {
-      mtu = 1500;
-      log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
-    }
+  } else
     log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
-  }
 
   // Fixes pcap_next_ex sometimes hanging on interface down
   // https://github.com/the-tcpdump-group/libpcap/issues/899
@@ -760,19 +761,23 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
   int to_skip = iface->ipoffset;
   int rv = pcap_next_ex(iface->pd, &hdr, &pkt);
 
-  if(rv == PCAP_ERROR) {
-    log_i("pcap_next_ex failed: %s", pcap_geterr(iface->pd));
-    close_interface(rt, iface);
+  if(rv != 1) {
+    if(rv == PCAP_ERROR) {
+      log_i("pcap_next_ex failed: %s", pcap_geterr(iface->pd));
+      close_interface(rt, iface);
 
-    if(iface == rt->inet_iface)
-      // Do not abort, just wait for route/interface changes
-      return 0;
+      if(iface == rt->inet_iface)
+        // Do not abort, just wait for route/interface changes
+        return 0;
 
-    // abort, resuming other interfaces is not supported yet
-    return -1;
-  } else if(rv != 1) {
-    // TODO handle EOF without error
-    return -1;
+      // abort, resuming other interfaces is not supported yet
+      return -1;
+    } else if(rv == PCAP_ERROR_BREAK)
+      // TODO handle EOF without error
+      return -1;
+
+    // can be reached when the packet buffer timeout expires
+    return 0;
   }
 
   if(hdr->caplen >= to_skip) {
