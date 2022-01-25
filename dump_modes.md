@@ -22,7 +22,9 @@ After the capture is stopped, a dialog is displayed which offers the option to s
 
 ## 2.4 UDP Exporter
 
-This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a linux PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream and sends the stream to the remote UDP collector. The collector IP and port must be configured through the settings.
+This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream and sends the stream to the remote UDP collector. The collector IP and port must be configured through the settings.
+
+**NOTE**: UDP is a unreliable transport protocol, which means that packets may be dropped or they may be reordered, in particular over wifi. This dump mode is not appropriate if you want to produce a full capture.
 
 The udp_receiver.py script will receive the UDP packets on the specified port, decapsulate them, and print the raw PCAP records to the stdout. By piping it into a network monitoring program it is possible to analyze the captured packets in real time.
 
