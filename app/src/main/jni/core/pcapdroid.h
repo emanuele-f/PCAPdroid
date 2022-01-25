@@ -201,11 +201,15 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
+        int snaplen;
+        int max_pkts_per_flow;
+        int max_dump_size;
         // the crc32 implementation requires 4-bytes aligned accesses.
         // frames are padded to honor the 4-bytes alignment.
         jbyte *buffer  __attribute__((aligned (4)));
         int buffer_idx;
-        u_int64_t last_dump_ms;
+        uint64_t last_dump_ms;
+        uint64_t tot_size;
     } pcap_dump;
 
     struct {

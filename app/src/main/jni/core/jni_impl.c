@@ -477,6 +477,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
+                    .snaplen = getIntPref(env, vpn, "getSnaplen"),
+                    .max_pkts_per_flow = getIntPref(env, vpn, "getMaxPktsPerFlow"),
+                    .max_dump_size = getIntPref(env, vpn, "getMaxDumpSize"),
             },
             .socks5 = {
                     .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
@@ -563,7 +566,8 @@ JNIEXPORT jbyteArray JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jclass clazz) {
     struct pcap_hdr_s pcap_hdr;
 
-    pcap_build_hdr(&pcap_hdr);
+    int snaplen = global_pd ? global_pd->pcap_dump.snaplen : 65535;
+    pcap_build_hdr(snaplen, &pcap_hdr);
 
     jbyteArray barray = (*env)->NewByteArray(env, sizeof(struct pcap_hdr_s));
     if((barray == NULL) || jniCheckException(env))

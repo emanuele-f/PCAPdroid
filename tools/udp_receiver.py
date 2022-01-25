@@ -25,13 +25,21 @@ import argparse
 # The buffer to hold the received UDP data
 BUFSIZE = 65535
 
+PCAP_HEADER_SIZE = 24
+
 # Standard PCAP header (struct pcap_hdr_s). Must be sent before any other PCAP record (struct pcaprec_hdr_s).
-# magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_RAW
-PCAP_HDR_BYTES = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000065000000")
+# magic: 0xa1b2c3d4, v2.4
+PCAP_HDR_BYTES_PREFIX = bytes.fromhex("d4c3b2a1020004000000000000000000")
+
+# snaplen: 65535, LINKTYPE_RAW
+PCAP_HDR_BYTES_RAW_SUFFIX = bytes.fromhex("ffff000065000000")
+
+# snaplen: 65535, LINKTYPE_ETHERNET
+PCAP_HDR_BYTES_ETHER_SUFFIX = bytes.fromhex("ffff000001000000")
 
 # PCAP header when PCAPDroid trailer is in use
-# magic: 0xa1b2c3d4, v2.4, snaplen: 65535, LINKTYPE_ETHERNET
-PCAP_HDR_BYTES_TRAILER = bytes.fromhex("d4c3b2a1020004000000000000000000ffff000001000000")
+# magic: 0xa1b2c3d4, v2.4
+
 PCAPDROID_TRAILER_MAGIC = bytes.fromhex("01072021")
 PCAPDROID_TRAILER_SIZE = 32
 
@@ -69,30 +77,37 @@ def main_loop():
   # Send the individual records (struct pcaprec_hdr_s)
   while True:
     data, addr = sock.recvfrom(BUFSIZE)
+    is_pcap_header = (len(data) == PCAP_HEADER_SIZE) and (data.startswith(PCAP_HDR_BYTES_PREFIX))
 
     if(args.verbose):
       sys.stderr.write("Got a {}B packet\n".format(len(data)))
 
-    if(not pcap_header_sent):
+    if(not pcap_header_sent) and (not is_pcap_header):
+      # This tool was started after PCAPdroid, so we must build a PCAP header
+
       # Determine is the PCAPDroid trailer is in use
       offset = len(data) - PCAPDROID_TRAILER_SIZE
-      has_trailer = (data == PCAP_HDR_BYTES_TRAILER) or ((offset > 0) and \
-        (data[offset:offset+4] == PCAPDROID_TRAILER_MAGIC))
+      has_trailer = ((offset > 0) and (data[offset:offset+4] == PCAPDROID_TRAILER_MAGIC))
 
       if(args.verbose):
         sys.stderr.write("Sending PCAP header (trailer " + ("not " if not has_trailer else "") + "detected)\n")
 
       # Send the PCAP header before any other data
-      write(PCAP_HDR_BYTES if not has_trailer else PCAP_HDR_BYTES_TRAILER)
+      suffix = PCAP_HDR_BYTES_RAW_SUFFIX if not has_trailer else PCAP_HDR_BYTES_ETHER_SUFFIX
+      write(PCAP_HDR_BYTES_PREFIX + suffix)
       pcap_header_sent = True
+    elif is_pcap_header:
+      if pcap_header_sent:
+        # PCAPdroid has been restarted, ignore the PCAP header
+        if(args.verbose):
+          sys.stderr.write("PCAP header detected, skipping\n");
+        continue
+      else:
+        if(args.verbose):
+          sys.stderr.write("PCAP header detected\n");
+        pcap_header_sent = True
 
-    if((data == PCAP_HDR_BYTES) or (data == PCAP_HDR_BYTES_TRAILER)):
-      # Ignore the PCAP header as we already sent it above
-      if(args.verbose):
-        sys.stderr.write("PCAP header detected, skipping\n");
-      continue
-
-    # this is a PCAP record, send it
+    # this is a PCAP header/record, send it
     write(data)
 
 if __name__ == "__main__":

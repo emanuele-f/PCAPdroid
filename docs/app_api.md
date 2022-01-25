@@ -84,6 +84,9 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | root_capture            | bool   | true to capture packets in root mode, false to use the VPNService |
 | pcapdroid_trailer       | bool   | true to enable the PCAPdroid trailer                              |
 | capture_interface       | string | @inet \| any \| ifname - network interface to use in root mode    |
+| snaplen                 | int    | max size in bytes for each individual packet in the PCAP  dump    |
+| max_pkts_per_flow       | int    | only dump the first max_pkts_per_flow packets per flow            |
+| max_dump_size           | int    | PCAP dump max bytes before the capture is automatically stopped   |
 
 *NOTE*: due to [file storage restrictions](https://developer.android.com/about/versions/11/privacy/storage), the `pcap_uri` must point to an app internal directory, e.g. `file:///data/user/0/com.emanuelef.remote_capture/cache/dump.pcap`.
 

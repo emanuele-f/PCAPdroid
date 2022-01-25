@@ -840,6 +840,12 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getCaptureInterface() { return(mSettings.capture_interface); }
 
+    public int getSnaplen() {  return mSettings.snaplen; }
+
+    public int getMaxPktsPerFlow() {  return mSettings.max_pkts_per_flow; }
+
+    public int getMaxDumpSize() {  return mSettings.max_dump_size; }
+
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
 

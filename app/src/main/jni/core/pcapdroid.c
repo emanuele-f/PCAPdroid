@@ -1004,8 +1004,10 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
     data->update_type |= CONN_UPDATE_STATS;
     pd_notify_connection_update(pd, pctx->tuple, pctx->data);
 
-    if(pd->pcap_dump.buffer) {
-        int rec_size = pcap_rec_size(pkt->len);
+    if((pd->pcap_dump.buffer) &&
+            ((pd->pcap_dump.max_pkts_per_flow <= 0) ||
+                ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow))) {
+        int rec_size = pcap_rec_size(pd->pcap_dump.snaplen, pkt->len);
 
         if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size) {
             // Flush the buffer
@@ -1015,11 +1017,16 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
         if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size)
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
                   JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
-        else {
+        else if((pd->pcap_dump.max_dump_size > 0) &&
+                ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
+            log_d("Max dump size reached, stopping capture");
+            running = false;
+        } else {
             pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
                           pctx);
 
             pd->pcap_dump.buffer_idx += rec_size;
+            pd->pcap_dump.tot_size += rec_size;
         }
     }
 }
@@ -1054,6 +1061,9 @@ int pd_run(pcapdroid_t *pd) {
     if(pd->pcap_dump.enabled) {
         pd->pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
         pd->pcap_dump.buffer_idx = 0;
+
+        if(pd->pcap_dump.snaplen <= 0)
+            pd->pcap_dump.snaplen = 65535;
 
         if(!pd->pcap_dump.buffer) {
             log_f("malloc(pcap_dump.buffer) failed with code %d/%s",

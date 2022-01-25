@@ -50,6 +50,9 @@ public class Prefs {
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
     public static final String PREF_BLOCKLIST = "bl";
     public static final String PREF_START_AT_BOOT = "start_at_boot";
+    public static final String PREF_SNAPLEN = "snaplen";
+    public static final String PREF_MAX_PKTS_PER_FLOW = "max_pkts_per_flow";
+    public static final String PREF_MAX_DUMP_SIZE = "max_dump_size";
 
     public enum DumpMode {
         NONE,
