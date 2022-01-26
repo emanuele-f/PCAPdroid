@@ -417,7 +417,19 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
   int snaplen = mtu + SLL2_HDR_LEN;
 
-  pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
+  // pcap_set_immediate_mode necessary to avoid using TPACKET v3, which sometimes causes packets
+  // reordering in the capture
+  pcap_t *pd;
+  if(!(pd = pcap_create(ifname, errbuf)) ||
+          pcap_set_immediate_mode(pd, 1) ||
+          pcap_set_snaplen(pd, snaplen) ||
+          pcap_activate(pd)) {
+    if(pd) {
+      pcap_close(pd);
+      pd = NULL;
+    }
+  }
+
   if(!pd) {
     // try to open as file
     pd = pcap_open_offline(ifname, errbuf);
