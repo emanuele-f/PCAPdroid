@@ -59,12 +59,10 @@
     <string name="last_seen">Sist sett</string>
     <string name="conn_status_closed">Lukket</string>
     <string name="copy_to_clipboard">Kopier til utklippstavle</string>
-    <string name="copied_to_clipboard">Kopiert til utklippstavlen</string>
     <string name="save_to_file">Lagre som fil</string>
     <string name="unknown_app">Ukjent</string>
     <string name="enable_ipv6">Skru på IPv6</string>
     <string name="error">Feil</string>
-    <string name="no_app_filter">Målprogram er ikke valgt</string>
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang.</string>
     <string name="get_app">Hent det:</string>
@@ -134,7 +132,6 @@
     <string name="no_apps">Ingen programmer</string>
     <string name="deny">Nekt</string>
     <string name="country">Land</string>
-    <string name="file_saved">Fil lagret</string>
     <string name="other_prefs">Annet</string>
     <string name="lang_english">Engelsk</string>
     <string name="system_default">Systemforvalg</string>

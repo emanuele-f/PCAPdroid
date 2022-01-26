@@ -49,7 +49,7 @@ static void test_snaplen() {
     at_least_one_pkt_truncated |= (rec.incl_len != rec.orig_len);
   }
 
-  // For this test to be effective, at least one packeted must be trucated
+  // For this test to be effective, at least one packet must be trucated
   // due to the snaplen
   assert(at_least_one_pkt_truncated);
 
