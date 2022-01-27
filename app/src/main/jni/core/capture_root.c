@@ -486,7 +486,7 @@ void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 int run_root(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
-    char buffer[65535];
+    char buffer[PCAPD_SNAPLEN];
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 

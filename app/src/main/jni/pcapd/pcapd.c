@@ -183,25 +183,6 @@ static int get_iface_mac(const char *iface, uint64_t *mac) {
 
 /* ******************************************************* */
 
-static int get_iface_mtu(const char *iface) {
-  char fpath[128];
-  int mtu = -1;
-
-  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/mtu", iface);
-
-  FILE *f = fopen(fpath, "r");
-
-  if(f == NULL)
-    return -1;
-
-  fscanf(f, "%d", &mtu);
-  fclose(f);
-
-  return mtu;
-}
-
-/* ******************************************************* */
-
 static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
   struct ifreq ifr;
   int fd;
@@ -406,18 +387,8 @@ static void init_interface(pcapd_iface_t *iface) {
 static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
   int is_file = 0;
-  int mtu = get_iface_mtu(ifname);
 
-  if(mtu < 0) {
-    mtu = 1500;
-    if(!strstr(ifname, ".pcap"))
-      log_d("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
-  }
-
-  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
-  int snaplen = mtu + SLL2_HDR_LEN;
-
-  pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
+  pcap_t *pd = pcap_open_live(ifname, PCAPD_SNAPLEN, 0, 1, errbuf);
   if(!pd) {
     // try to open as file
     pd = pcap_open_offline(ifname, errbuf);
@@ -427,8 +398,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
       return -1;
     }
     is_file = 1;
-  } else
-    log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
+  }
 
   // Fixes pcap_next_ex sometimes hanging on interface down
   // https://github.com/the-tcpdump-group/libpcap/issues/899

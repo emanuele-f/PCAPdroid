@@ -22,6 +22,7 @@
 #include "pcapdroid.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
+#include "pcapd/pcapd.h"
 #include "ndpi_protocol_ids.h"
 
 extern int run_vpn(pcapdroid_t *pd);
@@ -1061,9 +1062,10 @@ int pd_run(pcapdroid_t *pd) {
     if(pd->pcap_dump.enabled) {
         pd->pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
         pd->pcap_dump.buffer_idx = 0;
+        int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
-        if(pd->pcap_dump.snaplen <= 0)
-            pd->pcap_dump.snaplen = 65535;
+        if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
+            pd->pcap_dump.snaplen = max_snaplen;
 
         if(!pd->pcap_dump.buffer) {
             log_f("malloc(pcap_dump.buffer) failed with code %d/%s",

@@ -372,7 +372,7 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 int run_vpn(pcapdroid_t *pd) {
     zdtun_t *zdt;
-    char buffer[32768];
+    char buffer[VPN_BUFFER_SIZE];
     u_int64_t next_purge_ms;
 
     int flags = fcntl(pd->vpn.tunfd, F_GETFL, 0);
