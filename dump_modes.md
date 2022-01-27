@@ -13,10 +13,10 @@ After the capture is started, you can connect to the URL displayed by PCAPdroid 
 On linux, you can also use this mode to analyze the PCAP in real time on Wireshark with the following command (replace `192.168.1.10:8080`):
 
 ```bash
-curl -NLs http://192.168.1.10:8080 --output - | wireshark -k -i -
+curl -NLs http://192.168.1.10:8080 | wireshark -k -i -
 ```
 
-Compared to the `UDP Exporter` mode, this has the advantage of using TCP as the transport, which will prevent packet drops/reordering.
+Compared to the `UDP Exporter` mode, this has the advantage of using TCP as the transport protocol, which prevents packets drops/reordering.
 
 ## 2.3 PCAP File
 
