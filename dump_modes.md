@@ -8,12 +8,15 @@ This mode does not export the traffic in any way. This is suitable to only perfo
 
 This mode starts an HTTP server which can be accessed by any PC in the local network to download the PCAP file containing the captured traffic. This is the default mode of PCAPdroid as it does not require any further setup or specific OS.
 
-In order to properly download the PCAP, you need to follow these steps:
+After the capture is started, you can connect to the URL displayed by PCAPdroid in the "Status" view to start downloading the PCAP. It is normal if you don't see any download progress in your browser as the PCAP size is unknown. The PCAP file will be properly saved once you stop the capture from PCAPdroid.
 
-1. Ensure that the HTTP server mode is selected
-2. Start the capture from the app
-3. From another device, open the URL displayed in the app. This will start the PCAP download. It's ok IF no download progress is shown, as the browser does not know the actual PCAP size.
-4. Stop the capture from the app. This will terminate the active downloads and the PCAP file will be properly saved.
+On linux, you can also use this mode to analyze the PCAP in real time on Wireshark with the following command (replace `192.168.1.10:8080`):
+
+```bash
+curl -NLs http://192.168.1.10:8080 --output - | wireshark -k -i -
+```
+
+Compared to the `UDP Exporter` mode, this has the advantage of using TCP as the transport, which will prevent packet drops/reordering.
 
 ## 2.3 PCAP File
 
