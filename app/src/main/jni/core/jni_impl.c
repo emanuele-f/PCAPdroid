@@ -97,7 +97,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
 static void sendPcapDump(pcapdroid_t *pd) {
     JNIEnv *env = pd->env;
 
-    log_d("Exporting a %d B PCAP buffer", pd->pcap_dump.buffer_idx);
+    //log_d("Exporting a %d B PCAP buffer", pd->pcap_dump.buffer_idx);
 
     jbyteArray barray = (*env)->NewByteArray(env, pd->pcap_dump.buffer_idx);
     if(jniCheckException(env))

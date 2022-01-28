@@ -99,7 +99,9 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mCaptureThread;
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
+    private Thread mDumperThread;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
+    private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
     private String vpn_dns;
     private String dns_server;
@@ -273,6 +275,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         if(mDumper != null) {
+            // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
+            mDumpQueue = new LinkedBlockingDeque<>(64);
+
             try {
                 mDumper.startDumper();
             } catch (IOException | SecurityException e) {
@@ -358,6 +363,11 @@ public class CaptureService extends VpnService implements Runnable {
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
 
+        if(mDumper != null) {
+            mDumperThread = new Thread(this::dumpWork, "DumperThread");
+            mDumperThread.start();
+        }
+
         // Start the native capture thread
         mQueueFull = false;
         mCaptureThread = new Thread(this, "PacketCapture");
@@ -395,6 +405,7 @@ public class CaptureService extends VpnService implements Runnable {
                 e.printStackTrace();
             }
             mDumper = null;
+            mDumpQueue.clear();
         }
 
         appsResolver = null;
@@ -571,7 +582,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void stop() {
         stopPacketLoop();
-        mPendingUpdates.offer(new Pair<>(null, null)); // signal termination to the mConnUpdateThread
+
+        // signal termination
+        mPendingUpdates.offer(new Pair<>(null, null));
+        mDumpQueue.offer(new byte[0]);
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -594,6 +608,18 @@ public class CaptureService extends VpnService implements Runnable {
         }
         mConnUpdateThread = null;
 
+        while((mDumperThread != null) && (mDumperThread.isAlive())) {
+            try {
+                Log.d(TAG, "Joining dumper thread...");
+                mDumperThread.join();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Joining dumper thread failed");
+                mDumpQueue.offer(new byte[0]);
+            }
+        }
+        mDumperThread = null;
+        mDumper = null;
+
         if(mParcelFileDescriptor != null) {
             try {
                 mParcelFileDescriptor.close();
@@ -601,15 +627,6 @@ public class CaptureService extends VpnService implements Runnable {
                 Toast.makeText(this, "Stopping VPN failed", Toast.LENGTH_SHORT).show();
             }
             mParcelFileDescriptor = null;
-        }
-
-        if(mDumper != null) {
-            try {
-                mDumper.stopDumper();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mDumper = null;
         }
 
         mPcapUri = null;
@@ -780,28 +797,60 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void connUpdateWork() {
-        try {
-            while(true) {
-                Pair<ConnectionDescriptor[], ConnectionUpdate[]> item = mPendingUpdates.take();
-                if(item.first == null) // termination request
-                    break;
-
-                ConnectionDescriptor[] new_conns = item.first;
-                ConnectionUpdate[] conns_updates = item.second;
-
-                checkBlacklistsUpdates();
-
-                // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
-                // thus preventing the ConnectionsAdapter from interleaving other operations
-                synchronized (conn_reg) {
-                    if(new_conns.length > 0)
-                        conn_reg.newConnections(new_conns);
-
-                    if(conns_updates.length > 0)
-                        conn_reg.connectionsUpdates(conns_updates);
-                }
+        while(true) {
+            Pair<ConnectionDescriptor[], ConnectionUpdate[]> item;
+            try {
+                item = mPendingUpdates.take();
+            } catch (InterruptedException e) {
+                continue;
             }
-        } catch (InterruptedException e) {
+
+            if(item.first == null) // termination request
+                break;
+
+            ConnectionDescriptor[] new_conns = item.first;
+            ConnectionUpdate[] conns_updates = item.second;
+
+            checkBlacklistsUpdates();
+
+            // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
+            // thus preventing the ConnectionsAdapter from interleaving other operations
+            synchronized (conn_reg) {
+                if(new_conns.length > 0)
+                    conn_reg.newConnections(new_conns);
+
+                if(conns_updates.length > 0)
+                    conn_reg.connectionsUpdates(conns_updates);
+            }
+        }
+    }
+
+    private void dumpWork() {
+        while(true) {
+            byte[] data;
+            try {
+                data = mDumpQueue.take();
+            } catch (InterruptedException e) {
+                continue;
+            }
+
+            if(data.length == 0) // termination request
+                break;
+
+            try {
+                mDumper.dumpData(data);
+            } catch (IOException e) {
+                // Stop the capture
+                e.printStackTrace();
+                reportError(e.getLocalizedMessage());
+                mHandler.post(this::stop);
+                break;
+            }
+        }
+
+        try {
+            mDumper.stopDumper();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -941,13 +990,16 @@ public class CaptureService extends VpnService implements Runnable {
 
     /* Exports a PCAP data chunk */
     public void dumpPcapData(byte[] data) {
-        if(mDumper != null) {
-            try {
-                mDumper.dumpData(data);
-            } catch (IOException e) {
-                e.printStackTrace();
-                reportError(e.getLocalizedMessage());
-                stopPacketLoop();
+        if((mDumper != null) && (data.length > 0)) {
+            while(true) {
+                try {
+                    // wait until the queue has space to insert the data. If the queue is full, we
+                    // will experience slow-downs/drops but this is expected
+                    mDumpQueue.put(data);
+                    break;
+                } catch (InterruptedException e) {
+                    // retry
+                }
             }
         }
     }

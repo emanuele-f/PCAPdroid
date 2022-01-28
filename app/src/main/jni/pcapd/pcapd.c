@@ -915,7 +915,9 @@ cleanup:
   if(rt.tun)
     zdtun_finalize(rt.tun);
 
-  log_i("Pkts: %u rcvd, %u drops, %u iface_drops", rt.stats.ps_recv, rt.stats.ps_drop, rt.stats.ps_ifdrop);
+  log_i("Pkts: %u rcvd, %u drops (%.1f%%), %u iface_drops", rt.stats.ps_recv, rt.stats.ps_drop,
+        rt.stats.ps_drop * 100.f / (rt.stats.ps_recv + rt.stats.ps_drop + 1),
+        rt.stats.ps_ifdrop);
 
   return rv;
 }

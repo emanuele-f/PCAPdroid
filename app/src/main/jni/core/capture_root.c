@@ -528,11 +528,11 @@ int run_root(pcapdroid_t *pd) {
 
         pd_refresh_time(pd);
 
-        if(!running)
-            break;
-
         if(!FD_ISSET(sock, &fdset))
             goto housekeeping;
+
+        if(!running)
+            break;
 
         ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
         if(xrv != sizeof(hdr)) {
