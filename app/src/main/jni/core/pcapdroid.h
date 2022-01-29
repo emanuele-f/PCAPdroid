@@ -149,8 +149,6 @@ typedef struct {
 
 /* ******************************************************* */
 
-typedef struct pcap_conn pcap_conn_t;
-
 typedef struct pcapdroid {
 #ifdef ANDROID
     JNIEnv *env;
@@ -193,7 +191,7 @@ typedef struct pcapdroid {
             uid_resolver_t *resolver;
         } vpn;
         struct {
-            pcap_conn_t *connections;
+            struct pcap_conn_t *connections;
             bool as_root;
             char *bpf;
             char *capture_interface;

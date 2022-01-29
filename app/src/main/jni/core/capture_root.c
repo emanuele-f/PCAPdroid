@@ -36,12 +36,12 @@ extern char **environ;
 
 /* ******************************************************* */
 
-struct pcap_conn {
+typedef struct pcap_conn_t {
     zdtun_5tuple_t tuple;
     pd_conn_t *data;
 
     UT_hash_handle hh;
-};
+} pcap_conn_t;
 
 /* ******************************************************* */
 
@@ -284,7 +284,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
             break;
     }
 
-    HASH_DELETE(hh, pd->root.connections, conn);
+    HASH_DEL(pd->root.connections, conn);
     pd_free(conn);
 }
 
@@ -292,7 +292,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
 
 // Determines when a connection gets closed
 static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
-  // NOTE: pcap_conn_t neeeded below in remove_connection
+  // NOTE: pcap_conn_t needed below in remove_connection
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
 
@@ -341,7 +341,7 @@ static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_p
               if(data->pending_dns_queries == 0) {
                   data->status = CONN_STATUS_CLOSED;
 
-                  // Remove the connection from the hash to ensure that if the DNS connection is
+                  // Remove the connection from the hash table to ensure that if the DNS connection is
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
                   data->to_purge = true;
@@ -465,11 +465,18 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
     // like last_seen but monotonic
     conn->data->root.last_update_ms = pd->now_ms;
 
+    // make a copy before passing it to pd_process_packet since conn may
+    // be freed in update_connection_status, while the pkt_context_t is still
+    // used in pd_account_stats
+    zdtun_5tuple_t conn_tuple = conn->tuple;
+
     struct timeval tv = hdr->ts;
     pkt_context_t pinfo;
-    pd_process_packet(pd, &pkt, is_tx, &conn->tuple, conn->data, &tv, &pinfo);
+    pd_process_packet(pd, &pkt, is_tx, &conn_tuple, conn->data, &tv, &pinfo);
 
+    // NOTE: this may free the conn
     update_connection_status(pd, conn, &pkt, !is_tx);
+
     pd_account_stats(pd, &pinfo);
 }
 
