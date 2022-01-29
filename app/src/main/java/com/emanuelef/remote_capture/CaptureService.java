@@ -585,7 +585,8 @@ public class CaptureService extends VpnService implements Runnable {
 
         // signal termination
         mPendingUpdates.offer(new Pair<>(null, null));
-        mDumpQueue.offer(new byte[0]);
+        if(mDumpQueue != null)
+            mDumpQueue.offer(new byte[0]);
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
