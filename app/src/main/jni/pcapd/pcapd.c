@@ -280,13 +280,15 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     goto err;
   }
 
-  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
-                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
-  if(rt->nlsock < 0) {
-    log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
-    goto err;
+  if(rt->inet_iface) {
+    rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+                                   RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
+    if(rt->nlsock < 0) {
+      log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
+      goto err;
+    }
+    rt->maxfd = max(rt->maxfd, rt->nlsock);
   }
-  rt->maxfd = max(rt->maxfd, rt->nlsock);
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -663,7 +665,8 @@ static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
   if(rt->client > 0)
     FD_SET(rt->client, fds);
 
-  FD_SET(rt->nlsock, fds);
+  if(rt->nlsock > 0)
+    FD_SET(rt->nlsock, fds);
 
   for(int i=0; i<rt->conf->num_interfaces; i++) {
     if(rt->ifaces[i].pf != -1)
@@ -829,7 +832,7 @@ int run_pcap_dump(pcapd_conf_t *conf) {
     if((rt.client > 0) && FD_ISSET(rt.client, &fds)) {
       log_i("Client closed");
       break;
-    } else if(FD_ISSET(rt.nlsock, &fds)) {
+    } else if((rt.nlsock > 0) && FD_ISSET(rt.nlsock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
         rv = -1;
         break;
