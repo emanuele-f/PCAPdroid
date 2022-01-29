@@ -11,4 +11,4 @@ jobs:
         submodules: 'recursive'
     - name: Run native tests
       working-directory: ./app/src/main/jni/tests
-      run: ./run_tests.sh
+      run: make run_tests

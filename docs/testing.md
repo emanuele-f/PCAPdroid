@@ -6,9 +6,7 @@ Tests in PCAPdroid can be split in the following categories:
   to mock the Android API, allowing them to be run locally (without an Android device).
 
 - [Native tests](https://github.com/emanuele-f/PCAPdroid/tree/dev/app/src/main/jni/tests):
-  they can be run with `./run_tests.sh` on a linux host. They are built
-  with the [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html)
-  to detect memory issues and leaks.
+  tests and fuzzing targets for native code. Check out their readme for more details.
 
 The tests are executed on every push via the
 [Github workflows](https://github.com/emanuele-f/PCAPdroid/tree/dev/.github/workflows).

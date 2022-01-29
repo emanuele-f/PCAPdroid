@@ -34,7 +34,7 @@ static u_char pcap_read_buf[65535];
 /* ******************************************************* */
 
 static void getPcapdPath(struct pcapdroid *pd, const char *prog_name, char *buf, int bufsize) {
-  snprintf(buf, bufsize, "main/pcapd/libpcapd.so");
+  snprintf(buf, bufsize, "../main/pcapd/libpcapd.so");
 }
 
 /* ******************************************************* */
