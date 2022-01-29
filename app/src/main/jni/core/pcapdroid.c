@@ -862,8 +862,8 @@ static void sendPcapDump(pcapdroid_t *pd) {
  * passed (e.g. after a select with no packet). */
 void pd_housekeeping(pcapdroid_t *pd) {
     if(pd->capture_stats.new_stats
-       && ((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
-       dump_capture_stats_now) {
+       && (((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
+              dump_capture_stats_now)) {
         dump_capture_stats_now = false;
 
         if(!pd->root_capture)

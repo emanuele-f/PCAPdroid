@@ -28,7 +28,7 @@
 #define assert1(x) assert((x) == 1)
 #define assert_ip_equal(ipver, a, b) assert(zdtun_cmp_ip((ipver), (a), (b)) == 0)
 
-#define PCAP_PATH "../../pcap"
+#define PCAP_PATH "../../../pcap"
 #define PCAP_OUT_PATH "/tmp/test_out.pcap"
 
 void add_test(const char *name, void (*test_cb)());

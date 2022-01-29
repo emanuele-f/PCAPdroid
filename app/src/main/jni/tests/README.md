@@ -12,4 +12,7 @@ make run_tests
 
 # Fuzz the pcapd daemon
 make fuzz_pcap
+
+# Fuzz the pcapdroid capture
+make fuzz_capture
 ```

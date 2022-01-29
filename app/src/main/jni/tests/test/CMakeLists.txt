@@ -4,7 +4,6 @@ include(CTest)
 add_custom_target(build_tests)
 add_custom_target(run_tests COMMAND CTEST_OUTPUT_ON_FAILURE=1 ${CMAKE_CTEST_COMMAND})
 add_dependencies(run_tests build_tests)
-include_directories(..)
 
 # test_source(target)
 macro(test_source)

@@ -17,27 +17,25 @@
  * Copyright 2021-22 - Emanuele Faranda
  */
 
-#include "pcapd/pcapd_priv.h"
+#include "core/pcapdroid.h"
+#include "test_utils.h"
 
 /* ******************************************************* */
 
 #include "fuzz_utils.c"
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  pcapd_conf_t conf;
   char *pcap_path;
 
   if(!(pcap_path = buffer_to_tmpfile(Data, Size)))
     return -1;
 
-  init_conf(&conf);
-  conf.ifnames[0] = strdup(pcap_path);
-  conf.num_interfaces = 1;
-  conf.no_client = 1;
+  pcapdroid_t *pd = pd_init_test(pcap_path);
 
   loglevel = ANDROID_LOG_FATAL;
-  run_pcap_dump(&conf);
+  pd_run(pd);
 
+  pd_free_test(pd);
   unlink(pcap_path);
   free(pcap_path);
 

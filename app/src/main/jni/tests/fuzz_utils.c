@@ -14,32 +14,41 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-22 - Emanuele Faranda
+ * Copyright 2022 - Emanuele Faranda
  */
 
-#include "pcapd/pcapd_priv.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <string.h>
 
 /* ******************************************************* */
 
-#include "fuzz_utils.c"
+/* Creates a temporary file to hold the specified buffer data.
+ * Returns the file name string. The string must be freed. */
+char* buffer_to_tmpfile(const uint8_t *buf, size_t size) {
+  char fname[] = "/tmp/pcapdroid_testXXXXXX";
 
-int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  pcapd_conf_t conf;
-  char *pcap_path;
+  int filedes = mkstemp(fname);
+  if(filedes < 0) {
+    perror("mkstemp failed");
+    return NULL;
+  }
 
-  if(!(pcap_path = buffer_to_tmpfile(Data, Size)))
-    return -1;
+  FILE *fd = fdopen(filedes, "wb");
+  if(!fd) {
+    perror("fdopen failed");
+    return NULL;
+  }
 
-  init_conf(&conf);
-  conf.ifnames[0] = strdup(pcap_path);
-  conf.num_interfaces = 1;
-  conf.no_client = 1;
+  int success = (fwrite(buf, 1, size, fd) == size);
 
-  loglevel = ANDROID_LOG_FATAL;
-  run_pcap_dump(&conf);
+  fclose(fd);
+  close(filedes);
 
-  unlink(pcap_path);
-  free(pcap_path);
+  if(!success)
+    return NULL;
 
-  return 0;
+  return strdup(fname);
 }

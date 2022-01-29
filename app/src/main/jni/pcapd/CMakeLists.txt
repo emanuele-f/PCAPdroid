@@ -33,11 +33,13 @@ ADD_LIBRARY(pcap STATIC
 
 # Executables must be names as libraries to be stored into corresponding native folder
 # NOTE: only works if extractNativeLibs is true
-if(FUZZING)
-  add_library(libpcapd.so SHARED pcapd.c nl_utils.c)
-else()
-  add_executable(libpcapd.so pcapd.c nl_utils.c)
-endif()
+add_executable(libpcapd.so pcapd.c nl_utils.c)
 
 # Better to link static libs to avoid changing the library path
 target_link_libraries(libpcapd.so pcap zdtun common)
+
+if(FUZZING)
+  add_library(pcapdlib SHARED pcapd.c nl_utils.c)
+  target_link_libraries(pcapdlib pcap zdtun common)
+  target_compile_definitions(pcapdlib PRIVATE -DNO_MAIN)
+endif()

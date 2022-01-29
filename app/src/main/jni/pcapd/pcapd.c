@@ -35,6 +35,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -982,7 +984,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
 /* ******************************************************* */
 
-#ifndef FUZZING
+#ifndef NO_MAIN
 
 int main(int argc, char *argv[]) {
   pcapd_conf_t conf;

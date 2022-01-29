@@ -21,8 +21,6 @@
 #define __PCAPD_PRIV_H__
 
 #include <stdint.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
 #include <net/if.h>
 #include <pcap.h>
 #include "common/uid_lru.h"
