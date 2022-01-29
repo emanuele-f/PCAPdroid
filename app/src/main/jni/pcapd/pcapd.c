@@ -1012,7 +1012,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
   if(conf->num_interfaces == 0) {
     conf->inet_ifid = 0;
-    conf->ifnames[conf->num_interfaces++] = "@inet";
+    conf->ifnames[conf->num_interfaces++] = strdup("@inet");
   }
 }
 
