@@ -273,7 +273,7 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   if(conf->inet_ifid != -1)
     rt->inet_iface = &rt->ifaces[conf->inet_ifid];
 
-  if(create_pid_file() < 0) {
+  if(conf->daemonize && (create_pid_file() < 0)) {
     log_e("pid file creation failed[%d]: %s", errno, strerror(errno));
     goto err;
   }
