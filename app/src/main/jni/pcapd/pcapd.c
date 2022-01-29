@@ -29,6 +29,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
+#include "pcapd_priv.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,69 +40,14 @@
 #include <sys/un.h>
 #include <signal.h>
 #include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <net/if.h>
 #include <time.h>
-#include <pcap.h>
 #include <pcap/sll.h>
 #include "pcapd.h"
 #include "nl_utils.h"
-#include "common/uid_resolver.h"
-#include "common/uid_lru.h"
-#include "common/utils.h"
-#include "zdtun.h"
 
 //#define READ_FROM_PCAP "/sdcard/test.pcap"
-#define MAX_IFACES 16
 
 /* ******************************************************* */
-
-typedef struct {
-  char *ifnames[MAX_IFACES];
-  char *bpf;
-  char *log_file;
-  int uid_filter;
-  int num_interfaces;
-  int daemonize;
-  int dump_datalink;
-  int inet_ifid;
-  int no_client;
-} pcapd_conf_t;
-
-typedef struct {
-  char name[IFNAMSIZ];
-  int ifidx;
-  uint8_t ifid;       // positional interface index
-  uint8_t is_file;
-  pcap_t *pd;
-  int pf;
-  int dlink;
-  int ipoffset;
-  uint64_t mac;
-  uint32_t ip;
-  struct in6_addr ip6;
-  time_t next_stats_update;
-  struct pcap_stat stats;
-} pcapd_iface_t;
-
-typedef struct {
-  char bpf[512];
-  char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
-
-  int nlsock;
-  int client;
-
-  zdtun_t *tun;
-  uid_lru_t *lru;
-  uid_resolver_t *resolver;
-  pcapd_iface_t *inet_iface;
-  pcapd_iface_t ifaces[MAX_IFACES];
-  struct pcap_stat stats;
-  fd_set sel_fds;
-  int maxfd;
-  pcapd_conf_t *conf;
-} pcapd_runtime_t;
 
 static void init_interface(pcapd_iface_t *iface);
 static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface);
@@ -830,7 +776,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
 
 /* ******************************************************* */
 
-static int run_pcap_dump(pcapd_conf_t *conf) {
+int run_pcap_dump(pcapd_conf_t *conf) {
   int rv = -1;
   struct timespec ts = {0};
   pcapd_runtime_t rt = {0};
@@ -919,6 +865,18 @@ cleanup:
         rt.stats.ps_drop * 100.f / (rt.stats.ps_recv + rt.stats.ps_drop + 1),
         rt.stats.ps_ifdrop);
 
+  unlink(PCAPD_PID);
+
+  for(int i=0; i<conf->num_interfaces; i++)
+    free(conf->ifnames[i]);
+
+  if(conf->bpf)
+    free(conf->bpf);
+  if(conf->log_file)
+    free(conf->log_file);
+  if(logf)
+    fclose(logf);
+
   return rv;
 }
 
@@ -944,19 +902,25 @@ static void usage() {
 
 /* ******************************************************* */
 
-static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
-  int c;
-
+void init_conf(pcapd_conf_t *conf) {
   memset(conf, 0, sizeof(pcapd_conf_t));
   conf->uid_filter = -1;
   conf->inet_ifid = -1;
+}
+
+/* ******************************************************* */
+
+static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
+  int c;
+
+  init_conf(conf);
   opterr = 0;
 
   while ((c = getopt (argc, argv, "hdtni:u:b:l:")) != -1) {
     switch(c) {
       case 'i':
-        if(conf->num_interfaces >= MAX_IFACES) {
-          fprintf(stderr, "Maximum number of interfaces reached (%d)\n", MAX_IFACES);
+        if(conf->num_interfaces >= PCAPD_MAX_INTERFACES) {
+          fprintf(stderr, "Maximum number of interfaces reached (%d)\n", PCAPD_MAX_INTERFACES);
           exit(1);
         }
         if(strcmp(optarg, "@inet") == 0) {
@@ -1018,6 +982,8 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
 /* ******************************************************* */
 
+#ifndef FUZZING
+
 int main(int argc, char *argv[]) {
   pcapd_conf_t conf;
   int rv;
@@ -1027,17 +993,8 @@ int main(int argc, char *argv[]) {
   parse_args(&conf, argc, argv);
 
   rv = run_pcap_dump(&conf);
-  unlink(PCAPD_PID);
-
-  for(int i=0; i<conf.num_interfaces; i++)
-    free(conf.ifnames[i]);
-
-  if(conf.bpf)
-    free(conf.bpf);
-  if(conf.log_file)
-    free(conf.log_file);
-  if(logf)
-    fclose(logf);
 
   return rv;
 }
+
+#endif
