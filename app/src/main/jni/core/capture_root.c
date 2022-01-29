@@ -141,6 +141,38 @@ static void kill_pcapd(pcapdroid_t *nc) {
 
 /* ******************************************************* */
 
+static bool valid_ifname(const char *name) {
+    if(*name == '\0')
+        return false;
+
+    if(strlen(name) >= 16)
+        return false;
+
+    while(*name) {
+        if((*name != '.') && (*name != '_') && (*name != '@') && !isalnum(*name))
+            return false;
+        name++;
+    }
+
+    return true;
+}
+
+/* ******************************************************* */
+
+static bool valid_bpf(const char *bpf) {
+    static const char disallowed_chars[] = "$'\"`\n\r";
+
+    while(*bpf) {
+        if(strchr(disallowed_chars, *bpf))
+            return false;
+        bpf++;
+    }
+
+    return true;
+}
+
+/* ******************************************************* */
+
 static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
@@ -186,12 +218,27 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     log_d("AF_UNIX socket listening at '%s'", addr.sun_path);
 
-    if(bpf[0])
-        log_d("Using dumper BPF \"%s\"", bpf);
+    // Validate parameters to prevent command injection
+    if(bpf[0]) {
+        if(!valid_bpf(bpf)) {
+            log_e("BPF contains suspicious characters");
+            goto cleanup;
+        }
+        log_d("BPF filter is in use");
+    }
+
+#ifdef ANDROID
+    // File paths are currently disallowed
+    // NOTE: interface validation is currently skipped when running local tests (files are used)
+    if(!valid_ifname(pd->root.capture_interface)) {
+        log_e("Invalid capture_interface");
+        goto cleanup;
+    }
+#endif
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -t -b \"%s\"", pd->root.capture_interface, pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->app_filter, bpf);
     if(run_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
