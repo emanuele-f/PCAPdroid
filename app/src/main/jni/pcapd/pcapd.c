@@ -643,7 +643,7 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
   if(ip->version == 4) {
     if(ip->daddr == iface->ip)
       return 0; // RX
-  } else if(ip->version == 6) {
+  } else if((ip->version == 6) && (len >= sizeof(struct ipv6hdr))) {
     struct ipv6hdr *hdr = (struct ipv6hdr *) pkt;
 
     if(memcmp(&hdr->daddr, &iface->ip6, sizeof(iface->ip6)) == 0)
