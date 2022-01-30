@@ -10,11 +10,12 @@ run_tests:
 		$(MAKE) run_tests
 
 fuzz:
-	mkdir -p build/fuzz
-	cd build/fuzz && \
+	# Note: corpus should be specific of a single target
+	mkdir -p build/${FUZZ_TARGET}
+	cd build/${FUZZ_TARGET} && \
 		cmake -DFUZZING=1 -DCMAKE_C_COMPILER=clang ../.. && \
 		make -j$(nproc) ${FUZZ_TARGET}
-	cd build/fuzz/fuzz && \
+	cd build/${FUZZ_TARGET}/fuzz && \
 		mkdir -p CORPUS && \
 		./${FUZZ_TARGET} CORPUS ../../../../../../../../submodules/nDPI/tests/pcap ../../../pcap >/dev/null
 

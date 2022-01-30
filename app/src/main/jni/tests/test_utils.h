@@ -29,7 +29,7 @@
 #define assert_ip_equal(ipver, a, b) assert(zdtun_cmp_ip((ipver), (a), (b)) == 0)
 
 #define PCAP_PATH "../../../pcap"
-#define PCAP_OUT_PATH "/tmp/test_out.pcap"
+#define PCAP_OUT_PATH "/tmp/pcapdroid_test_out.pcap"
 
 void add_test(const char *name, void (*test_cb)());
 void run_test(int argc, char **argv);

@@ -29,6 +29,11 @@
 // Needed for local compilation, don't remove
 extern char **environ;
 
+#ifdef FUZZING
+extern int openPcap(pcapdroid_t *pd);
+extern int nextPacket(pcapdroid_t *pd, pcapd_hdr_t *hdr, char *buf, size_t bufsize);
+#endif
+
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
 #define TCP_CLOSED_TIMEOUT_SEC 60   // some servers keep sending FIN+ACK after close
@@ -557,10 +562,18 @@ int run_root(pcapdroid_t *pd) {
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
+#ifndef FUZZING
     if((sock = connectPcapd(pd)) < 0) {
         rv = -1;
         goto cleanup;
     }
+#else
+    // spawning a daemon is too expensive for fuzzing
+    if((sock = openPcap(pd)) < 0) {
+        rv = -1;
+        goto cleanup;
+    }
+#endif
 
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -588,6 +601,7 @@ int run_root(pcapdroid_t *pd) {
         if(!running)
             break;
 
+#ifndef FUZZING
         ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
         if(xrv != sizeof(hdr)) {
             if(xrv < 0)
@@ -602,6 +616,13 @@ int run_root(pcapdroid_t *pd) {
             log_e("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
             goto cleanup;
         }
+#else
+        int xrv = nextPacket(pd, &hdr, buffer, sizeof(buffer));
+        if(xrv < 0)
+          goto cleanup;
+        else if(xrv == 0)
+          goto housekeeping;
+#endif
 
         pd->num_dropped_pkts = hdr.pkt_drops;
         handle_packet(pd, &hdr, buffer);

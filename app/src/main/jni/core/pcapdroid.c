@@ -181,17 +181,43 @@ char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize) {
 /* ******************************************************* */
 
 struct ndpi_detection_module_struct* init_ndpi() {
+#ifdef FUZZING
+    // nDPI initialization is very expensive, cache it
+    // see also ndpi_exit_detection_module
+    static struct ndpi_detection_module_struct *ndpi_cache = NULL;
+
+    if(ndpi_cache != NULL)
+      return ndpi_cache;
+#endif
+
     struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
     NDPI_PROTOCOL_BITMASK protocols;
 
     if(!ndpi)
         return(NULL);
 
+    // needed by pd_get_proto_name
+    init_protocols_bitmask(&masterProtos);
+
+#ifndef FUZZING
     // enable all the protocols
     NDPI_BITMASK_SET_ALL(protocols);
+#else
+    // nDPI has a big performance impact on fuzzing.
+    // Only enable some protocols to extract the metadata for use in
+    // PCAPdroid, we are not fuzzing nDPI!
+    NDPI_BITMASK_RESET(protocols);
+    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_DNS);
+    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_HTTP);
+    //NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_TLS);
+#endif
 
     ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
     ndpi_finalize_initialization(ndpi);
+
+#ifdef FUZZING
+    ndpi_cache = ndpi;
+#endif
 
     return(ndpi);
 }
@@ -1041,7 +1067,6 @@ int pd_run(pcapdroid_t *pd) {
 
     /* nDPI */
     pd->ndpi = init_ndpi();
-    init_protocols_bitmask(&masterProtos);
     if(pd->ndpi == NULL) {
         log_f("nDPI initialization failed");
         return(-1);
@@ -1118,7 +1143,10 @@ int pd_run(pcapdroid_t *pd) {
             pd_free(pd->malware_detection.bls_info);
         }
     }
+
+#ifndef FUZZING
     ndpi_exit_detection_module(pd->ndpi);
+#endif
 
     if(pd->pcap_dump.buffer) {
         if(pd->pcap_dump.buffer_idx > 0)

@@ -987,7 +987,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
 /* ******************************************************* */
 
-#ifndef NO_MAIN
+#ifndef FUZZING
 
 int main(int argc, char *argv[]) {
   pcapd_conf_t conf;
