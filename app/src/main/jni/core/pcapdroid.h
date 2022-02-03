@@ -143,6 +143,7 @@ typedef struct {
     void (*send_stats_dump)(struct pcapdroid *pd);
     void (*send_connections_dump)(struct pcapdroid *pd);
     void (*send_pcap_dump)(struct pcapdroid *pd);
+    void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
 } pd_callbacks_t;
@@ -266,6 +267,7 @@ typedef struct {
     jmethodID getApplicationByUid;
     jmethodID protect;
     jmethodID dumpPcapData;
+    jmethodID stopPcapDump;
     jmethodID updateConnections;
     jmethodID connInit;
     jmethodID connProcessUpdate;

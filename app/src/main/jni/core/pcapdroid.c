@@ -875,11 +875,25 @@ static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tupl
 /* ******************************************************* */
 
 static void sendPcapDump(pcapdroid_t *pd) {
+    if(pd->pcap_dump.buffer_idx == 0)
+        return;
+
     if(pd->cb.send_pcap_dump)
         pd->cb.send_pcap_dump(pd);
 
     pd->pcap_dump.buffer_idx = 0;
     pd->pcap_dump.last_dump_ms = pd->now_ms;
+}
+
+/* ******************************************************* */
+
+static void stop_pcap_dump(pcapdroid_t *pd){
+    sendPcapDump(pd);
+    pd_free(pd->pcap_dump.buffer);
+    pd->pcap_dump.buffer = NULL;
+
+    if(pd->cb.stop_pcap_dump)
+        pd->cb.stop_pcap_dump(pd);
 }
 
 /* ******************************************************* */
@@ -1046,8 +1060,8 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
                   JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
         else if((pd->pcap_dump.max_dump_size > 0) &&
                 ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
-            log_d("Max dump size reached, stopping capture");
-            running = false;
+            log_d("Max dump size reached, stop the dump");
+            stop_pcap_dump(pd);
         } else {
             pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
                           pctx);
@@ -1148,13 +1162,8 @@ int pd_run(pcapdroid_t *pd) {
     ndpi_exit_detection_module(pd->ndpi);
 #endif
 
-    if(pd->pcap_dump.buffer) {
-        if(pd->pcap_dump.buffer_idx > 0)
-            sendPcapDump(pd);
-
-        pd_free(pd->pcap_dump.buffer);
-        pd->pcap_dump.buffer = NULL;
-    }
+    if(pd->pcap_dump.buffer)
+        stop_pcap_dump(pd);
 
     uid_to_app_t *e, *tmp;
     HASH_ITER(hh, pd->uid2app, e, tmp) {

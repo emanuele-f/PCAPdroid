@@ -112,6 +112,15 @@ static void sendPcapDump(pcapdroid_t *pd) {
 
 /* ******************************************************* */
 
+static void stopPcapDump(pcapdroid_t *pd) {
+    JNIEnv *env = pd->env;
+
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.stopPcapDump);
+    jniCheckException(env);
+}
+
+/* ******************************************************* */
+
 static void notifyServiceStatus(pcapdroid_t *pd, const char *status) {
     JNIEnv *env = pd->env;
     jstring status_str;
@@ -436,6 +445,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
             mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
+    mids.stopPcapDump = jniGetMethodID(env, vpn_class, "stopPcapDump", "()V");
     mids.updateConnections = jniGetMethodID(env, vpn_class, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
@@ -470,6 +480,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .send_stats_dump = sendStatsDump,
                     .send_connections_dump = sendConnectionsDump,
                     .send_pcap_dump = sendPcapDump,
+                    .stop_pcap_dump = stopPcapDump,
                     .notify_service_status = notifyServiceStatus,
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
             },

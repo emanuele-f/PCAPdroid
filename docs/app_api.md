@@ -83,10 +83,10 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | ipv6_enabled            | bool   |     | true to enable IPv6 support in non-root mode                       |
 | root_capture            | bool   |     | true to capture packets in root mode, false to use the VPNService  |
 | pcapdroid_trailer       | bool   |     | true to enable the PCAPdroid trailer                               |
-| capture_interface       | string |  42 | @inet \| any \| ifname - network interface to use in root mode     |
+| capture_interface       | string |     | @inet \| any \| ifname - network interface to use in root mode     |
 | snaplen                 | int    |  43 | max size in bytes for each individual packet in the PCAP  dump     |
 | max_pkts_per_flow       | int    |  43 | only dump the first max_pkts_per_flow packets per flow             |
-| max_dump_size           | int    |  43 | PCAP dump max bytes before the capture is automatically stopped    |
+| max_dump_size           | int    |  43 | max size in bytes for the PCAP dump                                |
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 

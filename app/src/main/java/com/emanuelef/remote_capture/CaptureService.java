@@ -585,8 +585,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         // signal termination
         mPendingUpdates.offer(new Pair<>(null, null));
-        if(mDumpQueue != null)
-            mDumpQueue.offer(new byte[0]);
+        stopPcapDump();
 
         while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
             try {
@@ -615,7 +614,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mDumperThread.join();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Joining dumper thread failed");
-                mDumpQueue.offer(new byte[0]);
+                stopPcapDump();
             }
         }
         mDumperThread = null;
@@ -1003,6 +1002,11 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
         }
+    }
+
+    public void stopPcapDump() {
+        if((mDumpQueue != null) && (mDumperThread != null) && (mDumperThread.isAlive()))
+            mDumpQueue.offer(new byte[0]);
     }
 
     public void reportError(String msg) {
