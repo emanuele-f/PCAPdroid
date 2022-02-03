@@ -34,9 +34,8 @@ extern "C" {
   /* The #define below is used for apps that dynamically link with nDPI to make
      sure that datastructures and in sync across versions
   */
-#define NDPI_API_VERSION                      4817
+#define NDPI_API_VERSION                      5710
 
-#define SIZEOF_ID_STRUCT                      ( sizeof(struct ndpi_id_struct)   )
 #define SIZEOF_FLOW_STRUCT                    ( sizeof(struct ndpi_flow_struct) )
 
 #define NDPI_DETECTION_ONLY_IPV4              ( 1 << 0 )
@@ -76,15 +75,6 @@ extern "C" {
 
 
   /**
-   * Get the size of the id struct
-   *
-   * @return the size of the id struct
-   *
-   */
-  u_int32_t ndpi_detection_get_sizeof_ndpi_id_struct(void);
-
-
-  /**
    * Get the size of the flow tcp struct
    *
    * @return the size of the flow tcp struct
@@ -118,7 +108,8 @@ extern "C" {
   void   ndpi_free(void *ptr);
   void * ndpi_flow_malloc(size_t size);
   void   ndpi_flow_free(void *ptr);
-
+  u_int32_t ndpi_get_tot_allocated_memory(void);
+  
   /**
    * Search the first occurrence of substring -find- in -s-
    * The search is limited to the first -slen- characters of the string
@@ -302,8 +293,6 @@ extern "C" {
    * @par    packet         = unsigned char pointer to the Layer 3 (IP header)
    * @par    packetlen      = the length of the packet
    * @par    packet_time_ms = the current timestamp for the packet (expressed in msec)
-   * @par    src            = pointer to the source subscriber state machine
-   * @par    dst            = pointer to the destination subscriber state machine
    * @return void
    *
    */
@@ -311,9 +300,7 @@ extern "C" {
 				 struct ndpi_flow_struct *flow,
 				 const unsigned char *packet,
 				 const unsigned short packetlen,
-				 const u_int64_t packet_time_ms,
-				 struct ndpi_id_struct *src,
-				 struct ndpi_id_struct *dst);
+				 const u_int64_t packet_time_ms);
 
   /**
    * Processes one packet and returns the ID of the detected protocol.
@@ -324,8 +311,6 @@ extern "C" {
    * @par    packet         = unsigned char pointer to the Layer 3 (IP header)
    * @par    packetlen      = the length of the packet
    * @par    packet_time_ms = the current timestamp for the packet (expressed in msec)
-   * @par    src            = pointer to the source subscriber state machine
-   * @par    dst            = pointer to the destination subscriber state machine
    * @return the detected ID of the protocol
    *
    */
@@ -333,9 +318,7 @@ extern "C" {
 					      struct ndpi_flow_struct *flow,
 					      const unsigned char *packet,
 					      const unsigned short packetlen,
-					      const u_int64_t packet_time_ms,
-					      struct ndpi_id_struct *src,
-					      struct ndpi_id_struct *dst);
+					      const u_int64_t packet_time_ms);
   /**
    * Get the main protocol of the passed flows for the detected module
    *
@@ -424,7 +407,6 @@ extern "C" {
    * @par    string_to_match     = the string to match
    * @par    string_to_match_len = the length of the string
    * @par    ret_match           = completed returned match information
-   * @par    is_host_match       = value of the second field of struct ndpi_automa
    * @return the ID of the matched subprotocol;
    *         -1 if automa is not finalized;
    *         -2 if automa==NULL or string_to_match==NULL or empty string_to_match
@@ -433,8 +415,7 @@ extern "C" {
   int ndpi_match_string_subprotocol(struct ndpi_detection_module_struct *ndpi_struct,
 				    char *string_to_match,
 				    u_int string_to_match_len,
-				    ndpi_protocol_match_result *ret_match,
-				    u_int8_t is_host_match);
+				    ndpi_protocol_match_result *ret_match);
   /**
    * Check if the host passed match with a protocol
    *
@@ -464,24 +445,6 @@ extern "C" {
   void ndpi_check_subprotocol_risk(struct ndpi_detection_module_struct *ndpi_str,
 				 struct ndpi_flow_struct *flow, u_int16_t subprotocol_id);
 
-  /**
-   * Check if the string content passed match with a protocol
-   *
-   * @par    ndpi_struct         = the detection module
-   * @par    flow                = the flow where match the host
-   * @par    string_to_match     = the string to match
-   * @par    string_to_match_len = the length of the string
-   * @par    ret_match           = completed returned match information
-   * @par    master_protocol_id  = value of the ID associated to the master protocol detected
-   * @return the ID of the matched subprotocol
-   *
-   */
-  u_int16_t ndpi_match_content_subprotocol(struct ndpi_detection_module_struct *ndpi_struct,
-					   struct ndpi_flow_struct *flow,
-					   char *string_to_match,
-					   u_int string_to_match_len,
-					   ndpi_protocol_match_result *ret_match,
-					   u_int16_t master_protocol_id);
   /**
    * Exclude protocol from search
    *
@@ -602,6 +565,15 @@ extern "C" {
 				     ndpi_protocol_category_t category);
 
   /**
+   * Get classification confidence as string
+   *
+   * @par     confidence      = the confidence value
+   * @return  the string name of the confidence result
+   *
+   */
+  const char* ndpi_confidence_get_name(ndpi_confidence_t confidence);
+
+  /**
    * Set protocol category string
    *
    * @par     mod           = the detection module
@@ -683,11 +655,18 @@ extern "C" {
   void ndpi_dump_protocols(struct ndpi_detection_module_struct *mod);
 
   /**
+   * Generate Options list used in OPNsense firewall plugin
+   *
+   * @par  opt = The Option list to generate
+   */
+  void ndpi_generate_options(u_int opt);
+
+  /**
    * Write the list of the scores and their associated risks
    *
    * @par  ndpi_mod = the detection module
    */
-  void ndpi_dump_risks_score();
+  void ndpi_dump_risks_score(void);
 
   /**
    * Read a file and load the protocols
@@ -728,6 +707,15 @@ extern "C" {
    *          -1 else
    */
   int ndpi_add_host_risk_mask(struct ndpi_detection_module_struct *ndpi_mod, char *host, ndpi_risk mask);
+
+  /**
+   * Add a trusted certificate issuer DN
+   *
+   * @par     ndpi_mod = the detection module
+   * @par     dn       = the issuer DN as it appears in the certificate (example "CN=813845657003339838, O=Code42, OU=TEST, ST=MN, C=US")
+   * @return  0 if the rule is loaded correctly; < 0 in case an error is detected
+   */
+  int ndpi_add_trusted_issuer_dn(struct ndpi_detection_module_struct *ndpi_mod, char *dn);
 
   /**
    * Read a file and load the categories
@@ -958,6 +946,18 @@ extern "C" {
 				    ndpi_protocol_category_t *category,
 				    ndpi_protocol_breed_t *breed);
 
+  /**
+   * Specifies the threshold used to trigger the NDPI_TLS_CERTIFICATE_ABOUT_TO_EXPIRE
+   * flow risk that by default is set to 30 days
+   *
+   * @par    ndpi_struct  = the struct created for the protocol detection
+   * @par    days         = the number of days threshold for emitting the alert
+   *                        
+   */
+  void ndpi_set_tls_cert_expire_days(struct ndpi_detection_module_struct *ndpi_str,
+				     u_int8_t days);
+
+  
   /* Utility functions to set ndpi malloc/free/print wrappers */
   void set_ndpi_malloc(void* (*__ndpi_malloc)(size_t size));
   void set_ndpi_free(void  (*__ndpi_free)(void *ptr));
@@ -988,7 +988,7 @@ extern "C" {
   /* Return a flow info string (summarized). Does only work for DNS/HTTP/TLS/QUIC. */
   const char* ndpi_get_flow_info(struct ndpi_flow_struct const * const flow,
                                  ndpi_protocol const * const l7_protocol);
-  char* ndpi_ssl_version2str(struct ndpi_flow_struct *flow,
+  char* ndpi_ssl_version2str(char *buf, int buf_len,
                              u_int16_t version, u_int8_t *unknown_tls_version);
   int ndpi_netbios_name_interpret(u_char *in, u_int in_len, u_char *out, u_int out_len);
   void ndpi_patchIPv6Address(char *str);
@@ -1007,7 +1007,7 @@ extern "C" {
   int ndpi_flow2json(struct ndpi_detection_module_struct *ndpi_struct,
 		     struct ndpi_flow_struct *flow,
 		     u_int8_t ip_version,
-		     u_int8_t l4_protocol, u_int16_t vlan_id,
+		     u_int8_t l4_protocol,
 		     u_int32_t src_v4, u_int32_t dst_v4,
 		     struct ndpi_in6_addr *src_v6, struct ndpi_in6_addr *dst_v6,
 		     u_int16_t src_port, u_int16_t dst_port,
@@ -1092,6 +1092,12 @@ extern "C" {
    * @param serializer The serializer handle
    */
   void ndpi_reset_serializer(ndpi_serializer *serializer);
+
+  /**
+   * Hint to not create the header (used to avoid creaign the header when not used)
+   * @param serializer The serializer handle
+   */
+  void ndpi_serializer_skip_header(ndpi_serializer *serializer);
 
   /**
    * Serialize a 32-bit unsigned int key and a 32-bit unsigned int value
@@ -1521,12 +1527,14 @@ extern "C" {
 
   int ndpi_ses_init(struct ndpi_ses_struct *ses, double alpha, float significance);
   int ndpi_ses_add_value(struct ndpi_ses_struct *ses, const u_int64_t _value, double *forecast, double *confidence_band);
-
+  void ndpi_ses_fitting(double *values, u_int32_t num_values, float *ret_alpha);
+  
   /* ******************************* */
 
   int ndpi_des_init(struct ndpi_des_struct *des, double alpha, double beta, float significance);
   int ndpi_des_add_value(struct ndpi_des_struct *des, const u_int64_t _value, double *forecast, double *confidence_band);
-
+  void ndpi_des_fitting(double *values, u_int32_t num_values, float *ret_alpha, float *ret_beta);
+  
   /* ******************************* */
 
   int   ndpi_jitter_init(struct ndpi_jitter_struct *hw, u_int16_t num_periods);
@@ -1543,8 +1551,10 @@ extern "C" {
 
   u_int8_t ndpi_is_protocol_detected(struct ndpi_detection_module_struct *ndpi_str,
 				     ndpi_protocol proto);
-  void ndpi_serialize_risk(ndpi_serializer *serializer, struct ndpi_flow_struct *flow);
-
+  void ndpi_serialize_risk(ndpi_serializer *serializer, ndpi_risk_enum risk);
+  void ndpi_serialize_proto(struct ndpi_detection_module_struct *ndpi_struct,
+                            ndpi_serializer *serializer, ndpi_risk_enum risk,
+                            ndpi_protocol l7_protocol);
   const char* ndpi_risk2str(ndpi_risk_enum risk);
   const char* ndpi_severity2str(ndpi_risk_severity s);
   ndpi_risk_info* ndpi_risk2severity(ndpi_risk_enum risk);
@@ -1569,16 +1579,17 @@ extern "C" {
 
   /* ******************************* */
 
-  int  ndpi_init_bin(struct ndpi_bin *b, enum ndpi_bin_family f, u_int8_t num_bins);
+  int  ndpi_init_bin(struct ndpi_bin *b, enum ndpi_bin_family f, u_int16_t num_bins);
   void ndpi_free_bin(struct ndpi_bin *b);
   struct ndpi_bin* ndpi_clone_bin(struct ndpi_bin *b);
-  void ndpi_inc_bin(struct ndpi_bin *b, u_int8_t slot_id, u_int32_t val);
-  void ndpi_set_bin(struct ndpi_bin *b, u_int8_t slot_id, u_int32_t value);
-  u_int32_t ndpi_get_bin_value(struct ndpi_bin *b, u_int8_t slot_id);
+  void ndpi_inc_bin(struct ndpi_bin *b, u_int16_t slot_id, u_int32_t val);
+  void ndpi_set_bin(struct ndpi_bin *b, u_int16_t slot_id, u_int32_t value);
+  u_int32_t ndpi_get_bin_value(struct ndpi_bin *b, u_int16_t slot_id);
   void ndpi_reset_bin(struct ndpi_bin *b);
   void ndpi_normalize_bin(struct ndpi_bin *b);
   char* ndpi_print_bin(struct ndpi_bin *b, u_int8_t normalize_first, char *out_buf, u_int out_buf_len);
-  float ndpi_bin_similarity(struct ndpi_bin *b1, struct ndpi_bin *b2, u_int8_t normalize_first);
+  float ndpi_bin_similarity(struct ndpi_bin *b1, struct ndpi_bin *b2,
+			    u_int8_t normalize_first, float similarity_max_threshold);
   int ndpi_cluster_bins(struct ndpi_bin *bins, u_int16_t num_bins,
 			u_int8_t num_clusters, u_int16_t *cluster_ids,
 			struct ndpi_bin *centroids);
@@ -1609,6 +1620,26 @@ extern "C" {
 
   char* ndpi_get_flow_name(struct ndpi_flow_struct *flow);
   
+  /* ******************************* */
+
+  ndpi_bitmap* ndpi_bitmap_alloc(void);
+  void ndpi_bitmap_free(ndpi_bitmap* b);
+  u_int64_t ndpi_bitmap_cardinality(ndpi_bitmap* b);
+  void ndpi_bitmap_set(ndpi_bitmap* b, u_int32_t value);
+  void ndpi_bitmap_unset(ndpi_bitmap* b, u_int32_t value);
+  bool ndpi_bitmap_isset(ndpi_bitmap* b, u_int32_t value);
+  void ndpi_bitmap_clear(ndpi_bitmap* b);
+
+  size_t ndpi_bitmap_serialize(ndpi_bitmap* b, char **buf);
+  ndpi_bitmap* ndpi_bitmap_deserialize(char *buf);
+
+  void ndpi_bitmap_and(ndpi_bitmap* a, ndpi_bitmap* b_and);
+  void ndpi_bitmap_or(ndpi_bitmap* a, ndpi_bitmap* b_or);
+  
+  ndpi_bitmap_iterator* ndpi_bitmap_iterator_alloc(ndpi_bitmap* b);
+  void ndpi_bitmap_iterator_free(ndpi_bitmap* b);
+  bool ndpi_bitmap_iterator_next(ndpi_bitmap_iterator* i, uint32_t *value);
+
   /* ******************************* */
   
 #ifdef __cplusplus
