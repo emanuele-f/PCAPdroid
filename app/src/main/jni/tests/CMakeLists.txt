@@ -5,10 +5,10 @@ option(FUZZING "Build for Fuzz Testing" OFF)
 
 if(FUZZING)
   if(NOT DEFINED "LIB_FUZZING_ENGINE")
-    set(LIB_FUZZING_ENGINE "-fsanitize=fuzzer-no-link,address -fno-sanitize-recover=undefined")
+    set(LIB_FUZZING_ENGINE "-fsanitize=fuzzer")
   endif()
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFUZZING -g -O1 ${LIB_FUZZING_ENGINE}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFUZZING -g -O1 ${LIB_FUZZING_ENGINE} -fsanitize=address,undefined,leak -fno-sanitize=alignment")
 endif()
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)

@@ -758,7 +758,8 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
           char buf[512];
           zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-          printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
+          if(!rt->conf->quiet)
+            printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
         }
 
         if(iface->is_file) {
@@ -787,6 +788,9 @@ int run_pcap_dump(pcapd_conf_t *conf) {
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
   zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+  if(conf->quiet && (loglevel < ANDROID_LOG_ERROR))
+    loglevel = ANDROID_LOG_ERROR;
 
   if(!(rt.tun = zdtun_init(&callbacks, NULL)))
     goto cleanup;
@@ -900,6 +904,7 @@ static void usage() {
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
     " -n             do not connect to the UNIX socket, log to stdout instead\n"
+    " -q             suppress non-error output\n"
   );
 
   exit(1);
@@ -960,6 +965,9 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
       case 'l':
         if(conf->log_file) free(conf->log_file);
         conf->log_file = strdup(optarg);
+        break;
+      case 'q':
+        conf->quiet = 1;
         break;
       default:
         usage();
