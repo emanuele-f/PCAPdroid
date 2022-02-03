@@ -124,6 +124,9 @@ public class HTTPServer implements PcapDumper, Runnable {
         }
 
         private void close(String error) {
+            if(isClosed())
+                return;
+
             if(error != null) {
                 Log.i(TAG, "Client error: " + error);
                 mHasError = true;
@@ -142,7 +145,7 @@ public class HTTPServer implements PcapDumper, Runnable {
         }
 
         public void stop() {
-            // if active, will trigger a IOException
+            // if running, will trigger a IOException
             checkedClose(mSocket);
         }
 
@@ -290,21 +293,30 @@ public class HTTPServer implements PcapDumper, Runnable {
 
         checkedClose(mSocket);
 
-        // Terminate the clients
+        // Terminate the running clients threads
         pool.shutdown();
         synchronized(this) {
-            for(ClientHandler client: mClients)
-                client.close(null);
-
-            mClients.clear();
+            // Possibly wake clients blocked on read
+            for(ClientHandler client: mClients) {
+                if(!client.isReadyForData())
+                    client.stop();
+            }
         }
-
-        // Wait clients termination
         while(true) {
             try {
                 if(pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS))
                     break;
             } catch (InterruptedException ignored) {}
+        }
+
+        // Close the clients
+        synchronized(this) {
+            for(ClientHandler client: mClients) {
+                if(!client.isClosed())
+                    client.close(null);
+            }
+
+            mClients.clear();
         }
     }
 
