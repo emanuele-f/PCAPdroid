@@ -80,6 +80,5 @@ dependencies {
 
 // Third-party
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
 }

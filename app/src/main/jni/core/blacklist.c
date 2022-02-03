@@ -253,6 +253,18 @@ bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver) {
 
 /* ******************************************************* */
 
+bool blacklist_match_ipstr(blacklist_t *bl, const char *ip_str) {
+    zdtun_ip_t parsed;
+
+    int ipver = zdtun_parse_ip(ip_str, &parsed);
+    if(ipver < 0)
+        return false;
+
+    return blacklist_match_ip(bl, &parsed, ipver);
+}
+
+/* ******************************************************* */
+
 bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
     string_entry_t *entry = NULL;
 
@@ -279,6 +291,8 @@ void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
 }
 
 /* ******************************************************* */
+
+#if ANDROID
 
 static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blacklist_type tp) {
     int num_items = (*env)->CallIntMethod(env, list, mids.listSize);
@@ -334,3 +348,5 @@ int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld) {
     (*env)->DeleteLocalRef(env, ips);
     return 0;
 }
+
+#endif // ANDROID

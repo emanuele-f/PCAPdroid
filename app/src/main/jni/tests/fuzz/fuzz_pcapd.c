@@ -14,27 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2021-22 - Emanuele Faranda
  */
 
-#ifndef __UID_RESOLVER_H__
-#define __UID_RESOLVER_H__
+#include "pcapd/pcapd_priv.h"
 
-#include "jni_utils.h"
-#include "zdtun.h"
+/* ******************************************************* */
 
-#define UID_UNKNOWN -1
-#define UID_ROOT 0
-#define UID_NETD 1051
+#include "fuzz_utils.c"
 
-typedef struct uid_resolver uid_resolver_t;
+int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+  pcapd_conf_t conf;
+  char *pcap_path;
 
-#ifdef ANDROID
-uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn);
-#endif
+  if(!(pcap_path = buffer_to_tmpfile(Data, Size)))
+    return -1;
 
-uid_resolver_t* init_uid_resolver_from_proc();
-void destroy_uid_resolver(uid_resolver_t *resolver);
-int get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info);
+  init_conf(&conf);
+  conf.ifnames[0] = strdup(pcap_path);
+  conf.num_interfaces = 1;
+  conf.no_client = 1;
 
-#endif // __UID_RESOLVER_H__
+  loglevel = ANDROID_LOG_FATAL;
+  run_pcap_dump(&conf);
+
+  unlink(pcap_path);
+  free(pcap_path);
+
+  return 0;
+}

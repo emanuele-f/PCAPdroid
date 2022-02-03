@@ -22,28 +22,24 @@
 #include "pcapdroid.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
+#include "pcapd/pcapd.h"
 #include "ndpi_protocol_ids.h"
 
-// Minimum length (e.g. of "GET") to avoid reporting non-requests
-#define MIN_REQ_PLAINTEXT_CHARS 3
-
-extern int run_vpn(pcapdroid_t *pd, int tunfd);
+extern int run_vpn(pcapdroid_t *pd);
 extern int run_root(pcapdroid_t *pd);
 extern void root_iter_connections(pcapdroid_t *pd, conn_cb cb);
 
 /* ******************************************************* */
 
-jni_classes_t cls;
-jni_methods_t mids;
-jni_fields_t fields;
 bool running = false;
 uint32_t new_dns_server = 0;
 bool block_private_dns = false;
 
-static bool dump_capture_stats_now = false;
-static bool reload_blacklists_now = false;
+bool dump_capture_stats_now = false;
+bool reload_blacklists_now = false;
+int bl_num_checked_connections = 0;
+
 static ndpi_protocol_bitmask_struct_t masterProtos;
-static int bl_num_checked_connections = 0;
 
 /* ******************************************************* */
 
@@ -51,7 +47,6 @@ static int bl_num_checked_connections = 0;
 static int netd_resolve_waiting;
 static u_int64_t last_connections_dump;
 static u_int64_t next_connections_dump;
-static pcapdroid_t *global_pd = NULL;
 
 /* ******************************************************* */
 
@@ -152,116 +147,8 @@ static void conns_clear(conn_array_t *arr, bool free_all) {
 
 /* ******************************************************* */
 
-char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize) {
-    JNIEnv *env = pd->env;
-
-    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
-    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, midMethod);
-    char *rv = NULL;
-
-    if(!jniCheckException(env)) {
-        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
-        log_d("getStringPref(%s) = %s", key, value);
-
-        strncpy(buf, value, bufsize);
-        buf[bufsize - 1] = '\0';
-        rv = buf;
-
-        (*env)->ReleaseStringUTFChars(env, obj, value);
-    }
-
-    (*env)->DeleteLocalRef(env, obj);
-
-    return(rv);
-}
-
-/* ******************************************************* */
-
-u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
-    struct in_addr addr = {0};
-
-    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
-    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
-
-    if(!jniCheckException(env)) {
-        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
-        log_d("getIPv4Pref(%s) = %s", key, value);
-
-        if(inet_aton(value, &addr) == 0)
-            log_e("%s() returned invalid IPv4 address", key);
-
-        (*env)->ReleaseStringUTFChars(env, obj, value);
-    }
-
-    (*env)->DeleteLocalRef(env, obj);
-
-    return(addr.s_addr);
-}
-
-/* ******************************************************* */
-
-struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
-    struct in6_addr addr = {0};
-
-    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
-    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
-
-    if(!jniCheckException(env)) {
-        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
-        log_d("getIPv6Pref(%s) = %s", key, value);
-
-        if(inet_pton(AF_INET6, value, &addr) != 1)
-            log_e("%s() returned invalid IPv6 address", key);
-
-        (*env)->ReleaseStringUTFChars(env, obj, value);
-    }
-
-    (*env)->DeleteLocalRef(env, obj);
-
-    return(addr);
-}
-
-/* ******************************************************* */
-
-int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
-    jint value;
-    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()I");
-
-    value = (*env)->CallIntMethod(env, vpn_inst, midMethod);
-    jniCheckException(env);
-
-    log_d("getIntPref(%s) = %d", key, value);
-
-    return(value);
-}
-
-/* ******************************************************* */
-
-static void getApplicationByUidJava(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
-    JNIEnv *env = pd->env;
-    const char *value = NULL;
-
-    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getApplicationByUid, uid);
-    jniCheckException(env);
-
-    if(obj)
-        value = (*env)->GetStringUTFChars(env, obj, 0);
-
-    if(!value) {
-        strncpy(buf, "???", bufsize);
-        buf[bufsize-1] = '\0';
-    } else {
-        strncpy(buf, value, bufsize);
-        buf[bufsize - 1] = '\0';
-    }
-
-    if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
-    if(obj) (*env)->DeleteLocalRef(env, obj);
-}
-
-/* ******************************************************* */
-
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize) {
+#ifdef ANDROID
     uid_to_app_t *app_entry;
 
     HASH_FIND_INT(pd->uid2app, &uid, app_entry);
@@ -270,7 +157,7 @@ char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize) {
 
         if(app_entry) {
             // Resolve the app name
-            getApplicationByUidJava(pd, uid, app_entry->appname, sizeof(app_entry->appname));
+            getApplicationByUid(pd, uid, app_entry->appname, sizeof(app_entry->appname));
 
             log_d("uid %d resolved to \"%s\"", uid, app_entry->appname);
 
@@ -278,6 +165,9 @@ char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize) {
             HASH_ADD_INT(pd->uid2app, uid, app_entry);
         }
     }
+#else
+    uid_to_app_t *app_entry = NULL;
+#endif
 
     if(app_entry) {
         strncpy(buf, app_entry->appname, bufsize-1);
@@ -291,30 +181,56 @@ char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize) {
 /* ******************************************************* */
 
 struct ndpi_detection_module_struct* init_ndpi() {
+#ifdef FUZZING
+    // nDPI initialization is very expensive, cache it
+    // see also ndpi_exit_detection_module
+    static struct ndpi_detection_module_struct *ndpi_cache = NULL;
+
+    if(ndpi_cache != NULL)
+      return ndpi_cache;
+#endif
+
     struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
     NDPI_PROTOCOL_BITMASK protocols;
 
     if(!ndpi)
         return(NULL);
 
+    // needed by pd_get_proto_name
+    init_protocols_bitmask(&masterProtos);
+
+#ifndef FUZZING
     // enable all the protocols
     NDPI_BITMASK_SET_ALL(protocols);
+#else
+    // nDPI has a big performance impact on fuzzing.
+    // Only enable some protocols to extract the metadata for use in
+    // PCAPdroid, we are not fuzzing nDPI!
+    NDPI_BITMASK_RESET(protocols);
+    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_DNS);
+    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_HTTP);
+    //NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_TLS);
+#endif
 
     ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
     ndpi_finalize_initialization(ndpi);
+
+#ifdef FUZZING
+    ndpi_cache = ndpi;
+#endif
 
     return(ndpi);
 }
 
 /* ******************************************************* */
 
-const char *getProtoName(struct ndpi_detection_module_struct *mod, uint16_t proto, int ipproto) {
+const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto) {
     if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
         // Return the L3 protocol
         return zdtun_proto2str(ipproto);
     }
 
-    return ndpi_get_proto_name(mod, proto);
+    return ndpi_get_proto_name(pd->ndpi, proto);
 }
 
 /* ******************************************************* */
@@ -734,208 +650,6 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
 
 /* ******************************************************* */
 
-static void javaPcapDump(pcapdroid_t *pd) {
-    JNIEnv *env = pd->env;
-
-    log_d("Exporting a %d B PCAP buffer", pd->pcap_dump.buffer_idx);
-
-    jbyteArray barray = (*env)->NewByteArray(env, pd->pcap_dump.buffer_idx);
-    if(jniCheckException(env))
-        return;
-
-    (*env)->SetByteArrayRegion(env, barray, 0, pd->pcap_dump.buffer_idx, pd->pcap_dump.buffer);
-    (*env)->CallVoidMethod(env, pd->capture_service, mids.dumpPcapData, barray);
-    jniCheckException(env);
-
-    pd->pcap_dump.buffer_idx = 0;
-    pd->pcap_dump.last_dump_ms = pd->now_ms;
-
-    (*env)->DeleteLocalRef(env, barray);
-}
-
-/* ******************************************************* */
-
-static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
-    JNIEnv *env = pd->env;
-    pd_conn_t *data = conn->data;
-
-    jobject update = (*env)->NewObject(env, cls.conn_update, mids.connUpdateInit, data->incr_id);
-
-    if((update == NULL) || jniCheckException(env)) {
-        log_e("NewObject(ConnectionDescriptor) failed");
-        return NULL;
-    }
-
-    if(data->update_type & CONN_UPDATE_STATS) {
-        bool blocked = data->to_block && !pd->root_capture; // currently can only block connections in non-root mode
-
-        (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
-                               data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
-                               (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (blocked << 10) | (data->blacklisted_domain << 9) |
-                                    (data->blacklisted_ip << 8) | (data->status & 0xFF));
-    }
-    if(data->update_type & CONN_UPDATE_INFO) {
-        jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
-        jobject url = (*env)->NewStringUTF(env, data->url ? data->url : "");
-        jobject req = (*env)->NewStringUTF(env, (data->request_data &&
-            (strnlen(data->request_data, MIN_REQ_PLAINTEXT_CHARS) == MIN_REQ_PLAINTEXT_CHARS)) ? data->request_data : "");
-        jobject l7proto = (*env)->NewStringUTF(env, getProtoName(pd->ndpi, data->l7proto, conn->tuple.ipproto));
-
-        (*env)->CallVoidMethod(env, update, mids.connUpdateSetInfo, info, url, req, l7proto);
-
-        (*env)->DeleteLocalRef(env, info);
-        (*env)->DeleteLocalRef(env, url);
-        (*env)->DeleteLocalRef(env, req);
-        (*env)->DeleteLocalRef(env, l7proto);
-    }
-
-    // reset the update flag
-    data->update_type = 0;
-
-    if(jniCheckException(env)) {
-        log_e("getConnUpdate() failed");
-        (*env)->DeleteLocalRef(env, update);
-        return NULL;
-    }
-
-    return update;
-}
-
-/* ******************************************************* */
-
-static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobject arr, int idx) {
-    char srcip[INET6_ADDRSTRLEN], dstip[INET6_ADDRSTRLEN];
-    JNIEnv *env = pd->env;
-    const zdtun_5tuple_t *conn_info = &conn->tuple;
-    const pd_conn_t *data = conn->data;
-    int rv = 0;
-    int family = (conn->tuple.ipver == 4) ? AF_INET : AF_INET6;
-
-    if((inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip)) == NULL) ||
-       (inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip)) == NULL)) {
-        log_w("inet_ntop failed: ipver=%d, dstport=%d", conn->tuple.ipver, ntohs(conn_info->dst_port));
-        return 0;
-    }
-
-#if 0
-    log_i( "DUMP: [proto=%d]: %s:%u -> %s:%u [%d]",
-                        conn_info->ipproto,
-                        srcip, ntohs(conn_info->src_port),
-                        dstip, ntohs(conn_info->dst_port),
-                        data->uid);
-#endif
-
-    jobject src_string = (*env)->NewStringUTF(env, srcip);
-    jobject dst_string = (*env)->NewStringUTF(env, dstip);
-    u_int ifidx = (pd->root_capture ? data->root.ifidx : 0);
-    jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
-                                                conn_info->ipver, conn_info->ipproto,
-                                                src_string, dst_string,
-                                                ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
-                                                data->uid, ifidx, data->first_seen);
-
-    if((conn_descriptor != NULL) && !jniCheckException(env)) {
-        // This is the first update, send all the data
-        conn->data->update_type = CONN_UPDATE_STATS | CONN_UPDATE_INFO;
-        jobject update = getConnUpdate(pd, conn);
-
-        if(update != NULL) {
-            (*env)->CallVoidMethod(env, conn_descriptor, mids.connProcessUpdate, update);
-            (*env)->DeleteLocalRef(env, update);
-        } else
-            rv = -1;
-
-        /* Add the connection to the array */
-        (*env)->SetObjectArrayElement(env, arr, idx, conn_descriptor);
-
-        if(jniCheckException(env))
-            rv = -1;
-
-        (*env)->DeleteLocalRef(env, conn_descriptor);
-    } else {
-        log_e("NewObject(ConnectionDescriptor) failed");
-        rv = -1;
-    }
-
-    (*env)->DeleteLocalRef(env, src_string);
-    (*env)->DeleteLocalRef(env, dst_string);
-
-    return rv;
-}
-
-/* ******************************************************* */
-
-static int dumpConnectionUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobject arr, int idx) {
-    JNIEnv *env = pd->env;
-    jobject update = getConnUpdate(pd, conn);
-
-    if(update != NULL) {
-        (*env)->SetObjectArrayElement(env, arr, idx, update);
-        (*env)->DeleteLocalRef(env, update);
-        return 0;
-    }
-
-    return -1;
-}
-
-/* ******************************************************* */
-
-/* Perform a full dump of the active connections */
-static void sendConnectionsDump(pcapdroid_t *pd) {
-    if((pd->new_conns.cur_items == 0) && (pd->conns_updates.cur_items == 0))
-        return;
-
-    log_d("sendConnectionsDump [after %" PRIu64 " ms]: new=%d, updates=%d",
-          pd->now_ms - last_connections_dump,
-          pd->new_conns.cur_items, pd->conns_updates.cur_items);
-
-    JNIEnv *env = pd->env;
-    jobject new_conns = (*env)->NewObjectArray(env, pd->new_conns.cur_items, cls.conn, NULL);
-    jobject conns_updates = (*env)->NewObjectArray(env, pd->conns_updates.cur_items, cls.conn_update, NULL);
-
-    if((new_conns == NULL) || (conns_updates == NULL) || jniCheckException(env)) {
-        log_e("NewObjectArray() failed");
-        goto cleanup;
-    }
-
-    // New connections
-    for(int i=0; i < pd->new_conns.cur_items; i++) {
-        conn_and_tuple_t *conn = &pd->new_conns.items[i];
-        conn->data->pending_notification = false;
-
-        if(dumpNewConnection(pd, conn, new_conns, i) < 0)
-            goto cleanup;
-    }
-
-    //clock_t start = clock();
-
-    // Updated connections
-    for(int i=0; i < pd->conns_updates.cur_items; i++) {
-        conn_and_tuple_t *conn = &pd->conns_updates.items[i];
-        conn->data->pending_notification = false;
-
-        if(dumpConnectionUpdate(pd, conn, conns_updates, i) < 0)
-            goto cleanup;
-    }
-
-    //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-    //log_d("avg cpu_time_used per update: %f sec", cpu_time_used / pd->conns_updates.cur_items);
-
-    /* Send the dump */
-    (*env)->CallVoidMethod(env, pd->capture_service, mids.updateConnections, new_conns, conns_updates);
-    jniCheckException(env);
-
-cleanup:
-    conns_clear(&pd->new_conns, false);
-    conns_clear(&pd->conns_updates, false);
-
-    (*env)->DeleteLocalRef(env, new_conns);
-    (*env)->DeleteLocalRef(env, conns_updates);
-}
-
-/* ******************************************************* */
-
 #ifdef PCAPDROID_TRACK_ALLOCS
 
 static char allocs_buf[1024];
@@ -960,82 +674,26 @@ static char* get_allocs_summary() {
 
 /* ******************************************************* */
 
-static void sendStatsDump(const pcapdroid_t *pd) {
-    JNIEnv *env = pd->env;
-    const capture_stats_t *capstats = &pd->capture_stats;
-    const zdtun_statistics_t *stats = &pd->stats;
-    jstring allocs_summary =
-#ifdef PCAPDROID_TRACK_ALLOCS
-            (*pd->env)->NewStringUTF(pd->env, get_allocs_summary());
-#else
-    NULL;
-#endif
-
-    int active_conns = (int)(stats->num_icmp_conn + stats->num_tcp_conn + stats->num_udp_conn);
-    int tot_conns = (int)(stats->num_icmp_opened + stats->num_tcp_opened + stats->num_udp_opened);
-
-    jobject stats_obj = (*env)->NewObject(env, cls.stats, mids.statsInit);
-
-    if((stats_obj == NULL) || jniCheckException(env)) {
-        log_e("NewObject(VPNStats) failed");
-        return;
-    }
-
-    (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
-                           allocs_summary,
-                           capstats->sent_bytes, capstats->rcvd_bytes,
-                           capstats->sent_pkts, capstats->rcvd_pkts,
-                           min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
-                           stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
-                           pd->num_dns_requests);
-
-    if(!jniCheckException(env)) {
-        (*env)->CallVoidMethod(env, pd->capture_service, mids.sendStatsDump, stats_obj);
-        jniCheckException(env);
-    }
-
-    (*env)->DeleteLocalRef(env, allocs_summary);
-    (*env)->DeleteLocalRef(env, stats_obj);
+const char* get_cache_path(pcapdroid_t *pd, const char *subpath) {
+    strncpy(pd->cachedir + pd->cachedir_len, subpath,
+            sizeof(pd->cachedir) - pd->cachedir_len - 1);
+    pd->cachedir[sizeof(pd->cachedir) - 1] = 0;
+    return pd->cachedir;
 }
 
 /* ******************************************************* */
 
-static void notifyServiceStatus(pcapdroid_t *pd, const char *status) {
-    JNIEnv *env = pd->env;
-    jstring status_str;
-
-    status_str = (*env)->NewStringUTF(env, status);
-
-    (*env)->CallVoidMethod(env, pd->capture_service, mids.sendServiceStatus, status_str);
-    jniCheckException(env);
-
-    (*env)->DeleteLocalRef(env, status_str);
-}
-
-/* ******************************************************* */
-
-const char* get_cache_path(const char *subpath) {
-    strncpy(global_pd->cachedir + global_pd->cachedir_len, subpath,
-            sizeof(global_pd->cachedir) - global_pd->cachedir_len - 1);
-    global_pd->cachedir[sizeof(global_pd->cachedir) - 1] = 0;
-    return global_pd->cachedir;
-}
-
-/* ******************************************************* */
-
-const char* get_file_path(const char *subpath) {
-    strncpy(global_pd->filesdir + global_pd->filesdir_len, subpath,
-            sizeof(global_pd->filesdir) - global_pd->filesdir_len - 1);
-    global_pd->filesdir[sizeof(global_pd->filesdir) - 1] = 0;
-    return global_pd->filesdir;
+const char* get_file_path(pcapdroid_t *pd, const char *subpath) {
+    strncpy(pd->filesdir + pd->filesdir_len, subpath,
+            sizeof(pd->filesdir) - pd->filesdir_len - 1);
+    pd->filesdir[sizeof(pd->filesdir) - 1] = 0;
+    return pd->filesdir;
 }
 
 /* ******************************************************* */
 
 // called after load_new_blacklists
 static void use_new_blacklists(pcapdroid_t *pd) {
-    JNIEnv *env = pd->env;
-
     if(!pd->malware_detection.new_bl)
         return;
 
@@ -1047,95 +705,23 @@ static void use_new_blacklists(pcapdroid_t *pd) {
     bl_status_arr_t *status_arr = pd->malware_detection.status_arr;
     pd->malware_detection.status_arr = NULL;
 
-    jobject status_obj = (*env)->NewObjectArray(env, status_arr ? status_arr->cur_items : 0, cls.blacklist_status, NULL);
-    if((status_obj == NULL) || jniCheckException(env)) {
-        log_e("NewObjectArray() failed");
-        goto cleanup;
+    if(status_arr == NULL) {
+        // NOTE: must notify even if status_arr is NULL
+        status_arr = pd_calloc(0, sizeof(bl_status_arr_t));
+
+        if(!status_arr) // this should never happen
+            return;
     }
 
-    // Notify
-    if(status_arr != NULL) {
-        for(int i=0; i<status_arr->cur_items; i++) {
-            bl_status_t *st = &status_arr->items[i];
-            jstring fname = (*env)->NewStringUTF(env, st->fname);
-            if((fname == NULL) || jniCheckException(env))
-                break;
+    if(pd->cb.notify_blacklists_loaded)
+        pd->cb.notify_blacklists_loaded(pd, status_arr);
 
-            jobject stats = (*env)->NewObject(env, cls.blacklist_status, mids.blacklistStatusInit,
-                                                  fname, st->num_rules);
-            if((stats == NULL) || jniCheckException(env)) {
-                (*env)->DeleteLocalRef(env, fname);
-                break;
-            }
-
-            (*env)->SetObjectArrayElement(env, status_obj, i, stats);
-            if(jniCheckException(env)) {
-                (*env)->DeleteLocalRef(env, stats);
-                break;
-            }
-        }
+    for(int i = 0; i < status_arr->cur_items; i++) {
+        bl_status_t *st = &status_arr->items[i];
+        pd_free(st->fname);
     }
-    (*pd->env)->CallVoidMethod(pd->env, pd->capture_service, mids.notifyBlacklistsLoaded, status_obj);
-
-cleanup:
-    if(status_arr != NULL) {
-        for(int i = 0; i < status_arr->cur_items; i++) {
-            bl_status_t *st = &status_arr->items[i];
-            pd_free(st->fname);
-        }
-        pd_free(status_arr->items);
-        pd_free(status_arr);
-    }
-}
-
-/* ******************************************************* */
-
-// Load information about the blacklists to use (pd->malware_detection.bls_info)
-int load_blacklists_info(pcapdroid_t *pd) {
-    int rv = 0;
-    JNIEnv *env = pd->env;
-    jobjectArray *arr = (*env)->CallObjectMethod(env, pd->capture_service, mids.getBlacklistsInfo);
-    pd->malware_detection.bls_info = NULL;
-    pd->malware_detection.num_bls = 0;
-
-    if((jniCheckException(pd->env) != 0) || (arr == NULL))
-        return -1;
-
-    pd->malware_detection.num_bls = (*env)->GetArrayLength(env, arr);
-    if(pd->malware_detection.num_bls == 0)
-        goto cleanup;
-
-    pd->malware_detection.bls_info = (bl_info_t*) pd_calloc(pd->malware_detection.num_bls, sizeof(bl_info_t));
-    if(pd->malware_detection.bls_info == NULL) {
-        pd->malware_detection.num_bls = 0;
-        rv = -1;
-        goto cleanup;
-    }
-
-    jobject type_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");
-
-    for(int i = 0; i < pd->malware_detection.num_bls; i++) {
-        jobject *bl_descr = (*env)->GetObjectArrayElement(env, arr, i);
-        if(bl_descr != NULL) {
-            bl_info_t *blinfo = &pd->malware_detection.bls_info[i];
-
-            jstring fname_obj = (*env)->GetObjectField(env, bl_descr, fields.bldescr_fname);
-            const char *fname = (*env)->GetStringUTFChars(env, fname_obj, 0);
-            blinfo->fname = pd_strdup(fname);
-            (*env)->ReleaseStringUTFChars(env, fname_obj, fname);
-            (*pd->env)->DeleteLocalRef(pd->env, fname_obj);
-
-            jobject bl_type = (*env)->GetObjectField(env, bl_descr, fields.bldescr_type);
-            blinfo->type = (*env)->IsSameObject(env, bl_type, type_ip) ? IP_BLACKLIST : DOMAIN_BLACKLIST;
-            (*pd->env)->DeleteLocalRef(pd->env, bl_type);
-
-            //log_d("[+] Blacklist: %s (%s)", blinfo->fname, (blinfo->type == IP_BLACKLIST) ? "IP" : "domain");
-        }
-    }
-
-cleanup:
-    (*pd->env)->DeleteLocalRef(pd->env, arr);
-    return rv;
+    pd_free(status_arr->items);
+    pd_free(status_arr);
 }
 
 /* ******************************************************* */
@@ -1167,7 +753,7 @@ static void* load_new_blacklists(void *data) {
 
         snprintf(subpath, sizeof(subpath), "malware_bl/%s", blinfo->fname);
 
-        if(blacklist_load_file(bl, get_file_path(subpath), blinfo->type, &stats) == 0) {
+        if(blacklist_load_file(bl, get_file_path(pd, subpath), blinfo->type, &stats) == 0) {
             // NOTE: cannot invoke JNI from this thread, must use an intermediate storage
             if(status_arr->size >= status_arr->cur_items) {
                 /* Extend array */
@@ -1288,29 +874,64 @@ static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tupl
 
 /* ******************************************************* */
 
+static void sendPcapDump(pcapdroid_t *pd) {
+    if(pd->pcap_dump.buffer_idx == 0)
+        return;
+
+    if(pd->cb.send_pcap_dump)
+        pd->cb.send_pcap_dump(pd);
+
+    pd->pcap_dump.buffer_idx = 0;
+    pd->pcap_dump.last_dump_ms = pd->now_ms;
+}
+
+/* ******************************************************* */
+
+static void stop_pcap_dump(pcapdroid_t *pd){
+    sendPcapDump(pd);
+    pd_free(pd->pcap_dump.buffer);
+    pd->pcap_dump.buffer = NULL;
+
+    if(pd->cb.stop_pcap_dump)
+        pd->cb.stop_pcap_dump(pd);
+}
+
+/* ******************************************************* */
+
 /* Perfom periodic tasks. This should be called after processing a packet or after some time has
  * passed (e.g. after a select with no packet). */
 void pd_housekeeping(pcapdroid_t *pd) {
     if(pd->capture_stats.new_stats
-       && ((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
-       dump_capture_stats_now) {
+       && (((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
+              dump_capture_stats_now)) {
         dump_capture_stats_now = false;
 
         if(!pd->root_capture)
             zdtun_get_stats(pd->zdt, &pd->stats);
 
-        sendStatsDump(pd);
+        if(pd->cb.send_stats_dump)
+            pd->cb.send_stats_dump(pd);
 
         pd->capture_stats.new_stats = false;
         pd->capture_stats.last_update_ms = pd->now_ms;
     } else if (pd->now_ms >= next_connections_dump) {
-        sendConnectionsDump(pd);
+        log_d("sendConnectionsDump [after %" PRIu64 " ms]: new=%d, updates=%d",
+              pd->now_ms - last_connections_dump,
+              pd->new_conns.cur_items, pd->conns_updates.cur_items);
+
+        if((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
+            if(pd->cb.send_connections_dump)
+                pd->cb.send_connections_dump(pd);
+            conns_clear(&pd->new_conns, false);
+            conns_clear(&pd->conns_updates, false);
+        }
+
         last_connections_dump = pd->now_ms;
         next_connections_dump = pd->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
         netd_resolve_waiting = 0;
     } else if ((pd->pcap_dump.buffer_idx > 0)
                && (pd->now_ms - pd->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
-        javaPcapDump(pd);
+        sendPcapDump(pd);
     } else if(pd->malware_detection.enabled) {
         // Malware detection
         if(pd->malware_detection.reload_in_progress) {
@@ -1363,25 +984,6 @@ void pd_refresh_time(pcapdroid_t *pd) {
     }
 
     pd->now_ms = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-}
-
-/* ******************************************************* */
-
-static void log_callback(int lvl, const char *line) {
-    if(lvl >= ANDROID_LOG_FATAL) {
-        pcapdroid_t *pd = global_pd;
-
-        // This is a fatal error, report it to the gui
-        jobject info_string = (*pd->env)->NewStringUTF(pd->env, line);
-
-        if((jniCheckException(pd->env) != 0) || (info_string == NULL))
-            return;
-
-        (*pd->env)->CallVoidMethod(pd->env, pd->capture_service, mids.reportError, info_string);
-        jniCheckException(pd->env);
-
-        (*pd->env)->DeleteLocalRef(pd->env, info_string);
-    }
 }
 
 /* ******************************************************* */
@@ -1443,364 +1045,138 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
     data->update_type |= CONN_UPDATE_STATS;
     pd_notify_connection_update(pd, pctx->tuple, pctx->data);
 
-    if(pd->pcap_dump.buffer) {
-        int rec_size = pcap_rec_size(pkt->len);
+    if((pd->pcap_dump.buffer) &&
+            ((pd->pcap_dump.max_pkts_per_flow <= 0) ||
+                ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow))) {
+        int rec_size = pcap_rec_size(pd->pcap_dump.snaplen, pkt->len);
 
         if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size) {
             // Flush the buffer
-            javaPcapDump(pd);
+            sendPcapDump(pd);
         }
 
         if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size)
             log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
                   JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
-        else {
+        else if((pd->pcap_dump.max_dump_size > 0) &&
+                ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
+            log_d("Max dump size reached, stop the dump");
+            stop_pcap_dump(pd);
+        } else {
             pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
                           pctx);
 
             pd->pcap_dump.buffer_idx += rec_size;
+            pd->pcap_dump.tot_size += rec_size;
         }
     }
 }
 
 /* ******************************************************* */
 
-static int run_loop(JNIEnv *env, jclass vpn, int tunfd, jint sdk) {
-    netd_resolve_waiting = 0;
-    jclass vpn_class = (*env)->GetObjectClass(env, vpn);
-
-#ifdef PCAPDROID_TRACK_ALLOCS
-    set_ndpi_malloc(pd_ndpi_malloc);
-    set_ndpi_free(pd_ndpi_free);
-#endif
-
-    /* Classes */
-    cls.vpn_service = vpn_class;
-    cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
-    cls.conn_update = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionUpdate");
-    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
-    cls.blacklist_status = jniFindClass(env, "com/emanuelef/remote_capture/model/Blacklists$NativeBlacklistStatus");
-    cls.blacklist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor");
-    cls.matchlist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/MatchList$ListDescriptor");
-    cls.list = jniFindClass(env, "java/util/List");
-
-    /* Methods */
-    mids.reportError = jniGetMethodID(env, vpn_class, "reportError", "(Ljava/lang/String;)V");
-    mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
-            mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
-    mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
-    mids.updateConnections = jniGetMethodID(env, vpn_class, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
-    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
-    mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
-    mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
-    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/model/Blacklists$NativeBlacklistStatus;)V");
-    mids.getBlacklistsInfo = jniGetMethodID(env, vpn_class, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
-    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIIJ)V");
-    mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
-    mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
-    mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJIIIII)V");
-    mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-    mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJIIIIIIIII)V");
-    mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
-    mids.listSize = jniGetMethodID(env, cls.list, "size", "()I");
-    mids.listGet = jniGetMethodID(env, cls.list, "get", "(I)Ljava/lang/Object;");
-
-    /* Fields */
-    fields.bldescr_fname = jniFieldID(env, cls.blacklist_descriptor, "fname", "Ljava/lang/String;");
-    fields.bldescr_type = jniFieldID(env, cls.blacklist_descriptor, "type", "Lcom/emanuelef/remote_capture/model/BlacklistDescriptor$Type;");
-    fields.ld_apps = jniFieldID(env, cls.matchlist_descriptor, "apps", "Ljava/util/List;");
-    fields.ld_hosts = jniFieldID(env, cls.matchlist_descriptor, "hosts", "Ljava/util/List;");
-    fields.ld_ips = jniFieldID(env, cls.matchlist_descriptor, "ips", "Ljava/util/List;");
-
-    pcapdroid_t pd = {
-            .sdk_ver = sdk,
-            .env = env,
-            .capture_service = vpn,
-            .ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE),
-            .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
-            .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
-            .new_conn_id = 0,
-            .pcap_dump = {
-                    .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
-            },
-            .socks5 = {
-                    .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
-                    .proxy_ip = getIPv4Pref(env, vpn, "getSocks5ProxyAddress"),
-                    .proxy_port = htons(getIntPref(env, vpn, "getSocks5ProxyPort")),
-            },
-            .ipv6 = {
-                    .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
-                    .dns_server = getIPv6Pref(env, vpn, "getIpv6DnsServer"),
-            },
-            .malware_detection = {
-                    .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
-            }
-    };
-
-    getStringPref(&pd, "getWorkingDir", pd.cachedir, sizeof(pd.cachedir));
-    strcat(pd.cachedir, "/");
-    pd.cachedir_len = strlen(pd.cachedir);
-
-    getStringPref(&pd, "getPersistentDir", pd.filesdir, sizeof(pd.filesdir));
-    strcat(pd.filesdir, "/");
-    pd.filesdir_len = strlen(pd.filesdir);
-
-    // Enable or disable the PCAPdroid trailer
-    pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
-
+int pd_run(pcapdroid_t *pd) {
     /* Important: init global state every time. Android may reuse the service. */
     running = true;
-
-    logcallback = log_callback;
-    global_pd = &pd;
+    netd_resolve_waiting = 0;
 
     /* nDPI */
-    pd.ndpi = init_ndpi();
-    init_protocols_bitmask(&masterProtos);
-    if(pd.ndpi == NULL) {
+    pd->ndpi = init_ndpi();
+    if(pd->ndpi == NULL) {
         log_f("nDPI initialization failed");
         return(-1);
     }
 
-    if(pd.malware_detection.enabled)
-        load_blacklists_info(&pd);
+    pd->ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE);
+
+    if(pd->malware_detection.enabled && pd->cb.load_blacklists_info)
+        pd->cb.load_blacklists_info(pd);
 
     // Load the blacklist before starting
-    if(pd.malware_detection.enabled && reload_blacklists_now) {
+    if(pd->malware_detection.enabled && reload_blacklists_now) {
         reload_blacklists_now = false;
-        load_new_blacklists(&pd);
-        use_new_blacklists(&pd);
+        load_new_blacklists(pd);
+        use_new_blacklists(pd);
     }
 
-    signal(SIGPIPE, SIG_IGN);
+    if(pd->pcap_dump.enabled) {
+        pd->pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
+        pd->pcap_dump.buffer_idx = 0;
+        int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
-    if(pd.pcap_dump.enabled) {
-        pd.pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
-        pd.pcap_dump.buffer_idx = 0;
+        if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
+            pd->pcap_dump.snaplen = max_snaplen;
 
-        if(!pd.pcap_dump.buffer) {
+        if(!pd->pcap_dump.buffer) {
             log_f("malloc(pcap_dump.buffer) failed with code %d/%s",
                         errno, strerror(errno));
             running = false;
         }
     }
 
-    memset(&pd.stats, 0, sizeof(pd.stats));
+    memset(&pd->stats, 0, sizeof(pd->stats));
 
-    pd_refresh_time(&pd);
-    last_connections_dump = pd.now_ms;
+    pd_refresh_time(pd);
+    last_connections_dump = pd->now_ms;
     next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
     bl_num_checked_connections = 0;
 
-    notifyServiceStatus(&pd, "started");
+    if(pd->cb.notify_service_status)
+        pd->cb.notify_service_status(pd, "started");
 
     // Run the capture
-    int rv = pd.root_capture ? run_root(&pd) : run_vpn(&pd, tunfd);
+    int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
 
     log_d("Stopped packet loop");
 
-    conns_clear(&pd.new_conns, true);
-    conns_clear(&pd.conns_updates, true);
+    // send last dump
+    if(pd->cb.send_connections_dump)
+        pd->cb.send_connections_dump(pd);
 
-    if(pd.firewall.bl)
-        blacklist_destroy(pd.firewall.bl);
-    if(pd.firewall.new_bl)
-        blacklist_destroy(pd.firewall.new_bl);
+    conns_clear(&pd->new_conns, true);
+    conns_clear(&pd->conns_updates, true);
 
-    if(pd.malware_detection.enabled) {
-        if(pd.malware_detection.reload_in_progress) {
+    if(pd->firewall.bl)
+        blacklist_destroy(pd->firewall.bl);
+    if(pd->firewall.new_bl)
+        blacklist_destroy(pd->firewall.new_bl);
+
+    if(pd->malware_detection.enabled) {
+        if(pd->malware_detection.reload_in_progress) {
             log_d("Joining blacklists reload_worker");
-            pthread_join(pd.malware_detection.reload_worker, NULL);
+            pthread_join(pd->malware_detection.reload_worker, NULL);
         }
-        if(pd.malware_detection.bl)
-            blacklist_destroy(pd.malware_detection.bl);
-        if(pd.malware_detection.whitelist)
-            blacklist_destroy(pd.malware_detection.whitelist);
-        if(pd.malware_detection.new_wl)
-            blacklist_destroy(pd.malware_detection.new_wl);
-        if(pd.malware_detection.bls_info) {
-            for(int i=0; i < pd.malware_detection.num_bls; i++)
-                pd_free(pd.malware_detection.bls_info[i].fname);
-            pd_free(pd.malware_detection.bls_info);
+        if(pd->malware_detection.bl)
+            blacklist_destroy(pd->malware_detection.bl);
+        if(pd->malware_detection.whitelist)
+            blacklist_destroy(pd->malware_detection.whitelist);
+        if(pd->malware_detection.new_wl)
+            blacklist_destroy(pd->malware_detection.new_wl);
+        if(pd->malware_detection.bls_info) {
+            for(int i=0; i < pd->malware_detection.num_bls; i++)
+                pd_free(pd->malware_detection.bls_info[i].fname);
+            pd_free(pd->malware_detection.bls_info);
         }
     }
-    ndpi_exit_detection_module(pd.ndpi);
 
-    if(pd.pcap_dump.buffer) {
-        if(pd.pcap_dump.buffer_idx > 0)
-            javaPcapDump(&pd);
+#ifndef FUZZING
+    ndpi_exit_detection_module(pd->ndpi);
+#endif
 
-        pd_free(pd.pcap_dump.buffer);
-        pd.pcap_dump.buffer = NULL;
-    }
+    if(pd->pcap_dump.buffer)
+        stop_pcap_dump(pd);
 
     uid_to_app_t *e, *tmp;
-    HASH_ITER(hh, pd.uid2app, e, tmp) {
-        HASH_DEL(pd.uid2app, e);
+    HASH_ITER(hh, pd->uid2app, e, tmp) {
+        HASH_DEL(pd->uid2app, e);
         pd_free(e);
     }
 
-    notifyServiceStatus(&pd, "stopped");
+    if(pd->cb.notify_service_status)
+        pd->cb.notify_service_status(pd, "stopped");
 
-    log_d("Host LRU cache size: %d", ip_lru_size(pd.ip_to_host));
-    log_d("Discarded fragments: %ld", pd.num_discarded_fragments);
-    ip_lru_destroy(pd.ip_to_host);
-
-    logcallback = NULL;
-    global_pd = NULL;
-
-#ifdef PCAPDROID_TRACK_ALLOCS
-    log_i(get_allocs_summary());
-#endif
+    log_d("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
+    log_d("Discarded fragments: %ld", pd->num_discarded_fragments);
+    ip_lru_destroy(pd->ip_to_host);
 
     return(rv);
-}
-
-/* ******************************************************* */
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jclass type) {
-    /* NOTE: the select on the packets loop uses a timeout to wake up periodically */
-    log_i( "stopPacketLoop called");
-    running = false;
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
-                                                              jobject vpn, jint sdk) {
-
-    run_loop(env, vpn, tunfd, sdk);
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jclass clazz) {
-    if(running)
-        dump_capture_stats_now = true;
-}
-
-JNIEXPORT jint JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_getFdSetSize(JNIEnv *env, jclass clazz) {
-    return FD_SETSIZE;
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jclass clazz,
-                                                               jstring server) {
-    struct in_addr addr = {0};
-    const char *value = (*env)->GetStringUTFChars(env, server, 0);
-
-    if(inet_aton(value, &addr) != 0)
-        new_dns_server = addr.s_addr;
-}
-
-JNIEXPORT jbyteArray JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jclass clazz) {
-    struct pcap_hdr_s pcap_hdr;
-
-    pcap_build_hdr(&pcap_hdr);
-
-    jbyteArray barray = (*env)->NewByteArray(env, sizeof(struct pcap_hdr_s));
-    if((barray == NULL) || jniCheckException(env))
-        return NULL;
-
-    (*env)->SetByteArrayRegion(env, barray, 0, sizeof(struct pcap_hdr_s), (jbyte*)&pcap_hdr);
-
-    if(jniCheckException(env)) {
-        (*env)->DeleteLocalRef(env, barray);
-        return NULL;
-    }
-
-    return barray;
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, jclass clazz) {
-    reload_blacklists_now = true;
-}
-
-JNIEXPORT jint JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedConnections(JNIEnv *env, jclass clazz) {
-    return bl_num_checked_connections;
-}
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_setPrivateDnsBlocked(JNIEnv *env, jclass clazz, jboolean to_block) {
-    block_private_dns = to_block;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, jclass clazz,
-        jobject ld) {
-    pcapdroid_t *pd = global_pd;
-    if(!pd) {
-        log_e("NULL pd instance");
-        return false;
-    }
-
-    if(pd->root_capture) {
-        log_e("firewall in root mode not implemented");
-        return false;
-    }
-
-    if(pd->firewall.new_bl != NULL) {
-        log_e("previous blocklist not loaded yet");
-        return false;
-    }
-
-    blacklist_t *bl = blacklist_init();
-    if(!bl) {
-        log_e("blacklist_init failed");
-        return false;
-    }
-
-    if(blacklist_load_list_descriptor(bl, env, ld) < 0) {
-        blacklist_destroy(bl);
-        return false;
-    }
-
-    blacklists_stats_t stats;
-    blacklist_get_stats(bl, &stats);
-    log_d("reloadBlocklist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
-
-    pd->firewall.new_bl = bl;
-    return true;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv *env, jclass clazz,
-                                                                         jobject whitelist) {
-    pcapdroid_t *pd = global_pd;
-    if(!pd) {
-        log_e("NULL pd instance");
-        return false;
-    }
-
-    if(!pd->malware_detection.enabled) {
-        log_e("malware detection not enabled");
-        return false;
-    }
-
-    if(pd->malware_detection.new_wl != NULL) {
-        log_e("previous whitelist not loaded yet");
-        return false;
-    }
-
-    blacklist_t *wl = blacklist_init();
-    if(!wl) {
-        log_e("blacklist_init failed");
-        return false;
-    }
-
-    if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
-        blacklist_destroy(wl);
-        return false;
-    }
-
-    blacklists_stats_t stats;
-    blacklist_get_stats(wl, &stats);
-    log_d("reloadMalwareWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
-
-    pd->malware_detection.new_wl = wl;
-    return true;
 }

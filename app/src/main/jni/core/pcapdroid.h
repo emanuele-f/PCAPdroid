@@ -20,12 +20,12 @@
 #ifndef __PCAPDROID_H__
 #define __PCAPDROID_H__
 
-#include <jni.h>
 #include <stdbool.h>
 #include "zdtun.h"
 #include "ip_lru.h"
 #include "blacklist.h"
 #include "ndpi_api.h"
+#include "common/jni_utils.h"
 #include "common/uid_resolver.h"
 #include "third_party/uthash.h"
 
@@ -35,10 +35,12 @@
 #define NETD_RESOLVE_DELAY_MS 1000
 #define SELECT_TIMEOUT_MS 250
 #define MAX_DPI_PACKETS 12
+#define VPN_BUFFER_SIZE 32768
 #define MAX_HOST_LRU_SIZE 256
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 #define MAX_PLAINTEXT_LENGTH 1024
+#define MIN_REQ_PLAINTEXT_CHARS 3        // Minimum length (e.g. of "GET") to avoid reporting non-requests
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
@@ -130,12 +132,30 @@ typedef struct pkt_context {
     pd_conn_t *data;
 } pkt_context_t;
 
-typedef struct pcap_conn pcap_conn_t;
+/* ******************************************************* */
 
+struct pcapdroid;
+
+// Used to decouple pcapdroid.c from the JNI calls
 typedef struct {
+    void (*get_libprog_path)(struct pcapdroid *pd, const char *prog_name, char *buf, int bufsize);
+     int (*load_blacklists_info)(struct pcapdroid *pd);
+    void (*send_stats_dump)(struct pcapdroid *pd);
+    void (*send_connections_dump)(struct pcapdroid *pd);
+    void (*send_pcap_dump)(struct pcapdroid *pd);
+    void (*stop_pcap_dump)(struct pcapdroid *pd);
+    void (*notify_service_status)(struct pcapdroid *pd, const char *status);
+    void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
+} pd_callbacks_t;
+
+/* ******************************************************* */
+
+typedef struct pcapdroid {
+#ifdef ANDROID
     JNIEnv *env;
     jobject capture_service;
     jint sdk_ver;
+#endif
     int new_conn_id;
     uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     struct ndpi_detection_module_struct *ndpi;
@@ -143,6 +163,7 @@ typedef struct {
     ip_lru_t *ip_to_host;
     conn_array_t new_conns;
     conn_array_t conns_updates;
+    pd_callbacks_t cb;
     uid_to_app_t *uid2app;
     char cachedir[PATH_MAX];
     char filesdir[PATH_MAX];
@@ -171,17 +192,24 @@ typedef struct {
             uid_resolver_t *resolver;
         } vpn;
         struct {
-            pcap_conn_t *connections;
-        } root;
+            struct pcap_conn_t *connections;
+            bool as_root;
+            char *bpf;
+            char *capture_interface;
+        } root; // TODO rename: it can run without root to read a PCAP file
     };
 
     struct {
         bool enabled;
+        int snaplen;
+        int max_pkts_per_flow;
+        int max_dump_size;
         // the crc32 implementation requires 4-bytes aligned accesses.
         // frames are padded to honor the 4-bytes alignment.
         jbyte *buffer  __attribute__((aligned (4)));
         int buffer_idx;
-        u_int64_t last_dump_ms;
+        uint64_t last_dump_ms;
+        uint64_t tot_size;
     } pcap_dump;
 
     struct {
@@ -232,11 +260,14 @@ typedef struct {
 
 /* ******************************************************* */
 
+#ifdef ANDROID
+
 typedef struct {
     jmethodID reportError;
     jmethodID getApplicationByUid;
     jmethodID protect;
     jmethodID dumpPcapData;
+    jmethodID stopPcapDump;
     jmethodID updateConnections;
     jmethodID connInit;
     jmethodID connProcessUpdate;
@@ -274,16 +305,23 @@ typedef struct {
     jfieldID ld_ips;
 } jni_fields_t;
 
-/* ******************************************************* */
-
 extern jni_methods_t mids;
 extern jni_classes_t cls;
 extern jni_fields_t fields;
+
+#endif // ANDROID
+
+/* ******************************************************* */
+
 extern bool running;
 extern uint32_t new_dns_server;
 extern bool block_private_dns;
+extern bool dump_capture_stats_now;
+extern bool reload_blacklists_now;
+extern int bl_num_checked_connections;
 
 // capture API
+int pd_run(pcapdroid_t *pd);
 void pd_refresh_time(pcapdroid_t *pd);
 void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
                        pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
@@ -293,17 +331,24 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 void pd_purge_connection(pd_conn_t *data);
 void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
+const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto);
 
 // Utility
-const char* get_cache_path(const char *subpath);
-const char* get_file_path(const char *subpath);
-static inline const char* get_cache_dir() { return get_cache_path(""); }
-static inline const char* get_files_dir() { return get_file_path(""); }
+const char* get_cache_path(pcapdroid_t *pd, const char *subpath);
+const char* get_file_path(pcapdroid_t *pd, const char *subpath);
+static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path(pd, ""); }
+static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
+
+#ifdef ANDROID
+
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
+void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
+
+#endif // ANDROID
 
 // Internals
 struct pcapdroid_trailer;

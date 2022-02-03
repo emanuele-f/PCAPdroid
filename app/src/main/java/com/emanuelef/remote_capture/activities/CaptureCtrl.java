@@ -42,6 +42,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -207,6 +208,8 @@ public class CaptureCtrl extends AppCompatActivity {
             Log.d(TAG, "Returning status");
 
             res.putExtra("running", CaptureService.isServiceActive());
+            res.putExtra("version_name", BuildConfig.VERSION_NAME);
+            res.putExtra("version_code", BuildConfig.VERSION_CODE);
         } else {
             Log.e(TAG, "unknown action: " + action);
             abort();

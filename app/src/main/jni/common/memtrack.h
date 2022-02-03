@@ -18,6 +18,7 @@
  */
 
 #ifndef PCAPDROID_MEMTRACK_H
+#define PCAPDROID_MEMTRACK_H
 
 #include <malloc.h>
 #include <stdatomic.h>

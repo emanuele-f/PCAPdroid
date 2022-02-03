@@ -22,7 +22,6 @@
 #include "pcapdroid.h"
 #include "pcap_utils.h"
 
-#define SNAPLEN 65535
 #define LINKTYPE_ETHERNET 1
 #define LINKTYPE_RAW      101
 
@@ -37,20 +36,20 @@ void pcap_set_pcapdroid_trailer(uint8_t enabled) {
 
 /* ******************************************************* */
 
-void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr) {
+void pcap_build_hdr(int snaplen, struct pcap_hdr_s *pcap_hdr) {
     pcap_hdr->magic_number = 0xa1b2c3d4;
     pcap_hdr->version_major = 2;
     pcap_hdr->version_minor = 4;
     pcap_hdr->thiszone = 0;
     pcap_hdr->sigfigs = 0;
-    pcap_hdr->snaplen = SNAPLEN;
+    pcap_hdr->snaplen = snaplen;
     pcap_hdr->network = pcapdroid_trailer ? LINKTYPE_ETHERNET : LINKTYPE_RAW;
 }
 
 /* ******************************************************* */
 
 /* Returns the size of a PCAP record */
-int pcap_rec_size(int pkt_len) {
+int pcap_rec_size(int snaplen, int pkt_len) {
     if(pcapdroid_trailer) {
         pkt_len += (int)(sizeof(pcapdroid_trailer_t) + sizeof(struct ethhdr));
 
@@ -58,8 +57,7 @@ int pcap_rec_size(int pkt_len) {
         pkt_len += (~pkt_len + 1) & 0x3;
     }
 
-    return((pkt_len < SNAPLEN ? pkt_len : SNAPLEN) +
-            (int)sizeof(struct pcaprec_hdr_s));
+    return(min(pkt_len, snaplen) + (int)sizeof(struct pcaprec_hdr_s));
 }
 
 /* ******************************************************* */
@@ -70,10 +68,11 @@ void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx) {
     const zdtun_pkt_t *pkt = pctx->pkt;
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
     int offset = 0;
+    int snaplen = pd->pcap_dump.snaplen;
 
     pcap_rec->ts_sec = pctx->tv.tv_sec;
     pcap_rec->ts_usec = pctx->tv.tv_usec;
-    pcap_rec->incl_len = pcap_rec_size(pkt->len) - (int)sizeof(struct pcaprec_hdr_s);
+    pcap_rec->incl_len = pcap_rec_size(snaplen, pkt->len) - (int)sizeof(struct pcaprec_hdr_s);
     pcap_rec->orig_len = pkt->len;
     buffer += sizeof(struct pcaprec_hdr_s);
 

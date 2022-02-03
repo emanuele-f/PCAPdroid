@@ -6,12 +6,16 @@ set(ROOTDIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../..)
 
 # Add debug symbols
 # See packagingOptions.doNotStrip in build.gradle to avoid stripping
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -fPIC")
 
 # zdtun
 set(ZDTUN_ROOT ${ROOTDIR}/submodules/zdtun)
 include_directories(${ZDTUN_ROOT})
 add_subdirectory(${ZDTUN_ROOT} zdtun_build)
+
+# nDPI
+set(NDPI_ROOT ${ROOTDIR}/submodules/nDPI)
+include_directories(${NDPI_ROOT}/src/include ${NDPI_ROOT}/src/lib/third_party/include)
 
 # base
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

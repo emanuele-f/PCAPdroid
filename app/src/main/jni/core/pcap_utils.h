@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include "common/utils.h"
 
 typedef struct pcap_hdr_s {
     uint32_t magic_number;
@@ -58,8 +59,8 @@ typedef struct pcapdroid_trailer {
 } __packed pcapdroid_trailer_t;
 
 void pcap_set_pcapdroid_trailer(uint8_t enabled);
-void pcap_build_hdr(struct pcap_hdr_s *pcap_hdr);
-int pcap_rec_size(int pkt_len);
+void pcap_build_hdr(int snaplen, struct pcap_hdr_s *pcap_hdr);
+int pcap_rec_size(int snaplen, int pkt_len);
 void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx);
 
 #endif // __MY_PCAP_H__

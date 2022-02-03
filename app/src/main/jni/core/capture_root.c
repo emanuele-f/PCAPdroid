@@ -26,6 +26,14 @@
 #include "common/utils.h"
 #include "third_party/uthash.h"
 
+// Needed for local compilation, don't remove
+extern char **environ;
+
+#ifdef FUZZING
+extern int openPcap(pcapdroid_t *pd);
+extern int nextPacket(pcapdroid_t *pd, pcapd_hdr_t *hdr, char *buf, size_t bufsize);
+#endif
+
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
 #define TCP_CLOSED_TIMEOUT_SEC 60   // some servers keep sending FIN+ACK after close
@@ -33,16 +41,16 @@
 
 /* ******************************************************* */
 
-struct pcap_conn {
+typedef struct pcap_conn_t {
     zdtun_5tuple_t tuple;
     pd_conn_t *data;
 
     UT_hash_handle hh;
-};
+} pcap_conn_t;
 
 /* ******************************************************* */
 
-static int su_cmd(const char *prog, const char *args, bool check_error) {
+static int run_cmd(const char *prog, const char *args, bool as_root, bool check_error) {
     int in_p[2], out_p[2];
     int rv = -1;
     pid_t pid;
@@ -54,7 +62,7 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
 
     if((pid = fork()) == 0) {
         // child
-        char *argp[] = {"sh", "-c", "su", NULL};
+        char *argp[] = {"sh", "-c", as_root ? "su" : "sh", NULL};
 
         close(in_p[1]);
         close(out_p[0]);
@@ -73,7 +81,7 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
         close(out_p[1]);
 
         // write "su" command input
-        log_d("su_cmd[%d]: %s %s", pid, prog, args);
+        log_d("run_cmd[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);
         write(in_p[1], args, strlen(args));
@@ -117,33 +125,6 @@ static int su_cmd(const char *prog, const char *args, bool check_error) {
 
 /* ******************************************************* */
 
-static void get_libprog_path(pcapdroid_t *pd, const char *prog_name, char *buf, int bufsize) {
-    JNIEnv *env = pd->env;
-    jobject prog_str = (*env)->NewStringUTF(env, prog_name);
-
-    buf[0] = '\0';
-
-    if((prog_str == NULL) || jniCheckException(env)) {
-        log_e("could not allocate get_libprog_path string");
-        return;
-    }
-
-    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getLibprogPath, prog_str);
-
-    if(!jniCheckException(env)) {
-        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
-
-        strncpy(buf, value, bufsize);
-        buf[bufsize - 1] = '\0';
-
-        (*env)->ReleaseStringUTFChars(env, obj, value);
-    }
-
-    (*env)->DeleteLocalRef(env, obj);
-}
-
-/* ******************************************************* */
-
 static void kill_pcapd(pcapdroid_t *nc) {
     int pid;
     char pid_s[8];
@@ -157,7 +138,7 @@ static void kill_pcapd(pcapdroid_t *nc) {
 
     if(pid != 0) {
         log_d("Killing old pcapd with pid %d", pid);
-        su_cmd("kill", pid_s, false);
+        run_cmd("kill", pid_s, true, false);
     }
 
     fclose(f);
@@ -165,22 +146,52 @@ static void kill_pcapd(pcapdroid_t *nc) {
 
 /* ******************************************************* */
 
+static bool valid_ifname(const char *name) {
+    if(*name == '\0')
+        return false;
+
+    if(strlen(name) >= 16)
+        return false;
+
+    while(*name) {
+        if((*name != '.') && (*name != '_') && (*name != '@') && !isalnum(*name))
+            return false;
+        name++;
+    }
+
+    return true;
+}
+
+/* ******************************************************* */
+
+static bool valid_bpf(const char *bpf) {
+    static const char disallowed_chars[] = "$'\"`\n\r";
+
+    while(*bpf) {
+        if(strchr(disallowed_chars, *bpf))
+            return false;
+        bpf++;
+    }
+
+    return true;
+}
+
+/* ******************************************************* */
+
 static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
-    char bpf[256];
     char pcapd[PATH_MAX];
-    char capture_interface[16];
+    char *bpf = pd->root.bpf ? pd->root.bpf : "";
 
-    getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
-    getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
-    get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
+    if(pd->cb.get_libprog_path)
+        pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
 
     if(!pcapd[0])
         return(-1);
 
-    if(chdir(get_cache_dir()) < 0) {
-        log_f("chdir to %s failed [%d]: %s", get_cache_dir(),
+    if(chdir(get_cache_dir(pd)) < 0) {
+        log_f("chdir to %s failed [%d]: %s", get_cache_dir(pd),
                     errno, strerror(errno));
         return (-1);
     }
@@ -212,13 +223,28 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     log_d("AF_UNIX socket listening at '%s'", addr.sun_path);
 
-    if(bpf[0])
-        log_d("Using dumper BPF \"%s\"", bpf);
+    // Validate parameters to prevent command injection
+    if(bpf[0]) {
+        if(!valid_bpf(bpf)) {
+            log_e("BPF contains suspicious characters");
+            goto cleanup;
+        }
+        log_d("BPF filter is in use");
+    }
+
+#ifdef ANDROID
+    // File paths are currently disallowed
+    // NOTE: interface validation is currently skipped when running local tests (files are used)
+    if(!valid_ifname(pd->root.capture_interface)) {
+        log_e("Invalid capture_interface");
+        goto cleanup;
+    }
+#endif
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i %s -d -u %d -t -b \"%s\"", capture_interface, pd->app_filter, bpf);
-    if(su_cmd(pcapd, args, true) != 0)
+    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->app_filter, bpf);
+    if(run_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
     // Wait for pcapd to start
@@ -263,7 +289,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
             break;
     }
 
-    HASH_DELETE(hh, pd->root.connections, conn);
+    HASH_DEL(pd->root.connections, conn);
     pd_free(conn);
 }
 
@@ -271,7 +297,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
 
 // Determines when a connection gets closed
 static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
-  // NOTE: pcap_conn_t neeeded below in remove_connection
+  // NOTE: pcap_conn_t needed below in remove_connection
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
 
@@ -320,7 +346,7 @@ static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_p
               if(data->pending_dns_queries == 0) {
                   data->status = CONN_STATUS_CLOSED;
 
-                  // Remove the connection from the hash to ensure that if the DNS connection is
+                  // Remove the connection from the hash table to ensure that if the DNS connection is
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
                   data->to_purge = true;
@@ -444,11 +470,18 @@ static void handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer)
     // like last_seen but monotonic
     conn->data->root.last_update_ms = pd->now_ms;
 
+    // make a copy before passing it to pd_process_packet since conn may
+    // be freed in update_connection_status, while the pkt_context_t is still
+    // used in pd_account_stats
+    zdtun_5tuple_t conn_tuple = conn->tuple;
+
     struct timeval tv = hdr->ts;
     pkt_context_t pinfo;
-    pd_process_packet(pd, &pkt, is_tx, &conn->tuple, conn->data, &tv, &pinfo);
+    pd_process_packet(pd, &pkt, is_tx, &conn_tuple, conn->data, &tv, &pinfo);
 
+    // NOTE: this may free the conn
     update_connection_status(pd, conn, &pkt, !is_tx);
+
     pd_account_stats(pd, &pinfo);
 }
 
@@ -512,17 +545,35 @@ void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 int run_root(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
-    char buffer[65535];
+    char buffer[PCAPD_SNAPLEN];
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+#if ANDROID
+    char capture_interface[16] = "@inet";
+    char bpf[256];
+    bpf[0] = '\0';
+
+    pd->root.as_root = true; // TODO support read from PCAP file
+    pd->root.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
+    pd->root.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+#endif
 
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
+#ifndef FUZZING
     if((sock = connectPcapd(pd)) < 0) {
         rv = -1;
         goto cleanup;
     }
+#else
+    // spawning a daemon is too expensive for fuzzing
+    if((sock = openPcap(pd)) < 0) {
+        rv = -1;
+        goto cleanup;
+    }
+#endif
 
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -544,24 +595,34 @@ int run_root(pcapdroid_t *pd) {
 
         pd_refresh_time(pd);
 
-        if(!running)
-            break;
-
         if(!FD_ISSET(sock, &fdset))
             goto housekeeping;
 
-        if(xread(sock, &hdr, sizeof(hdr)) < 0) {
-            log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
+        if(!running)
+            break;
+
+#ifndef FUZZING
+        ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
+        if(xrv != sizeof(hdr)) {
+            if(xrv < 0)
+                log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
         if(hdr.len > sizeof(buffer)) {
             log_e("packet too big (%d B)", hdr.len);
             goto cleanup;
         }
-        if(xread(sock, buffer, hdr.len) < 0) {
+        if(xread(sock, buffer, hdr.len) != hdr.len) {
             log_e("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
             goto cleanup;
         }
+#else
+        int xrv = nextPacket(pd, &hdr, buffer, sizeof(buffer));
+        if(xrv < 0)
+          goto cleanup;
+        else if(xrv == 0)
+          goto housekeeping;
+#endif
 
         pd->num_dropped_pkts = hdr.pkt_drops;
         handle_packet(pd, &hdr, buffer);

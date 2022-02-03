@@ -17,8 +17,8 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-#ifndef __IP_LRU_H__
-#define __IP_LRU_H__
+#ifndef __UID_LRU_H__
+#define __UID_LRU_H__
 
 #include "zdtun.h"
 
@@ -30,4 +30,4 @@ void uid_lru_add(uid_lru_t *lru, const zdtun_5tuple_t *tuple, int uid);
 int uid_lru_find(uid_lru_t *lru, const zdtun_5tuple_t *tuple);
 int uid_lru_size(uid_lru_t *lru);
 
-#endif // __IP_LRU_H__
+#endif // __UID_LRU_H__
