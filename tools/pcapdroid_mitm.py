@@ -18,7 +18,7 @@
 #  Copyright 2022 - Emanuele Faranda
 #
 
-# mitmdump -q -p 8050 --mode socks5 -s pcapdroid.py
+# mitmdump -q -p 8050 --mode socks5 -s pcapdroid_mitm.py
 from enum import Enum
 import socket
 import errno
