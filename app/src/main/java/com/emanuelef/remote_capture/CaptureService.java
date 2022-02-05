@@ -74,6 +74,7 @@ import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -100,6 +101,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
     private Thread mDumperThread;
+    private PlaintextReceiver mPlaintextReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
@@ -285,6 +287,17 @@ public class CaptureService extends VpnService implements Runnable {
                 e.printStackTrace();
                 mDumper = null;
                 return abortStart();
+            }
+        }
+
+        // adb shell run-as com.emanuelef.remote_capture.debug touch cache/BETA_PLAINTEXT_RECEIVER
+        if(mSettings.socks5_enabled && (new File(getCacheDir() + "/BETA_PLAINTEXT_RECEIVER")).exists()) {
+            mPlaintextReceiver = new PlaintextReceiver();
+            try {
+                mPlaintextReceiver.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+                mPlaintextReceiver = null;
             }
         }
 
@@ -619,6 +632,15 @@ public class CaptureService extends VpnService implements Runnable {
         }
         mDumperThread = null;
         mDumper = null;
+
+        if(mPlaintextReceiver != null) {
+            try {
+                mPlaintextReceiver.stop();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mPlaintextReceiver = null;
+        }
 
         if(mParcelFileDescriptor != null) {
             try {

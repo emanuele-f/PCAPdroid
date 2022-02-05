@@ -303,6 +303,14 @@ public class ConnectionsRegister {
         return -1;
     }
 
+    public synchronized @Nullable ConnectionDescriptor getConnById(int incr_id) {
+        int pos = getConnPositionById(incr_id);
+        if(pos < 0)
+            return null;
+
+        return getConn(pos);
+    }
+
     public synchronized List<AppStats> getAppsStats() {
         ArrayList<AppStats> rv = new ArrayList<>(mAppsStats.size());
 

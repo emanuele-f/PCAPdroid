@@ -468,6 +468,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 /* ******************************************************* */
 
+// sync with PlaintextReceiver
 static int is_plaintext(char c) {
     return isprint(c) || (c == '\r') || (c == '\n') || (c == '\t');
 }

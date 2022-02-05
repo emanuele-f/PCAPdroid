@@ -39,7 +39,7 @@
 #define MAX_HOST_LRU_SIZE 256
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
-#define MAX_PLAINTEXT_LENGTH 1024
+#define MAX_PLAINTEXT_LENGTH 1024        // sync with PlaintextReceiver
 #define MIN_REQ_PLAINTEXT_CHARS 3        // Minimum length (e.g. of "GET") to avoid reporting non-requests
 
 #define DNS_FLAGS_MASK 0x8000
@@ -74,6 +74,7 @@ typedef struct {
         } root;
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet
+            uint16_t local_port;         // local port, from zdtun to the Internet
         } vpn;
     };
 
