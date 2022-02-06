@@ -47,7 +47,6 @@ import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.ViewHolder>
         implements ConnectionsListener {
@@ -432,7 +431,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         AppsResolver resolver = new AppsResolver(mContext);
 
         // Header
-        builder.append(mContext.getString(R.string.connections_csv_fields_v1));
+        builder.append(mContext.getString(R.string.connections_csv_fields));
         builder.append("\n");
 
         // Contents

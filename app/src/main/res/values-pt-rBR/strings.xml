@@ -71,7 +71,6 @@
     <string name="last_seen">Visto último</string>
     <string name="conn_status_closed">Fechado</string>
     <string name="copy_to_clipboard">Copiar ao Clipboard</string>
-    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">Salvar em arquivo</string>
     <string name="older_connections_notice">%1$d conexões mais antigas não mostradas</string>
     <string name="about_text">PCAPdroid é uma ferramenta de captura e monitoramento de rede de software livre que funciona sem acesso Root.</string>

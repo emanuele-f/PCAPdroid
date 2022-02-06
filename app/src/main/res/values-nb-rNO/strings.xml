@@ -191,7 +191,6 @@
     <string name="tot_connections">Alle tilkoblinger</string>
     <string name="capture_running">Opptak kjører</string>
     <string name="enable_ipv6_summary">Tillat IPv6-tilkoblinger til Internett. Kun bruk dette på nettverk med en IPv6-portner.</string>
-    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="max_file_descriptor">Maks. FD</string>
     <string name="packets_dropped">Pakker som ikke kom fram</string>
     <string name="installed_on">Installert</string>
