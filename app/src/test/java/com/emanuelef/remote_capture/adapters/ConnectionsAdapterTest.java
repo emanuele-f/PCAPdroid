@@ -433,7 +433,7 @@ public class ConnectionsAdapterTest {
     ConnectionDescriptor newConnection(boolean active) {
         ConnectionDescriptor conn = new ConnectionDescriptor(incrId++, 4, 6,
                 "1.1.1.1", "2.2.2.2", 51234, 80,
-                -1, 0, 0);
+                0, -1, 0, 0);
         conn.status = active ? ConnectionDescriptor.CONN_STATUS_CONNECTED : ConnectionDescriptor.CONN_STATUS_CLOSED;
         return conn;
     }
