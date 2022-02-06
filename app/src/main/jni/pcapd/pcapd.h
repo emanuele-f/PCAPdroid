@@ -18,6 +18,10 @@
 #include <time.h>
 #include <stdint.h>
 
+// Using a snaplen large enough to avoid truncating packets even with TSO/GRO. Size is currently
+// limited to 16 bits by pcapd_hdr_t.len
+#define PCAPD_SNAPLEN 65535
+
 // pcap/dlt.h
 #define PCAPD_DLT_ETHERNET    1
 #define PCAPD_DLT_RAW         12

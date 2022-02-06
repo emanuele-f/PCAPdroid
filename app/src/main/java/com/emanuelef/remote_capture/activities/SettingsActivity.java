@@ -28,6 +28,7 @@ import android.text.InputType;
 import android.util.Patterns;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -125,6 +126,13 @@ public class SettingsActivity extends BaseActivity {
             }
         }
 
+        private @NonNull <T extends Preference> T requirePreference(String key) {
+            T pref = findPreference(key);
+            if(pref == null)
+                throw new IllegalStateException();
+            return pref;
+        }
+
         private boolean validatePort(String value) {
             try {
                 int val = Integer.parseInt(value);
@@ -137,7 +145,7 @@ public class SettingsActivity extends BaseActivity {
         @SuppressWarnings("deprecation")
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
-            EditTextPreference mRemoteCollectorIp = findPreference(Prefs.PREF_COLLECTOR_IP_KEY);
+            EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
             mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                     return (InetAddresses.isNumericAddress(newValue.toString()));
@@ -148,14 +156,14 @@ public class SettingsActivity extends BaseActivity {
             });
 
             /* Collector port validation */
-            EditTextPreference mRemoteCollectorPort = findPreference(Prefs.PREF_COLLECTOR_PORT_KEY);
+            EditTextPreference mRemoteCollectorPort = requirePreference(Prefs.PREF_COLLECTOR_PORT_KEY);
             mRemoteCollectorPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
         private void setupHttpServerPrefs() {
             /* HTTP Server port validation */
-            EditTextPreference mHttpServerPort = findPreference(Prefs.PREF_HTTP_SERVER_PORT);
+            EditTextPreference mHttpServerPort = requirePreference(Prefs.PREF_HTTP_SERVER_PORT);
             mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
@@ -189,15 +197,15 @@ public class SettingsActivity extends BaseActivity {
         }
 
         private void setupCapturePrefs() {
-            mCapInterface = findPreference(Prefs.PREF_CAPTURE_INTERFACE);
+            mCapInterface = requirePreference(Prefs.PREF_CAPTURE_INTERFACE);
             refreshInterfaces();
         }
 
         private void setupSecurityPrefs() {
-            mMalwareDetectionEnabled = findPreference(Prefs.PREF_MALWARE_DETECTION);
+            mMalwareDetectionEnabled = requirePreference(Prefs.PREF_MALWARE_DETECTION);
 
             if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
-                getPreferenceScreen().removePreference(findPreference("security"));
+                getPreferenceScreen().removePreference(requirePreference("security"));
                 return;
             }
 
@@ -218,17 +226,17 @@ public class SettingsActivity extends BaseActivity {
 
         @SuppressWarnings("deprecation")
         private void setupSocks5ProxyPrefs() {
-            mProxyPrefs = findPreference("proxy_prefs");
-            mTlsHelp = findPreference("tls_how_to");
+            mProxyPrefs = requirePreference("proxy_prefs");
+            mTlsHelp = requirePreference("tls_how_to");
 
-            mTlsDecryptionEnabled = findPreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
+            mTlsDecryptionEnabled = requirePreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
             mTlsDecryptionEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 socks5ProxyHideShow((Boolean) newValue);
                 return true;
             });
 
             /* TLS Proxy IP validation */
-            mSocks5ProxyIp = findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
+            mSocks5ProxyIp = requirePreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
             mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                     return (InetAddresses.isNumericAddress(newValue.toString()));
@@ -239,7 +247,7 @@ public class SettingsActivity extends BaseActivity {
             });
 
             /* TLS Proxy port validation */
-            mSocks5ProxyPort = findPreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
+            mSocks5ProxyPort = requirePreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
             mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
@@ -253,14 +261,14 @@ public class SettingsActivity extends BaseActivity {
         }
 
         private void setupOtherPrefs() {
-            DropDownPreference appLang = findPreference(Prefs.PREF_APP_LANGUAGE);
+            DropDownPreference appLang = requirePreference(Prefs.PREF_APP_LANGUAGE);
 
-            if(SettingsActivity.ACTION_LANG_RESTART.equals(getActivity().getIntent().getAction()))
+            if(SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
                 scrollToPreference(appLang);
 
             // Current locale applied via BaseActivity.attachBaseContext
             appLang.setOnPreferenceChangeListener((preference, newValue) -> {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
                 if(prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
                     // Restart the activity to apply the language change
@@ -275,7 +283,7 @@ public class SettingsActivity extends BaseActivity {
                 return false;
             });
 
-            DropDownPreference appTheme = findPreference(Prefs.PREF_APP_THEME);
+            DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
 
             appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
                 Utils.setAppTheme(newValue.toString());
@@ -283,7 +291,7 @@ public class SettingsActivity extends BaseActivity {
                 return true;
             });
 
-            mRootCaptureEnabled = findPreference(Prefs.PREF_ROOT_CAPTURE);
+            mRootCaptureEnabled = requirePreference(Prefs.PREF_ROOT_CAPTURE);
 
             if(Utils.isRootAvailable()) {
                 mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -293,9 +301,9 @@ public class SettingsActivity extends BaseActivity {
             } else
                 mRootCaptureEnabled.setVisible(false);
 
-            mIpv6Enabled = findPreference(Prefs.PREF_IPV6_ENABLED);
+            mIpv6Enabled = requirePreference(Prefs.PREF_IPV6_ENABLED);
 
-            Preference ctrlPerm = findPreference("control_permissions");
+            Preference ctrlPerm = requirePreference("control_permissions");
             if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
                 ctrlPerm.setVisible(false);
             else

@@ -29,75 +29,27 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
+#include "pcapd_priv.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <signal.h>
 #include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <net/if.h>
 #include <time.h>
-#include <pcap.h>
 #include <pcap/sll.h>
 #include "pcapd.h"
 #include "nl_utils.h"
-#include "common/uid_resolver.h"
-#include "common/uid_lru.h"
-#include "common/utils.h"
-#include "zdtun.h"
 
 //#define READ_FROM_PCAP "/sdcard/test.pcap"
-#define MAX_IFACES 16
 
 /* ******************************************************* */
-
-typedef struct {
-  char *ifnames[MAX_IFACES];
-  char *bpf;
-  char *log_file;
-  int uid_filter;
-  int num_interfaces;
-  int daemonize;
-  int dump_datalink;
-  int inet_ifid;
-  int no_client;
-} pcapd_conf_t;
-
-typedef struct {
-  char name[IFNAMSIZ];
-  int ifidx;
-  uint8_t ifid;       // positional interface index
-  pcap_t *pd;
-  int pf;
-  int dlink;
-  int ipoffset;
-  uint64_t mac;
-  uint32_t ip;
-  struct in6_addr ip6;
-  time_t next_stats_update;
-  struct pcap_stat stats;
-} pcapd_iface_t;
-
-typedef struct {
-  char bpf[512];
-  char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
-
-  int nlsock;
-  int client;
-
-  zdtun_t *tun;
-  uid_lru_t *lru;
-  uid_resolver_t *resolver;
-  pcapd_iface_t *inet_iface;
-  pcapd_iface_t ifaces[MAX_IFACES];
-  fd_set sel_fds;
-  int maxfd;
-  pcapd_conf_t *conf;
-} pcapd_runtime_t;
 
 static void init_interface(pcapd_iface_t *iface);
 static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface);
@@ -179,25 +131,6 @@ static int get_iface_mac(const char *iface, uint64_t *mac) {
 
 /* ******************************************************* */
 
-static int get_iface_mtu(const char *iface) {
-  char fpath[128];
-  int mtu = -1;
-
-  snprintf(fpath, sizeof(fpath), "/sys/class/net/%s/mtu", iface);
-
-  FILE *f = fopen(fpath, "r");
-
-  if(f == NULL)
-    return -1;
-
-  fscanf(f, "%d", &mtu);
-  fclose(f);
-
-  return mtu;
-}
-
-/* ******************************************************* */
-
 static int get_iface_ip(const char *iface, uint32_t *ip, uint32_t *netmask) {
   struct ifreq ifr;
   int fd;
@@ -229,7 +162,7 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
   if(f == NULL)
     return -1;
 
-  __be32 *ip6 = ip->in6_u.u6_addr32;
+  __be32 *ip6 = ip->s6_addr32;
 
   while(fgets(line, sizeof(line), f)) {
     if((strstr(line, iface) != NULL) &&
@@ -237,8 +170,8 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
       for(int i=0; i<4; i++)
         ip6[i] = htonl(ip6[i]);
 
-      if((ip->in6_u.u6_addr8[0] == 0xfe) &&
-         ((ip->in6_u.u6_addr8[1] & 0xC0) == 0x80)) // link local address
+      if((ip->s6_addr[0] == 0xfe) &&
+         ((ip->s6_addr[1] & 0xC0) == 0x80)) // link local address
         continue;
 
       char addr[INET6_ADDRSTRLEN];
@@ -252,6 +185,14 @@ static int get_iface_ip6(const char *iface, struct in6_addr *ip) {
 
   fclose(f);
   return(found ? 0 : -1);
+}
+
+/* ******************************************************* */
+
+static void sum_stats(struct pcap_stat *out, const struct pcap_stat *to_sum) {
+  out->ps_drop += to_sum->ps_drop;
+  out->ps_ifdrop += to_sum->ps_ifdrop;
+  out->ps_recv += to_sum->ps_recv;
 }
 
 /* ******************************************************* */
@@ -334,18 +275,20 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   if(conf->inet_ifid != -1)
     rt->inet_iface = &rt->ifaces[conf->inet_ifid];
 
-  if(create_pid_file() < 0) {
+  if(conf->daemonize && (create_pid_file() < 0)) {
     log_e("pid file creation failed[%d]: %s", errno, strerror(errno));
     goto err;
   }
 
-  rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
-                                 RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
-  if(rt->nlsock < 0) {
-    log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
-    goto err;
+  if(rt->inet_iface) {
+    rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+                                   RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
+    if(rt->nlsock < 0) {
+      log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
+      goto err;
+    }
+    rt->maxfd = max(rt->maxfd, rt->nlsock);
   }
-  rt->maxfd = max(rt->maxfd, rt->nlsock);
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -393,28 +336,25 @@ static void init_interface(pcapd_iface_t *iface) {
 
 static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
-  int mtu = get_iface_mtu(ifname);
+  int is_file = 0;
 
-  if(mtu < 0) {
-    mtu = 1500;
-    log_w("Could not get \"%s\" interface MTU, assuming %d", ifname, mtu);
-  }
-
-  /* The snaplen includes the datalink overhead. Max datalink overhead (SLL2): 20 B */
-  int snaplen = mtu + SLL2_HDR_LEN;
-  log_d("Using a %d snaplen (MTU %d)", snaplen, mtu);
-
-  pcap_t *pd = pcap_open_live(ifname, snaplen, 0, 1, errbuf);
-
+  pcap_t *pd = pcap_open_live(ifname, PCAPD_SNAPLEN, 0, 1, errbuf);
   if(!pd) {
-    log_i("pcap_open_live(%s) failed: %s", ifname, errbuf);
-    return -1;
+    // try to open as file
+    pd = pcap_open_offline(ifname, errbuf);
+
+    if(!pd) {
+      log_i("pcap_open(%s) failed: %s", ifname, errbuf);
+      return -1;
+    }
+    is_file = 1;
   }
 
   // Fixes pcap_next_ex sometimes hanging on interface down
   // https://github.com/the-tcpdump-group/libpcap/issues/899
   pcap_setnonblock(pd, 1, errbuf);
 #else
+  int is_file = 1;
   pcap_t *pd = pcap_open_offline(READ_FROM_PCAP, errbuf);
 
   if(!pd) {
@@ -477,20 +417,21 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   // Success
   iface->pd = pd;
+  iface->is_file = is_file;
   iface->mac = 0;
   iface->ifid = ifid;
   iface->ifidx = if_nametoindex(ifname);
 
   errno = 0;
-  if((dlink == DLT_EN10MB) && (get_iface_mac(ifname, &iface->mac) < 0))
+  if(!is_file && (dlink == DLT_EN10MB) && (get_iface_mac(ifname, &iface->mac) < 0))
     log_i("Could not get interface \"%s\" MAC[%d]: %s", ifname, errno, strerror(errno));
 
   uint32_t netmask;
   iface->ip = 0;
-  if(get_iface_ip(ifname, &iface->ip, &netmask) < 0)
+  if(!is_file && get_iface_ip(ifname, &iface->ip, &netmask) < 0)
     log_i("Could not get interface \"%s\" IP[%d]: %s", ifname, errno, strerror(errno));
 
-  if(get_iface_ip6(ifname, &iface->ip6) < 0) {
+  if(!is_file && get_iface_ip6(ifname, &iface->ip6) < 0) {
     log_i("Could not get interface \"%s\" IPv6[%d]: %s", ifname, errno, strerror(errno));
     memset(&iface->ip6, 0, sizeof(iface->ip6));
   }
@@ -512,6 +453,10 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 static void close_interface(pcapd_runtime_t *rt, pcapd_iface_t *iface) {
   if(!iface->pd)
     return;
+
+  // Account the stats
+  pcap_stats(iface->pd, &iface->stats);
+  sum_stats(&rt->stats, &iface->stats);
 
   FD_CLR(iface->pf, &rt->sel_fds);
   pcap_close(iface->pd);
@@ -549,8 +494,12 @@ static void check_inet_interface(pcapd_runtime_t *rt) {
     return;
 
   // Success
-  if(old_pd)
+  if(old_pd) {
+    // Account the stats before closing the interface
+    pcap_stats(old_pd, &rt->inet_iface->stats);
+    sum_stats(&rt->stats, &rt->inet_iface->stats);
     pcap_close(old_pd);
+  }
 
   log_i("\"%s\" is the new internet interface", ifname);
 }
@@ -698,7 +647,7 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
   if(ip->version == 4) {
     if(ip->daddr == iface->ip)
       return 0; // RX
-  } else if(ip->version == 6) {
+  } else if((ip->version == 6) && (len >= sizeof(struct ipv6hdr))) {
     struct ipv6hdr *hdr = (struct ipv6hdr *) pkt;
 
     if(memcmp(&hdr->daddr, &iface->ip6, sizeof(iface->ip6)) == 0)
@@ -716,7 +665,8 @@ static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
   if(rt->client > 0)
     FD_SET(rt->client, fds);
 
-  FD_SET(rt->nlsock, fds);
+  if(rt->nlsock > 0)
+    FD_SET(rt->nlsock, fds);
 
   for(int i=0; i<rt->conf->num_interfaces; i++) {
     if(rt->ifaces[i].pf != -1)
@@ -732,19 +682,26 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
   int to_skip = iface->ipoffset;
   int rv = pcap_next_ex(iface->pd, &hdr, &pkt);
 
-  if(rv == PCAP_ERROR) {
-    log_i("pcap_next_ex failed: %s", pcap_geterr(iface->pd));
-    close_interface(rt, iface);
+  if(rv != 1) {
+    if(rv == PCAP_ERROR) {
+      log_i("pcap_next_ex failed: %s", pcap_geterr(iface->pd));
+      close_interface(rt, iface);
 
-    if(iface == rt->inet_iface)
-      // Do not abort, just wait for route/interface changes
-      return 0;
+      if(iface == rt->inet_iface)
+        // Do not abort, just wait for route/interface changes
+        return 0;
 
-    // abort, resuming other interfaces is not supported yet
-    return -1;
+      // abort, resuming other interfaces is not supported yet
+      return -1;
+    } else if(rv == PCAP_ERROR_BREAK)
+      // TODO handle EOF without error
+      return -1;
+
+    // can be reached when the packet buffer timeout expires
+    return 0;
   }
 
-  if((rv == 1) && (hdr->caplen >= to_skip)) {
+  if(hdr->caplen >= to_skip) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
     int len = hdr->caplen;
@@ -762,11 +719,15 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         tupleSwapPeers(&zpkt.tuple);
       }
 
-      int uid = uid_lru_find(rt->lru, &zpkt.tuple);
+      int uid = UID_UNKNOWN;
 
-      if(uid == -2) {
-        uid = get_uid(rt->resolver, &zpkt.tuple);
-        uid_lru_add(rt->lru, &zpkt.tuple, uid);
+      if(!iface->is_file) {
+        uid = uid_lru_find(rt->lru, &zpkt.tuple);
+
+        if(uid == -2) {
+          uid = get_uid(rt->resolver, &zpkt.tuple);
+          uid_lru_add(rt->lru, &zpkt.tuple, uid);
+        }
       }
 
       if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
@@ -797,7 +758,13 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
           char buf[512];
           zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-          printf("[%s:%d] %s [%cX]\n", iface->name, iface->ifid, buf, is_tx ? 'T' : 'R');
+          printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
+        }
+
+        if(iface->is_file) {
+          // libpcap does not provide stats for savefiles
+          // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
+          iface->stats.ps_recv++;
         }
       }
     }
@@ -814,7 +781,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
 
 /* ******************************************************* */
 
-static int run_pcap_dump(pcapd_conf_t *conf) {
+int run_pcap_dump(pcapd_conf_t *conf) {
   int rv = -1;
   struct timespec ts = {0};
   pcapd_runtime_t rt = {0};
@@ -865,7 +832,7 @@ static int run_pcap_dump(pcapd_conf_t *conf) {
     if((rt.client > 0) && FD_ISSET(rt.client, &fds)) {
       log_i("Client closed");
       break;
-    } else if(FD_ISSET(rt.nlsock, &fds)) {
+    } else if((rt.nlsock > 0) && FD_ISSET(rt.nlsock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
         rv = -1;
         break;
@@ -899,6 +866,22 @@ cleanup:
   if(rt.tun)
     zdtun_finalize(rt.tun);
 
+  log_i("Pkts: %u rcvd, %u drops (%.1f%%), %u iface_drops", rt.stats.ps_recv, rt.stats.ps_drop,
+        rt.stats.ps_drop * 100.f / (rt.stats.ps_recv + rt.stats.ps_drop + 1),
+        rt.stats.ps_ifdrop);
+
+  unlink(PCAPD_PID);
+
+  for(int i=0; i<conf->num_interfaces; i++)
+    free(conf->ifnames[i]);
+
+  if(conf->bpf)
+    free(conf->bpf);
+  if(conf->log_file)
+    free(conf->log_file);
+  if(logf)
+    fclose(logf);
+
   return rv;
 }
 
@@ -924,19 +907,25 @@ static void usage() {
 
 /* ******************************************************* */
 
-static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
-  int c;
-
+void init_conf(pcapd_conf_t *conf) {
   memset(conf, 0, sizeof(pcapd_conf_t));
   conf->uid_filter = -1;
   conf->inet_ifid = -1;
+}
+
+/* ******************************************************* */
+
+static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
+  int c;
+
+  init_conf(conf);
   opterr = 0;
 
   while ((c = getopt (argc, argv, "hdtni:u:b:l:")) != -1) {
     switch(c) {
       case 'i':
-        if(conf->num_interfaces >= MAX_IFACES) {
-          fprintf(stderr, "Maximum number of interfaces reached (%d)\n", MAX_IFACES);
+        if(conf->num_interfaces >= PCAPD_MAX_INTERFACES) {
+          fprintf(stderr, "Maximum number of interfaces reached (%d)\n", PCAPD_MAX_INTERFACES);
           exit(1);
         }
         if(strcmp(optarg, "@inet") == 0) {
@@ -992,11 +981,13 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
   if(conf->num_interfaces == 0) {
     conf->inet_ifid = 0;
-    conf->ifnames[conf->num_interfaces++] = "@inet";
+    conf->ifnames[conf->num_interfaces++] = strdup("@inet");
   }
 }
 
 /* ******************************************************* */
+
+#ifndef FUZZING
 
 int main(int argc, char *argv[]) {
   pcapd_conf_t conf;
@@ -1007,14 +998,8 @@ int main(int argc, char *argv[]) {
   parse_args(&conf, argc, argv);
 
   rv = run_pcap_dump(&conf);
-  unlink(PCAPD_PID);
-
-  if(conf.bpf)
-    free(conf.bpf);
-  if(conf.log_file)
-    free(conf.log_file);
-  if(logf)
-    fclose(logf);
 
   return rv;
 }
+
+#endif

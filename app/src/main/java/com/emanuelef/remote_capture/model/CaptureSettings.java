@@ -7,19 +7,22 @@ import android.os.Bundle;
 import java.io.Serializable;
 
 public class CaptureSettings implements Serializable {
-    public final Prefs.DumpMode dump_mode;
-    public final String app_filter;
-    public final String collector_address;
-    public final int collector_port;
-    public final int http_server_port;
-    public final boolean socks5_enabled;
-    public final String socks5_proxy_address;
-    public final int socks5_proxy_port;
-    public final boolean ipv6_enabled;
-    public final boolean root_capture;
-    public final boolean pcapdroid_trailer;
-    public final String capture_interface;
-    public final String pcap_uri;
+    public Prefs.DumpMode dump_mode;
+    public String app_filter;
+    public String collector_address;
+    public int collector_port;
+    public int http_server_port;
+    public boolean socks5_enabled;
+    public String socks5_proxy_address;
+    public int socks5_proxy_port;
+    public boolean ipv6_enabled;
+    public boolean root_capture;
+    public boolean pcapdroid_trailer;
+    public String capture_interface;
+    public String pcap_uri;
+    public int snaplen = 0;
+    public int max_pkts_per_flow = 0;
+    public int max_dump_size = 0;
 
     public CaptureSettings(SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
@@ -51,6 +54,9 @@ public class CaptureSettings implements Serializable {
         pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
         pcap_uri = getString(intent, Prefs.PREF_PCAP_URI, "");
+        snaplen = getInt(intent, Prefs.PREF_SNAPLEN, 0);
+        max_pkts_per_flow = getInt(intent, Prefs.PREF_MAX_PKTS_PER_FLOW, 0);
+        max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
     }
 
     private static String getString(Intent intent, String key, String def_value) {

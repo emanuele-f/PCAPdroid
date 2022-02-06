@@ -24,6 +24,7 @@
         - Font Awesome: <a href='https://fontawesome.com/license/free'>Licenses</a>\n\n
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         </string>
+    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -96,7 +97,6 @@
     <string name="last_seen">Last seen</string>
     <string name="conn_status_closed">Closed</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
-    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">Save to file</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges</string>

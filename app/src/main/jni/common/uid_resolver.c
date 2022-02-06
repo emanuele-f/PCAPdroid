@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <jni.h>
 #include <errno.h>
 #include <netinet/in.h>
 
@@ -29,16 +28,18 @@
 /* ******************************************************* */
 
 struct uid_resolver {
+#ifdef ANDROID
     jint sdk;
     JNIEnv *env;
     jobject vpn_service;
     jmethodID getUidQ;
+#endif
 };
 
 /* ******************************************************* */
 
 // src_port and dst_port are in HBO.
-static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
+static int get_uid_proc(int ipver, int ipproto, const char *conn_shex,
                          const char *conn_dhex, u_int16_t src_port, u_int16_t dst_port) {
     char *proc;
 
@@ -68,7 +69,7 @@ static jint get_uid_proc(int ipver, int ipproto, const char *conn_shex,
     // Parse proc file
     char line[256];
     int lines = 0;
-    jint rv = UID_UNKNOWN;
+    int rv = UID_UNKNOWN;
     int sport, dport, uid;
     char shex[33], dhex[33];
     const char *zero = (ipver == 4 ? "00000000" : "00000000000000000000000000000000");
@@ -121,9 +122,9 @@ static char* tohex(const uint8_t *src, int srcsize, char *dst, int dstsize) {
 
 /* ******************************************************* */
 
-static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
+static int get_uid_slow(const zdtun_5tuple_t *conn_info) {
     char shex[33], dhex[33];
-    jint rv;
+    int rv;
 
     //clock_t start = clock();
 
@@ -145,8 +146,10 @@ static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
             rv = get_uid_proc(6, conn_info->ipproto, shex, dhex, sport, dport);
         }
     } else {
-        const uint32_t *src = conn_info->src_ip.ip6.in6_u.u6_addr32;
-        const uint32_t *dst = conn_info->dst_ip.ip6.in6_u.u6_addr32;
+        struct in6_addr srcip6 = conn_info->src_ip.ip6;
+        struct in6_addr dstip6 = conn_info->dst_ip.ip6;
+        const uint32_t *src = srcip6.s6_addr32;
+        const uint32_t *dst = dstip6.s6_addr32;
 
         sprintf(shex, "%08X%08X%08X%08X", src[0], src[1], src[2], src[3]);
         sprintf(dhex, "%08X%08X%08X%08X", dst[0], dst[1], dst[2], dst[3]);
@@ -164,10 +167,12 @@ static jint get_uid_slow(const zdtun_5tuple_t *conn_info) {
 
 /* ******************************************************* */
 
-static jint get_uid_q(uid_resolver_t *resolver,
+#ifdef ANDROID
+
+static int get_uid_q(uid_resolver_t *resolver,
                       const zdtun_5tuple_t *conn_info) {
     JNIEnv *env = resolver->env;
-    jint juid = UID_UNKNOWN;
+    int juid = UID_UNKNOWN;
     int version = conn_info->ipver;
     int family = (version == 4) ? AF_INET : AF_INET6;
     char srcip[INET6_ADDRSTRLEN];
@@ -209,7 +214,11 @@ static jint get_uid_q(uid_resolver_t *resolver,
     return juid;
 }
 
+#endif
+
 /* ******************************************************* */
+
+#ifdef ANDROID
 
 uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
     uid_resolver_t *rv = pd_calloc(1, sizeof(uid_resolver_t));
@@ -226,8 +235,14 @@ uid_resolver_t* init_uid_resolver(jint sdk_version, JNIEnv *env, jobject vpn) {
     return rv;
 }
 
+#endif
+
 uid_resolver_t* init_uid_resolver_from_proc() {
+#ifdef ANDROID
     return(init_uid_resolver(0, NULL, 0));
+#else
+    return pd_calloc(1, sizeof(uid_resolver_t));
+#endif
 }
 
 /* ******************************************************* */
@@ -238,9 +253,11 @@ void destroy_uid_resolver(uid_resolver_t *resolver) {
 
 /* ******************************************************* */
 
-jint get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info) {
-    if(resolver->sdk <= 28) // Android 9 Pie
-        return(get_uid_slow(conn_info));
-    else
+int get_uid(uid_resolver_t *resolver, const zdtun_5tuple_t *conn_info) {
+#ifdef ANDROID
+    if(resolver->sdk > 28) // Android 9 Pie
         return(get_uid_q(resolver, conn_info));
+    else
+#endif
+        return(get_uid_slow(conn_info));
 }
