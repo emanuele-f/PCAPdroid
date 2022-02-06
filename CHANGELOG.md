@@ -2,6 +2,18 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.6] - 2022-02-06
+- Improve capture performance when PCAP dump is enabled
+- Always-on VPN is now fully supported
+- Add Norwegian translation (credits: Allan Nordhøy)
+- Add French translation (credits: J. Lavoie and Maxime Leroy)
+- Fix Android 11/12 crash when invoked via the Intent-based API
+- Fix SecurityException crash on Android TV with PCAP file dump
+- Fix packets truncated with root on devices with sw/hw offloading
+- Fix use-after-free in root mode
+- Fix memory leak with HTTP server PCAP dump when a client disconnects
+- Add native code testing and fuzzing
+
 ## [1.4.5] - 2022-01-06
 - Reduce the memory usage, in particular during the capture
 - Malware detection now blocks malicious connections in non-root mode (paid feature)
