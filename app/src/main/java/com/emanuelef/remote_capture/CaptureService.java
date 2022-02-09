@@ -183,6 +183,7 @@ public class CaptureService extends VpnService implements Runnable {
         // Note: in Android 12, this may generate a ForegroundServiceStartNotAllowedException
         // if called when the app is in background.
         startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
+        stopForeground(true /* remove notification */);
 
         stopSelf();
         sendServiceStatus(SERVICE_STATUS_STOPPED);
@@ -198,6 +199,8 @@ public class CaptureService extends VpnService implements Runnable {
         Log.d(CaptureService.TAG, "onStartCommand");
 
         // NOTE: a null intent may be delivered due to START_STICKY
+        // It can be simulated by starting the capture, putting PCAPdroid in the background and then running:
+        //  adb shell ps | grep remote_capture | awk '{print $2}' | xargs adb shell run-as com.emanuelef.remote_capture.debug kill
         mSettings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
         if(mSettings == null) {
             // An Intent without extras is delivered in case of always on VPN
@@ -564,6 +567,9 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void handleLinkProperties(LinkProperties linkProperties) {
+        if(linkProperties == null)
+            return;
+
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
             boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
@@ -657,6 +663,7 @@ public class CaptureService extends VpnService implements Runnable {
         CaptureCtrl.notifyCaptureStopped(this);
 
         stopForeground(true /* remove notification */);
+        stopSelf();
     }
 
     private void stopThread() {
