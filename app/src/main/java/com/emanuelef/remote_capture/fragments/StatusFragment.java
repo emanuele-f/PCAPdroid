@@ -72,7 +72,8 @@ import java.util.List;
 public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
     private static final String TAG = "StatusFragment";
     private Menu mMenu;
-    private MenuItem mMenuItemStartBtn;
+    private MenuItem mStartBtn;
+    private MenuItem mStopBtn;
     private MenuItem mMenuSettings;
     private TextView mInterfaceInfo;
     private TextView mCollectorInfo;
@@ -223,7 +224,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         menuInflater.inflate(R.menu.main_menu, menu);
 
         mMenu = menu;
-        mMenuItemStartBtn = mMenu.findItem(R.id.action_start);
+        mStartBtn = mMenu.findItem(R.id.action_start);
+        mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         refreshStatus();
     }
@@ -331,17 +333,22 @@ private void refreshPcapDumpInfo() {
 
     @Override
     public void appStateChanged(AppState state) {
+        if(mMenu != null) {
+            if((state == AppState.running) || (state == AppState.stopping)) {
+                mStartBtn.setVisible(false);
+                mStopBtn.setEnabled(true);
+                mStopBtn.setVisible(!CaptureService.isAlwaysOnVPN());
+                mMenuSettings.setEnabled(false);
+            } else { // ready || starting
+                mStopBtn.setVisible(false);
+                mStartBtn.setEnabled(true);
+                mStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
+                mMenuSettings.setEnabled(true);
+            }
+        }
+
         switch(state) {
             case ready:
-                if(mMenu != null) {
-                    mMenuItemStartBtn.setIcon(
-                            ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_media_play));
-                    mMenuItemStartBtn.setTitle(R.string.start_button);
-                    mMenuItemStartBtn.setEnabled(true);
-                    mMenuItemStartBtn.setVisible(true);
-                    mMenuSettings.setEnabled(true);
-                }
-
                 mCaptureStatus.setText(R.string.ready);
                 mCollectorInfo.setVisibility(View.GONE);
                 mInterfaceInfo.setVisibility(View.GONE);
@@ -350,20 +357,14 @@ private void refreshPcapDumpInfo() {
                 refreshFilterInfo();
                 break;
             case starting:
+                if(mMenu != null)
+                    mStartBtn.setEnabled(false);
+                break;
             case stopping:
                 if(mMenu != null)
-                    mMenuItemStartBtn.setEnabled(false);
+                    mStopBtn.setEnabled(false);
                 break;
             case running:
-                if(mMenu != null) {
-                    mMenuItemStartBtn.setIcon(
-                            ContextCompat.getDrawable(requireContext(), R.drawable.ic_media_stop));
-                    mMenuItemStartBtn.setTitle(R.string.stop_button);
-                    mMenuItemStartBtn.setEnabled(true);
-                    mMenuItemStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
-                    mMenuSettings.setEnabled(false);
-                }
-
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);

@@ -6,7 +6,15 @@
         android:id="@+id/action_start"
         android:title="@string/start_button"
         android:orderInCategory="10"
-        android:icon="@android:drawable/ic_media_play"
+        android:icon="@drawable/ic_play_arrow"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_stop"
+        android:title="@string/stop_button"
+        android:orderInCategory="10"
+        android:icon="@drawable/ic_media_stop"
+        android:visible="false"
         app:showAsAction="always" />
 
     <item
