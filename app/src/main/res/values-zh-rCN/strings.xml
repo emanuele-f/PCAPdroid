@@ -96,7 +96,6 @@
     <string name="last_seen">最后一次见</string>
     <string name="conn_status_closed">已关闭</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
-    <string name="connections_csv_fields_v1">IP协议,源IP,源端口,目标IP,目标端口,UID,应用,协议,状态,信息,已发送字节数,已接收字节数,已发送数据包,已接收数据包,第一次见,最后一次见</string>
     <string name="save_to_file">保存到文件</string>
     <string name="older_connections_notice">未显示 %1$d 个较旧连接</string>
     <string name="about_text">PCAPdroid 是一款无需获取根权限便可进行网络捕获和监视的开源工具</string>

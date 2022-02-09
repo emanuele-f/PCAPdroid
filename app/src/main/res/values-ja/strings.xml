@@ -70,7 +70,6 @@
     <string name="last_seen">最新の確認</string>
     <string name="conn_status_closed">クローズド</string>
     <string name="copy_to_clipboard">クリップボードにコピー</string>
-    <string name="connections_csv_fields_v1">IPProto,SrcIP,SrcPort,DstIp,DstPort,Uid,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="save_to_file">ファイルに保存</string>
     <string name="older_connections_notice">%1$d より古い接続は表示されません</string>
     <string name="about_text">PCAPdroid はルート権限なしで動作するオープン ソースのネットワーク キャプチャ、モニタリング ツールです</string>

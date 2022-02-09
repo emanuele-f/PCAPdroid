@@ -1,0 +1,16 @@
+<i>PCAPdroid</i> è un'app open source che permette il monitoraggio e il dump del traffico di rete del dispositivo. L'app funziona senza root simulando una VPN ma, contrariamente a quanto che accade con una normale VPN, il traffico è processato localmente sul dispositivo.
+
+<b>Funzionalità:</b>
+
+* Registra ed esamina le connessioni effettuate da app utente e di sistema
+* Estrai SNI, query DNS, richieste HTTP, URL HTTP e l'indirizzo IP del server contattato
+* Crea regole per ignorare il traffico buono così da rilevare più facilmente le anomalie
+* Salva il traffico in un file PCAP, scarica il traffico tramite browser, o effettua lo stream a un collettore remoto per l'analisi in tempo reale (es. wireshark)
+* Usa l'app in combinazione con mitmproxy per decifrare il traffico HTTPS/TLS (conoscenza tecnica necessaria)
+* Su dispositivi con root, cattura il traffico mentre altre app di VPN sono in esecuzione
+
+Se usi PCAPdroid per analizzare i singoli pacchetti di rete, visita la <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>specifica sezione</a> del manuale utente.
+
+Visita <a href='https://github.com/emanuele-f/PCAPdroid'>il progetto su Github</a> per ulteriori dettagli.
+
+Puoi <a href="https://t.me/PCAPdroid">unirti alla comunità di PCAPdroid</a> su telegram per discutere con altri utenti e rimanere aggiornato sulle ultime novità.
