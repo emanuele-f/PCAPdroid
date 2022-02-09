@@ -1155,9 +1155,6 @@ int pd_run(pcapdroid_t *pd) {
         pd_free(e);
     }
 
-    if(pd->cb.notify_service_status)
-        pd->cb.notify_service_status(pd, "stopped");
-
     log_d("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
     log_d("Discarded fragments: %ld", pd->num_discarded_fragments);
     ip_lru_destroy(pd->ip_to_host);
