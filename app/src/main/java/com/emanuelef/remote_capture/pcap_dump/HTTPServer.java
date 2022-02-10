@@ -342,9 +342,7 @@ public class HTTPServer implements PcapDumper, Runnable {
             try {
                 Log.d(TAG, "Joining HTTP thread...");
                 mThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Joining HTTP thread failed");
-            }
+            } catch (InterruptedException ignored) {}
         }
     }
 

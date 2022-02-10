@@ -540,7 +540,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if(id == R.id.action_start) {
-            toggleService();
+            startCapture();
+            return true;
+        } else if(id == R.id.action_stop) {
+            stopCapture();
             return true;
         } else if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
@@ -593,8 +596,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         // NOTE: part of app_api.md
         Log.d(TAG, "PCAP URI to write [persistable=" + persistable + "]: " + mPcapUri.toString());
-
-        toggleService();
+        startCapture();
     }
 
     private void initAppState() {
@@ -606,30 +608,30 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             appStateRunning();
     }
 
-    private void startCaptureService() {
+    private void doStartCaptureService() {
         appStateStarting();
         mCapHelper.startCapture(new CaptureSettings(mPrefs));
     }
 
-    public void toggleService() {
-        if (CaptureService.isServiceActive()) {
-            appStateStopping();
-            CaptureService.stopService();
-        } else {
-            if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-                openFileSelector();
-                return;
-            }
-
-            if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
-                new AlertDialog.Builder(this)
-                        .setMessage(R.string.disconnect_vpn_confirm)
-                        .setPositiveButton(R.string.yes, (dialog, whichButton) -> startCaptureService())
-                        .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
-                        .show();
-            } else
-                startCaptureService();
+    public void startCapture() {
+        if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+            openFileSelector();
+            return;
         }
+
+        if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.disconnect_vpn_confirm)
+                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> doStartCaptureService())
+                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                    .show();
+        } else
+            doStartCaptureService();
+    }
+
+    public void stopCapture() {
+        appStateStopping();
+        CaptureService.stopService();
     }
 
     public void openFileSelector() {

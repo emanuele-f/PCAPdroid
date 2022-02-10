@@ -34,8 +34,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   conf.ifnames[0] = strdup(pcap_path);
   conf.num_interfaces = 1;
   conf.no_client = 1;
+  conf.quiet = 1;
 
-  loglevel = ANDROID_LOG_FATAL;
   run_pcap_dump(&conf);
 
   unlink(pcap_path);

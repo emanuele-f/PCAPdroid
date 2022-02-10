@@ -19,6 +19,7 @@ test_source(pcap_reader)
 
 test_source(dpi)
 add_test(NAME dpi_extract COMMAND ./dpi extract)
+add_test(NAME dpi_extract_proxy COMMAND ./dpi extract_proxy)
 
 test_source(blacklist)
 add_test(NAME blacklist_match COMMAND ./blacklist match)

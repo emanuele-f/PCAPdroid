@@ -74,6 +74,7 @@ import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -93,6 +94,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
     private boolean mIsAlwaysOnVPN;
+    private SharedPreferences mPrefs;
     private CaptureSettings mSettings;
     private Billing mBilling;
     private Handler mHandler;
@@ -100,6 +102,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
     private Thread mDumperThread;
+    private PlaintextReceiver mPlaintextReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
@@ -167,47 +170,62 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
-        INSTANCE = this;
         appsResolver = new AppsResolver(this);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mSettings = new CaptureSettings(mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
+        INSTANCE = this;
         super.onCreate();
     }
 
     private int abortStart() {
-        // NOTE: startForeground must be called before stopSelf, otherwise an exception will occur:
-        // android.app.ForegroundServiceDidNotStartInTimeException: Context.startForegroundService() did not then call Service.startForeground()
-        setupNotifications();
-
-        // Note: in Android 12, this may generate a ForegroundServiceStartNotAllowedException
-        // if called when the app is in background.
-        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
-
-        stopSelf();
+        stopService();
         sendServiceStatus(SERVICE_STATUS_STOPPED);
         return START_NOT_STICKY;
     }
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // startForeground must always be called since the Service is being started with
+        // ContextCompat.startForegroundService.
+        // NOTE: since Android 12, startForeground cannot be called when the app is in background
+        // (unless invoked via an Intent).
+        setupNotifications();
+        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
+
+        // NOTE: onStartCommand may be called when the capture is already running, e.g. if the user
+        // turns on the always-on VPN while the capture is running in root mode
+        if(mCaptureThread != null) {
+            // Restarting the capture requires calling stopAndJoinThreads, which is blocking.
+            // Choosing not to support this right now.
+            Log.e(TAG, "Restarting the capture is not supported");
+            return abortStart();
+        }
+
         mHandler = new Handler(Looper.getMainLooper());
         mBilling = Billing.newInstance(this);
 
         Log.d(CaptureService.TAG, "onStartCommand");
 
         // NOTE: a null intent may be delivered due to START_STICKY
-        mSettings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
-        if(mSettings == null) {
+        // It can be simulated by starting the capture, putting PCAPdroid in the background and then running:
+        //  adb shell ps | grep remote_capture | awk '{print $2}' | xargs adb shell run-as com.emanuelef.remote_capture.debug kill
+        CaptureSettings settings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
+        if(settings == null) {
+            // Use the settings from mPrefs
+
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
 
-            Log.d(CaptureService.TAG, "Missing capture settings, using previous ones");
-            mSettings = new CaptureSettings(prefs);
+            Log.d(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
             if(mIsAlwaysOnVPN)
                 mSettings.root_capture = false;
-        } else
+        } else {
+            // Use the provided settings
+            mSettings = settings;
             mIsAlwaysOnVPN = false;
+        }
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
@@ -251,6 +269,8 @@ public class CaptureService extends VpnService implements Runnable {
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
+        mDumpQueue = null;
+        mPendingUpdates.clear();
 
         // Possibly allocate the dumper
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
@@ -288,6 +308,17 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
+        // adb shell run-as com.emanuelef.remote_capture.debug touch cache/BETA_PLAINTEXT_RECEIVER
+        if(mSettings.socks5_enabled && (new File(getCacheDir() + "/BETA_PLAINTEXT_RECEIVER")).exists()) {
+            mPlaintextReceiver = new PlaintextReceiver();
+            try {
+                mPlaintextReceiver.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+                mPlaintextReceiver = null;
+            }
+        }
+
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
             try {
                 app_filter_uid = getPackageManager().getApplicationInfo(mSettings.app_filter, 0).uid;
@@ -298,7 +329,7 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             app_filter_uid = -1;
 
-        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, prefs);
+        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
 
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
@@ -348,10 +379,6 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        // Stop the previous session by interrupting the thread.
-        if(mCaptureThread != null)
-            mCaptureThread.interrupt();
-
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
@@ -373,9 +400,6 @@ public class CaptureService extends VpnService implements Runnable {
         mCaptureThread = new Thread(this, "PacketCapture");
         mCaptureThread.start();
 
-        setupNotifications();
-        startForeground(NOTIFY_ID_VPNSERVICE, getStatusNotification());
-
         // If the service is killed (e.g. due to low memory), then restart it with a NULL intent
         return START_STICKY;
     }
@@ -383,32 +407,23 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onRevoke() {
         Log.d(CaptureService.TAG, "onRevoke");
-        stop();
-
+        stopService();
         super.onRevoke();
     }
 
     @Override
     public void onDestroy() {
         Log.d(CaptureService.TAG, "onDestroy");
-        stop();
+
         INSTANCE = null;
 
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
         if(mBlacklistsUpdateThread != null)
             mBlacklistsUpdateThread.interrupt();
-        if(mDumper != null) {
-            try {
-                mDumper.stopDumper();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mDumper = null;
-            mDumpQueue.clear();
-        }
 
-        appsResolver = null;
+        unregisterNetworkCallbacks();
+
         super.onDestroy();
     }
 
@@ -551,6 +566,9 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void handleLinkProperties(LinkProperties linkProperties) {
+        if(linkProperties == null)
+            return;
+
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
             boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
@@ -580,29 +598,19 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    private void stop() {
-        stopPacketLoop();
+    // NOTE: do not call this on the main thread, otherwise it will be an ANR
+    private void stopAndJoinThreads() {
+        Log.d(TAG, "Joining threads...");
 
         // signal termination
         mPendingUpdates.offer(new Pair<>(null, null));
         stopPcapDump();
 
-        while((mCaptureThread != null) && (mCaptureThread.isAlive())) {
-            try {
-                Log.d(TAG, "Joining native thread...");
-                mCaptureThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Joining native thread failed");
-            }
-        }
-        mCaptureThread = null;
-
         while((mConnUpdateThread != null) && (mConnUpdateThread.isAlive())) {
             try {
                 Log.d(TAG, "Joining conn update thread...");
                 mConnUpdateThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Joining conn update thread failed");
+            } catch (InterruptedException ignored) {
                 mPendingUpdates.offer(new Pair<>(null, null));
             }
         }
@@ -612,34 +620,34 @@ public class CaptureService extends VpnService implements Runnable {
             try {
                 Log.d(TAG, "Joining dumper thread...");
                 mDumperThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Joining dumper thread failed");
+            } catch (InterruptedException ignored) {
                 stopPcapDump();
             }
         }
         mDumperThread = null;
         mDumper = null;
 
-        if(mParcelFileDescriptor != null) {
+        if(mPlaintextReceiver != null) {
             try {
-                mParcelFileDescriptor.close();
+                mPlaintextReceiver.stop();
             } catch (IOException e) {
-                Toast.makeText(this, "Stopping VPN failed", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
-            mParcelFileDescriptor = null;
+            mPlaintextReceiver = null;
         }
-
-        mPcapUri = null;
-        mPendingUpdates.clear();
-        unregisterNetworkCallbacks();
-        CaptureCtrl.notifyCaptureStopped(this);
-
-        stopForeground(true /* remove notification */);
     }
 
-    private void stopThread() {
-        mCaptureThread = null;
-        stop();
+    /* Stops the running Service. The SERVICE_STATUS_STOPPED notification is sent asynchronously
+     * when mCaptureThread terminates. */
+    public static void stopService() {
+        CaptureService captureService = INSTANCE;
+        if(captureService == null)
+            return;
+
+        stopPacketLoop();
+
+        captureService.stopForeground(true /* remove notification */);
+        captureService.stopSelf();
     }
 
     /* Check if the VPN service was launched */
@@ -725,12 +733,6 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && INSTANCE.mDnsEncrypted);
     }
 
-    /* Stop a running VPN service */
-    public static void stopService() {
-        if (INSTANCE != null)
-            INSTANCE.stop();
-    }
-
     public static @NonNull CaptureService requireInstance() {
         CaptureService inst = INSTANCE;
         assert(inst != null);
@@ -784,16 +786,37 @@ public class CaptureService extends VpnService implements Runnable {
                 if((fd > 0) && (fd < fd_setsize)) {
                     Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                     runPacketLoop(fd, this, Build.VERSION.SDK_INT);
-                } else {
+                } else
                     Log.e(TAG, "Invalid VPN fd: " + fd);
-                    stopThread();
-                }
             }
         }
 
         // After the capture is stopped
         if(mMalwareDetectionEnabled)
             mBlacklists.save();
+
+        // Important: the fd must be closed to properly terminate the VPN
+        if(mParcelFileDescriptor != null) {
+            try {
+                mParcelFileDescriptor.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mParcelFileDescriptor = null;
+        }
+
+        // NOTE: join the threads here instead in onDestroy to avoid ANR
+        stopAndJoinThreads();
+
+        stopService();
+
+        // Notify
+        mHandler.post(() -> {
+            sendServiceStatus(SERVICE_STATUS_STOPPED);
+            CaptureCtrl.notifyCaptureStopped(this);
+        });
+
+        mCaptureThread = null;
     }
 
     private void connUpdateWork() {
@@ -843,7 +866,7 @@ public class CaptureService extends VpnService implements Runnable {
                 // Stop the capture
                 e.printStackTrace();
                 reportError(e.getLocalizedMessage());
-                mHandler.post(this::stop);
+                mHandler.post(CaptureService::stopPacketLoop);
                 break;
             }
         }
@@ -947,7 +970,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mPendingUpdates.offer(new Pair<>(new_conns, conns_updates))) {
             Log.e(TAG, "The updates queue is full, this should never happen!");
             mQueueFull = true;
-            mHandler.post(this::stop);
+            mHandler.post(CaptureService::stopPacketLoop);
         }
     }
 

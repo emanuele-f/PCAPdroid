@@ -66,6 +66,7 @@ public class ConnectionDescriptor implements Serializable {
     public final String dst_ip;
     public final int src_port;
     public final int dst_port;
+    public final int local_port; // in VPN mode, this is the local port of the Internet connection
 
     /* Data */
     public long first_seen;
@@ -94,7 +95,7 @@ public class ConnectionDescriptor implements Serializable {
     public boolean alerted;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
-                                int _src_port, int _dst_port, int _uid, int _ifidx, long when) {
+                                int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx, long when) {
         incr_id = _incr_id;
         ipver = _ipver;
         ipproto = _ipproto;
@@ -102,6 +103,7 @@ public class ConnectionDescriptor implements Serializable {
         dst_ip = _dst_ip;
         src_port = _src_port;
         dst_port = _dst_port;
+        local_port = _local_port;
         uid = _uid;
         ifidx = _ifidx;
         first_seen = last_seen = when;

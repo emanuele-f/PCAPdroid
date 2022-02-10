@@ -370,6 +370,13 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
+// TODO with built-in decryption, only proxy encrypted connections
+static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
+    return pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP);
+}
+
+/* ******************************************************* */
+
 int run_vpn(pcapdroid_t *pd) {
     zdtun_t *zdt;
     char buffer[VPN_BUFFER_SIZE];
@@ -519,7 +526,7 @@ int run_vpn(pcapdroid_t *pd) {
                             spoof_dns_reply(pd, conn, &pctx);
                             zdtun_conn_close(zdt, conn, CONN_STATUS_CLOSED);
                         }
-                    } else if(pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP))
+                    } else if(should_proxy(pd, tuple))
                         zdtun_conn_proxy(conn);
                 }
 
@@ -541,10 +548,30 @@ int run_vpn(pcapdroid_t *pd) {
                     pd->num_dropped_connections++;
                     zdtun_conn_close(zdt, conn, CONN_STATUS_ERROR);
                     goto housekeeping;
-                } else if(data->vpn.fw_pctx) {
-                    // not accounted in remote2vpn, account here
-                    pd_account_stats(pd, data->vpn.fw_pctx);
-                    data->vpn.fw_pctx = NULL;
+                } else {
+                    // zdtun_forward was successful
+                    if(data->vpn.fw_pctx) {
+                        // not accounted in remote2vpn, account here
+                        pd_account_stats(pd, data->vpn.fw_pctx);
+                        data->vpn.fw_pctx = NULL;
+                    }
+
+                    // First forwarded packet
+                    if(data->sent_pkts == 1) {
+                        // The socket is open only after zdtun_forward is called
+                        socket_t sock = zdtun_conn_get_socket(conn);
+
+                        // In SOCKS5 with the PlaintextReceiver, we need the local port to the SOCKS5 proxy
+                        if((sock != INVALID_SOCKET) && (tuple->ipver == 4)) {
+                            // NOTE: the zdtun SOCKS5 implementation only supports IPv4 right now.
+                            // If it also supported IPv6, than we would need to expose "sock_ipver"
+                            struct sockaddr_in local_addr;
+                            socklen_t addrlen = sizeof(local_addr);
+
+                            if(getsockname(sock, (struct sockaddr*) &local_addr, &addrlen) == 0)
+                                data->vpn.local_port = local_addr.sin_port;
+                        }
+                    }
                 }
             } else {
                 pd_refresh_time(pd);

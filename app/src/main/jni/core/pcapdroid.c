@@ -19,6 +19,7 @@
 
 #include <inttypes.h>
 #include <assert.h> // NOTE: look for "assertion" in logcat
+#include <pthread.h>
 #include "pcapdroid.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
@@ -55,14 +56,6 @@ static void conn_free_ndpi(pd_conn_t *data) {
         ndpi_free_flow(data->ndpi_flow);
         data->ndpi_flow = NULL;
     }
-    if(data->src_id) {
-        ndpi_free(data->src_id);
-        data->src_id = NULL;
-    }
-    if(data->dst_id) {
-        ndpi_free(data->dst_id);
-        data->dst_id = NULL;
-    }
 }
 
 /* ******************************************************* */
@@ -71,7 +64,12 @@ static uint16_t ndpi2proto(ndpi_protocol proto) {
     // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
     // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
     // in the app protocols, so just take the one that's not unknown.
-    return((proto.master_protocol != NDPI_PROTOCOL_UNKNOWN) ? proto.master_protocol : proto.app_protocol);
+    uint16_t l7proto = ((proto.master_protocol != NDPI_PROTOCOL_UNKNOWN) ? proto.master_protocol : proto.app_protocol);
+
+    if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
+        l7proto = NDPI_PROTOCOL_HTTP;
+
+    return l7proto;
 }
 
 /* ******************************************************* */
@@ -287,16 +285,6 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         conn_free_ndpi(data);
     }
 
-    if((data->src_id = ndpi_calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
-        log_e("ndpi_malloc(src_id) failed");
-        conn_free_ndpi(data);
-    }
-
-    if((data->dst_id = ndpi_calloc(1, SIZEOF_ID_STRUCT)) == NULL) {
-        log_e("ndpi_malloc(dst_id) failed");
-        conn_free_ndpi(data);
-    }
-
     data->uid = uid;
     data->incr_id = pd->new_conn_id++;
 
@@ -429,6 +417,7 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
     char *found_info = NULL;
 
     switch(data->l7proto) {
+        case NDPI_PROTOCOL_TLS:
         case NDPI_PROTOCOL_DNS:
             if(data->ndpi_flow->host_server_name[0])
                 found_info = (char*)data->ndpi_flow->host_server_name;
@@ -443,10 +432,6 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
                 data->update_type |= CONN_UPDATE_INFO;
             }
 
-            break;
-        case NDPI_PROTOCOL_TLS:
-            if(data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name[0])
-                found_info = (char*)data->ndpi_flow->protos.tls_quic_stun.tls_quic.client_requested_server_name;
             break;
     }
 
@@ -483,6 +468,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 /* ******************************************************* */
 
+// sync with PlaintextReceiver
 static int is_plaintext(char c) {
     return isprint(c) || (c == '\r') || (c == '\n') || (c == '\t');
 }
@@ -615,14 +601,12 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
 
     uint16_t old_proto = data->l7proto;
     data->l7proto = ndpi2proto(ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-            pkt->len, data->last_seen,
-            is_tx ? data->src_id : data->dst_id,
-            is_tx ? data->dst_id : data->src_id));
+            pkt->len, data->last_seen));
 
     if(old_proto != data->l7proto)
         data->update_type |= CONN_UPDATE_INFO;
 
-    if((!data->request_done) && !data->ndpi_flow->packet.tcp_retransmission)
+    if((!data->request_done) && !pd->ndpi->packet.tcp_retransmission)
         process_request_data(pd, pctx);
 
     if(!is_tx && (data->l7proto == NDPI_PROTOCOL_DNS))
@@ -901,10 +885,10 @@ static void stop_pcap_dump(pcapdroid_t *pd){
 /* Perfom periodic tasks. This should be called after processing a packet or after some time has
  * passed (e.g. after a select with no packet). */
 void pd_housekeeping(pcapdroid_t *pd) {
-    if(pd->capture_stats.new_stats
-       && (((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
-              dump_capture_stats_now)) {
+    if(dump_capture_stats_now ||
+            (pd->capture_stats.new_stats && ((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS))) {
         dump_capture_stats_now = false;
+        //log_d("Send stats");
 
         if(!pd->root_capture)
             zdtun_get_stats(pd->zdt, &pd->stats);
@@ -1170,9 +1154,6 @@ int pd_run(pcapdroid_t *pd) {
         HASH_DEL(pd->uid2app, e);
         pd_free(e);
     }
-
-    if(pd->cb.notify_service_status)
-        pd->cb.notify_service_status(pd, "stopped");
 
     log_d("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
     log_d("Discarded fragments: %ld", pd->num_discarded_fragments);

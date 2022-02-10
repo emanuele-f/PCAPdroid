@@ -222,6 +222,8 @@ public class CaptureCtrl extends AppCompatActivity {
 
     public static void notifyCaptureStopped(Context ctx) {
         if((mStarterApp != null) && (mReceiverClass != null)) {
+            Log.d(TAG, "Notifying receiver");
+
             Intent intent = new Intent(ACTION_NOTIFY_STATUS);
             intent.putExtra("running", false);
             intent.setComponent(new ComponentName(mStarterApp.getPackageName(), mReceiverClass));

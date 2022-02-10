@@ -36,10 +36,11 @@ typedef struct {
   char *log_file;
   int uid_filter;
   int num_interfaces;
-  int daemonize;
-  int dump_datalink;
   int inet_ifid;
-  int no_client;
+  uint8_t dump_datalink;
+  uint8_t daemonize;
+  uint8_t no_client;
+  uint8_t quiet;
 } pcapd_conf_t;
 
 typedef struct {
