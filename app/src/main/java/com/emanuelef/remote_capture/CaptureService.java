@@ -94,6 +94,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
     private boolean mIsAlwaysOnVPN;
+    private SharedPreferences mPrefs;
     private CaptureSettings mSettings;
     private Billing mBilling;
     private Handler mHandler;
@@ -169,9 +170,11 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
-        INSTANCE = this;
         appsResolver = new AppsResolver(this);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mSettings = new CaptureSettings(mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
+        INSTANCE = this;
         super.onCreate();
     }
 
@@ -199,7 +202,6 @@ public class CaptureService extends VpnService implements Runnable {
             return abortStart();
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mHandler = new Handler(Looper.getMainLooper());
         mBilling = Billing.newInstance(this);
 
@@ -208,18 +210,22 @@ public class CaptureService extends VpnService implements Runnable {
         // NOTE: a null intent may be delivered due to START_STICKY
         // It can be simulated by starting the capture, putting PCAPdroid in the background and then running:
         //  adb shell ps | grep remote_capture | awk '{print $2}' | xargs adb shell run-as com.emanuelef.remote_capture.debug kill
-        mSettings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
-        if(mSettings == null) {
+        CaptureSettings settings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
+        if(settings == null) {
+            // Use the settings from mPrefs
+
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
 
-            Log.d(CaptureService.TAG, "Missing capture settings, using previous ones");
-            mSettings = new CaptureSettings(prefs);
+            Log.d(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
             if(mIsAlwaysOnVPN)
                 mSettings.root_capture = false;
-        } else
+        } else {
+            // Use the provided settings
+            mSettings = settings;
             mIsAlwaysOnVPN = false;
+        }
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
@@ -323,7 +329,7 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             app_filter_uid = -1;
 
-        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, prefs);
+        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
 
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
