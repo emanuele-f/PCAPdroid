@@ -885,10 +885,10 @@ static void stop_pcap_dump(pcapdroid_t *pd){
 /* Perfom periodic tasks. This should be called after processing a packet or after some time has
  * passed (e.g. after a select with no packet). */
 void pd_housekeeping(pcapdroid_t *pd) {
-    if(pd->capture_stats.new_stats
-       && (((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS) ||
-              dump_capture_stats_now)) {
+    if(dump_capture_stats_now ||
+            (pd->capture_stats.new_stats && ((pd->now_ms - pd->capture_stats.last_update_ms) >= CAPTURE_STATS_UPDATE_FREQUENCY_MS))) {
         dump_capture_stats_now = false;
+        //log_d("Send stats");
 
         if(!pd->root_capture)
             zdtun_get_stats(pd->zdt, &pd->stats);
