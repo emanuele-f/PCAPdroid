@@ -61,7 +61,7 @@
     <string name="copy_to_clipboard">Kopier til utklippstavle</string>
     <string name="save_to_file">Lagre som fil</string>
     <string name="unknown_app">Ukjent</string>
-    <string name="enable_ipv6">Skru på IPv6</string>
+    <string name="ipv6">Skru på IPv6</string>
     <string name="error">Feil</string>
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang</string>
@@ -136,7 +136,7 @@
     <string name="lang_english">Engelsk</string>
     <string name="system_default">System</string>
     <string name="app_theme">Drakt</string>
-    <string name="enable_socks5_proxy">Skru på SOCKS5-mellomtjener</string>
+    <string name="socks5_proxy">Skru på SOCKS5-mellomtjener</string>
     <string name="blacklists">Svartelister</string>
     <string name="status_not_loaded">Ikke innlastet</string>
     <string name="allow">Tillat</string>

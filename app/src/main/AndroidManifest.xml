@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <uses-permission android:name="com.pcapdroid.permission.MITM" android:required="false"/>
+
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.hardware.wifi" android:required="false" />
@@ -90,6 +92,9 @@
             android:parentActivityName=".activities.EditFilterActivity" />
         <activity
             android:name=".activities.EditFilterActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".activities.MitmSetupWizard"
             android:launchMode="singleTop" />
 
         <service

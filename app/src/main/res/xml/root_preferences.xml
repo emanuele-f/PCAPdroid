@@ -44,10 +44,17 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/proxy" app:iconSpaceReserved="false"  app:key="proxy_prefs">
+    <PreferenceCategory app:title="@string/traffic_inspection" app:iconSpaceReserved="false"  app:key="traffic_inspection">
         <SwitchPreference
-            app:key="tls_decryption_enabled"
-            app:title="@string/enable_socks5_proxy"
+            app:key="tls_decryption"
+            app:title="@string/tls_decryption"
+            app:iconSpaceReserved="false"
+            app:summary="@string/tls_decryption_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="socks5_enabled"
+            app:title="@string/socks5_proxy"
             app:iconSpaceReserved="false"
             app:summary="@string/enable_socks5_proxy_summary"
             app:defaultValue="false" />
@@ -151,7 +158,7 @@
 
         <SwitchPreference
             app:key="ipv6_enabled"
-            app:title="@string/enable_ipv6"
+            app:title="@string/ipv6"
             app:iconSpaceReserved="false"
             app:summary="@string/enable_ipv6_summary"
             app:defaultValue="false" />

@@ -19,17 +19,24 @@
 
 package com.emanuelef.remote_capture;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.ParcelFileDescriptor;
+import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.MitmAddon;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -46,84 +53,127 @@ import java.util.StringTokenizer;
  *
  * The raw payload data follows the header.
  */
-public class PlaintextReceiver implements Runnable, ConnectionsListener {
-    private static final String TAG = "PlaintextReceiver";
+public class MitmReceiver implements Runnable, ConnectionsListener {
+    private static final String TAG = "MitmReceiver";
     public static final int MAX_PLAINTEXT_LENGTH = 1024; // sync with pcapdroid.h
-    private ServerSocket mSocket;
-    private Socket mClient;
+    public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
     private Thread mThread;
-    private boolean mRunning;
     private final ConnectionsRegister mReg;
+    private final Context mContext;
+    private Messenger mService;
+    private boolean bound;
+    private ParcelFileDescriptor mSocketFd;
+
+    private final ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            Log.d(TAG, "Service connected");
+            mService = new Messenger(service);
+
+            ParcelFileDescriptor[] pair;
+            try {
+                // Create a pair of connected fds
+                pair = ParcelFileDescriptor.createReliableSocketPair();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+            mSocketFd = pair[1];
+
+            Message msg = Message.obtain(null, MitmAddon.MSG_START_MITM, TLS_DECRYPTION_PROXY_PORT, 0, pair[0]);
+
+            try {
+                mService.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                Utils.safeClose(pair[0]);
+                Utils.safeClose(pair[1]);
+                return;
+            }
+            bound = true;
+
+            // Sent, close here
+            Utils.safeClose(pair[0]);
+
+            if(mThread != null)
+                mThread.interrupt();
+
+            mThread = new Thread(MitmReceiver.this);
+            mThread.start();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d(TAG, "Service disconnected");
+            mService = null;
+            Utils.safeClose(mSocketFd);
+            mSocketFd = null;
+            bound = false;
+        }
+    };
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
 
-    public PlaintextReceiver() {
+    public MitmReceiver(Context ctx) {
+        // Important: the application context is required here, otherwise bind/unbind will not work properly
+        mContext = ctx.getApplicationContext();
         mReg = CaptureService.requireConnsRegister();
     }
 
-    public void start() throws IOException {
-        mSocket = new ServerSocket();
-        mSocket.setReuseAddress(true);
-        mSocket.bind(new InetSocketAddress(5750), 1);
+    public boolean start() throws IOException {
+        Log.d(TAG, "starting");
 
-        mRunning = true;
-        mThread = new Thread(this);
-        mThread.start();
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(MitmAddon.PACKAGE_NAME, MitmAddon.MITM_SERVICE));
+
+        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT)) {
+            mContext.unbindService(mConnection);
+            Utils.showToastLong(mContext, R.string.mitm_start_failed);
+            return false;
+        }
 
         mReg.addListener(this);
+        return true;
     }
 
     public void stop() throws IOException {
-        mRunning = false;
+        Log.d(TAG, "stopping");
+
         mReg.removeListener(this);
 
-        // Possibly generate a socket exception on the thread
-        mSocket.close();
-        if(mClient != null)
-            mClient.close();
+        ParcelFileDescriptor fd = mSocketFd;
+        mSocketFd = null;
+        Utils.safeClose(fd); // possibly wake mThread
 
         while((mThread != null) && (mThread.isAlive())) {
             try {
                 Log.d(TAG, "Joining receiver thread...");
                 mThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Joining receiver thread failed");
-            }
+            } catch (InterruptedException ignored) {}
         }
+        mThread = null;
+
+        if(bound) {
+            Log.d(TAG, "Unbinding service...");
+            mContext.unbindService(mConnection);
+            bound = false;
+        }
+
+        Log.d(TAG, "stop done");
     }
 
     @Override
     public void run() {
-        while(mRunning) {
-            try {
-                mClient = mSocket.accept();
-                Log.d(TAG, String.format("Client: %s:%d", mClient.getInetAddress().getHostAddress(), mClient.getPort()));
-                handleClient();
-            } catch (IOException e) {
-                if(!mRunning)
-                    Log.d(TAG, "Got termination request");
-                else
-                    Log.d(TAG, e.getLocalizedMessage());
-            }
-        }
-
-        try {
-            if(mClient != null)
-                mClient.close();
-        } catch (IOException ignored) {}
-        mClient = null;
-    }
-
-    private void handleClient() throws IOException {
-        try(DataInputStream istream = new DataInputStream(mClient.getInputStream())) {
-            while(mRunning) {
+        try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
+            while(bound) {
                 String payload_type;
                 int port;
                 int payload_len;
 
                 // Read the header
                 String header = istream.readLine();
+                if(header == null)
+                    break;
+
                 StringTokenizer tk = new StringTokenizer(header);
                 //Log.d(TAG, "[HEADER] " + header);
 
@@ -160,6 +210,9 @@ public class PlaintextReceiver implements Runnable, ConnectionsListener {
                 } else
                     istream.skipBytes(payload_len); // ignore for now
             }
+        } catch (IOException e) {
+            if(mSocketFd != null) // ignore termination
+                e.printStackTrace();
         }
     }
 

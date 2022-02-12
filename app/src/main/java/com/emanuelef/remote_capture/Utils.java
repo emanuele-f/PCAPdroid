@@ -76,6 +76,8 @@ import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -88,8 +90,13 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -104,6 +111,7 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.HttpsURLConnection;
 
 public class Utils {
+    static final String TAG = "Utils";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
@@ -572,7 +580,7 @@ public class Utils {
 
             appver = isRelease ? ("v" + version) : version;
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e("Utils", "Could not retrieve package version");
+            Log.e(TAG, "Could not retrieve package version");
             appver = "";
         }
 
@@ -883,6 +891,17 @@ public class Utils {
             h.post(r);
     }
 
+    public static void safeClose(Closeable obj) {
+        if(obj == null)
+            return;
+
+        try {
+            obj.close();
+        } catch (IOException e) {
+            Log.w(TAG, e.getLocalizedMessage());
+        }
+    }
+
     // Returns true on the playstore branch
     public static boolean isPlaystore() {
         return false;
@@ -922,8 +941,38 @@ public class Utils {
                     return BuildType.WORKFLOW;
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            Log.e("Utils", "Could not determine the build type");
+            Log.e(TAG, "Could not determine the build type");
         }
         return BuildType.UNKNOWN;
+    }
+
+    public static X509Certificate x509FromPem(String pem) {
+        int begin = pem.indexOf('\n') + 1;
+        int end = pem.indexOf('-', begin);
+
+        if((begin > 0) && (end > begin)) {
+            String cert64 = pem.substring(begin, end);
+            //Log.d(TAG, "Cert: " + cert64);
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                byte[] cert_data = android.util.Base64.decode(cert64, android.util.Base64.DEFAULT);
+                return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert_data));
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isCAInstalled(X509Certificate ca_cert) {
+        try {
+            KeyStore ks = KeyStore.getInstance("AndroidCAStore");
+            ks.load(null, null);
+            return ks.getCertificateAlias(ca_cert) != null;
+        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

@@ -74,7 +74,6 @@ import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -102,7 +101,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mBlacklistsUpdateThread;
     private Thread mConnUpdateThread;
     private Thread mDumperThread;
-    private PlaintextReceiver mPlaintextReceiver;
+    private MitmReceiver mMitmReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
@@ -129,6 +128,9 @@ public class CaptureService extends VpnService implements Runnable {
     private MatchList mBlocklist;
     private MatchList mWhitelist;
     private SparseArray<String> mIfIndexToName;
+    private boolean mSocks5Enabled;
+    private String mSocks5Address;
+    private int mSocks5Port;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max Estimated max memory usage: less than 4 MB. */
@@ -308,14 +310,26 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        // adb shell run-as com.emanuelef.remote_capture.debug touch cache/BETA_PLAINTEXT_RECEIVER
-        if(mSettings.socks5_enabled && (new File(getCacheDir() + "/BETA_PLAINTEXT_RECEIVER")).exists()) {
-            mPlaintextReceiver = new PlaintextReceiver();
-            try {
-                mPlaintextReceiver.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-                mPlaintextReceiver = null;
+        mSocks5Address = "";
+        mSocks5Enabled = mSettings.socks5_enabled || mSettings.tls_decryption;
+        if(mSocks5Enabled) {
+            if(mSettings.tls_decryption) {
+                // Built-in decryption
+                mSocks5Address = "127.0.0.1";
+                mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
+
+                mMitmReceiver = new MitmReceiver(this);
+                try {
+                    if(!mMitmReceiver.start())
+                        return abortStart();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return abortStart();
+                }
+            } else {
+                // SOCKS5 proxy
+                mSocks5Address = mSettings.socks5_proxy_address;
+                mSocks5Port = mSettings.socks5_proxy_port;
             }
         }
 
@@ -598,13 +612,16 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    // NOTE: do not call this on the main thread, otherwise it will be an ANR
-    private void stopAndJoinThreads() {
-        Log.d(TAG, "Joining threads...");
-
-        // signal termination
+    private void signalServicesTermination() {
         mPendingUpdates.offer(new Pair<>(null, null));
         stopPcapDump();
+    }
+
+    // NOTE: do not call this on the main thread, otherwise it will be an ANR
+    private void stopAndJoinThreads() {
+        signalServicesTermination();
+
+        Log.d(TAG, "Joining threads...");
 
         while((mConnUpdateThread != null) && (mConnUpdateThread.isAlive())) {
             try {
@@ -627,13 +644,13 @@ public class CaptureService extends VpnService implements Runnable {
         mDumperThread = null;
         mDumper = null;
 
-        if(mPlaintextReceiver != null) {
+        if(mMitmReceiver != null) {
             try {
-                mPlaintextReceiver.stop();
+                mMitmReceiver.stop();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            mPlaintextReceiver = null;
+            mMitmReceiver = null;
         }
     }
 
@@ -645,6 +662,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         stopPacketLoop();
+        captureService.signalServicesTermination();
 
         captureService.stopForeground(true /* remove notification */);
         captureService.stopSelf();
@@ -894,11 +912,11 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getIpv6DnsServer() { return(IPV6_DNS_SERVER); }
 
-    public String getSocks5ProxyAddress() {  return(mSettings.socks5_proxy_address);  }
+    public int getSocks5Enabled() { return mSocks5Enabled ? 1 : 0; }
 
-    public int getSocks5Enabled() { return mSettings.socks5_enabled ? 1 : 0; }
+    public String getSocks5ProxyAddress() {  return(mSocks5Address); }
 
-    public int getSocks5ProxyPort() {  return(mSettings.socks5_proxy_port);  }
+    public int getSocks5ProxyPort() {  return(mSocks5Port);  }
 
     public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
 

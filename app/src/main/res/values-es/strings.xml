@@ -76,7 +76,7 @@
     <string name="get_app">Obténgalo:</string>
     <string name="tls_how_to">Cómo configurar el descifrado TLS</string>
     <string name="unknown_app">Desconocido</string>
-    <string name="enable_ipv6">Activar IPv6</string>
+    <string name="ipv6">Activar IPv6</string>
     <string name="enable_ipv6_summary">Permite las conexiones a Internet IPv6. Esto sólo debería activarse en redes con un puerto de enlace IPv6.</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Inalcanzable</string>
@@ -88,7 +88,7 @@
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy">Activar Proxy SOCKS5</string>
+    <string name="socks5_proxy">Activar Proxy SOCKS5</string>
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Dirección IP proxy</string>
     <string name="proxy_port">Puerto proxy</string>

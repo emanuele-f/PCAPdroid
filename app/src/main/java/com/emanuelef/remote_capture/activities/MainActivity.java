@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ListInfo;
+import com.emanuelef.remote_capture.model.MitmAddon;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -530,6 +531,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
+        if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
+            Intent intent = new Intent(this, MitmSetupWizard.class);
+            startActivity(intent);
+            return;
+        }
+
         if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
             openFileSelector();
             return;

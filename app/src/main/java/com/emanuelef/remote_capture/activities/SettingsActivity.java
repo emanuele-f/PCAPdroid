@@ -19,14 +19,18 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.InetAddresses;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.util.Patterns;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
@@ -38,6 +42,7 @@ import androidx.preference.SwitchPreference;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.MitmAddon;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
@@ -48,6 +53,7 @@ import java.util.Enumeration;
 import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity {
+    private static final String TAG = "SettingsActivity";
     private static final String ACTION_LANG_RESTART = "lang_restart";
     public static final String TARGET_PREF_EXTRA = "target_pref";
 
@@ -76,16 +82,21 @@ public class SettingsActivity extends BaseActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private SwitchPreference mTlsDecryptionEnabled; // TODO rename
+        private SwitchPreference mSocks5Enabled;
+        private SwitchPreference mTlsDecryption;
         private SwitchPreference mRootCaptureEnabled;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
         private Preference mTlsHelp;
-        private Preference mProxyPrefs;
+        private Preference mTrafficInspection;
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
+
+        private final ActivityResultLauncher<String> requestPermissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
+                        Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied")));
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -94,12 +105,12 @@ public class SettingsActivity extends BaseActivity {
 
             setupUdpExporterPrefs();
             setupHttpServerPrefs();
-            setupSocks5ProxyPrefs();
+            setupTrafficInspectionPrefs();
             setupCapturePrefs();
             setupSecurityPrefs();
             setupOtherPrefs();
 
-            socks5ProxyHideShow(mTlsDecryptionEnabled.isChecked());
+            socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
             rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
 
             Intent intent = requireActivity().getIntent();
@@ -197,13 +208,27 @@ public class SettingsActivity extends BaseActivity {
         }
 
         @SuppressWarnings("deprecation")
-        private void setupSocks5ProxyPrefs() {
-            mProxyPrefs = requirePreference("proxy_prefs");
+        private void setupTrafficInspectionPrefs() {
+            mTrafficInspection = requirePreference("traffic_inspection");
             mTlsHelp = requirePreference("tls_how_to");
 
-            mTlsDecryptionEnabled = requirePreference(Prefs.PREF_TLS_DECRYPTION_ENABLED_KEY);
-            mTlsDecryptionEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                socks5ProxyHideShow((Boolean) newValue);
+            mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
+            mTlsDecryption.setOnPreferenceChangeListener((preference, newValue) -> {
+                boolean enabled = (boolean) newValue;
+                Context ctx = requireContext();
+
+                if(enabled && MitmAddon.needsSetup(ctx)) {
+                    Intent intent = new Intent(ctx, MitmSetupWizard.class);
+                    startActivity(intent);
+                    return false;
+                }
+
+                socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked());
+                return true;
+            });
+            mSocks5Enabled = requirePreference(Prefs.PREF_SOCKS5_ENABLED_KEY);
+            mSocks5Enabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                socks5ProxyHideShow(mTlsDecryption.isChecked(), (boolean)newValue);
                 return true;
             });
 
@@ -224,9 +249,10 @@ public class SettingsActivity extends BaseActivity {
             mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
         }
 
-        private void socks5ProxyHideShow(boolean decryptionEnabled) {
-            mSocks5ProxyIp.setVisible(decryptionEnabled);
-            mSocks5ProxyPort.setVisible(decryptionEnabled);
+        private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled) {
+            mSocks5Enabled.setVisible(!tlsDecryption);
+            mSocks5ProxyIp.setVisible(socks5Enabled && !tlsDecryption);
+            mSocks5ProxyPort.setVisible(socks5Enabled && !tlsDecryption);
 
             //mTlsHelp.setVisible(decryptionEnabled);
             mTlsHelp.setVisible(true);
@@ -287,7 +313,7 @@ public class SettingsActivity extends BaseActivity {
         }
 
         private void rootCaptureHideShow(boolean enabled) {
-            mProxyPrefs.setVisible(!enabled);
+            mTrafficInspection.setVisible(!enabled);
             mIpv6Enabled.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
         }

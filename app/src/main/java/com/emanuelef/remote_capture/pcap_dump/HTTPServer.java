@@ -28,7 +28,6 @@ import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,16 +136,16 @@ public class HTTPServer implements PcapDumper, Runnable {
                 } catch (IOException ignored) {}
             }
 
-            checkedClose(mChunkedOutputStream);
-            checkedClose(mOutputStream);
-            checkedClose(mInputStream);
-            checkedClose(mSocket);
+            Utils.safeClose(mChunkedOutputStream);
+            Utils.safeClose(mOutputStream);
+            Utils.safeClose(mInputStream);
+            Utils.safeClose(mSocket);
             mIsClosed = true;
         }
 
         public void stop() {
             // if running, will trigger a IOException
-            checkedClose(mSocket);
+            Utils.safeClose(mSocket);
         }
 
         @Override
@@ -264,7 +263,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                 synchronized(this) {
                     if(mClients.size() >= MAX_CLIENTS) {
                         Log.w(TAG, "Clients limit reached");
-                        checkedClose(client);
+                        Utils.safeClose(client);
                         continue;
                     }
                 }
@@ -281,7 +280,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                     }
                 } catch (RejectedExecutionException e) {
                     Log.w(TAG, e.getLocalizedMessage());
-                    checkedClose(client);
+                    Utils.safeClose(client);
                 }
             } catch (IOException e) {
                 if(!mRunning)
@@ -291,7 +290,7 @@ public class HTTPServer implements PcapDumper, Runnable {
             }
         }
 
-        checkedClose(mSocket);
+        Utils.safeClose(mSocket);
 
         // Terminate the running clients threads
         pool.shutdown();
@@ -317,17 +316,6 @@ public class HTTPServer implements PcapDumper, Runnable {
             }
 
             mClients.clear();
-        }
-    }
-
-    private static void checkedClose(Closeable socket) {
-        if(socket == null)
-            return;
-
-        try {
-            socket.close();
-        } catch (IOException e) {
-            Log.d(TAG, e.getLocalizedMessage());
         }
     }
 

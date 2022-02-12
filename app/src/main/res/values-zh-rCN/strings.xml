@@ -102,7 +102,7 @@
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
     <string name="unknown_app">未知</string>
-    <string name="enable_ipv6">启用 IPv6</string>
+    <string name="ipv6">启用 IPv6</string>
     <string name="enable_ipv6_summary">允许 IPv6 网络连接。仅在带有 IPv6 网关的网络中使用</string>
     <string name="error">错误</string>
     <string name="conn_status_unreachable">不可达</string>
@@ -114,7 +114,7 @@
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
     <string name="app_theme">主题</string>
-    <string name="enable_socks5_proxy">启用 SOCKS5 代理</string>
+    <string name="socks5_proxy">启用 SOCKS5 代理</string>
     <string name="proxy">代理</string>
     <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>

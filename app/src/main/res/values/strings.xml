@@ -12,7 +12,7 @@
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License or later</a> for
         more details</string>
-    <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br/>\n\n
+    <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br />\n\n
         - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
         - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
         - NanoHTTPD: <a href='https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md'>BSD-3-Clause</a>\n\n
@@ -103,7 +103,7 @@
     <string name="get_app">Get it:</string>
     <string name="tls_how_to">How to set up the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
-    <string name="enable_ipv6">Enable IPv6</string>
+    <string name="ipv6">IPv6</string>
     <string name="enable_ipv6_summary">Allow IPv6 connections to the Internet. Only use this on networks with an IPv6 gateway</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Unreachable</string>
@@ -116,8 +116,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="app_theme">Theme</string>
-    <string name="enable_socks5_proxy">Enable SOCKS5 proxy</string>
-    <string name="enable_socks5_proxy_summary">Redirect all TCP connections to the specified SOCKS5 proxy</string>
+    <string name="socks5_proxy">SOCKS5</string>
+    <string name="enable_socks5_proxy_summary">Redirect all the TCP connections to the specified SOCKS5 proxy</string>
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_port">Proxy port</string>
@@ -263,4 +263,21 @@
     <string name="close_nav_drawer">Close drawer</string>
     <string name="capture_all_apps">Capture the traffic of all the apps</string>
     <string name="save_ok">Saved</string>
+    <string name="tls_decryption">TLS decryption (preview)</string>
+    <string name="tls_decryption_summary">Decrypt the SSL/TLS traffic by performing mitm. This may now work with some apps, check out the user guide</string>
+    <string name="traffic_inspection">Traffic inspection</string>
+    <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
+    <string name="mitm_setup_wizard">Mitm setup wizard</string>
+    <string name="next_step">Next</string>
+    <string name="install_action">Install</string>
+    <string name="export_action">Export</string>
+    <string name="install_mitm_addon">Install the PCAPdroid mitm addon</string>
+    <string name="configure_action">Configure</string>
+    <string name="grant_mitm_permission">Give PCAPdroid the ability to decrypt the network traffic</string>
+    <string name="install_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
+    <string name="checking_the_certificate">Checking the certificate…</string>
+    <string name="ca_installation_failed">CA certificate installation failed</string>
+    <string name="cert_exported_now_installed">Certificate exported, now install it from the Android settings</string>
+    <string name="cert_installed_correctly">The CA certificate is installed</string>
+    <string name="done">Done</string>
 </resources>
