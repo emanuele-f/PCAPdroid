@@ -54,7 +54,7 @@
     <string name="delete">Slett</string>
     <string name="ok">OK</string>
     <string name="delete_error">Kunne ikke slette filen</string>
-    <string name="conn_status_open">Åpne</string>
+    <string name="conn_status_open">Åpen</string>
     <string name="first_seen">Først sett</string>
     <string name="last_seen">Sist sett</string>
     <string name="conn_status_closed">Lukket</string>
