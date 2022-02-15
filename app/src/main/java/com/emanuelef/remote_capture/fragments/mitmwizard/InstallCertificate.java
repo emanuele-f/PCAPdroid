@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.activity.result.ActivityResult;
@@ -35,18 +36,19 @@ import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.model.MitmAddon;
+import com.emanuelef.remote_capture.interfaces.MitmListener;
+import com.emanuelef.remote_capture.MitmAddon;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.cert.X509Certificate;
 
-public class InstallCertificate extends StepFragment {
+public class InstallCertificate extends StepFragment implements MitmListener {
+    private static final String TAG = "InstallCertificate";
+    private MitmAddon mAddon;
     private String mCaPem;
     private X509Certificate mCaCert;
 
-    private final ActivityResultLauncher<Intent> mitmCtrlLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::mitmCtrlResult);
     private final ActivityResultLauncher<Intent> certFileLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::certFileResult);
 
@@ -57,15 +59,15 @@ public class InstallCertificate extends StepFragment {
         mStepButton.setText(R.string.export_action);
         mStepButton.setEnabled(false);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setClassName(MitmAddon.PACKAGE_NAME, MitmAddon.CONTROL_ACTIVITY);
-        intent.putExtra(MitmAddon.ACTION_EXTRA, MitmAddon.ACTION_GET_CA_CERTIFICATE);
+        mAddon = new MitmAddon(requireContext(), this);
+        if(!mAddon.connect(0))
+            certFail();
+    }
 
-        try {
-            mitmCtrlLauncher.launch(intent);
-        } catch (ActivityNotFoundException e) {
-            mStepLabel.setText(R.string.no_intent_handler_found);
-        }
+    @Override
+    public void onDestroyView() {
+        mAddon.disconnect();
+        super.onDestroyView();
     }
 
     @Override
@@ -74,28 +76,6 @@ public class InstallCertificate extends StepFragment {
             certOk();
 
         super.onResume();
-    }
-
-    private void mitmCtrlResult(final ActivityResult result) {
-        if((result.getResultCode() == Activity.RESULT_OK) && (result.getData() != null)) {
-            Intent res = result.getData();
-            mCaPem = res.getStringExtra(MitmAddon.CERTIFICATE_RESULT);
-
-            if(mCaPem != null) {
-                //Log.d(TAG, "certificate: " + cert_str);
-                mCaCert = Utils.x509FromPem(mCaPem);
-
-                if(mCaCert != null) {
-                    if(Utils.isCAInstalled(mCaCert))
-                        certOk();
-                    else {
-                        MitmAddon.setDecryptionSetupDone(requireContext(), false);
-                        installCaCertificate();
-                    }
-                } else
-                    certFail();
-            }
-        }
     }
 
     private void certOk() {
@@ -153,5 +133,39 @@ public class InstallCertificate extends StepFragment {
             if(written)
                 Utils.showToastLong(ctx, R.string.cert_exported_now_installed);
         }
+    }
+
+    @Override
+    public void onMitmGetCaCertificateResult(@Nullable String ca_pem) {
+        mAddon.disconnect();
+        mCaPem = ca_pem;
+
+        if(mCaPem != null) {
+            Log.d(TAG, "Got certificate");
+            //Log.d(TAG, "certificate: " + cert_str);
+            mCaCert = Utils.x509FromPem(mCaPem);
+
+            if(mCaCert != null) {
+                if(Utils.isCAInstalled(mCaCert))
+                    certOk();
+                else {
+                    MitmAddon.setDecryptionSetupDone(requireContext(), false);
+                    installCaCertificate();
+                }
+            } else
+                certFail();
+        }
+    }
+
+    @Override
+    public void onMitmServiceConnect() {
+        if(!mAddon.requestCaCertificate())
+            certFail();
+    }
+
+    @Override
+    public void onMitmServiceDisconnect() {
+        if(mCaPem == null)
+            certFail();
     }
 }

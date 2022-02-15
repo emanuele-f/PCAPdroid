@@ -22,22 +22,21 @@ package com.emanuelef.remote_capture;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
-import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.emanuelef.remote_capture.activities.MitmSetupWizard;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.interfaces.MitmListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.emanuelef.remote_capture.model.MitmAddon;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -53,70 +52,23 @@ import java.util.StringTokenizer;
  *
  * The raw payload data follows the header.
  */
-public class MitmReceiver implements Runnable, ConnectionsListener {
+public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
     public static final int MAX_PLAINTEXT_LENGTH = 1024; // sync with pcapdroid.h
     public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
     private Thread mThread;
     private final ConnectionsRegister mReg;
     private final Context mContext;
-    private Messenger mService;
-    private boolean bound;
+    private final MitmAddon mAddon;
     private ParcelFileDescriptor mSocketFd;
-
-    private final ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            Log.d(TAG, "Service connected");
-            mService = new Messenger(service);
-
-            ParcelFileDescriptor[] pair;
-            try {
-                // Create a pair of connected fds
-                pair = ParcelFileDescriptor.createReliableSocketPair();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-            mSocketFd = pair[1];
-
-            Message msg = Message.obtain(null, MitmAddon.MSG_START_MITM, TLS_DECRYPTION_PROXY_PORT, 0, pair[0]);
-
-            try {
-                mService.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                Utils.safeClose(pair[0]);
-                Utils.safeClose(pair[1]);
-                return;
-            }
-            bound = true;
-
-            // Sent, close here
-            Utils.safeClose(pair[0]);
-
-            if(mThread != null)
-                mThread.interrupt();
-
-            mThread = new Thread(MitmReceiver.this);
-            mThread.start();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.d(TAG, "Service disconnected");
-            mService = null;
-            Utils.safeClose(mSocketFd);
-            mSocketFd = null;
-            bound = false;
-        }
-    };
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
 
     public MitmReceiver(Context ctx) {
-        // Important: the application context is required here, otherwise bind/unbind will not work properly
-        mContext = ctx.getApplicationContext();
+        mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
+        mAddon = new MitmAddon(mContext, this);
     }
 
     public boolean start() throws IOException {
@@ -125,8 +77,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(MitmAddon.PACKAGE_NAME, MitmAddon.MITM_SERVICE));
 
-        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT)) {
-            mContext.unbindService(mConnection);
+        if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);
             return false;
         }
@@ -152,19 +103,17 @@ public class MitmReceiver implements Runnable, ConnectionsListener {
         }
         mThread = null;
 
-        if(bound) {
-            Log.d(TAG, "Unbinding service...");
-            mContext.unbindService(mConnection);
-            bound = false;
-        }
+        mAddon.disconnect();
 
         Log.d(TAG, "stop done");
     }
 
     @Override
     public void run() {
+        Log.d(TAG, "Receiving data...");
+
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
-            while(bound) {
+            while(mAddon.isConnected()) {
                 String payload_type;
                 int port;
                 int payload_len;
@@ -214,6 +163,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener {
             if(mSocketFd != null) // ignore termination
                 e.printStackTrace();
         }
+
+        Log.d(TAG, "End receiving data");
     }
 
     @Override
@@ -230,6 +181,47 @@ public class MitmReceiver implements Runnable, ConnectionsListener {
             for(ConnectionDescriptor conn: conns)
                 mPortToConnId.put(conn.local_port, conn.incr_id);
         }
+    }
+
+    @Override
+    public void onMitmServiceConnect() {
+        // when connected, verify that the certificate is installed before starting the proxy.
+        // will continue on onMitmGetCaCertificateResult.
+        if(!mAddon.requestCaCertificate())
+            mAddon.disconnect();
+    }
+
+    @Override
+    public void onMitmGetCaCertificateResult(@Nullable String ca_pem) {
+        if(!Utils.isCAInstalled(ca_pem)) {
+            // The certificate has been uninstalled from the system
+            Utils.showToastLong(mContext, R.string.cert_reinstall_required);
+            MitmAddon.setDecryptionSetupDone(mContext, false);
+            CaptureService.stopService();
+            return;
+        }
+
+        // Certificate installation verified, start the proxy
+        mSocketFd = mAddon.startProxy(TLS_DECRYPTION_PROXY_PORT);
+        if(mSocketFd == null) {
+            mAddon.disconnect();
+            return;
+        }
+
+        if(mThread != null)
+            mThread.interrupt();
+
+        mThread = new Thread(MitmReceiver.this);
+        mThread.start();
+    }
+
+    @Override
+    public void onMitmServiceDisconnect() {
+        Utils.safeClose(mSocketFd);
+        mSocketFd = null;
+
+        // Stop the capture if running
+        CaptureService.stopService();
     }
 
     ConnectionDescriptor getConnByLocalPort(int local_port) {

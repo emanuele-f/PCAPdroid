@@ -279,5 +279,6 @@
     <string name="ca_installation_failed">CA certificate installation failed</string>
     <string name="cert_exported_now_installed">Certificate exported, now install it from the Android settings</string>
     <string name="cert_installed_correctly">The CA certificate is installed</string>
+    <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="done">Done</string>
 </resources>

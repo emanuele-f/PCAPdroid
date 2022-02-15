@@ -26,7 +26,7 @@ import androidx.annotation.Nullable;
 import android.view.View;
 
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.model.MitmAddon;
+import com.emanuelef.remote_capture.MitmAddon;
 
 public class InstallAddon extends StepFragment {
     @Override

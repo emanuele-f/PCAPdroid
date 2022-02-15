@@ -30,7 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.model.MitmAddon;
+import com.emanuelef.remote_capture.MitmAddon;
 
 public class GrantPermission extends StepFragment {
     private final ActivityResultLauncher<String> requestPermissionLauncher =

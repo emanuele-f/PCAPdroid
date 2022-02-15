@@ -975,4 +975,15 @@ public class Utils {
             return false;
         }
     }
+
+    public static boolean isCAInstalled(String ca_pem) {
+        if(ca_pem == null)
+            return false;
+
+        X509Certificate ca_cert = x509FromPem(ca_pem);
+        if(ca_cert == null)
+            return false;
+
+        return isCAInstalled(ca_cert);
+    }
 }
