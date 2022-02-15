@@ -19,6 +19,8 @@
 
 package com.emanuelef.remote_capture.fragments.mitmwizard;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import android.view.View;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.Utils;
 
 public class InstallAddon extends StepFragment {
     @Override
@@ -40,6 +43,14 @@ public class InstallAddon extends StepFragment {
             installAddon();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(MitmAddon.isInstalled(requireContext()))
+            addonOk();
+    }
+
     private void addonOk() {
         nextStep(R.id.navto_grant_permission);
     }
@@ -48,9 +59,9 @@ public class InstallAddon extends StepFragment {
         mStepLabel.setText(R.string.install_mitm_addon);
         mStepButton.setText(R.string.install_action);
         mStepButton.setOnClickListener(v -> {
-            // TODO install
-            if(MitmAddon.isInstalled(requireContext()))
-                addonOk();
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://github.com/emanuele-f/PCAPdroid-mitm/releases/download/v0.1/PCAPdroid-mitm_v0.1.apk"));
+            Utils.startActivity(requireContext(), browserIntent);
         });
     }
 }
