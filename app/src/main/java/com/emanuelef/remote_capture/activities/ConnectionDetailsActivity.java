@@ -61,6 +61,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private TextView mFirstSeen;
     private TextView mLastSeen;
     private TextView mTcpFlags;
+    private TextView mError;
     private ImageView mBlacklistedIp;
     private ImageView mBlacklistedHost;
     private Handler mHandler;
@@ -103,6 +104,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mFirstSeen = findViewById(R.id.first_seen);
         mLastSeen = findViewById(R.id.last_seen);
         mTcpFlags = findViewById(R.id.tcp_flags);
+        mError = findViewById(R.id.error_msg);
         mBlacklistedIp = findViewById(R.id.blacklisted_ip);
         mBlacklistedHost = findViewById(R.id.blacklisted_host);
 
@@ -253,6 +255,10 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             mTcpFlags.setText(Utils.tcpFlagsToStr(conn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(conn.getSentTcpFlags()));
             mBlacklistedIp.setVisibility(conn.isBlacklistedIp() ? View.VISIBLE : View.GONE);
             mBlacklistedHost.setVisibility(conn.isBlacklistedHost() ? View.VISIBLE : View.GONE);
+            if(conn.tls_error != null) {
+                mError.setText(conn.tls_error);
+                mError.setVisibility(View.VISIBLE);
+            }
 
             if(conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
                 unregisterConnsListener();

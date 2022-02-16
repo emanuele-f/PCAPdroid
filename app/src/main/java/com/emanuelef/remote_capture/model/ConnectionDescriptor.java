@@ -88,6 +88,7 @@ public class ConnectionDescriptor implements Serializable {
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
+    public String tls_error;
     public String country;
     public Geomodel.ASN asn;
 
@@ -126,6 +127,10 @@ public class ConnectionDescriptor implements Serializable {
             blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
             tcp_flags = update.tcp_flags;
+
+            // see MitmReceiver.handlePayload
+            if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (tls_error != null))
+                status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         }
         if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
             info = update.info;

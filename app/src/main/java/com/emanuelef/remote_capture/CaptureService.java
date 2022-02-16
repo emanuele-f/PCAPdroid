@@ -922,6 +922,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
 
+    public int isTlsDecryptionEnabled() { return mSettings.tls_decryption ? 1 : 0; }
+
     public int malwareDetectionEnabled() { return(mMalwareDetectionEnabled ? 1 : 0); }
 
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }

@@ -606,7 +606,8 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     if(old_proto != data->l7proto)
         data->update_type |= CONN_UPDATE_INFO;
 
-    if((!data->request_done) && !pd->ndpi->packet.tcp_retransmission)
+    if((!data->request_done) && !pd->ndpi->packet.tcp_retransmission && !pd->tls_decryption_enabled)
+        // NOTE: when performing TLS decryption, the request data is set by the MitmReceiver
         process_request_data(pd, pctx);
 
     if(!is_tx && (data->l7proto == NDPI_PROTOCOL_DNS))

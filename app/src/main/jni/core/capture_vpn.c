@@ -370,8 +370,10 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-// TODO with built-in decryption, only proxy encrypted connections
 static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
+    // NOTE: connections must be proxied as soon as the first packet arrives.
+    // Since we cannot reliably determine TLS connections with 1 packet, we must proxy all the TCP
+    // connections.
     return pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP);
 }
 

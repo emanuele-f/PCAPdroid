@@ -23,10 +23,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.LruCache;
+import android.util.SparseArray;
 
-import com.emanuelef.remote_capture.activities.MitmSetupWizard;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -36,7 +37,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.X509Certificate;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -64,6 +64,32 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
+    private final SparseArray<PendingPayload> mPendingPayloads = new SparseArray<>();
+
+    private enum PayloadType {
+        UNKNOWN,
+        TLS_ERROR,
+        HTTP_REQUEST,
+        HTTP_REPLY,
+        TCP_CLIENT_MSG,
+        TCP_SERVER_MSG,
+        WEBSOCKET_CLIENT_MSG,
+        WEBSOCKET_SERVER_MSG,
+    }
+
+    private static class PendingPayload {
+        PayloadType pType;
+        byte[] payload;
+        int port;
+        long pendingSince;
+
+        PendingPayload(PayloadType _pType, byte[] _payload, int _port) {
+            pType = _pType;
+            payload = _payload;
+            port = _port;
+            pendingSince = SystemClock.uptimeMillis();
+        }
+    }
 
     public MitmReceiver(Context ctx) {
         mContext = ctx;
@@ -146,18 +172,22 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                     return;
                 }
 
-                if(payload_type.equals("http_req")) {
+                PayloadType pType = parsePayloadType(payload_type);
+
+                if((pType == PayloadType.HTTP_REQUEST)
+                        || (pType == PayloadType.TCP_CLIENT_MSG)
+                        || (pType == PayloadType.TLS_ERROR)) {
                     byte[] payload = new byte[payload_len];
                     istream.readFully(payload);
 
-                    //Log.d(TAG, "HTTP_REQUEST [" + payload_len + "]");
-
                     ConnectionDescriptor conn = getConnByLocalPort(port);
-                    if((conn != null) && (conn.l7proto.equals("TLS")) && (conn.request_plaintext.isEmpty())) {
-                        // NOTE: we are accessing conn concurrently, however request_plaintext is
-                        // never set inline for encrypted flows.
-                        conn.request_plaintext = getPlaintextString(payload);
-                    }
+                    //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
+
+                    if(conn != null)
+                        handlePayload(conn, pType, payload);
+                    else
+                        // We may receive a payload before seeing the connection in connectionsAdded
+                        addPendingPayload(new PendingPayload(pType, payload, port));
                 } else
                     istream.skipBytes(payload_len); // ignore for now
             }
@@ -169,6 +199,60 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         Log.d(TAG, "End receiving data");
     }
 
+    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload) {
+        // NOTE: we are possibly accessing the conn concurrently
+        if(((pType == PayloadType.HTTP_REQUEST) || (pType == PayloadType.TCP_CLIENT_MSG)) && conn.request_plaintext.isEmpty())
+            conn.request_plaintext = getPlaintextString(payload);
+        else if(pType == PayloadType.TLS_ERROR) {
+            conn.tls_error = new String(payload, StandardCharsets.US_ASCII);
+
+            // see ConnectionDescriptor.processUpdate
+            if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
+                conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
+        }
+    }
+
+    private synchronized void addPendingPayload(PendingPayload pending) {
+        // Purge unresolved connections (should not happen, just in case)
+        if(mPendingPayloads.size() > 32) {
+            long now = SystemClock.uptimeMillis();
+
+            for(int i=mPendingPayloads.size()-1; i>=0; i--) {
+                PendingPayload pp = mPendingPayloads.valueAt(i);
+
+                if((now - pp.pendingSince) > 5000 /* 5 sec */) {
+                    Log.d(TAG, "Dropping old payload: " + pp.pType.name());
+                    mPendingPayloads.remove(pp.port);
+                }
+            }
+        }
+
+        // TODO: concatenate the payload to the existing entry
+        if(mPendingPayloads.indexOfKey(pending.port) < 0)
+            mPendingPayloads.put(pending.port, pending);
+    }
+
+    private static PayloadType parsePayloadType(String str) {
+        switch (str) {
+            case "tls_err":
+                return PayloadType.TLS_ERROR;
+            case "http_req":
+                return PayloadType.HTTP_REQUEST;
+            case "http_rep":
+                return PayloadType.HTTP_REPLY;
+            case "tcp_climsg":
+                return PayloadType.TCP_CLIENT_MSG;
+            case "tcp_srvmsg":
+                return PayloadType.TCP_SERVER_MSG;
+            case "ws_climsg":
+                return PayloadType.WEBSOCKET_CLIENT_MSG;
+            case "ws_srvmsg":
+                return PayloadType.WEBSOCKET_SERVER_MSG;
+            default:
+                return PayloadType.UNKNOWN;
+        }
+    }
+
     @Override
     public void connectionsChanges(int num_connetions) {}
     @Override
@@ -178,10 +262,23 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     @Override
     public void connectionsAdded(int start, ConnectionDescriptor[] conns) {
-        synchronized(mPortToConnId) {
+        synchronized(this) {
             // Save the latest port->ID mapping
-            for(ConnectionDescriptor conn: conns)
+            for(ConnectionDescriptor conn: conns) {
+                //Log.d(TAG, "[+] port " + conn.local_port);
                 mPortToConnId.put(conn.local_port, conn.incr_id);
+
+                // Check if the payload has already been received
+                int pending_idx = mPendingPayloads.indexOfKey(conn.local_port);
+                if(pending_idx >= 0) {
+                    PendingPayload pending = mPendingPayloads.valueAt(pending_idx);
+                    mPendingPayloads.removeAt(pending_idx);
+
+                    //Log.d(TAG, "(pending) PAYLOAD." + pending.pType.name() + "[" + pending.payload.length + " B]: port=" + pending.port);
+
+                    handlePayload(conn, pending.pType, pending.payload);
+                }
+            }
         }
     }
 
@@ -226,7 +323,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     ConnectionDescriptor getConnByLocalPort(int local_port) {
         Integer conn_id;
 
-        synchronized(mPortToConnId) {
+        synchronized(this) {
             conn_id = mPortToConnId.get(local_port);
         }
         if(conn_id == null)

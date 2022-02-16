@@ -488,6 +488,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
+            .tls_decryption_enabled = (bool) getIntPref(env, vpn, "isTlsDecryptionEnabled"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
                     .snaplen = getIntPref(env, vpn, "getSnaplen"),

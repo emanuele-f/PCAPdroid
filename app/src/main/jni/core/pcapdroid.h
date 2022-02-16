@@ -174,6 +174,7 @@ typedef struct pcapdroid {
     // config
     jint app_filter;
     bool root_capture;
+    bool tls_decryption_enabled;
 
     // stats
     u_int num_dropped_pkts;
