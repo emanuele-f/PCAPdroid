@@ -91,6 +91,10 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         mReg.removeListener(this);
 
+        // on some devices, calling close on the socket is not enough to stop the thread,
+        // the service must be unbound
+        mAddon.disconnect();
+
         ParcelFileDescriptor fd = mSocketFd;
         mSocketFd = null;
         Utils.safeClose(fd); // possibly wake mThread
@@ -102,8 +106,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             } catch (InterruptedException ignored) {}
         }
         mThread = null;
-
-        mAddon.disconnect();
 
         Log.d(TAG, "stop done");
     }
@@ -217,10 +219,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     @Override
     public void onMitmServiceDisconnect() {
-        Utils.safeClose(mSocketFd);
-        mSocketFd = null;
-
-        // Stop the capture if running
+        // Stop the capture if running, CaptureService will call MitmReceiver::stop
         CaptureService.stopService();
     }
 
