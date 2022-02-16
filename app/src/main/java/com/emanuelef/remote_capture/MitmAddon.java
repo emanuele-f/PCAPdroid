@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +48,8 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     /* API */
     public static final String PACKAGE_NAME = "com.pcapdroid.mitm";
+    public static final String PACKAGE_VERSION_NAME = "v0.2";
+    public static final int PACKAGE_VERSION_CODE = 2;
     public static final String MITM_PERMISSION = "com.pcapdroid.permission.MITM";
     public static final String MITM_SERVICE = PACKAGE_NAME + ".MitmService";
 
@@ -82,13 +85,22 @@ public class MitmAddon {
         }
     };
 
-    public static boolean isInstalled(Context ctx) {
+    public static int getInstalledVersion(Context ctx) {
         try {
-            ctx.getPackageManager().getPackageInfo(PACKAGE_NAME, 0);
-            return true;
+            PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(PACKAGE_NAME, 0);
+            return pInfo.versionCode;
         } catch (PackageManager.NameNotFoundException e) {
-            return false;
+            return -1;
         }
+    }
+
+    public static boolean isInstalled(Context ctx) {
+        return getInstalledVersion(ctx) == PACKAGE_VERSION_CODE;
+    }
+
+    public static String getGithubReleaseUrl() {
+        return "https://github.com/emanuele-f/PCAPdroid-mitm/releases/download/" +
+                PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME +".apk";
     }
 
     public static boolean hasMitmPermission(Context ctx) {

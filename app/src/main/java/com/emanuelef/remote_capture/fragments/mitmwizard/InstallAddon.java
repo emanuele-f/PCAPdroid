@@ -56,11 +56,25 @@ public class InstallAddon extends StepFragment {
     }
 
     private void installAddon() {
-        mStepLabel.setText(R.string.install_mitm_addon);
-        mStepButton.setText(R.string.install_action);
+        int installed_ver = MitmAddon.getInstalledVersion(requireContext());
+
+        if(installed_ver < 0) {
+            mStepLabel.setText(R.string.install_mitm_addon);
+            mStepButton.setText(R.string.install_action);
+        } else if(installed_ver < MitmAddon.PACKAGE_VERSION_CODE) {
+            mStepLabel.setText(R.string.mitm_addon_new_version);
+            mStepButton.setText(R.string.upgrade_action);
+        } else {
+            mStepLabel.setText(R.string.mitm_addon_bad_version);
+            mStepIcon.setColorFilter(mDangerColor);
+            mStepButton.setText(R.string.install_action);
+            mStepButton.setEnabled(false);
+            return;
+        }
+
         mStepButton.setOnClickListener(v -> {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("https://github.com/emanuele-f/PCAPdroid-mitm/releases/download/v0.1/PCAPdroid-mitm_v0.1.apk"));
+                    Uri.parse(MitmAddon.getGithubReleaseUrl()));
             Utils.startActivity(requireContext(), browserIntent);
         });
     }
