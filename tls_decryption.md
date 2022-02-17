@@ -1,6 +1,6 @@
 ## 3.1 Decrypt HTTPS/TLS
 
-PCAPdroid has the ability to send all the TCP traffic via a SOCKS5 proxy. By connecting to [mitmproxy](https://github.com/emanuele-f/mitmproxy) in SOCKS5 mode it's possible to decrypt the TLS traffic. TLS decryption can be used, for example, to inspect the plain HTTP traffic in HTTPS requests. *Note*: the TLS decryption is not available if *root capture* is enabled.
+PCAPdroid has the ability to send all the TCP traffic via a SOCKS5 proxy. By connecting to [mitmproxy](https://github.com/mitmproxy/mitmproxy) in SOCKS5 mode it's possible to decrypt the TLS traffic. TLS decryption can be used, for example, to inspect the plain HTTP traffic in HTTPS requests. *Note*: the TLS decryption is not available if *root capture* is enabled.
 
 mitmproxy can be installed on a PC by following the [official installation guide](https://docs.mitmproxy.org/stable/overview-installation). Both the Android device and the PC should be connected to the same network for this to work.
 
