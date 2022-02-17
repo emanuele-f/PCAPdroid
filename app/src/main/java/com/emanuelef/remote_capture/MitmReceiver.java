@@ -117,13 +117,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         mReg.removeListener(this);
 
-        // on some devices, calling close on the socket is not enough to stop the thread,
-        // the service must be unbound
-        mAddon.disconnect();
-
         ParcelFileDescriptor fd = mSocketFd;
         mSocketFd = null;
         Utils.safeClose(fd); // possibly wake mThread
+
+        // on some devices, calling close on the socket is not enough to stop the thread,
+        // the service must be unbound
+        mAddon.disconnect();
 
         while((mThread != null) && (mThread.isAlive())) {
             try {
@@ -284,6 +284,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     @Override
     public void onMitmServiceConnect() {
+        // Ensure that no other instance is running
+        mAddon.stopProxy();
+
         // when connected, verify that the certificate is installed before starting the proxy.
         // will continue on onMitmGetCaCertificateResult.
         if(!mAddon.requestCaCertificate())
