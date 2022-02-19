@@ -1,1 +1,1 @@
-Ferramenta de captura e monitoramento de rede sem acesso Root
+Ferramenta de monitoramento de rede sem acesso root para Android
