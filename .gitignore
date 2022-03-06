@@ -17,3 +17,6 @@ captures/
 .cxx
 app/release/
 app/debug/
+
+# Python
+__pycache__

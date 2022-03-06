@@ -73,7 +73,6 @@ Some features of PCAPdroid can be integrated into a third-party app to provide p
 
 - [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
 - [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
-- [nanohttpd](https://github.com/NanoHttpd/nanohttpd): tiny HTTP server
 
 For the complete list of third party libraries and the corresponding licenses check out the "About" page in the app.
 
