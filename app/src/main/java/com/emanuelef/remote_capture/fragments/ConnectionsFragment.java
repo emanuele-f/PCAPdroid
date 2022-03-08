@@ -25,6 +25,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,6 +49,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -66,6 +68,7 @@ import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
@@ -91,6 +94,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private ChipGroup mActiveFilter;
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
+    private MenuItem mMenuSslkeylogExport;
     private MenuItem mSave;
     private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
@@ -623,6 +627,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSave = menu.findItem(R.id.save);
         mMenuFilter = menu.findItem(R.id.edit_filter);
         mMenuItemSearch = menu.findItem(R.id.search);
+        mMenuSslkeylogExport = menu.findItem(R.id.export_sslkeylogfile);
 
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
         mSearchView.setOnQueryTextListener(this);
@@ -658,10 +663,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
+        Context ctx = requireContext();
 
         mMenuItemSearch.setVisible(is_enabled); // NOTE: setEnabled does not work for this
         //mMenuFilter.setEnabled(is_enabled);
         mSave.setEnabled(is_enabled);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        mMenuSslkeylogExport.setVisible(Utils.supportsFileDialog(ctx) && Prefs.getTlsDecryptionEnabled(prefs));
+        mMenuSslkeylogExport.setEnabled(CaptureService.isServiceActive());
     }
 
     private void dumpCsv() {

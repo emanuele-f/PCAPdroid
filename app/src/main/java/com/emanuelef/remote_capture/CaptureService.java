@@ -59,6 +59,7 @@ import com.emanuelef.remote_capture.activities.CaptureCtrl;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.interfaces.SslkeylogDumpListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.BlacklistDescriptor;
 import com.emanuelef.remote_capture.model.Blacklists;
@@ -767,6 +768,13 @@ public class CaptureService extends VpnService implements Runnable {
         assert(reg != null);
 
         return reg;
+    }
+
+    // See MitmReceiver.dumpSslkeylogfile
+    public static boolean dumpSslkeylogfile(SslkeylogDumpListener listener) {
+        if(INSTANCE != null)
+            return INSTANCE.mMitmReceiver.dumpSslkeylogfile(listener);
+        return false;
     }
 
     public static boolean isCapturingAsRoot() {

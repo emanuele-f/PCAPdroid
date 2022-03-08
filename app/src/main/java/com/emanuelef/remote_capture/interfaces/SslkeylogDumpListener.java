@@ -14,16 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
-
 package com.emanuelef.remote_capture.interfaces;
 
-import org.jetbrains.annotations.Nullable;
+import androidx.annotation.Nullable;
 
-public interface MitmListener {
-    void onMitmGetCaCertificateResult(@Nullable String ca_pem);
-    void onMitmSslkeylogfileResult(@Nullable byte[] contents);
-    void onMitmServiceConnect();
-    void onMitmServiceDisconnect();
+public interface SslkeylogDumpListener {
+    void onSslkeylogDumpResult(@Nullable byte[] sslkeylog);
 }

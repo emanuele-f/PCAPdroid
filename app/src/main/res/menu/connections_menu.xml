@@ -29,4 +29,11 @@
         android:icon="@drawable/ic_save"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/export_sslkeylogfile"
+        android:title="@string/export_sslkeylog"
+        android:orderInCategory="40"
+        android:icon="@drawable/ic_save"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

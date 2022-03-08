@@ -48,8 +48,8 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     /* API */
     public static final String PACKAGE_NAME = "com.pcapdroid.mitm";
-    public static final String PACKAGE_VERSION_NAME = "v0.2";
-    public static final int PACKAGE_VERSION_CODE = 2;
+    public static final String PACKAGE_VERSION_NAME = "v0.3";
+    public static final int PACKAGE_VERSION_CODE = 3;
     public static final String MITM_PERMISSION = "com.pcapdroid.permission.MITM";
     public static final String MITM_SERVICE = PACKAGE_NAME + ".MitmService";
 
@@ -57,7 +57,9 @@ public class MitmAddon {
     public static final int MSG_START_MITM = 1;
     public static final int MSG_GET_CA_CERTIFICATE = 2;
     public static final int MSG_STOP_MITM = 3;
+    public static final int MSG_GET_SSLKEYLOG = 4;
     public static final String CERTIFICATE_RESULT = "certificate";
+    public static final String SSLKEYLOG_RESULT = "sslkeylog";
     /* END API */
 
     private static final String TAG = "MitmAddon";
@@ -158,6 +160,15 @@ public class MitmAddon {
                 }
 
                 receiver.onMitmGetCaCertificateResult(ca_pem);
+            } else if(msg.what == MitmAddon.MSG_GET_SSLKEYLOG) {
+                byte []sslkeylog = null;
+
+                if(msg.getData() != null) {
+                    Bundle res = msg.getData();
+                    sslkeylog = res.getByteArray(MitmAddon.SSLKEYLOG_RESULT);
+                }
+
+                receiver.onMitmSslkeylogfileResult(sslkeylog);
             }
         }
     }
@@ -194,6 +205,23 @@ public class MitmAddon {
         }
 
         Message msg = Message.obtain(null, MitmAddon.MSG_GET_CA_CERTIFICATE);
+        msg.replyTo = mMessenger;
+        try {
+            mService.send(msg);
+            return true;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean requestSslkeylogfile() {
+        if(mService == null) {
+            Log.e(TAG, "Not connected");
+            return false;
+        }
+
+        Message msg = Message.obtain(null, MitmAddon.MSG_GET_SSLKEYLOG);
         msg.replyTo = mMessenger;
         try {
             mService.send(msg);

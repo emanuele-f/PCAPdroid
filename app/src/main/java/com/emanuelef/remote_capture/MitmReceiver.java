@@ -30,6 +30,7 @@ import android.util.SparseArray;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
+import com.emanuelef.remote_capture.interfaces.SslkeylogDumpListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
 import org.jetbrains.annotations.Nullable;
@@ -61,6 +62,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final Context mContext;
     private final MitmAddon mAddon;
     private ParcelFileDescriptor mSocketFd;
+    private SslkeylogDumpListener mSslkeylogListener;
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
@@ -321,6 +323,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     public void onMitmServiceDisconnect() {
         // Stop the capture if running, CaptureService will call MitmReceiver::stop
         CaptureService.stopService();
+        mSslkeylogListener = null;
     }
 
     ConnectionDescriptor getConnByLocalPort(int local_port) {
@@ -356,5 +359,27 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
 
         return new String(bytes, 0, i, StandardCharsets.US_ASCII);
+    }
+
+    /* Requests to dump the sslkeylogfile of the remote mitm-addon.
+     * Returns false if the the dump cannot be done. The listener onSslkeylogDumpResult method can
+     * only be invoked when returning true. */
+    public boolean dumpSslkeylogfile(SslkeylogDumpListener listener) {
+        if(mAddon.isConnected() && mAddon.requestSslkeylogfile()) {
+            // will continue in onMitmSslkeylogfileResult
+            mSslkeylogListener = listener;
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onMitmSslkeylogfileResult(@Nullable byte []contents) {
+        if(mSslkeylogListener == null)
+            return;
+
+        mSslkeylogListener.onSslkeylogDumpResult(contents);
+        mSslkeylogListener = null;
     }
 }

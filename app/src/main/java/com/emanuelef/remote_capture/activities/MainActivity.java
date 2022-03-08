@@ -36,6 +36,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -78,7 +79,11 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Billing mIab;
@@ -108,6 +113,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
+    private final ActivityResultLauncher<Intent> sslkeyfileExportLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::sslkeyfileExportResult);
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new RequestPermission(), isGranted ->
                 Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied"))
@@ -466,6 +473,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.export_sslkeylogfile) {
+            startExportSslkeylogfile();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -690,5 +700,44 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         return null;
+    }
+
+    private void startExportSslkeylogfile() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, "sslkeylogfile.txt");
+
+        boolean noFileDialog = false;
+        if(Utils.supportsFileDialog(this, intent)) {
+            try {
+                sslkeyfileExportLauncher.launch(intent);
+            } catch (ActivityNotFoundException e) {
+                noFileDialog = true;
+            }
+        } else
+            noFileDialog = true;
+
+        if(noFileDialog)
+            Utils.showToastLong(this, R.string.no_activity_file_selection);
+    }
+
+    private void sslkeyfileExportResult(final ActivityResult result) {
+        if(result.getResultCode() == RESULT_OK && result.getData() != null) {
+            Uri uri = result.getData().getData();
+
+            if(!CaptureService.dumpSslkeylogfile(sslkeylog -> exportSslkeylogfile(uri, sslkeylog)))
+                Utils.showToastLong(this, R.string.export_failed);
+        }
+    }
+
+    private void exportSslkeylogfile(Uri export_uri, @Nullable byte[] sslkeylog) {
+        try(OutputStream out = getContentResolver().openOutputStream(export_uri)) {
+            out.write(sslkeylog);
+            Utils.showToast(this, R.string.save_ok);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Utils.showToastLong(this, R.string.cannot_write_file);
+        }
     }
 }

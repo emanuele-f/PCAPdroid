@@ -79,9 +79,11 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -594,6 +596,13 @@ public class Utils {
         return((comp != null) && (!"com.google.android.tv.frameworkpackagestubs".equals(comp.getPackageName())));
     }
 
+    public static boolean supportsFileDialog(Context context) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        return supportsFileDialog(context, intent);
+    }
+
     @SuppressWarnings("deprecation")
     public static Uri getInternalStorageFile(Context context, String fname) {
         ContentValues values = new ContentValues();
@@ -771,7 +780,7 @@ public class Utils {
                     // Extract file
                     try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
                         byte[] bytesIn = new byte[4096];
-                        int read = 0;
+                        int read;
                         while ((read = zipIn.read(bytesIn)) != -1)
                             bos.write(bytesIn, 0, read);
                     }
@@ -802,7 +811,7 @@ public class Utils {
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
-                        int read = 0;
+                        int read;
                         while ((read = in.read(bytesIn)) != -1) {
                             bos.write(bytesIn, 0, read);
                             has_contents |= (read > 0);
@@ -985,5 +994,15 @@ public class Utils {
             return false;
 
         return isCAInstalled(ca_cert);
+    }
+
+    // Like Files.copy(src.toPath(), out);
+    public static void copy(File src, OutputStream out) throws IOException {
+        try(FileInputStream in = new FileInputStream(src)) {
+            byte[] bytesIn = new byte[4096];
+            int read;
+            while((read = in.read(bytesIn)) != -1)
+                out.write(bytesIn, 0, read);
+        }
     }
 }
