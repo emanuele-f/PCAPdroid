@@ -8,9 +8,13 @@ Another option is to install it directly on the Android device via `termux`. Aft
 
 ```bash
 pkg update
-pkg install python
+pkg install python openssl-1.1-static
 python3 -m pip install --upgrade pip
-CRYPTOGRAPHY_DONT_BUILD_RUST=1 pip install mitmproxy
+
+CRYPTOGRAPHY_DONT_BUILD_RUST=1 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
+  LDFLAGS="$PREFIX/lib/openssl-1.1/libssl.a $PREFIX/lib/openssl-1.1/libcrypto.a" \
+  CFLAGS="-I$PREFIX/include/openssl-1.1" \
+  pip install mitmproxy
 ```
 
 **Note**: when installed on the Android device via termux, it's essential to set an app filter in PCAPdroid to only capture a specific app traffic, otherwise the termux mitmproxy traffic would run in a loop, breaking the phone internet connectivity.
