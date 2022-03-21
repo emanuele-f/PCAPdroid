@@ -39,15 +39,15 @@
 #define MAX_HOST_LRU_SIZE 256
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
-#define MAX_PLAINTEXT_LENGTH 1024        // sync with PlaintextReceiver
-#define MIN_REQ_PLAINTEXT_CHARS 3        // Minimum length (e.g. of "GET") to avoid reporting non-requests
+#define MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE 512        // sync with MitmReceiver
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
 #define DNS_TYPE_RESPONSE 0x8000
 
-#define CONN_UPDATE_STATS 1
-#define CONN_UPDATE_INFO 2
+#define CONN_UPDATE_STATS   0x1
+#define CONN_UPDATE_INFO    0x2
+#define CONN_UPDATE_PAYLOAD 0x4
 
 typedef struct {
     jlong sent_bytes;
@@ -58,6 +58,13 @@ typedef struct {
     bool new_stats;
     u_int64_t last_update_ms;
 } capture_stats_t;
+
+// NOTE: sync with Prefs.PayloadMode
+typedef enum {
+    PAYLOAD_MODE_NONE = 0,
+    PAYLOAD_MODE_MINIMAL,
+    PAYLOAD_MODE_FULL
+} payload_mode_t;
 
 typedef struct {
     jint incr_id; // an incremental number which identifies a specific connection
@@ -78,6 +85,8 @@ typedef struct {
         } vpn;
     };
 
+    void* payload_chunks;
+
     jlong first_seen;
     jlong last_seen;
     jlong sent_bytes;
@@ -96,13 +105,15 @@ typedef struct {
     bool pending_notification;
     bool to_purge; // if true, free this pd_conn_t during the next sendConnectionsDump
     bool info_from_lru;
-    bool request_done;
     bool blacklisted_internal;
     bool blacklisted_ip;
     bool blacklisted_domain;
     bool whitelisted_app;
     bool to_block;
-    char *request_data;
+    bool proxied;
+    bool encrypted_l7;
+    bool payload_truncated;
+    bool has_payload[2]; // [0]: rx, [1] tx
     char *url;
     uint8_t update_type;
 } pd_conn_t;
@@ -147,6 +158,7 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, const pkt_context_t *pctx, int dump_size);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -175,6 +187,7 @@ typedef struct pcapdroid {
     jint app_filter;
     bool root_capture;
     bool tls_decryption_enabled;
+    payload_mode_t payload_mode;
 
     // stats
     u_int num_dropped_pkts;
@@ -276,6 +289,7 @@ typedef struct {
     jmethodID connUpdateInit;
     jmethodID connUpdateSetStats;
     jmethodID connUpdateSetInfo;
+    jmethodID connUpdateSetPayload;
     jmethodID sendServiceStatus;
     jmethodID sendStatsDump;
     jmethodID statsInit;
@@ -286,6 +300,9 @@ typedef struct {
     jmethodID getBlacklistsInfo;
     jmethodID listSize;
     jmethodID listGet;
+    jmethodID arraylistNew;
+    jmethodID arraylistAdd;
+    jmethodID payloadChunkInit;
 } jni_methods_t;
 
 typedef struct {
@@ -297,6 +314,8 @@ typedef struct {
     jclass blacklist_descriptor;
     jclass matchlist_descriptor;
     jclass list;
+    jclass arraylist;
+    jclass payload_chunk;
 } jni_classes_t;
 
 typedef struct {
@@ -307,9 +326,16 @@ typedef struct {
     jfieldID ld_ips;
 } jni_fields_t;
 
+typedef struct {
+    jobject bltype_ip;
+    jobject chunktype_raw;
+    jobject chunktype_http;
+} jni_enum_t;
+
 extern jni_methods_t mids;
 extern jni_classes_t cls;
 extern jni_fields_t fields;
+extern jni_enum_t enums;
 
 #endif // ANDROID
 
@@ -330,7 +356,7 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
-void pd_purge_connection(pd_conn_t *data);
+void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
 void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
 const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto);

@@ -20,53 +20,53 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Intent;
-import android.net.Uri;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TextView;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.fragments.ConnectionOverview;
+import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.haipq.android.flagkit.FlagImageView;
+import com.emanuelef.remote_capture.model.PayloadChunk;
+import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.util.ArrayList;
 
 public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_EXTRA_KEY = "conn_descriptor";
-    public static final String APP_NAME_EXTRA_KEY = "app_name";
-    private TableLayout mTable;
-    private TextView mBytesView;
-    private TextView mPacketsView;
-    private TextView mDurationView;
-    private TextView mRequestData;
-    private TextView mBlockedPkts;
-    private View mBlockedPktsRow;
+    private static final int MAX_CHUNKS_TO_CHECK = 10;
     private ConnectionDescriptor mConn;
-    private TextView mStatus;
-    private TextView mFirstSeen;
-    private TextView mLastSeen;
-    private TextView mTcpFlags;
-    private TextView mError;
-    private ImageView mBlacklistedIp;
-    private ImageView mBlacklistedHost;
+    private ViewPager2 mPager;
+    private StateAdapter mPagerAdapter;
     private Handler mHandler;
     private int mConnPos;
+    private int mCurChunks;
     private boolean mListenerSet;
+    private boolean mHasPayload;
+    private boolean mHasRequestTab;
+    private boolean mHasResponseTab;
+    private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
+
+    private static final int POS_OVERVIEW = 0;
+    private static final int POS_REQUEST = 1;
+    private static final int POS_RESPONSE = 2;
+    private static final int POS_PAYLOAD = 3;
+
+    public interface ConnUpdateListener {
+        void connectionUpdated();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,112 +78,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mConn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
         mHandler = new Handler(Looper.getMainLooper());
         mConnPos = -1;
-        String app_name = getIntent().getStringExtra(APP_NAME_EXTRA_KEY);
 
-        TextView app = findViewById(R.id.detail_app);
-        TextView proto = findViewById(R.id.detail_protocol);
-        TextView info_label = findViewById(R.id.detail_info_label);
-        TextView info = findViewById(R.id.detail_info);
-        TextView url = findViewById(R.id.detail_url);
-        View url_row = findViewById(R.id.detail_url_row);
-        View info_row = findViewById(R.id.detail_info_row);
-        TextView source = findViewById(R.id.detail_source);
-        mRequestData = findViewById(R.id.request_data);
-        TextView request_data_lbl = findViewById(R.id.request_data_label);
-        TextView destination = findViewById(R.id.detail_destination);
-        TextView country = findViewById(R.id.country_name);
-        FlagImageView country_flag = findViewById(R.id.country_flag);
-        TextView asn = findViewById(R.id.asn);
-        mTable = findViewById(R.id.table);
-        mBytesView = findViewById(R.id.detail_bytes);
-        mPacketsView = findViewById(R.id.detail_packets);
-        mBlockedPkts = findViewById(R.id.blocked_pkts);
-        mBlockedPktsRow = findViewById(R.id.blocked_row);
-        mDurationView = findViewById(R.id.detail_duration);
-        mStatus = findViewById(R.id.detail_status);
-        mFirstSeen = findViewById(R.id.first_seen);
-        mLastSeen = findViewById(R.id.last_seen);
-        mTcpFlags = findViewById(R.id.tcp_flags);
-        mError = findViewById(R.id.error_msg);
-        mBlacklistedIp = findViewById(R.id.blacklisted_ip);
-        mBlacklistedHost = findViewById(R.id.blacklisted_host);
-
-        findViewById(R.id.whois_ip).setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://search.arin.net/rdap/?query=" + mConn.dst_ip));
-            Utils.startActivity(this, intent);
-        });
-
-        String l4proto = Utils.proto2str(mConn.ipproto);
-
-        //if(l4proto.equals("TCP"))
-        //    findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
-
-        if(mConn != null) {
-            if(!mConn.l7proto.equals(l4proto))
-                proto.setText(String.format(getResources().getString(R.string.app_and_proto), mConn.l7proto, l4proto));
-            else
-                proto.setText(mConn.l7proto);
-
-            if(l4proto.equals("ICMP")) {
-                source.setText(mConn.src_ip);
-                destination.setText(mConn.dst_ip);
-            } else {
-                source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
-                destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
-            }
-
-            if((mConn.info != null) && (!mConn.info.isEmpty())) {
-                if(mConn.l7proto.equals("DNS"))
-                    info_label.setText(R.string.query);
-                else if(mConn.l7proto.equals("HTTP"))
-                    info_label.setText(R.string.host);
-                info.setText(mConn.info);
-            } else
-                info_row.setVisibility(View.GONE);
-
-            if(app_name != null)
-                app.setText(String.format(getResources().getString(R.string.app_and_proto), app_name, Integer.toString(mConn.uid)));
-            else
-                app.setText(Integer.toString(mConn.uid));
-
-            if(!mConn.url.isEmpty())
-                url.setText(mConn.url);
-            else
-                url_row.setVisibility(View.GONE);
-
-            if(!mConn.request_plaintext.isEmpty())
-                mRequestData.setText(mConn.request_plaintext);
-            else {
-                mRequestData.setVisibility(View.GONE);
-                request_data_lbl.setVisibility(View.GONE);
-            }
-
-            if(!mConn.country.isEmpty()) {
-                country.setText(Utils.getCountryName(this, mConn.country));
-                country_flag.setCountryCode(mConn.country);
-            } else
-                findViewById(R.id.country_row).setVisibility(View.GONE);
-
-            if(mConn.asn.isKnown())
-                asn.setText(mConn.asn.toString());
-            else
-                findViewById(R.id.asn_row).setVisibility(View.GONE);
-
-            if(mConn.ifidx > 0) {
-                String ifname = CaptureService.getInterfaceName(mConn.ifidx);
-
-                if(!ifname.isEmpty()) {
-                    findViewById(R.id.interface_row).setVisibility(View.VISIBLE);
-                    ((TextView) findViewById(R.id.capture_interface)).setText(ifname);
-                }
-            }
-
-            updateStats(mConn);
-        }
-
-        if(Utils.isTv(this)) {
-            mRequestData.setOnClickListener(v -> Utils.shareText(this, getString(R.string.request_plaintext), mRequestData.getText().toString()));
-        }
+        mPager = findViewById(R.id.pager);
+        setupTabs();
     }
 
     @Override
@@ -203,6 +100,76 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         unregisterConnsListener();
     }
 
+    private void setupTabs() {
+        mPagerAdapter = new StateAdapter(this);
+        mPager.setAdapter(mPagerAdapter);
+
+        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
+                tab.setText(getString(mPagerAdapter.getPageTitle(position)))
+        ).attach();
+
+        mCurChunks = 0;
+        recheckTabs();
+    }
+
+    private class StateAdapter extends FragmentStateAdapter {
+        StateAdapter(final FragmentActivity fa) { super(fa); }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            //Log.d(TAG, "createFragment");
+            int pos = getVisibleTabsPositions()[position];
+
+            switch (pos) {
+                case POS_REQUEST:
+                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.REQUEST_ONLY);
+                case POS_RESPONSE:
+                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.RESPONSE_ONLY);
+                case POS_PAYLOAD:
+                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.BOTH);
+                case POS_OVERVIEW:
+                default:
+                    return new ConnectionOverview();
+            }
+        }
+
+        @Override
+        public int getItemCount() {  return 1 + (mHasPayload ? 1 : 0) + (mHasRequestTab ? 1 : 0) + (mHasResponseTab ? 1 : 0);  }
+
+        public int getPageTitle(final int position) {
+            int pos = getVisibleTabsPositions()[position];
+
+            switch (pos) {
+                case POS_REQUEST:
+                    return R.string.request;
+                case POS_RESPONSE:
+                    return R.string.response;
+                case POS_PAYLOAD:
+                    return R.string.payload;
+                case POS_OVERVIEW:
+                default:
+                    return R.string.overview;
+            }
+        }
+
+        private int[] getVisibleTabsPositions() {
+            int[] visible = new int[getItemCount()];
+            int i = 0;
+
+            visible[i++] = POS_OVERVIEW;
+
+            if(mHasRequestTab)
+                visible[i++] = POS_REQUEST;
+            if(mHasResponseTab)
+                visible[i++] = POS_RESPONSE;
+            if(mHasPayload)
+                visible[i] = POS_PAYLOAD;
+
+            return visible;
+        }
+    }
+
     private void registerConnsListener() {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
@@ -219,7 +186,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                         mListenerSet = true;
                     }
 
-                    updateStats(conn);
+                    dispatchConnUpdate();
                 }
             }
         }
@@ -238,70 +205,6 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         }
 
         mConnPos = -1;
-    }
-
-    private void updateStats(ConnectionDescriptor conn) {
-        if(conn != null) {
-            mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(conn.rcvd_bytes), Utils.formatBytes(conn.sent_bytes)));
-            mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(conn.rcvd_pkts), Utils.formatIntShort(conn.sent_pkts)));
-            if(conn.blocked_pkts > 0) {
-                mBlockedPkts.setText(String.format(getResources().getString(R.string.n_pkts), Utils.formatIntShort(conn.blocked_pkts)));
-                mBlockedPktsRow.setVisibility(View.VISIBLE);
-            }
-            mDurationView.setText(Utils.formatDuration((conn.last_seen - conn.first_seen) / 1000));
-            mFirstSeen.setText(Utils.formatEpochMillis(this, conn.first_seen));
-            mLastSeen.setText(Utils.formatEpochMillis(this, conn.last_seen));
-            mStatus.setText(conn.getStatusLabel(this));
-            mTcpFlags.setText(Utils.tcpFlagsToStr(conn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(conn.getSentTcpFlags()));
-            mBlacklistedIp.setVisibility(conn.isBlacklistedIp() ? View.VISIBLE : View.GONE);
-            mBlacklistedHost.setVisibility(conn.isBlacklistedHost() ? View.VISIBLE : View.GONE);
-            if(conn.tls_error != null) {
-                mError.setText(conn.tls_error);
-                mError.setVisibility(View.VISIBLE);
-            }
-
-            if(conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
-                unregisterConnsListener();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.copy_share_menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    private String getContents() {
-        if(mTable == null)
-            return "";
-
-        String contents = Utils.table2Text(mTable);
-
-        if(mRequestData.getText().length() > 0)
-            contents += "\n" + getString(R.string.request_plaintext) + ":\n" + mRequestData.getText();
-
-        return contents;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.copy_to_clipboard) {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(getString(R.string.connection_details), getContents());
-            clipboard.setPrimaryClip(clip);
-
-            Utils.showToast(this, R.string.copied);
-            return true;
-        } else if(id == R.id.share) {
-            Utils.shareText(this, getString(R.string.connection_details), getContents());
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -326,7 +229,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
                 // Double check the incr_id
                 if((conn != null) && (conn.incr_id == mConn.incr_id))
-                    mHandler.post(() -> updateStats(conn));
+                    mHandler.post(this::dispatchConnUpdate);
                 else
                     unregisterConnsListener();
 
@@ -334,4 +237,61 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             }
         }
     }
+
+    public void addConnUpdateListener(ConnUpdateListener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeConnUpdateListener(ConnUpdateListener listener) {
+        mListeners.remove(listener);
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void recheckTabs() {
+        if(mHasRequestTab && mHasResponseTab)
+            return;
+
+        int max_check = Math.min(mConn.getNumPayloadChunks(), MAX_CHUNKS_TO_CHECK);
+        boolean changed = false;
+
+        if(!mHasPayload && (max_check > 0)) {
+            mHasPayload = true;
+            changed = true;
+        }
+
+        for(int i=mCurChunks; i<max_check; i++) {
+            PayloadChunk chunk = mConn.getPayloadChunk(i);
+
+            if((chunk.type == PayloadChunk.ChunkType.HTTP) || (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)) {
+                if(chunk.is_sent && !mHasRequestTab) {
+                    mHasRequestTab = true;
+                    changed = true;
+                } else if(!chunk.is_sent && !mHasResponseTab) {
+                    mHasResponseTab = true;
+                    changed = true;
+                }
+            }
+        }
+
+        if(changed)
+            mPagerAdapter.notifyDataSetChanged();
+
+        mCurChunks = max_check;
+    }
+
+    private void dispatchConnUpdate() {
+        if(mConn == null)
+            return;
+
+        for(ConnUpdateListener listener: mListeners)
+            listener.connectionUpdated();
+
+        if((mCurChunks < MAX_CHUNKS_TO_CHECK) && (mConn.getNumPayloadChunks() > mCurChunks))
+            recheckTabs();
+
+        if(mConn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
+            unregisterConnsListener();
+    }
+
+    public ConnectionDescriptor getConn() { return mConn; }
 }

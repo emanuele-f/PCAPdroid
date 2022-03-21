@@ -88,6 +88,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | max_pkts_per_flow       | int    |  43 | only dump the first max_pkts_per_flow packets per flow             |
 | max_dump_size           | int    |  43 | max size in bytes for the PCAP dump                                |
 | tls_decryption          | bool   |  48 | true to enable the built-in TLS decryption                         |
+| payload_mode            | string |  48 | none \| minimal \| full, specify how much payload to display       |
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 

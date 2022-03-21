@@ -69,12 +69,29 @@ static uint16_t ndpi2proto(ndpi_protocol proto) {
     if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
         l7proto = NDPI_PROTOCOL_HTTP;
 
+    // nDPI will still return a disabled protocol (via the bitmask) if it matches some
+    // metadata for it (e.g. the SNI)
+    if(!NDPI_ISSET(&masterProtos, l7proto))
+        l7proto = NDPI_PROTOCOL_UNKNOWN;
+
+    //log_d("PROTO: %d/%d -> %d", proto.master_protocol, proto.app_protocol, l7proto);
+
     return l7proto;
 }
 
 /* ******************************************************* */
 
-void pd_purge_connection(pd_conn_t *data) {
+static bool is_encrypted_l7(struct ndpi_detection_module_struct *ndpi_str, uint16_t l7proto) {
+    // The ndpi_is_encrypted_proto API does not work reliably as it mixes master protocols with apps
+    if(l7proto >= (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS))
+        return false;
+
+    return(ndpi_str->proto_defaults[l7proto].isClearTextProto == 0);
+}
+
+/* ******************************************************* */
+
+void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data) {
     if(!data)
         return;
 
@@ -84,8 +101,11 @@ void pd_purge_connection(pd_conn_t *data) {
         pd_free(data->info);
     if(data->url)
         pd_free(data->url);
-    if(data->request_data)
-        pd_free(data->request_data);
+
+#ifdef ANDROID
+    if(data->payload_chunks)
+        (*pd->env)->DeleteLocalRef(pd->env, data->payload_chunks);
+#endif
 
     pd_free(data);
 }
@@ -126,13 +146,13 @@ void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
 
 /* ******************************************************* */
 
-static void conns_clear(conn_array_t *arr, bool free_all) {
+static void conns_clear(pcapdroid_t *pd, conn_array_t *arr, bool free_all) {
     if(arr->items) {
         for(int i=0; i < arr->cur_items; i++) {
             conn_and_tuple_t *slot = &arr->items[i];
 
             if(slot->data && (slot->data->to_purge || free_all))
-                pd_purge_connection(slot->data);
+                pd_purge_connection(pd, slot->data);
         }
 
         pd_free(arr->items);
@@ -223,7 +243,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
 /* ******************************************************* */
 
 const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto) {
-    if((proto == NDPI_PROTOCOL_UNKNOWN) || !NDPI_ISSET(&masterProtos, proto)) {
+    if(proto == NDPI_PROTOCOL_UNKNOWN) {
         // Return the L3 protocol
         return zdtun_proto2str(ipproto);
     }
@@ -455,8 +475,10 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
     if(data->l7proto == NDPI_PROTOCOL_UNKNOWN) {
         uint8_t proto_guessed;
-        data->l7proto = ndpi2proto(ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
-                                              &proto_guessed));
+        struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
+                              &proto_guessed);
+        data->l7proto = ndpi2proto(n_proto);
+        data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
 
     log_d("nDPI completed[ipver=%d, proto=%d] -> l7proto: %d",
@@ -468,52 +490,39 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 /* ******************************************************* */
 
-// sync with PlaintextReceiver
-static int is_plaintext(char c) {
-    return isprint(c) || (c == '\r') || (c == '\n') || (c == '\t');
-}
-
-/* ******************************************************* */
-
-static void process_request_data(pcapdroid_t *pd, pkt_context_t *pctx) {
+static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
     const zdtun_pkt_t *pkt = pctx->pkt;
     pd_conn_t *data = pctx->data;
+    bool truncated = data->payload_truncated;
+    bool updated = false;
 
-    if(pkt->l7_len > 0) {
-        if(pctx->is_tx && is_plaintext(pkt->l7[0])) {
-            int request_len = data->request_data ? (int)strlen(data->request_data) : 0;
-            int num_chars = min(MAX_PLAINTEXT_LENGTH - request_len, pkt->l7_len);
+    if((pd->payload_mode == PAYLOAD_MODE_NONE) ||
+       (pd->cb.dump_payload_chunk == NULL) ||
+       (pkt->l7_len <= 0) ||
+       (pd->tls_decryption_enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
+        return;
 
-            if(num_chars <= 0) {
-                data->request_done = true;
-                return;
-            }
+    // NOTE: keep logic in sync with MitmReceiver
+    if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
+        int to_dump = pkt->l7_len;
 
-            // +1 to add a NULL terminator
-            data->request_data = pd_realloc(data->request_data,request_len + num_chars + 1);
+        if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (pkt->l7_len > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
+            to_dump = MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE;
+            truncated = true;
+        }
 
-            if(!data->request_data) {
-                log_e("realloc(request_data) failed with code %d/%s",
-                      errno, strerror(errno));
-                data->request_done = true;
-                return;
-            }
-
-            for(int i = 0; i < num_chars; i++) {
-                char ch = pkt->l7[i];
-
-                if(!is_plaintext(ch)) {
-                    data->request_done = true;
-                    break;
-                }
-
-                data->request_data[request_len++] = ch;
-            }
-
-            data->request_data[request_len] = '\0';
-            data->update_type |= CONN_UPDATE_INFO;
+        if(pd->cb.dump_payload_chunk(pd, pctx, to_dump)) {
+            data->has_payload[pctx->is_tx] = true;
+            updated = true;
         } else
-            data->request_done = true;
+            truncated = true;
+    } else
+        truncated = true;
+
+    if((updated && data->payload_chunks) || (truncated != data->payload_truncated)) {
+        data->payload_truncated |= truncated;
+        data->update_type |= CONN_UPDATE_PAYLOAD;
+        pd_notify_connection_update(pd, pctx->tuple, data);
     }
 }
 
@@ -600,15 +609,14 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     bool is_tx = pctx->is_tx;
 
     uint16_t old_proto = data->l7proto;
-    data->l7proto = ndpi2proto(ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-            pkt->len, data->last_seen));
+    struct ndpi_proto n_proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
+                                  pkt->len, data->last_seen);
+    data->l7proto = ndpi2proto(n_proto);
 
-    if(old_proto != data->l7proto)
+    if(old_proto != data->l7proto) {
         data->update_type |= CONN_UPDATE_INFO;
-
-    if((!data->request_done) && !pd->ndpi->packet.tcp_retransmission && !pd->tls_decryption_enabled)
-        // NOTE: when performing TLS decryption, the request data is set by the MitmReceiver
-        process_request_data(pd, pctx);
+        data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
+    }
 
     if(!is_tx && (data->l7proto == NDPI_PROTOCOL_DNS))
         process_dns_reply(data, pd, pkt);
@@ -900,15 +908,15 @@ void pd_housekeeping(pcapdroid_t *pd) {
         pd->capture_stats.new_stats = false;
         pd->capture_stats.last_update_ms = pd->now_ms;
     } else if (pd->now_ms >= next_connections_dump) {
-        log_d("sendConnectionsDump [after %" PRIu64 " ms]: new=%d, updates=%d",
+        /*log_d("sendConnectionsDump [after %" PRIu64 " ms]: new=%d, updates=%d",
               pd->now_ms - last_connections_dump,
-              pd->new_conns.cur_items, pd->conns_updates.cur_items);
+              pd->new_conns.cur_items, pd->conns_updates.cur_items);*/
 
         if((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
             if(pd->cb.send_connections_dump)
                 pd->cb.send_connections_dump(pd);
-            conns_clear(&pd->new_conns, false);
-            conns_clear(&pd->conns_updates, false);
+            conns_clear(pd, &pd->new_conns, false);
+            conns_clear(pd, &pd->conns_updates, false);
         }
 
         last_connections_dump = pd->now_ms;
@@ -1003,6 +1011,8 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
         // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
         perform_dpi(pd, pctx);
     }
+
+    process_payload(pd, pctx);
 }
 
 /* ******************************************************* */
@@ -1117,8 +1127,8 @@ int pd_run(pcapdroid_t *pd) {
     if(pd->cb.send_connections_dump)
         pd->cb.send_connections_dump(pd);
 
-    conns_clear(&pd->new_conns, true);
-    conns_clear(&pd->conns_updates, true);
+    conns_clear(pd, &pd->new_conns, true);
+    conns_clear(pd, &pd->conns_updates, true);
 
     if(pd->firewall.bl)
         blacklist_destroy(pd->firewall.bl);

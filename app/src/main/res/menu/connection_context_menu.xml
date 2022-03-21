@@ -106,8 +106,13 @@
                 android:visible="false" />
 
             <item
-                android:id="@+id/copy_request_plaintext"
-                android:title="@string/request_plaintext"
+                android:id="@+id/copy_http_request"
+                android:title="@string/string_http_request"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/copy_http_response"
+                android:title="@string/string_http_response"
                 android:visible="false" />
         </menu>
     </item>

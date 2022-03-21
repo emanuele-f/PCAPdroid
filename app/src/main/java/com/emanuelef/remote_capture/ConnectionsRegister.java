@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
@@ -66,6 +67,7 @@ public class ConnectionsRegister {
     private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
     private final Geolocation mGeo;
+    private final AppsResolver mAppsResolver;
 
     public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
@@ -77,6 +79,7 @@ public class ConnectionsRegister {
         mListeners = new ArrayList<>();
         mAppsStats = new SparseArray<>(); // uid -> AppStats
         mConnsByIface = new SparseIntArray();
+        mAppsResolver = new AppsResolver(ctx);
     }
 
     // returns the position in mItemsRing of the oldest connection
@@ -178,6 +181,10 @@ public class ConnectionsRegister {
             conn.country = mGeo.getCountryCode(dstAddr);
             conn.asn = mGeo.getASN(dstAddr);
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
+
+            AppDescriptor app = mAppsResolver.get(conn.uid, 0);
+            if(app != null)
+                conn.encrypted_payload = Utils.hasEncryptedPayload(app, conn);
 
             processConnectionStatus(conn);
 

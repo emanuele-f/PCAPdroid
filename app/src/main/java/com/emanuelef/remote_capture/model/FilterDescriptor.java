@@ -36,7 +36,7 @@ public class FilterDescriptor implements Serializable {
     public boolean showMasked = true;
     public boolean onlyBLocked = false;
     public boolean onlyBlacklisted = false;
-    public boolean onlyPlaintext = false;
+    public boolean onlyCleartext = false;
     public String iface;
 
     public boolean isSet() {
@@ -44,7 +44,7 @@ public class FilterDescriptor implements Serializable {
                 || (iface != null)
                 || onlyBLocked
                 || onlyBlacklisted
-                || onlyPlaintext
+                || onlyCleartext
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
@@ -52,7 +52,7 @@ public class FilterDescriptor implements Serializable {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
                 && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
-                && (!onlyPlaintext || !conn.request_plaintext.isEmpty())
+                && (!onlyCleartext || (conn.isCleartext() || conn.isDecrypted()))
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
                 && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)));
     }
@@ -73,8 +73,8 @@ public class FilterDescriptor implements Serializable {
             addChip(inflater, group, R.id.blocked, ctx.getString(R.string.blocked_connection_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
-        if(onlyPlaintext)
-            addChip(inflater, group, R.id.only_plaintext, ctx.getString(R.string.plaintext));
+        if(onlyCleartext)
+            addChip(inflater, group, R.id.only_cleartext, ctx.getString(R.string.cleartext));
         if(status != Status.STATUS_INVALID) {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
@@ -90,8 +90,8 @@ public class FilterDescriptor implements Serializable {
             onlyBLocked = false;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
-        else if(filter_id == R.id.only_plaintext)
-            onlyPlaintext = false;
+        else if(filter_id == R.id.only_cleartext)
+            onlyCleartext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
         else if(filter_id == R.id.capture_interface)

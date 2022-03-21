@@ -45,14 +45,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
-import com.emanuelef.remote_capture.adapters.DumpModesAdapter;
+import com.emanuelef.remote_capture.adapters.PrefSpinnerAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -65,6 +64,7 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.views.AppsListView;
+import com.emanuelef.remote_capture.views.PrefSpinner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,25 +149,13 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
 
-        DumpModesAdapter dumpModeAdapter = new DumpModesAdapter(requireContext());
-        Spinner dumpMode = view.findViewById(R.id.dump_mode_spinner);
-        dumpMode.setAdapter(dumpModeAdapter);
-        int curSel = dumpModeAdapter.getModePos(mPrefs.getString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE));
-        dumpMode.setSelection(curSel);
+        PrefSpinner.init(view.findViewById(R.id.dump_mode_spinner),
+                R.array.pcap_dump_modes, R.array.pcap_dump_modes_labels, R.array.pcap_dump_modes_descriptions,
+                Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE);
 
-        dumpMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                DumpModesAdapter.DumpModeInfo mode = (DumpModesAdapter.DumpModeInfo) dumpModeAdapter.getItem(position);
-                SharedPreferences.Editor editor = mPrefs.edit();
-
-                editor.putString(Prefs.PREF_PCAP_DUMP_MODE, mode.key);
-                editor.apply();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        PrefSpinner.init(view.findViewById(R.id.payload_mode),
+                R.array.payload_modes, R.array.payload_modes_labels, R.array.payload_modes_descriptions,
+                Prefs.PREF_PAYLOAD_MODE, Prefs.DEFAULT_PAYLOAD_MODE);
 
         mAppFilterSwitch = view.findViewById(R.id.app_filter_switch);
         View filterRow = view.findViewById(R.id.app_filter_text);

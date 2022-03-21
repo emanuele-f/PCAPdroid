@@ -38,4 +38,20 @@
         <item>@string/theme_light</item>
         <item>@string/theme_dark</item>
     </string-array>
+
+    <string-array name="payload_modes">
+        <item>none</item>
+        <item>minimal</item>
+        <item>full</item>
+    </string-array>
+    <string-array name="payload_modes_labels">
+        <item>@string/no_payload</item>
+        <item>@string/minimal_payload</item>
+        <item>@string/full_payload</item>
+    </string-array>
+    <string-array name="payload_modes_descriptions">
+        <item>@string/payload_mode_none</item>
+        <item>@string/payload_mode_minimal</item>
+        <item>@string/payload_mode_full</item>
+    </string-array>
 </resources>

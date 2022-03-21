@@ -28,37 +28,34 @@ import android.widget.TextView;
 
 import com.emanuelef.remote_capture.R;
 
-public class DumpModesAdapter extends BaseAdapter {
-    private final Context mContext;
+public class PrefSpinnerAdapter extends BaseAdapter {
     private final LayoutInflater mInflater;
-    private final DumpModeInfo[] mModes;
+    private final ModeInfo[] mModes;
 
-    public class DumpModeInfo {
+    public static class ModeInfo {
         public final String key;
         public final String label;
         public final String description;
 
-        public DumpModeInfo(String _key, String _label, String _descr) {
+        public ModeInfo(String _key, String _label, String _descr) {
             key = _key;
             label = _label;
             description = _descr;
         }
     }
 
-    public DumpModesAdapter(Context context) {
-        mContext = context;
-        mInflater = LayoutInflater.from(mContext);
+    public PrefSpinnerAdapter(Context context, int keysRes, int labelsRes, int descrRes) {
+        mInflater = LayoutInflater.from(context);
 
-        String[] keys = mContext.getResources().getStringArray(R.array.pcap_dump_modes);
-        String[] labels = mContext.getResources().getStringArray(R.array.pcap_dump_modes_labels);
-        String[] descriptions = mContext.getResources().getStringArray(R.array.pcap_dump_modes_descriptions);
+        String[] keys = context.getResources().getStringArray(keysRes);
+        String[] labels = context.getResources().getStringArray(labelsRes);
+        String[] descriptions = context.getResources().getStringArray(descrRes);
 
         assert ((keys.length == labels.length) && (keys.length == descriptions.length));
-        mModes = new DumpModeInfo[keys.length];
+        mModes = new ModeInfo[keys.length];
 
-        for(int i=0; i<keys.length; i++) {
-            mModes[i] = new DumpModeInfo(keys[i], labels[i], descriptions[i]);
-        }
+        for(int i=0; i<keys.length; i++)
+            mModes[i] = new ModeInfo(keys[i], labels[i], descriptions[i]);
     }
 
     public int getModePos(String key) {
@@ -90,12 +87,12 @@ public class DumpModesAdapter extends BaseAdapter {
         if(convertView == null)
             convertView = mInflater.inflate(R.layout.quick_settings_item, parent, false);
 
-        DumpModeInfo mode = (DumpModeInfo) getItem(position);
+        ModeInfo mode = (ModeInfo) getItem(position);
 
-        TextView title =convertView.findViewById(R.id.title);
-        TextView description =convertView.findViewById(R.id.description);
-
+        TextView title = convertView.findViewById(R.id.title);
         title.setText(mode.label);
+
+        TextView description = convertView.findViewById(R.id.description);
         description.setText(mode.description);
 
         return convertView;

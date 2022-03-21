@@ -32,12 +32,16 @@ import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
 import com.emanuelef.remote_capture.interfaces.SslkeylogDumpListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.PayloadChunk;
+import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
+import com.emanuelef.remote_capture.model.Prefs.PayloadMode;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -55,7 +59,7 @@ import java.util.StringTokenizer;
  */
 public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
-    public static final int MAX_PLAINTEXT_LENGTH = 1024; // sync with pcapdroid.h
+    public static final int MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE = 512; // sync with pcapdroid.h
     public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
     private Thread mThread;
     private final ConnectionsRegister mReg;
@@ -66,7 +70,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
-    private final SparseArray<PendingPayload> mPendingPayloads = new SparseArray<>();
+    private final SparseArray<ArrayList<PendingPayload>> mPendingPayloads = new SparseArray<>();
 
     private enum PayloadType {
         UNKNOWN,
@@ -84,12 +88,14 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         byte[] payload;
         int port;
         long pendingSince;
+        long when;
 
-        PendingPayload(PayloadType _pType, byte[] _payload, int _port) {
+        PendingPayload(PayloadType _pType, byte[] _payload, int _port, long _now) {
             pType = _pType;
             payload = _payload;
             port = _port;
             pendingSince = SystemClock.uptimeMillis();
+            when = _now;
         }
     }
 
@@ -169,29 +175,26 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                     return;
                 }
 
-                if((payload_len <= 0) || (payload_len > 1048576)) { /* max 1 MB */
+                if((payload_len <= 0) || (payload_len > 8388608)) { /* max 8 MB */
                     Log.w(TAG, "Bad payload length: " + payload_len);
                     return;
                 }
 
                 PayloadType pType = parsePayloadType(payload_type);
+                //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port);
 
-                if((pType == PayloadType.HTTP_REQUEST)
-                        || (pType == PayloadType.TCP_CLIENT_MSG)
-                        || (pType == PayloadType.TLS_ERROR)) {
-                    byte[] payload = new byte[payload_len];
-                    istream.readFully(payload);
+                byte[] payload = new byte[payload_len];
+                istream.readFully(payload);
 
-                    ConnectionDescriptor conn = getConnByLocalPort(port);
-                    //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
+                long now = System.currentTimeMillis();
+                ConnectionDescriptor conn = getConnByLocalPort(port);
+                //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
 
-                    if(conn != null)
-                        handlePayload(conn, pType, payload);
-                    else
-                        // We may receive a payload before seeing the connection in connectionsAdded
-                        addPendingPayload(new PendingPayload(pType, payload, port));
-                } else
-                    istream.skipBytes(payload_len); // ignore for now
+                if(conn != null)
+                    handlePayload(conn, pType, payload, now);
+                else
+                    // We may receive a payload before seeing the connection in connectionsAdded
+                    addPendingPayload(new PendingPayload(pType, payload, port, now));
             }
         } catch (IOException e) {
             if(mSocketFd != null) // ignore termination
@@ -201,17 +204,59 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         Log.d(TAG, "End receiving data");
     }
 
-    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload) {
+    private boolean isSent(PayloadType pType) {
+        switch (pType) {
+            case HTTP_REQUEST:
+            case TCP_CLIENT_MSG:
+            case WEBSOCKET_CLIENT_MSG:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private ChunkType getChunkType(PayloadType pType) {
+        switch (pType) {
+            case HTTP_REQUEST:
+            case HTTP_REPLY:
+                return ChunkType.HTTP;
+            case WEBSOCKET_CLIENT_MSG:
+            case WEBSOCKET_SERVER_MSG:
+                return ChunkType.WEBSOCKET;
+            default:
+                return ChunkType.RAW;
+        }
+    }
+
+    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long now) {
+        boolean is_sent = isSent(pType);
+
+        // NOTE: keep logic in sync with pcapdroid.c:process_payload
+        if(CaptureService.getCurPayloadMode() == PayloadMode.MINIMAL) {
+            // Check if the payload limit was reached
+            if(conn.getNumPayloadChunks() >= 2)
+                return;
+
+            PayloadChunk first_chunk = conn.getPayloadChunk(0);
+            if((first_chunk != null) && (first_chunk.is_sent == is_sent))
+                return;
+
+            if(payload.length > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE) {
+                byte[] data = new byte[MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE];
+                System.arraycopy(payload, 0, data, 0, MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE);
+                payload = data;
+            }
+        }
+
         // NOTE: we are possibly accessing the conn concurrently
-        if(((pType == PayloadType.HTTP_REQUEST) || (pType == PayloadType.TCP_CLIENT_MSG)) && conn.request_plaintext.isEmpty())
-            conn.request_plaintext = getPlaintextString(payload);
-        else if(pType == PayloadType.TLS_ERROR) {
+        if(pType == PayloadType.TLS_ERROR) {
             conn.tls_error = new String(payload, StandardCharsets.US_ASCII);
 
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
-        }
+        } else
+            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), is_sent, now));
     }
 
     private synchronized void addPendingPayload(PendingPayload pending) {
@@ -220,18 +265,25 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             long now = SystemClock.uptimeMillis();
 
             for(int i=mPendingPayloads.size()-1; i>=0; i--) {
-                PendingPayload pp = mPendingPayloads.valueAt(i);
+                ArrayList<PendingPayload> pp = mPendingPayloads.valueAt(i);
 
-                if((now - pp.pendingSince) > 5000 /* 5 sec */) {
-                    Log.d(TAG, "Dropping old payload: " + pp.pType.name());
-                    mPendingPayloads.remove(pp.port);
+                if((now - pp.get(0).pendingSince) > 5000 /* 5 sec */) {
+                    Log.w(TAG, "Dropping " + pp.size() + " oldpayloads");
+                    mPendingPayloads.remove(mPendingPayloads.keyAt(i));
                 }
             }
         }
 
-        // TODO: concatenate the payload to the existing entry
-        if(mPendingPayloads.indexOfKey(pending.port) < 0)
-            mPendingPayloads.put(pending.port, pending);
+        int idx = mPendingPayloads.indexOfKey(pending.port);
+        ArrayList<PendingPayload> pp;
+
+        if(idx < 0) {
+            pp = new ArrayList<>();
+            mPendingPayloads.put(pending.port, pp);
+        } else
+            pp = mPendingPayloads.valueAt(idx);
+
+        pp.add(pending);
     }
 
     private static PayloadType parsePayloadType(String str) {
@@ -273,12 +325,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 // Check if the payload has already been received
                 int pending_idx = mPendingPayloads.indexOfKey(conn.local_port);
                 if(pending_idx >= 0) {
-                    PendingPayload pending = mPendingPayloads.valueAt(pending_idx);
+                    ArrayList<PendingPayload> pp = mPendingPayloads.valueAt(pending_idx);
                     mPendingPayloads.removeAt(pending_idx);
 
-                    //Log.d(TAG, "(pending) PAYLOAD." + pending.pType.name() + "[" + pending.payload.length + " B]: port=" + pending.port);
-
-                    handlePayload(conn, pending.pType, pending.payload);
+                    for(PendingPayload pending: pp) {
+                        //Log.d(TAG, "(pending) PAYLOAD." + pending.pType.name() + "[" + pending.payload.length + " B]: port=" + pending.port);
+                        handlePayload(conn, pending.pType, pending.payload, pending.when);
+                    }
                 }
             }
         }
@@ -341,24 +394,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         // success
         return conn;
-    }
-
-    // sync with pcapdroid.c
-    private boolean is_plaintext(byte c) {
-        return ((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t');
-    }
-
-    private String getPlaintextString(byte []bytes) {
-        int i = 0;
-        int limit = Math.min(bytes.length, MAX_PLAINTEXT_LENGTH);
-
-        while(i < limit) {
-            if(!is_plaintext(bytes[i]))
-                break;
-            i++;
-        }
-
-        return new String(bytes, 0, i, StandardCharsets.US_ASCII);
     }
 
     /* Requests to dump the sslkeylogfile of the remote mitm-addon.

@@ -433,7 +433,7 @@ public class ConnectionsAdapterTest {
     ConnectionDescriptor newConnection(boolean active) {
         ConnectionDescriptor conn = new ConnectionDescriptor(incrId++, 4, 6,
                 "1.1.1.1", "2.2.2.2", 51234, 80,
-                0, -1, 0, 0);
+                0, -1, 0, false, 0);
         conn.status = active ? ConnectionDescriptor.CONN_STATUS_CONNECTED : ConnectionDescriptor.CONN_STATUS_CLOSED;
         return conn;
     }
@@ -449,7 +449,7 @@ public class ConnectionsAdapterTest {
             update.setStats(0, 10, 10, 1, 1,
                     0, 0, ConnectionDescriptor.CONN_STATUS_CONNECTED);
         else
-            update.setInfo("example.org", null, null, "TLS");
+            update.setInfo("example.org", null, "TLS", ConnectionUpdate.UPDATE_INFO_FLAG_ENCRYPTED_L7);
 
         return update;
     }
@@ -459,7 +459,7 @@ public class ConnectionsAdapterTest {
      */
     ConnectionUpdate connInfo(int incr_id, String info) {
         ConnectionUpdate update = new ConnectionUpdate(incr_id);
-        update.setInfo(info, null, null, "TLS");
+        update.setInfo(info, null, "TLS", ConnectionUpdate.UPDATE_INFO_FLAG_ENCRYPTED_L7);
 
         return update;
     }

@@ -113,13 +113,28 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="17:15:00"/>
 
+        <ImageView
+            android:id="@+id/decryption_status"
+            android:layout_width="wrap_content"
+            android:adjustViewBounds="true"
+            android:layout_height="0dp"
+            android:paddingVertical="3dp"
+            app:layout_constraintTop_toBottomOf="@id/app_name_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/l7proto"
+            tools:tint="@color/ok"
+            android:contentDescription="@string/encrypted"
+            tools:src="@drawable/ic_lock_open" />
+
         <TextView
             android:id="@+id/l7proto"
             android:textSize="13sp"
+            android:layout_marginStart="4dp"
+            app:layout_goneMarginStart="0dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/app_name_layout"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/decryption_status"
             tools:text="HTTP, 80" />
 
         <LinearLayout

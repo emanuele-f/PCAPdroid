@@ -520,7 +520,7 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
                 // It will be free in sendConnectionsDump.
                 pd_notify_connection_update(pd, &conn->tuple, conn->data);
             } else {
-                pd_purge_connection(conn->data);
+                pd_purge_connection(pd, conn->data);
                 conn->data = NULL;
             }
 

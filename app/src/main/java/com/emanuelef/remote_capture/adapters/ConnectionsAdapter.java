@@ -75,6 +75,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ImageView icon;
         ImageView blacklistedInd;
         ImageView blockedInd;
+        ImageView decryptionInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -83,6 +84,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         TextView lastSeen;
         //FlagImageView countryFlag;
         final String mProtoAndPort;
+        final Drawable lockOpen;
+        final Drawable lockClosed;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -92,6 +95,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             l7proto = itemView.findViewById(R.id.l7proto);
             traffic = itemView.findViewById(R.id.traffic);
             statusInd = itemView.findViewById(R.id.status_ind);
+            decryptionInd = itemView.findViewById(R.id.decryption_status);
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
@@ -100,6 +104,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
+
+            lockOpen = ContextCompat.getDrawable(context, R.drawable.ic_lock_open);
+            lockClosed = ContextCompat.getDrawable(context, R.drawable.ic_lock);
         }
 
         @SuppressWarnings("deprecation")
@@ -152,6 +159,29 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
+
+            if(CaptureService.isDecryptingTLS()) {
+                switch(conn.getDecryptionStatus()) {
+                    case CLEARTEXT:
+                    case DECRYPTION_IN_PROGRESS:
+                        color = R.color.lightGray;
+                        break;
+                    case DECRYPTED:
+                        color = R.color.ok;
+                        break;
+                    case NOT_DECRYPTABLE:
+                        color = R.color.warning;
+                        break;
+                    case TLS_ERROR:
+                        color = R.color.danger;
+                        break;
+                }
+
+                decryptionInd.setVisibility(View.VISIBLE);
+                decryptionInd.setColorFilter(ContextCompat.getColor(context, color));
+                decryptionInd.setImageDrawable((conn.isCleartext() || conn.isDecrypted()) ? lockOpen : lockClosed);
+            } else
+                decryptionInd.setVisibility(View.GONE);
         }
     }
 

@@ -113,15 +113,6 @@ public class HTTPServer implements PcapDumper, Runnable {
             mOutputStream = mSocket.getOutputStream();
         }
 
-        /* Detects and returns the end of the HTTP request headers */
-        private int getEndOfRequestHeaders(byte[] buf) {
-            for(int i = 0; i < (buf.length - 4); i++) {
-                if((buf[i] == '\r') && (buf[i+1] == '\n') && (buf[i+2] == '\r') && (buf[i+3] == '\n'))
-                    return i+4;
-            }
-            return 0;
-        }
-
         private void close(String error) {
             if(isClosed())
                 return;
@@ -157,7 +148,7 @@ public class HTTPServer implements PcapDumper, Runnable {
             try {
                 while(req_size <= 0) {
                     sofar += mInputStream.read(buf, sofar, buf.length - sofar);
-                    req_size = getEndOfRequestHeaders(buf);
+                    req_size = Utils.getEndOfHTTPHeaders(buf);
                 }
 
                 Log.d(TAG, "Request headers end at " + req_size);
@@ -185,9 +176,10 @@ public class HTTPServer implements PcapDumper, Runnable {
                     } else {
                         Log.d(TAG, "URL: " + url);
 
+                        // NOTE: compressing with gzip is almost useless as most HTTP data is already
+                        // gzip-compressed
                         mOutputStream.write(("HTTP/1.1 200 OK\r\n" +
                                 "Content-Type: " + PCAP_MIME + "\r\n" +
-                                //"Content-Encoding: gzip\r\n" + // TODO?
                                 "Connection: close\r\n" +
                                 "Transfer-Encoding: chunked\r\n" +
                                 "\r\n"

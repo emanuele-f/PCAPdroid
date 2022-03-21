@@ -51,7 +51,7 @@ public class EditFilterActivity extends BaseActivity {
     private CheckBox mHideMasked;
     private CheckBox mOnlyBlocked;
     private CheckBox mOnlyBlacklisted;
-    private CheckBox mOnlyPlaintext;
+    private CheckBox mOnlyCleartext;
     private Chip mStatusOpen;
     private Chip mStatusClosed;
     private Chip mStatusUnreachable;
@@ -82,7 +82,7 @@ public class EditFilterActivity extends BaseActivity {
         mHideMasked = findViewById(R.id.not_hidden);
         mOnlyBlocked = findViewById(R.id.only_blocked);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
-        mOnlyPlaintext = findViewById(R.id.only_plaintext);
+        mOnlyCleartext = findViewById(R.id.only_cleartext);
         mStatusOpen = findViewById(R.id.status_open);
         mStatusClosed = findViewById(R.id.status_closed);
         mStatusUnreachable = findViewById(R.id.status_unreachable);
@@ -134,7 +134,7 @@ public class EditFilterActivity extends BaseActivity {
         mHideMasked.setChecked(!mFilter.showMasked);
         mOnlyBlocked.setChecked(mFilter.onlyBLocked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
-        mOnlyPlaintext.setChecked(mFilter.onlyPlaintext);
+        mOnlyCleartext.setChecked(mFilter.onlyCleartext);
 
         mStatusOpen.setChecked(false);
         mStatusClosed.setChecked(false);
@@ -167,7 +167,7 @@ public class EditFilterActivity extends BaseActivity {
         mFilter.showMasked = !mHideMasked.isChecked();
         mFilter.onlyBLocked = mOnlyBlocked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
-        mFilter.onlyPlaintext = mOnlyPlaintext.isChecked();
+        mFilter.onlyCleartext = mOnlyCleartext.isChecked();
 
         if(mStatusOpen.isChecked())
             mFilter.status = Status.STATUS_OPEN;

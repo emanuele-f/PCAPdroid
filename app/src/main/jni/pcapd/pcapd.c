@@ -695,7 +695,11 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
       return -1;
     } else if(rv == PCAP_ERROR_BREAK)
       // TODO handle EOF without error
+#ifndef READ_FROM_PCAP
       return -1;
+#else
+      return 0;
+#endif
 
     // can be reached when the packet buffer timeout expires
     return 0;

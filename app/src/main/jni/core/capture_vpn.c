@@ -515,6 +515,12 @@ int run_vpn(pcapdroid_t *pd) {
                 pkt_context_t pctx;
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
 
+                // To be run before pd_process_packet/process_payload
+                if((data->sent_pkts == 0) && should_proxy(pd, tuple)) {
+                    zdtun_conn_proxy(conn);
+                    data->proxied = true;
+                }
+
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
@@ -528,8 +534,7 @@ int run_vpn(pcapdroid_t *pd) {
                             spoof_dns_reply(pd, conn, &pctx);
                             zdtun_conn_close(zdt, conn, CONN_STATUS_CLOSED);
                         }
-                    } else if(should_proxy(pd, tuple))
-                        zdtun_conn_proxy(conn);
+                    }
                 }
 
                 if(data->to_block) {
@@ -563,7 +568,7 @@ int run_vpn(pcapdroid_t *pd) {
                         // The socket is open only after zdtun_forward is called
                         socket_t sock = zdtun_conn_get_socket(conn);
 
-                        // In SOCKS5 with the PlaintextReceiver, we need the local port to the SOCKS5 proxy
+                        // In SOCKS5 with the MitmReceiver, we need the local port to the SOCKS5 proxy
                         if((sock != INVALID_SOCKET) && (tuple->ipver == 4)) {
                             // NOTE: the zdtun SOCKS5 implementation only supports IPv4 right now.
                             // If it also supported IPv6, than we would need to expose "sock_ipver"

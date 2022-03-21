@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="3sp"
+    android:paddingVertical="10dp">
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:textSize="11sp"
+        android:layout_marginBottom="12dp"
+        android:textStyle="bold"
+        tools:text="#1 [TX] 11:02:03.154 — 120 B" />
+
+    <TextView
+        android:id="@+id/dump"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:background="@color/sentPayloadBg"
+        tools:textColor="@color/sentPayloadFg"
+        android:layout_marginTop="2dp"
+        android:textIsSelectable="true"
+        android:fontFamily="monospace"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:scrollHorizontally="true"
+        android:focusable="true"
+        tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
+</LinearLayout>

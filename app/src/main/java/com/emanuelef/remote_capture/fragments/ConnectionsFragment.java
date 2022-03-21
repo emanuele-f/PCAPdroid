@@ -206,15 +206,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
                 AppDescriptor app = mApps.get(item.uid, 0);
-                String app_name = null;
-
-                if(app != null)
-                    app_name = app.getName();
 
                 intent.putExtra(ConnectionDetailsActivity.CONN_EXTRA_KEY, item);
-
-                if(app_name != null)
-                    intent.putExtra(ConnectionDetailsActivity.APP_NAME_EXTRA_KEY, app_name);
 
                 startActivity(intent);
             }
@@ -391,11 +384,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
         }
 
-        if(!conn.request_plaintext.isEmpty()) {
-            item = menu.findItem(R.id.copy_request_plaintext);
-            item.setVisible(true);
-        }
-
         String label = MatchList.getRuleLabel(ctx, RuleType.IP, conn.dst_ip);
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
@@ -403,6 +391,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.block_ip).setTitle(label);
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
+
+        if(conn.hasHttpRequest())
+            menu.findItem(R.id.copy_http_request).setVisible(true);
+        if(conn.hasHttpResponse())
+            menu.findItem(R.id.copy_http_response).setVisible(true);
 
         label = MatchList.getRuleLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
         menu.findItem(R.id.hide_proto).setTitle(label);
@@ -482,8 +475,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Utils.copyToClipboard(ctx, conn.info);
         else if(id == R.id.copy_url)
             Utils.copyToClipboard(ctx, conn.url);
-        else if(id == R.id.copy_request_plaintext)
-            Utils.copyToClipboard(ctx, conn.request_plaintext);
+        else if(id == R.id.copy_http_request)
+            Utils.copyToClipboard(ctx, conn.getHttpRequest());
+        else if(id == R.id.copy_http_response)
+            Utils.copyToClipboard(ctx, conn.getHttpResponse());
         else
             return super.onContextItemSelected(item);
 

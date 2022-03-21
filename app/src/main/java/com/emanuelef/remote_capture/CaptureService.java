@@ -134,7 +134,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int mSocks5Port;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
-     * Max Estimated max memory usage: less than 4 MB. */
+     * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
     public static final int CONNECTIONS_LOG_SIZE = 8192;
 
     public static final String FALLBACK_DNS_SERVER = "8.8.8.8";
@@ -782,6 +782,15 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isRootCapture() == 1));
     }
 
+    public static boolean isDecryptingTLS() {
+        return((INSTANCE != null) &&
+                (INSTANCE.isTlsDecryptionEnabled() == 1));
+    }
+
+    public static Prefs.PayloadMode getCurPayloadMode() {
+        return((INSTANCE != null) ? INSTANCE.mSettings.payload_mode : Prefs.PayloadMode.NONE);
+    }
+
     public static void requestBlacklistsUpdate() {
         if(INSTANCE != null) {
             INSTANCE.mBlacklistsUpdateRequested = true;
@@ -946,6 +955,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getMaxDumpSize() {  return mSettings.max_dump_size; }
 
+    public int getPayloadMode() { return mSettings.payload_mode.ordinal(); }
+
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
 
@@ -1030,6 +1041,7 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
+    // NOTE: to be invoked only by the native code
     public String getApplicationByUid(int uid) {
         AppDescriptor dsc = appsResolver.get(uid, 0);
 

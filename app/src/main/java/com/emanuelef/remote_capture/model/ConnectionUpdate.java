@@ -19,9 +19,15 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.util.Log;
+
+import java.util.ArrayList;
+
 public class ConnectionUpdate {
-    public static final int UPDATE_STATS = 1;
-    public static final int UPDATE_INFO = 2;
+    public static final int UPDATE_STATS = 0x1;
+    public static final int UPDATE_INFO = 0x2;
+    public static final int UPDATE_PAYLOAD = 0x4;
+    public static final int UPDATE_INFO_FLAG_ENCRYPTED_L7 = 0x1;
     public final int incr_id;
     public int update_type;
 
@@ -34,12 +40,16 @@ public class ConnectionUpdate {
     public int blocked_pkts;
     public int tcp_flags;
     public int status;
+    public int info_flags;
 
     /* set if update_type & UPDATE_INFO */
     public String info;
     public String url;
-    public String request_plaintext;
     public String l7proto;
+
+    /* set if update_type & UPDATE_PAYLOAD */
+    public ArrayList<PayloadChunk> payload_chunks;
+    public boolean payload_truncated;
 
     public ConnectionUpdate(int _incr_id) {
         incr_id = _incr_id;
@@ -60,12 +70,19 @@ public class ConnectionUpdate {
         status = _status;
     }
 
-    public void setInfo(String _info, String _url, String _req, String _l7proto) {
+    public void setInfo(String _info, String _url, String _l7proto, int flags) {
         update_type |= UPDATE_INFO;
 
         info = _info;
         url = _url;
-        request_plaintext = _req;
         l7proto = _l7proto;
+        info_flags = flags;
+    }
+
+    public void setPayload(ArrayList<PayloadChunk> _chunks, boolean _payload_truncated) {
+        update_type |= UPDATE_PAYLOAD;
+
+        payload_chunks = _chunks;
+        payload_truncated = _payload_truncated;
     }
 }

@@ -71,6 +71,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
@@ -92,6 +93,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -407,6 +409,43 @@ public class Utils {
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    // Adapted from https://gist.github.com/jen20/906db194bd97c14d91df
+    public static String hexdump(byte[] array, int offset, int length) {
+        final int width = 16;
+        final int half = width / 2;
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int rowOffset = offset; rowOffset < offset + length; rowOffset += width) {
+            for (int index = 0; index < width; index++) {
+                if(index == half)
+                    builder.append(" ");
+
+                if (rowOffset + index < array.length) {
+                    builder.append(String.format("%02x ", array[rowOffset + index]));
+                } else {
+                    builder.append("   ");
+                }
+            }
+
+            if (rowOffset < array.length) {
+                int asciiWidth = Math.min(width, array.length - rowOffset);
+                builder.append(" ");
+
+                builder.append(new String(array, rowOffset, asciiWidth,
+                        StandardCharsets.US_ASCII).replaceAll("[^ -~]", "."));
+            }
+
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
+    public static String hexdump(byte[] array) {
+        return hexdump(array, 0, array.length);
     }
 
     // Splits the provided data into individual PCAP records. Intended to be used with data received
@@ -1004,5 +1043,32 @@ public class Utils {
             while((read = in.read(bytesIn)) != -1)
                 out.write(bytesIn, 0, read);
         }
+    }
+
+    public static boolean hasEncryptedPayload(AppDescriptor app, ConnectionDescriptor conn) {
+        return(
+            // Telegram
+            app.getPackageName().equals("org.telegram.messenger") ||
+
+            // Whatsapp
+            ((conn.info != null) && conn.info.equals("g.whatsapp.net") && !conn.l7proto.equals("DNS")) ||
+
+            // Google GCM
+            // https://stackoverflow.com/questions/15571576/which-port-and-protocol-does-google-cloud-messaging-gcm-use
+            ((app.getUid() == 1000) && (conn.dst_port >= 5228) && (conn.dst_port <= 5230)) ||
+
+            // Google APN
+            // https://keabird.com/blogs/2014/09/19/ports-to-be-whitelisted-for-iosandroid-push-notification/
+            ((app.getUid() == 1000) && ((conn.dst_port == 2195) || (conn.dst_port == 2196) || (conn.dst_port == 5223)))
+        );
+    }
+
+    /* Detects and returns the end of the HTTP request/response headers. 0 is returned if not found. */
+    public static int getEndOfHTTPHeaders(byte[] buf) {
+        for(int i = 0; i <= (buf.length - 4); i++) {
+            if((buf[i] == '\r') && (buf[i+1] == '\n') && (buf[i+2] == '\r') && (buf[i+3] == '\n'))
+                return i+4;
+        }
+        return 0;
     }
 }
