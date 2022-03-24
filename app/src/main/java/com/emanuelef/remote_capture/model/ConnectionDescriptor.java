@@ -253,7 +253,7 @@ public class ConnectionDescriptor {
     }
 
     public boolean isNotDecryptable()   { return encrypted_payload || !mitm_decrypt; }
-    public boolean isDecrypted()        { return mitm_decrypt && (getNumPayloadChunks() > 0); }
+    public boolean isDecrypted()        { return !isNotDecryptable() && (getNumPayloadChunks() > 0); }
     public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }
 
     public int getNumPayloadChunks() { return (payload_chunks == null) ? 0 : payload_chunks.size(); }
