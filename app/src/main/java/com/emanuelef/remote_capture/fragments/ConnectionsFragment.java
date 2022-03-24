@@ -205,10 +205,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
-                AppDescriptor app = mApps.get(item.uid, 0);
-
-                intent.putExtra(ConnectionDetailsActivity.CONN_EXTRA_KEY, item);
-
+                intent.putExtra(ConnectionDetailsActivity.CONN_EXTRA_KEY, item.incr_id);
                 startActivity(intent);
             }
         });

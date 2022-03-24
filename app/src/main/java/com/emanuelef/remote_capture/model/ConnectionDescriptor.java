@@ -27,9 +27,7 @@ import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.Utils;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * thread. However this does not create concurrency problems as the update only increments counters
  * or sets a previously null field to a non-null value.
  */
-public class ConnectionDescriptor implements Serializable {
+public class ConnectionDescriptor {
     // sync with zdtun_conn_status_t
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,

@@ -45,7 +45,7 @@ import java.util.ArrayList;
 
 public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
-    public static final String CONN_EXTRA_KEY = "conn_descriptor";
+    public static final String CONN_EXTRA_KEY = "conn_id";
     private static final int MAX_CHUNKS_TO_CHECK = 10;
     private ConnectionDescriptor mConn;
     private ViewPager2 mPager;
@@ -75,7 +75,19 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         displayBackAction();
         setContentView(R.layout.activity_connection_details);
 
-        mConn = (ConnectionDescriptor) getIntent().getSerializableExtra(CONN_EXTRA_KEY);
+        int incr_id = getIntent().getIntExtra(CONN_EXTRA_KEY, -1);
+        if(incr_id != -1) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if(reg != null)
+                mConn = reg.getConnById(incr_id);
+        }
+
+        if(mConn == null) {
+            Log.w(TAG, "Connection with ID " + incr_id + " not found");
+            finish();
+            return;
+        }
+
         mHandler = new Handler(Looper.getMainLooper());
         mConnPos = -1;
 
@@ -176,20 +188,14 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         if((reg != null) && !mListenerSet) {
             mConnPos = reg.getConnPositionById(mConn.incr_id);
 
-            if(mConnPos != -1) {
-                ConnectionDescriptor conn = reg.getConn(mConnPos);
-
-                if(conn != null) {
-                    if(conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED) {
-                        Log.d(TAG, "Adding connections listener");
-                        reg.addListener(this);
-                        mListenerSet = true;
-                    }
-
-                    dispatchConnUpdate();
-                }
+            if((mConnPos != -1) && (mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)) {
+                Log.d(TAG, "Adding connections listener");
+                reg.addListener(this);
+                mListenerSet = true;
             }
         }
+
+        dispatchConnUpdate();
     }
 
     private void unregisterConnsListener() {
@@ -280,9 +286,6 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     }
 
     private void dispatchConnUpdate() {
-        if(mConn == null)
-            return;
-
         for(ConnUpdateListener listener: mListeners)
             listener.connectionUpdated();
 
