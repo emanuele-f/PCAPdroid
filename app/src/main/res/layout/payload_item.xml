@@ -23,7 +23,6 @@
         android:layout_height="wrap_content"
         tools:background="@color/sentPayloadBg"
         tools:textColor="@color/sentPayloadFg"
-        android:layout_marginTop="2dp"
         android:textIsSelectable="true"
         android:fontFamily="monospace"
         android:textSize="9sp"
@@ -31,4 +30,14 @@
         android:scrollHorizontally="true"
         android:focusable="true"
         tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
+
+    <ImageView
+        android:id="@+id/expand_button"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_expand_more"
+        android:tint="@color/colorTabText" />
 </LinearLayout>

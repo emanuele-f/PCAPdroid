@@ -23,9 +23,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,6 +48,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadViewHolder> implements HTTPReassembly.ReassemblyListener {
+    public static final int COLLAPSE_CHUNK_SIZE = 1500;
     private final LayoutInflater mLayoutInflater;
     private final ConnectionDescriptor mConn;
     private final Context mContext;
@@ -53,6 +56,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private int mHandledChunks;
     private final ArrayList<PayloadChunk> mChunks = new ArrayList<>();
     private final HTTPReassembly mHttp;
+    private final ArraySet<Integer> mExpandedPos = new ArraySet<>();
 
     public PayloadAdapter(Context context, ConnectionDescriptor conn, Direction dir) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -68,12 +72,14 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     protected static class PayloadViewHolder extends RecyclerView.ViewHolder {
         TextView header;
         TextView dump;
+        ImageView expandButton;
 
         public PayloadViewHolder(View view) {
             super(view);
 
             header = view.findViewById(R.id.header);
             dump = view.findViewById(R.id.dump);
+            expandButton = view.findViewById(R.id.expand_button);
         }
     }
 
@@ -81,7 +87,20 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     @Override
     public PayloadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.payload_item, parent, false);
-        return(new PayloadViewHolder(view));
+        PayloadViewHolder holder = new PayloadViewHolder(view);
+
+        holder.expandButton.setOnClickListener(v -> {
+            int pos = holder.getAbsoluteAdapterPosition();
+
+            if(mExpandedPos.contains(pos))
+                mExpandedPos.remove(pos);
+            else
+                mExpandedPos.add(pos);
+
+            notifyItemChanged(pos);
+        });
+
+        return holder;
     }
 
     @Override
@@ -105,12 +124,21 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
                 (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
                 Utils.formatBytes(chunk.payload.length)));
 
+        boolean is_expanded = mExpandedPos.contains(position);
+
+        if(chunk.payload.length > COLLAPSE_CHUNK_SIZE) {
+            holder.expandButton.setVisibility(View.VISIBLE);
+            holder.expandButton.setRotation(is_expanded ? 180 : 0);
+        } else
+            holder.expandButton.setVisibility(View.GONE);
+
+        int dump_len = is_expanded ? chunk.payload.length : Math.min(chunk.payload.length, COLLAPSE_CHUNK_SIZE);
         String dump;
 
         if(isPayloadTab())
-            dump = Utils.hexdump(chunk.payload);
+            dump = Utils.hexdump(chunk.payload, 0, dump_len);
         else
-            dump = new String(chunk.payload, StandardCharsets.UTF_8);
+            dump = new String(chunk.payload, 0, dump_len, StandardCharsets.UTF_8);
 
         holder.dump.setText(dump);
 
