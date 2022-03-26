@@ -26,10 +26,11 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
+    public static final String DUMP_NONE = "none";
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
     public static final String DUMP_PCAP_FILE = "pcap_file";
-    public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
+    public static final String DEFAULT_DUMP_MODE = DUMP_NONE;
 
     public static final String PAYLOAD_MODE_NONE = "none";
     public static final String PAYLOAD_MODE_MINIMAL = "minimal";
@@ -45,7 +46,7 @@ public class Prefs {
     public static final String PREF_TLS_DECRYPTION_KEY = "tls_decryption";
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
-    public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
+    public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_PCAP_URI = "pcap_uri";
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";

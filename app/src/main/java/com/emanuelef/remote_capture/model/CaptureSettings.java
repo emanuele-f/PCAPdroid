@@ -45,7 +45,7 @@ public class CaptureSettings implements Serializable {
     }
 
     public CaptureSettings(Intent intent) {
-        dump_mode = Prefs.getDumpMode(getString(intent, Prefs.PREF_PCAP_DUMP_MODE, "none"));
+        dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
         app_filter = getString(intent, Prefs.PREF_APP_FILTER, "");
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
