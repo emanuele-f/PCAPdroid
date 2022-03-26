@@ -205,10 +205,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         refreshFilterInfo();
 
         mCaptureStatus.setOnClickListener(v -> {
-            if(mActivity.getState() == AppState.running) {
-                Intent intent = new Intent(getActivity(), StatsActivity.class);
-                startActivity(intent);
-            }
+            if(mActivity.getState() == AppState.ready)
+                mActivity.startCapture();
         });
 
         // Make URLs clickable
