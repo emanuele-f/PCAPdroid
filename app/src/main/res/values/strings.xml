@@ -17,6 +17,8 @@
         - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
+        - Brotli decoder: <a href='https://github.com/google/brotli/blob/master/LICENSE'>MIT</a>\n\n
+        - mitmproxy: <a href='https://github.com/mitmproxy/mitmproxy/blob/main/LICENSE'>MIT</a>\n\n
         - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
         - FlagKit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
         - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n

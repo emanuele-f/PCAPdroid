@@ -79,6 +79,7 @@ dependencies {
 // Google
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'org.brotli:dec:0.1.2'
 
 // Third-party
     implementation 'cat.ereza:customactivityoncrash:2.3.0'

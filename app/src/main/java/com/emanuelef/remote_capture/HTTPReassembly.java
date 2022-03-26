@@ -27,16 +27,20 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.Inflater;
+import org.brotli.dec.BrotliInputStream;
 
 public class HTTPReassembly {
     private static final String TAG = "HTTPReassembly";
     private static final int MAX_HEADERS_SIZE = 1024;
     private boolean mReadingHeaders;
-    private boolean mGzipEncoding;
     private boolean mChunkedEncoding;
+    private ContentEncoding mContentEncoding;
     private int mContentLength;
     private int mHeadersSize;
     private final ArrayList<PayloadChunk> mHeaders = new ArrayList<>();
@@ -51,9 +55,16 @@ public class HTTPReassembly {
         reset();
     }
 
+    private enum ContentEncoding {
+        UNKNOWN,
+        GZIP,
+        DEFLATE,
+        BROTLI,
+    }
+
     private void reset() {
         mReadingHeaders = true;
-        mGzipEncoding = false;
+        mContentEncoding = ContentEncoding.UNKNOWN;
         mChunkedEncoding = false;
         mContentLength = -1;
         mHeadersSize = 0;
@@ -95,7 +106,19 @@ public class HTTPReassembly {
                         String contentEncoding = line.substring(18);
                         Log.d(TAG, "Content-Encoding: " + contentEncoding);
 
-                        mGzipEncoding = contentEncoding.equals("gzip");
+                        switch (contentEncoding) {
+                            case "gzip":
+                                mContentEncoding = ContentEncoding.GZIP;
+                                break;
+                            case "deflate":
+                                // test with http://carsten.codimi.de/gzip.yaws/daniels.html?deflate=on
+                                mContentEncoding = ContentEncoding.DEFLATE;
+                                break;
+                            case "br":
+                                // test with google.com
+                                mContentEncoding = ContentEncoding.BROTLI;
+                                break;
+                        }
                     } else if(line.startsWith("content-type: ")) {
                         String contentType = line.substring(14);
                         Log.d(TAG, "Content-Type: " + contentType);
@@ -197,22 +220,9 @@ public class HTTPReassembly {
                 PayloadChunk headers = reassembleChunks(mHeaders);
                 PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
 
-                if((body != null) && mGzipEncoding) {
-                    // Decode the body
-                    try(GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(body.payload))) {
-                        try(ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                            byte[] buf = new byte[1024];
-                            int read;
-
-                            while ((read = gzipInputStream.read(buf)) != -1)
-                                bos.write(buf, 0, read);
-
-                            body.payload = bos.toByteArray();
-                        }
-                    } catch (IOException ignored) {
-                        Log.d(TAG, "GZIP decoding failed");
-                    }
-                }
+                // Decode body
+                if((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
+                    decodeBody(body);
 
                 PayloadChunk to_add;
 
@@ -238,6 +248,44 @@ public class HTTPReassembly {
                 Log.d(TAG, "Continue from " + new_body_start);
                 handleChunk(chunk.subchunk(new_body_start, chunk.payload.length - new_body_start));
             }
+        }
+    }
+
+    private void decodeBody(PayloadChunk body) {
+        InputStream inputStream = null;
+
+        //Log.d(TAG, "Decoding as " + mContentEncoding.name().toLowerCase());
+
+        try(ByteArrayInputStream bis = new ByteArrayInputStream(body.payload)) {
+            switch (mContentEncoding) {
+                case GZIP:
+                    inputStream = new GZIPInputStream(bis);
+                    break;
+                case DEFLATE:
+                    inputStream = new InflaterInputStream(bis, new Inflater(true));
+                    break;
+                case BROTLI:
+                    inputStream = new BrotliInputStream(bis);
+                    break;
+            }
+
+            if(inputStream != null) {
+                try(ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                    byte[] buf = new byte[1024];
+                    int read;
+
+                    while ((read = inputStream.read(buf)) != -1)
+                        bos.write(buf, 0, read);
+
+                    // success
+                    body.payload = bos.toByteArray();
+                }
+            }
+        } catch (IOException ignored) {
+            Log.d(TAG, mContentEncoding.name().toLowerCase() + " decoding failed");
+            //ignored.printStackTrace();
+        } finally {
+            Utils.safeClose(inputStream);
         }
     }
 
