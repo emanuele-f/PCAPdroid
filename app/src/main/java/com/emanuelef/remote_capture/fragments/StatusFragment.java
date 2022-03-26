@@ -354,9 +354,9 @@ private void refreshPcapDumpInfo() {
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
+                CaptureService service = CaptureService.requireInstance();
 
                 if(CaptureService.isCapturingAsRoot()) {
-                    CaptureService service = CaptureService.requireInstance();
                     String capiface = service.getCaptureInterface();
 
                     if(capiface.equals("@inet"))
@@ -365,6 +365,13 @@ private void refreshPcapDumpInfo() {
                         capiface = getString(R.string.all_interfaces);
 
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(CaptureService.isDecryptingTLS()) {
+                    mInterfaceInfo.setText(R.string.tls_decryption_status);
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(service.getSocks5Enabled() == 1) {
+                    mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),
+                            service.getSocks5ProxyAddress(), service.getSocks5ProxyPort()));
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 }
 
