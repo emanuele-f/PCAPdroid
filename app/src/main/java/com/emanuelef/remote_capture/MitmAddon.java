@@ -48,8 +48,8 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     /* API */
     public static final String PACKAGE_NAME = "com.pcapdroid.mitm";
-    public static final String PACKAGE_VERSION_NAME = "v0.3";
-    public static final int PACKAGE_VERSION_CODE = 3;
+    public static final String PACKAGE_VERSION_NAME = "v0.4";
+    public static final int PACKAGE_VERSION_CODE = 4;
     public static final String MITM_PERMISSION = "com.pcapdroid.permission.MITM";
     public static final String MITM_SERVICE = PACKAGE_NAME + ".MitmService";
 
