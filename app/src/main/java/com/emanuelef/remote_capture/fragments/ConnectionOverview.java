@@ -120,11 +120,11 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             Utils.startActivity(mActivity, intent);
         });
 
-        String l4proto = Utils.proto2str(mConn.ipproto);
-        //if(l4proto.equals("TCP"))
-        //    findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
-
         if(mConn != null) {
+            String l4proto = Utils.proto2str(mConn.ipproto);
+            //if(l4proto.equals("TCP"))
+            //    findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
+
             if(!mConn.l7proto.equals(l4proto))
                 proto.setText(String.format(getResources().getString(R.string.app_and_proto), mConn.l7proto, l4proto));
             else
