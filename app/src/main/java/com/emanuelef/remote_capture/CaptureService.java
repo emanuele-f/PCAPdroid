@@ -430,7 +430,9 @@ public class CaptureService extends VpnService implements Runnable {
     public void onDestroy() {
         Log.d(CaptureService.TAG, "onDestroy");
 
-        INSTANCE = null;
+        // Do not nullify INSTANCE to allow its settings and the connections register to be accessible
+        // after the capture is stopped
+        //INSTANCE = null;
 
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
