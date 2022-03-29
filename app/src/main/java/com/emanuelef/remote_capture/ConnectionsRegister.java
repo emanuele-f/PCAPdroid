@@ -297,17 +297,16 @@ public class ConnectionsRegister {
     }
 
     public synchronized int getConnPositionById(int incr_id) {
-        int first = firstPos();
+        if(mCurItems <= 0)
+            return -1;
 
-        for(int i = 0; i < mCurItems; i++) {
-            int pos = (first + i) % mSize;
-            ConnectionDescriptor item = mItemsRing[pos];
+        ConnectionDescriptor first = mItemsRing[firstPos()];
+        ConnectionDescriptor last = mItemsRing[lastPos()];
 
-            if((item != null) && (item.incr_id == incr_id))
-                return pos;
-        }
+        if((incr_id < first.incr_id) || (incr_id > last.incr_id))
+            return -1;
 
-        return -1;
+        return(incr_id - first.incr_id);
     }
 
     public synchronized @Nullable ConnectionDescriptor getConnById(int incr_id) {

@@ -45,7 +45,7 @@ import java.util.ArrayList;
 
 public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
-    public static final String CONN_EXTRA_KEY = "conn_id";
+    public static final String CONN_ID_KEY = "conn_id";
     private static final int MAX_CHUNKS_TO_CHECK = 10;
     private ConnectionDescriptor mConn;
     private ViewPager2 mPager;
@@ -75,7 +75,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         displayBackAction();
         setContentView(R.layout.activity_connection_details);
 
-        int incr_id = getIntent().getIntExtra(CONN_EXTRA_KEY, -1);
+        int incr_id = getIntent().getIntExtra(CONN_ID_KEY, -1);
         if(incr_id != -1) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if(reg != null)
