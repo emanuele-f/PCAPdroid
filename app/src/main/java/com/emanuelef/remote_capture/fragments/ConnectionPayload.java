@@ -29,7 +29,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
@@ -93,10 +92,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         EmptyRecyclerView recyclerView = view.findViewById(R.id.payload);
         EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutMan);
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                layoutMan.getOrientation());
-        recyclerView.addItemDecoration(dividerItemDecoration);
 
         mTruncatedWarning = view.findViewById(R.id.truncated_warning);
         mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.minimal_payload)));
