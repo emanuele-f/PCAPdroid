@@ -527,7 +527,7 @@ static void process_dns_reply(pd_conn_t *data, pcapdroid_t *pd, const struct zdt
 
     dns_packet_t *dns = (dns_packet_t*)pkt->l7;
 
-    if(((dns->flags & 0x8000) == 0x8000) && (dns->questions != 0) && (dns->answ_rrs != 0)) {
+    if(((ntohs(dns->flags) & 0x8000) == 0x8000) && (dns->questions != 0) && (dns->answ_rrs != 0)) {
         u_char *reply = dns->queries;
         int len = pkt->l7_len - sizeof(dns_packet_t);
         int num_queries = ntohs(dns->questions);
