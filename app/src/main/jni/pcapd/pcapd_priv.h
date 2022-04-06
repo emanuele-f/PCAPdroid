@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <net/if.h>
 #include <pcap.h>
+#include "nl_utils.h"
 #include "common/uid_lru.h"
 #include "common/uid_resolver.h"
 #include "common/utils.h"
@@ -61,9 +62,10 @@ typedef struct {
 
 typedef struct {
   char bpf[512];
-  char nlbuf[8192]; /* >= 8192 to avoid truncation, see "man 7 netlink" */
+  char nlbuf[NL_BUFFER_SIZE];
 
-  int nlsock;
+  int nlroute_sock;
+  int nldiag_sock;
   int client;
 
   zdtun_t *tun;
