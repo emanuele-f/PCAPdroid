@@ -23,11 +23,14 @@
 #include <sys/socket.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#include <linux/sock_diag.h>
+#include <linux/inet_diag.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #include "nl_utils.h"
+#include "common/uid_resolver.h"
 
-int nl_socket(uint32_t groups) {
+int nl_route_socket(uint32_t groups) {
   struct sockaddr_nl snl;
   int sock;
 
@@ -145,4 +148,121 @@ out:
   close(nlsock);
 
   return(rv);
+}
+
+/* ******************************************************* */
+
+static int diag_uid_lookup(int nlsock, int family, int ipproto,
+          const pd_sockaddr_t *local, const pd_sockaddr_t *remote,
+          int flags) {
+  struct sockaddr_nl snl = {0};
+  struct msghdr msg = {0};
+  struct iovec iov;
+  u_char buf[512];
+  static int seq = 0;
+  ssize_t rv;
+
+  struct nlmsghdr *nmsg = (struct nlmsghdr*) buf;
+  struct inet_diag_req_v2 *req = (struct inet_diag_req_v2*) (nmsg + 1);
+
+  memset(req, 0, sizeof(*req));
+  req->sdiag_family = family;
+  req->sdiag_protocol = ipproto;
+  req->idiag_states = -1 /* ANY state */;
+  req->id.idiag_sport = local->port;
+  req->id.idiag_dport = remote->port;
+  req->id.idiag_cookie[0] = -1, req->id.idiag_cookie[1] = -1; /* no cookie */
+
+  if(family == AF_INET) {
+    memcpy(req->id.idiag_src, &local->addr.ip4, 4);
+    memcpy(req->id.idiag_dst, &remote->addr.ip4, 4);
+  } else {
+    memcpy(req->id.idiag_src, &local->addr.ip6, 16);
+    memcpy(req->id.idiag_dst, &remote->addr.ip6, 16);
+  }
+
+  memset(nmsg, 0, sizeof(*nmsg));
+  nmsg->nlmsg_len = sizeof(*nmsg) + sizeof(*req);
+  nmsg->nlmsg_type = SOCK_DIAG_BY_FAMILY;
+  nmsg->nlmsg_flags = flags;
+  nmsg->nlmsg_seq = ++seq;
+
+  iov.iov_base = (void*) nmsg;
+  iov.iov_len = nmsg->nlmsg_len;
+
+  snl.nl_family = AF_NETLINK;
+
+  msg.msg_name = (void*) &snl;
+  msg.msg_namelen = sizeof(snl);
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+
+  // Send request
+  if(sendmsg(nlsock, &msg, 0) < 0)
+    return -1;
+
+  iov.iov_base = buf;
+  iov.iov_len = sizeof(buf);
+
+  // Recv reply
+  if((rv = recvmsg(nlsock, &msg, 0)) <= 0)
+    return -2;
+
+  // NOTE: nmsg points to buf
+  if(nmsg->nlmsg_len < (int)sizeof(*nmsg) || nmsg->nlmsg_len > rv ||
+      nmsg->nlmsg_seq != seq) {
+    errno = EINVAL;
+    return -3;
+  }
+
+  if(nmsg->nlmsg_type == NLMSG_ERROR)
+    return -4;
+
+  struct inet_diag_msg *diag_msg = (struct inet_diag_msg*) NLMSG_DATA(nmsg);
+  return diag_msg->idiag_uid;
+}
+
+/* ******************************************************* */
+
+int nl_get_uid(int nlsock, const zdtun_5tuple_t *tuple) {
+  int uid;
+
+  int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+  int ipproto = tuple->ipproto;
+  pd_sockaddr_t src = {.addr = tuple->src_ip, .port = tuple->src_port};
+  pd_sockaddr_t dst = {.addr = tuple->dst_ip, .port = tuple->dst_port};
+
+  // fix to known bug with UDP: https://www.mail-archive.com/netdev@vger.kernel.org/msg248638.html
+  const pd_sockaddr_t *local = (ipproto == IPPROTO_UDP) ? &dst : &src;
+  const pd_sockaddr_t *remote = (ipproto == IPPROTO_UDP) ? &src : &dst;
+
+  uid = diag_uid_lookup(nlsock, family, ipproto, local, remote, NLM_F_REQUEST);
+  if(uid >= 0)
+    return uid;
+
+  // Search for IPv4-mapped IPv6 addresses
+  if(family == AF_INET) {
+    uid = diag_uid_lookup(nlsock, AF_INET6, ipproto, local, remote, NLM_F_REQUEST);
+    if(uid >= 0)
+      return uid;
+  }
+
+  // For UDP it's possible for a socket to send packets to arbitrary destinations
+  // See InetDiagMessage.java in Android
+  if(ipproto == IPPROTO_UDP) {
+    pd_sockaddr_t wildcard = {0};
+
+    uid = diag_uid_lookup(nlsock, family, ipproto, &src, &wildcard, NLM_F_REQUEST | NLM_F_DUMP);
+    if(uid >= 0)
+      return uid;
+
+    // Search for IPv4-mapped IPv6 addresses
+    if(family == AF_INET) {
+      uid = diag_uid_lookup(nlsock, AF_INET6, ipproto, &src, &wildcard, NLM_F_REQUEST | NLM_F_DUMP);
+      if(uid >= 0)
+        return uid;
+    }
+  }
+
+  return UID_UNKNOWN;
 }

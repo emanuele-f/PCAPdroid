@@ -227,8 +227,10 @@ static int create_pid_file() {
 static void finish_pcapd_capture(pcapd_runtime_t *rt) {
   if(rt->client > 0)
     close(rt->client);
-  if(rt->nlsock > 0)
-    close(rt->nlsock);
+  if(rt->nlroute_sock > 0)
+    close(rt->nlroute_sock);
+  if(rt->nldiag_sock > 0)
+    close(rt->nldiag_sock);
   if(rt->lru)
     uid_lru_destroy(rt->lru);
   if(rt->resolver)
@@ -259,7 +261,8 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     signal(SIGPIPE, SIG_IGN);
   }
 
-  rt->nlsock = -1;
+  rt->nlroute_sock = -1;
+  rt->nldiag_sock = -1;
   rt->client = -1;
   rt->conf = conf;
 
@@ -281,14 +284,18 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   }
 
   if(rt->inet_iface) {
-    rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+    rt->nlroute_sock = nl_route_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
                                    RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
-    if(rt->nlsock < 0) {
+    if(rt->nlroute_sock < 0) {
       log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
       goto err;
     }
-    rt->maxfd = max(rt->maxfd, rt->nlsock);
+    rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
   }
+
+  rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+  if(rt->nldiag_sock < 0)
+    log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -533,7 +540,7 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
     .msg_iovlen = 1
   };
 
-  ssize_t len = recvmsg(rt->nlsock, &msg, 0);
+  ssize_t len = recvmsg(rt->nlroute_sock, &msg, 0);
   uint8_t recheck_inet = 0;
 
 #ifdef READ_FROM_PCAP
@@ -665,8 +672,8 @@ static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
   if(rt->client > 0)
     FD_SET(rt->client, fds);
 
-  if(rt->nlsock > 0)
-    FD_SET(rt->nlsock, fds);
+  if(rt->nlroute_sock > 0)
+    FD_SET(rt->nlroute_sock, fds);
 
   for(int i=0; i<rt->conf->num_interfaces; i++) {
     if(rt->ifaces[i].pf != -1)
@@ -725,7 +732,13 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         uid = uid_lru_find(rt->lru, &zpkt.tuple);
 
         if(uid == -2) {
-          uid = get_uid(rt->resolver, &zpkt.tuple);
+          if((rt->nldiag_sock > 0) && (zpkt.tuple.ipproto != IPPROTO_ICMP))
+            // retrieve via netlink
+            uid = nl_get_uid(rt->nldiag_sock, &zpkt.tuple);
+          else
+            // slow method
+            uid = get_uid(rt->resolver, &zpkt.tuple);
+
           uid_lru_add(rt->lru, &zpkt.tuple, uid);
         }
       }
@@ -754,12 +767,13 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
             log_e("write failed[%d]: %s", errno, strerror(errno));
             return -1;
           }
-        } else {
+        } else if(!rt->conf->quiet) {
           char buf[512];
           zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-          if(!rt->conf->quiet)
-            printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
+          printf("[%s:%d] %s (%u B) [%cX] (%d)\n", iface->name,
+              iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R',
+              uid);
         }
 
         if(iface->is_file) {
@@ -832,11 +846,10 @@ int run_pcap_dump(pcapd_conf_t *conf) {
     clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
     time_t now = ts.tv_sec;
 
-
     if((rt.client > 0) && FD_ISSET(rt.client, &fds)) {
       log_i("Client closed");
       break;
-    } else if((rt.nlsock > 0) && FD_ISSET(rt.nlsock, &fds)) {
+    } else if((rt.nlroute_sock > 0) && FD_ISSET(rt.nlroute_sock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
         rv = -1;
         break;
