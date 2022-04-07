@@ -32,7 +32,6 @@
     <string name="http_server_port">Porta do servidor HTTP</string>
     <string name="receiver_ip_address">Endereço IP do receptor</string>
     <string name="receiver_port">Porta do receptor</string>
-    <string name="dump_mode">Modo de dados brutos</string>
     <string name="user_guide">Guia do Usuário</string>
     <string name="open_telegram_group">Grupo no Telegram</string>
     <string name="source_code">Código fonte</string>

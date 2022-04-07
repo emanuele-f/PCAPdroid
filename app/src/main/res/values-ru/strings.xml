@@ -31,7 +31,6 @@
     <string name="http_server_port">Порт HTTP сервера</string>
     <string name="receiver_ip_address">IP адрес сборщика</string>
     <string name="receiver_port">Порт сборщика</string>
-    <string name="dump_mode">Режим записи</string>
     <string name="user_guide">Руководство пользователя</string>
     <string name="open_telegram_group">Telegram сообщество</string>
     <string name="source_code">Исходный код</string>

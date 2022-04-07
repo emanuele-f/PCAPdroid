@@ -113,7 +113,6 @@
     <string name="http_server_port">Port du serveur HTTP</string>
     <string name="receiver_ip_address">Adresse IP du collecteur</string>
     <string name="receiver_port">Port du collecteur</string>
-    <string name="dump_mode">Mode d\'extraction</string>
     <string name="pcap_file_info">Créer une fichier PCAP dans l\'espace de stockage</string>
     <string name="enable_ipv6_summary">Autoriser les connexions internet IPv6. À n\'utiliser que sur les réseaux connecté en IPv6</string>
     <string name="tls_how_to">Comment configurer un décryptage TLS</string>

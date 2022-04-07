@@ -57,7 +57,6 @@
     <string name="http_server_port">HTTP 服务器端口</string>
     <string name="receiver_ip_address">收集器 IP 地址</string>
     <string name="receiver_port">收集器端口</string>
-    <string name="dump_mode">转储模式</string>
     <string name="user_guide">用户指南</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="source_code">源代码</string>
