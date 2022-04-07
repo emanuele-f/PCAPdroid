@@ -347,8 +347,22 @@ static void init_interface(pcapd_iface_t *iface) {
 static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
   int is_file = 0;
+  pcap_t *pd;
 
-  pcap_t *pd = pcap_open_live(ifname, PCAPD_SNAPLEN, 0, 1, errbuf);
+  pd = pcap_create(ifname, errbuf);
+  if(pd) {
+    // NOTE: setting immediate mode greatly increases the chance to resolve UIDs of short-lived
+    // connections. But it has a big performance impact due to the increased context switches.
+    // The performance cost is not acceptable.
+    if((pcap_set_timeout(pd, 1) != 0) ||
+       (pcap_set_snaplen(pd, PCAPD_SNAPLEN) != 0) ||
+       (pcap_set_immediate_mode(pd, 0) != 0) ||
+       (pcap_activate(pd) != 0)) {
+      pcap_close(pd);
+      pd = NULL;
+    }
+  }
+
   if(!pd) {
     // try to open as file
     pd = pcap_open_offline(ifname, errbuf);
