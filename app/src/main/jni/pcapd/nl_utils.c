@@ -152,6 +152,10 @@ out:
 
 /* ******************************************************* */
 
+// Returns:
+//      >= 0 on success
+//      UID_UNKNOWN if the UID could not be resolved
+//      other on error, errno is set accordingly
 static int diag_uid_lookup(int nlsock, int family, int ipproto,
           const pd_sockaddr_t *local, const pd_sockaddr_t *remote,
           int flags) {
@@ -199,27 +203,66 @@ static int diag_uid_lookup(int nlsock, int family, int ipproto,
 
   // Send request
   if(sendmsg(nlsock, &msg, 0) < 0)
-    return -1;
+    return -2;
 
   iov.iov_base = buf;
   iov.iov_len = sizeof(buf);
 
   // Recv reply
   if((rv = recvmsg(nlsock, &msg, 0)) <= 0)
-    return -2;
+    return -3;
 
   // NOTE: nmsg points to buf
   if(nmsg->nlmsg_len < (int)sizeof(*nmsg) || nmsg->nlmsg_len > rv ||
       nmsg->nlmsg_seq != seq) {
     errno = EINVAL;
-    return -3;
+    return -4;
   }
 
-  if(nmsg->nlmsg_type == NLMSG_ERROR)
-    return -4;
+  if(nmsg->nlmsg_type == NLMSG_ERROR) {
+    const struct nlmsgerr *err = NLMSG_DATA(nmsg);
+
+    if(nmsg->nlmsg_len >= NLMSG_LENGTH(sizeof(*err))) {
+        errno = -err->error;
+        if(errno == ENOENT)
+            return UID_UNKNOWN;
+    } else
+        errno = EINVAL;
+
+    return -5;
+  }
+
+  if(nmsg->nlmsg_type == NLMSG_DONE)
+    return UID_UNKNOWN;
+
+  if(nmsg->nlmsg_len < NLMSG_LENGTH(sizeof(struct inet_diag_msg))) {
+      errno = EINVAL;
+      return -6;
+  }
 
   struct inet_diag_msg *diag_msg = (struct inet_diag_msg*) NLMSG_DATA(nmsg);
   return diag_msg->idiag_uid;
+}
+
+/* ******************************************************* */
+
+// On some Android versions (e.g. emulator API 21) the DIAG socket always returns ENOENT
+// Perform a wildcard dump query to verify this
+int nl_is_diag_working() {
+  int working;
+  pd_sockaddr_t wildcard = {0};
+
+  // NOTE: don't use an existing socket, as the NLM_F_DUMP query may span multiple datagrams
+  int nlsock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+  if(nlsock < 0)
+    return 0;
+
+  // Assume at least 1 open UDP AF_INET open socket exists
+  int rv = diag_uid_lookup(nlsock, AF_INET, IPPROTO_UDP, &wildcard, &wildcard, NLM_F_REQUEST | NLM_F_DUMP);
+  working = (rv >= 0);
+
+  close(nlsock);
+  return working;
 }
 
 /* ******************************************************* */

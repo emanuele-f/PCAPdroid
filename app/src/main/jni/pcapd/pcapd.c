@@ -293,9 +293,12 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
   }
 
-  rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
-  if(rt->nldiag_sock < 0)
-    log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
+  if(nl_is_diag_working()) {
+    rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+    if(rt->nldiag_sock < 0)
+      log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
+  } else
+    log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);

@@ -46,6 +46,7 @@ typedef struct {
 
 int nl_get_route(int af, const addr_t *addr, route_info_t *out);
 int nl_route_socket(uint32_t groups);
+int nl_is_diag_working();
 int nl_get_uid(int nlsock, const zdtun_5tuple_t *tuple);
 
 #endif
