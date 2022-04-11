@@ -27,7 +27,7 @@ public class FileDumper implements PcapDumper {
     @Override
     public void startDumper() throws IOException {
         Log.d(TAG, "PCAP URI: " + mPcapUri);
-        mOutputStream = mContext.getContentResolver().openOutputStream(mPcapUri);
+        mOutputStream = mContext.getContentResolver().openOutputStream(mPcapUri, "rwt");
     }
 
     @Override
