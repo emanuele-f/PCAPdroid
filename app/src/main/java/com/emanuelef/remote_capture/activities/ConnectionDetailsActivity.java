@@ -55,14 +55,14 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private int mCurChunks;
     private boolean mListenerSet;
     private boolean mHasPayload;
-    private boolean mHasRequestTab;
-    private boolean mHasResponseTab;
+    private boolean mHasHttpTab;
+    private boolean mHasWsTab;
     private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
 
     private static final int POS_OVERVIEW = 0;
-    private static final int POS_REQUEST = 1;
-    private static final int POS_RESPONSE = 2;
-    private static final int POS_PAYLOAD = 3;
+    private static final int POS_WEBSOCKET = 1;
+    private static final int POS_HTTP = 2;
+    private static final int POS_RAW_PAYLOAD = 3;
 
     public interface ConnUpdateListener {
         void connectionUpdated();
@@ -134,12 +134,12 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             int pos = getVisibleTabsPositions()[position];
 
             switch (pos) {
-                case POS_REQUEST:
-                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.REQUEST_ONLY);
-                case POS_RESPONSE:
-                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.RESPONSE_ONLY);
-                case POS_PAYLOAD:
-                    return ConnectionPayload.newInstance(ConnectionPayload.Direction.BOTH);
+                case POS_WEBSOCKET:
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.WEBSOCKET);
+                case POS_HTTP:
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.HTTP);
+                case POS_RAW_PAYLOAD:
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.RAW);
                 case POS_OVERVIEW:
                 default:
                     return new ConnectionOverview();
@@ -147,18 +147,18 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         }
 
         @Override
-        public int getItemCount() {  return 1 + (mHasPayload ? 1 : 0) + (mHasRequestTab ? 1 : 0) + (mHasResponseTab ? 1 : 0);  }
+        public int getItemCount() {  return 1 + (mHasPayload ? 1 : 0) + (mHasHttpTab ? 1 : 0) + (mHasWsTab ? 1 : 0);  }
 
         public int getPageTitle(final int position) {
             int pos = getVisibleTabsPositions()[position];
 
             switch (pos) {
-                case POS_REQUEST:
-                    return R.string.request;
-                case POS_RESPONSE:
-                    return R.string.response;
-                case POS_PAYLOAD:
-                    return R.string.payload;
+                case POS_WEBSOCKET:
+                    return R.string.websocket;
+                case POS_HTTP:
+                    return R.string.http;
+                case POS_RAW_PAYLOAD:
+                    return R.string.raw_payload;
                 case POS_OVERVIEW:
                 default:
                     return R.string.overview;
@@ -171,12 +171,12 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
             visible[i++] = POS_OVERVIEW;
 
-            if(mHasRequestTab)
-                visible[i++] = POS_REQUEST;
-            if(mHasResponseTab)
-                visible[i++] = POS_RESPONSE;
+            if(mHasWsTab)
+                visible[i++] = POS_WEBSOCKET;
+            if(mHasHttpTab)
+                visible[i++] = POS_HTTP;
             if(mHasPayload)
-                visible[i] = POS_PAYLOAD;
+                visible[i] = POS_RAW_PAYLOAD;
 
             return visible;
         }
@@ -254,7 +254,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
     @SuppressLint("NotifyDataSetChanged")
     private void recheckTabs() {
-        if(mHasRequestTab && mHasResponseTab)
+        if(mHasHttpTab && mHasWsTab)
             return;
 
         int max_check = Math.min(mConn.getNumPayloadChunks(), MAX_CHUNKS_TO_CHECK);
@@ -268,14 +268,12 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         for(int i=mCurChunks; i<max_check; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
 
-            if((chunk.type == PayloadChunk.ChunkType.HTTP) || (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)) {
-                if(chunk.is_sent && !mHasRequestTab) {
-                    mHasRequestTab = true;
-                    changed = true;
-                } else if(!chunk.is_sent && !mHasResponseTab) {
-                    mHasResponseTab = true;
-                    changed = true;
-                }
+            if(!mHasHttpTab && (chunk.type == PayloadChunk.ChunkType.HTTP)) {
+                mHasHttpTab = true;
+                changed = true;
+            } else if (!mHasWsTab && (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)) {
+                mHasWsTab = true;
+                changed = true;
             }
         }
 

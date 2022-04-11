@@ -34,9 +34,8 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
-
-import java.io.Serializable;
 
 public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
     private ConnectionDetailsActivity mActivity;
@@ -45,16 +44,10 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     private TextView mTruncatedWarning;
     private int mCurChunks;
 
-    public enum Direction implements Serializable {
-        REQUEST_ONLY,
-        RESPONSE_ONLY,
-        BOTH
-    }
-
-    public static ConnectionPayload newInstance(Direction dir) {
+    public static ConnectionPayload newInstance(PayloadChunk.ChunkType mode) {
         ConnectionPayload fragment = new ConnectionPayload();
         Bundle args = new Bundle();
-        args.putSerializable("direction", dir);
+        args.putSerializable("mode", mode);
         fragment.setArguments(args);
         return fragment;
     }
@@ -83,11 +76,11 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
-        Direction dir;
-        if((args != null) && args.containsKey("direction"))
-            dir = (Direction) args.getSerializable("direction");
+        PayloadChunk.ChunkType mode;
+        if((args != null) && args.containsKey("mode"))
+            mode = (PayloadChunk.ChunkType) args.getSerializable("mode");
         else
-            dir = Direction.BOTH;
+            mode = PayloadChunk.ChunkType.RAW;
 
         EmptyRecyclerView recyclerView = view.findViewById(R.id.payload);
         EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
@@ -98,7 +91,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         if(mConn.isPayloadTruncated())
             mTruncatedWarning.setVisibility(View.VISIBLE);
 
-        mAdapter = new PayloadAdapter(requireContext(), mConn, dir);
+        mAdapter = new PayloadAdapter(requireContext(), mConn, mode);
         mCurChunks = mConn.getNumPayloadChunks();
         recyclerView.setAdapter(mAdapter);
     }

@@ -48,6 +48,7 @@ public class HTTPReassembly {
     private final ReassemblyListener mListener;
     private boolean mReassembleChunks;
     private boolean mInvalidHttp;
+    private boolean mIsTx;
 
     public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
         mListener = listener;
@@ -80,6 +81,10 @@ public class HTTPReassembly {
         void onChunkReassembled(PayloadChunk chunk);
     }
 
+    private void log_d(String msg) {
+        Log.d(TAG + "(" + (mIsTx ? "TX" : "RX") + ")", msg);
+    }
+
     /* The request/response tab shows reassembled HTTP chunks.
      * Reassembling chunks is requires when using a content-encoding like gzip since we can only
      * decode the data when we have the full chunk and we cannot determine data bounds.
@@ -89,6 +94,7 @@ public class HTTPReassembly {
         int body_start = 0;
         byte[] payload = chunk.payload;
         boolean chunked_complete = false;
+        mIsTx = chunk.is_sent;
 
         if(mReadingHeaders) {
             // Reading the HTTP headers
@@ -100,11 +106,11 @@ public class HTTPReassembly {
                 String line = reader.readLine();
                 while((line != null) && (line.length() > 0)) {
                     line = line.toLowerCase();
-                    //Log.d(TAG, "[HEADER] " + line);
+                    //log_d("[HEADER] " + line);
 
                     if(line.startsWith("content-encoding: ")) {
                         String contentEncoding = line.substring(18);
-                        Log.d(TAG, "Content-Encoding: " + contentEncoding);
+                        log_d("Content-Encoding: " + contentEncoding);
 
                         switch (contentEncoding) {
                             case "gzip":
@@ -121,17 +127,17 @@ public class HTTPReassembly {
                         }
                     } else if(line.startsWith("content-type: ")) {
                         String contentType = line.substring(14);
-                        Log.d(TAG, "Content-Type: " + contentType);
+                        log_d("Content-Type: " + contentType);
                     } else if(line.startsWith("content-length: ")) {
                         try {
                             int contentLength = Integer.parseInt(line.substring(16));
-                            Log.d(TAG, "Content-Length: " + contentLength);
+                            log_d("Content-Length: " + contentLength);
                         } catch (NumberFormatException ignored) {}
                     } else if(line.startsWith("upgrade: ")) {
-                        Log.d(TAG, "Upgrade found, stop parsing");
+                        log_d("Upgrade found, stop parsing");
                         mReassembleChunks = false;
                     } else if(line.equals("transfer-encoding: chunked")) {
-                        Log.d(TAG, "Detected chunked encoding");
+                        log_d("Detected chunked encoding");
                         mChunkedEncoding = true;
                     }
 
@@ -145,6 +151,8 @@ public class HTTPReassembly {
                 mHeaders.add(chunk.subchunk(0, body_start));
             } else {
                 if(mHeadersSize > MAX_HEADERS_SIZE) {
+                    log_d("Assuming not HTTP");
+
                     // Assume this is not valid HTTP traffic
                     mReadingHeaders = false;
                     mReassembleChunks = false;
@@ -159,8 +167,10 @@ public class HTTPReassembly {
 
         // If not Content-Length provided and not using chunked encoding, then we cannot determine
         // chunks bounds, so disable reassembly
-        if(!mReadingHeaders && (mContentLength < 0) && (!mChunkedEncoding))
+        if(!mReadingHeaders && (mContentLength < 0) && (!mChunkedEncoding) && mReassembleChunks) {
+            log_d("Cannot determine bounds, disable reassembly");
             mReassembleChunks = false;
+        }
 
         // When mReassembleChunks is false, each chunk should be passed to the mListener
         if(!mReassembleChunks)
@@ -181,7 +191,7 @@ public class HTTPReassembly {
                             body_start += line.length() + 2;
                             body_size -= line.length() + 2;
 
-                            Log.d(TAG, "Chunk length: " + mContentLength);
+                            log_d("Chunk length: " + mContentLength);
 
                             if(mContentLength == 0)
                                 chunked_complete = true;
@@ -193,6 +203,7 @@ public class HTTPReassembly {
             // NOTE: Content-Length is optional in HTTP/2.0, mitmproxy reconstructs the entire message
             if(body_size > 0) {
                 if(mContentLength > 0) {
+                    //log_d("body: " + body_size + " / " + mContentLength);
                     if(body_size < mContentLength)
                         mContentLength -= body_size;
                     else {
@@ -215,10 +226,13 @@ public class HTTPReassembly {
             if(chunked_complete || !mReassembleChunks)
                 mChunkedEncoding = false;
 
-            if(((mContentLength <= 0) || !mReassembleChunks) && !mChunkedEncoding) {
+            if(((mContentLength <= 0) || !mReassembleChunks)
+                    && !mChunkedEncoding) {
                 // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
                 PayloadChunk headers = reassembleChunks(mHeaders);
                 PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
+
+                //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
 
                 // Decode body
                 if((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
@@ -245,7 +259,7 @@ public class HTTPReassembly {
 
             if((new_body_start > 0) && (chunk.payload.length > new_body_start)) {
                 // Part of this chunk should be processed as a new chunk
-                Log.d(TAG, "Continue from " + new_body_start);
+                log_d("Continue from " + new_body_start);
                 handleChunk(chunk.subchunk(new_body_start, chunk.payload.length - new_body_start));
             }
         }
@@ -254,7 +268,7 @@ public class HTTPReassembly {
     private void decodeBody(PayloadChunk body) {
         InputStream inputStream = null;
 
-        //Log.d(TAG, "Decoding as " + mContentEncoding.name().toLowerCase());
+        //log_d("Decoding as " + mContentEncoding.name().toLowerCase());
 
         try(ByteArrayInputStream bis = new ByteArrayInputStream(body.payload)) {
             switch (mContentEncoding) {
@@ -282,7 +296,7 @@ public class HTTPReassembly {
                 }
             }
         } catch (IOException ignored) {
-            Log.d(TAG, mContentEncoding.name().toLowerCase() + " decoding failed");
+            log_d(mContentEncoding.name().toLowerCase() + " decoding failed");
             //ignored.printStackTrace();
         } finally {
             Utils.safeClose(inputStream);

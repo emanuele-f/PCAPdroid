@@ -299,7 +299,6 @@
     <string name="payload_mode_none">The connections payload will not be shown</string>
     <string name="payload_mode_minimal">Only the initial bytes of the payload will be shown</string>
     <string name="payload_mode_full">The full payload will be shown (e.g. the full HTTP request and response). This requires a lot of memory</string>
-    <string name="payload">Payload</string>
     <string name="connection">Connection</string>
     <string name="encrypted">Encrypted</string>
     <string name="cleartext">Cleartext</string>
@@ -310,4 +309,9 @@
     <string name="string_http_response">HTTP response</string>
     <string name="payload_visualization">Payload visualization</string>
     <string name="payload_truncated">Only a portion of the actual payload is shown, see \"%1$s\"</string>
+    <string name="websocket">WebSocket</string>
+    <string name="http">HTTP</string>
+    <string name="raw_payload">Raw</string>
+    <string name="tx_direction">TX</string>
+    <string name="rx_direction">RX</string>
 </resources>

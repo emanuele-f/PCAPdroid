@@ -34,7 +34,6 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.fragments.ConnectionPayload.Direction;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
@@ -56,19 +55,25 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final LayoutInflater mLayoutInflater;
     private final ConnectionDescriptor mConn;
     private final Context mContext;
-    private final Direction mDir;
+    private final ChunkType mMode;
     private int mHandledChunks;
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
-    private final HTTPReassembly mHttp;
+    private final HTTPReassembly mHttpReq;
+    private final HTTPReassembly mHttpRes;
 
-    public PayloadAdapter(Context context, ConnectionDescriptor conn, Direction dir) {
+    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mConn = conn;
         mContext = context;
-        mDir = dir;
+        mMode = mode;
 
         // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
-        mHttp = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL, this);
+        boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
+
+        // each direction must have its separate reassembly
+        mHttpReq = new HTTPReassembly(reassemble, this);
+        mHttpRes = new HTTPReassembly(reassemble, this);
+
         handleChunksAdded(mConn.getNumPayloadChunks());
     }
 
@@ -103,7 +108,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         private void makeText() {
             int dump_len = mIsExpanded ? mChunk.payload.length : Math.min(mChunk.payload.length, COLLAPSE_CHUNK_SIZE);
 
-            if(isPayloadTab())
+            if(mMode == ChunkType.RAW)
                 mTheText = Utils.hexdump(mChunk.payload, 0, dump_len);
             else
                 mTheText = new String(mChunk.payload, 0, dump_len, StandardCharsets.UTF_8);
@@ -203,40 +208,38 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
             if(page.adaptChunk.isExpanded()) {
                 int numPages = page.adaptChunk.getNumPages();
+                int firstPagePos = pos - (numPages - 1);
                 page.adaptChunk.collapse();
-                notifyItemRangeRemoved(pos - (numPages - 1), numPages - 1);
+                notifyItemChanged(firstPagePos);
+                notifyItemRangeRemoved(firstPagePos + 1, numPages - 1);
             } else {
                 page.adaptChunk.expand();
+                notifyItemChanged(pos);
                 notifyItemRangeInserted(pos + 1, page.adaptChunk.getNumPages() - 1);
             }
-
-            notifyItemChanged(pos);
         });
 
         return holder;
     }
 
+    private String getHeaderTag(PayloadChunk chunk) {
+        if(mMode == ChunkType.HTTP)
+            return (chunk.is_sent) ? mContext.getString(R.string.request) : mContext.getString(R.string.response);
+        else
+            return chunk.is_sent ? mContext.getString(R.string.tx_direction) : mContext.getString(R.string.rx_direction);
+    }
+
     @Override
     public void onBindViewHolder(@NonNull PayloadViewHolder holder, int position) {
         Page page = getItem(position);
-        Locale locale = Utils.getPrimaryLocale(mContext);
-        String prefix = "";
         PayloadChunk chunk = page.adaptChunk.getPayloadChunk();
 
         if(page.isFirst()) {
-            // Show the header for the first page
-            if(!isPayloadTab()) {
-                // NOTE: do not add the prefix in the "Payload" tab, as the chunk is not analyzed by the
-                // HTTPReassembly
-                if(chunk.type == ChunkType.HTTP)
-                    prefix = "HTTP_";
-                else if(chunk.type == ChunkType.WEBSOCKET)
-                    prefix = "WS_";
-            }
+            Locale locale = Utils.getPrimaryLocale(mContext);
 
             holder.header.setText(String.format(locale,
-                    "#%d [%s%s] %s — %s", page.adaptChunk.originalPos + 1,
-                    prefix, chunk.is_sent ? "TX" : "RX",
+                    "#%d [%s] %s — %s", page.adaptChunk.originalPos + 1,
+                    getHeaderTag(chunk),
                     (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
                     Utils.formatBytes(chunk.payload.length)));
             holder.header.setVisibility(View.VISIBLE);
@@ -295,24 +298,24 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         return mChunks.get(i).getPage(pageIdx);
     }
 
-    private boolean isPayloadTab() {
-        return(mDir == Direction.BOTH);
-    }
-
     public void handleChunksAdded(int tot_chunks) {
         for(int i = mHandledChunks; i<tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
 
-            if((mDir == Direction.BOTH) ||
-                    (mDir == Direction.REQUEST_ONLY && chunk.is_sent) ||
-                    (mDir == Direction.RESPONSE_ONLY && !chunk.is_sent)) {
-                if(!isPayloadTab() && (chunk.type == ChunkType.HTTP))
-                    mHttp.handleChunk(chunk); // will call onChunkReassembled
-                else {
-                    int insert_pos = getItemCount();
-                    mChunks.add(new AdapterChunk(chunk, mChunks.size()));
-                    notifyItemInserted(insert_pos);
-                }
+            // Exclude unrelated chunks
+            if((mMode != ChunkType.RAW) && (mMode != chunk.type))
+                continue;
+
+            if(mMode == ChunkType.HTTP) {
+                // will call onChunkReassembled
+                if(chunk.is_sent)
+                    mHttpReq.handleChunk(chunk);
+                else
+                    mHttpRes.handleChunk(chunk);
+            } else {
+                int insert_pos = getItemCount();
+                mChunks.add(new AdapterChunk(chunk, mChunks.size()));
+                notifyItemInserted(insert_pos);
             }
         }
 

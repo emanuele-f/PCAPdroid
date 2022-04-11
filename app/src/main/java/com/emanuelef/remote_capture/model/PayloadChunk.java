@@ -28,7 +28,8 @@ public class PayloadChunk implements Serializable {
     public long timestamp;
     public ChunkType type;
 
-    public enum ChunkType {
+    // Serializable need in ConnectionPayload fragment
+    public enum ChunkType implements Serializable {
         RAW,
         HTTP,
         WEBSOCKET
