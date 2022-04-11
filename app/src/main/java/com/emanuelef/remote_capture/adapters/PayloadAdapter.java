@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -38,6 +40,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.google.android.material.button.MaterialButton;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -50,6 +53,7 @@ import java.util.Locale;
  * Since the text of a chunk can be very long (hundreds of KB) and rendering it would freeze the UI,
  * it is split into pages of VISUAL_PAGE_SIZE. */
 public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadViewHolder> implements HTTPReassembly.ReassemblyListener {
+    private static final String TAG = "PayloadAdapter";
     public static final int COLLAPSE_CHUNK_SIZE = 1500;
     public static final int VISUAL_PAGE_SIZE = 4020; // must be a multiple of 67 to avoid splitting the hexdump
     private final LayoutInflater mLayoutInflater;
@@ -57,12 +61,15 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final Context mContext;
     private final ChunkType mMode;
     private int mHandledChunks;
+    private AdapterChunk mUnmatchedHttpReq = null;
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
+    private final LinearLayoutManager mLinearLayout;
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
 
-    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode) {
+    public PayloadAdapter(Context context, LinearLayoutManager linearLayout, ConnectionDescriptor conn, ChunkType mode) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mLinearLayout = linearLayout;
         mConn = conn;
         mContext = context;
         mMode = mode;
@@ -83,6 +90,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         private boolean mIsExpanded;
         private int mNumPages = 1;
         public final int originalPos;
+        public AdapterChunk peer = null;
 
         AdapterChunk(PayloadChunk _chunk, int pos) {
             mChunk = _chunk;
@@ -186,6 +194,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         TextView header;
         TextView dump;
         ImageView expandButton;
+        MaterialButton jumpToReply;
 
         public PayloadViewHolder(View view) {
             super(view);
@@ -193,6 +202,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             header = view.findViewById(R.id.header);
             dump = view.findViewById(R.id.dump);
             expandButton = view.findViewById(R.id.expand_button);
+            jumpToReply = view.findViewById(R.id.jumpToReply);
         }
     }
 
@@ -217,6 +227,16 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
                 notifyItemChanged(pos);
                 notifyItemRangeInserted(pos + 1, page.adaptChunk.getNumPages() - 1);
             }
+        });
+
+        holder.jumpToReply.setOnClickListener(v -> {
+            int pos = holder.getAbsoluteAdapterPosition();
+            Page page = getItem(pos);
+            assert(page.adaptChunk.peer != null);
+
+            int jumpPos = getAdapterPosition(page.adaptChunk.peer);
+            Log.d(TAG, "jump to " + jumpPos + " (orig_pos=" + page.adaptChunk.peer.originalPos + ")");
+            mLinearLayout.scrollToPosition(jumpPos);
         });
 
         return holder;
@@ -251,6 +271,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             holder.expandButton.setRotation(page.adaptChunk.isExpanded() ? 180 : 0);
         } else
             holder.expandButton.setVisibility(View.GONE);
+
+        holder.jumpToReply.setVisibility((page.adaptChunk.peer != null) ? View.VISIBLE : View.GONE);
 
         holder.dump.setText(page.getText());
 
@@ -298,6 +320,21 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         return mChunks.get(i).getPage(pageIdx);
     }
 
+    private int getAdapterPosition(AdapterChunk chunk) {
+        int i;
+        int count = 0;
+
+        for(i=0; i < mChunks.size(); i++) {
+            AdapterChunk aChunk = mChunks.get(i);
+            if(aChunk == chunk)
+                break;
+
+            count += aChunk.getNumPages();
+        }
+
+        return count;
+    }
+
     public void handleChunksAdded(int tot_chunks) {
         for(int i = mHandledChunks; i<tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
@@ -324,8 +361,29 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
     @Override
     public void onChunkReassembled(PayloadChunk chunk) {
+        AdapterChunk adapterChunk = new AdapterChunk(chunk, mChunks.size());
+
+        if(!chunk.is_sent && (mUnmatchedHttpReq != null)) {
+            // HTTP reply
+            adapterChunk.peer = mUnmatchedHttpReq;
+            mUnmatchedHttpReq.peer = adapterChunk;
+            notifyItemChanged(getAdapterPosition(mUnmatchedHttpReq));
+            mUnmatchedHttpReq = null;
+
+            // Possibly find next un-replied HTTP request
+            for(int i=adapterChunk.peer.originalPos + 1; i<mChunks.size(); i++) {
+                AdapterChunk cur = mChunks.get(i);
+
+                if(cur.mChunk.is_sent) {
+                    mUnmatchedHttpReq = cur;
+                    break;
+                }
+            }
+        } else if((chunk.is_sent) && (mUnmatchedHttpReq == null))
+            mUnmatchedHttpReq = adapterChunk;
+
         int insert_pos = getItemCount();
-        mChunks.add(new AdapterChunk(chunk, mChunks.size()));
+        mChunks.add(adapterChunk);
         notifyItemInserted(insert_pos);
     }
 }

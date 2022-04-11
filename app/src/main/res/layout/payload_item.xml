@@ -3,19 +3,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:paddingHorizontal="3sp"
-    android:paddingVertical="10dp">
+    android:paddingVertical="8dp">
 
-    <TextView
-        android:id="@+id/header"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="monospace"
-        android:textSize="11sp"
-        android:layout_marginBottom="12dp"
-        android:textStyle="bold"
-        tools:text="#1 [TX] 11:02:03.154 — 120 B" />
+        android:gravity="center_vertical"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="monospace"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:text="#1 [TX] 11:02:03.154 — 120 B" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/jumpToReply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingVertical="0dp"
+            android:paddingHorizontal="0dp"
+            android:padding="4dp"
+            app:icon="@drawable/ic_subdirectory_arrow_left"
+            app:iconTint="@color/colorTabText" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/dump"
