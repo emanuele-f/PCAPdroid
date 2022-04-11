@@ -73,6 +73,7 @@ typedef struct {
     struct ndpi_flow_struct *ndpi_flow;
     struct ndpi_id_struct *src_id, *dst_id;
     uint16_t l7proto;
+    uint16_t alpn;
 
     union {
         struct {
@@ -359,7 +360,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
 void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
-const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto);
+const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, int ipproto);
 
 // Utility
 const char* get_cache_path(pcapdroid_t *pd, const char *subpath);
@@ -381,7 +382,8 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 // Internals
 struct pcapdroid_trailer;
 void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, pd_conn_t *conn);
-void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 #endif //__PCAPDROID_H__

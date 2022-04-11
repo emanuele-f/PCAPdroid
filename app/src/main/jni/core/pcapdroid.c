@@ -215,7 +215,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
         return(NULL);
 
     // needed by pd_get_proto_name
-    init_protocols_bitmask(&masterProtos);
+    init_ndpi_protocols_bitmask(&masterProtos);
 
 #ifndef FUZZING
     // enable all the protocols
@@ -231,6 +231,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
 #endif
 
     ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
+
     ndpi_finalize_initialization(ndpi);
 
 #ifdef FUZZING
@@ -242,10 +243,24 @@ struct ndpi_detection_module_struct* init_ndpi() {
 
 /* ******************************************************* */
 
-const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto) {
+const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, int ipproto) {
     if(proto == NDPI_PROTOCOL_UNKNOWN) {
         // Return the L3 protocol
         return zdtun_proto2str(ipproto);
+    }
+
+    if(proto == NDPI_PROTOCOL_TLS) {
+        switch (alpn) {
+            case NDPI_PROTOCOL_HTTP:
+                return "HTTPS";
+            case NDPI_PROTOCOL_MAIL_IMAP:
+                return "IMAPS";
+            case NDPI_PROTOCOL_MAIL_SMTP:
+                return "SMTPS";
+            default:
+                // go on
+                break;
+        }
     }
 
     return ndpi_get_proto_name(pd->ndpi, proto);
@@ -438,6 +453,23 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
 
     switch(data->l7proto) {
         case NDPI_PROTOCOL_TLS:
+            // ALPN extension in client hello (https://datatracker.ietf.org/doc/html/rfc7301)
+            if(!data->alpn && data->ndpi_flow->protos.tls_quic.alpn) {
+                if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "http/")) {
+                    data->alpn = NDPI_PROTOCOL_HTTP;
+                    data->update_type |= CONN_UPDATE_INFO;
+                } else if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "imap")) {
+                    data->alpn = NDPI_PROTOCOL_MAIL_IMAP;
+                    data->update_type |= CONN_UPDATE_INFO;
+                } else if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "stmp")) {
+                    data->alpn = NDPI_PROTOCOL_MAIL_SMTP;
+                    data->update_type |= CONN_UPDATE_INFO;
+                } else {
+                    log_d("Unknown ALPN: %s", data->ndpi_flow->protos.tls_quic.alpn);
+                    data->alpn = NDPI_PROTOCOL_TLS; // mark to avoid port-based guessing
+                }
+            }
+            /* fallthrough */
         case NDPI_PROTOCOL_DNS:
             if(data->ndpi_flow->host_server_name[0])
                 found_info = (char*)data->ndpi_flow->host_server_name;
@@ -481,7 +513,8 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
 
-    log_d("nDPI completed[ipver=%d, proto=%d] -> l7proto: %d",
+    log_d("nDPI completed[pkts=%d, ipver=%d, proto=%d] -> l7proto: %d",
+                data->sent_pkts + data->rcvd_pkts,
                 tuple->ipver, tuple->ipproto, data->l7proto);
 
     process_ndpi_data(pd, tuple, data);
@@ -638,6 +671,23 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
             next_connections_dump += NETD_RESOLVE_DELAY_MS;
         }
         netd_resolve_waiting++;
+    }
+
+    if(!data->ndpi_flow) {
+        // nDPI detection complete
+        if((data->l7proto == NDPI_PROTOCOL_TLS) && (!data->alpn)) {
+            if(ntohs(pctx->tuple->dst_port) == 443)
+                data->alpn = NDPI_PROTOCOL_HTTP; // assume HTTPS
+            else if(data->info && !strncmp(data->info, "imap.", 5))
+                data->alpn = NDPI_PROTOCOL_MAIL_IMAP; // assume IMAPS
+            else if(data->info && !strncmp(data->info, "smtp.", 5))
+                data->alpn = NDPI_PROTOCOL_MAIL_SMTP; // assume SMTPS
+
+            if(data->alpn) {
+                data->update_type |= CONN_UPDATE_INFO;
+                pd_notify_connection_update(pd, pctx->tuple, data);
+            }
+        }
     }
 }
 

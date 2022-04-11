@@ -159,7 +159,7 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     if(data->update_type & CONN_UPDATE_INFO) {
         jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
         jobject url = (*env)->NewStringUTF(env, data->url ? data->url : "");
-        jobject l7proto = (*env)->NewStringUTF(env, pd_get_proto_name(pd, data->l7proto,
+        jobject l7proto = (*env)->NewStringUTF(env, pd_get_proto_name(pd, data->l7proto, data->alpn,
                                                                       conn->tuple.ipproto));
         int flags = data->encrypted_l7;
 

@@ -5,7 +5,7 @@ add_library(capture SHARED
         capture_vpn.c
         capture_root.c
         ip_lru.c
-        ndpi_master_protos.c
+        ndpi_config.c
         crc32.c
         blacklist.c
         pcap_utils.c
