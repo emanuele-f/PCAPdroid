@@ -674,7 +674,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             boolean error = true;
 
             try {
-                OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname);
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname, "rwt");
 
                 if(stream != null) {
                     stream.write(dump.getBytes());

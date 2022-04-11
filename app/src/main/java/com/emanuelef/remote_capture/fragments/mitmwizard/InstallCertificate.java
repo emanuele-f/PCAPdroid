@@ -148,7 +148,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
             Uri cert_uri = result.getData().getData();
             boolean written = false;
 
-            try(PrintWriter writer = new PrintWriter(ctx.getContentResolver().openOutputStream(cert_uri))) {
+            try(PrintWriter writer = new PrintWriter(ctx.getContentResolver().openOutputStream(cert_uri, "rwt"))) {
                 writer.print(mCaPem);
                 written = true;
             } catch (IOException e) {

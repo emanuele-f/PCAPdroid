@@ -732,7 +732,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void exportSslkeylogfile(Uri export_uri, @Nullable byte[] sslkeylog) {
-        try(OutputStream out = getContentResolver().openOutputStream(export_uri)) {
+        try(OutputStream out = getContentResolver().openOutputStream(export_uri, "rwt")) {
             out.write(sslkeylog);
             Utils.showToast(this, R.string.save_ok);
         } catch (IOException e) {
