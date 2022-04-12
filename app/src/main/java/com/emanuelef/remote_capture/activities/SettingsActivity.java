@@ -84,6 +84,7 @@ public class SettingsActivity extends BaseActivity {
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private SwitchPreference mSocks5Enabled;
         private SwitchPreference mTlsDecryption;
+        private SwitchPreference mFullPayloadEnabled;
         private SwitchPreference mRootCaptureEnabled;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
@@ -110,6 +111,7 @@ public class SettingsActivity extends BaseActivity {
             setupSecurityPrefs();
             setupOtherPrefs();
 
+            fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
             rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
 
@@ -223,9 +225,13 @@ public class SettingsActivity extends BaseActivity {
                     return false;
                 }
 
+                fullPayloadHideShow((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked());
                 return true;
             });
+
+            mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
+
             mSocks5Enabled = requirePreference(Prefs.PREF_SOCKS5_ENABLED_KEY);
             mSocks5Enabled.setOnPreferenceChangeListener((preference, newValue) -> {
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), (boolean)newValue);
@@ -247,6 +253,10 @@ public class SettingsActivity extends BaseActivity {
             mSocks5ProxyPort = requirePreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
             mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+        }
+
+        private void fullPayloadHideShow(boolean tlsDecryption) {
+            mFullPayloadEnabled.setVisible(!tlsDecryption);
         }
 
         private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled) {

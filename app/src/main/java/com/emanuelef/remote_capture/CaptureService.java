@@ -791,13 +791,13 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static Prefs.PayloadMode getCurPayloadMode() {
         if(INSTANCE == null)
-            return Prefs.PayloadMode.NONE;
+            return Prefs.PayloadMode.MINIMAL;
 
         // With TLS decryption, payload mode is always "full"
         if(INSTANCE.mSettings.tls_decryption)
             return Prefs.PayloadMode.FULL;
 
-        return INSTANCE.mSettings.payload_mode;
+        return INSTANCE.mSettings.full_payload ? Prefs.PayloadMode.FULL : Prefs.PayloadMode.MINIMAL;
     }
 
     public static void requestBlacklistsUpdate() {
@@ -964,7 +964,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getMaxDumpSize() {  return mSettings.max_dump_size; }
 
-    public int getPayloadMode() { return mSettings.payload_mode.ordinal(); }
+    public int getPayloadMode() { return getCurPayloadMode().ordinal(); }
 
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);

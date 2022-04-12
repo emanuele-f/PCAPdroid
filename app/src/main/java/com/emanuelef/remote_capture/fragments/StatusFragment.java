@@ -37,8 +37,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,7 +49,6 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
-import com.emanuelef.remote_capture.adapters.PrefSpinnerAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -59,7 +56,6 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
@@ -87,7 +83,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private String mAppFilter;
     private TextView mEmptyAppsView;
     private TextView mFilterWarning;
-    private Spinner mPayloadMode;
     AppsListView mOpenAppsList;
 
     @Override
@@ -116,9 +111,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 processStatsUpdateIntent(intent);
             }
         };
-
-        // With TLS decryption, payload mode is always "full"
-        mPayloadMode.setVisibility(Prefs.getTlsDecryptionEnabled(mPrefs) ? View.GONE : View.VISIBLE);
 
         LocalBroadcastManager.getInstance(requireContext())
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
@@ -152,15 +144,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mFilterWarning = view.findViewById(R.id.app_filter_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
-        mPayloadMode = view.findViewById(R.id.payload_mode);
 
         PrefSpinner.init(view.findViewById(R.id.dump_mode_spinner),
                 R.array.pcap_dump_modes, R.array.pcap_dump_modes_labels, R.array.pcap_dump_modes_descriptions,
                 Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE);
-
-        PrefSpinner.init(mPayloadMode,
-                R.array.payload_modes, R.array.payload_modes_labels, R.array.payload_modes_descriptions,
-                Prefs.PREF_PAYLOAD_MODE, Prefs.DEFAULT_PAYLOAD_MODE);
 
         mAppFilterSwitch = view.findViewById(R.id.app_filter_switch);
         View filterRow = view.findViewById(R.id.app_filter_text);

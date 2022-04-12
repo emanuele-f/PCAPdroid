@@ -62,7 +62,7 @@ public class Prefs {
     public static final String PREF_MAX_DUMP_SIZE = "max_dump_size";
     public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
     public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
-    public static final String PREF_PAYLOAD_MODE = "payload_mode";
+    public static final String PREF_FULL_PAYLOAD = "full_payload";
 
     public enum DumpMode {
         NONE,
@@ -116,5 +116,5 @@ public class Prefs {
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
-    public static PayloadMode getPayloadMode(SharedPreferences p) { return(getPayloadMode(p.getString(PREF_PAYLOAD_MODE, "minimal")));}
+    public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
 }

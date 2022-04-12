@@ -291,14 +291,6 @@
     <string name="upgrade_action">Upgrade</string>
     <string name="export_sslkeylog">Export SSL keylog</string>
     <string name="export_failed">Export failed</string>
-    <string name="connections_payload">Payload</string>
-    <string name="no_payload">No payload</string>
-    <string name="minimal_payload">Short payload</string>
-    <string name="full_payload">Full payload</string>
-    <string name="full">Full</string>
-    <string name="payload_mode_none">The connections payload will not be shown</string>
-    <string name="payload_mode_minimal">Only the initial bytes of the payload will be shown</string>
-    <string name="payload_mode_full">The full payload will be shown (e.g. the full HTTP request and response). This requires a lot of memory</string>
     <string name="connection">Connection</string>
     <string name="encrypted">Encrypted</string>
     <string name="cleartext">Cleartext</string>
@@ -307,11 +299,12 @@
     <string name="overview">Overview</string>
     <string name="string_http_request">HTTP request</string>
     <string name="string_http_response">HTTP response</string>
-    <string name="payload_visualization">Payload visualization</string>
-    <string name="payload_truncated">Only a portion of the actual payload is shown, see \"%1$s\"</string>
+    <string name="payload_truncated">Payload is truncated. Enable \"%1$s\" to show it in full</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="raw_payload">Raw</string>
     <string name="tx_direction">TX</string>
     <string name="rx_direction">RX</string>
+    <string name="full_payload">Full payload</string>
+    <string name="full_payload_summary">Show the full connections payload (e.g. the full HTTP request and response). This requires a lot of memory, don\'t use in the long run</string>
 </resources>

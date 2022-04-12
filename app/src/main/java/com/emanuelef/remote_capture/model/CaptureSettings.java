@@ -8,7 +8,6 @@ import java.io.Serializable;
 
 public class CaptureSettings implements Serializable {
     public Prefs.DumpMode dump_mode;
-    public Prefs.PayloadMode payload_mode;
     public String app_filter;
     public String collector_address;
     public int collector_port;
@@ -20,6 +19,7 @@ public class CaptureSettings implements Serializable {
     public boolean ipv6_enabled;
     public boolean root_capture;
     public boolean pcapdroid_trailer;
+    public boolean full_payload;
     public String capture_interface;
     public String pcap_uri;
     public int snaplen = 0;
@@ -41,7 +41,7 @@ public class CaptureSettings implements Serializable {
         capture_interface = Prefs.getCaptureInterface(prefs);
         pcap_uri = Prefs.getPCAPUri(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
-        payload_mode = Prefs.getPayloadMode(prefs);
+        full_payload = Prefs.getFullPayloadMode(prefs);
     }
 
     public CaptureSettings(Intent intent) {
@@ -62,7 +62,7 @@ public class CaptureSettings implements Serializable {
         max_pkts_per_flow = getInt(intent, Prefs.PREF_MAX_PKTS_PER_FLOW, 0);
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
         tls_decryption = getBool(intent, Prefs.PREF_TLS_DECRYPTION_KEY, false);
-        payload_mode = Prefs.getPayloadMode(getString(intent, Prefs.PREF_PAYLOAD_MODE, "minimal"));
+        full_payload = false;
     }
 
     private static String getString(Intent intent, String key, String def_value) {

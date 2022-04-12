@@ -87,7 +87,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         recyclerView.setLayoutManager(layoutMan);
 
         mTruncatedWarning = view.findViewById(R.id.truncated_warning);
-        mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.minimal_payload)));
+        mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.full_payload)));
         if(mConn.isPayloadTruncated())
             mTruncatedWarning.setVisibility(View.VISIBLE);
 

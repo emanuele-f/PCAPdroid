@@ -53,6 +53,13 @@
             app:defaultValue="false" />
 
         <SwitchPreference
+            app:key="full_payload"
+            app:title="@string/full_payload"
+            app:iconSpaceReserved="false"
+            app:summary="@string/full_payload_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
             app:key="socks5_enabled"
             app:title="@string/socks5_proxy"
             app:iconSpaceReserved="false"
