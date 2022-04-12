@@ -272,7 +272,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         } else
             holder.expandButton.setVisibility(View.GONE);
 
-        holder.jumpToReply.setVisibility((page.adaptChunk.peer != null) ? View.VISIBLE : View.GONE);
+        holder.jumpToReply.setVisibility((page.isFirst() && (page.adaptChunk.peer != null)) ? View.VISIBLE : View.GONE);
 
         holder.dump.setText(page.getText());
 

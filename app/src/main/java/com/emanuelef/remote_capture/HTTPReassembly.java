@@ -130,8 +130,8 @@ public class HTTPReassembly {
                         log_d("Content-Type: " + contentType);
                     } else if(line.startsWith("content-length: ")) {
                         try {
-                            int contentLength = Integer.parseInt(line.substring(16));
-                            log_d("Content-Length: " + contentLength);
+                            mContentLength = Integer.parseInt(line.substring(16));
+                            log_d("Content-Length: " + mContentLength);
                         } catch (NumberFormatException ignored) {}
                     } else if(line.startsWith("upgrade: ")) {
                         log_d("Upgrade found, stop parsing");
