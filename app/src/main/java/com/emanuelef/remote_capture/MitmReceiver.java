@@ -34,7 +34,6 @@ import com.emanuelef.remote_capture.interfaces.SslkeylogDumpListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
-import com.emanuelef.remote_capture.model.Prefs.PayloadMode;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +58,6 @@ import java.util.StringTokenizer;
  */
 public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
-    public static final int MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE = 512; // sync with pcapdroid.h
     public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
     private Thread mThread;
     private final ConnectionsRegister mReg;
@@ -229,25 +227,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     }
 
     private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long now) {
-        boolean is_sent = isSent(pType);
-
-        // NOTE: keep logic in sync with pcapdroid.c:process_payload
-        if(CaptureService.getCurPayloadMode() == PayloadMode.MINIMAL) {
-            // Check if the payload limit was reached
-            if(conn.getNumPayloadChunks() >= 2)
-                return;
-
-            PayloadChunk first_chunk = conn.getPayloadChunk(0);
-            if((first_chunk != null) && (first_chunk.is_sent == is_sent))
-                return;
-
-            if(payload.length > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE) {
-                byte[] data = new byte[MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE];
-                System.arraycopy(payload, 0, data, 0, MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE);
-                payload = data;
-            }
-        }
-
         // NOTE: we are possibly accessing the conn concurrently
         if(pType == PayloadType.TLS_ERROR) {
             conn.tls_error = new String(payload, StandardCharsets.US_ASCII);
@@ -256,7 +235,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         } else
-            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), is_sent, now));
+            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), isSent(pType), now));
     }
 
     private synchronized void addPendingPayload(PendingPayload pending) {

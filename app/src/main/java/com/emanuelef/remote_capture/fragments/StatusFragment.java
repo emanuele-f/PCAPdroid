@@ -87,6 +87,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private String mAppFilter;
     private TextView mEmptyAppsView;
     private TextView mFilterWarning;
+    private Spinner mPayloadMode;
     AppsListView mOpenAppsList;
 
     @Override
@@ -115,6 +116,9 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 processStatsUpdateIntent(intent);
             }
         };
+
+        // With TLS decryption, payload mode is always "full"
+        mPayloadMode.setVisibility(Prefs.getTlsDecryptionEnabled(mPrefs) ? View.GONE : View.VISIBLE);
 
         LocalBroadcastManager.getInstance(requireContext())
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
@@ -148,12 +152,13 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mFilterWarning = view.findViewById(R.id.app_filter_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
+        mPayloadMode = view.findViewById(R.id.payload_mode);
 
         PrefSpinner.init(view.findViewById(R.id.dump_mode_spinner),
                 R.array.pcap_dump_modes, R.array.pcap_dump_modes_labels, R.array.pcap_dump_modes_descriptions,
                 Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE);
 
-        PrefSpinner.init(view.findViewById(R.id.payload_mode),
+        PrefSpinner.init(mPayloadMode,
                 R.array.payload_modes, R.array.payload_modes_labels, R.array.payload_modes_descriptions,
                 Prefs.PREF_PAYLOAD_MODE, Prefs.DEFAULT_PAYLOAD_MODE);
 
@@ -270,7 +275,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
-private void refreshPcapDumpInfo() {
+    private void refreshPcapDumpInfo() {
         String info = "";
 
         Prefs.DumpMode mode = CaptureService.getDumpMode();

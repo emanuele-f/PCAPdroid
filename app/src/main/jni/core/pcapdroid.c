@@ -535,7 +535,6 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
        (pd->tls_decryption_enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
         return;
 
-    // NOTE: keep logic in sync with MitmReceiver
     if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
         int to_dump = pkt->l7_len;
 

@@ -790,7 +790,14 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public static Prefs.PayloadMode getCurPayloadMode() {
-        return((INSTANCE != null) ? INSTANCE.mSettings.payload_mode : Prefs.PayloadMode.NONE);
+        if(INSTANCE == null)
+            return Prefs.PayloadMode.NONE;
+
+        // With TLS decryption, payload mode is always "full"
+        if(INSTANCE.mSettings.tls_decryption)
+            return Prefs.PayloadMode.FULL;
+
+        return INSTANCE.mSettings.payload_mode;
     }
 
     public static void requestBlacklistsUpdate() {
