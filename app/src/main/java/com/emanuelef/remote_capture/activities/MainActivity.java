@@ -495,11 +495,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mPcapFname = null;
         boolean hasPermission = false;
 
+        /* FLAG_GRANT_READ_URI_PERMISSION required for showPcapActionDialog (e.g. when auto-started at boot) */
+        int peristMode = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+
         // Revoke the previous permissions
         for(UriPermission permission : getContentResolver().getPersistedUriPermissions()) {
             if(!permission.getUri().equals(uri)) {
                 Log.d(TAG, "Releasing URI permission: " + permission.getUri().toString());
-                getContentResolver().releasePersistableUriPermission(permission.getUri(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().releasePersistableUriPermission(permission.getUri(), peristMode);
             } else
                 hasPermission = true;
         }
@@ -509,7 +512,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
          * or when starting the capture at boot. */
         if(persistable && !hasPermission) {
             try {
-                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().takePersistableUriPermission(uri, peristMode);
             } catch (SecurityException e) {
                 // This should never occur
                 Log.e(TAG, "Could not get PersistableUriPermission");
