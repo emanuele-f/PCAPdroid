@@ -224,7 +224,7 @@ public class MitmAddon {
 
     // Start the mitm proxy and returns a ParcelFileDescriptor for the data communication.
     // The proxy can be stopped by closing the descriptor and then calling disconnect().
-    public ParcelFileDescriptor startProxy(int port) {
+    public ParcelFileDescriptor startProxy(int port, String proxyAuth) {
         if(mService == null) {
             Log.e(TAG, "Not connected");
             return null;
@@ -240,6 +240,7 @@ public class MitmAddon {
 
         MitmAPI.MitmConfig conf = new MitmAPI.MitmConfig();
         conf.proxyPort = port;
+        conf.proxyAuth = proxyAuth;
 
         /* upstream certificate verification is disabled because the app does not provide a way to let the user
            accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in

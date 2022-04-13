@@ -431,6 +431,9 @@ int run_vpn(pcapdroid_t *pd) {
         zdtun_ip_t dnatip = {0};
         dnatip.ip4 = pd->socks5.proxy_ip;
         zdtun_set_socks5_proxy(zdt, &dnatip, pd->socks5.proxy_port, 4);
+
+        if(pd->socks5.proxy_user[0] && pd->socks5.proxy_pass[0])
+            zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);
     }
 
     zdtun_ip_t ip = {0};

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -109,6 +109,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -1070,5 +1071,16 @@ public class Utils {
                 return i+4;
         }
         return 0;
+    }
+
+    public static String genRandomString(int length) {
+        String charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder(length);
+        Random rnd = new Random();
+
+        for(int i = 0; i < length; i++)
+            sb.append(charset.charAt(rnd.nextInt(charset.length())));
+
+        return sb.toString();
     }
 }

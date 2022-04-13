@@ -61,6 +61,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final ConnectionsRegister mReg;
     private final Context mContext;
     private final MitmAddon mAddon;
+    private final String mProxyAuth;
     private ParcelFileDescriptor mSocketFd;
     private SslkeylogDumpListener mSslkeylogListener;
 
@@ -95,10 +96,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    public MitmReceiver(Context ctx) {
+    public MitmReceiver(Context ctx, String proxyAuth) {
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
+        mProxyAuth = proxyAuth;
     }
 
     public boolean start() throws IOException {
@@ -342,7 +344,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
 
         // Certificate installation verified, start the proxy
-        mSocketFd = mAddon.startProxy(TLS_DECRYPTION_PROXY_PORT);
+        mSocketFd = mAddon.startProxy(TLS_DECRYPTION_PROXY_PORT, mProxyAuth);
         if(mSocketFd == null) {
             mAddon.disconnect();
             return;

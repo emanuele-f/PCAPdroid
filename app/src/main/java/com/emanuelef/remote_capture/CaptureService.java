@@ -132,6 +132,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mSocks5Enabled;
     private String mSocks5Address;
     private int mSocks5Port;
+    private String mSocks5Auth;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -318,8 +319,9 @@ public class CaptureService extends VpnService implements Runnable {
                 // Built-in decryption
                 mSocks5Address = "127.0.0.1";
                 mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
+                mSocks5Auth = Utils.genRandomString(8) + ":" + Utils.genRandomString(8);
 
-                mMitmReceiver = new MitmReceiver(this);
+                mMitmReceiver = new MitmReceiver(this, mSocks5Auth);
                 try {
                     if(!mMitmReceiver.start())
                         return abortStart();
@@ -331,6 +333,7 @@ public class CaptureService extends VpnService implements Runnable {
                 // SOCKS5 proxy
                 mSocks5Address = mSettings.socks5_proxy_address;
                 mSocks5Port = mSettings.socks5_proxy_port;
+                mSocks5Auth = null;
             }
         }
 
@@ -943,6 +946,8 @@ public class CaptureService extends VpnService implements Runnable {
     public String getSocks5ProxyAddress() {  return(mSocks5Address); }
 
     public int getSocks5ProxyPort() {  return(mSocks5Port);  }
+
+    public String getSocks5ProxyAuth() {  return(mSocks5Auth);  }
 
     public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
 

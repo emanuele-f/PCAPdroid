@@ -232,6 +232,8 @@ typedef struct pcapdroid {
         bool enabled;
         u_int32_t proxy_ip;
         u_int32_t proxy_port;
+        char proxy_user[32];
+        char proxy_pass[32];
     } socks5;
 
     struct {

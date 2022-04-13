@@ -453,6 +453,25 @@ static void getLibprogPath(pcapdroid_t *pd, const char *prog_name, char *buf, in
 
 /* ******************************************************* */
 
+static void getSocks5ProxyAuth(pcapdroid_t *pd) {
+    char buf[64];
+    buf[0] = '\0';
+
+    getStringPref(pd, "getSocks5ProxyAuth", buf, sizeof(buf));
+    char *sep = strchr(buf, ':');
+
+    if(!sep)
+        return;
+
+    *sep = '\0';
+    strncpy(pd->socks5.proxy_user, buf, sizeof(pd->socks5.proxy_user));
+    strncpy(pd->socks5.proxy_pass, sep + 1, sizeof(pd->socks5.proxy_pass));
+
+    //log_d("SOCKS5: user=%s pass=%s", pd->socks5.proxy_user, pd->socks5.proxy_pass);
+}
+
+/* ******************************************************* */
+
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
                                                               jobject vpn, jint sdk) {
@@ -553,6 +572,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
             }
     };
+
+    if(pd.socks5.enabled)
+        getSocks5ProxyAuth(&pd);
 
     // Enable or disable the PCAPdroid trailer
     pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
@@ -754,6 +776,10 @@ char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize) {
     char *rv = NULL;
 
     if(!jniCheckException(env)) {
+        // Null string
+        if(obj == NULL)
+            return NULL;
+
         const char *value = (*env)->GetStringUTFChars(env, obj, 0);
         log_d("getStringPref(%s) = %s", key, value);
 
