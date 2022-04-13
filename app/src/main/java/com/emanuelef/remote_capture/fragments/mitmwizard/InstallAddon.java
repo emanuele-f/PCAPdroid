@@ -56,7 +56,7 @@ public class InstallAddon extends StepFragment {
     }
 
     private void installAddon() {
-        int installed_ver = MitmAddon.getInstalledVersion(requireContext());
+        long installed_ver = MitmAddon.getInstalledVersion(requireContext());
 
         if(installed_ver < 0) {
             mStepLabel.setText(R.string.install_mitm_addon);

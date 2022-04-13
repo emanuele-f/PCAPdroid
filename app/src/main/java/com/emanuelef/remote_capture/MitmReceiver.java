@@ -151,31 +151,41 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 String payload_type;
                 int port;
                 int payload_len;
+                long tstamp;
 
                 // Read the header
+                @SuppressWarnings("deprecation")
                 String header = istream.readLine();
-                if(header == null)
+
+                if(header == null) {
+                    CaptureService.requireInstance().reportError("[BUG] Empty header received from the mitm plugin");
+                    CaptureService.stopService();
                     break;
+                }
 
                 StringTokenizer tk = new StringTokenizer(header);
                 //Log.d(TAG, "[HEADER] " + header);
 
                 try {
-                    // port:payload_type:payload_length\n
-                    String tk_port = tk.nextToken(":");
+                    // timestamp:port:payload_type:payload_length\n
+                    String tk_tstamp = tk.nextToken(":");
+                    String tk_port = tk.nextToken();
                     payload_type = tk.nextToken();
                     String tk_len = tk.nextToken();
 
+                    tstamp = Long.parseLong(tk_tstamp);
                     port = Integer.parseInt(tk_port);
                     payload_len = Integer.parseInt(tk_len);
                 } catch (NoSuchElementException | NumberFormatException e) {
-                    Log.w(TAG, "Invalid header");
-                    return;
+                    CaptureService.requireInstance().reportError("[BUG] Invalid header received from the mitm plugin");
+                    CaptureService.stopService();
+                    break;
                 }
 
-                if((payload_len <= 0) || (payload_len > 8388608)) { /* max 8 MB */
-                    Log.w(TAG, "Bad payload length: " + payload_len);
-                    return;
+                if((payload_len <= 0) || (payload_len > 67108864)) { /* max 64 MB */
+                    Log.w(TAG, "Ignoring bad payload length: " + payload_len);
+                    istream.skipBytes(payload_len);
+                    continue;
                 }
 
                 PayloadType pType = parsePayloadType(payload_type);
@@ -184,15 +194,14 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 byte[] payload = new byte[payload_len];
                 istream.readFully(payload);
 
-                long now = System.currentTimeMillis();
                 ConnectionDescriptor conn = getConnByLocalPort(port);
                 //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
 
                 if(conn != null)
-                    handlePayload(conn, pType, payload, now);
+                    handlePayload(conn, pType, payload, tstamp);
                 else
                     // We may receive a payload before seeing the connection in connectionsAdded
-                    addPendingPayload(new PendingPayload(pType, payload, port, now));
+                    addPendingPayload(new PendingPayload(pType, payload, port, tstamp));
             }
         } catch (IOException e) {
             if(mSocketFd != null) // ignore termination
@@ -226,7 +235,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long now) {
+    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long tstamp) {
         // NOTE: we are possibly accessing the conn concurrently
         if(pType == PayloadType.TLS_ERROR) {
             conn.tls_error = new String(payload, StandardCharsets.US_ASCII);
@@ -235,7 +244,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         } else
-            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), isSent(pType), now));
+            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), isSent(pType), tstamp));
     }
 
     private synchronized void addPendingPayload(PendingPayload pending) {

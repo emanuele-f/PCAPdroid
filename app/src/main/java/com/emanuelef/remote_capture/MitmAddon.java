@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
@@ -48,8 +49,8 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     /* API */
     public static final String PACKAGE_NAME = "com.pcapdroid.mitm";
-    public static final String PACKAGE_VERSION_NAME = "v0.4";
-    public static final int PACKAGE_VERSION_CODE = 4;
+    public static final String PACKAGE_VERSION_NAME = "v0.5";
+    public static final long PACKAGE_VERSION_CODE = 5;
     public static final String MITM_PERMISSION = "com.pcapdroid.permission.MITM";
     public static final String MITM_SERVICE = PACKAGE_NAME + ".MitmService";
 
@@ -72,7 +73,7 @@ public class MitmAddon {
         // Important: the application context is required here, otherwise bind/unbind will not work properly
         mContext = ctx.getApplicationContext();
         mReceiver = receiver;
-        mMessenger = new Messenger(new ReplyHandler(receiver));
+        mMessenger = new Messenger(new ReplyHandler(ctx.getMainLooper(), receiver));
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {
@@ -89,10 +90,10 @@ public class MitmAddon {
         }
     };
 
-    public static int getInstalledVersion(Context ctx) {
+    public static long getInstalledVersion(Context ctx) {
         try {
             PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(PACKAGE_NAME, 0);
-            return pInfo.versionCode;
+            return pInfo.getLongVersionCode();
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }
@@ -139,7 +140,8 @@ public class MitmAddon {
     private static class ReplyHandler extends Handler {
         private final WeakReference<MitmListener> mReceiver;
 
-        ReplyHandler(MitmListener receiver) {
+        ReplyHandler(Looper looper, MitmListener receiver) {
+            super(looper);
             mReceiver = new WeakReference<>(receiver);
         }
 
