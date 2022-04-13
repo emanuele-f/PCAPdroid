@@ -191,6 +191,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     }
 
     protected static class PayloadViewHolder extends RecyclerView.ViewHolder {
+        View headerLine;
         TextView header;
         TextView dump;
         ImageView expandButton;
@@ -199,6 +200,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         public PayloadViewHolder(View view) {
             super(view);
 
+            headerLine = view.findViewById(R.id.header_line);
             header = view.findViewById(R.id.header);
             dump = view.findViewById(R.id.dump);
             expandButton = view.findViewById(R.id.expand_button);
@@ -236,7 +238,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
             int jumpPos = getAdapterPosition(page.adaptChunk.peer);
             Log.d(TAG, "jump to " + jumpPos + " (orig_pos=" + page.adaptChunk.peer.originalPos + ")");
-            mLinearLayout.scrollToPosition(jumpPos);
+            mLinearLayout.scrollToPositionWithOffset(jumpPos, 0);
         });
 
         return holder;
@@ -255,24 +257,27 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         PayloadChunk chunk = page.adaptChunk.getPayloadChunk();
 
         if(page.isFirst()) {
-            Locale locale = Utils.getPrimaryLocale(mContext);
+            holder.headerLine.setVisibility(View.VISIBLE);
 
+            Locale locale = Utils.getPrimaryLocale(mContext);
             holder.header.setText(String.format(locale,
                     "#%d [%s] %s — %s", page.adaptChunk.originalPos + 1,
                     getHeaderTag(chunk),
                     (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
                     Utils.formatBytes(chunk.payload.length)));
-            holder.header.setVisibility(View.VISIBLE);
+
+            holder.jumpToReply.setVisibility(((page.adaptChunk.peer != null) &&
+                    /* Only show the button if request and reply are not consecutive */
+                    (Math.abs(page.adaptChunk.peer.originalPos - page.adaptChunk.originalPos) != 1))
+                    ? View.VISIBLE : View.INVISIBLE);
         } else
-            holder.header.setVisibility(View.GONE);
+            holder.headerLine.setVisibility(View.GONE);
 
         if(page.isLast && page.adaptChunk.canBeExpanded()) {
             holder.expandButton.setVisibility(View.VISIBLE);
             holder.expandButton.setRotation(page.adaptChunk.isExpanded() ? 180 : 0);
         } else
             holder.expandButton.setVisibility(View.GONE);
-
-        holder.jumpToReply.setVisibility((page.isFirst() && (page.adaptChunk.peer != null)) ? View.VISIBLE : View.GONE);
 
         holder.dump.setText(page.getText());
 

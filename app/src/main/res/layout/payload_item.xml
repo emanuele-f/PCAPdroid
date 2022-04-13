@@ -5,14 +5,14 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:paddingHorizontal="3sp"
-    android:paddingVertical="8dp">
+    android:paddingHorizontal="3sp">
 
     <LinearLayout
+        android:id="@+id/header_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:layout_marginBottom="10dp"
+        android:layout_marginVertical="8dp"
         android:orientation="horizontal">
 
         <TextView
