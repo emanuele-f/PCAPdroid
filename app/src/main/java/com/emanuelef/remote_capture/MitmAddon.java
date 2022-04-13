@@ -38,31 +38,19 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.MitmListener;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.pcapdroid.mitm.MitmAPI;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    /* API */
-    public static final String PACKAGE_NAME = "com.pcapdroid.mitm";
-    public static final String PACKAGE_VERSION_NAME = "v0.5";
     public static final long PACKAGE_VERSION_CODE = 5;
-    public static final String MITM_PERMISSION = "com.pcapdroid.permission.MITM";
-    public static final String MITM_SERVICE = PACKAGE_NAME + ".MitmService";
-
-    public static final int MSG_ERROR = -1;
-    public static final int MSG_START_MITM = 1;
-    public static final int MSG_GET_CA_CERTIFICATE = 2;
-    public static final int MSG_STOP_MITM = 3;
-    public static final int MSG_GET_SSLKEYLOG = 4;
-    public static final String CERTIFICATE_RESULT = "certificate";
-    public static final String SSLKEYLOG_RESULT = "sslkeylog";
-    /* END API */
-
+    public static final String PACKAGE_VERSION_NAME = "v0.5";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
     private final MitmListener mReceiver;
@@ -92,8 +80,8 @@ public class MitmAddon {
 
     public static long getInstalledVersion(Context ctx) {
         try {
-            PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(PACKAGE_NAME, 0);
-            return pInfo.getLongVersionCode();
+            PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(MitmAPI.PACKAGE_NAME, 0);
+            return PackageInfoCompat.getLongVersionCode(pInfo);
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }
@@ -110,7 +98,7 @@ public class MitmAddon {
 
     public static boolean hasMitmPermission(Context ctx) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            return ctx.checkSelfPermission(MitmAddon.MITM_PERMISSION) == PackageManager.PERMISSION_GRANTED;
+            return ctx.checkSelfPermission(MitmAPI.MITM_PERMISSION) == PackageManager.PERMISSION_GRANTED;
 
         return true;
     }
@@ -153,21 +141,21 @@ public class MitmAddon {
             if(receiver == null)
                 return;
 
-            if(msg.what == MitmAddon.MSG_GET_CA_CERTIFICATE) {
+            if(msg.what == MitmAPI.MSG_GET_CA_CERTIFICATE) {
                 String ca_pem = null;
 
                 if(msg.getData() != null) {
                     Bundle res = msg.getData();
-                    ca_pem = res.getString(MitmAddon.CERTIFICATE_RESULT);
+                    ca_pem = res.getString(MitmAPI.CERTIFICATE_RESULT);
                 }
 
                 receiver.onMitmGetCaCertificateResult(ca_pem);
-            } else if(msg.what == MitmAddon.MSG_GET_SSLKEYLOG) {
+            } else if(msg.what == MitmAPI.MSG_GET_SSLKEYLOG) {
                 byte []sslkeylog = null;
 
                 if(msg.getData() != null) {
                     Bundle res = msg.getData();
-                    sslkeylog = res.getByteArray(MitmAddon.SSLKEYLOG_RESULT);
+                    sslkeylog = res.getByteArray(MitmAPI.SSLKEYLOG_RESULT);
                 }
 
                 receiver.onMitmSslkeylogfileResult(sslkeylog);
@@ -178,7 +166,7 @@ public class MitmAddon {
     // Asynchronously connect to the service. The onConnect callback will be called.
     public boolean connect(int extra_flags) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(MitmAddon.PACKAGE_NAME, MitmAddon.MITM_SERVICE));
+        intent.setComponent(new ComponentName(MitmAPI.PACKAGE_NAME, MitmAPI.MITM_SERVICE));
 
         if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | extra_flags)) {
             mContext.unbindService(mConnection);
@@ -206,7 +194,7 @@ public class MitmAddon {
             return false;
         }
 
-        Message msg = Message.obtain(null, MitmAddon.MSG_GET_CA_CERTIFICATE);
+        Message msg = Message.obtain(null, MitmAPI.MSG_GET_CA_CERTIFICATE);
         msg.replyTo = mMessenger;
         try {
             mService.send(msg);
@@ -223,7 +211,7 @@ public class MitmAddon {
             return false;
         }
 
-        Message msg = Message.obtain(null, MitmAddon.MSG_GET_SSLKEYLOG);
+        Message msg = Message.obtain(null, MitmAPI.MSG_GET_SSLKEYLOG);
         msg.replyTo = mMessenger;
         try {
             mService.send(msg);
@@ -250,7 +238,20 @@ public class MitmAddon {
             return null;
         }
 
-        Message msg = Message.obtain(null, MitmAddon.MSG_START_MITM, port, 0, pair[0]);
+        MitmAPI.MitmConfig conf = new MitmAPI.MitmConfig();
+        conf.proxyPort = port;
+
+        /* upstream certificate verification is disabled because the app does not provide a way to let the user
+           accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
+           https://github.com/mitmproxy/mitmproxy/issues/5109 */
+        conf.sslInsecure = true;
+
+        // Note: ParcelFileDescriptor must be passed as parcelable
+        Message msg = Message.obtain(null, MitmAPI.MSG_START_MITM, 0, 0, pair[0]);
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(MitmAPI.MITM_CONFIG, conf);
+        msg.setData(bundle);
 
         try {
             mService.send(msg);
@@ -273,7 +274,7 @@ public class MitmAddon {
             return false;
         }
 
-        Message msg = Message.obtain(null, MitmAddon.MSG_STOP_MITM);
+        Message msg = Message.obtain(null, MitmAPI.MSG_STOP_MITM);
         try {
             mService.send(msg);
             return true;

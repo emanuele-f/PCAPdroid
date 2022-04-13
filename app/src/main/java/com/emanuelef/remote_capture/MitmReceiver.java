@@ -19,9 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.util.Log;
@@ -105,9 +103,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     public boolean start() throws IOException {
         Log.d(TAG, "starting");
-
-        Intent intent = new Intent();
-        intent.setComponent(new ComponentName(MitmAddon.PACKAGE_NAME, MitmAddon.MITM_SERVICE));
 
         if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);

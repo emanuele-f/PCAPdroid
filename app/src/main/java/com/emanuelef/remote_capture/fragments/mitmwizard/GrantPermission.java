@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.pcapdroid.mitm.MitmAPI;
 
 public class GrantPermission extends StepFragment {
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -60,7 +61,7 @@ public class GrantPermission extends StepFragment {
         mStepButton.setText(R.string.configure_action);
         mStepButton.setOnClickListener(v -> {
             try {
-                requestPermissionLauncher.launch(MitmAddon.MITM_PERMISSION);
+                requestPermissionLauncher.launch(MitmAPI.MITM_PERMISSION);
             } catch (ActivityNotFoundException e) {
                 Utils.showToastLong(requireContext(), R.string.no_intent_handler_found);
             }
