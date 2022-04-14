@@ -59,6 +59,7 @@ import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -569,6 +570,7 @@ public class Utils {
     }
 
     // Converts a TableLayout (two columns, label and value) to a string which can be copied
+    // If value is a ViewGroup, extract the first TextView from it
     public static String table2Text(TableLayout table) {
         StringBuilder builder = new StringBuilder();
 
@@ -579,6 +581,19 @@ public class Utils {
                     && (((TableRow) v).getChildCount() == 2)) {
                 View label = ((TableRow) v).getChildAt(0);
                 View value = ((TableRow) v).getChildAt(1);
+
+                if(value instanceof ViewGroup) {
+                    // Try to find first TextView child
+                    ViewGroup group = (ViewGroup) value;
+                    for(int c=0; c<group.getChildCount(); c++) {
+                        View view = group.getChildAt(c);
+
+                        if(view instanceof TextView) {
+                            value = view;
+                            break;
+                        }
+                    }
+                }
 
                 if((label instanceof TextView) && (value instanceof TextView)) {
                     builder.append(((TextView) label).getText());
