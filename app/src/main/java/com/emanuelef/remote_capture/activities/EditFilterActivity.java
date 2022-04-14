@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,12 +38,16 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor.DecryptionStatus;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+
+import java.util.Arrays;
+import java.util.ArrayList;
 
 public class EditFilterActivity extends BaseActivity {
     public static final String FILTER_DESCRIPTOR = "filter";
@@ -51,11 +56,8 @@ public class EditFilterActivity extends BaseActivity {
     private CheckBox mHideMasked;
     private CheckBox mOnlyBlocked;
     private CheckBox mOnlyBlacklisted;
-    private CheckBox mOnlyCleartext;
-    private Chip mStatusOpen;
-    private Chip mStatusClosed;
-    private Chip mStatusUnreachable;
-    private Chip mStatusError;
+    private ArrayList<Pair<Status, Chip>> mStatusChips;
+    private ArrayList<Pair<DecryptionStatus, Chip>> mDecChips;
     private ChipGroup mInterfaceGroup;
 
     @Override
@@ -82,11 +84,6 @@ public class EditFilterActivity extends BaseActivity {
         mHideMasked = findViewById(R.id.not_hidden);
         mOnlyBlocked = findViewById(R.id.only_blocked);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
-        mOnlyCleartext = findViewById(R.id.only_cleartext);
-        mStatusOpen = findViewById(R.id.status_open);
-        mStatusClosed = findViewById(R.id.status_closed);
-        mStatusUnreachable = findViewById(R.id.status_unreachable);
-        mStatusError = findViewById(R.id.status_error);
         mInterfaceGroup = findViewById(R.id.interfaces);
 
         findViewById(R.id.edit_mask).setOnClickListener(v -> {
@@ -94,6 +91,25 @@ public class EditFilterActivity extends BaseActivity {
             editIntent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.VISUALIZATION_MASK);
             startActivity(editIntent);
         });
+
+        mStatusChips = new ArrayList<>(Arrays.asList(
+                new Pair<>(Status.STATUS_OPEN, findViewById(R.id.status_open)),
+                new Pair<>(Status.STATUS_CLOSED, findViewById(R.id.status_closed)),
+                new Pair<>(Status.STATUS_UNREACHABLE, findViewById(R.id.status_unreachable)),
+                new Pair<>(Status.STATUS_ERROR, findViewById(R.id.status_error))
+        ));
+
+        mDecChips = new ArrayList<>(Arrays.asList(
+                new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
+                new Pair<>(DecryptionStatus.DECRYPTION_IN_PROGRESS, findViewById(R.id.dec_status_in_progress)),
+                new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
+                new Pair<>(DecryptionStatus.TLS_ERROR, findViewById(R.id.dec_status_error))
+        ));
+
+        if(CaptureService.isDecryptingTLS()) {
+            findViewById(R.id.decryption_status_label).setVisibility(View.VISIBLE);
+            findViewById(R.id.decryption_status_group).setVisibility(View.VISIBLE);
+        }
 
         Billing billing = Billing.newInstance(this);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -130,26 +146,31 @@ public class EditFilterActivity extends BaseActivity {
         findViewById(R.id.connections_mask).setVisibility(mask.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
+    private <T> void setCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T curValue) {
+        for(Pair<T, Chip> mapping: chipMap) {
+            Chip chip = mapping.second;
+            chip.setChecked(mapping.first.equals(curValue));
+        }
+    }
+
+    private <T> T getCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T defaultValue) {
+        for(Pair<T, Chip> mapping: chipMap) {
+            Chip chip = mapping.second;
+
+            if(chip.isChecked())
+                return mapping.first;
+        }
+
+        return defaultValue;
+    }
+
     private void model2view() {
         mHideMasked.setChecked(!mFilter.showMasked);
         mOnlyBlocked.setChecked(mFilter.onlyBLocked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
-        mOnlyCleartext.setChecked(mFilter.onlyCleartext);
 
-        mStatusOpen.setChecked(false);
-        mStatusClosed.setChecked(false);
-        mStatusUnreachable.setChecked(false);
-        mStatusError.setChecked(false);
-
-        Chip selected_status = null;
-        switch(mFilter.status) {
-            case STATUS_OPEN: selected_status = mStatusOpen; break;
-            case STATUS_CLOSED: selected_status = mStatusClosed; break;
-            case STATUS_UNREACHABLE: selected_status = mStatusUnreachable; break;
-            case STATUS_ERROR: selected_status = mStatusError; break;
-        }
-        if(selected_status != null)
-            selected_status.setChecked(true);
+        setCheckedChip(mStatusChips, mFilter.status);
+        setCheckedChip(mDecChips, mFilter.decStatus);
 
         if(mFilter.iface != null) {
             int num_chips = mInterfaceGroup.getChildCount();
@@ -167,18 +188,9 @@ public class EditFilterActivity extends BaseActivity {
         mFilter.showMasked = !mHideMasked.isChecked();
         mFilter.onlyBLocked = mOnlyBlocked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
-        mFilter.onlyCleartext = mOnlyCleartext.isChecked();
 
-        if(mStatusOpen.isChecked())
-            mFilter.status = Status.STATUS_OPEN;
-        else if(mStatusClosed.isChecked())
-            mFilter.status = Status.STATUS_CLOSED;
-        else if(mStatusUnreachable.isChecked())
-            mFilter.status = Status.STATUS_UNREACHABLE;
-        else if(mStatusError.isChecked())
-            mFilter.status = Status.STATUS_ERROR;
-        else
-            mFilter.status = Status.STATUS_INVALID;
+        mFilter.status = getCheckedChip(mStatusChips, Status.STATUS_INVALID);
+        mFilter.decStatus = getCheckedChip(mDecChips, DecryptionStatus.INVALID);
 
         int num_chips = mInterfaceGroup.getChildCount();
         for(int i=0; i<num_chips; i++) {

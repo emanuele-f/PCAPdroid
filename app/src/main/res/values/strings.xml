@@ -189,7 +189,6 @@
     <string name="copy_action">Copy…</string>
     <string name="url_val">"URL: %1$s"</string>
     <string name="show_only_plaintext">Plaintext connections</string>
-    <string name="show_only_cleartext">Cleartext connections</string>
     <string name="plaintext">Plaintext</string>
     <string name="malware_detection_ad0">Ready to enhance the security of your device?</string>
     <string name="malware_detection_ad1">Meet the PCAPdroid malware detection!</string>
@@ -307,4 +306,9 @@
     <string name="rx_direction">RX</string>
     <string name="full_payload">Full payload</string>
     <string name="full_payload_summary">Show the full connections payload (e.g. the full HTTP request and response). This requires a lot of memory, don\'t use in the long run</string>
+    <string name="not_decryptable">Not decryptable</string>
+    <string name="decrypted">Decrypted</string>
+    <string name="decryption">Decryption</string>
+    <string name="decryption_filter">Decryption: %1$s</string>
+    <string name="in_progress">In progress</string>
 </resources>

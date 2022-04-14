@@ -26,6 +26,7 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor.DecryptionStatus;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -36,15 +37,15 @@ public class FilterDescriptor implements Serializable {
     public boolean showMasked = true;
     public boolean onlyBLocked = false;
     public boolean onlyBlacklisted = false;
-    public boolean onlyCleartext = false;
+    public DecryptionStatus decStatus = DecryptionStatus.INVALID;
     public String iface;
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
+                || (decStatus != DecryptionStatus.INVALID)
                 || (iface != null)
                 || onlyBLocked
                 || onlyBlacklisted
-                || onlyCleartext
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
@@ -52,8 +53,8 @@ public class FilterDescriptor implements Serializable {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
                 && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
-                && (!onlyCleartext || (conn.isCleartext() || conn.isDecrypted()))
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
+                && ((decStatus == DecryptionStatus.INVALID) || (conn.getDecryptionStatus() == decStatus))
                 && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)));
     }
 
@@ -73,11 +74,13 @@ public class FilterDescriptor implements Serializable {
             addChip(inflater, group, R.id.blocked, ctx.getString(R.string.blocked_connection_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
-        if(onlyCleartext)
-            addChip(inflater, group, R.id.only_cleartext, ctx.getString(R.string.cleartext));
         if(status != Status.STATUS_INVALID) {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
+        }
+        if(decStatus != DecryptionStatus.INVALID) {
+            String label = String.format(ctx.getString(R.string.decryption_filter), ConnectionDescriptor.getDecryptionStatusLabel(decStatus, ctx));
+            addChip(inflater, group, R.id.decryption_status, label);
         }
         if(iface != null)
             addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
@@ -90,10 +93,10 @@ public class FilterDescriptor implements Serializable {
             onlyBLocked = false;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
-        else if(filter_id == R.id.only_cleartext)
-            onlyCleartext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
+        else if(filter_id == R.id.decryption_status)
+            decStatus = DecryptionStatus.INVALID;
         else if(filter_id == R.id.capture_interface)
             iface = null;
     }

@@ -64,6 +64,7 @@ public class ConnectionDescriptor {
     }
 
     public enum DecryptionStatus {
+        INVALID,
         CLEARTEXT,
         DECRYPTED,
         NOT_DECRYPTABLE,
@@ -232,6 +233,24 @@ public class ConnectionDescriptor {
             return DecryptionStatus.DECRYPTED;
         else
             return DecryptionStatus.DECRYPTION_IN_PROGRESS;
+    }
+
+    public static String getDecryptionStatusLabel(DecryptionStatus status, Context ctx) {
+        int resid;
+
+        switch (status) {
+            case CLEARTEXT: resid = R.string.cleartext; break;
+            case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
+            case DECRYPTED: resid = R.string.decrypted; break;
+            case DECRYPTION_IN_PROGRESS: resid = R.string.in_progress; break;
+            default: resid = R.string.error;
+        }
+
+        return(ctx.getString(resid));
+    }
+
+    public String getDecryptionStatusLabel(Context ctx) {
+        return getDecryptionStatusLabel(getDecryptionStatus(), ctx);
     }
 
     public int getSentTcpFlags() {
