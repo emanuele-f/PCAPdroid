@@ -14,7 +14,7 @@ python3 -m pip install --upgrade pip
 CRYPTOGRAPHY_DONT_BUILD_RUST=1 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
   LDFLAGS="$PREFIX/lib/openssl-1.1/libssl.a $PREFIX/lib/openssl-1.1/libcrypto.a" \
   CFLAGS="-I$PREFIX/include/openssl-1.1" \
-  pip install mitmproxy
+  pip install mitmproxy==7.0.4
 ```
 
 **Note**: when installed on the Android device via termux, it's essential to set an app filter in PCAPdroid to only capture a specific app traffic, otherwise the termux mitmproxy traffic would run in a loop, breaking the phone internet connectivity.
