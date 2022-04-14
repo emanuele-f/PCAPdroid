@@ -90,6 +90,7 @@ typedef struct {
 
     jlong first_seen;
     jlong last_seen;
+    jlong payload_length;
     jlong sent_bytes;
     jlong rcvd_bytes;
     jint sent_pkts;

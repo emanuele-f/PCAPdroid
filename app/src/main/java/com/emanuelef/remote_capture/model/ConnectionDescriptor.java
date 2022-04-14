@@ -84,6 +84,7 @@ public class ConnectionDescriptor {
     /* Data */
     public long first_seen;
     public long last_seen;
+    public long payload_length;
     public long sent_bytes;
     public long rcvd_bytes;
     public int sent_pkts;
@@ -135,6 +136,7 @@ public class ConnectionDescriptor {
     public void processUpdate(ConnectionUpdate update) {
         // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
+            payload_length = update.payload_length;
             sent_bytes = update.sent_bytes;
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
@@ -145,7 +147,7 @@ public class ConnectionDescriptor {
             blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
-            tcp_flags = update.tcp_flags;
+            tcp_flags = update.tcp_flags; // NOTE: only for root capture
 
             // see MitmReceiver.handlePayload
             if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (tls_error != null))
@@ -239,7 +241,7 @@ public class ConnectionDescriptor {
         int resid;
 
         switch (status) {
-            case CLEARTEXT: resid = R.string.cleartext; break;
+            case CLEARTEXT: resid = R.string.not_encrypted; break;
             case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
             case DECRYPTED: resid = R.string.decrypted; break;
             case DECRYPTION_IN_PROGRESS: resid = R.string.in_progress; break;
@@ -327,6 +329,13 @@ public class ConnectionDescriptor {
     }
     public String getHttpRequest() { return getHttp(true); }
     public String getHttpResponse() { return getHttp(false); }
+
+    public boolean hasSeenStart() {
+        if((ipproto != 6 /* TCP */) || !CaptureService.isCapturingAsRoot())
+            return true;
+
+        return (getSentTcpFlags() & 0x2) != 0; // SYN
+    }
 
     @Override
     public @NonNull String toString() {

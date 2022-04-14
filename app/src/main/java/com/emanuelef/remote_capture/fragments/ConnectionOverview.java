@@ -37,6 +37,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.AppsResolver;
@@ -53,14 +54,17 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     private ConnectionDescriptor mConn;
     private TableLayout mTable;
     private TextView mBytesView;
+    private TextView mPayload;
     private TextView mPacketsView;
     private TextView mDurationView;
     private TextView mBlockedPkts;
     private View mBlockedPktsRow;
     private TextView mStatus;
+    private TextView mDecStatus;
+    private ImageView mDecIcon;
     private TextView mFirstSeen;
     private TextView mLastSeen;
-    private TextView mTcpFlags;
+    //private TextView mTcpFlags;
     private TextView mError;
     private ImageView mBlacklistedIp;
     private ImageView mBlacklistedHost;
@@ -102,15 +106,18 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         FlagImageView country_flag = view.findViewById(R.id.country_flag);
         TextView asn = view.findViewById(R.id.asn);
         mTable = view.findViewById(R.id.table);
+        mPayload = view.findViewById(R.id.detail_payload);
         mBytesView = view.findViewById(R.id.detail_bytes);
         mPacketsView = view.findViewById(R.id.detail_packets);
         mBlockedPkts = view.findViewById(R.id.blocked_pkts);
         mBlockedPktsRow = view.findViewById(R.id.blocked_row);
         mDurationView = view.findViewById(R.id.detail_duration);
         mStatus = view.findViewById(R.id.detail_status);
+        mDecStatus = view.findViewById(R.id.detail_decryption_status);
+        mDecIcon = view.findViewById(R.id.decryption_icon);
         mFirstSeen = view.findViewById(R.id.first_seen);
         mLastSeen = view.findViewById(R.id.last_seen);
-        mTcpFlags = view.findViewById(R.id.tcp_flags);
+        //mTcpFlags = view.findViewById(R.id.tcp_flags);
         mError = view.findViewById(R.id.error_msg);
         mBlacklistedIp = view.findViewById(R.id.blacklisted_ip);
         mBlacklistedHost = view.findViewById(R.id.blacklisted_host);
@@ -123,7 +130,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         if(mConn != null) {
             String l4proto = Utils.proto2str(mConn.ipproto);
             //if(l4proto.equals("TCP"))
-            //    findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
+            //    view.findViewById(R.id.tcp_flags_row).setVisibility(View.VISIBLE);
 
             if(!mConn.l7proto.equals(l4proto))
                 proto.setText(String.format(getResources().getString(R.string.app_and_proto), mConn.l7proto, l4proto));
@@ -153,6 +160,8 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
                 appLabel.setText(String.format(getResources().getString(R.string.app_and_proto), app.getName(), uid_str));
             else
                 appLabel.setText(uid_str);
+
+            view.findViewById(R.id.decryption_status_row).setVisibility(CaptureService.isDecryptingTLS() ? View.VISIBLE : View.GONE);
 
             if(!mConn.url.isEmpty())
                 url.setText(mConn.url);
@@ -216,6 +225,9 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
 
     @Override
     public void connectionUpdated() {
+        Context context = mBytesView.getContext();
+
+        mPayload.setText(Utils.formatBytes(mConn.payload_length));
         mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(mConn.rcvd_bytes), Utils.formatBytes(mConn.sent_bytes)));
         mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(mConn.rcvd_pkts), Utils.formatIntShort(mConn.sent_pkts)));
 
@@ -228,12 +240,19 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         mFirstSeen.setText(Utils.formatEpochMillis(mActivity, mConn.first_seen));
         mLastSeen.setText(Utils.formatEpochMillis(mActivity, mConn.last_seen));
         mStatus.setText(mConn.getStatusLabel(mActivity));
-        mTcpFlags.setText(Utils.tcpFlagsToStr(mConn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(mConn.getSentTcpFlags()));
+        mDecStatus.setText(mConn.getDecryptionStatusLabel(mActivity));
+        Utils.setDecryptionIcon(mDecIcon, mConn);
+        //mTcpFlags.setText(Utils.tcpFlagsToStr(mConn.getRcvdTcpFlags()) + " <- " + Utils.tcpFlagsToStr(mConn.getSentTcpFlags()));
         mBlacklistedIp.setVisibility(mConn.isBlacklistedIp() ? View.VISIBLE : View.GONE);
         mBlacklistedHost.setVisibility(mConn.isBlacklistedHost() ? View.VISIBLE : View.GONE);
 
         if(mConn.tls_error != null) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.danger));
             mError.setText(mConn.tls_error);
+            mError.setVisibility(View.VISIBLE);
+        } else if(!mConn.hasSeenStart()) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
+            mError.setText(context.getString(R.string.connection_start_not_seen));
             mError.setVisibility(View.VISIBLE);
         }
     }

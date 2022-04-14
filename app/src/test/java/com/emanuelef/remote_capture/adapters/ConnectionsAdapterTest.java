@@ -446,7 +446,7 @@ public class ConnectionsAdapterTest {
         ConnectionUpdate update = new ConnectionUpdate(incr_id);
 
         if(tp.equals(UpdateType.UPDATE_STATS))
-            update.setStats(0, 10, 10, 1, 1,
+            update.setStats(0, 0, 10, 10, 1, 1,
                     0, 0, ConnectionDescriptor.CONN_STATUS_CONNECTED);
         else
             update.setInfo("example.org", null, "TLS", ConnectionUpdate.UPDATE_INFO_FLAG_ENCRYPTED_L7);

@@ -292,7 +292,7 @@
     <string name="export_failed">Export failed</string>
     <string name="connection">Connection</string>
     <string name="encrypted">Encrypted</string>
-    <string name="cleartext">Cleartext</string>
+    <string name="not_encrypted">Not encrypted</string>
     <string name="request">Request</string>
     <string name="response">Response</string>
     <string name="overview">Overview</string>
@@ -301,7 +301,7 @@
     <string name="payload_truncated">Payload is truncated. Enable \"%1$s\" to show it in full</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
-    <string name="raw_payload">Raw</string>
+    <string name="payload">Payload</string>
     <string name="tx_direction">TX</string>
     <string name="rx_direction">RX</string>
     <string name="full_payload">Full payload</string>
@@ -311,4 +311,6 @@
     <string name="decryption">Decryption</string>
     <string name="decryption_filter">Decryption: %1$s</string>
     <string name="in_progress">In progress</string>
+    <string name="connection_start_not_seen">PCAPdroid has not seen the start of this connection. Some information may be missing</string>
+    <string name="network_traffic">Traffic</string>
 </resources>

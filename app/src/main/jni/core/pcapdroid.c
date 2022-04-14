@@ -1071,6 +1071,8 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
     zdtun_pkt_t *pkt = pctx->pkt;
     pd_conn_t *data = pctx->data;
 
+    data->payload_length += pkt->l7_len;
+
     if(pctx->is_tx) {
         data->sent_pkts++;
         data->sent_bytes += pkt->len;

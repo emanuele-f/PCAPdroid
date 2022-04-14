@@ -33,6 +33,7 @@ public class ConnectionUpdate {
 
     /* set if update_type & UPDATE_STATS */
     public long last_seen;
+    public long payload_length;
     public long sent_bytes;
     public long rcvd_bytes;
     public int sent_pkts;
@@ -55,12 +56,13 @@ public class ConnectionUpdate {
         incr_id = _incr_id;
     }
 
-    public void setStats(long _last_seen, long _sent_bytes, long _rcvd_bytes,
+    public void setStats(long _last_seen, long _payload_length, long _sent_bytes, long _rcvd_bytes,
                          int _sent_pkts, int _rcvd_pkts, int _blocked_pkts,
                          int _tcp_flags, int _status) {
         update_type |= UPDATE_STATS;
 
         last_seen = _last_seen;
+        payload_length = _payload_length;
         sent_bytes = _sent_bytes;
         rcvd_bytes = _rcvd_bytes;
         sent_pkts = _sent_pkts;

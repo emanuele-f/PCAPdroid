@@ -59,6 +59,7 @@ import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -67,6 +68,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
@@ -1082,5 +1084,29 @@ public class Utils {
             sb.append(charset.charAt(rnd.nextInt(charset.length())));
 
         return sb.toString();
+    }
+
+    public static void setDecryptionIcon(ImageView icon, ConnectionDescriptor conn) {
+        int color;
+
+        switch(conn.getDecryptionStatus()) {
+            case DECRYPTED:
+                color = R.color.ok;
+                break;
+            case NOT_DECRYPTABLE:
+                color = R.color.warning;
+                break;
+            case TLS_ERROR:
+                color = R.color.danger;
+                break;
+            default:
+                color = R.color.lightGray;
+        }
+
+        Context context = icon.getContext();
+        int resid = (conn.isCleartext() || conn.isDecrypted()) ? R.drawable.ic_lock_open : R.drawable.ic_lock;
+
+        icon.setColorFilter(ContextCompat.getColor(context, color));
+        icon.setImageDrawable(ContextCompat.getDrawable(context, resid));
     }
 }

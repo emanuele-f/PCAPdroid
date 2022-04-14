@@ -270,25 +270,61 @@
                 android:textIsSelectable="true"
                 tools:text="ASN_1 - Public" />
         </TableRow>
-
         <TableRow
+            android:id="@+id/decryption_status_row"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp">
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.25"
                 android:textStyle="bold"
-                android:text="@string/bytes" />
+                android:text="@string/decryption" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/decryption_icon"
+                    tools:tint="@color/ok"
+                    tools:src="@drawable/ic_lock_open"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="-2dp"
+                    android:layout_marginEnd="2dp"
+                    android:adjustViewBounds="true"
+                    android:paddingVertical="2dp" />
+                <TextView
+                    android:id="@+id/detail_decryption_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.75"
+                    android:textIsSelectable="true"
+                    tools:text="Decrypted" />
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="16dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/network_traffic" />
             <TextView
                 android:id="@+id/detail_bytes"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.75"
                 android:textIsSelectable="true"
-                tools:text="1.5 MB down - 0.1 up" />
+                tools:text="1.5 MB received - 0.1 sent" />
         </TableRow>
 
         <TableRow
@@ -328,7 +364,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.75"
                 android:textIsSelectable="true"
-                tools:text="1.1 K down - 98 down" />
+                tools:text="1.1 K received - 98 sent" />
         </TableRow>
 
         <TableRow
@@ -351,6 +387,25 @@
                 android:layout_weight="0.75"
                 android:textIsSelectable="true"
                 tools:text="11 pkts" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/payload" />
+            <TextView
+                android:id="@+id/detail_payload"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="0.6 MB" />
         </TableRow>
 
         <TableRow

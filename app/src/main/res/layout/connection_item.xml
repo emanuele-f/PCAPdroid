@@ -123,7 +123,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/l7proto"
             tools:tint="@color/ok"
-            android:contentDescription="@string/encrypted"
             tools:src="@drawable/ic_lock_open" />
 
         <TextView

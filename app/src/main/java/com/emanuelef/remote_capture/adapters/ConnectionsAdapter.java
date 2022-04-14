@@ -84,8 +84,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         TextView lastSeen;
         //FlagImageView countryFlag;
         final String mProtoAndPort;
-        final Drawable lockOpen;
-        final Drawable lockClosed;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -104,9 +102,6 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             Context context = itemView.getContext();
             mProtoAndPort = context.getString(R.string.proto_and_port);
-
-            lockOpen = ContextCompat.getDrawable(context, R.drawable.ic_lock_open);
-            lockClosed = ContextCompat.getDrawable(context, R.drawable.ic_lock);
         }
 
         @SuppressWarnings("deprecation")
@@ -161,25 +156,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
 
             if(CaptureService.isDecryptingTLS()) {
-                switch(conn.getDecryptionStatus()) {
-                    case CLEARTEXT:
-                    case DECRYPTION_IN_PROGRESS:
-                        color = R.color.lightGray;
-                        break;
-                    case DECRYPTED:
-                        color = R.color.ok;
-                        break;
-                    case NOT_DECRYPTABLE:
-                        color = R.color.warning;
-                        break;
-                    case TLS_ERROR:
-                        color = R.color.danger;
-                        break;
-                }
-
                 decryptionInd.setVisibility(View.VISIBLE);
-                decryptionInd.setColorFilter(ContextCompat.getColor(context, color));
-                decryptionInd.setImageDrawable((conn.isCleartext() || conn.isDecrypted()) ? lockOpen : lockClosed);
+                Utils.setDecryptionIcon(decryptionInd, conn);
             } else
                 decryptionInd.setVisibility(View.GONE);
         }

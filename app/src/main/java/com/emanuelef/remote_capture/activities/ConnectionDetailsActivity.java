@@ -158,7 +158,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 case POS_HTTP:
                     return R.string.http;
                 case POS_RAW_PAYLOAD:
-                    return R.string.raw_payload;
+                    return R.string.payload;
                 case POS_OVERVIEW:
                 default:
                     return R.string.overview;
