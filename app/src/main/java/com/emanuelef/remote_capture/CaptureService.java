@@ -512,7 +512,8 @@ public class CaptureService extends VpnService implements Runnable {
         int uid = conn.uid;
 
         AppDescriptor app = appsResolver.get(conn.uid, 0);
-        assert app != null;
+        if(app == null)
+            return;
 
         FilterDescriptor filter = new FilterDescriptor();
         filter.onlyBlacklisted = true;

@@ -100,7 +100,14 @@ public class AppsResolver {
         if(app != null)
             return app;
 
-        String[] packages = mPm.getPackagesForUid(uid);
+        String[] packages = null;
+
+        try {
+            packages = mPm.getPackagesForUid(uid);
+        } catch (SecurityException e) {
+            // this is a bug in some devices https://github.com/AdguardTeam/AdguardForAndroid/issues/173
+            e.printStackTrace();
+        }
 
         if((packages == null) || (packages.length < 1)) {
             Log.w(TAG, "could not retrieve package: uid=" + uid);
