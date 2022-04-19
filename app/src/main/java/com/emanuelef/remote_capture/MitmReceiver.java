@@ -72,10 +72,12 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private enum PayloadType {
         UNKNOWN,
         TLS_ERROR,
+        HTTP_ERROR,
         HTTP_REQUEST,
         HTTP_REPLY,
         TCP_CLIENT_MSG,
         TCP_SERVER_MSG,
+        TCP_ERROR,
         WEBSOCKET_CLIENT_MSG,
         WEBSOCKET_SERVER_MSG,
     }
@@ -234,8 +236,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long tstamp) {
         // NOTE: we are possibly accessing the conn concurrently
-        if(pType == PayloadType.TLS_ERROR) {
-            conn.tls_error = new String(payload, StandardCharsets.US_ASCII);
+        if((pType == PayloadType.TLS_ERROR) || (pType == PayloadType.HTTP_ERROR) || (pType == PayloadType.TCP_ERROR)) {
+            conn.decryption_error = new String(payload, StandardCharsets.US_ASCII);
 
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
@@ -275,6 +277,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         switch (str) {
             case "tls_err":
                 return PayloadType.TLS_ERROR;
+            case "http_err":
+                return PayloadType.HTTP_ERROR;
             case "http_req":
                 return PayloadType.HTTP_REQUEST;
             case "http_rep":
@@ -283,6 +287,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return PayloadType.TCP_CLIENT_MSG;
             case "tcp_srvmsg":
                 return PayloadType.TCP_SERVER_MSG;
+            case "tcp_err":
+                return PayloadType.TCP_ERROR;
             case "ws_climsg":
                 return PayloadType.WEBSOCKET_CLIENT_MSG;
             case "ws_srvmsg":

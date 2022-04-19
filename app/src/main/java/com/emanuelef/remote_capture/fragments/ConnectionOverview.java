@@ -246,9 +246,9 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         mBlacklistedIp.setVisibility(mConn.isBlacklistedIp() ? View.VISIBLE : View.GONE);
         mBlacklistedHost.setVisibility(mConn.isBlacklistedHost() ? View.VISIBLE : View.GONE);
 
-        if(mConn.tls_error != null) {
+        if(mConn.decryption_error != null) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.danger));
-            mError.setText(mConn.tls_error);
+            mError.setText(mConn.decryption_error);
             mError.setVisibility(View.VISIBLE);
         } else if(!mConn.hasSeenStart()) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));

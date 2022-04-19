@@ -106,7 +106,7 @@ public class ConnectionDescriptor {
     private boolean payload_truncated;
     private boolean encrypted_l7;
     public boolean encrypted_payload;
-    public String tls_error;
+    public String decryption_error;
     public String country;
     public Geomodel.ASN asn;
 
@@ -150,7 +150,7 @@ public class ConnectionDescriptor {
             tcp_flags = update.tcp_flags; // NOTE: only for root capture
 
             // see MitmReceiver.handlePayload
-            if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (tls_error != null))
+            if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (decryption_error != null))
                 status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         }
         if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
@@ -227,7 +227,7 @@ public class ConnectionDescriptor {
     public DecryptionStatus getDecryptionStatus() {
         if(isCleartext())
             return DecryptionStatus.CLEARTEXT;
-        else if(tls_error != null)
+        else if(decryption_error != null)
             return DecryptionStatus.TLS_ERROR;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
