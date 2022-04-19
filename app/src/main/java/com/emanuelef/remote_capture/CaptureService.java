@@ -74,6 +74,7 @@ import com.emanuelef.remote_capture.pcap_dump.FileDumper;
 import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
+import com.pcapdroid.mitm.MitmAPI;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -386,6 +387,15 @@ public class CaptureService extends VpnService implements Runnable {
                     String msg = String.format(getResources().getString(R.string.app_not_found), mSettings.app_filter);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     return abortStart();
+                }
+            }
+
+            if(mSettings.tls_decryption) {
+                // Exclude the mitm addon traffic in case system-wide decryption is performed
+                try {
+                    builder.addDisallowedApplication(MitmAPI.PACKAGE_NAME);
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
 

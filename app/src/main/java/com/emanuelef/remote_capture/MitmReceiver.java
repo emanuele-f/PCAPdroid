@@ -157,7 +157,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 String header = istream.readLine();
 
                 if(header == null) {
-                    CaptureService.requireInstance().reportError("[BUG] Empty header received from the mitm plugin");
+                    // received when the addon is stopped
                     CaptureService.stopService();
                     break;
                 }

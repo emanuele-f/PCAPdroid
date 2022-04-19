@@ -61,6 +61,7 @@ import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.views.PrefSpinner;
+import com.pcapdroid.mitm.MitmAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -408,7 +409,21 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         mEmptyAppsView.setText(R.string.no_apps);
 
-        // Load the apps/icons
+        if(Prefs.isTLSDecryptionSetupDone(mPrefs)) {
+            // Remove the mitm addon from the list
+            AppDescriptor mitmAddon = null;
+
+            for(AppDescriptor cur: installedApps) {
+                if(cur.getPackageName().equals(MitmAPI.PACKAGE_NAME)) {
+                    mitmAddon = cur;
+                    break;
+                }
+            }
+
+            if(mitmAddon != null)
+                installedApps.remove(mitmAddon);
+        }
+
         Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
         mOpenAppsList.setApps(installedApps);
     }
