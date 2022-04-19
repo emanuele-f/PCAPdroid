@@ -101,9 +101,9 @@ public class EditFilterActivity extends BaseActivity {
 
         mDecChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
-                new Pair<>(DecryptionStatus.DECRYPTION_IN_PROGRESS, findViewById(R.id.dec_status_in_progress)),
+                new Pair<>(DecryptionStatus.WAITING_DATA, findViewById(R.id.dec_status_waiting_data)),
                 new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
-                new Pair<>(DecryptionStatus.TLS_ERROR, findViewById(R.id.dec_status_error))
+                new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));
 
         if(CaptureService.isDecryptingTLS()) {

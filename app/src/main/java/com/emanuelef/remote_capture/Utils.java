@@ -1111,7 +1111,7 @@ public class Utils {
             case NOT_DECRYPTABLE:
                 color = R.color.warning;
                 break;
-            case TLS_ERROR:
+            case ERROR:
                 color = R.color.danger;
                 break;
             default:

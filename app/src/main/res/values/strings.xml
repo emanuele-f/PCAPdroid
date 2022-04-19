@@ -310,7 +310,8 @@
     <string name="decrypted">Decrypted</string>
     <string name="decryption">Decryption</string>
     <string name="decryption_filter">Decryption: %1$s</string>
-    <string name="in_progress">In progress</string>
     <string name="connection_start_not_seen">PCAPdroid has not seen the start of this connection. Some information may be missing</string>
     <string name="network_traffic">Traffic</string>
+    <string name="warn_no_app_data">No application data has been exchanged</string>
+    <string name="waiting_application_data">Waiting data</string>
 </resources>

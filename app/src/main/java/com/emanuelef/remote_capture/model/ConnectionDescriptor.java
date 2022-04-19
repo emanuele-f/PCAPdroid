@@ -68,8 +68,8 @@ public class ConnectionDescriptor {
         CLEARTEXT,
         DECRYPTED,
         NOT_DECRYPTABLE,
-        DECRYPTION_IN_PROGRESS,
-        TLS_ERROR,
+        WAITING_DATA,
+        ERROR,
     }
 
     /* Metadata */
@@ -136,7 +136,6 @@ public class ConnectionDescriptor {
     public void processUpdate(ConnectionUpdate update) {
         // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
-            payload_length = update.payload_length;
             sent_bytes = update.sent_bytes;
             rcvd_bytes = update.rcvd_bytes;
             sent_pkts = update.sent_pkts;
@@ -152,6 +151,10 @@ public class ConnectionDescriptor {
             // see MitmReceiver.handlePayload
             if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (decryption_error != null))
                 status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
+
+            // with mitm we account the TLS payload length instead
+            if(!mitm_decrypt)
+                payload_length = update.payload_length;
         }
         if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
             info = update.info;
@@ -228,13 +231,13 @@ public class ConnectionDescriptor {
         if(isCleartext())
             return DecryptionStatus.CLEARTEXT;
         else if(decryption_error != null)
-            return DecryptionStatus.TLS_ERROR;
+            return DecryptionStatus.ERROR;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
         else if(isDecrypted())
             return DecryptionStatus.DECRYPTED;
         else
-            return DecryptionStatus.DECRYPTION_IN_PROGRESS;
+            return DecryptionStatus.WAITING_DATA;
     }
 
     public static String getDecryptionStatusLabel(DecryptionStatus status, Context ctx) {
@@ -244,7 +247,7 @@ public class ConnectionDescriptor {
             case CLEARTEXT: resid = R.string.not_encrypted; break;
             case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
             case DECRYPTED: resid = R.string.decrypted; break;
-            case DECRYPTION_IN_PROGRESS: resid = R.string.in_progress; break;
+            case WAITING_DATA: resid = R.string.waiting_application_data; break;
             default: resid = R.string.error;
         }
 
@@ -289,6 +292,7 @@ public class ConnectionDescriptor {
         if(payload_chunks == null)
             payload_chunks = new ArrayList<>();
         payload_chunks.add(chunk);
+        payload_length += chunk.payload.length;
     }
 
     private boolean hasHttp(boolean is_sent) {

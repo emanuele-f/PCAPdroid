@@ -54,7 +54,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     private ConnectionDescriptor mConn;
     private TableLayout mTable;
     private TextView mBytesView;
-    private TextView mPayload;
+    private TextView mPayloadLen;
     private TextView mPacketsView;
     private TextView mDurationView;
     private TextView mBlockedPkts;
@@ -106,7 +106,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         FlagImageView country_flag = view.findViewById(R.id.country_flag);
         TextView asn = view.findViewById(R.id.asn);
         mTable = view.findViewById(R.id.table);
-        mPayload = view.findViewById(R.id.detail_payload);
+        mPayloadLen = view.findViewById(R.id.detail_payload);
         mBytesView = view.findViewById(R.id.detail_bytes);
         mPacketsView = view.findViewById(R.id.detail_packets);
         mBlockedPkts = view.findViewById(R.id.blocked_pkts);
@@ -227,7 +227,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     public void connectionUpdated() {
         Context context = mBytesView.getContext();
 
-        mPayload.setText(Utils.formatBytes(mConn.payload_length));
+        mPayloadLen.setText(Utils.formatBytes(mConn.payload_length));
         mBytesView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatBytes(mConn.rcvd_bytes), Utils.formatBytes(mConn.sent_bytes)));
         mPacketsView.setText(String.format(getResources().getString(R.string.rcvd_and_sent), Utils.formatIntShort(mConn.rcvd_pkts), Utils.formatIntShort(mConn.sent_pkts)));
 
@@ -254,6 +254,11 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.connection_start_not_seen));
             mError.setVisibility(View.VISIBLE);
-        }
+        } else if(mConn.payload_length == 0) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
+            mError.setText(context.getString(R.string.warn_no_app_data));
+            mError.setVisibility(View.VISIBLE);
+        } else
+            mError.setVisibility(View.GONE);
     }
 }
