@@ -690,6 +690,10 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.mCaptureThread != null));
     }
 
+    public static boolean isMitmProxyRunning() {
+        return((INSTANCE != null) && (INSTANCE.mMitmReceiver != null) && INSTANCE.mMitmReceiver.isProxyRunning());
+    }
+
     public static boolean isAlwaysOnVPN() {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
     }

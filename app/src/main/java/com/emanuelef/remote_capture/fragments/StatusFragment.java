@@ -49,6 +49,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -109,12 +110,21 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                processStatsUpdateIntent(intent);
+                String action = intent.getAction();
+
+                if(action.equals(CaptureService.ACTION_STATS_DUMP))
+                    processStatsUpdateIntent(intent);
+                else if(action.equals(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED))
+                    refreshDecryptionStatus();
             }
         };
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(CaptureService.ACTION_STATS_DUMP);
+        filter.addAction(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED);
+
         LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+                .registerReceiver(mReceiver, filter);
     }
 
     @Override
@@ -212,6 +222,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private void recheckFilterWarning() {
         boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
         mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) && !hasFilter) ? View.VISIBLE : View.GONE);
+    }
+
+    private void refreshDecryptionStatus() {
+        mInterfaceInfo.setText(CaptureService.isMitmProxyRunning() ? R.string.tls_decryption_running : R.string.tls_decryption_starting);
     }
 
     private void refreshFilterInfo() {
@@ -360,7 +374,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 } else if(CaptureService.isDecryptingTLS()) {
-                    mInterfaceInfo.setText(R.string.tls_decryption_status);
+                    refreshDecryptionStatus();
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 } else if(service.getSocks5Enabled() == 1) {
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),

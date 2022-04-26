@@ -20,12 +20,17 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.LruCache;
 import android.util.SparseArray;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
@@ -61,6 +66,7 @@ import java.util.StringTokenizer;
 public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
     public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
+    public static final String ACTION_MITM_ADDON_STATUS_CHANGED = "addon_status_changed";
     private Thread mThread;
     private final ConnectionsRegister mReg;
     private final Context mContext;
@@ -68,6 +74,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final MitmAPI.MitmConfig mConfig;
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
+    private boolean mProxyRunning;
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
@@ -75,6 +82,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     private enum PayloadType {
         UNKNOWN,
+        RUNNING,
         TLS_ERROR,
         HTTP_ERROR,
         HTTP_REQUEST,
@@ -128,6 +136,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     public boolean start() throws IOException {
         Log.d(TAG, "starting");
+        mProxyRunning = false;
 
         if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);
@@ -146,6 +155,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         ParcelFileDescriptor fd = mSocketFd;
         mSocketFd = null;
         Utils.safeClose(fd); // possibly wake mThread
+
+        // send explicit stop message, as the addon may not be waked when the fd is closed
+        mAddon.stopProxy();
 
         // on some devices, calling close on the socket is not enough to stop the thread,
         // the service must be unbound
@@ -202,7 +214,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                     break;
                 }
 
-                if((payload_len <= 0) || (payload_len > 67108864)) { /* max 64 MB */
+                if((payload_len < 0) || (payload_len > 67108864)) { /* max 64 MB */
                     Log.w(TAG, "Ignoring bad payload length: " + payload_len);
                     istream.skipBytes(payload_len);
                     continue;
@@ -216,6 +228,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
                 if(pType == PayloadType.MASTER_SECRET)
                     logMasterSecret(payload);
+                else if(pType == PayloadType.RUNNING)
+                    handleProxyRunning();
                 else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
                     //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
@@ -235,6 +249,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             mKeylog = null;
         }
 
+        mProxyRunning = false;
         Log.d(TAG, "End receiving data");
     }
 
@@ -260,6 +275,17 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             default:
                 return ChunkType.RAW;
         }
+    }
+
+    private void handleProxyRunning() {
+        Log.d(TAG, "MITM proxy is running");
+        mProxyRunning = true;
+
+        // Notify the StatusFragment
+        new Handler(Looper.getMainLooper()).post(() -> {
+            Intent intent = new Intent(ACTION_MITM_ADDON_STATUS_CHANGED);
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+        });
     }
 
     private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long tstamp) {
@@ -303,6 +329,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     private static PayloadType parsePayloadType(String str) {
         switch (str) {
+            case "running":
+                return PayloadType.RUNNING;
             case "tls_err":
                 return PayloadType.TLS_ERROR;
             case "http_err":
@@ -336,6 +364,10 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         mKeylog.write(master_secret);
         mKeylog.write(0xa);
+    }
+
+    public boolean isProxyRunning() {
+        return mProxyRunning;
     }
 
     @Override

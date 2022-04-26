@@ -56,6 +56,7 @@ public class MitmAddon {
     private final MitmListener mReceiver;
     private final Messenger mMessenger;
     private Messenger mService;
+    private boolean mStopRequested;
 
     public MitmAddon(Context ctx, MitmListener receiver) {
         // Important: the application context is required here, otherwise bind/unbind will not work properly
@@ -65,15 +66,35 @@ public class MitmAddon {
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {
+        @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             Log.d(TAG, "Service connected");
             mService = new Messenger(service);
-            mReceiver.onMitmServiceConnect();
+
+            if(mStopRequested)
+                stopProxy();
+            else
+                mReceiver.onMitmServiceConnect();
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName className) {
             Log.d(TAG, "Service disconnected");
             disconnect(); // call unbind to prevent new connections
+            mReceiver.onMitmServiceDisconnect();
+        }
+
+        @Override
+        public void onBindingDied(ComponentName name) {
+            Log.w(TAG, "onBindingDied");
+            disconnect();
+            mReceiver.onMitmServiceDisconnect();
+        }
+
+        @Override
+        public void onNullBinding(ComponentName name) {
+            Log.w(TAG, "onNullBinding");
+            disconnect();
             mReceiver.onMitmServiceDisconnect();
         }
     };
@@ -236,13 +257,16 @@ public class MitmAddon {
 
     public boolean stopProxy() {
         if(mService == null) {
-            Log.e(TAG, "Not connected");
-            return false;
+            Log.d(TAG, "Not connected, postponing stop message");
+            mStopRequested = true;
+            return true;
         }
 
+        Log.d(TAG, "Send stop message");
         Message msg = Message.obtain(null, MitmAPI.MSG_STOP_MITM);
         try {
             mService.send(msg);
+            mStopRequested = false;
             return true;
         } catch (RemoteException e) {
             e.printStackTrace();

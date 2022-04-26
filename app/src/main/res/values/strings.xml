@@ -267,7 +267,8 @@
     <string name="save_ok">Saved</string>
     <string name="tls_decryption">TLS decryption (preview)</string>
     <string name="tls_decryption_summary">Decrypt the SSL/TLS traffic by performing mitm. This may now work with some apps, check out the user guide</string>
-    <string name="tls_decryption_status">TLS decryption is running</string>
+    <string name="tls_decryption_starting">TLS decryption is starting</string>
+    <string name="tls_decryption_running">TLS decryption is running</string>
     <string name="traffic_inspection">Traffic inspection</string>
     <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
