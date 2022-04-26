@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion "31.0.0"
-    ndkVersion "23.1.7779620"
+    ndkVersion "24.0.8215888"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 48
         versionName "1.4.8"
     }
@@ -73,8 +73,8 @@ dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation "androidx.navigation:navigation-fragment:2.4.1"
-    implementation "androidx.navigation:navigation-ui:2.4.1"
+    implementation "androidx.navigation:navigation-fragment:2.4.2"
+    implementation "androidx.navigation:navigation-ui:2.4.2"
 
 // Google
     implementation 'com.google.android.material:material:1.5.0'
