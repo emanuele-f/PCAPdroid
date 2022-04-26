@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.util.Log;
@@ -28,14 +29,17 @@ import android.util.SparseArray;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
-import com.emanuelef.remote_capture.interfaces.SslkeylogDumpListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
+import com.emanuelef.remote_capture.model.Prefs;
+import com.pcapdroid.mitm.MitmAPI;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -61,9 +65,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final ConnectionsRegister mReg;
     private final Context mContext;
     private final MitmAddon mAddon;
-    private final String mProxyAuth;
+    private final MitmAPI.MitmConfig mConfig;
     private ParcelFileDescriptor mSocketFd;
-    private SslkeylogDumpListener mSslkeylogListener;
+    private BufferedOutputStream mKeylog;
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
@@ -80,6 +84,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         TCP_ERROR,
         WEBSOCKET_CLIENT_MSG,
         WEBSOCKET_SERVER_MSG,
+        MASTER_SECRET,
     }
 
     private static class PendingPayload {
@@ -102,7 +107,23 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
-        mProxyAuth = proxyAuth;
+
+        mConfig = new MitmAPI.MitmConfig();
+        mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
+        mConfig.proxyAuth = proxyAuth;
+        mConfig.dumpMasterSecrets = (CaptureService.getDumpMode() != Prefs.DumpMode.NONE);
+
+        /* upstream certificate verification is disabled because the app does not provide a way to let the user
+           accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
+           https://github.com/mitmproxy/mitmproxy/issues/5109 */
+        mConfig.sslInsecure = true;
+
+        //noinspection ResultOfMethodCallIgnored
+        getKeylogFilePath(mContext).delete();
+    }
+
+    public static File getKeylogFilePath(Context ctx) {
+        return new File(ctx.getCacheDir(), "SSLKEYLOG.txt");
     }
 
     public boolean start() throws IOException {
@@ -193,18 +214,25 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 byte[] payload = new byte[payload_len];
                 istream.readFully(payload);
 
-                ConnectionDescriptor conn = getConnByLocalPort(port);
-                //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
+                if(pType == PayloadType.MASTER_SECRET)
+                    logMasterSecret(payload);
+                else {
+                    ConnectionDescriptor conn = getConnByLocalPort(port);
+                    //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
 
-                if(conn != null)
-                    handlePayload(conn, pType, payload, tstamp);
-                else
-                    // We may receive a payload before seeing the connection in connectionsAdded
-                    addPendingPayload(new PendingPayload(pType, payload, port, tstamp));
+                    if(conn != null)
+                        handlePayload(conn, pType, payload, tstamp);
+                    else
+                        // We may receive a payload before seeing the connection in connectionsAdded
+                        addPendingPayload(new PendingPayload(pType, payload, port, tstamp));
+                }
             }
         } catch (IOException e) {
             if(mSocketFd != null) // ignore termination
                 e.printStackTrace();
+        } finally {
+            Utils.safeClose(mKeylog);
+            mKeylog = null;
         }
 
         Log.d(TAG, "End receiving data");
@@ -293,9 +321,21 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return PayloadType.WEBSOCKET_CLIENT_MSG;
             case "ws_srvmsg":
                 return PayloadType.WEBSOCKET_SERVER_MSG;
+            case "secret":
+                return PayloadType.MASTER_SECRET;
             default:
                 return PayloadType.UNKNOWN;
         }
+    }
+
+    private void logMasterSecret(byte[] master_secret) throws IOException {
+        if(mKeylog == null)
+            mKeylog = new BufferedOutputStream(
+                    mContext.getContentResolver().openOutputStream(
+                            Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
+
+        mKeylog.write(master_secret);
+        mKeylog.write(0xa);
     }
 
     @Override
@@ -350,7 +390,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
 
         // Certificate installation verified, start the proxy
-        mSocketFd = mAddon.startProxy(TLS_DECRYPTION_PROXY_PORT, mProxyAuth);
+        mSocketFd = mAddon.startProxy(mConfig);
         if(mSocketFd == null) {
             mAddon.disconnect();
             return;
@@ -367,7 +407,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     public void onMitmServiceDisconnect() {
         // Stop the capture if running, CaptureService will call MitmReceiver::stop
         CaptureService.stopService();
-        mSslkeylogListener = null;
     }
 
     ConnectionDescriptor getConnByLocalPort(int local_port) {
@@ -385,27 +424,5 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         // success
         return conn;
-    }
-
-    /* Requests to dump the sslkeylogfile of the remote mitm-addon.
-     * Returns false if the the dump cannot be done. The listener onSslkeylogDumpResult method can
-     * only be invoked when returning true. */
-    public boolean dumpSslkeylogfile(SslkeylogDumpListener listener) {
-        if(mAddon.isConnected() && mAddon.requestSslkeylogfile()) {
-            // will continue in onMitmSslkeylogfileResult
-            mSslkeylogListener = listener;
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void onMitmSslkeylogfileResult(@Nullable byte []contents) {
-        if(mSslkeylogListener == null)
-            return;
-
-        mSslkeylogListener.onSslkeylogDumpResult(contents);
-        mSslkeylogListener = null;
     }
 }

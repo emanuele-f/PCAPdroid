@@ -884,6 +884,7 @@ public class Utils {
 
         if(!has_contents) {
             try {
+                //noinspection ResultOfMethodCallIgnored
                 (new File(path + ".tmp")).delete(); // if exists
             } catch (Exception e) {
                 // ignore

@@ -64,6 +64,7 @@ import android.widget.TextView;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
+import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
@@ -91,6 +92,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private AppState mState;
     private AppStateListener mListener;
     private Uri mPcapUri;
+    private File mKeylogFile;
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
@@ -156,17 +158,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     Log.d(TAG, "Service status: " + status);
 
                     if (status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
+                        mKeylogFile = null;
                         appStateRunning();
                     } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                         // The service may still be active (on premature native termination)
                         if (CaptureService.isServiceActive())
                             CaptureService.stopService();
 
+                        mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+                        if(!mKeylogFile.exists())
+                            mKeylogFile = null;
+
+                        Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
+
                         if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
                             showPcapActionDialog(mPcapUri);
                             mPcapUri = null;
                             mPcapFname = null;
-                        }
+
+                            // will export the keylogfile after saving/sharing pcap
+                        } else if(mKeylogFile != null)
+                            startExportSslkeylogfile();
 
                         appStateReady();
                     }
@@ -473,9 +485,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        } else if (id == R.id.export_sslkeylogfile) {
-            startExportSslkeylogfile();
-            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -670,6 +679,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             dialog.cancel();
         });
         builder.setNeutralButton(R.string.ok, (dialog, which) -> dialog.cancel());
+        builder.setOnDismissListener(dialogInterface -> {
+            if(mKeylogFile != null)
+                startExportSslkeylogfile();
+        });
 
         builder.create().show();
     }
@@ -727,20 +740,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void sslkeyfileExportResult(final ActivityResult result) {
         if(result.getResultCode() == RESULT_OK && result.getData() != null) {
-            Uri uri = result.getData().getData();
-
-            if(!CaptureService.dumpSslkeylogfile(sslkeylog -> exportSslkeylogfile(uri, sslkeylog)))
+            try(OutputStream out = getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
+                Utils.copy(mKeylogFile, out);
+                Utils.showToast(this, R.string.save_ok);
+            } catch (IOException e) {
+                e.printStackTrace();
                 Utils.showToastLong(this, R.string.export_failed);
-        }
-    }
-
-    private void exportSslkeylogfile(Uri export_uri, @Nullable byte[] sslkeylog) {
-        try(OutputStream out = getContentResolver().openOutputStream(export_uri, "rwt")) {
-            out.write(sslkeylog);
-            Utils.showToast(this, R.string.save_ok);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Utils.showToastLong(this, R.string.cannot_write_file);
+            }
         }
     }
 }

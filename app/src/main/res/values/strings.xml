@@ -288,7 +288,6 @@
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Uninstall it and retry</string>
     <string name="mitm_addon_new_version">The PCAPdroid plugin must be upgraded</string>
     <string name="upgrade_action">Upgrade</string>
-    <string name="export_sslkeylog">Export SSL keylog</string>
     <string name="export_failed">Export failed</string>
     <string name="connection">Connection</string>
     <string name="encrypted">Encrypted</string>

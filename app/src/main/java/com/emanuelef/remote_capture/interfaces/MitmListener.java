@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 public interface MitmListener {
     void onMitmGetCaCertificateResult(@Nullable String ca_pem);
-    void onMitmSslkeylogfileResult(@Nullable byte[] contents);
     void onMitmServiceConnect();
     void onMitmServiceDisconnect();
 }

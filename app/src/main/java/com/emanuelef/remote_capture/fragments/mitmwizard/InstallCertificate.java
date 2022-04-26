@@ -217,7 +217,4 @@ public class InstallCertificate extends StepFragment implements MitmListener {
         if(mCaPem == null)
             certFail();
     }
-
-    @Override
-    public void onMitmSslkeylogfileResult(@Nullable byte[] contents) {}
 }

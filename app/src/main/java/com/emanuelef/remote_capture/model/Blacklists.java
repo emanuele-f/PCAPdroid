@@ -193,6 +193,8 @@ public class Blacklists {
             for(File f: files) {
                 if(!validLists.contains(f)) {
                     Log.d(TAG, "Removing unknown list: " + f.getPath());
+
+                    //noinspection ResultOfMethodCallIgnored
                     f.delete();
                 }
             }

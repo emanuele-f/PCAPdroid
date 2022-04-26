@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 5;
-    public static final String PACKAGE_VERSION_NAME = "v0.5";
+    public static final long PACKAGE_VERSION_CODE = 6;
+    public static final String PACKAGE_VERSION_NAME = "v0.6";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
     private final MitmListener mReceiver;
@@ -150,15 +150,6 @@ public class MitmAddon {
                 }
 
                 receiver.onMitmGetCaCertificateResult(ca_pem);
-            } else if(msg.what == MitmAPI.MSG_GET_SSLKEYLOG) {
-                byte []sslkeylog = null;
-
-                if(msg.getData() != null) {
-                    Bundle res = msg.getData();
-                    sslkeylog = res.getByteArray(MitmAPI.SSLKEYLOG_RESULT);
-                }
-
-                receiver.onMitmSslkeylogfileResult(sslkeylog);
             }
         }
     }
@@ -205,26 +196,9 @@ public class MitmAddon {
         }
     }
 
-    public boolean requestSslkeylogfile() {
-        if(mService == null) {
-            Log.e(TAG, "Not connected");
-            return false;
-        }
-
-        Message msg = Message.obtain(null, MitmAPI.MSG_GET_SSLKEYLOG);
-        msg.replyTo = mMessenger;
-        try {
-            mService.send(msg);
-            return true;
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     // Start the mitm proxy and returns a ParcelFileDescriptor for the data communication.
     // The proxy can be stopped by closing the descriptor and then calling disconnect().
-    public ParcelFileDescriptor startProxy(int port, String proxyAuth) {
+    public ParcelFileDescriptor startProxy(MitmAPI.MitmConfig conf) {
         if(mService == null) {
             Log.e(TAG, "Not connected");
             return null;
@@ -237,15 +211,6 @@ public class MitmAddon {
             e.printStackTrace();
             return null;
         }
-
-        MitmAPI.MitmConfig conf = new MitmAPI.MitmConfig();
-        conf.proxyPort = port;
-        conf.proxyAuth = proxyAuth;
-
-        /* upstream certificate verification is disabled because the app does not provide a way to let the user
-           accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
-           https://github.com/mitmproxy/mitmproxy/issues/5109 */
-        conf.sslInsecure = true;
 
         // Note: ParcelFileDescriptor must be passed as parcelable
         Message msg = Message.obtain(null, MitmAPI.MSG_START_MITM, 0, 0, pair[0]);
