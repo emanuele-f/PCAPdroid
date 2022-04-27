@@ -27,6 +27,7 @@ public class PayloadChunk implements Serializable {
     public boolean is_sent;
     public long timestamp;
     public ChunkType type;
+    public String contentType;
 
     // Serializable need in ConnectionPayload fragment
     public enum ChunkType implements Serializable {

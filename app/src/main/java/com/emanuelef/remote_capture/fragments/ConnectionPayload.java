@@ -91,7 +91,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         if(mConn.isPayloadTruncated())
             mTruncatedWarning.setVisibility(View.VISIBLE);
 
-        mAdapter = new PayloadAdapter(requireContext(), layoutMan, mConn, mode);
+        mAdapter = new PayloadAdapter(requireContext(), mConn, mode);
         mCurChunks = mConn.getNumPayloadChunks();
         recyclerView.setAdapter(mAdapter);
     }

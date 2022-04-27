@@ -41,6 +41,7 @@ public class HTTPReassembly {
     private boolean mReadingHeaders;
     private boolean mChunkedEncoding;
     private ContentEncoding mContentEncoding;
+    private String mContentType;
     private int mContentLength;
     private int mHeadersSize;
     private final ArrayList<PayloadChunk> mHeaders = new ArrayList<>();
@@ -68,6 +69,7 @@ public class HTTPReassembly {
         mContentEncoding = ContentEncoding.UNKNOWN;
         mChunkedEncoding = false;
         mContentLength = -1;
+        mContentType = null;
         mHeadersSize = 0;
         mHeaders.clear();
         mBody.clear();
@@ -126,8 +128,10 @@ public class HTTPReassembly {
                                 break;
                         }
                     } else if(line.startsWith("content-type: ")) {
-                        String contentType = line.substring(14);
-                        log_d("Content-Type: " + contentType);
+                        int endIdx = line.indexOf(";");
+                        mContentType = line.substring(14, (endIdx > 0) ? endIdx : line.length());
+
+                        log_d("Content-Type: " + mContentType);
                     } else if(line.startsWith("content-length: ")) {
                         try {
                             mContentLength = Integer.parseInt(line.substring(16));
@@ -253,6 +257,7 @@ public class HTTPReassembly {
                 if(mInvalidHttp)
                     to_add.type = PayloadChunk.ChunkType.RAW;
 
+                to_add.contentType = mContentType;
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
             }

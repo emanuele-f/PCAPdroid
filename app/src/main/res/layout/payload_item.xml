@@ -17,28 +17,27 @@
 
         <TextView
             android:id="@+id/header"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:fontFamily="monospace"
             android:textSize="11sp"
             android:textStyle="bold"
             tools:text="#1 [TX] 11:02:03.154 — 120 B" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/jumpToReply"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/content_type"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="2dp"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingVertical="0dp"
-            android:paddingHorizontal="0dp"
-            android:padding="4dp"
-            app:icon="@drawable/ic_subdirectory_arrow_left"
-            app:iconTint="@color/colorTabText" />
+            android:fontFamily="monospace"
+            android:textSize="11sp"
+            android:textStyle="italic"
+            android:singleLine="true"
+            android:ellipsize="start"
+            tools:text="application/javascript" />
     </LinearLayout>
 
     <TextView
