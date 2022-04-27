@@ -93,7 +93,7 @@ public class EditFilterActivity extends BaseActivity {
         });
 
         mStatusChips = new ArrayList<>(Arrays.asList(
-                new Pair<>(Status.STATUS_OPEN, findViewById(R.id.status_open)),
+                new Pair<>(Status.STATUS_ACTIVE, findViewById(R.id.status_active)),
                 new Pair<>(Status.STATUS_CLOSED, findViewById(R.id.status_closed)),
                 new Pair<>(Status.STATUS_UNREACHABLE, findViewById(R.id.status_unreachable)),
                 new Pair<>(Status.STATUS_ERROR, findViewById(R.id.status_error))
@@ -101,7 +101,6 @@ public class EditFilterActivity extends BaseActivity {
 
         mDecChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
-                new Pair<>(DecryptionStatus.WAITING_DATA, findViewById(R.id.dec_status_waiting_data)),
                 new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
                 new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));

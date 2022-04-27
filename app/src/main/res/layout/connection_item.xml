@@ -102,7 +102,7 @@
             app:layout_constraintBottom_toBottomOf="@id/app_name_layout"
             app:layout_constraintEnd_toEndOf="parent"
             tools:textColor="#FF28BC36"
-            tools:text="@string/conn_status_open" />
+            tools:text="@string/conn_status_active" />
 
         <TextView
             android:id="@+id/last_seen"

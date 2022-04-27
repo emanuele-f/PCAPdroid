@@ -57,7 +57,7 @@ public class ConnectionDescriptor {
     // This is an high level status which abstracts the zdtun_conn_status_t
     public enum Status {
         STATUS_INVALID,
-        STATUS_OPEN,
+        STATUS_ACTIVE,
         STATUS_CLOSED,
         STATUS_UNREACHABLE,
         STATUS_ERROR,
@@ -192,14 +192,14 @@ public class ConnectionDescriptor {
                     return Status.STATUS_ERROR;
             }
         }
-        return Status.STATUS_OPEN;
+        return Status.STATUS_ACTIVE;
     }
 
     public static String getStatusLabel(Status status, Context ctx) {
         int resid;
 
         switch(status) {
-            case STATUS_OPEN: resid = R.string.conn_status_open; break;
+            case STATUS_ACTIVE: resid = R.string.conn_status_active; break;
             case STATUS_CLOSED: resid = R.string.conn_status_closed; break;
             case STATUS_UNREACHABLE: resid = R.string.conn_status_unreachable; break;
             default: resid = R.string.error;

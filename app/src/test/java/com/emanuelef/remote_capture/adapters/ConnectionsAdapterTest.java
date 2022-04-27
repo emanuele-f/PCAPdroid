@@ -248,7 +248,7 @@ public class ConnectionsAdapterTest {
         });
 
         // apply filter: only active connections
-        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_OPEN;
+        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_ACTIVE;
         adapter.refreshFilteredConnections();
 
         assertEquals(4, adapter.getItemCount());
@@ -290,7 +290,7 @@ public class ConnectionsAdapterTest {
     @Test
     /* Update of connections with rollover and status filter */
     public void testFilterUpdate() {
-        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_OPEN;
+        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_ACTIVE;
         adapter.refreshFilteredConnections();
 
         // 8 connections (5 active connections) with 4 removed connections (mUnfilteredItemsCount not 0).
@@ -339,7 +339,7 @@ public class ConnectionsAdapterTest {
      * connection transits to the "closed" state.
      */
     public void testFilterUnmatch() {
-        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_OPEN;
+        adapter.mFilter.status = ConnectionDescriptor.Status.STATUS_ACTIVE;
         adapter.refreshFilteredConnections();
 
         // 8 connections (4 active connections) with 1 removed connections (mUnfilteredItemsCount not 0).

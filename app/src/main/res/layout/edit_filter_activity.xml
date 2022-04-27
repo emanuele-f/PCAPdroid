@@ -65,11 +65,11 @@
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/status_open"
+                android:id="@+id/status_active"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/conn_status_open"/>
+                android:text="@string/conn_status_active"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_closed"
@@ -119,13 +119,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/decrypted"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/dec_status_waiting_data"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/waiting_application_data"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/dec_status_not_decryptable"
