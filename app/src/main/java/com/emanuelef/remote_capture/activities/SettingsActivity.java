@@ -89,7 +89,6 @@ public class SettingsActivity extends BaseActivity {
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
         private Preference mTlsHelp;
-        private Preference mTrafficInspection;
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
@@ -211,7 +210,6 @@ public class SettingsActivity extends BaseActivity {
 
         @SuppressWarnings("deprecation")
         private void setupTrafficInspectionPrefs() {
-            mTrafficInspection = requirePreference("traffic_inspection");
             mTlsHelp = requirePreference("tls_how_to");
 
             mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
@@ -323,7 +321,19 @@ public class SettingsActivity extends BaseActivity {
         }
 
         private void rootCaptureHideShow(boolean enabled) {
-            mTrafficInspection.setVisible(!enabled);
+            if(enabled) {
+                mTlsDecryption.setVisible(false);
+                mSocks5Enabled.setVisible(false);
+                mSocks5ProxyIp.setVisible(false);
+                mSocks5ProxyPort.setVisible(false);
+                mTlsHelp.setVisible(false);
+                mFullPayloadEnabled.setVisible(true);
+            } else {
+                mTlsDecryption.setVisible(true);
+                fullPayloadHideShow(mTlsDecryption.isChecked());
+                socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
+            }
+
             mIpv6Enabled.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
         }

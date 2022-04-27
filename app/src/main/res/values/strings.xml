@@ -265,7 +265,7 @@
     <string name="close_nav_drawer">Close drawer</string>
     <string name="capture_all_apps">Capture the traffic of all the apps</string>
     <string name="save_ok">Saved</string>
-    <string name="tls_decryption">TLS decryption (preview)</string>
+    <string name="tls_decryption">TLS decryption</string>
     <string name="tls_decryption_summary">Decrypt the SSL/TLS traffic by performing mitm. This may now work with some apps, check out the user guide</string>
     <string name="tls_decryption_starting">TLS decryption is starting</string>
     <string name="tls_decryption_running">TLS decryption is running</string>
