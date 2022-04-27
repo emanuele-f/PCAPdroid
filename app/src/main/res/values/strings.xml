@@ -314,4 +314,7 @@
     <string name="network_traffic">Traffic</string>
     <string name="warn_no_app_data">No application data has been exchanged</string>
     <string name="waiting_application_data">Waiting data</string>
+    <string name="display_as">Display as…</string>
+    <string name="printable_text">Printable text</string>
+    <string name="hexdump">Hexdump</string>
 </resources>

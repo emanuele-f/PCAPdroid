@@ -1125,4 +1125,8 @@ public class Utils {
         icon.setColorFilter(ContextCompat.getColor(context, color));
         icon.setImageDrawable(ContextCompat.getDrawable(context, resid));
     }
+
+    public static boolean isPrintable(byte c) {
+        return ((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t');
+    }
 }

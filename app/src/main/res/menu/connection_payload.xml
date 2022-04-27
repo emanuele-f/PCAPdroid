@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/display_as"
+        android:icon="@drawable/ic_short_text"
+        app:showAsAction="ifRoom">
+        <menu>
+            <group android:id="@+id/display_as_grp" android:checkableBehavior="single">
+                <item
+                    android:id="@+id/printable_text"
+                    android:title="@string/printable_text" />
+                <item
+                    android:id="@+id/hexdump"
+                    android:title="@string/hexdump" />
+            </group>
+        </menu>
+    </item>
+</menu>

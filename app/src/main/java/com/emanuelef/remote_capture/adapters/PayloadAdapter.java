@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -63,6 +64,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
+    private boolean mShowAsPrintable;
 
     public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -111,15 +113,13 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         private void makeText() {
             int dump_len = mIsExpanded ? mChunk.payload.length : Math.min(mChunk.payload.length, COLLAPSE_CHUNK_SIZE);
 
-            if(mMode == ChunkType.RAW)
+            if(!mShowAsPrintable)
                 mTheText = Utils.hexdump(mChunk.payload, 0, dump_len);
             else
                 mTheText = new String(mChunk.payload, 0, dump_len, StandardCharsets.UTF_8);
         }
 
         void expand() {
-            assert(!mIsExpanded);
-
             mIsExpanded = true;
             makeText();
 
@@ -129,8 +129,6 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         // collapses the item and returns the old number of pages
         void collapse() {
-            assert(mIsExpanded);
-
             mIsExpanded = false;
             mTheText = null;
 
@@ -305,6 +303,19 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         int pageIdx = pos - count;
         return mChunks.get(i).getPage(pageIdx);
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setDisplayAsPrintableText(boolean asText) {
+        if(mShowAsPrintable != asText) {
+            mShowAsPrintable = asText;
+
+            // Chunk pagination depends on the displayed data length, collapsing everything is simpler
+            // than handling individual changes
+            for(AdapterChunk chunk: mChunks)
+                chunk.collapse(); // resets the chunk text
+            notifyDataSetChanged();
+        }
     }
 
     private int getAdapterPosition(AdapterChunk chunk) {
