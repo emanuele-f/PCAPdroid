@@ -48,6 +48,7 @@
         tools:textColor="@color/sentPayloadFg"
         android:textIsSelectable="true"
         android:fontFamily="monospace"
+        android:textDirection="ltr"
         android:textSize="9sp"
         android:textStyle="bold"
         android:scrollHorizontally="true"

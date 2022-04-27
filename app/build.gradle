@@ -22,6 +22,7 @@ android {
             // Use a different app ID for debug to allow its coexistence with release builds
             applicationIdSuffix '.debug'
             versionNameSuffix '-debug'
+            pseudoLocalesEnabled true
 
             if(project.hasProperty("doNotStrip")) {
                 // NOTE: packagingOptions will also affect the "release" build, so the "doNotStrip"
