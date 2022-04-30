@@ -51,17 +51,18 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-/* An experimental receiver for the TLS decryption plaintext.
+/* A receiver for the mitm addon messages.
  *
- * A mitmproxy plugin sends TCP messages on port 5750, containing an header and the plaintext.
+ * The mitm addon sends TCP messages via a socket, containing an header and the plaintext.
  *
  * The header is an ASCII string in the following format:
- *   "port:payload_type:payload_length\n"
+ *   "timestamp:port:msg_type:msg_length\n"
+ * - timestamp: milliseconds timestamp for the message
  * - port: the TCP local port used by the SOCKS5 client
- * - payload_type: http_req|http_rep|ws_climsg|ws_srvmsg
- * - payload_length: the payload length in bytes:
+ * - msg_type: type of message, see parseMsgType for possible values
+ * - msg_length: the message length in bytes
  *
- * The raw payload data follows the header.
+ * The raw message data follows the header.
  */
 public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
@@ -78,9 +79,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
-    private final SparseArray<ArrayList<PendingPayload>> mPendingPayloads = new SparseArray<>();
+    private final SparseArray<ArrayList<PendingMessage>> mPendingMessages = new SparseArray<>();
 
-    private enum PayloadType {
+    private enum MsgType {
         UNKNOWN,
         RUNNING,
         TLS_ERROR,
@@ -95,16 +96,16 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         MASTER_SECRET,
     }
 
-    private static class PendingPayload {
-        PayloadType pType;
-        byte[] payload;
+    private static class PendingMessage {
+        MsgType type;
+        byte[] msg;
         int port;
         long pendingSince;
         long when;
 
-        PendingPayload(PayloadType _pType, byte[] _payload, int _port, long _now) {
-            pType = _pType;
-            payload = _payload;
+        PendingMessage(MsgType _type, byte[] _msg, int _port, long _now) {
+            type = _type;
+            msg = _msg;
             port = _port;
             pendingSince = SystemClock.uptimeMillis();
             when = _now;
@@ -180,9 +181,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
-                String payload_type;
+                String msg_type;
                 int port;
-                int payload_len;
+                int msg_len;
                 long tstamp;
 
                 // Read the header
@@ -199,46 +200,46 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 //Log.d(TAG, "[HEADER] " + header);
 
                 try {
-                    // timestamp:port:payload_type:payload_length\n
+                    // timestamp:port:msg_type:msg_length\n
                     String tk_tstamp = tk.nextToken(":");
                     String tk_port = tk.nextToken();
-                    payload_type = tk.nextToken();
+                    msg_type = tk.nextToken();
                     String tk_len = tk.nextToken();
 
                     tstamp = Long.parseLong(tk_tstamp);
                     port = Integer.parseInt(tk_port);
-                    payload_len = Integer.parseInt(tk_len);
+                    msg_len = Integer.parseInt(tk_len);
                 } catch (NoSuchElementException | NumberFormatException e) {
                     CaptureService.requireInstance().reportError("[BUG] Invalid header received from the mitm plugin");
                     CaptureService.stopService();
                     break;
                 }
 
-                if((payload_len < 0) || (payload_len > 67108864)) { /* max 64 MB */
-                    Log.w(TAG, "Ignoring bad payload length: " + payload_len);
-                    istream.skipBytes(payload_len);
+                if((msg_len < 0) || (msg_len > 67108864)) { /* max 64 MB */
+                    Log.w(TAG, "Ignoring bad message length: " + msg_len);
+                    istream.skipBytes(msg_len);
                     continue;
                 }
 
-                PayloadType pType = parsePayloadType(payload_type);
-                //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port);
+                MsgType type = parseMsgType(msg_type);
+                //Log.d(TAG, "MSG." + type.name() + "[" + message_len + " B]: port=" + port);
 
-                byte[] payload = new byte[payload_len];
-                istream.readFully(payload);
+                byte[] msg = new byte[msg_len];
+                istream.readFully(msg);
 
-                if(pType == PayloadType.MASTER_SECRET)
-                    logMasterSecret(payload);
-                else if(pType == PayloadType.RUNNING)
+                if(type == MsgType.MASTER_SECRET)
+                    logMasterSecret(msg);
+                else if(type == MsgType.RUNNING)
                     handleProxyRunning();
                 else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
-                    //Log.d(TAG, "PAYLOAD." + pType.name() + "[" + payload_len + " B]: port=" + port + ", match=" + (conn != null));
+                    //Log.d(TAG, "MSG." + type.name() + "[" + message_len + " B]: port=" + port + ", match=" + (conn != null));
 
                     if(conn != null)
-                        handlePayload(conn, pType, payload, tstamp);
+                        handleMessage(conn, type, msg, tstamp);
                     else
-                        // We may receive a payload before seeing the connection in connectionsAdded
-                        addPendingPayload(new PendingPayload(pType, payload, port, tstamp));
+                        // We may receive a message before seeing the connection in connectionsAdded
+                        addPendingMessage(new PendingMessage(type, msg, port, tstamp));
                 }
             }
         } catch (IOException e) {
@@ -253,8 +254,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         Log.d(TAG, "End receiving data");
     }
 
-    private boolean isSent(PayloadType pType) {
-        switch (pType) {
+    private boolean isSent(MsgType type) {
+        switch (type) {
             case HTTP_REQUEST:
             case TCP_CLIENT_MSG:
             case WEBSOCKET_CLIENT_MSG:
@@ -264,8 +265,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    private ChunkType getChunkType(PayloadType pType) {
-        switch (pType) {
+    private ChunkType getChunkType(MsgType type) {
+        switch (type) {
             case HTTP_REQUEST:
             case HTTP_REPLY:
                 return ChunkType.HTTP;
@@ -288,71 +289,71 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         });
     }
 
-    private void handlePayload(ConnectionDescriptor conn, PayloadType pType, byte[] payload, long tstamp) {
+    private void handleMessage(ConnectionDescriptor conn, MsgType type, byte[] message, long tstamp) {
         // NOTE: we are possibly accessing the conn concurrently
-        if((pType == PayloadType.TLS_ERROR) || (pType == PayloadType.HTTP_ERROR) || (pType == PayloadType.TCP_ERROR)) {
-            conn.decryption_error = new String(payload, StandardCharsets.US_ASCII);
+        if((type == MsgType.TLS_ERROR) || (type == MsgType.HTTP_ERROR) || (type == MsgType.TCP_ERROR)) {
+            conn.decryption_error = new String(message, StandardCharsets.US_ASCII);
 
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         } else
-            conn.addPayloadChunk(new PayloadChunk(payload, getChunkType(pType), isSent(pType), tstamp));
+            conn.addPayloadChunk(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
-    private synchronized void addPendingPayload(PendingPayload pending) {
+    private synchronized void addPendingMessage(PendingMessage pending) {
         // Purge unresolved connections (should not happen, just in case)
-        if(mPendingPayloads.size() > 32) {
+        if(mPendingMessages.size() > 32) {
             long now = SystemClock.uptimeMillis();
 
-            for(int i=mPendingPayloads.size()-1; i>=0; i--) {
-                ArrayList<PendingPayload> pp = mPendingPayloads.valueAt(i);
+            for(int i = mPendingMessages.size()-1; i>=0; i--) {
+                ArrayList<PendingMessage> pp = mPendingMessages.valueAt(i);
 
                 if((now - pp.get(0).pendingSince) > 5000 /* 5 sec */) {
-                    Log.w(TAG, "Dropping " + pp.size() + " oldpayloads");
-                    mPendingPayloads.remove(mPendingPayloads.keyAt(i));
+                    Log.w(TAG, "Dropping " + pp.size() + " old messages");
+                    mPendingMessages.remove(mPendingMessages.keyAt(i));
                 }
             }
         }
 
-        int idx = mPendingPayloads.indexOfKey(pending.port);
-        ArrayList<PendingPayload> pp;
+        int idx = mPendingMessages.indexOfKey(pending.port);
+        ArrayList<PendingMessage> pp;
 
         if(idx < 0) {
             pp = new ArrayList<>();
-            mPendingPayloads.put(pending.port, pp);
+            mPendingMessages.put(pending.port, pp);
         } else
-            pp = mPendingPayloads.valueAt(idx);
+            pp = mPendingMessages.valueAt(idx);
 
         pp.add(pending);
     }
 
-    private static PayloadType parsePayloadType(String str) {
+    private static MsgType parseMsgType(String str) {
         switch (str) {
             case "running":
-                return PayloadType.RUNNING;
+                return MsgType.RUNNING;
             case "tls_err":
-                return PayloadType.TLS_ERROR;
+                return MsgType.TLS_ERROR;
             case "http_err":
-                return PayloadType.HTTP_ERROR;
+                return MsgType.HTTP_ERROR;
             case "http_req":
-                return PayloadType.HTTP_REQUEST;
+                return MsgType.HTTP_REQUEST;
             case "http_rep":
-                return PayloadType.HTTP_REPLY;
+                return MsgType.HTTP_REPLY;
             case "tcp_climsg":
-                return PayloadType.TCP_CLIENT_MSG;
+                return MsgType.TCP_CLIENT_MSG;
             case "tcp_srvmsg":
-                return PayloadType.TCP_SERVER_MSG;
+                return MsgType.TCP_SERVER_MSG;
             case "tcp_err":
-                return PayloadType.TCP_ERROR;
+                return MsgType.TCP_ERROR;
             case "ws_climsg":
-                return PayloadType.WEBSOCKET_CLIENT_MSG;
+                return MsgType.WEBSOCKET_CLIENT_MSG;
             case "ws_srvmsg":
-                return PayloadType.WEBSOCKET_SERVER_MSG;
+                return MsgType.WEBSOCKET_SERVER_MSG;
             case "secret":
-                return PayloadType.MASTER_SECRET;
+                return MsgType.MASTER_SECRET;
             default:
-                return PayloadType.UNKNOWN;
+                return MsgType.UNKNOWN;
         }
     }
 
@@ -385,15 +386,15 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 //Log.d(TAG, "[+] port " + conn.local_port);
                 mPortToConnId.put(conn.local_port, conn.incr_id);
 
-                // Check if the payload has already been received
-                int pending_idx = mPendingPayloads.indexOfKey(conn.local_port);
+                // Check if the message has already been received
+                int pending_idx = mPendingMessages.indexOfKey(conn.local_port);
                 if(pending_idx >= 0) {
-                    ArrayList<PendingPayload> pp = mPendingPayloads.valueAt(pending_idx);
-                    mPendingPayloads.removeAt(pending_idx);
+                    ArrayList<PendingMessage> pp = mPendingMessages.valueAt(pending_idx);
+                    mPendingMessages.removeAt(pending_idx);
 
-                    for(PendingPayload pending: pp) {
-                        //Log.d(TAG, "(pending) PAYLOAD." + pending.pType.name() + "[" + pending.payload.length + " B]: port=" + pending.port);
-                        handlePayload(conn, pending.pType, pending.payload, pending.when);
+                    for(PendingMessage pending: pp) {
+                        //Log.d(TAG, "(pending) MSG." + pending.type.name() + "[" + pending.message.length + " B]: port=" + pending.port);
+                        handleMessage(conn, pending.type, pending.msg, pending.when);
                     }
                 }
             }
