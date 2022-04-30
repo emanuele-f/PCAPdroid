@@ -157,16 +157,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (status != null) {
                     Log.d(TAG, "Service status: " + status);
 
-                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
-                        mKeylogFile = null;
+                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED))
                         appStateRunning();
-                    } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
+                    else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                         // The service may still be active (on premature native termination)
                         if (CaptureService.isServiceActive())
                             CaptureService.stopService();
 
                         mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
-                        if(!mKeylogFile.exists())
+                        if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
                             mKeylogFile = null;
 
                         Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
@@ -748,5 +747,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToastLong(this, R.string.export_failed);
             }
         }
+
+        mKeylogFile = null;
     }
 }
