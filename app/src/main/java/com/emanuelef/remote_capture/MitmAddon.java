@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 6;
-    public static final String PACKAGE_VERSION_NAME = "v0.6";
+    public static final long PACKAGE_VERSION_CODE = 7;
+    public static final String PACKAGE_VERSION_NAME = "v0.7";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
     private final MitmListener mReceiver;
@@ -114,7 +114,7 @@ public class MitmAddon {
 
     public static String getGithubReleaseUrl() {
         return "https://github.com/emanuele-f/PCAPdroid-mitm/releases/download/" +
-                PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME +".apk";
+                PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
     }
 
     public static boolean hasMitmPermission(Context ctx) {
