@@ -250,6 +250,10 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mError.setTextColor(ContextCompat.getColor(context, R.color.danger));
             mError.setText(mConn.decryption_error);
             mError.setVisibility(View.VISIBLE);
+        } else if(mConn.is_blocked) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
+            mError.setText(context.getString(R.string.connection_blocked));
+            mError.setVisibility(View.VISIBLE);
         } else if(!mConn.hasSeenStart()) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.connection_start_not_seen));

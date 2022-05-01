@@ -330,4 +330,5 @@
     <string name="size_x">Size: %1$s</string>
     <string name="geo_db_delete">Tap to delete the database and save space</string>
     <string name="download">Download</string>
+    <string name="connection_blocked">This connection has been blocked by PCAPdroid</string>
 </resources>

@@ -17,7 +17,7 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.model;
+package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -27,8 +27,8 @@ import android.util.Log;
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
-import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.BlacklistsStateListener;
+import com.emanuelef.remote_capture.model.BlacklistDescriptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;

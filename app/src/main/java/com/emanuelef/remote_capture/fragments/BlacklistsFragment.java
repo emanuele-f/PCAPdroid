@@ -45,7 +45,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.adapters.BlacklistsAdapter;
 import com.emanuelef.remote_capture.interfaces.BlacklistsStateListener;
-import com.emanuelef.remote_capture.model.Blacklists;
+import com.emanuelef.remote_capture.Blacklists;
 
 public class BlacklistsFragment extends Fragment implements BlacklistsStateListener {
     private static final String TAG = "BlacklistsFragment";
