@@ -24,7 +24,7 @@
     <string name="duration">Продолжительность</string>
     <string name="http_server">HTTP сервер</string>
     <string name="udp_exporter">UDP экспортёр</string>
-    <string name="no_dump">Никакой</string>
+    <string name="no_dump">Без записи</string>
     <string name="no_dump_info">PCAP не будет записываться</string>
     <string name="http_server_info">Запустить HTTP сервер для скачивания PCAP</string>
     <string name="udp_exporter_info">Отправляет PCAP на удалённый UDP приёмник</string>
@@ -72,7 +72,7 @@
     <string name="copy_to_clipboard">Копировать в буфер обмена</string>
     <string name="save_to_file">Сохранить в файл</string>
     <string name="older_connections_notice">%1$d старых соединений не показано</string>
-    <string name="about_text">PCAPdroid это свободный инструмент захвата и отслеживания сетевого трафика, который работает без привелегий суперпользователя</string>
+    <string name="about_text">PCAPdroid это свободный инструмент захвата и отслеживания сетевого трафика, который работает без привилегий суперпользователя</string>
     <string name="get_app">Получить его:</string>
     <string name="tls_how_to">Как настроить расшифровку TLS</string>
     <string name="unknown_app">Неизвестное</string>
