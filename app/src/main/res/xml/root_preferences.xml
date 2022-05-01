@@ -163,6 +163,13 @@
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
 
+        <Preference
+            android:key="geolocation"
+            app:title="@string/geolocation"
+            app:summary="@string/geolocation_summary"
+            app:iconSpaceReserved="false"
+            app:fragment="com.emanuelef.remote_capture.fragments.GeoipSettings" />
+
         <SwitchPreference
             app:key="ipv6_enabled"
             app:title="@string/ipv6"

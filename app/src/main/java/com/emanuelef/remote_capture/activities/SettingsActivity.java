@@ -32,6 +32,9 @@ import android.util.Patterns;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -43,6 +46,7 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.fragments.GeoipSettings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
@@ -52,7 +56,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, FragmentManager.OnBackStackChangedListener {
     private static final String TAG = "SettingsActivity";
     private static final String ACTION_LANG_RESTART = "lang_restart";
     public static final String TARGET_PREF_EXTRA = "target_pref";
@@ -66,19 +70,53 @@ public class SettingsActivity extends BaseActivity {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings_container, new SettingsFragment())
+                .replace(R.id.settings_container, new SettingsFragment(), "root")
                 .commit();
+
+        getSupportFragmentManager().addOnBackStackChangedListener(this);
+    }
+
+    @Override
+    public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
+        PreferenceFragmentCompat targetFragment = null;
+        Log.d(TAG, "startFragment: " + pref.getKey());
+
+        if(pref.getKey().equals("geolocation")) {
+            targetFragment = new GeoipSettings();
+            setTitle(R.string.geolocation);
+        }
+
+        if(targetFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.settings_container, targetFragment, pref.getKey())
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .addToBackStack(pref.getKey())
+                    .commit();
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
+        if(f instanceof SettingsFragment)
+            setTitle(R.string.title_activity_settings);
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
-        // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        finish();
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
+        if(f instanceof SettingsFragment) {
+            // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        } else
+            super.onBackPressed();
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

@@ -318,4 +318,16 @@
     <string name="display_as">Display as…</string>
     <string name="printable_text">Printable text</string>
     <string name="hexdump">Hexdump</string>
+    <string name="geolocation">Geolocation</string>
+    <string name="geolocation_summary">Add country and ASN info by performing offline lookups</string>
+    <string name="downloading">Downloading…</string>
+    <string name="download_in_progress">Download in progress, please wait</string>
+    <string name="download_failed">Download failed</string>
+    <string name="geo_db_not_found">Database not found. Geolocation is disabled</string>
+    <string name="database">Database</string>
+    <string name="built_on">Built on: %1$s</string>
+    <string name="geo_db_download">Tap to download the latest database. New databases are available monthly</string>
+    <string name="size_x">Size: %1$s</string>
+    <string name="geo_db_delete">Tap to delete the database and save space</string>
+    <string name="download">Download</string>
 </resources>

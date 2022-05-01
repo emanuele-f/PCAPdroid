@@ -113,6 +113,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -847,6 +848,21 @@ public class Utils {
                 entry = zipIn.getNextEntry();
             }
 
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean ungzip(InputStream is, String dst) {
+        try(GZIPInputStream gis = new GZIPInputStream(is)) {
+            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                byte[] bytesIn = new byte[4096];
+                int read;
+                while ((read = gis.read(bytesIn)) != -1)
+                    bos.write(bytesIn, 0, read);
+            }
             return true;
         } catch (IOException e) {
             e.printStackTrace();
