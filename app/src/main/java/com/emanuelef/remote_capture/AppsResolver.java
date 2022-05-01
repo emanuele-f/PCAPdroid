@@ -71,6 +71,9 @@ public class AppsResolver {
         mApps.put(1000, new AppDescriptor("Android",
                 virtualIconLoader,"android", 1000, true)
                 .setDescription(mContext.getString(R.string.android_app_info)));
+        mApps.put(1001, new AppDescriptor(mContext.getString(R.string.phone_app),
+                virtualIconLoader,"phone", 1001, true)
+                .setDescription(mContext.getString(R.string.phone_app_info)));
         mApps.put(1013, new AppDescriptor("MediaServer",
                 virtualIconLoader,"mediaserver", 1013, true));
         mApps.put(1020, new AppDescriptor("MulticastDNSResponder",

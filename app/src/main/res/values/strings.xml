@@ -105,6 +105,7 @@
     <string name="get_app">Get it:</string>
     <string name="tls_how_to">How to set up the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
+    <string name="phone_app">Phone</string>
     <string name="ipv6">IPv6</string>
     <string name="enable_ipv6_summary">Allow IPv6 connections to the Internet. Only use this on networks with an IPv6 gateway</string>
     <string name="error">Error</string>
@@ -150,6 +151,7 @@
     <string name="root_app_info">System daemons running with maximum privileges</string>
     <string name="netd_app_info">The system daemon performing the DNS resolutions</string>
     <string name="android_app_info">The Android system</string>
+    <string name="phone_app_info">Telephony services</string>
     <string name="unknown_app_info">\"Unknown\" marks connections whose app could not be determined</string>
     <string name="packets_dropped">Packets dropped</string>
     <string name="capture_prefs">Capture</string>
