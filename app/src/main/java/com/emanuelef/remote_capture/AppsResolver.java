@@ -32,6 +32,8 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import java.util.Arrays;
+
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
     private final SparseArray<AppDescriptor> mApps;
@@ -114,6 +116,9 @@ public class AppsResolver {
             return null;
         }
 
+        // Since multiple packages names may be returned, sort them and get the first to provide a
+        // consistent name
+        Arrays.sort(packages);
         String packageName = packages[0];
 
         app = resolve(mPm, packageName, pm_flags);
