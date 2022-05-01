@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -44,6 +45,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -437,9 +439,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public String dumpConnectionsCsv() {
         StringBuilder builder = new StringBuilder();
         AppsResolver resolver = new AppsResolver(mContext);
+        boolean malwareDetection = Prefs.isMalwareDetectionEnabled(mContext, PreferenceManager.getDefaultSharedPreferences(mContext));
 
-        // Header
-        builder.append(mContext.getString(R.string.connections_csv_fields));
+        String header = mContext.getString(R.string.connections_csv_fields);
+        builder.append(header);
+        if(malwareDetection)
+            builder.append(",Malicious");
         builder.append("\n");
 
         // Contents
@@ -464,7 +469,16 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 builder.append(conn.sent_pkts);                             builder.append(",");
                 builder.append(conn.rcvd_pkts);                             builder.append(",");
                 builder.append(conn.first_seen);                            builder.append(",");
-                builder.append(conn.last_seen);                             builder.append("\n");
+                builder.append(conn.last_seen);
+
+                if(malwareDetection) {
+                    builder.append(",");
+
+                    if(conn.isBlacklisted())
+                        builder.append("yes");
+                }
+
+                builder.append("\n");
             }
         }
 
