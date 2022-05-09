@@ -40,7 +40,7 @@ The first test you should do to verify that decryption works is to choose an app
 
 The lock icon and color indicates the decryption status, which is also reported into the connection details:
 
-- *geen*: decryption successful
+- *green*: decryption successful
 - *red*: decryption failed. If you tap on the connection, you should get an error message explaining why it failed
 - *orange*: decryption is not supported for this protocol/app (e.g. for QUIC and some specific apps, see below)
 - *gray open lock*: the connection is not encrypted (e.g. plain DNS)
@@ -70,7 +70,7 @@ If you are on Android 7 or newer and the app you are decrypting has target SDK >
 - You can use [apktool](https://ibotpeaches.github.io/Apktool) to decompile the app, lower its target SDK to 23, and rebuild it
 - You can use [VirtualXposed](https://github.com/android-hacker/VirtualXposed) to virtualize your app, making it run as it was SDK 23. To do so, open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method). Then in PCAPdroid, select VirtualXposed as the target app for the decryption. Virtualization is quite unreliable, so expect crashes
 
-Additionally, some apps (mainly browsers) implement a custom certificate trust store, separate from the system store. You should check if they have an option to disable it, for example, in Firefox [you can do this](https://support.mozilla.org/en-US/questions/1304237) via `about:config`. If such option is not avialable, you will need to patch the app.
+Additionally, some apps (mainly browsers) implement a custom certificate trust store, separate from the system store. You should check if they have an option to disable it, for example, in Firefox [you can do this](https://support.mozilla.org/en-US/questions/1304237) via `about:config`. If such option is not available, you will need to patch the app.
 
 If the client still refuses to connect, then the app may employ certificate pinning, which means that the app actively performs certificate verification against a whitelist. To bypass this, you either need to:
 
