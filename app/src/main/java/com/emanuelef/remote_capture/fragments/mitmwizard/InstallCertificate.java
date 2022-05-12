@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.security.KeyChain;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -66,8 +67,10 @@ public class InstallCertificate extends StepFragment implements MitmListener {
         mStepButton.setEnabled(false);
 
         mAddon = new MitmAddon(requireContext(), this);
-        if(!mAddon.connect(0))
+        if(!mAddon.connect(0)) {
+            Toast.makeText(requireContext(), "addon connect failed", Toast.LENGTH_LONG).show();
             certFail();
+        }
     }
 
     @Override
@@ -201,20 +204,26 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                             exportCaCertificate();
                     });
                 }
-            } else
+            } else {
+                Toast.makeText(requireContext(), "addon did not return certificate", Toast.LENGTH_LONG).show();
                 certFail();
+            }
         }
     }
 
     @Override
     public void onMitmServiceConnect() {
-        if(!mAddon.requestCaCertificate())
+        if(!mAddon.requestCaCertificate()) {
+            Toast.makeText(requireContext(), "requestCaCertificate failed", Toast.LENGTH_LONG).show();
             certFail();
+        }
     }
 
     @Override
     public void onMitmServiceDisconnect() {
-        if(mCaPem == null)
+        if(mCaPem == null) {
+            Toast.makeText(requireContext(), "addon disconnected", Toast.LENGTH_LONG).show();
             certFail();
+        }
     }
 }
