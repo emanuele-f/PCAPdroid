@@ -11,6 +11,20 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_export"
+        android:title="@string/export_action"
+        android:orderInCategory="18"
+        android:icon="@drawable/ic_file_export"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_import"
+        android:title="@string/import_action"
+        android:orderInCategory="19"
+        android:icon="@drawable/ic_file_import"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/copy_to_clipboard"
         android:title="@string/copy_to_clipboard"
         android:orderInCategory="20"

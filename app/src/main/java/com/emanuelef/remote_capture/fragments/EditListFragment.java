@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -30,9 +33,14 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -42,8 +50,13 @@ import com.emanuelef.remote_capture.adapters.ListEditAdapter;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 
 public class EditListFragment extends Fragment {
     private ListEditAdapter mAdapter;
@@ -52,9 +65,13 @@ public class EditListFragment extends Fragment {
     private MatchList mList;
     private ListInfo mListInfo;
     private ListView mListView;
-    private boolean mChanged;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
+
+    private final ActivityResultLauncher<Intent> exportLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::exportResult);
+    private final ActivityResultLauncher<Intent> importLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::importResult);
 
     public static EditListFragment newInstance(ListInfo.Type list) {
         EditListFragment fragment = new EditListFragment();
@@ -114,25 +131,7 @@ public class EditListFragment extends Fragment {
                 int id = menuItem.getItemId();
 
                 if(id == R.id.delete_entry) {
-                    if(mSelected.size() >= mAdapter.getCount()) {
-                        mAdapter.clear();
-                        mList.clear();
-                        mList.save();
-                    } else {
-                        for(MatchList.Rule item : mSelected)
-                            mAdapter.remove(item);
-                        updateList();
-                    }
-
-                    if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST)
-                        CaptureService.reloadMalwareWhitelist();
-                    else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
-                        if(CaptureService.isServiceActive())
-                            CaptureService.requireInstance().reloadBlocklist();
-                    }
-
-                    mode.finish();
-                    recheckListSize();
+                    confirmDelete(mode);
                     return true;
                 } else if(id == R.id.select_all) {
                     if(mSelected.size() >= mAdapter.getCount())
@@ -158,9 +157,40 @@ public class EditListFragment extends Fragment {
         recheckListSize();
     }
 
+    private void confirmDelete(ActionMode mode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setMessage(R.string.rules_delete_confirm);
+        builder.setCancelable(true);
+        builder.setPositiveButton(R.string.yes, (dialog, which) -> {
+            if(mSelected.size() >= mAdapter.getCount()) {
+                mAdapter.clear();
+                mList.clear();
+                mList.save();
+            } else {
+                for(MatchList.Rule item : mSelected)
+                    mAdapter.remove(item);
+                updateList();
+            }
+
+            mode.finish();
+            reloadListRules();
+            recheckListSize();
+        });
+        builder.setNegativeButton(R.string.no, (dialog, whichButton) -> {});
+
+        final AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(true);
+        alert.show();
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.list_edit_menu, menu);
+
+        if(!Utils.supportsFileDialog(requireContext())) {
+            menu.findItem(R.id.action_import).setVisible(false);
+            menu.findItem(R.id.action_export).setVisible(false);
+        }
     }
 
     @Override
@@ -171,7 +201,16 @@ public class EditListFragment extends Fragment {
         if(lv == null)
             return false;
 
-        if(id == R.id.copy_to_clipboard) {
+        if(id == R.id.action_export) {
+            if(mList.isEmpty())
+                Utils.showToastLong(requireContext(), R.string.no_rules_to_export);
+            else
+                startExport();
+            return true;
+        } else if(id == R.id.action_import) {
+            startImport();
+            return true;
+        } else if(id == R.id.copy_to_clipboard) {
             String contents = Utils.adapter2Text((ListEditAdapter)lv.getAdapter());
             Utils.copyToClipboard(requireContext(), contents);
             return true;
@@ -191,6 +230,15 @@ public class EditListFragment extends Fragment {
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
     }
 
+    private void reloadListRules() {
+        if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST)
+            CaptureService.reloadMalwareWhitelist();
+        else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadBlocklist();
+        }
+    }
+
     private void updateList() {
         ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
         Iterator<MatchList.Rule> iter = mList.iterRules();
@@ -207,5 +255,107 @@ public class EditListFragment extends Fragment {
             mList.removeRules(toRemove);
             mList.save();
         }
+    }
+
+    private String getExportName() {
+        String fname = getString(mListInfo.getTitle()).toLowerCase().replaceAll(" ", "_");
+        return "PCAPdroid_" + fname + ".json";
+    }
+
+    private void startExport() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, getExportName());
+
+        Utils.launchFileDialog(requireContext(), intent, exportLauncher);
+    }
+
+    private void exportResult(final ActivityResult result) {
+        if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            Context context = requireContext();
+            String data = mList.toJson(true);
+
+            try(OutputStream out = context.getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
+                try(PrintWriter printer = new PrintWriter(out)) {
+                    printer.print(data);
+                    Utils.showToast(context, R.string.save_ok);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Utils.showToastLong(context, R.string.export_failed);
+            }
+        }
+    }
+
+    private void startImport() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, getExportName());
+
+        Utils.launchFileDialog(requireContext(), intent, importLauncher);
+    }
+
+    private void importResult(final ActivityResult result) {
+        if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            Context context = requireContext();
+
+            try(InputStream in = context.getContentResolver().openInputStream(result.getData().getData())) {
+                try(Scanner s = new Scanner(in).useDelimiter("\\A")) {
+                    String data = s.hasNext() ? s.next() : "";
+                    MatchList rules = new MatchList(context, "");
+
+                    if(rules.fromJson(data) && !rules.isEmpty()) {
+                        if(!mList.isEmpty())
+                            confirmImport(rules);
+                        else
+                            importRules(rules, false);
+                    } else
+                        Utils.showToastLong(context, R.string.invalid_backup);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Utils.showToastLong(context, R.string.import_failed);
+            }
+        }
+    }
+
+    private void confirmImport(MatchList rules) {
+        Context context = requireContext();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.import_action);
+        builder.setMessage(R.string.rules_merge_msg);
+        builder.setCancelable(true);
+        builder.setPositiveButton(R.string.keep_action, (dialog, which) -> importRules(rules, true));
+        builder.setNegativeButton(R.string.discard_action, (dialog, which) -> importRules(rules, false));
+
+        final AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(false);
+        alert.show();
+    }
+
+    private void importRules(MatchList to_add, boolean keep_existing) {
+        Context context = requireContext();
+
+        if(!keep_existing)
+            mList.clear();
+
+        int num_imported = mList.addRules(to_add);
+
+        if(num_imported <= 0)
+            return;
+
+        mList.save();
+        reloadListRules();
+
+        // reload view
+        mAdapter = new ListEditAdapter(context, mList.iterRules());
+        mListView.setAdapter(mAdapter);
+        recheckListSize();
+
+        String msg = String.format(context.getResources().getString(R.string.rules_import_success), num_imported);
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 }

@@ -333,4 +333,13 @@
     <string name="geo_db_delete">Tap to delete the database and save space</string>
     <string name="download">Download</string>
     <string name="connection_blocked">This connection has been blocked by PCAPdroid</string>
+    <string name="import_action">Import</string>
+    <string name="import_failed">Import failed</string>
+    <string name="invalid_backup">Invalid backup format</string>
+    <string name="rules_import_success">Imported %1$d rules</string>
+    <string name="no_rules_to_export">No rules to export</string>
+    <string name="rules_merge_msg">Keep the existing rules?</string>
+    <string name="keep_action">Keep</string>
+    <string name="discard_action">Discard</string>
+    <string name="rules_delete_confirm">Delete the selected rules?</string>
 </resources>

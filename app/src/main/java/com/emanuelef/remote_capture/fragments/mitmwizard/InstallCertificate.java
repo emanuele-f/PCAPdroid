@@ -118,18 +118,8 @@ public class InstallCertificate extends StepFragment implements MitmListener {
         intent.setType("application/x-x509-ca-cert");
         intent.putExtra(Intent.EXTRA_TITLE, fname);
 
-        if(!Utils.supportsFileDialog(requireContext(), intent)) {
-            Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
+        if(!Utils.launchFileDialog(requireContext(), intent, certExportLauncher))
             certFail();
-            return;
-        }
-
-        try {
-            certExportLauncher.launch(intent);
-        } catch (ActivityNotFoundException e) {
-            Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
-            certFail();
-        }
     }
 
     private void installCaCertificate() {

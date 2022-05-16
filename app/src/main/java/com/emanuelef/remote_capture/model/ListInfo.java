@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.fragments.EditListFragment;
 
 
 public class ListInfo {
@@ -82,5 +83,9 @@ public class ListInfo {
 
         assert false;
         return 0;
+    }
+
+    public EditListFragment newFragment() {
+        return EditListFragment.newInstance(mType);
     }
 }

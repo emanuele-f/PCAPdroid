@@ -66,6 +66,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
@@ -659,6 +660,18 @@ public class Utils {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
         return supportsFileDialog(context, intent);
+    }
+
+    public static boolean launchFileDialog(Context context, Intent intent, ActivityResultLauncher<Intent> launcher) {
+        if(Utils.supportsFileDialog(context, intent)) {
+            try {
+                launcher.launch(intent);
+                return true;
+            } catch (ActivityNotFoundException ignored) {}
+        }
+
+        Utils.showToastLong(context, R.string.no_activity_file_selection);
+        return false;
     }
 
     @SuppressWarnings("deprecation")

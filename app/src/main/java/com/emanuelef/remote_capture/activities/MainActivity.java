@@ -36,7 +36,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -84,7 +83,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Billing mIab;
@@ -723,18 +721,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_TITLE, "sslkeylogfile.txt");
 
-        boolean noFileDialog = false;
-        if(Utils.supportsFileDialog(this, intent)) {
-            try {
-                sslkeyfileExportLauncher.launch(intent);
-            } catch (ActivityNotFoundException e) {
-                noFileDialog = true;
-            }
-        } else
-            noFileDialog = true;
-
-        if(noFileDialog)
-            Utils.showToastLong(this, R.string.no_activity_file_selection);
+        Utils.launchFileDialog(this, intent, sslkeyfileExportLauncher);
     }
 
     private void sslkeyfileExportResult(final ActivityResult result) {

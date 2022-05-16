@@ -41,6 +41,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class MatchList {
 
     public void save() {
         mPrefs.edit()
-                .putString(mPrefName, toJson())
+                .putString(mPrefName, toJson(false))
                 .apply();
     }
 
@@ -176,27 +177,35 @@ public class MatchList {
         }
     }
 
-    private void deserialize(JsonObject object) {
-        clear();
+    private boolean deserialize(JsonObject object) {
+        try {
+            JsonArray ruleArray = object.getAsJsonArray("rules");
+            if(ruleArray == null)
+                return false;
 
-        JsonArray ruleArray = object.getAsJsonArray("rules");
-        if(ruleArray == null)
-            return;
+            clear();
 
-        for(JsonElement el: ruleArray) {
-            JsonObject ruleObj = el.getAsJsonObject();
-            RuleType type;
+            for(JsonElement el: ruleArray) {
+                JsonObject ruleObj = el.getAsJsonObject();
+                RuleType type;
 
-            try {
-                type = RuleType.valueOf(ruleObj.get("type").getAsString());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                continue;
+                try {
+                    type = RuleType.valueOf(ruleObj.get("type").getAsString());
+                } catch (IllegalArgumentException e) {
+                    // can happen if format is changed, ignore
+                    e.printStackTrace();
+                    continue;
+                }
+
+                String val = ruleObj.get("value").getAsString();
+                addRule(new Rule(type, val));
             }
-
-            String val = ruleObj.get("value").getAsString();
-            addRule(new Rule(type, val));
+        } catch (IllegalArgumentException | ClassCastException e) {
+            e.printStackTrace();
+            return false;
         }
+
+        return true;
     }
 
     public void addApp(int uid)        { addRule(new Rule(RuleType.APP, uid)); }
@@ -210,13 +219,16 @@ public class MatchList {
         return tp + "@" + val;
     }
 
-    private void addRule(Rule rule) {
+    private boolean addRule(Rule rule) {
         String key = matchKey(rule.getType(), rule.getValue().toString());
 
         if(!mMatches.containsKey(key)) {
             mRules.add(rule);
             mMatches.put(key, rule);
+            return true;
         }
+
+        return false;
     }
 
     public void removeRules(List<Rule> rules) {
@@ -226,6 +238,19 @@ public class MatchList {
             String key = matchKey(rule.getType(), rule.getValue().toString());
             mMatches.remove(key);
         }
+    }
+
+    public int addRules(MatchList to_add) {
+        int num_added = 0;
+
+        for(Iterator<Rule> it = to_add.iterRules(); it.hasNext(); ) {
+            Rule rule = it.next();
+
+            if(addRule(rule))
+                num_added++;
+        }
+
+        return num_added;
     }
 
     public boolean matchesApp(int uid) {
@@ -278,9 +303,15 @@ public class MatchList {
         return(mRules.size() == 0);
     }
 
-    public String toJson() {
-        Gson gson = new GsonBuilder().registerTypeAdapter(getClass(), new Serializer())
-                .create();
+    public int getSize() {
+        return mRules.size();
+    }
+
+    public String toJson(boolean pretty_print) {
+        GsonBuilder builder = new GsonBuilder().registerTypeAdapter(getClass(), new Serializer());
+        if(pretty_print)
+            builder.setPrettyPrinting();
+        Gson gson = builder.create();
 
         String serialized = gson.toJson(this);
         //Log.d(TAG, "toJson: " + serialized);
@@ -288,9 +319,14 @@ public class MatchList {
         return serialized;
     }
 
-    public void fromJson(String json_str) {
-        JsonObject obj = JsonParser.parseString(json_str).getAsJsonObject();
-        deserialize(obj);
+    public boolean fromJson(String json_str) {
+        try {
+            JsonObject obj = JsonParser.parseString(json_str).getAsJsonObject();
+            return deserialize(obj);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
