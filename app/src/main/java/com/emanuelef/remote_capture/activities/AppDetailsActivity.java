@@ -19,193 +19,28 @@
 
 package com.emanuelef.remote_capture.activities;
 
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-
-import com.emanuelef.remote_capture.AppsResolver;
-import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
-import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.AppStats;
+import com.emanuelef.remote_capture.fragments.AppOverview;
 
 public class AppDetailsActivity extends BaseActivity {
     private static final String TAG = "AppDetailsActivity";
     public static final String APP_UID_EXTRA = "app_uid";
-    private int mUid;
-    private View mBlockedConnsRow;
-    private Handler mHandler;
-    private TextView mBytes;
-    private TextView mConnections;
-    private TextView mBlockedConnections;
-    private TableLayout mTable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.app_details);
         displayBackAction();
-        setContentView(R.layout.app_details_activity);
+        setContentView(R.layout.fragment_activity);
 
-        mUid = getIntent().getIntExtra(APP_UID_EXTRA, Utils.UID_UNKNOWN);
-        AppsResolver res = new AppsResolver(this);
-        AppDescriptor dsc = res.get(mUid, PackageManager.GET_PERMISSIONS);
+        int uid = getIntent().getIntExtra(APP_UID_EXTRA, Utils.UID_UNKNOWN);
 
-        if(dsc == null) {
-            finish();
-            return;
-        }
-
-        mHandler = new Handler(Looper.getMainLooper());
-        mBytes = findViewById(R.id.detail_bytes);
-        mConnections = findViewById(R.id.connections);
-        mBlockedConnections = findViewById(R.id.conns_blocked);
-        mBlockedConnsRow = findViewById(R.id.conns_blocked_row);
-
-        ((TextView)findViewById(R.id.uid)).setText(Utils.formatInteger(this, dsc.getUid()));
-        ((TextView)findViewById(R.id.name)).setText(dsc.getName());
-        PackageInfo pinfo = dsc.getPackageInfo();
-        ((ImageView)findViewById(R.id.app_icon)).setImageDrawable(dsc.getIcon());
-
-        if(pinfo != null) {
-            ((TextView)findViewById(R.id.package_name)).setText(dsc.getPackageName());
-            ((TextView)findViewById(R.id.version)).setText(pinfo.versionName);
-            ((TextView)findViewById(R.id.target_sdk)).setText(Utils.formatInteger(this, pinfo.applicationInfo.targetSdkVersion));
-            ((TextView)findViewById(R.id.install_date)).setText(Utils.formatEpochFull(this, pinfo.firstInstallTime / 1000));
-            ((TextView)findViewById(R.id.last_update)).setText(Utils.formatEpochFull(this, pinfo.lastUpdateTime / 1000));
-
-            if((pinfo.requestedPermissions != null) && (pinfo.requestedPermissions.length != 0)) {
-                StringBuilder builder = new StringBuilder();
-                boolean first = true;
-
-                for(String perm: pinfo.requestedPermissions) {
-                    if(first)
-                        first = false;
-                    else
-                        builder.append("\n");
-
-                    builder.append(perm);
-                }
-
-                TextView perms = findViewById(R.id.permissions);
-                perms.setText(builder.toString());
-
-                if(Utils.isTv(this)) {
-                    perms.setOnClickListener(v -> Utils.shareText(this, getString(R.string.permissions), perms.getText().toString()));
-                }
-            } else {
-                findViewById(R.id.permissions_label).setVisibility(View.GONE);
-                findViewById(R.id.permissions).setVisibility(View.GONE);
-            }
-        } else {
-            // This is a virtual App
-            if(!dsc.getDescription().isEmpty()) {
-               ((TextView) findViewById(R.id.vapp_info)).setText(dsc.getDescription());
-               findViewById(R.id.vapp_info).setVisibility(View.VISIBLE);
-            }
-
-            findViewById(R.id.package_name_row).setVisibility(View.GONE);
-            findViewById(R.id.version_row).setVisibility(View.GONE);
-            findViewById(R.id.target_sdk_row).setVisibility(View.GONE);
-            findViewById(R.id.install_date_row).setVisibility(View.GONE);
-            findViewById(R.id.last_update_row).setVisibility(View.GONE);
-            findViewById(R.id.permissions_label).setVisibility(View.GONE);
-            findViewById(R.id.permissions).setVisibility(View.GONE);
-            findViewById(R.id.app_settings).setVisibility(View.GONE);
-        }
-
-        mTable = findViewById(R.id.table);
-
-        findViewById(R.id.app_settings).setOnClickListener(v -> {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            intent.setData(Uri.fromParts("package", dsc.getPackageName(), null));
-            Utils.startActivity(this, intent);
-        });
-
-        findViewById(R.id.show_connections).setOnClickListener(v -> {
-            Intent intent = new Intent(this, ConnectionsActivity.class);
-            intent.putExtra(ConnectionsFragment.QUERY_EXTRA, dsc.getPackageName());
-            startActivity(intent);
-        });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateStatus();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mHandler.removeCallbacksAndMessages(null);
-    }
-
-    private String asString() {
-        if(findViewById(R.id.permissions).getVisibility() == View.GONE)
-            return Utils.table2Text(mTable);
-
-        return Utils.table2Text(mTable) +
-                "\n" +
-                getString(R.string.permissions) +
-                ":\n" +
-                ((TextView) findViewById(R.id.permissions)).getText();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.copy_share_menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.copy_to_clipboard) {
-            Utils.copyToClipboard(this, asString());
-            return true;
-        } else if(id == R.id.share) {
-            Utils.shareText(this, getString(R.string.app_details), asString());
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void updateStatus() {
-        ConnectionsRegister reg = CaptureService.getConnsRegister();
-        if(reg == null)
-            return;
-
-        AppStats stats = reg.getAppStats(mUid);
-        if(stats == null)
-            return;
-
-        mBytes.setText(String.format(getResources().getString(R.string.rcvd_and_sent),
-                Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
-        mConnections.setText(Utils.formatInteger(this, stats.numConnections));
-
-        mBlockedConnsRow.setVisibility(stats.numBlockedConnections > 0 ? View.VISIBLE : View.GONE);
-        mBlockedConnections.setText(Utils.formatInteger(this, stats.numBlockedConnections));
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment, AppOverview.newInstance(uid))
+                .commit();
     }
 }
