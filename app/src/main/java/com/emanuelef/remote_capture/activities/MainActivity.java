@@ -70,7 +70,6 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
-import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -110,6 +109,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
     public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#51-malware-detection";
+    public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#52-firewall";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
@@ -375,8 +375,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
         } else if(id == R.id.firewall) {
-            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.BLOCKLIST);
+            Intent intent = new Intent(MainActivity.this, FirewallActivity.class);
             startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);

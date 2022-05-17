@@ -21,10 +21,12 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,8 +39,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -47,55 +51,54 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.Blacklists;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 
-public class MalwareStatusFragment extends Fragment {
-    private static final String TAG = "MalwareStatus";
-    private Blacklists mBlacklists;
+public class FirewallStatus extends Fragment {
+    private static final String TAG = "FirewallStatus";
     private Handler mHandler;
+    SharedPreferences mPrefs;
+    private SwitchCompat mToggle;
     private ImageView mStatusIcon;
     private Button mConnectionsBtn;
     private TextView mStatus;
-    private TextView mNumMalicious;
-    private TextView mNumUpToDate;
+    private TextView mNumBlocked;
     private TextView mNumChecked;
-    private TextView mLastUpdate;
-    private TextView mDomainRules;
-    private TextView mIPRules;
-    private int mOkColor, mWarnColor, mDangerColor, mTextColor, mGrayColor;
+    private TextView mNumRules;
+    private TextView mLastBlock;
+    private MatchList mBlocklist;
+    private int mOkColor, mWarnColor, mGrayColor;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        return inflater.inflate(R.layout.malware_detection_status, container, false);
+        return inflater.inflate(R.layout.firewall_status, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Context ctx = view.getContext();
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mStatus = view.findViewById(R.id.status);
         mHandler = new Handler(Looper.getMainLooper());
         mStatusIcon = view.findViewById(R.id.status_icon);
         mConnectionsBtn = view.findViewById(R.id.show_connections);
-        mNumMalicious = view.findViewById(R.id.num_malicious);
-        mNumUpToDate = view.findViewById(R.id.num_up_to_date);
+        mNumBlocked = view.findViewById(R.id.num_blocked);
         mNumChecked = view.findViewById(R.id.num_checked);
-        mLastUpdate = view.findViewById(R.id.last_update);
-        mDomainRules = view.findViewById(R.id.num_domain_rules);
-        mIPRules = view.findViewById(R.id.num_ip_rules);
-        mBlacklists = PCAPdroid.getInstance().getBlacklists();
+        mNumRules = view.findViewById(R.id.num_rules);
+        mLastBlock = view.findViewById(R.id.last_block);
+
         mOkColor = ContextCompat.getColor(ctx, R.color.ok);
         mWarnColor = ContextCompat.getColor(ctx, R.color.warning);
-        mDangerColor = ContextCompat.getColor(ctx, R.color.danger);
         mGrayColor = ContextCompat.getColor(ctx, R.color.lightGray);
-        mTextColor = ContextCompat.getColor(ctx, R.color.highContrast);
 
         mConnectionsBtn.setOnClickListener(v -> {
             FilterDescriptor filter = new FilterDescriptor();
-            filter.onlyBlacklisted = true;
+            filter.onlyBLocked = true;
 
             Intent intent = new Intent(requireContext(), ConnectionsActivity.class)
                     .putExtra(ConnectionsFragment.FILTER_EXTRA, filter);
@@ -117,7 +120,19 @@ public class MalwareStatusFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.docs_menu, menu);
+        inflater.inflate(R.menu.firewall_menu, menu);
+
+        mToggle = (SwitchCompat) menu.findItem(R.id.toggle_btn).getActionView();
+        mToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Log.d(TAG, "Firwall is now " + (isChecked ? "enabled" : "disabled"));
+
+            CaptureService.setFirewallEnabled(isChecked);
+            mPrefs.edit().putBoolean(Prefs.PREF_FIREWALL, isChecked).apply();
+
+            updateStatus();
+        });
+
+        updateStatus();
     }
 
     @Override
@@ -125,7 +140,7 @@ public class MalwareStatusFragment extends Fragment {
         int id = item.getItemId();
 
         if(id == R.id.user_guide) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.MALWARE_DETECTION_DOCS_URL));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.FIREWALL_DOCS_URL));
             Utils.startActivity(requireContext(), browserIntent);
             return true;
         }
@@ -137,52 +152,38 @@ public class MalwareStatusFragment extends Fragment {
         Context ctx = requireContext();
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         boolean is_running = CaptureService.isServiceActive();
+        boolean is_enabled = CaptureService.isFirewallEnabled(ctx, mPrefs);
 
-        int num_malicious = ((reg != null) ? reg.getNumMaliciousConnections() : 0);
-        if(num_malicious > 0) {
+        int num_blocked = ((reg != null) ? reg.getNumBlockedConnections() : 0);
+        mConnectionsBtn.setVisibility((num_blocked > 0) ? View.VISIBLE : View.GONE);
+
+        if(!is_running) {
+            mStatusIcon.setImageResource(R.drawable.ic_shield);
+            mStatusIcon.setColorFilter(mGrayColor);
+            mStatus.setText(R.string.capture_not_running_status);
+        } else if(CaptureService.isDNSEncrypted()) {
             mStatusIcon.setImageResource(R.drawable.ic_exclamation_triangle_solid);
-            mStatusIcon.setColorFilter(mDangerColor);
-            mStatus.setText(R.string.malware_status_detected);
-            mConnectionsBtn.setVisibility(View.VISIBLE);
+            mStatusIcon.setColorFilter(mWarnColor);
+            mStatus.setText(R.string.private_dns_hinders_detection);
         } else {
-            mConnectionsBtn.setVisibility(View.GONE);
+            mStatusIcon.setImageResource(R.drawable.ic_shield);
 
-            if(!is_running) {
-                mStatusIcon.setImageResource(R.drawable.ic_bug);
-                mStatusIcon.setColorFilter(mGrayColor);
-                mStatus.setText(R.string.capture_not_running_status);
-            } else if(mBlacklists.getNumUpdatedBlacklists() < mBlacklists.getNumBlacklists()) {
-                mStatusIcon.setImageResource(R.drawable.ic_exclamation_triangle_solid);
-                mStatusIcon.setColorFilter(mWarnColor);
-                mStatus.setText(R.string.malware_status_update_failed);
-            } else if(CaptureService.isDNSEncrypted()) {
-                mStatusIcon.setImageResource(R.drawable.ic_exclamation_triangle_solid);
-                mStatusIcon.setColorFilter(mWarnColor);
-                mStatus.setText(R.string.private_dns_hinders_detection);
-            } else {
-                mStatusIcon.setImageResource(R.drawable.ic_check_solid);
+            if(is_enabled) {
                 mStatusIcon.setColorFilter(mOkColor);
-                mStatus.setText(R.string.malware_status_ok);
+                mStatus.setText(R.string.firewall_is_enabled);
+            } else {
+                mStatusIcon.setColorFilter(mWarnColor);
+                mStatus.setText(R.string.firewall_is_disabled);
             }
         }
 
-        mNumMalicious.setText(Utils.formatIntShort(num_malicious));
-        if(num_malicious > 0)
-            mNumMalicious.setTextColor(mDangerColor);
-        else
-            mNumMalicious.setTextColor(mTextColor);
+        if(mToggle != null)
+            mToggle.setChecked(is_enabled);
 
-        mNumUpToDate.setText(String.format(Utils.getPrimaryLocale(ctx), "%d/%d",
-                mBlacklists.getNumUpdatedBlacklists(), mBlacklists.getNumBlacklists()));
-        if(is_running && (mBlacklists.getNumUpdatedBlacklists() < mBlacklists.getNumBlacklists()))
-            mNumUpToDate.setTextColor(mWarnColor);
-        else
-            mNumUpToDate.setTextColor(mTextColor);
-
-        mNumChecked.setText(Utils.formatIntShort(CaptureService.getNumCheckedMalwareConnections()));
-        mLastUpdate.setText(Utils.formatEpochMin(ctx, mBlacklists.getLastUpdate() / 1000));
-        mDomainRules.setText(Utils.formatIntShort(mBlacklists.getNumLoadedDomainRules()));
-        mIPRules.setText(Utils.formatIntShort(mBlacklists.getNumLoadedIPRules()));
+        mNumBlocked.setText(Utils.formatIntShort(num_blocked));
+        mNumChecked.setText(Utils.formatIntShort(CaptureService.getNumCheckedFirewallConnections()));
+        mLastBlock.setText(Utils.formatEpochMin(ctx, ((reg != null) ? reg.getLastFirewallBlock() / 1000 : 0)));
+        mNumRules.setText(Utils.formatIntShort(mBlocklist.getSize()));
 
         // Periodic update
         mHandler.postDelayed(this::updateStatus, 1000);

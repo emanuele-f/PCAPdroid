@@ -24,6 +24,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,14 +38,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.AppStats;
 
 public class AppDetailsActivity extends BaseActivity {
     private static final String TAG = "AppDetailsActivity";
     public static final String APP_UID_EXTRA = "app_uid";
+    private int mUid;
+    private View mBlockedConnsRow;
+    private Handler mHandler;
+    private TextView mBytes;
+    private TextView mConnections;
+    private TextView mBlockedConnections;
     private TableLayout mTable;
 
     @Override
@@ -53,14 +64,20 @@ public class AppDetailsActivity extends BaseActivity {
         displayBackAction();
         setContentView(R.layout.app_details_activity);
 
-        int uid = getIntent().getIntExtra(APP_UID_EXTRA, Utils.UID_UNKNOWN);
+        mUid = getIntent().getIntExtra(APP_UID_EXTRA, Utils.UID_UNKNOWN);
         AppsResolver res = new AppsResolver(this);
-        AppDescriptor dsc = res.get(uid, PackageManager.GET_PERMISSIONS);
+        AppDescriptor dsc = res.get(mUid, PackageManager.GET_PERMISSIONS);
 
         if(dsc == null) {
             finish();
             return;
         }
+
+        mHandler = new Handler(Looper.getMainLooper());
+        mBytes = findViewById(R.id.detail_bytes);
+        mConnections = findViewById(R.id.connections);
+        mBlockedConnections = findViewById(R.id.conns_blocked);
+        mBlockedConnsRow = findViewById(R.id.conns_blocked_row);
 
         ((TextView)findViewById(R.id.uid)).setText(Utils.formatInteger(this, dsc.getUid()));
         ((TextView)findViewById(R.id.name)).setText(dsc.getName());
@@ -129,6 +146,18 @@ public class AppDetailsActivity extends BaseActivity {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateStatus();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
     private String asString() {
         if(findViewById(R.id.permissions).getVisibility() == View.GONE)
             return Utils.table2Text(mTable);
@@ -161,5 +190,22 @@ public class AppDetailsActivity extends BaseActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateStatus() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg == null)
+            return;
+
+        AppStats stats = reg.getAppStats(mUid);
+        if(stats == null)
+            return;
+
+        mBytes.setText(String.format(getResources().getString(R.string.rcvd_and_sent),
+                Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
+        mConnections.setText(Utils.formatInteger(this, stats.numConnections));
+
+        mBlockedConnsRow.setVisibility(stats.numBlockedConnections > 0 ? View.VISIBLE : View.GONE);
+        mBlockedConnections.setText(Utils.formatInteger(this, stats.numBlockedConnections));
     }
 }

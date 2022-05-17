@@ -191,6 +191,9 @@ public class EditListFragment extends Fragment {
             menu.findItem(R.id.action_import).setVisible(false);
             menu.findItem(R.id.action_export).setVisible(false);
         }
+
+        if(mListInfo.getHelpString() <= 0)
+            menu.findItem(R.id.show_hint).setVisible(false);
     }
 
     @Override
@@ -310,7 +313,7 @@ public class EditListFragment extends Fragment {
                         if(!mList.isEmpty())
                             confirmImport(rules);
                         else
-                            importRules(rules, false);
+                            importRules(rules);
                     } else
                         Utils.showToastLong(context, R.string.invalid_backup);
                 }
@@ -328,24 +331,20 @@ public class EditListFragment extends Fragment {
         builder.setTitle(R.string.import_action);
         builder.setMessage(R.string.rules_merge_msg);
         builder.setCancelable(true);
-        builder.setPositiveButton(R.string.keep_action, (dialog, which) -> importRules(rules, true));
-        builder.setNegativeButton(R.string.discard_action, (dialog, which) -> importRules(rules, false));
+        builder.setPositiveButton(R.string.keep_action, (dialog, which) -> importRules(rules));
+        builder.setNegativeButton(R.string.discard_action, (dialog, which) -> {
+            mList.clear();
+            importRules(rules);
+        });
 
         final AlertDialog alert = builder.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
     }
 
-    private void importRules(MatchList to_add, boolean keep_existing) {
+    private void importRules(MatchList to_add) {
         Context context = requireContext();
-
-        if(!keep_existing)
-            mList.clear();
-
         int num_imported = mList.addRules(to_add);
-
-        if(num_imported <= 0)
-            return;
 
         mList.save();
         reloadListRules();

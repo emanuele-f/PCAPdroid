@@ -43,6 +43,7 @@ public class Prefs {
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
     public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
     public static final String PREF_MALWARE_DETECTION = "malware_detection";
+    public static final String PREF_FIREWALL = "firewall";
     public static final String PREF_TLS_DECRYPTION_KEY = "tls_decryption";
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
@@ -111,7 +112,12 @@ public class Prefs {
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
     public static boolean isMalwareDetectionEnabled(Context ctx, SharedPreferences p) {
         return(Billing.newInstance(ctx).isRedeemed(Billing.MALWARE_DETECTION_SKU)
-                && p.getBoolean(PREF_MALWARE_DETECTION, false));
+                && p.getBoolean(PREF_MALWARE_DETECTION, true));
+    }
+    public static boolean isFirewallEnabled(Context ctx, SharedPreferences p) {
+        return(Billing.newInstance(ctx).isRedeemed(Billing.FIREWALL_SKU)
+                && !isRootCaptureEnabled(p)
+                && p.getBoolean(PREF_FIREWALL, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }

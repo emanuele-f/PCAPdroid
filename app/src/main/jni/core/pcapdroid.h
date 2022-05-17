@@ -257,6 +257,7 @@ typedef struct pcapdroid {
     } malware_detection;
 
     struct {
+        bool enabled;
         blacklist_t *bl;
         blacklist_t *new_bl;
     } firewall;
@@ -351,6 +352,7 @@ extern bool block_private_dns;
 extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
 extern int bl_num_checked_connections;
+extern int fw_num_checked_connections;
 
 // capture API
 int pd_run(pcapdroid_t *pd);

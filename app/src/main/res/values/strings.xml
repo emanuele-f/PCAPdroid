@@ -236,7 +236,6 @@
     <string name="block">Block…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall rules</string>
-    <string name="firewall_help">This list contains rules to block connections</string>
     <string name="blocked_pkts">Blocked</string>
     <string name="n_pkts">%1$s pkts</string>
     <string name="show_only_blocked">Blocked by firewall</string>
@@ -342,4 +341,10 @@
     <string name="keep_action">Keep</string>
     <string name="discard_action">Discard</string>
     <string name="rules_delete_confirm">Delete the selected rules?</string>
+    <string name="blocklist">Blocklist</string>
+    <string name="num_configured_rules">Configured rules</string>
+    <string name="connections_blocked">Connections blocked</string>
+    <string name="last_firewall_block">Last block</string>
+    <string name="firewall_is_disabled">Firewall is disabled</string>
+    <string name="firewall_is_enabled">Firewall is enabled</string>
 </resources>

@@ -570,6 +570,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .malware_detection = {
                     .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
+            },
+            .firewall = {
+                    .enabled = (bool) getIntPref(env, vpn, "firewallEnabled"),
             }
     };
 
@@ -674,8 +677,15 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlacklists(JNIEnv *env, 
 /* ******************************************************* */
 
 JNIEXPORT jint JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedConnections(JNIEnv *env, jclass clazz) {
+Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedMalwareConnections(JNIEnv *env, jclass clazz) {
     return bl_num_checked_connections;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedFirewallConnections(JNIEnv *env, jclass clazz) {
+    return fw_num_checked_connections;
 }
 
 /* ******************************************************* */
@@ -765,6 +775,18 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv 
     return true;
 }
 
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_nativeSetFirewallEnabled(JNIEnv *env, jclass clazz, jboolean enabled) {
+    pcapdroid_t *pd = global_pd;
+    if(!pd) {
+        log_e("NULL pd instance");
+        return;
+    }
+
+    pd->firewall.enabled = enabled;
+}
 
 /* ******************************************************* */
 
@@ -880,3 +902,4 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
 }
 
 #endif // ANDROID
+

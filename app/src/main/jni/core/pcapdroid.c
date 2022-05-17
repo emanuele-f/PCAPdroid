@@ -39,6 +39,7 @@ bool block_private_dns = false;
 bool dump_capture_stats_now = false;
 bool reload_blacklists_now = false;
 int bl_num_checked_connections = 0;
+int fw_num_checked_connections = 0;
 
 static ndpi_protocol_bitmask_struct_t masterProtos;
 
@@ -290,7 +291,7 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
             }
         }
 
-        if(pd->firewall.bl && !data->to_block) {
+        if(pd->firewall.enabled && pd->firewall.bl && !data->to_block) {
             // Check if the domain is explicitly blocked by the firewall
             data->to_block |= blacklist_match_domain(pd->firewall.bl, data->info);
             if(data->to_block) {
@@ -403,7 +404,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         bl_num_checked_connections++;
     }
 
-    if(pd->firewall.bl && !data->to_block) {
+    if(pd->firewall.enabled && pd->firewall.bl && !data->to_block) {
         data->to_block |= blacklist_match_ip(pd->firewall.bl, &dst_ip, tuple->ipver);
         if(data->to_block) {
             char appbuf[64];
@@ -421,6 +422,8 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
                 log_w("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
+
+        fw_num_checked_connections++;
     }
 
     notif_connection(pd, &pd->new_conns, tuple, data);
@@ -864,10 +867,12 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
     blacklist_t *fw_bl = pd->firewall.bl;
     bool old_block = data->to_block;
 
-    data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain) ||
-            blacklist_match_uid(fw_bl, data->uid) ||
-            blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
-            (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
+    data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain);
+    if(!data->to_block && pd->firewall.enabled) {
+        data->to_block = blacklist_match_uid(fw_bl, data->uid) ||
+                         blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
+                         (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
+    }
 
     if(old_block != data->to_block) {
         data->update_type |= CONN_UPDATE_STATS;
@@ -1165,6 +1170,7 @@ int pd_run(pcapdroid_t *pd) {
     last_connections_dump = pd->now_ms;
     next_connections_dump = last_connections_dump + 500 /* first update after 500 ms */;
     bl_num_checked_connections = 0;
+    fw_num_checked_connections = 0;
 
     if(pd->cb.notify_service_status)
         pd->cb.notify_service_status(pd, "started");

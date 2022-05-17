@@ -78,7 +78,7 @@ public class ListInfo {
             case MALWARE_WHITELIST:
                 return R.string.malware_whitelist_help;
             case BLOCKLIST:
-                return R.string.firewall_help;
+                return 0;
         }
 
         assert false;

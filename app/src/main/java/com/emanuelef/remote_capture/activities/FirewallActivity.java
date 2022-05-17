@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -30,24 +30,22 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.EditListFragment;
-import com.emanuelef.remote_capture.fragments.BlacklistsFragment;
-import com.emanuelef.remote_capture.fragments.MalwareStatusFragment;
+import com.emanuelef.remote_capture.fragments.FirewallStatus;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class MalwareDetection extends BaseActivity {
-    private static final String TAG = "MalwareStats";
+public class FirewallActivity extends BaseActivity {
+    private static final String TAG = "Firewall";
     private ViewPager2 mPager;
 
     private static final int POS_STATUS = 0;
-    private static final int POS_BLACKLISTS = 1;
-    private static final int POS_WHITELIST = 2;
-    private static final int TOTAL_COUNT = 3;
+    private static final int POS_BLOCKLIST = 1;
+    private static final int TOTAL_COUNT = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.malware_detection);
+        setTitle(R.string.firewall);
         setContentView(R.layout.tabs_activity);
 
         mPager = findViewById(R.id.pager);
@@ -65,11 +63,9 @@ public class MalwareDetection extends BaseActivity {
             switch (position) {
                 default: // Deliberate fall-through to status tab
                 case POS_STATUS:
-                    return new MalwareStatusFragment();
-                case POS_BLACKLISTS:
-                    return new BlacklistsFragment();
-                case POS_WHITELIST:
-                    return EditListFragment.newInstance(ListInfo.Type.MALWARE_WHITELIST);
+                    return new FirewallStatus();
+                case POS_BLOCKLIST:
+                    return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST);
             }
         }
 
@@ -81,10 +77,8 @@ public class MalwareDetection extends BaseActivity {
                 default: // Deliberate fall-through to status tab
                 case POS_STATUS:
                     return R.string.status;
-                case POS_BLACKLISTS:
-                    return R.string.blacklists;
-                case POS_WHITELIST:
-                    return R.string.whitelist;
+                case POS_BLOCKLIST:
+                    return R.string.blocklist;
             }
         }
     }

@@ -167,6 +167,65 @@
                 android:textIsSelectable="true"
                 tools:text="01/02/20 00:45:01" />
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="16dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/network_traffic" />
+            <TextView
+                android:id="@+id/detail_bytes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="410 B received — 590 B sent" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/connections_view" />
+            <TextView
+                android:id="@+id/connections"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="2" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/conns_blocked_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/connections_blocked" />
+            <TextView
+                android:id="@+id/conns_blocked"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="5" />
+        </TableRow>
     </TableLayout>
 
     <LinearLayout

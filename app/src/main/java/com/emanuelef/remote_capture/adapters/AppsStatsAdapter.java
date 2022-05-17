@@ -40,7 +40,6 @@ import com.emanuelef.remote_capture.AppsResolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.ViewHolder> {
     private static final String TAG = "ConnectionsAdapter";
@@ -75,12 +74,12 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(stats.getUid());
 
-            if(stats.num_connections > 1)
-                info_txt += " (" + Utils.formatNumber(context, stats.num_connections) + ")";
+            if(stats.numConnections > 1)
+                info_txt += " (" + Utils.formatNumber(context, stats.numConnections) + ")";
 
             info.setText(info_txt);
 
-            traffic.setText(Utils.formatBytes(stats.bytes));
+            traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
         }
     }
 

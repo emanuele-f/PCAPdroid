@@ -120,6 +120,7 @@ public class CaptureService extends VpnService implements Runnable {
     private AppsResolver appsResolver;
     private boolean mMalwareDetectionEnabled;
     private boolean mBlacklistsUpdateRequested;
+    private boolean mFirewallEnabled;
     private boolean mBlockPrivateDns;
     private boolean mDnsEncrypted;
     private boolean mStrictDnsNoticeShown;
@@ -347,6 +348,7 @@ public class CaptureService extends VpnService implements Runnable {
             app_filter_uid = -1;
 
         mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
+        mFirewallEnabled = Prefs.isFirewallEnabled(this, mPrefs);
 
         if(!mSettings.root_capture) {
             Log.i(TAG, "Using DNS server " + dns_server);
@@ -930,6 +932,13 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
+    public static boolean isFirewallEnabled(Context ctx, SharedPreferences prefs) {
+        if(INSTANCE != null)
+            return INSTANCE.mFirewallEnabled;
+
+        return Prefs.isFirewallEnabled(ctx, prefs);
+    }
+
     /* The following methods are called from native code */
 
     public String getVpnIPv4() {
@@ -961,6 +970,8 @@ public class CaptureService extends VpnService implements Runnable {
     public int isTlsDecryptionEnabled() { return mSettings.tls_decryption ? 1 : 0; }
 
     public int malwareDetectionEnabled() { return(mMalwareDetectionEnabled ? 1 : 0); }
+
+    public int firewallEnabled() { return(mFirewallEnabled ? 1 : 0); }
 
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
@@ -1138,6 +1149,14 @@ public class CaptureService extends VpnService implements Runnable {
         reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
     }
 
+    public static void setFirewallEnabled(boolean enabled) {
+        if(INSTANCE == null)
+            return;
+
+        INSTANCE.mFirewallEnabled = enabled;
+        nativeSetFirewallEnabled(enabled);
+    }
+
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();
@@ -1148,5 +1167,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
-    public static native int getNumCheckedConnections();
+    public static native void nativeSetFirewallEnabled(boolean enabled);
+    public static native int getNumCheckedMalwareConnections();
+    public static native int getNumCheckedFirewallConnections();
 }
