@@ -33,12 +33,17 @@ import com.google.android.material.chip.ChipGroup;
 import java.io.Serializable;
 
 public class FilterDescriptor implements Serializable {
-    public Status status = Status.STATUS_INVALID;
-    public boolean showMasked = true;
-    public boolean onlyBLocked = false;
-    public boolean onlyBlacklisted = false;
-    public DecryptionStatus decStatus = DecryptionStatus.INVALID;
+    public Status status;
+    public boolean showMasked;
+    public boolean onlyBLocked;
+    public boolean onlyBlacklisted;
+    public DecryptionStatus decStatus;
     public String iface;
+    public int uid = -2; // this is persistent and used internally (AppDetailsActivity)
+
+    public FilterDescriptor() {
+        clear();
+    }
 
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
@@ -46,6 +51,7 @@ public class FilterDescriptor implements Serializable {
                 || (iface != null)
                 || onlyBLocked
                 || onlyBlacklisted
+                || (uid != 2)
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
@@ -55,7 +61,8 @@ public class FilterDescriptor implements Serializable {
                 && (!onlyBlacklisted || conn.isBlacklisted())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
                 && ((decStatus == DecryptionStatus.INVALID) || (conn.getDecryptionStatus() == decStatus))
-                && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)));
+                && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)))
+                && ((uid == -2) || (uid == conn.uid));
     }
 
     private void addChip(LayoutInflater inflater, ChipGroup group, int id, String text) {
@@ -99,5 +106,14 @@ public class FilterDescriptor implements Serializable {
             decStatus = DecryptionStatus.INVALID;
         else if(filter_id == R.id.capture_interface)
             iface = null;
+    }
+
+    public void clear() {
+        showMasked = true;
+        onlyBLocked = false;
+        onlyBlacklisted = false;
+        status = Status.STATUS_INVALID;
+        decStatus = DecryptionStatus.INVALID;
+        iface = null;
     }
 }

@@ -347,4 +347,5 @@
     <string name="last_firewall_block">Last block</string>
     <string name="firewall_is_disabled">Firewall is disabled</string>
     <string name="firewall_is_enabled">Firewall is enabled</string>
+    <string name="app_info">App info</string>
 </resources>

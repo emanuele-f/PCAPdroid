@@ -33,7 +33,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -58,10 +57,9 @@ import com.emanuelef.remote_capture.model.Prefs;
 public class FirewallStatus extends Fragment {
     private static final String TAG = "FirewallStatus";
     private Handler mHandler;
-    SharedPreferences mPrefs;
+    private SharedPreferences mPrefs;
     private SwitchCompat mToggle;
     private ImageView mStatusIcon;
-    private View mConnectionsCard;
     private TextView mStatus;
     private TextView mNumBlocked;
     private TextView mNumChecked;
@@ -86,7 +84,6 @@ public class FirewallStatus extends Fragment {
         mStatus = view.findViewById(R.id.status);
         mHandler = new Handler(Looper.getMainLooper());
         mStatusIcon = view.findViewById(R.id.status_icon);
-        mConnectionsCard = view.findViewById(R.id.show_connections);
         mNumBlocked = view.findViewById(R.id.num_blocked);
         mNumChecked = view.findViewById(R.id.num_checked);
         mNumRules = view.findViewById(R.id.num_rules);
@@ -96,7 +93,7 @@ public class FirewallStatus extends Fragment {
         mWarnColor = ContextCompat.getColor(ctx, R.color.warning);
         mGrayColor = ContextCompat.getColor(ctx, R.color.lightGray);
 
-        mConnectionsCard.setOnClickListener(v -> {
+        view.findViewById(R.id.show_connections).setOnClickListener(v -> {
             FilterDescriptor filter = new FilterDescriptor();
             filter.onlyBLocked = true;
 

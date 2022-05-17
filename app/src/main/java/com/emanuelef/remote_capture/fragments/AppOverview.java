@@ -47,7 +47,6 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 
@@ -61,6 +60,7 @@ public class AppOverview extends Fragment {
     private TextView mBlockedConnections;
     private TableLayout mTable;
     private TextView mPermissions;
+    private PackageInfo mPinfo;
 
     public static AppOverview newInstance(int uid) {
         AppOverview fragment = new AppOverview();
@@ -100,21 +100,22 @@ public class AppOverview extends Fragment {
 
         ((TextView)view.findViewById(R.id.uid)).setText(Utils.formatInteger(ctx, dsc.getUid()));
         ((TextView)view.findViewById(R.id.name)).setText(dsc.getName());
-        PackageInfo pinfo = dsc.getPackageInfo();
         ((ImageView)view.findViewById(R.id.app_icon)).setImageDrawable(dsc.getIcon());
 
-        if(pinfo != null) {
-            ((TextView)view.findViewById(R.id.package_name)).setText(dsc.getPackageName());
-            ((TextView)view.findViewById(R.id.version)).setText(pinfo.versionName);
-            ((TextView)view.findViewById(R.id.target_sdk)).setText(Utils.formatInteger(ctx, pinfo.applicationInfo.targetSdkVersion));
-            ((TextView)view.findViewById(R.id.install_date)).setText(Utils.formatEpochFull(ctx, pinfo.firstInstallTime / 1000));
-            ((TextView)view.findViewById(R.id.last_update)).setText(Utils.formatEpochFull(ctx, pinfo.lastUpdateTime / 1000));
+        mPinfo = dsc.getPackageInfo();
 
-            if((pinfo.requestedPermissions != null) && (pinfo.requestedPermissions.length != 0)) {
+        if(mPinfo != null) {
+            ((TextView)view.findViewById(R.id.package_name)).setText(dsc.getPackageName());
+            ((TextView)view.findViewById(R.id.version)).setText(mPinfo.versionName);
+            ((TextView)view.findViewById(R.id.target_sdk)).setText(Utils.formatInteger(ctx, mPinfo.applicationInfo.targetSdkVersion));
+            ((TextView)view.findViewById(R.id.install_date)).setText(Utils.formatEpochFull(ctx, mPinfo.firstInstallTime / 1000));
+            ((TextView)view.findViewById(R.id.last_update)).setText(Utils.formatEpochFull(ctx, mPinfo.lastUpdateTime / 1000));
+
+            if((mPinfo.requestedPermissions != null) && (mPinfo.requestedPermissions.length != 0)) {
                 StringBuilder builder = new StringBuilder();
                 boolean first = true;
 
-                for(String perm: pinfo.requestedPermissions) {
+                for(String perm: mPinfo.requestedPermissions) {
                     if(first)
                         first = false;
                     else
@@ -146,22 +147,11 @@ public class AppOverview extends Fragment {
             view.findViewById(R.id.last_update_row).setVisibility(View.GONE);
             view.findViewById(R.id.permissions_label).setVisibility(View.GONE);
             view.findViewById(R.id.permissions).setVisibility(View.GONE);
-            view.findViewById(R.id.app_settings).setVisibility(View.GONE);
         }
 
         mTable = view.findViewById(R.id.table);
 
-        view.findViewById(R.id.app_settings).setOnClickListener(v -> {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            intent.setData(Uri.fromParts("package", dsc.getPackageName(), null));
-            Utils.startActivity(ctx, intent);
-        });
 
-        view.findViewById(R.id.show_connections).setOnClickListener(v -> {
-            Intent intent = new Intent(ctx, ConnectionsActivity.class);
-            intent.putExtra(ConnectionsFragment.QUERY_EXTRA, dsc.getPackageName());
-            startActivity(intent);
-        });
     }
 
     @Override
@@ -189,14 +179,22 @@ public class AppOverview extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.copy_share_menu, menu);
+        menuInflater.inflate(R.menu.app_overview_menu, menu);
+
+        if(mPinfo == null)
+            menu.findItem(R.id.app_info).setVisible(false);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.copy_to_clipboard) {
+        if(id == R.id.app_info) {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.fromParts("package", mPinfo.packageName, null));
+            Utils.startActivity(requireContext(), intent);
+            return true;
+        } else if(id == R.id.copy_to_clipboard) {
             Utils.copyToClipboard(requireContext(), asString());
             return true;
         } else if(id == R.id.share) {

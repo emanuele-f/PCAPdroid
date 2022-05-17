@@ -229,7 +229,7 @@ public class EditFilterActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.reset_changes) {
-            mFilter = new FilterDescriptor();
+            mFilter.clear();
             model2view();
             return true;
         }
