@@ -26,13 +26,6 @@
         android:textStyle="bold"
         tools:text="@string/firewall_is_enabled" />
 
-    <Button
-        android:id="@+id/show_connections"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/connections_view"
-        style="?attr/borderlessButtonStyle" />
-
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -76,8 +69,9 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
-            android:clickable="false"
-            android:focusable="false"
+            android:id="@+id/show_connections"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1">

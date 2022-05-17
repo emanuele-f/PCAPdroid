@@ -61,7 +61,7 @@ public class FirewallStatus extends Fragment {
     SharedPreferences mPrefs;
     private SwitchCompat mToggle;
     private ImageView mStatusIcon;
-    private Button mConnectionsBtn;
+    private View mConnectionsCard;
     private TextView mStatus;
     private TextView mNumBlocked;
     private TextView mNumChecked;
@@ -86,7 +86,7 @@ public class FirewallStatus extends Fragment {
         mStatus = view.findViewById(R.id.status);
         mHandler = new Handler(Looper.getMainLooper());
         mStatusIcon = view.findViewById(R.id.status_icon);
-        mConnectionsBtn = view.findViewById(R.id.show_connections);
+        mConnectionsCard = view.findViewById(R.id.show_connections);
         mNumBlocked = view.findViewById(R.id.num_blocked);
         mNumChecked = view.findViewById(R.id.num_checked);
         mNumRules = view.findViewById(R.id.num_rules);
@@ -96,7 +96,7 @@ public class FirewallStatus extends Fragment {
         mWarnColor = ContextCompat.getColor(ctx, R.color.warning);
         mGrayColor = ContextCompat.getColor(ctx, R.color.lightGray);
 
-        mConnectionsBtn.setOnClickListener(v -> {
+        mConnectionsCard.setOnClickListener(v -> {
             FilterDescriptor filter = new FilterDescriptor();
             filter.onlyBLocked = true;
 
@@ -154,9 +154,6 @@ public class FirewallStatus extends Fragment {
         boolean is_running = CaptureService.isServiceActive();
         boolean is_enabled = CaptureService.isFirewallEnabled(ctx, mPrefs);
 
-        int num_blocked = ((reg != null) ? reg.getNumBlockedConnections() : 0);
-        mConnectionsBtn.setVisibility((num_blocked > 0) ? View.VISIBLE : View.GONE);
-
         if(!is_running) {
             mStatusIcon.setImageResource(R.drawable.ic_shield);
             mStatusIcon.setColorFilter(mGrayColor);
@@ -180,7 +177,7 @@ public class FirewallStatus extends Fragment {
         if(mToggle != null)
             mToggle.setChecked(is_enabled);
 
-        mNumBlocked.setText(Utils.formatIntShort(num_blocked));
+        mNumBlocked.setText(Utils.formatIntShort(((reg != null) ? reg.getNumBlockedConnections() : 0)));
         mNumChecked.setText(Utils.formatIntShort(CaptureService.getNumCheckedFirewallConnections()));
         mLastBlock.setText(Utils.formatEpochMin(ctx, ((reg != null) ? reg.getLastFirewallBlock() / 1000 : 0)));
         mNumRules.setText(Utils.formatIntShort(mBlocklist.getSize()));
