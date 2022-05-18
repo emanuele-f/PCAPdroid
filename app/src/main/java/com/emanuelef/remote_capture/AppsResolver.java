@@ -20,9 +20,11 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -129,6 +131,38 @@ public class AppsResolver {
             mApps.put(uid, app);
 
         return app;
+    }
+
+    public @Nullable AppDescriptor lookup(int uid) {
+        return mApps.get(uid);
+    }
+
+    /* Lookup a UID by package name (including virtual apps).
+     * UID_NO_FILTER is returned if no match is found. */
+    public int getUid(String package_name) {
+        if(!package_name.contains(".")) {
+            // This is a virtual app
+            for(int i=0; i<mApps.size(); i++) {
+                AppDescriptor app = mApps.valueAt(i);
+
+                if(app.getPackageName().equals(package_name))
+                    return app.getUid();
+            }
+        } else {
+            try {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    return mPm.getPackageUid(package_name, 0);
+                } else {
+                    ApplicationInfo info = mPm.getApplicationInfo(package_name, 0);
+                    return info.uid;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Not found
+        return Utils.UID_NO_FILTER;
     }
 
     public void clear() {

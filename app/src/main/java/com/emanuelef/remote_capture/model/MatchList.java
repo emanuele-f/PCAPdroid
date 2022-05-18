@@ -27,6 +27,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
@@ -57,6 +58,9 @@ public class MatchList {
     private final String mPrefName;
     private final ArrayList<Rule> mRules = new ArrayList<>();
     private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
+    private final ArraySet<Integer> mUids = new ArraySet<>();
+    private final AppsResolver mResolver;
+    private boolean mFormatMigration = false;
 
     public enum RuleType {
         APP,
@@ -110,6 +114,7 @@ public class MatchList {
         mContext = ctx;
         mPrefName = pref_name; // The preference to bake the list rules
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        mResolver = new AppsResolver(ctx);
         reload();
     }
 
@@ -117,9 +122,15 @@ public class MatchList {
         String serialized = mPrefs.getString(mPrefName, "");
         //Log.d(TAG, serialized);
 
-        if(!serialized.isEmpty())
+        if(!serialized.isEmpty()) {
             fromJson(serialized);
-        else
+
+            if(mFormatMigration) {
+                Log.i(TAG, "Migration completed");
+                save();
+                mFormatMigration = false;
+            }
+        } else
             clear();
     }
 
@@ -144,9 +155,7 @@ public class MatchList {
         }
 
         if(tp == RuleType.APP) {
-            AppsResolver resolver = new AppsResolver(ctx);
-            AppDescriptor app = resolver.get(Integer.parseInt(value), 0);
-
+            AppDescriptor app = AppsResolver.resolve(ctx.getPackageManager(), value, 0);
             if(app != null)
                 value = app.getName();
         } else if(tp == RuleType.HOST)
@@ -198,6 +207,26 @@ public class MatchList {
                 }
 
                 String val = ruleObj.get("value").getAsString();
+
+                // Handle migration from old uid-based format
+                if(type == RuleType.APP) {
+                    try {
+                        int uid = Integer.parseInt(val);
+
+                        AppDescriptor app = mResolver.get(uid, 0);
+                        if(app != null) {
+                            val = app.getPackageName();
+                            Log.i(TAG, String.format("UID %d resolved to package %s", uid, val));
+                            mFormatMigration = true;
+                        } else {
+                            Log.w(TAG, "Ignoring unknown UID " + uid);
+                            continue;
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // ok, package name
+                    }
+                }
+
                 addRule(new Rule(type, val));
             }
         } catch (IllegalArgumentException | ClassCastException e) {
@@ -208,35 +237,64 @@ public class MatchList {
         return true;
     }
 
-    public void addApp(int uid)        { addRule(new Rule(RuleType.APP, uid)); }
+    public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
     public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
     public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
     public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
     public void addRootDomain(String domain)    { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
     public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
 
+    public void addApp(int uid) {
+        AppDescriptor app = mResolver.get(uid, 0);
+        if(app == null) {
+            Log.e(TAG, "could not resolve UID " + uid);
+            return;
+        }
+
+        // apps must be identified by their package name to work across installations
+        addApp(app.getPackageName());
+    }
+
     static private String matchKey(RuleType tp, Object val) {
         return tp + "@" + val;
     }
 
     private boolean addRule(Rule rule) {
-        String key = matchKey(rule.getType(), rule.getValue().toString());
+        String value = rule.getValue().toString();
+        String key = matchKey(rule.getType(), value);
 
-        if(!mMatches.containsKey(key)) {
-            mRules.add(rule);
-            mMatches.put(key, rule);
-            return true;
+        if(mMatches.containsKey(key))
+            return false;
+
+        if(rule.getType() == RuleType.APP) {
+            // Need uid for match
+            int uid = mResolver.getUid(value);
+            if(uid == Utils.UID_NO_FILTER)
+                return false;
+
+            mUids.add(uid);
         }
 
-        return false;
+        mRules.add(rule);
+        mMatches.put(key, rule);
+        return true;
     }
 
     public void removeRules(List<Rule> rules) {
         mRules.removeAll(rules);
 
         for(Rule rule: rules) {
-            String key = matchKey(rule.getType(), rule.getValue().toString());
+            String val = rule.getValue().toString();
+            String key = matchKey(rule.getType(), val);
             mMatches.remove(key);
+
+            if(rule.getType() == RuleType.APP) {
+                int uid = mResolver.getUid(val);
+                if(uid != Utils.UID_NO_FILTER)
+                    mUids.remove(uid);
+                else
+                    Log.w(TAG, "removeRules: no uid found for package " + val);
+            }
         }
     }
 
@@ -254,7 +312,8 @@ public class MatchList {
     }
 
     public boolean matchesApp(int uid) {
-        return mMatches.containsKey(matchKey(RuleType.APP, uid));
+        // match apps based on their uid (faster) rather than their package name
+        return mUids.contains(uid);
     }
 
     public boolean matchesIP(String ip) {
@@ -297,6 +356,7 @@ public class MatchList {
     public void clear() {
         mRules.clear();
         mMatches.clear();
+        mUids.clear();
     }
 
     public boolean isEmpty() {
@@ -341,15 +401,17 @@ public class MatchList {
             MatchList.RuleType tp = rule.getType();
             String val = rule.getValue().toString();
 
-            if(tp.equals(MatchList.RuleType.APP))
-                rv.apps.add(val);
-            else if(tp.equals(MatchList.RuleType.HOST))
+            if(tp.equals(MatchList.RuleType.HOST))
                 rv.hosts.add(val);
             else if(tp.equals(MatchList.RuleType.IP))
                 rv.ips.add(val);
-            else
+            else if(!tp.equals(MatchList.RuleType.APP)) // apps handled below
                 Log.w(TAG, "ListDescriptor does not support RuleType " + tp.name());
         }
+
+        // Apps are matched via their UID
+        for(int uid: mUids)
+            rv.apps.add(Integer.toString(uid));
 
         return rv;
     }

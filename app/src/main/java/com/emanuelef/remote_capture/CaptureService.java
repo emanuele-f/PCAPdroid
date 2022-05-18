@@ -1142,6 +1142,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mBilling.isRedeemed(Billing.FIREWALL_SKU) || mSettings.root_capture)
             return;
 
+        Log.d(TAG, "reloading firewall blocklist");
         reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
@@ -1149,6 +1150,7 @@ public class CaptureService extends VpnService implements Runnable {
         if((INSTANCE == null) || !INSTANCE.mMalwareDetectionEnabled)
             return;
 
+        Log.d(TAG, "reloading malware whitelist");
         reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
     }
 

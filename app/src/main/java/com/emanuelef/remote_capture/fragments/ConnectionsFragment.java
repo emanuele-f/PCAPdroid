@@ -312,7 +312,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(app != null) {
             item = menu.findItem(R.id.hide_app);
-            String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.APP, Integer.toString(app.getUid())), max_length);
+
+            String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.APP, app.getPackageName()), max_length);
             item.setTitle(label);
             item.setVisible(true);
 
