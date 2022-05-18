@@ -55,7 +55,7 @@ You can help the PCAPdroid project in many ways:
 - Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
-You can join the PCAPdroid community on [telegram](https://t.me/PCAPdroid) or on [matrix](https://matrix.to/#/#pcapdroid:matrix.org).
+You can join the PCAPdroid community [on telegram](https://t.me/PCAPdroid) or [on matrix](https://matrix.to/#/#pcapdroid:matrix.org).
 The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target the dev branch when making pull requests for new features. Here is the normal release cycle:
 
 1. Changes are developed and pushed to the dev branch
