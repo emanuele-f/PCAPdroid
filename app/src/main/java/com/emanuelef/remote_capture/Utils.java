@@ -429,15 +429,14 @@ public class Utils {
                 if(index == half)
                     builder.append(" ");
 
-                if (rowOffset + index < array.length) {
+                if (rowOffset + index < length)
                     builder.append(String.format("%02x ", array[rowOffset + index]));
-                } else {
+                else
                     builder.append("   ");
-                }
             }
 
-            if (rowOffset < array.length) {
-                int asciiWidth = Math.min(width, array.length - rowOffset);
+            if (rowOffset < length) {
+                int asciiWidth = Math.min(width, length - rowOffset);
                 builder.append(" ");
 
                 builder.append(new String(array, rowOffset, asciiWidth,

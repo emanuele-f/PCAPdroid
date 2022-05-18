@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             tools:textColor="@color/sentPayloadFg"
             android:textIsSelectable="true"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/sourcecodepro_regular"
             android:textDirection="ltr"
             android:textSize="9sp"
             android:textStyle="bold"
