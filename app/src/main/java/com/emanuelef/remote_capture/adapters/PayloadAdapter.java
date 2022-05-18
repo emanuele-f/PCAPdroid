@@ -185,6 +185,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
     protected static class PayloadViewHolder extends RecyclerView.ViewHolder {
         View headerLine;
+        View dumpBox;
         TextView header;
         TextView dump;
         TextView contentType;
@@ -196,6 +197,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             headerLine = view.findViewById(R.id.header_line);
             header = view.findViewById(R.id.header);
             dump = view.findViewById(R.id.dump);
+            dumpBox = view.findViewById(R.id.dump_box);
             expandButton = view.findViewById(R.id.expand_button);
             contentType = view.findViewById(R.id.content_type);
         }
@@ -262,10 +264,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         holder.dump.setText(page.getText());
 
         if(chunk.is_sent) {
-            holder.dump.setBackgroundResource(R.color.sentPayloadBg);
+            holder.dumpBox.setBackgroundResource(R.color.sentPayloadBg);
             holder.dump.setTextColor(ContextCompat.getColor(mContext, R.color.sentPayloadFg));
         } else {
-            holder.dump.setBackgroundResource(R.color.rcvdPayloadBg);
+            holder.dumpBox.setBackgroundResource(R.color.rcvdPayloadBg);
             holder.dump.setTextColor(ContextCompat.getColor(mContext, R.color.rcvdPayloadFg));
         }
     }
