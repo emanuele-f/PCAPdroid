@@ -249,7 +249,7 @@ public class CaptureService extends VpnService implements Runnable {
             }
         } catch (SocketException ignored) {}
 
-        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
 
@@ -361,6 +361,9 @@ public class CaptureService extends VpnService implements Runnable {
                     .addRoute("0.0.0.0", 1)
                     .addRoute("128.0.0.0", 1)
                     .addDnsServer(vpn_dns);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                builder.setMetered(false);
 
             if (mSettings.ipv6_enabled) {
                 builder.addAddress(VPN_IP6_ADDRESS, 128);
