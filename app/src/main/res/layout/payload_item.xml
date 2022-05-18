@@ -47,6 +47,7 @@
         tools:background="@color/sentPayloadBg">
 
         <!-- Keep layout_width to "wrap_content" or text selection will fail in some cases (Android bug?) -->
+        <!-- Use dp to get a consistent size across devices: prevents splitting hexdump lines -->
         <TextView
             android:id="@+id/dump"
             android:layout_width="wrap_content"
@@ -55,7 +56,7 @@
             android:textIsSelectable="true"
             android:fontFamily="@font/sourcecodepro_regular"
             android:textDirection="ltr"
-            android:textSize="9sp"
+            android:textSize="9dp"
             android:textStyle="bold"
             android:focusable="true"
             tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
