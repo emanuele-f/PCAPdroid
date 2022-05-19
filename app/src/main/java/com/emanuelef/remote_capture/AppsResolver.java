@@ -133,6 +133,14 @@ public class AppsResolver {
         return app;
     }
 
+    public @Nullable AppDescriptor getByPackage(String package_name, int pm_flags) {
+        int uid = getUid(package_name);
+        if(uid == Utils.UID_NO_FILTER)
+            return null;
+
+        return get(uid, pm_flags);
+    }
+
     public @Nullable AppDescriptor lookup(int uid) {
         return mApps.get(uid);
     }

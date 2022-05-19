@@ -20,27 +20,41 @@
 package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.Iterator;
 
 public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements TextAdapter {
     private final LayoutInflater mLayoutInflater;
+    private final AppsResolver mApps;
+    private final Drawable mDefaultIcon;
+    private final Drawable mUnknownIcon;
 
     public ListEditAdapter(Context context, Iterator<MatchList.Rule> items) {
         super(context, R.layout.rule_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mApps = new AppsResolver(context);
+        mUnknownIcon = ContextCompat.getDrawable(context, R.drawable.ic_image);
+        mDefaultIcon = ContextCompat.getDrawable(context, R.drawable.ic_short_text);
+        assert mDefaultIcon != null;
+        DrawableCompat.setTint(mDefaultIcon, ContextCompat.getColor(context, R.color.colorTabText));
 
         while(items.hasNext()) {
             MatchList.Rule item = items.next();
@@ -56,6 +70,15 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
 
         MatchList.Rule rule = getItem(position);
         ((TextView)convertView.findViewById(R.id.item_label)).setText(rule.getLabel());
+        ImageView icon = convertView.findViewById(R.id.icon);
+
+        if(rule.getType() == MatchList.RuleType.APP) {
+            String package_name = (String)rule.getValue();
+            AppDescriptor app = mApps.getByPackage(package_name, 0);
+            Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
+            icon.setImageDrawable(drawable);
+        } else
+            icon.setImageDrawable(mDefaultIcon);
 
         return convertView;
     }
