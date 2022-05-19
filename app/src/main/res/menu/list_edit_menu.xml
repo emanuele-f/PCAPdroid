@@ -22,7 +22,7 @@
         android:title="@string/import_action"
         android:orderInCategory="19"
         android:icon="@drawable/ic_file_import"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/copy_to_clipboard"
