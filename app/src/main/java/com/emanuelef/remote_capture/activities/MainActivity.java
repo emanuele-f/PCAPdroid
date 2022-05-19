@@ -400,7 +400,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.action_share_app) {
             String description = getString(R.string.about_text);
             String getApp = getString(R.string.get_app);
-            String url = "http://play.google.com/store/apps/details?id=" + this.getPackageName();
+            String url = "https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture";
 
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
