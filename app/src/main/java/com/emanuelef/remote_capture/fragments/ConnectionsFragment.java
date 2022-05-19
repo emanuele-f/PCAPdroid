@@ -351,11 +351,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
 
             String dm_clean = Utils.cleanDomain(conn.info);
-            String rootDomain = Utils.getRootDomain(dm_clean);
+            String rootDomain = Utils.getSecondLevelDomain(dm_clean);
 
             if(!rootDomain.equals(dm_clean)) {
-                item = menu.findItem(R.id.hide_root_domain);
-                item.setTitle(Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.ROOT_DOMAIN, rootDomain), max_length));
+                label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, rootDomain), max_length);
+
+                item = menu.findItem(R.id.hide_domain);
+                item.setTitle(label);
+                item.setVisible(true);
+
+                item = menu.findItem(R.id.block_domain);
+                item.setTitle(label);
                 item.setVisible(true);
             }
 
@@ -426,8 +432,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.hide_proto) {
             mAdapter.mMask.addProto(conn.l7proto);
             mask_changed = true;
-        } else if(id == R.id.hide_root_domain) {
-            mAdapter.mMask.addRootDomain(Utils.getRootDomain(conn.info));
+        } else if(id == R.id.hide_domain) {
+            mAdapter.mMask.addHost(Utils.getSecondLevelDomain(conn.info));
             mask_changed = true;
         } else if(id == R.id.hide_country) {
             mAdapter.mMask.addCountry(conn.country);
@@ -458,6 +464,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             blocklist_changed = true;
         } else if(id == R.id.block_host) {
             blocklist.addHost(conn.info);
+            blocklist_changed = true;
+        } else if(id == R.id.block_domain) {
+            blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);

@@ -797,7 +797,7 @@ public class Utils {
     }
 
     // a.example.org -> example.org
-    public static String getRootDomain(String domain) {
+    public static String getSecondLevelDomain(String domain) {
         int tldPos = domain.lastIndexOf(".");
 
         if(tldPos <= 0)

@@ -24,7 +24,7 @@
                 android:visible="false" />
 
             <item
-                android:id="@+id/hide_root_domain"
+                android:id="@+id/hide_domain"
                 android:title=""
                 tools:title="@string/host_val"
                 android:visible="false" />
@@ -59,6 +59,12 @@
                 android:id="@+id/block_host"
                 android:title=""
                 tools:title="@string/host_val" />
+
+            <item
+                android:id="@+id/block_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
         </menu>
     </item>
 

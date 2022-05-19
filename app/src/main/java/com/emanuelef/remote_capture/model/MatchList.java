@@ -66,7 +66,6 @@ public class MatchList {
         APP,
         IP,
         HOST,
-        ROOT_DOMAIN,
         PROTOCOL,
         COUNTRY
     }
@@ -146,7 +145,6 @@ public class MatchList {
         switch(tp) {
             case APP:           resid = R.string.app_val; break;
             case IP:            resid = R.string.ip_address_val; break;
-            case ROOT_DOMAIN:   value = "*" + value; // fallthrough
             case HOST:          resid = R.string.host_val; break;
             case PROTOCOL:      resid = R.string.protocol_val; break;
             case COUNTRY:       resid = R.string.country_val; break;
@@ -196,17 +194,23 @@ public class MatchList {
 
             for(JsonElement el: ruleArray) {
                 JsonObject ruleObj = el.getAsJsonObject();
+                String typeStr = ruleObj.get("type").getAsString();
+                String val = ruleObj.get("value").getAsString();
                 RuleType type;
 
                 try {
-                    type = RuleType.valueOf(ruleObj.get("type").getAsString());
+                    type = RuleType.valueOf(typeStr);
                 } catch (IllegalArgumentException e) {
-                    // can happen if format is changed, ignore
-                    e.printStackTrace();
-                    continue;
+                    // can happen if format is changed
+                    if(typeStr.equals("ROOT_DOMAIN")) {
+                        Log.i(TAG, String.format("ROOT_DOMAIN %s migrated", val));
+                        type = RuleType.HOST;
+                        mFormatMigration = true;
+                    } else {
+                        e.printStackTrace();
+                        continue;
+                    }
                 }
-
-                String val = ruleObj.get("value").getAsString();
 
                 // Handle migration from old uid-based format
                 if(type == RuleType.APP) {
@@ -241,7 +245,6 @@ public class MatchList {
     public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
     public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
     public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
-    public void addRootDomain(String domain)    { addRule(new Rule(RuleType.ROOT_DOMAIN, domain)); }
     public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
 
     public void addApp(int uid) {
@@ -325,11 +328,16 @@ public class MatchList {
     }
 
     public boolean matchesHost(String host) {
-        return mMatches.containsKey(matchKey(RuleType.HOST, Utils.cleanDomain(host)));
-    }
+        // Keep in sync with the native blacklist_match_domain
+        host = Utils.cleanDomain(host);
 
-    public boolean matchesRootDomain(String root_domain) {
-        return mMatches.containsKey(matchKey(RuleType.ROOT_DOMAIN, root_domain));
+        // exact domain match
+        if(mMatches.containsKey(matchKey(RuleType.HOST, host)))
+            return true;
+
+        // 2nd-level domain match
+        String domain = Utils.getSecondLevelDomain(host);
+        return !domain.equals(host) && mMatches.containsKey(matchKey(RuleType.HOST, domain));
     }
 
     public boolean matchesCountry(String country_code) {
@@ -345,8 +353,7 @@ public class MatchList {
                 matchesIP(conn.dst_ip) ||
                 matchesProto(conn.l7proto) ||
                 matchesCountry(conn.country) ||
-                (hasInfo && matchesHost(conn.info))) ||
-                (hasInfo && matchesRootDomain(Utils.getRootDomain(conn.info)));
+                (hasInfo && matchesHost(conn.info)));
     }
 
     public Iterator<Rule> iterRules() {
