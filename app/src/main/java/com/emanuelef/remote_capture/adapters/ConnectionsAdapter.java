@@ -199,6 +199,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ViewHolder holder = new ViewHolder(view);
 
         view.setOnLongClickListener(v -> {
+            // see registerForContextMenu
             mClickedPosition = holder.getAbsoluteAdapterPosition();
             return false;
         });

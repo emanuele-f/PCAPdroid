@@ -349,4 +349,6 @@
     <string name="firewall_is_disabled">Firewall is disabled</string>
     <string name="firewall_is_enabled">Firewall is enabled</string>
     <string name="app_info">App info</string>
+    <string name="action_block">Block</string>
+    <string name="action_unblock">Unblock</string>
 </resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <item
+        android:id="@+id/block_app"
+        android:title="@string/action_block" />
+
+    <item
+        android:id="@+id/unblock_app"
+        android:title="@string/action_unblock" />
+</menu>

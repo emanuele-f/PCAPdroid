@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,29 +30,37 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.ViewHolder> {
-    private static final String TAG = "ConnectionsAdapter";
+    private static final String TAG = "AppsStatsAdapter";
     private final Context mContext;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
+    private final MatchList mBlocklist;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
+    private final SharedPreferences mPrefs;
+    private int mClickedPosition;
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
+        ImageView blockedFlag;
         TextView info;
         TextView traffic;
 
@@ -59,27 +68,29 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             super(itemView);
 
             icon = itemView.findViewById(R.id.icon);
+            blockedFlag = itemView.findViewById(R.id.blocked);
             info = itemView.findViewById(R.id.app_info);
             traffic = itemView.findViewById(R.id.traffic);
         }
 
-        public void bindAppStats(Context context, AppStats stats, AppsResolver apps, Drawable unknownIcon) {
+        public void bindAppStats(AppStats stats) {
             Drawable appIcon;
 
             // NOTE: can be null
-            AppDescriptor app = (apps != null) ? apps.get(stats.getUid(), 0) : null;
+            AppDescriptor app = (mApps != null) ? mApps.get(stats.getUid(), 0) : null;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
+            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
             icon.setImageDrawable(appIcon);
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(stats.getUid());
 
             if(stats.numConnections > 1)
-                info_txt += " (" + Utils.formatNumber(context, stats.numConnections) + ")";
+                info_txt += " (" + Utils.formatNumber(mContext, stats.numConnections) + ")";
 
             info.setText(info_txt);
 
             traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
+            blockedFlag.setVisibility(mBlocklist.matchesApp(stats.getUid()) ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
@@ -88,8 +99,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mApps = new AppsResolver(context);
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
+        mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mListener = null;
         mStats = new ArrayList<>();
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         setHasStableIds(true);
     }
 
@@ -106,7 +119,21 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         if(mListener != null)
             view.setOnClickListener(mListener);
 
-        return new ViewHolder(view);
+        ViewHolder holder = new ViewHolder(view);
+
+        if(CaptureService.isFirewallEnabled(mContext, mPrefs)) {
+            // Enable the ability to show the context menu
+            view.setLongClickable(true);
+
+            view.setOnLongClickListener(v -> {
+                // see registerForContextMenu
+                mClickedPosition = holder.getAbsoluteAdapterPosition();
+                return false;
+            });
+        } else
+            view.setLongClickable(false);
+
+        return holder;
     }
 
     @Override
@@ -116,7 +143,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         if(stats == null)
             return;
 
-        holder.bindAppStats(mContext, stats, mApps, mUnknownIcon);
+        holder.bindAppStats(stats);
     }
 
     @Override
@@ -128,6 +155,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
     public AppStats getItem(int pos) {
         return mStats.get(pos);
+    }
+
+    public int getClickedItemPos() {
+        return mClickedPosition;
     }
 
     public String getItemPackage(int pos) {
