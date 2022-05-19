@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.adapters;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,10 +29,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -52,10 +50,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private final MatchList mBlocklist;
+    private final boolean mFirewallAvailable;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
-    private final SharedPreferences mPrefs;
     private int mClickedPosition;
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -102,7 +100,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mListener = null;
         mStats = new ArrayList<>();
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        mFirewallAvailable = Billing.newInstance(context).canUseFirewall();
         setHasStableIds(true);
     }
 
@@ -121,7 +119,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
         ViewHolder holder = new ViewHolder(view);
 
-        if(CaptureService.isFirewallEnabled(mContext, mPrefs)) {
+        if(mFirewallAvailable) {
             // Enable the ability to show the context menu
             view.setLongClickable(true);
 
@@ -130,8 +128,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
                 mClickedPosition = holder.getAbsoluteAdapterPosition();
                 return false;
             });
-        } else
-            view.setLongClickable(false);
+        }
 
         return holder;
     }

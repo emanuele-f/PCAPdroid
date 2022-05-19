@@ -235,6 +235,7 @@
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
     <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
+    <string name="unblock">Unblock…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall rules</string>
     <string name="blocked_pkts">Blocked</string>

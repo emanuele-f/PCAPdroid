@@ -305,14 +305,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         AppDescriptor app = mApps.get(conn.uid, 0);
         Context ctx = requireContext();
-        Billing billing = Billing.newInstance(ctx);
         MenuItem item;
 
-        menu.findItem(R.id.block_menu).setVisible(billing.isRedeemed(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot());
+        boolean firewallAvailable = Billing.newInstance(ctx).canUseFirewall();
+        boolean blockVisible = false;
+        boolean unblockVisible = false;
+        MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
 
         if(app != null) {
-            item = menu.findItem(R.id.hide_app);
+            boolean appBlocked = blocklist.matchesApp(app.getUid());
+            blockVisible = !appBlocked;
+            unblockVisible = appBlocked;
 
+            item = menu.findItem(R.id.hide_app);
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.APP, app.getPackageName()), max_length);
             item.setTitle(label);
             item.setVisible(true);
@@ -323,7 +328,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             item = menu.findItem(R.id.block_app);
             item.setTitle(label);
-            item.setVisible(true);
+            item.setVisible(!appBlocked);
+
+            item = menu.findItem(R.id.unblock_app);
+            item.setTitle(label);
+            item.setVisible(appBlocked);
 
             if(conn.isBlacklisted()) {
                 item = menu.findItem(R.id.whitelist_app);
@@ -333,14 +342,22 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         if((conn.info != null) && (!conn.info.isEmpty())) {
-            item = menu.findItem(R.id.hide_host);
+            boolean hostBlocked = blocklist.matchesExactHost(conn.info);
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info), max_length);
+            blockVisible |= !hostBlocked;
+            unblockVisible |= hostBlocked;
+
+            item = menu.findItem(R.id.hide_host);
             item.setTitle(label);
             item.setVisible(true);
 
             item = menu.findItem(R.id.block_host);
             item.setTitle(label);
-            item.setVisible(true);
+            item.setVisible(!hostBlocked);
+
+            item = menu.findItem(R.id.unblock_host);
+            item.setTitle(label);
+            item.setVisible(hostBlocked);
 
             item = menu.findItem(R.id.search_host);
             item.setTitle(label);
@@ -351,10 +368,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setVisible(true);
 
             String dm_clean = Utils.cleanDomain(conn.info);
-            String rootDomain = Utils.getSecondLevelDomain(dm_clean);
+            String domain = Utils.getSecondLevelDomain(dm_clean);
 
-            if(!rootDomain.equals(dm_clean)) {
-                label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, rootDomain), max_length);
+            if(!domain.equals(dm_clean)) {
+                boolean domainBlocked = blocklist.matchesExactHost(domain);
+                label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, domain), max_length);
+                blockVisible |= !domainBlocked;
+                unblockVisible |= domainBlocked;
 
                 item = menu.findItem(R.id.hide_domain);
                 item.setTitle(label);
@@ -362,7 +382,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                 item = menu.findItem(R.id.block_domain);
                 item.setTitle(label);
-                item.setVisible(true);
+                item.setVisible(!domainBlocked);
+
+                item = menu.findItem(R.id.unblock_domain);
+                item.setTitle(label);
+                item.setVisible(domainBlocked);
             }
 
             if(conn.isBlacklistedHost()) {
@@ -388,7 +412,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
-        menu.findItem(R.id.block_ip).setTitle(label);
+
+        boolean ipBlocked = blocklist.matchesIP(conn.dst_ip);
+        blockVisible |= !ipBlocked;
+        unblockVisible |= ipBlocked;
+
+        menu.findItem(R.id.block_ip)
+                .setTitle(label)
+                .setVisible(!ipBlocked);
+        menu.findItem(R.id.unblock_ip)
+                .setTitle(label)
+                .setVisible(ipBlocked);
+
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
 
@@ -400,6 +435,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         label = MatchList.getRuleLabel(ctx, RuleType.PROTOCOL, conn.l7proto);
         menu.findItem(R.id.hide_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
+
+        menu.findItem(R.id.block_menu).setVisible(firewallAvailable && blockVisible);
+        menu.findItem(R.id.unblock_menu).setVisible(firewallAvailable && unblockVisible);
 
         if(!conn.isBlacklisted())
             menu.findItem(R.id.whitelist_menu).setVisible(false);
@@ -467,6 +505,18 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             blocklist_changed = true;
         } else if(id == R.id.block_domain) {
             blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
+            blocklist_changed = true;
+        } else if(id == R.id.unblock_app) {
+            blocklist.removeApp(conn.uid);
+            blocklist_changed = true;
+        } else if(id == R.id.unblock_ip) {
+            blocklist.removeIp(conn.dst_ip);
+            blocklist_changed = true;
+        } else if(id == R.id.unblock_host) {
+            blocklist.removeHost(conn.info);
+            blocklist_changed = true;
+        } else if(id == R.id.unblock_domain) {
+            blocklist.removeHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);

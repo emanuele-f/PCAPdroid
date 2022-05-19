@@ -115,8 +115,8 @@ public class Prefs {
                 && p.getBoolean(PREF_MALWARE_DETECTION, true));
     }
     public static boolean isFirewallEnabled(Context ctx, SharedPreferences p) {
-        return(Billing.newInstance(ctx).isRedeemed(Billing.FIREWALL_SKU)
-                && !isRootCaptureEnabled(p)
+        // NOTE: firewall can be disabled at runtime
+        return(Billing.newInstance(ctx).canUseFirewall()
                 && p.getBoolean(PREF_FIREWALL, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }

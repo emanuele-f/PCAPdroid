@@ -241,12 +241,11 @@ public class MatchList {
         return true;
     }
 
-    public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
     public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
     public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
     public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
     public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
-
+    public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
     public void addApp(int uid) {
         AppDescriptor app = mResolver.get(uid, 0);
         if(app == null) {
@@ -256,6 +255,21 @@ public class MatchList {
 
         // apps must be identified by their package name to work across installations
         addApp(app.getPackageName());
+    }
+
+    public void removeIp(String ip)       { removeRule(new Rule(RuleType.IP, ip)); }
+    public void removeHost(String info)   { removeRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
+    public void removeProto(String proto) { removeRule(new Rule(RuleType.PROTOCOL, proto)); }
+    public void removeCountry(String country_code) { removeRule(new Rule(RuleType.COUNTRY, country_code)); }
+    public void removeApp(String pkg)     { removeRule(new Rule(RuleType.APP, pkg)); }
+    public void removeApp(int uid) {
+        AppDescriptor app = mResolver.get(uid, 0);
+        if(app == null) {
+            Log.e(TAG, "could not resolve UID " + uid);
+            return;
+        }
+
+        removeApp(app.getPackageName());
     }
 
     static private String matchKey(RuleType tp, Object val) {
@@ -283,24 +297,6 @@ public class MatchList {
         return true;
     }
 
-    public void removeRules(List<Rule> rules) {
-        mRules.removeAll(rules);
-
-        for(Rule rule: rules) {
-            String val = rule.getValue().toString();
-            String key = matchKey(rule.getType(), val);
-            mMatches.remove(key);
-
-            if(rule.getType() == RuleType.APP) {
-                int uid = mResolver.getUid(val);
-                if(uid != Utils.UID_NO_FILTER)
-                    mUids.remove(uid);
-                else
-                    Log.w(TAG, "removeRules: no uid found for package " + val);
-            }
-        }
-    }
-
     public int addRules(MatchList to_add) {
         int num_added = 0;
 
@@ -312,6 +308,21 @@ public class MatchList {
         }
 
         return num_added;
+    }
+
+    public void removeRule(Rule rule) {
+        String val = rule.getValue().toString();
+        String key = matchKey(rule.getType(), val);
+        mRules.remove(rule);
+        mMatches.remove(key);
+
+        if(rule.getType() == RuleType.APP) {
+            int uid = mResolver.getUid(val);
+            if(uid != Utils.UID_NO_FILTER)
+                mUids.remove(uid);
+            else
+                Log.w(TAG, "removeRule: no uid found for package " + val);
+        }
     }
 
     public boolean matchesApp(int uid) {
@@ -327,12 +338,17 @@ public class MatchList {
         return mMatches.containsKey(matchKey(RuleType.PROTOCOL, l7proto));
     }
 
+    public boolean matchesExactHost(String host) {
+        host = Utils.cleanDomain(host);
+        return mMatches.containsKey(matchKey(RuleType.HOST, host));
+    }
+
     public boolean matchesHost(String host) {
         // Keep in sync with the native blacklist_match_domain
         host = Utils.cleanDomain(host);
 
         // exact domain match
-        if(mMatches.containsKey(matchKey(RuleType.HOST, host)))
+        if(matchesExactHost(host))
             return true;
 
         // 2nd-level domain match

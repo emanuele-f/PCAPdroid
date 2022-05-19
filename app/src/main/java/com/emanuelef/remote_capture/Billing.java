@@ -166,4 +166,8 @@ public class Billing {
 
         return rv;
     }
+
+    public boolean canUseFirewall() {
+        return isRedeemed(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot();
+    }
 }

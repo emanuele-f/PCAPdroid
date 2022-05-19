@@ -211,7 +211,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(mIab.canUseFirewall());
     }
 
     private void setupNavigationDrawer() {

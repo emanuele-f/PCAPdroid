@@ -151,9 +151,9 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         if(stats == null)
             return;
 
-        // TODO unblock
-        menu.findItem(R.id.block_app).setVisible(true);
-        menu.findItem(R.id.unblock_app).setVisible(false);
+        boolean isBlocked = PCAPdroid.getInstance().getBlocklist().matchesApp(stats.getUid());
+        menu.findItem(R.id.block_app).setVisible(!isBlocked);
+        menu.findItem(R.id.unblock_app).setVisible(isBlocked);
     }
 
     @Override
@@ -165,6 +165,8 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
 
         if(id == R.id.block_app)
             blocklist.addApp(app.getUid());
+        else if(id == R.id.unblock_app)
+            blocklist.removeApp(app.getUid());
         else
             return super.onContextItemSelected(item);
 

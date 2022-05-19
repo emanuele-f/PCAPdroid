@@ -1139,7 +1139,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reloadBlocklist() {
-        if(!mBilling.isRedeemed(Billing.FIREWALL_SKU) || mSettings.root_capture)
+        if(!mBilling.canUseFirewall())
             return;
 
         Log.d(TAG, "reloading firewall blocklist");

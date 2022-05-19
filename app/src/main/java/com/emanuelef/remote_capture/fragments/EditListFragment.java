@@ -255,7 +255,8 @@ public class EditListFragment extends Fragment {
         }
 
         if(toRemove.size() > 0) {
-            mList.removeRules(toRemove);
+            for(MatchList.Rule rule: toRemove)
+                mList.removeRule(rule);
             mList.save();
         }
     }
