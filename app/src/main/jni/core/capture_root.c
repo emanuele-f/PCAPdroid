@@ -361,36 +361,29 @@ static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_p
 
 /* ******************************************************* */
 
+static int get_ip_offset(int linktype) {
+    switch(linktype) {
+        case PCAPD_DLT_RAW:
+            return 0;
+        case PCAPD_DLT_ETHERNET:
+            return 14;
+        case PCAPD_DLT_LINUX_SLL:
+            return 16;
+        case PCAPD_DLT_LINUX_SLL2:
+            return 20;
+        default:
+            return -1;
+    }
+}
+
+/* ******************************************************* */
+
 /* Returns true if packet is valid. If false is returned, the pkt must still be dumped, so a call to
  * pd_dump_packet is required. */
-static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer) {
+static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer, int ipoffset) {
     zdtun_pkt_t pkt;
     pcap_conn_t *conn = NULL;
     uint8_t is_tx = (hdr->flags & PCAPD_FLAG_TX); // NOTE: the direction uses an heuristic so it may be wrong
-    int ipoffset;
-
-    switch(hdr->linktype) {
-        case PCAPD_DLT_RAW:
-            ipoffset = 0;
-            break;
-        case PCAPD_DLT_ETHERNET:
-            ipoffset = 14;
-            break;
-        case PCAPD_DLT_LINUX_SLL:
-            ipoffset = 16;
-            break;
-        case PCAPD_DLT_LINUX_SLL2:
-            ipoffset = 20;
-            break;
-        default:
-            log_e("invalid datalink: %d", hdr->linktype);
-            return false;
-    }
-
-    if(hdr->len < ipoffset) {
-        log_e("invalid length: %d, expected at least %d", hdr->len, ipoffset);
-        return false;
-    }
 
     if(zdtun_parse_pkt(pd->zdt, buffer + ipoffset, hdr->len - ipoffset, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
@@ -628,10 +621,21 @@ int run_root(pcapdroid_t *pd) {
 #endif
 
         pd->num_dropped_pkts = hdr.pkt_drops;
-        if(!handle_packet(pd, &hdr, buffer)) {
+
+        int ipoffset = get_ip_offset(hdr.linktype);
+        if(ipoffset < 0) {
+            log_e("invalid datalink: %d", hdr.linktype);
+            continue;
+        }
+        if(hdr.len < ipoffset) {
+            log_e("invalid length: %d, expected at least %d", hdr.len, ipoffset);
+            continue;
+        }
+
+        if(!handle_packet(pd, &hdr, buffer, ipoffset)) {
             // packet was rejected (unsupported/corrupted), dump to PCAP file anyway
             struct timeval tv = hdr.ts;
-            pd_dump_packet(pd, buffer, hdr.len, &tv, hdr.uid);
+            pd_dump_packet(pd, buffer + ipoffset, hdr.len - ipoffset, &tv, hdr.uid);
         }
 
     housekeeping:
