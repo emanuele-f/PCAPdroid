@@ -360,6 +360,7 @@ void pd_refresh_time(pcapdroid_t *pd);
 void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
                        pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
+void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
@@ -386,7 +387,7 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 
 // Internals
 struct pcapdroid_trailer;
-void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, pd_conn_t *conn);
+void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, int uid);
 void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);

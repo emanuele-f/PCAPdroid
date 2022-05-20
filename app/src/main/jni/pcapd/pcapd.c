@@ -733,6 +733,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
     int len = hdr->caplen;
+    int uid = UID_UNKNOWN;
     uint8_t is_tx = is_tx_packet(iface, pkt, len);
 
     if(hdr->caplen < hdr->len)
@@ -746,8 +747,6 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         // Packet from the internet, swap src and dst
         tupleSwapPeers(&zpkt.tuple);
       }
-
-      int uid = UID_UNKNOWN;
 
       if(!iface->is_file) {
         uid = uid_lru_find(rt->lru, &zpkt.tuple);
@@ -763,45 +762,46 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
           uid_lru_add(rt->lru, &zpkt.tuple, uid);
         }
       }
+    }
 
-      if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
-        if(rt->conf->dump_datalink) {
-          // Include the datalink header
-          pkt -= to_skip;
-          len += to_skip;
-          phdr.linktype = iface->dlink;
-        } else
-          phdr.linktype = DLT_RAW;
+    // export packet even if zdtun_parse_pkt failed
+    if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
+      if(rt->conf->dump_datalink) {
+        // Include the datalink header
+        pkt -= to_skip;
+        len += to_skip;
+        phdr.linktype = iface->dlink;
+      } else
+        phdr.linktype = DLT_RAW;
 
-        phdr.ts = hdr->ts;
-        phdr.len = len;
-        phdr.pkt_drops = iface->stats.ps_drop;
-        phdr.uid = uid;
-        phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
-        phdr.ifid = iface->ifid;
+      phdr.ts = hdr->ts;
+      phdr.len = len;
+      phdr.pkt_drops = iface->stats.ps_drop;
+      phdr.uid = uid;
+      phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
+      phdr.ifid = iface->ifid;
 
-        if(!rt->conf->no_client) {
-          // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
-          // the IP header.
-          if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
-             (xwrite(rt->client, pkt, phdr.len) < 0)) {
-            log_e("write failed[%d]: %s", errno, strerror(errno));
-            return -1;
-          }
-        } else if(!rt->conf->quiet) {
-          char buf[512];
-          zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
-
-          printf("[%s:%d] %s (%u B) [%cX] (%d)\n", iface->name,
-              iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R',
-              uid);
+      if(!rt->conf->no_client) {
+        // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
+        // the IP header.
+        if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
+           (xwrite(rt->client, pkt, phdr.len) < 0)) {
+          log_e("write failed[%d]: %s", errno, strerror(errno));
+          return -1;
         }
+      } else if(!rt->conf->quiet) {
+        char buf[512];
+        zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-        if(iface->is_file) {
-          // libpcap does not provide stats for savefiles
-          // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
-          iface->stats.ps_recv++;
-        }
+        printf("[%s:%d] %s (%u B) [%cX] (%d)\n", iface->name,
+            iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R',
+            uid);
+      }
+
+      if(iface->is_file) {
+        // libpcap does not provide stats for savefiles
+        // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
+        iface->stats.ps_recv++;
       }
     }
   }

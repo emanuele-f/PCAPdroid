@@ -64,16 +64,17 @@ int pcap_rec_size(int snaplen, int pkt_len) {
 
 /* Dumps a packet into the provided buffer. The buffer must have at least pcap_rec_size()
  * bytes available */
-void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx) {
-    const zdtun_pkt_t *pkt = pctx->pkt;
+void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, const char *pkt, int pktlen,
+                   const struct timeval *tv, int uid) {
+    //const zdtun_pkt_t *pkt = pctx->pkt;
     struct pcaprec_hdr_s *pcap_rec = (pcaprec_hdr_s*) buffer;
     int offset = 0;
     int snaplen = pd->pcap_dump.snaplen;
 
-    pcap_rec->ts_sec = pctx->tv.tv_sec;
-    pcap_rec->ts_usec = pctx->tv.tv_usec;
-    pcap_rec->incl_len = pcap_rec_size(snaplen, pkt->len) - (int)sizeof(struct pcaprec_hdr_s);
-    pcap_rec->orig_len = pkt->len;
+    pcap_rec->ts_sec = tv->tv_sec;
+    pcap_rec->ts_usec = tv->tv_usec;
+    pcap_rec->incl_len = pcap_rec_size(snaplen, pktlen) - (int)sizeof(struct pcaprec_hdr_s);
+    pcap_rec->orig_len = pktlen;
     buffer += sizeof(struct pcaprec_hdr_s);
 
     if(pcapdroid_trailer) {
@@ -83,14 +84,14 @@ void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx) {
         // Insert the bogus header: both the MAC addresses are 0
         struct ethhdr *eth = (struct ethhdr*) buffer;
         memset(eth, 0, sizeof(struct ethhdr));
-        eth->h_proto = htons((((*pkt->buf) >> 4) == 4) ? ETH_P_IP : ETH_P_IPV6);
+        eth->h_proto = htons((((*pkt) >> 4) == 4) ? ETH_P_IP : ETH_P_IPV6);
 
         pcap_rec->orig_len += sizeof(struct ethhdr);
         offset += sizeof(struct ethhdr);
     }
 
-    int payload_to_copy = min(pkt->len, pcap_rec->incl_len - offset);
-    memcpy(buffer + offset, pkt->buf, payload_to_copy);
+    int payload_to_copy = min(pktlen, pcap_rec->incl_len - offset);
+    memcpy(buffer + offset, pkt, payload_to_copy);
     offset += payload_to_copy;
 
     if(pcapdroid_trailer &&
@@ -106,7 +107,7 @@ void pcap_dump_rec(pcapdroid_t *pd, u_char *buffer, pkt_context_t *pctx) {
         // Populate the custom data
         pcapdroid_trailer_t *cdata = (pcapdroid_trailer_t*)(buffer + offset);
 
-        fill_custom_data(cdata, pd, pctx->data);
+        fill_custom_data(cdata, pd, uid);
 
         //clock_t start = clock();
         cdata->fcs = crc32(buffer, pcap_rec->incl_len - 4, 0);
