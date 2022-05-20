@@ -17,6 +17,7 @@ Current limitations:
 - TLS decryption is not available with the root capture
 - Decrypting QUIC traffic [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4170)
 - Decrypting STARTTLS [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4215)
+- There are some protocol-specific limitations, check out [the mitmproxy docs](https://docs.mitmproxy.org/stable/concepts-protocols/#protocols) for more details
 
 TLS decryption on Android is not an easy task, technical knowledge and familiarity with the topic is required. There are many pitfalls and limitations which are be discussed below. A rooted device will help you being successful in most circumstances.
 
