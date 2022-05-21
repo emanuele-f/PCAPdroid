@@ -23,7 +23,6 @@
     <string name="http_server">HTTP-Server</string>
     <string name="no_dump">Keiner</string>
     <string name="http_server_info">Starte einen HTTP-Server für den PCAP download</string>
-    <string name="dump_mode">Dump-Modus</string>
     <string name="user_guide">Benutzerhandbuch</string>
     <string name="open_telegram_group">Telegram-Gruppe</string>
     <string name="source_code">Quellcode</string>
@@ -99,7 +98,6 @@
     <string name="older_connections_notice">%1$d älter Verbindungen werden nicht angezeigt</string>
     <string name="tls_how_to">So richtest du die TLS-Entschlüsselung ein</string>
     <string name="unknown_app">Unbekannt</string>
-    <string name="enable_ipv6">IPv6 aktivieren</string>
     <string name="enable_ipv6_summary">IPv6-Verbindungen zum Internet zulassen. Verwende dies nur in Netzwerken mit einem IPv6-Gateway</string>
     <string name="error">Fehler</string>
     <string name="conn_status_unreachable">Unerreichbar</string>
@@ -113,7 +111,6 @@
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
     <string name="app_theme">Thema</string>
-    <string name="enable_socks5_proxy">SOCKS5-Proxy aktivieren</string>
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Proxy-IP-Adresse</string>
     <string name="proxy_port">Proxy-Port</string>
@@ -207,7 +204,6 @@
     <string name="block">Blockieren…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall-Regeln</string>
-    <string name="firewall_help">Diese Liste enthält Regeln zum Blockieren von Verbindungen</string>
     <string name="blocked_pkts">Blockiert</string>
     <string name="n_pkts">%1$s Pkt</string>
     <string name="show_only_blocked">Blockiert durch Firewall</string>

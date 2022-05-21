@@ -168,7 +168,6 @@
     <string name="private_dns_message_notice">Privat DNS forhindrer PCAPdroid fra å inspisere DNS-trafikk. Du kan skru det av fra Android-nettverksinnstillingene.</string>
     <string name="n_pkts">%1$s pakker</string>
     <string name="private_dns_hinders_detection">Privat DNS forhindrer oppdagelse</string>
-    <string name="firewall_help">Denne listen inneholder regler for blokkering av tilkoblinger</string>
     <string name="decryption_no_filter_warn">Velg et målprogram når du dekrypterer TLS for å unngå å miste tilkoblingen din til Internett</string>
     <string name="billing_failure">Kunne ikke koble til Google Play. Prøv igjen om en stund.</string>
     <string name="item_redeemed">Anvendt</string>

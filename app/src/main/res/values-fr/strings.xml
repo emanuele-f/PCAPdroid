@@ -215,7 +215,6 @@
     <string name="firewall_rules">Règles du par-feu</string>
     <string name="paid_features">Fonctionnalités payantes</string>
     <string name="unlock_code">Code de déverrouillage</string>
-    <string name="firewall_help">Cette liste contient des règles pour bloquer les connexions</string>
     <string name="show_only_blocked">Bloqué par le par-feu</string>
     <string name="no_intent_handler_found">Aucune application pour cette action</string>
     <string name="decryption_no_filter_warn">Sélectionnez une application cible lors du décryptage TLS pour éviter de perdre votre connexion internet</string>

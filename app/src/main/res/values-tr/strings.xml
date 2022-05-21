@@ -5,7 +5,6 @@
     <string name="billing_connecting">Google Play bağlantısı devam ediyor, lütfen biraz sonra tekrar deneyin</string>
     <string name="private_dns_message_notice">Gizli DNS, PCAPdroid\'in DNS trafiğini denetlemesini engeller. Bunu Android ağ ayarlarından kapatabilirsiniz</string>
     <string name="firewall_rules">Güvenlik duvarı kuralları</string>
-    <string name="firewall_help">Bu liste, bağlantıları engellemek için kurallar içerir</string>
     <string name="blocked_pkts">Engellendi</string>
     <string name="learn_more">Daha fazla bilgi edin</string>
     <string name="buy_action">Satın al</string>
@@ -40,7 +39,6 @@
     <string name="http_server_info">PCAP indirmesi için bir HTTP sunucusu başlat</string>
     <string name="udp_exporter_info">PCAP dökümünü uzak bir UDP alıcısına gönderir</string>
     <string name="http_server_port">HTTP sunucusu bağlantı noktası</string>
-    <string name="dump_mode">Döküm modu</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="stats">İstatistikler</string>
     <string name="active_connections">Etkin bağlantılar</string>
@@ -193,7 +191,6 @@
     <string name="capture_prefs">Yakala</string>
     <string name="pending_transaction">Bu özelliği kullanmak için lütfen işleminizi tamamlayın</string>
     <string name="packets_rcvd">Alınan paketler</string>
-    <string name="enable_ipv6">IPv6\'yı etkinleştir</string>
     <string name="unknown_app_info">\"Bilinmeyen\", uygulaması belirlenemeyen bağlantıları belirtir</string>
     <string name="edit_list">Listeyi düzenle</string>
     <string name="status_uptodate">Güncel</string>
@@ -216,7 +213,6 @@
     <string name="no_activity_file_selection">Dosya seçimini yapacak uygulama bulunamadı</string>
     <string name="theme_dark">Koyu</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy">SOCKS5 vekili kullanmayı etkinleştir</string>
     <string name="proxy">Vekil</string>
     <string name="proxy_port">Vekil bağlantı noktası</string>
     <string name="root_capture">Root olarak yakala</string>

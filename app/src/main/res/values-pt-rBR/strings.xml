@@ -30,16 +30,9 @@
     <string name="http_server_info">Inicia um servidor HTTP para o download do PCAP</string>
     <string name="udp_exporter_info">Envia o PCAP para um receptor UDP remoto</string>
     <string name="http_server_port">Porta do servidor HTTP</string>
-<<<<<<< HEAD
     <string name="receiver_ip_address">Endereço IP do coletor</string>
     <string name="receiver_port">Porta do coletor</string>
-    <string name="dump_mode">Modo de dados brutos</string>
     <string name="user_guide">Manual do usuário</string>
-=======
-    <string name="receiver_ip_address">Endereço IP do receptor</string>
-    <string name="receiver_port">Porta do receptor</string>
-    <string name="user_guide">Guia do Usuário</string>
->>>>>>> dev
     <string name="open_telegram_group">Grupo no Telegram</string>
     <string name="source_code">Código-fonte</string>
     <string name="yes">Sim</string>
@@ -193,7 +186,6 @@
     <string name="malware_detection_learn_more">Saiba mais sobre o recurso de detecção de malware</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Regras do Firewall</string>
-    <string name="firewall_help">Esta lista contém regras para bloquear conexões</string>
     <string name="blocked_pkts">Bloqueado</string>
     <string name="n_pkts">%1$s pcts</string>
     <string name="show_only_blocked">Bloqueado por firewall</string>

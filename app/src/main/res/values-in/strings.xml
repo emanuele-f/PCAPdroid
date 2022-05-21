@@ -51,7 +51,6 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="firewall_help">Daftar ini berisi aturan untuk memblokir koneksi</string>
     <string name="show_only_blocked">Diblokir oleh firewall</string>
     <string name="blocked_connection_filter">diblokir</string>
     <string name="invalid">Tidak sah</string>
@@ -81,7 +80,6 @@
     <string name="open_telegram_group">Grup telegram</string>
     <string name="source_code">Kode sumber</string>
     <string name="yes">Ya</string>
-    <string name="dump_mode">Mode dump</string>
     <string name="stats">Statistik</string>
     <string name="tot_connections">Jumlah koneksi</string>
     <string name="open_sockets">Buka soket</string>
@@ -104,14 +102,12 @@
     <string name="about_text">PCAPdroid adalah alat penangkapan dan pemantauan jaringan sumber terbuka yang bekerja tanpa hak akses root</string>
     <string name="get_app">Dapatkan:</string>
     <string name="tls_how_to">Cara mengatur dekripsi TLS</string>
-    <string name="enable_ipv6">Aktifkan IPv6</string>
     <string name="error">Kesalahan</string>
     <string name="app_language">Bahasa</string>
     <string name="no_activity_file_selection">Tidak ada aplikasi yang ditemukan untuk menangani pemilihan file</string>
     <string name="file_saved_with_name">File disimpan sebagai \"%1$s\"</string>
     <string name="theme_dark">Gelap</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy">Aktifkan proxy SOCKS5</string>
     <string name="enable_socks5_proxy_summary">Arahkan ulang semua koneksi TCP ke proxy SOCKS5 yang ditentukan</string>
     <string name="proxy_port">Port proksi</string>
     <string name="root_capture">Capture dengan akses root</string>

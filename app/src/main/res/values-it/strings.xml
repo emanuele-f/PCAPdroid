@@ -197,7 +197,6 @@
     <string name="block">Blocca…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Regole del firewall</string>
-    <string name="firewall_help">Questa lista contiene regole per bloccare le connessioni</string>
     <string name="blocked_pkts">Bloccata</string>
     <string name="n_pkts">%1$s pacchetti</string>
     <string name="show_only_blocked">Bloccate dal firewall</string>

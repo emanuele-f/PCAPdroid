@@ -223,7 +223,6 @@
     <string name="block">拦截…</string>
     <string name="firewall">防火墙</string>
     <string name="firewall_rules">防火墙规则</string>
-    <string name="firewall_help">此列表包含拦截连接的规则</string>
     <string name="blocked_pkts">已拦截</string>
     <string name="n_pkts">%1$s 个数据包</string>
     <string name="show_only_blocked">由防火墙拦截</string>

@@ -210,7 +210,6 @@
     <string name="can_use_purchased_feature">Ahora puedes utilizar la función comprada</string>
     <string name="save_ok">Guardado</string>
     <string name="loading_apps">Cargando apps…</string>
-    <string name="firewall_help">Esta lista contiene reglas para bloquear conexiones</string>
     <string name="decryption_no_filter_warn">Selecciona una aplicación de destino al descifrar TLS para evitar perder la conexión a Internet</string>
     <string name="file_saved_with_name">Archivo guardado como \"%1$s\"</string>
     <string name="loading">Cargando…</string>

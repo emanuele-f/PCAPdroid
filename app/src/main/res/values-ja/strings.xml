@@ -201,7 +201,6 @@
     <string name="block">ブロック…</string>
     <string name="firewall">ファイアウォール</string>
     <string name="firewall_rules">ファイアウォール ルール</string>
-    <string name="firewall_help">このリストは接続をブロックするルールが含まれています</string>
     <string name="blocked_pkts">ブロック済み</string>
     <string name="n_pkts">%1$s パケット</string>
     <string name="show_only_blocked">ファイアウォールによるブロック</string>

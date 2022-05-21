@@ -210,7 +210,6 @@
     <string name="blocked_connection_filter">заблокировано</string>
     <string name="block">Заблокировать…</string>
     <string name="firewall_rules">Правила для файрвола</string>
-    <string name="firewall_help">Этот список содержит правила блокировки соединений</string>
     <string name="validate">Подтвердить</string>
     <string name="unlock_code">Код разблокировки</string>
     <string name="billing_failure">Не удалось подключиться к Google Play, пожалуйста повторите позже</string>
