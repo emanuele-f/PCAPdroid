@@ -56,11 +56,6 @@ You can help the PCAPdroid project in many ways:
 - Of course provide code pull requests!
 
 You can join the PCAPdroid community [on telegram](https://t.me/PCAPdroid) or [on matrix](https://matrix.to/#/#pcapdroid:matrix.org).
-The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target the dev branch when making pull requests for new features. Here is the normal release cycle:
-
-1. Changes are developed and pushed to the dev branch
-2. Once changes are stable enough, they are merged to the [master branch](https://github.com/emanuele-f/PCAPdroid/tree/master)
-3. After about 2 days (or more in case of a major update), the new version is released
 
 ## Integrating into your APP
 
