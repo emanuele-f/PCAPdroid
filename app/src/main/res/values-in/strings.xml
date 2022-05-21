@@ -30,7 +30,6 @@
     <string name="url_val">URL: %1$s</string>
     <string name="forever">Selamanya</string>
     <string name="not_hidden_filter">Tidak tersembunyi</string>
-    <string name="malware_detection_ad1">Temui deteksi malware PCAPdroid!</string>
     <string name="once">Sekali</string>
     <string name="control_permissions_summary">Periksa aplikasi mana yang diizinkan untuk mengontrol penangkapan PCAPdroid</string>
     <string name="country">Negara</string>
@@ -142,7 +141,6 @@
     <string name="feature_not_available">Saat ini fitur tidak tersedia untuk perangkat Anda</string>
     <string name="billing_connecting">Koneksi ke Google Play sedang berlangsung, silakan coba beberapa saat lagi</string>
     <string name="status_filter">Status: %1$s</string>
-    <string name="malware_detection_ad0">Siap untuk meningkatkan keamanan perangkat Anda\?</string>
     <string name="show_me">Tunjukkan</string>
     <string name="hint">Petunjuk</string>
     <string name="control_permissions">Izin kontrol</string>

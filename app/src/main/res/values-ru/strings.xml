@@ -147,8 +147,6 @@
     <string name="not_hidden_filter">Не скрыты</string>
     <string name="copy_action">Копировать…</string>
     <string name="url_val">"URL: %1$s"</string>
-    <string name="malware_detection_ad0">Готовы улучшить безопасность своего устройства?</string>
-    <string name="malware_detection_ad1">Встречайте обнаружение вредоносных соединений в PCAPdroid!</string>
     <string name="show_me">Покажите мне</string>
     <string name="hint">Подсказка</string>
     <string name="once">Единожды</string>

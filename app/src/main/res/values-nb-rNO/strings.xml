@@ -92,7 +92,6 @@
     <string name="malicious_connection_filter">Skadelig</string>
     <string name="status_filter">Status: %1$s</string>
     <string name="url_val">Nettadresse: %1$s</string>
-    <string name="malware_detection_ad0">Klar til å forbedre sikkerheten på enheten din\?</string>
     <string name="show_me">Vis meg</string>
     <string name="hint">Hint</string>
     <string name="once">Én gang</string>
@@ -149,7 +148,6 @@
     <string name="malicious_connection_app">Ondsinnet tilkobling opdaget (%1$s)</string>
     <string name="security">Sikkerhet</string>
     <string name="show_only_malicious">Ondsinnede tilkoblinger</string>
-    <string name="malware_detection_ad1">Finn deg til rette med PCAPdroid-skadevareoppdagelse.</string>
     <string name="control_permissions">Kontrolltilganger</string>
     <string name="control_permissions_summary">Sjekk hvilke programmer som tillates å kontrollere PCAPdroid-fangst</string>
     <string name="control_permissions_item">%1$s: %2$s</string>

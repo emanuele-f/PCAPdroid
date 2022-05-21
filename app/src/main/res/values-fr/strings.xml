@@ -169,8 +169,6 @@
     <string name="country_val">Pays : %1$s</string>
     <string name="send_report">Envoyer le rapport</string>
     <string name="control_permissions_summary">Vérifier quelles applications peuvent contrôler la capture de PCAPdroid</string>
-    <string name="malware_detection_ad0">Prêt à améliorer la sécurité de votre appareil \?</string>
-    <string name="malware_detection_ad1">Rencontrez le détecteur de virus PCAPdroid !</string>
     <string name="control_permissions">Contrôle des autorisations</string>
     <string name="start_at_boot">Lancer au démarrage</string>
     <string name="start_at_boot_summary">Capturer dès le lancement</string>

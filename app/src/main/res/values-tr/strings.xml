@@ -106,8 +106,6 @@
     <string name="not_hidden_filter">Gizli değil</string>
     <string name="copy_action">Kopyala…</string>
     <string name="url_val">URL: %1$s</string>
-    <string name="malware_detection_ad0">Aygıtınızın güvenliğini artırmaya hazır mısınız\?</string>
-    <string name="malware_detection_ad1">PCAPdroid kötü amaçlı yazılım algılamasıyla tanışın!</string>
     <string name="show_me">Göster</string>
     <string name="hint">İpucu</string>
     <string name="once">Bir kere</string>

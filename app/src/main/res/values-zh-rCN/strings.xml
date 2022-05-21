@@ -174,8 +174,6 @@
     <string name="not_hidden_filter">未隐藏</string>
     <string name="copy_action">复制…</string>
     <string name="url_val">"URL：%1$s"</string>
-    <string name="malware_detection_ad0">准备好增强设备安全性了吗？</string>
-    <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
     <string name="show_me">让我看看</string>
     <string name="hint">提示</string>
     <string name="once">一次</string>
