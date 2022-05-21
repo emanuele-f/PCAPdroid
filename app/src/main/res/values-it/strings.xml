@@ -19,7 +19,6 @@
     <string name="protocol">Protocollo</string>
     <string name="source">Sorgente</string>
     <string name="destination">Destinazione</string>
-    <string name="bytes">Byte</string>
     <string name="packets">Pacchetti</string>
     <string name="duration">Durata</string>
     <string name="http_server">Server HTTP</string>
@@ -31,7 +30,6 @@
     <string name="http_server_port">Porta del server HTTP</string>
     <string name="receiver_ip_address">IP del collettore</string>
     <string name="receiver_port">Porta del collettore</string>
-    <string name="dump_mode">Modalità di dump</string>
     <string name="user_guide">Guida utente</string>
     <string name="open_telegram_group">Gruppo Telegram</string>
     <string name="source_code">Codice sorgente</string>
@@ -65,7 +63,6 @@
     <string name="capture_running">Cattura in esecuzione</string>
     <string name="notification_msg">%1$s catturati, %2$s connessioni</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Attiva</string>
     <string name="first_seen">Inizio</string>
     <string name="last_seen">Fine</string>
     <string name="conn_status_closed">Terminata</string>
@@ -76,7 +73,7 @@
     <string name="get_app">Scaricala:</string>
     <string name="tls_how_to">Come impostare la decrittazione TLS</string>
     <string name="unknown_app">Sconosciuta</string>
-    <string name="enable_ipv6">Abilita IPv6</string>
+    <string name="ipv6">Abilita IPv6</string>
     <string name="enable_ipv6_summary">Permetti connessioni internet IPv6. Da abilitare soltanto in reti con gateway IPv6</string>
     <string name="error">Errore</string>
     <string name="conn_status_unreachable">Non raggiungibile</string>
@@ -88,15 +85,13 @@
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy">Abilita proxy SOCKS5</string>
-    <string name="proxy">Proxy</string>
+    <string name="socks5_proxy">Abilita proxy SOCKS5</string>
     <string name="proxy_ip_address">Indirizzo IP del proxy</string>
     <string name="proxy_port">Porta del proxy</string>
     <string name="root_capture">Cattura come root</string>
     <string name="root_capture_summary">Permette a PCAPdroid di funzionare assieme ad altre app VPN</string>
     <string name="donate">Donazioni</string>
     <string name="root_log">Log root</string>
-    <string name="request_plaintext">Richiesta in chiaro</string>
     <string name="search">Cerca…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Indirizzo IP: %1$s</string>
@@ -124,7 +119,6 @@
     <string name="pcapdroid_trailer">Trailer PCAPdroid</string>
     <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti dumpati</string>
     <string name="trailer_how_to">Come visualizzare le info del trailer su Wireshark</string>
-    <string name="remove_ads">Rimuovi annunci</string>
     <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
     <string name="ctrl_consent">Un\'altra app vuole catturare il traffico di questo dispositivo.\nNegare l\'accesso se non si è sicuri</string>
     <string name="deny">Nega</string>
@@ -146,7 +140,6 @@
     <string name="malware_detection">Rilevamento malware</string>
     <string name="malware_detection_summary">Rileva le connessioni a host malevoli tramite blacklist di terze parti</string>
     <string name="reset">Reimposta</string>
-    <string name="malware_whitelist">Whitelist malware</string>
     <string name="malware_whitelist_rules">Regole della whitelist malware</string>
     <string name="feature_not_available">Questa funzione non è attualmente disponibile per il tuo dispositivo</string>
     <string name="billing_connecting">La connessione a Google Play è in corso, riprovare tra poco</string>
@@ -155,8 +148,6 @@
     <string name="not_hidden_filter">Non nascosta</string>
     <string name="copy_action">Copia…</string>
     <string name="url_val">"URL: %1$s"</string>
-    <string name="show_only_plaintext">Connessioni in chiaro</string>
-    <string name="plaintext">In chiaro</string>
     <string name="malware_detection_ad0">Sei pronto a migliorare la sicurezza del tuo dispositivo?</string>
     <string name="malware_detection_ad1">Scopri il rilevamento malware in PCAPdroid!</string>
     <string name="show_me">Mostrami</string>
@@ -198,7 +189,6 @@
     <string name="block">Blocca…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Regole del firewall</string>
-    <string name="firewall_help">Questa lista contiene regole per bloccare le connessioni</string>
     <string name="blocked_pkts">Bloccata</string>
     <string name="n_pkts">%1$s pacchetti</string>
     <string name="show_only_blocked">Bloccate dal firewall</string>
@@ -217,9 +207,6 @@
     <string name="billing_failure">La connessione a Google Play è fallita, attendere e riprovare</string>
     <string name="learn_more">Scopri di più</string>
     <string name="buy_action">Acquista</string>
-    <string name="remove_ads_description">Rimuove gli annunci da questa app</string>
-    <string name="ads_notice">Gli annunci in-app generano traffico da PCAPdroid verso server terzi. Puoi rimuoverli acquistando una funzione a pagamento</string>
-    <string name="item_redeemed">Riscosso</string>
     <string name="capture_not_running_status">La cattura non è in esecuzione</string>
     <string name="start_capture_first">Prima avvia la cattura</string>
     <string name="copied">Copiato</string>

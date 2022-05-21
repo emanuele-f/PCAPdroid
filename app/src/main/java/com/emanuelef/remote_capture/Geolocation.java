@@ -19,18 +19,21 @@
 
 package com.emanuelef.remote_capture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.model.Geomodel;
 import com.maxmind.db.Reader;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /* A class to query geolocation info from IP addresses. */
 public class Geolocation {
@@ -46,67 +49,123 @@ public class Geolocation {
 
     @Override
     public void finalize() {
-        try {
-            mCountryReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            mAsnReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Utils.safeClose(mCountryReader);
+        Utils.safeClose(mAsnReader);
+        mCountryReader = null;
+        mAsnReader = null;
     }
 
     private void openDb() {
         try {
-            File countryFile = new File(mContext.getCacheDir() + "/dbip_country_lite.mmdb");
-            res_to_file(R.raw.dbip_country_lite, countryFile);
-            mCountryReader = new Reader(countryFile);
+            mCountryReader = new Reader(getCountryFile(mContext));
             Log.d(TAG, "Country DB loaded: " + mCountryReader.getMetadata());
 
-            File asnFile = new File(mContext.getCacheDir() + "/dbip_asn_lite.mmdb");
-            res_to_file(R.raw.dbip_asn_lite, asnFile);
-            mAsnReader = new Reader(asnFile);
+            mAsnReader = new Reader(getAsnFile(mContext));
             Log.d(TAG, "ASN DB loaded: " + mAsnReader.getMetadata());
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
+            Log.i(TAG, "Geolocation is not available");
         }
     }
 
-    // We need to get a File from the resource so that the Reader can mmap it
-    private void res_to_file(int resid, File dst) throws IOException {
-        try(InputStream is = mContext.getResources().openRawResource(resid)) {
-            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
-                byte[] bytesIn = new byte[4096];
-                int read;
+    private static File getCountryFile(Context ctx) {
+        return new File(ctx.getFilesDir() + "/dbip_country_lite.mmdb");
+    }
 
-                while((read = is.read(bytesIn)) != -1)
-                    bos.write(bytesIn, 0, read);
+    private static File getAsnFile(Context ctx) {
+        return new File(ctx.getFilesDir() + "/dbip_asn_lite.mmdb");
+    }
+
+    public static Date getDbDate(File file) throws IOException {
+        try(Reader reader = new Reader(file)) {
+            return reader.getMetadata().getBuildDate();
+        }
+    }
+
+    public static @Nullable Date getDbDate(Context ctx) {
+        try {
+            return getDbDate(getCountryFile(ctx));
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    public static long getDbSize(Context ctx) {
+        return getCountryFile(ctx).length() + getAsnFile(ctx).length();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void deleteDb(Context ctx) {
+        getCountryFile(ctx).delete();
+        getAsnFile(ctx).delete();
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    public static boolean downloadDb(Context ctx) {
+        String dateid = new SimpleDateFormat("yyyy-MM").format(new Date());
+        String country_url = "https://download.db-ip.com/free/dbip-country-lite-" + dateid + ".mmdb.gz";
+        String asn_url = "https://download.db-ip.com/free/dbip-asn-lite-" + dateid + ".mmdb.gz";
+
+        try {
+            return downloadAndUnzip(ctx, "country", country_url, getCountryFile(ctx)) &&
+                    downloadAndUnzip(ctx, "asn", asn_url, getAsnFile(ctx));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private static boolean downloadAndUnzip(Context ctx, String label, String url, File dst) throws IOException {
+        File tmp_file = new File(ctx.getCacheDir() + "/geoip_db.zip");
+
+        boolean rv = Utils.downloadFile(url, tmp_file.getAbsolutePath());
+        if(!rv) {
+            Log.w(TAG, "Could not download " + label + " db from " +  url);
+            return false;
+        }
+
+        try(FileInputStream is = new FileInputStream(tmp_file.getAbsolutePath())) {
+            if(!Utils.ungzip(is, dst.getAbsolutePath())) {
+                Log.w(TAG, "ungzip of " + tmp_file + " failed");
+                return false;
             }
+
+            // Verify - throws IOException on error
+            getDbDate(dst);
+
+            return true;
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            tmp_file.delete();
         }
     }
 
     public String getCountryCode(InetAddress addr) {
-        try {
-            Geomodel.CountryResult res = mCountryReader.get(addr, Geomodel.CountryResult.class);
-            if((res != null) && (res.country != null))
-                return res.country.isoCode;
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(mCountryReader != null) {
+            try {
+                Geomodel.CountryResult res = mCountryReader.get(addr, Geomodel.CountryResult.class);
+                if ((res != null) && (res.country != null))
+                    return res.country.isoCode;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+        // fallback
         return "";
     }
 
     public Geomodel.ASN getASN(InetAddress addr) {
-        try {
-            Geomodel.ASN res = mAsnReader.get(addr, Geomodel.ASN.class);
-            if(res != null)
-                return res;
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(mAsnReader != null) {
+            try {
+                Geomodel.ASN res = mAsnReader.get(addr, Geomodel.ASN.class);
+                if (res != null)
+                    return res;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+        // fallback
         return new Geomodel.ASN();
     }
 }

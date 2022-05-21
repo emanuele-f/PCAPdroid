@@ -24,11 +24,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.HTTPReassembly;
 import com.emanuelef.remote_capture.R;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 /* Holds the information about a single connection.
  * Equivalent of zdtun_conn_t from zdtun and pd_conn_t from pcapdroid.c .
@@ -38,7 +42,7 @@ import java.net.UnknownHostException;
  * thread. However this does not create concurrency problems as the update only increments counters
  * or sets a previously null field to a non-null value.
  */
-public class ConnectionDescriptor implements Serializable {
+public class ConnectionDescriptor {
     // sync with zdtun_conn_status_t
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
@@ -53,10 +57,19 @@ public class ConnectionDescriptor implements Serializable {
     // This is an high level status which abstracts the zdtun_conn_status_t
     public enum Status {
         STATUS_INVALID,
-        STATUS_OPEN,
+        STATUS_ACTIVE,
         STATUS_CLOSED,
         STATUS_UNREACHABLE,
         STATUS_ERROR,
+    }
+
+    public enum DecryptionStatus {
+        INVALID,
+        CLEARTEXT,
+        DECRYPTED,
+        NOT_DECRYPTABLE,
+        WAITING_DATA,
+        ERROR,
     }
 
     /* Metadata */
@@ -71,6 +84,7 @@ public class ConnectionDescriptor implements Serializable {
     /* Data */
     public long first_seen;
     public long last_seen;
+    public long payload_length;
     public long sent_bytes;
     public long rcvd_bytes;
     public int sent_pkts;
@@ -78,24 +92,31 @@ public class ConnectionDescriptor implements Serializable {
     public int blocked_pkts;
     public String info;
     public String url;
-    public String request_plaintext;
     public String l7proto;
+    private ArrayList<PayloadChunk> payload_chunks;
     public final int uid;
     public final int ifidx;
     public final int incr_id;
+    private final boolean mitm_decrypt; // true if the connection is under mitm for TLS decryption
     public int status;
     private int tcp_flags;
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
+    private boolean payload_truncated;
+    private boolean encrypted_l7;
+    public boolean encrypted_payload;
+    public String decryption_error;
     public String country;
     public Geomodel.ASN asn;
 
     /* Internal */
     public boolean alerted;
+    public boolean block_accounted;
 
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
-                                int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx, long when) {
+                                int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx,
+                                boolean _mitm_decrypt, long when) {
         incr_id = _incr_id;
         ipver = _ipver;
         ipproto = _ipproto;
@@ -110,6 +131,7 @@ public class ConnectionDescriptor implements Serializable {
         l7proto = "";
         country = "";
         asn = new Geomodel.ASN();
+        mitm_decrypt = _mitm_decrypt;
     }
 
     public void processUpdate(ConnectionUpdate update) {
@@ -125,13 +147,28 @@ public class ConnectionDescriptor implements Serializable {
             blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;
             last_seen = update.last_seen;
-            tcp_flags = update.tcp_flags;
+            tcp_flags = update.tcp_flags; // NOTE: only for root capture
+
+            // see MitmReceiver.handlePayload
+            if((status == ConnectionDescriptor.CONN_STATUS_CLOSED) && (decryption_error != null))
+                status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
+
+            // with mitm we account the TLS payload length instead
+            if(!mitm_decrypt)
+                payload_length = update.payload_length;
         }
         if((update.update_type & ConnectionUpdate.UPDATE_INFO) != 0) {
             info = update.info;
             url = update.url;
-            request_plaintext = update.request_plaintext;
             l7proto = update.l7proto;
+            encrypted_l7 = ((update.info_flags & ConnectionUpdate.UPDATE_INFO_FLAG_ENCRYPTED_L7) != 0);
+        }
+        if((update.update_type & ConnectionUpdate.UPDATE_PAYLOAD) != 0) {
+            // Payload for decryptable connections should be received via the MitmReceiver
+            assert(isNotDecryptable());
+
+            payload_chunks = update.payload_chunks;
+            payload_truncated = update.payload_truncated;
         }
     }
 
@@ -156,14 +193,14 @@ public class ConnectionDescriptor implements Serializable {
                     return Status.STATUS_ERROR;
             }
         }
-        return Status.STATUS_OPEN;
+        return Status.STATUS_ACTIVE;
     }
 
     public static String getStatusLabel(Status status, Context ctx) {
         int resid;
 
         switch(status) {
-            case STATUS_OPEN: resid = R.string.conn_status_open; break;
+            case STATUS_ACTIVE: resid = R.string.conn_status_active; break;
             case STATUS_CLOSED: resid = R.string.conn_status_closed; break;
             case STATUS_UNREACHABLE: resid = R.string.conn_status_unreachable; break;
             default: resid = R.string.error;
@@ -191,6 +228,37 @@ public class ConnectionDescriptor implements Serializable {
         );
     }
 
+    public DecryptionStatus getDecryptionStatus() {
+        if(isCleartext())
+            return DecryptionStatus.CLEARTEXT;
+        else if(decryption_error != null)
+            return DecryptionStatus.ERROR;
+        else if(isNotDecryptable())
+            return DecryptionStatus.NOT_DECRYPTABLE;
+        else if(isDecrypted())
+            return DecryptionStatus.DECRYPTED;
+        else
+            return DecryptionStatus.WAITING_DATA;
+    }
+
+    public static String getDecryptionStatusLabel(DecryptionStatus status, Context ctx) {
+        int resid;
+
+        switch (status) {
+            case CLEARTEXT: resid = R.string.not_encrypted; break;
+            case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
+            case DECRYPTED: resid = R.string.decrypted; break;
+            case WAITING_DATA: resid = R.string.waiting_application_data; break;
+            default: resid = R.string.error;
+        }
+
+        return(ctx.getString(resid));
+    }
+
+    public String getDecryptionStatusLabel(Context ctx) {
+        return getDecryptionStatusLabel(getDecryptionStatus(), ctx);
+    }
+
     public int getSentTcpFlags() {
         return (tcp_flags >> 8);
     }
@@ -203,6 +271,75 @@ public class ConnectionDescriptor implements Serializable {
     public boolean isBlacklistedHost() { return blacklisted_host; }
     public boolean isBlacklisted() {
         return isBlacklistedIp() || isBlacklistedHost();
+    }
+
+    public boolean isPayloadTruncated() {
+        return payload_truncated;
+    }
+
+    public boolean isNotDecryptable()   { return encrypted_payload || !mitm_decrypt; }
+    public boolean isDecrypted()        { return !isNotDecryptable() && (getNumPayloadChunks() > 0); }
+    public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }
+
+    public int getNumPayloadChunks() { return (payload_chunks == null) ? 0 : payload_chunks.size(); }
+
+    public PayloadChunk getPayloadChunk(int idx) {
+        if(getNumPayloadChunks() <= idx)
+            return null;
+        return payload_chunks.get(idx);
+    }
+
+    public void addPayloadChunk(PayloadChunk chunk) {
+        if(payload_chunks == null)
+            payload_chunks = new ArrayList<>();
+        payload_chunks.add(chunk);
+        payload_length += chunk.payload.length;
+    }
+
+    private boolean hasHttp(boolean is_sent) {
+        if(getNumPayloadChunks() == 0)
+            return false;
+
+        for(PayloadChunk chunk: payload_chunks) {
+            if(chunk.is_sent == is_sent)
+                return (chunk.type == PayloadChunk.ChunkType.HTTP);
+        }
+
+        return false;
+    }
+    public boolean hasHttpRequest() { return hasHttp(true); }
+    public boolean hasHttpResponse() { return hasHttp(false); }
+
+    private String getHttp(boolean is_sent) {
+        if(getNumPayloadChunks() == 0)
+            return "";
+
+        // Need to wrap the String to set it from the lambda
+        final AtomicReference<String> rv = new AtomicReference<>();
+
+        HTTPReassembly reassembly = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL, chunk ->
+                rv.set(new String(chunk.payload, StandardCharsets.UTF_8)));
+
+        // Possibly reassemble/decode the request
+        for(PayloadChunk chunk: payload_chunks) {
+            if(chunk.is_sent == is_sent)
+                reassembly.handleChunk(chunk);
+
+            // Stop at the first reassembly/chunk
+            if(rv.get() != null)
+                break;
+        }
+
+        return rv.get();
+    }
+    public String getHttpRequest() { return getHttp(true); }
+    public String getHttpResponse() { return getHttp(false); }
+
+    public boolean hasSeenStart() {
+        if((ipproto != 6 /* TCP */) || !CaptureService.isCapturingAsRoot())
+            return true;
+
+        return (getSentTcpFlags() & 0x2) != 0; // SYN
     }
 
     @Override

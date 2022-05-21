@@ -50,13 +50,6 @@
             android:layout_marginBottom="10dp"
             android:text="@string/show_only_malicious" />
 
-        <CheckBox
-            android:id="@+id/only_plaintext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/show_only_plaintext" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -72,11 +65,11 @@
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/status_open"
+                android:id="@+id/status_active"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/conn_status_open"/>
+                android:text="@string/conn_status_active"/>
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_closed"
@@ -94,6 +87,48 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/status_error"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/error"/>
+        </com.google.android.material.chip.ChipGroup>
+
+        <TextView
+            android:id="@+id/decryption_status_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/decryption"
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_marginBottom="5dp"/>
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/decryption_status_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/dec_status_decrypted"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/decrypted"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/dec_status_not_decryptable"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/not_decryptable"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/dec_status_error"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

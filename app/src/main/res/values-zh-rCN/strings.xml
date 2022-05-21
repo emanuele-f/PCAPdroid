@@ -45,7 +45,6 @@
     <string name="protocol">协议</string>
     <string name="source">源</string>
     <string name="destination">目的地</string>
-    <string name="bytes">字节</string>
     <string name="packets">流量包</string>
     <string name="duration">持续时间</string>
     <string name="http_server">HTTP 服务器</string>
@@ -57,7 +56,6 @@
     <string name="http_server_port">HTTP 服务器端口</string>
     <string name="receiver_ip_address">收集器 IP 地址</string>
     <string name="receiver_port">收集器端口</string>
-    <string name="dump_mode">转储模式</string>
     <string name="user_guide">用户指南</string>
     <string name="open_telegram_group">Telegram 群组</string>
     <string name="source_code">源代码</string>
@@ -91,7 +89,6 @@
     <string name="capture_running">流量捕获运行中</string>
     <string name="notification_msg">%1$s 已捕获, %2$s 连接</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">已打开</string>
     <string name="first_seen">第一次见</string>
     <string name="last_seen">最后一次见</string>
     <string name="conn_status_closed">已关闭</string>
@@ -102,7 +99,7 @@
     <string name="get_app">获取应用:</string>
     <string name="tls_how_to">如何设置 TLS 解密</string>
     <string name="unknown_app">未知</string>
-    <string name="enable_ipv6">启用 IPv6</string>
+    <string name="ipv6">启用 IPv6</string>
     <string name="enable_ipv6_summary">允许 IPv6 网络连接。仅在带有 IPv6 网关的网络中使用</string>
     <string name="error">错误</string>
     <string name="conn_status_unreachable">不可达</string>
@@ -114,14 +111,12 @@
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
     <string name="app_theme">主题</string>
-    <string name="enable_socks5_proxy">启用 SOCKS5 代理</string>
-    <string name="proxy">代理</string>
+    <string name="socks5_proxy">启用 SOCKS5 代理</string>
     <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>
     <string name="root_capture">以 root 用户身份捕获流量</string>
     <string name="donate">捐赠</string>
     <string name="root_log">Root 日志</string>
-    <string name="request_plaintext">请求明文</string>
     <string name="search">搜索…</string>
     <string name="app_val">应用: %1$s</string>
     <string name="ip_address_val">IP 地址: %1$s</string>
@@ -149,7 +144,6 @@
     <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
     <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中</string>
     <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
-    <string name="remove_ads">去除广告</string>
     <string name="pending_transaction">请完成您的交易以兑换此功能</string>
     <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。
 \n如果你不确定，最好拒绝</string>
@@ -172,7 +166,6 @@
     <string name="malware_detection">恶意软件检测</string>
     <string name="malware_detection_summary">通过第三方黑名单检测到已知恶意主机的连接</string>
     <string name="reset">重置</string>
-    <string name="malware_whitelist">恶意软件白名单</string>
     <string name="malware_whitelist_rules">恶意软件白名单规则</string>
     <string name="feature_not_available">此功能目前在您的设备上不可用</string>
     <string name="billing_connecting">正在连接 Google Play，请稍候再试</string>
@@ -181,8 +174,6 @@
     <string name="not_hidden_filter">未隐藏</string>
     <string name="copy_action">复制…</string>
     <string name="url_val">"URL：%1$s"</string>
-    <string name="show_only_plaintext">明文连接</string>
-    <string name="plaintext">明文</string>
     <string name="malware_detection_ad0">准备好增强设备安全性了吗？</string>
     <string name="malware_detection_ad1">试试 PCAPdroid 恶意软件检测！</string>
     <string name="show_me">让我看看</string>
@@ -224,7 +215,6 @@
     <string name="block">拦截…</string>
     <string name="firewall">防火墙</string>
     <string name="firewall_rules">防火墙规则</string>
-    <string name="firewall_help">此列表包含拦截连接的规则</string>
     <string name="blocked_pkts">已拦截</string>
     <string name="n_pkts">%1$s 个数据包</string>
     <string name="show_only_blocked">由防火墙拦截</string>
@@ -243,9 +233,6 @@
     <string name="billing_failure">未能连接到 Google Play，请稍后再试</string>
     <string name="learn_more">了解更多</string>
     <string name="buy_action">购买</string>
-    <string name="remove_ads_description">移除应用广告</string>
-    <string name="ads_notice">应用内广告导致 PCAPdroid 向外部服务器产生流量。你可以通过购买付费功能来移除广告</string>
-    <string name="item_redeemed">已兑换</string>
     <string name="start_at_boot_summary">开机后自动开始流量捕获</string>
     <string name="capture_not_running_status">流量捕获未在运行</string>
     <string name="start_capture_first">先开始流量捕获</string>

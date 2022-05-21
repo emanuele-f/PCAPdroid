@@ -6,6 +6,7 @@
     android:orientation="horizontal"
     android:paddingHorizontal="4dp"
     android:paddingVertical="2dp"
+    android:gravity="center_vertical"
     android:layout_height="wrap_content">
 
     <ImageView
@@ -22,8 +23,14 @@
         tools:text="Example app"
         android:maxLines="2"
         android:gravity="center_vertical"
-        android:layout_marginEnd="8dp"
         android:id="@+id/app_info"/>
+
+    <ImageView
+        android:id="@+id/blocked"
+        android:src="@drawable/ic_block"
+        android:layout_marginHorizontal="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="12sp" />
 
     <TextView
         android:layout_width="8sp"

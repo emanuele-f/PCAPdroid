@@ -37,22 +37,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
-import com.emanuelef.remote_capture.adapters.DumpModesAdapter;
+import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -60,11 +57,12 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
-import com.emanuelef.remote_capture.activities.StatsActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.VPNStats;
 import com.emanuelef.remote_capture.views.AppsListView;
+import com.emanuelef.remote_capture.views.PrefSpinner;
+import com.pcapdroid.mitm.MitmAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,12 +110,21 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                processStatsUpdateIntent(intent);
+                String action = intent.getAction();
+
+                if(action.equals(CaptureService.ACTION_STATS_DUMP))
+                    processStatsUpdateIntent(intent);
+                else if(action.equals(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED))
+                    refreshDecryptionStatus();
             }
         };
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(CaptureService.ACTION_STATS_DUMP);
+        filter.addAction(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED);
+
         LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+                .registerReceiver(mReceiver, filter);
     }
 
     @Override
@@ -149,25 +156,9 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
 
-        DumpModesAdapter dumpModeAdapter = new DumpModesAdapter(requireContext());
-        Spinner dumpMode = view.findViewById(R.id.dump_mode_spinner);
-        dumpMode.setAdapter(dumpModeAdapter);
-        int curSel = dumpModeAdapter.getModePos(mPrefs.getString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE));
-        dumpMode.setSelection(curSel);
-
-        dumpMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                DumpModesAdapter.DumpModeInfo mode = (DumpModesAdapter.DumpModeInfo) dumpModeAdapter.getItem(position);
-                SharedPreferences.Editor editor = mPrefs.edit();
-
-                editor.putString(Prefs.PREF_PCAP_DUMP_MODE, mode.key);
-                editor.apply();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        PrefSpinner.init(view.findViewById(R.id.dump_mode_spinner),
+                R.array.pcap_dump_modes, R.array.pcap_dump_modes_labels, R.array.pcap_dump_modes_descriptions,
+                Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE);
 
         mAppFilterSwitch = view.findViewById(R.id.app_filter_switch);
         View filterRow = view.findViewById(R.id.app_filter_text);
@@ -205,10 +196,8 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         refreshFilterInfo();
 
         mCaptureStatus.setOnClickListener(v -> {
-            if(mActivity.getState() == AppState.running) {
-                Intent intent = new Intent(getActivity(), StatsActivity.class);
-                startActivity(intent);
-            }
+            if(mActivity.getState() == AppState.ready)
+                mActivity.startCapture();
         });
 
         // Make URLs clickable
@@ -233,6 +222,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private void recheckFilterWarning() {
         boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
         mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) && !hasFilter) ? View.VISIBLE : View.GONE);
+    }
+
+    private void refreshDecryptionStatus() {
+        mInterfaceInfo.setText(CaptureService.isMitmProxyRunning() ? R.string.tls_decryption_running : R.string.tls_decryption_starting);
     }
 
     private void refreshFilterInfo() {
@@ -284,7 +277,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
-private void refreshPcapDumpInfo() {
+    private void refreshPcapDumpInfo() {
         String info = "";
 
         Prefs.DumpMode mode = CaptureService.getDumpMode();
@@ -368,9 +361,9 @@ private void refreshPcapDumpInfo() {
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
                 mCollectorInfo.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
+                CaptureService service = CaptureService.requireInstance();
 
                 if(CaptureService.isCapturingAsRoot()) {
-                    CaptureService service = CaptureService.requireInstance();
                     String capiface = service.getCaptureInterface();
 
                     if(capiface.equals("@inet"))
@@ -379,6 +372,13 @@ private void refreshPcapDumpInfo() {
                         capiface = getString(R.string.all_interfaces);
 
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(CaptureService.isDecryptingTLS()) {
+                    refreshDecryptionStatus();
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(service.getSocks5Enabled() == 1) {
+                    mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),
+                            service.getSocks5ProxyAddress(), service.getSocks5ProxyPort()));
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 }
 
@@ -423,7 +423,21 @@ private void refreshPcapDumpInfo() {
 
         mEmptyAppsView.setText(R.string.no_apps);
 
-        // Load the apps/icons
+        if(Prefs.isTLSDecryptionSetupDone(mPrefs)) {
+            // Remove the mitm addon from the list
+            AppDescriptor mitmAddon = null;
+
+            for(AppDescriptor cur: installedApps) {
+                if(cur.getPackageName().equals(MitmAPI.PACKAGE_NAME)) {
+                    mitmAddon = cur;
+                    break;
+                }
+            }
+
+            if(mitmAddon != null)
+                installedApps.remove(mitmAddon);
+        }
+
         Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
         mOpenAppsList.setApps(installedApps);
     }

@@ -70,13 +70,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:spinnerMode="dialog"
-                android:prompt="@string/dump_mode"/>
+                tools:listitem="@layout/quick_settings_item"
+                android:prompt="@string/traffic_dump"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:paddingEnd="0dp">
+                android:layout_height="match_parent">
 
                 <include
                     android:id="@+id/app_filter_text"

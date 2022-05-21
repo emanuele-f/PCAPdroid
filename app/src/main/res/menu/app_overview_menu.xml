@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/app_info"
+        android:title="@string/app_info"
+        android:orderInCategory="5"
+        android:icon="@drawable/ic_settings"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/copy_to_clipboard"
+        android:title="@string/copy_to_clipboard"
+        android:orderInCategory="10"
+        android:icon="@drawable/ic_content_copy"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/share"
+        android:title="@string/share"
+        android:orderInCategory="20"
+        android:icon="@drawable/ic_share"
+        app:showAsAction="never" />
+</menu>

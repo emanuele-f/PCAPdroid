@@ -8,6 +8,7 @@ The targets can be run with the provided `Makefile` as follows:
 
 ```bash
 # Run the tests
+# pcapd log at build/test/test/pcapd.log
 make run_tests
 
 # Fuzz the pcapd daemon
@@ -56,6 +57,18 @@ the last 29 packets are from the second flow.
 [TCP4] 192.168.1.10:36922 -> 216.58.208.164:80 [www.google.com]
 [TCP4] 192.168.1.10:51588 -> 142.250.180.131:443 [google.it]
 ```
+
+## invalid_or_unsupported.pcap
+
+Contains packets with invalid or unsupported IP/transport headers.
+
+- Packets with invalid length
+- Packet smaller than IP header size
+- UDP packet smaller than header size
+- Packet with invalid IP version (0)
+- Packet with non TCP/UDP/ICMP protocol (CHAOS)
+- Packets with IPv6 extensions (OSPF IGP, ESP)
+- IP subsequent fragment with first fragment not seen
 
 ## crash-*
 

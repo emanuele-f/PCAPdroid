@@ -17,7 +17,8 @@
         tools:tint="@color/colorAccent"
         android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="80dp"
+        android:adjustViewBounds="true"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -167,36 +168,65 @@
                 android:textIsSelectable="true"
                 tools:text="01/02/20 00:45:01" />
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/network_traffic" />
+            <TextView
+                android:id="@+id/detail_bytes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="410 B received — 590 B sent" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/connections_view" />
+            <TextView
+                android:id="@+id/connections"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="2" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/conns_blocked_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.35"
+                android:textStyle="bold"
+                android:text="@string/connections_blocked" />
+            <TextView
+                android:id="@+id/conns_blocked"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.65"
+                android:textIsSelectable="true"
+                tools:text="5" />
+        </TableRow>
     </TableLayout>
-
-    <LinearLayout
-        android:id="@+id/buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="10dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/table">
-
-        <Button
-            android:id="@+id/app_settings"
-            android:text="@string/title_activity_settings"
-            android:layout_width="0dp"
-            android:layout_height="42dip"
-            android:layout_weight="1"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:textColor="@color/colorTabText" />
-
-        <Button
-            android:id="@+id/show_connections"
-            android:text="@string/connections_view"
-            android:nextFocusDown="@id/permissions"
-            android:layout_marginStart="5dp"
-            android:layout_width="0dp"
-            android:layout_height="42dip"
-            android:layout_weight="1" />
-    </LinearLayout>
 
     <TextView
         android:id="@+id/vapp_info"
@@ -206,16 +236,16 @@
         android:textStyle="italic"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttons" />
+        app:layout_constraintTop_toBottomOf="@id/table" />
 
     <TextView
         android:id="@+id/permissions_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttons"
+        app:layout_constraintTop_toBottomOf="@id/table"
         android:text="@string/permissions"/>
 
     <HorizontalScrollView

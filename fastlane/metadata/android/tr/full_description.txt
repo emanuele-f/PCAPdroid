@@ -1,0 +1,16 @@
+<i>PCAPdroid</i>, aygıtınızın ağ trafiğini izlemenizi ve dışa aktarmanızı sağlayan açık kaynaklı bir uygulamadır. Uygulama, root olmadan yakalama yapmak için bir VPN gibi davranır, ancak VPN'nin aksine, trafik yerel olarak aygıtta işlenir.
+
+<b>Özellikler:</b>
+
+* Kullanıcı ve sistem uygulamaları tarafından yapılan bağlantıları günlüğe kaydedin ve inceleyin
+* SNI, DNS sorgusu, HTTP isteği, HTTP URL'si ve uzak IP adresini ayıklayın
+* İyi trafiği süzmek ve anormallikleri kolayca tespit etmek için kurallar oluşturun
+* Trafiği bir PCAP dosyasına aktarın, tarayıcıdan indirin veya gerçek zamanlı inceleme için uzak bir alıcıya aktarın (örn. wireshark)
+* HTTPS/TLS trafiğinin şifresini çözmek için uygulamayı mitmproxy ile birlikte kullanın (teknik bilgi gereklidir)
+* Root yapılan aygıtlarda, diğer VPN uygulamaları çalışırken trafiği yakalayın
+
+Paket incelemesi yapmak için PCAPdroid kullanmayı düşünüyorsanız, lütfen kılavuzun <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>ilgili bölümüne</a> bakın.
+
+Daha fazla ayrıntı için <a href='https://github.com/emanuele-f/PCAPdroid'>projenin Github sayfasını</a> ziyaret edin.
+
+En son özellikler hakkında tartışmak ve güncel bilgileri almak için <a href="https://t.me/PCAPdroid">PCAPdroid topluluğuna</a> telegram üzerinden katılabilirsiniz.

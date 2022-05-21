@@ -19,7 +19,6 @@
     <string name="protocol">プロトコル</string>
     <string name="source">ソース</string>
     <string name="destination">宛先</string>
-    <string name="bytes">バイト</string>
     <string name="packets">パケット</string>
     <string name="duration">期限</string>
     <string name="http_server">HTTP サーバー</string>
@@ -31,7 +30,6 @@
     <string name="http_server_port">HTTP サーバー ポート</string>
     <string name="receiver_ip_address">コントローラー IP アドレス</string>
     <string name="receiver_port">コントローラー ポート</string>
-    <string name="dump_mode">ダンプ モード</string>
     <string name="user_guide">ユーザー ガイド</string>
     <string name="open_telegram_group">Telegram グループ</string>
     <string name="source_code">ソース コード</string>
@@ -65,7 +63,6 @@
     <string name="capture_running">キャプチャは実行されています</string>
     <string name="notification_msg">%1$s キャプチャ済み、%2$s 接続</string>
     <string name="proto_and_port">%1$s、%2$d</string>
-    <string name="conn_status_open">オープン</string>
     <string name="first_seen">最初の確認</string>
     <string name="last_seen">最新の確認</string>
     <string name="conn_status_closed">クローズド</string>
@@ -76,7 +73,7 @@
     <string name="get_app">入手:</string>
     <string name="tls_how_to">TLS 復号化のセットアップ方法</string>
     <string name="unknown_app">不明</string>
-    <string name="enable_ipv6">IPv6 を有効にする</string>
+    <string name="ipv6">IPv6 を有効にする</string>
     <string name="enable_ipv6_summary">IPv6 インターネット接続を許可します。IPv6 ゲートウェイを搭載したネットワークでのみ有効にする必要があります</string>
     <string name="error">エラー</string>
     <string name="conn_status_unreachable">到達不能</string>
@@ -89,16 +86,14 @@
     <string name="theme_light">ライト</string>
     <string name="theme_dark">ダーク</string>
     <string name="app_theme">テーマ</string>
-    <string name="enable_socks5_proxy">SOCKS5 プロキシを有効にする</string>
+    <string name="socks5_proxy">SOCKS5 プロキシを有効にする</string>
     <string name="enable_socks5_proxy_summary">すべての TCP 接続を指定した SOCKS5 プロキシにリダイレクトします</string>
-    <string name="proxy">プロキシ</string>
     <string name="proxy_ip_address">プロキシ IP アドレス</string>
     <string name="proxy_port">プロキシ ポート</string>
     <string name="root_capture">ルートとしてキャプチャ</string>
     <string name="root_capture_summary">PCAPdroid とほかの VPN アプリとの併用を許可します</string>
     <string name="donate">寄付</string>
     <string name="root_log">ルート ログ</string>
-    <string name="request_plaintext">プレーンテキストをリクエスト</string>
     <string name="search">検索…</string>
     <string name="app_val">アプリ: %1$s</string>
     <string name="ip_address_val">IP アドレス: %1$s</string>
@@ -126,7 +121,6 @@
     <string name="pcapdroid_trailer">PCAPdroid トレーラー</string>
     <string name="pcapdroid_trailer_summary">追加のメタデータ (アプリ名など) を含んだトレーラーをダンプされたパケットに追加します</string>
     <string name="trailer_how_to">Wireshark で流れているデータを表示する方法</string>
-    <string name="remove_ads">広告を削除</string>
     <string name="pending_transaction">決済を完了させて機能を回復させてください</string>
     <string name="ctrl_consent">アプリはデバイスのトラフィックをキャプチャしようとしています。よくわからない場合は拒否してください</string>
     <string name="deny">拒否</string>
@@ -148,7 +142,6 @@
     <string name="malware_detection">マルウェアの検出</string>
     <string name="malware_detection_summary">第三者のブラックリストを使って悪意ある既知のホストへの接続を検出します</string>
     <string name="reset">リセット</string>
-    <string name="malware_whitelist">マルウェア ホワイトリスト</string>
     <string name="malware_whitelist_rules">マルウェア ホワイトリスト ルール</string>
     <string name="feature_not_available">このデバイスでこの機能は現在利用できません</string>
     <string name="billing_connecting">Google Play に接続しています。しばらくしてから再試行してください</string>
@@ -158,8 +151,6 @@
     <string name="not_hidden_filter">隠されていません</string>
     <string name="copy_action">コピー…</string>
     <string name="url_val">URL: %1$s</string>
-    <string name="show_only_plaintext">プレーンテキスト接続</string>
-    <string name="plaintext">プレーンテキスト</string>
     <string name="malware_detection_ad0">あなたのデバイスのセキュリティを強化しませんか?</string>
     <string name="malware_detection_ad1">PCAPdroid マルウェア検出機能をご覧ください!</string>
     <string name="show_me">表示</string>
@@ -202,7 +193,6 @@
     <string name="block">ブロック…</string>
     <string name="firewall">ファイアウォール</string>
     <string name="firewall_rules">ファイアウォール ルール</string>
-    <string name="firewall_help">このリストは接続をブロックするルールが含まれています</string>
     <string name="blocked_pkts">ブロック済み</string>
     <string name="n_pkts">%1$s パケット</string>
     <string name="show_only_blocked">ファイアウォールによるブロック</string>
@@ -220,9 +210,6 @@
     <string name="billing_failure">Google Play に接続できませんでした。しばらくしてから再試行してください</string>
     <string name="learn_more">詳細</string>
     <string name="buy_action">購入</string>
-    <string name="remove_ads_description">このアプリから広告を削除</string>
-    <string name="ads_notice">PCAPdroid にあるアプリ内広告は外部サーバーのトラフィックを生成します。有料機能を購入することで広告を削除することができます</string>
-    <string name="item_redeemed">復元しました</string>
     <string name="capture_not_running_status">キャプチャは実行されていません</string>
     <string name="start_capture_first">最初にキャプチャを開始してください</string>
     <string name="copied">コピーしました</string>

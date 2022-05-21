@@ -50,10 +50,21 @@ public class Billing {
     public static final String SUPPORTER_SKU = "pcapdroid_supporter";
     public static final String NO_ADS_SKU = "no_ads";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
-    public static final String FIREWALL_SKU = "firewall";
+    public static final String FIREWALL_SKU = "no_root_firewall";
     public static final List<String> ALL_SKUS = Arrays.asList(
             SUPPORTER_SKU, NO_ADS_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
     );
+
+    // Resources used in the play build, referenced here to avoid being marked as unused resources
+    private static final int[] res_placeholder = {
+            R.string.billing_connecting, R.string.pending_transaction,
+            R.string.feature_not_available, R.string.malware_detection_ad0,
+            R.string.malware_detection_ad1, R.string.show_me,
+            R.string.loading, R.string.purchased,
+            R.string.no_items_for_purchase, R.string.billing_failure,
+            R.string.learn_more, R.string.buy_action,
+            R.string.can_use_purchased_feature, R.drawable.ic_shopping_cart,
+    };
 
     protected final Context mContext;
     protected SharedPreferences mPrefs;
@@ -165,5 +176,9 @@ public class Billing {
         System.arraycopy(signature, offset + r_len, rv, i, r_len);
 
         return rv;
+    }
+
+    public boolean canUseFirewall() {
+        return isRedeemed(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot();
     }
 }

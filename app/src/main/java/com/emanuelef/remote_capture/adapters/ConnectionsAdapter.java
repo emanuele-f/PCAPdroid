@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -44,6 +45,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +77,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ImageView icon;
         ImageView blacklistedInd;
         ImageView blockedInd;
+        ImageView decryptionInd;
         TextView statusInd;
         TextView remote;
         TextView l7proto;
@@ -92,6 +95,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             l7proto = itemView.findViewById(R.id.l7proto);
             traffic = itemView.findViewById(R.id.traffic);
             statusInd = itemView.findViewById(R.id.status_ind);
+            decryptionInd = itemView.findViewById(R.id.decryption_status);
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
@@ -152,6 +156,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
+
+            if(CaptureService.isDecryptingTLS()) {
+                decryptionInd.setVisibility(View.VISIBLE);
+                Utils.setDecryptionIcon(decryptionInd, conn);
+            } else
+                decryptionInd.setVisibility(View.GONE);
         }
     }
 
@@ -189,6 +199,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ViewHolder holder = new ViewHolder(view);
 
         view.setOnLongClickListener(v -> {
+            // see registerForContextMenu
             mClickedPosition = holder.getAbsoluteAdapterPosition();
             return false;
         });
@@ -429,9 +440,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public String dumpConnectionsCsv() {
         StringBuilder builder = new StringBuilder();
         AppsResolver resolver = new AppsResolver(mContext);
+        boolean malwareDetection = Prefs.isMalwareDetectionEnabled(mContext, PreferenceManager.getDefaultSharedPreferences(mContext));
 
-        // Header
-        builder.append(mContext.getString(R.string.connections_csv_fields));
+        String header = mContext.getString(R.string.connections_csv_fields);
+        builder.append(header);
+        if(malwareDetection)
+            builder.append(",Malicious");
         builder.append("\n");
 
         // Contents
@@ -456,7 +470,16 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 builder.append(conn.sent_pkts);                             builder.append(",");
                 builder.append(conn.rcvd_pkts);                             builder.append(",");
                 builder.append(conn.first_seen);                            builder.append(",");
-                builder.append(conn.last_seen);                             builder.append("\n");
+                builder.append(conn.last_seen);
+
+                if(malwareDetection) {
+                    builder.append(",");
+
+                    if(conn.isBlacklisted())
+                        builder.append("yes");
+                }
+
+                builder.append("\n");
             }
         }
 

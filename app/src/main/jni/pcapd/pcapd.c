@@ -227,8 +227,10 @@ static int create_pid_file() {
 static void finish_pcapd_capture(pcapd_runtime_t *rt) {
   if(rt->client > 0)
     close(rt->client);
-  if(rt->nlsock > 0)
-    close(rt->nlsock);
+  if(rt->nlroute_sock > 0)
+    close(rt->nlroute_sock);
+  if(rt->nldiag_sock > 0)
+    close(rt->nldiag_sock);
   if(rt->lru)
     uid_lru_destroy(rt->lru);
   if(rt->resolver)
@@ -259,7 +261,8 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     signal(SIGPIPE, SIG_IGN);
   }
 
-  rt->nlsock = -1;
+  rt->nlroute_sock = -1;
+  rt->nldiag_sock = -1;
   rt->client = -1;
   rt->conf = conf;
 
@@ -281,14 +284,21 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
   }
 
   if(rt->inet_iface) {
-    rt->nlsock = nl_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
+    rt->nlroute_sock = nl_route_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
                                    RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
-    if(rt->nlsock < 0) {
+    if(rt->nlroute_sock < 0) {
       log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
       goto err;
     }
-    rt->maxfd = max(rt->maxfd, rt->nlsock);
+    rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
   }
+
+  if(nl_is_diag_working()) {
+    rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+    if(rt->nldiag_sock < 0)
+      log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
+  } else
+    log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -337,8 +347,22 @@ static void init_interface(pcapd_iface_t *iface) {
 static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
   int is_file = 0;
+  pcap_t *pd;
 
-  pcap_t *pd = pcap_open_live(ifname, PCAPD_SNAPLEN, 0, 1, errbuf);
+  pd = pcap_create(ifname, errbuf);
+  if(pd) {
+    // NOTE: setting immediate mode greatly increases the chance to resolve UIDs of short-lived
+    // connections. But it has a big performance impact due to the increased context switches.
+    // The performance cost is not acceptable.
+    if((pcap_set_timeout(pd, 1) != 0) ||
+       (pcap_set_snaplen(pd, PCAPD_SNAPLEN) != 0) ||
+       (pcap_set_immediate_mode(pd, 0) != 0) ||
+       (pcap_activate(pd) != 0)) {
+      pcap_close(pd);
+      pd = NULL;
+    }
+  }
+
   if(!pd) {
     // try to open as file
     pd = pcap_open_offline(ifname, errbuf);
@@ -533,7 +557,7 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
     .msg_iovlen = 1
   };
 
-  ssize_t len = recvmsg(rt->nlsock, &msg, 0);
+  ssize_t len = recvmsg(rt->nlroute_sock, &msg, 0);
   uint8_t recheck_inet = 0;
 
 #ifdef READ_FROM_PCAP
@@ -665,8 +689,8 @@ static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
   if(rt->client > 0)
     FD_SET(rt->client, fds);
 
-  if(rt->nlsock > 0)
-    FD_SET(rt->nlsock, fds);
+  if(rt->nlroute_sock > 0)
+    FD_SET(rt->nlroute_sock, fds);
 
   for(int i=0; i<rt->conf->num_interfaces; i++) {
     if(rt->ifaces[i].pf != -1)
@@ -695,7 +719,11 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
       return -1;
     } else if(rv == PCAP_ERROR_BREAK)
       // TODO handle EOF without error
+#ifndef READ_FROM_PCAP
       return -1;
+#else
+      return 0;
+#endif
 
     // can be reached when the packet buffer timeout expires
     return 0;
@@ -705,6 +733,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
     pcapd_hdr_t phdr;
     zdtun_pkt_t zpkt;
     int len = hdr->caplen;
+    int uid = UID_UNKNOWN;
     uint8_t is_tx = is_tx_packet(iface, pkt, len);
 
     if(hdr->caplen < hdr->len)
@@ -719,54 +748,60 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         tupleSwapPeers(&zpkt.tuple);
       }
 
-      int uid = UID_UNKNOWN;
-
       if(!iface->is_file) {
         uid = uid_lru_find(rt->lru, &zpkt.tuple);
 
         if(uid == -2) {
-          uid = get_uid(rt->resolver, &zpkt.tuple);
+          if((rt->nldiag_sock > 0) && (zpkt.tuple.ipproto != IPPROTO_ICMP))
+            // retrieve via netlink
+            uid = nl_get_uid(rt->nldiag_sock, &zpkt.tuple);
+          else
+            // slow method
+            uid = get_uid(rt->resolver, &zpkt.tuple);
+
           uid_lru_add(rt->lru, &zpkt.tuple, uid);
         }
       }
+    }
 
-      if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
-        if(rt->conf->dump_datalink) {
-          // Include the datalink header
-          pkt -= to_skip;
-          len += to_skip;
-          phdr.linktype = iface->dlink;
-        } else
-          phdr.linktype = DLT_RAW;
+    // export packet even if zdtun_parse_pkt failed
+    if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
+      if(rt->conf->dump_datalink) {
+        // Include the datalink header
+        pkt -= to_skip;
+        len += to_skip;
+        phdr.linktype = iface->dlink;
+      } else
+        phdr.linktype = DLT_RAW;
 
-        phdr.ts = hdr->ts;
-        phdr.len = len;
-        phdr.pkt_drops = iface->stats.ps_drop;
-        phdr.uid = uid;
-        phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
-        phdr.ifid = iface->ifid;
+      phdr.ts = hdr->ts;
+      phdr.len = len;
+      phdr.pkt_drops = iface->stats.ps_drop;
+      phdr.uid = uid;
+      phdr.flags = is_tx ? PCAPD_FLAG_TX : 0;
+      phdr.ifid = iface->ifid;
 
-        if(!rt->conf->no_client) {
-          // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
-          // the IP header.
-          if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
-             (xwrite(rt->client, pkt, phdr.len) < 0)) {
-            log_e("write failed[%d]: %s", errno, strerror(errno));
-            return -1;
-          }
-        } else {
-          char buf[512];
-          zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
-
-          if(!rt->conf->quiet)
-            printf("[%s:%d] %s (%u B) [%cX]\n", iface->name, iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R');
+      if(!rt->conf->no_client) {
+        // Send the pcapd_hdr_t first, then the packet data. The packet data always starts with
+        // the IP header.
+        if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
+           (xwrite(rt->client, pkt, phdr.len) < 0)) {
+          log_e("write failed[%d]: %s", errno, strerror(errno));
+          return -1;
         }
+      } else if(!rt->conf->quiet) {
+        char buf[512];
+        zdtun_5tuple2str(&zpkt.tuple, buf, sizeof(buf));
 
-        if(iface->is_file) {
-          // libpcap does not provide stats for savefiles
-          // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
-          iface->stats.ps_recv++;
-        }
+        printf("[%s:%d] %s (%u B) [%cX] (%d)\n", iface->name,
+            iface->ifid, buf, phdr.len, is_tx ? 'T' : 'R',
+            uid);
+      }
+
+      if(iface->is_file) {
+        // libpcap does not provide stats for savefiles
+        // https://www.tcpdump.org/manpages/pcap_stats.3pcap.html
+        iface->stats.ps_recv++;
       }
     }
   }
@@ -832,11 +867,10 @@ int run_pcap_dump(pcapd_conf_t *conf) {
     clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
     time_t now = ts.tv_sec;
 
-
     if((rt.client > 0) && FD_ISSET(rt.client, &fds)) {
       log_i("Client closed");
       break;
-    } else if((rt.nlsock > 0) && FD_ISSET(rt.nlsock, &fds)) {
+    } else if((rt.nlroute_sock > 0) && FD_ISSET(rt.nlroute_sock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
         rv = -1;
         break;

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -59,27 +59,36 @@ import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -88,8 +97,14 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -98,12 +113,15 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class Utils {
+    static final String TAG = "Utils";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
@@ -399,6 +417,42 @@ public class Utils {
         return new String(hexChars);
     }
 
+    // Adapted from https://gist.github.com/jen20/906db194bd97c14d91df
+    public static String hexdump(byte[] array, int offset, int length) {
+        final int width = 16;
+        final int half = width / 2;
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int rowOffset = offset; rowOffset < offset + length; rowOffset += width) {
+            for (int index = 0; index < width; index++) {
+                if(index == half)
+                    builder.append(" ");
+
+                if (rowOffset + index < length)
+                    builder.append(String.format("%02x ", array[rowOffset + index]));
+                else
+                    builder.append("   ");
+            }
+
+            if (rowOffset < length) {
+                int asciiWidth = Math.min(width, length - rowOffset);
+                builder.append(" ");
+
+                builder.append(new String(array, rowOffset, asciiWidth,
+                        StandardCharsets.US_ASCII).replaceAll("[^ -~]", "."));
+            }
+
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
+    public static String hexdump(byte[] array) {
+        return hexdump(array, 0, array.length);
+    }
+
     // Splits the provided data into individual PCAP records. Intended to be used with data received
     // via CaptureService::dumpPcapData
     public static Iterator<Integer> iterPcapRecords(byte[] data) {
@@ -517,6 +571,7 @@ public class Utils {
     }
 
     // Converts a TableLayout (two columns, label and value) to a string which can be copied
+    // If value is a ViewGroup, extract the first TextView from it
     public static String table2Text(TableLayout table) {
         StringBuilder builder = new StringBuilder();
 
@@ -527,6 +582,19 @@ public class Utils {
                     && (((TableRow) v).getChildCount() == 2)) {
                 View label = ((TableRow) v).getChildAt(0);
                 View value = ((TableRow) v).getChildAt(1);
+
+                if(value instanceof ViewGroup) {
+                    // Try to find first TextView child
+                    ViewGroup group = (ViewGroup) value;
+                    for(int c=0; c<group.getChildCount(); c++) {
+                        View view = group.getChildAt(c);
+
+                        if(view instanceof TextView) {
+                            value = view;
+                            break;
+                        }
+                    }
+                }
 
                 if((label instanceof TextView) && (value instanceof TextView)) {
                     builder.append(((TextView) label).getText());
@@ -572,7 +640,7 @@ public class Utils {
 
             appver = isRelease ? ("v" + version) : version;
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e("Utils", "Could not retrieve package version");
+            Log.e(TAG, "Could not retrieve package version");
             appver = "";
         }
 
@@ -584,6 +652,25 @@ public class Utils {
         ComponentName comp = intent.resolveActivity(context.getPackageManager());
 
         return((comp != null) && (!"com.google.android.tv.frameworkpackagestubs".equals(comp.getPackageName())));
+    }
+
+    public static boolean supportsFileDialog(Context context) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        return supportsFileDialog(context, intent);
+    }
+
+    public static boolean launchFileDialog(Context context, Intent intent, ActivityResultLauncher<Intent> launcher) {
+        if(Utils.supportsFileDialog(context, intent)) {
+            try {
+                launcher.launch(intent);
+                return true;
+            } catch (ActivityNotFoundException ignored) {}
+        }
+
+        Utils.showToastLong(context, R.string.no_activity_file_selection);
+        return false;
     }
 
     @SuppressWarnings("deprecation")
@@ -710,7 +797,7 @@ public class Utils {
     }
 
     // a.example.org -> example.org
-    public static String getRootDomain(String domain) {
+    public static String getSecondLevelDomain(String domain) {
         int tldPos = domain.lastIndexOf(".");
 
         if(tldPos <= 0)
@@ -763,7 +850,7 @@ public class Utils {
                     // Extract file
                     try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
                         byte[] bytesIn = new byte[4096];
-                        int read = 0;
+                        int read;
                         while ((read = zipIn.read(bytesIn)) != -1)
                             bos.write(bytesIn, 0, read);
                     }
@@ -773,6 +860,21 @@ public class Utils {
                 entry = zipIn.getNextEntry();
             }
 
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean ungzip(InputStream is, String dst) {
+        try(GZIPInputStream gis = new GZIPInputStream(is)) {
+            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
+                byte[] bytesIn = new byte[4096];
+                int read;
+                while ((read = gis.read(bytesIn)) != -1)
+                    bos.write(bytesIn, 0, read);
+            }
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -794,7 +896,7 @@ public class Utils {
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
-                        int read = 0;
+                        int read;
                         while ((read = in.read(bytesIn)) != -1) {
                             bos.write(bytesIn, 0, read);
                             has_contents |= (read > 0);
@@ -810,6 +912,7 @@ public class Utils {
 
         if(!has_contents) {
             try {
+                //noinspection ResultOfMethodCallIgnored
                 (new File(path + ".tmp")).delete(); // if exists
             } catch (Exception e) {
                 // ignore
@@ -883,6 +986,17 @@ public class Utils {
             h.post(r);
     }
 
+    public static void safeClose(Closeable obj) {
+        if(obj == null)
+            return;
+
+        try {
+            obj.close();
+        } catch (IOException e) {
+            Log.w(TAG, e.getLocalizedMessage());
+        }
+    }
+
     // Returns true on the playstore branch
     public static boolean isPlaystore() {
         return true;
@@ -922,8 +1036,125 @@ public class Utils {
                     return BuildType.WORKFLOW;
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            Log.e("Utils", "Could not determine the build type");
+            Log.e(TAG, "Could not determine the build type");
         }
         return BuildType.UNKNOWN;
+    }
+
+    public static X509Certificate x509FromPem(String pem) {
+        int begin = pem.indexOf('\n') + 1;
+        int end = pem.indexOf('-', begin);
+
+        if((begin > 0) && (end > begin)) {
+            String cert64 = pem.substring(begin, end);
+            //Log.d(TAG, "Cert: " + cert64);
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                byte[] cert_data = android.util.Base64.decode(cert64, android.util.Base64.DEFAULT);
+                return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert_data));
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isCAInstalled(X509Certificate ca_cert) {
+        try {
+            KeyStore ks = KeyStore.getInstance("AndroidCAStore");
+            ks.load(null, null);
+            return ks.getCertificateAlias(ca_cert) != null;
+        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean isCAInstalled(String ca_pem) {
+        if(ca_pem == null)
+            return false;
+
+        X509Certificate ca_cert = x509FromPem(ca_pem);
+        if(ca_cert == null)
+            return false;
+
+        return isCAInstalled(ca_cert);
+    }
+
+    // Like Files.copy(src.toPath(), out);
+    public static void copy(File src, OutputStream out) throws IOException {
+        try(FileInputStream in = new FileInputStream(src)) {
+            byte[] bytesIn = new byte[4096];
+            int read;
+            while((read = in.read(bytesIn)) != -1)
+                out.write(bytesIn, 0, read);
+        }
+    }
+
+    public static boolean hasEncryptedPayload(AppDescriptor app, ConnectionDescriptor conn) {
+        return(
+            // Telegram
+            app.getPackageName().equals("org.telegram.messenger") ||
+
+            // Whatsapp
+            ((conn.info != null) && conn.info.equals("g.whatsapp.net") && !conn.l7proto.equals("DNS")) ||
+
+            // Google GCM
+            // https://stackoverflow.com/questions/15571576/which-port-and-protocol-does-google-cloud-messaging-gcm-use
+            ((app.getUid() == 1000) && (conn.dst_port >= 5228) && (conn.dst_port <= 5230)) ||
+
+            // Google APN
+            // https://keabird.com/blogs/2014/09/19/ports-to-be-whitelisted-for-iosandroid-push-notification/
+            ((app.getUid() == 1000) && ((conn.dst_port == 2195) || (conn.dst_port == 2196) || (conn.dst_port == 5223)))
+        );
+    }
+
+    /* Detects and returns the end of the HTTP request/response headers. 0 is returned if not found. */
+    public static int getEndOfHTTPHeaders(byte[] buf) {
+        for(int i = 0; i <= (buf.length - 4); i++) {
+            if((buf[i] == '\r') && (buf[i+1] == '\n') && (buf[i+2] == '\r') && (buf[i+3] == '\n'))
+                return i+4;
+        }
+        return 0;
+    }
+
+    public static String genRandomString(int length) {
+        String charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder(length);
+        Random rnd = new Random();
+
+        for(int i = 0; i < length; i++)
+            sb.append(charset.charAt(rnd.nextInt(charset.length())));
+
+        return sb.toString();
+    }
+
+    public static void setDecryptionIcon(ImageView icon, ConnectionDescriptor conn) {
+        int color;
+
+        switch(conn.getDecryptionStatus()) {
+            case DECRYPTED:
+                color = R.color.ok;
+                break;
+            case NOT_DECRYPTABLE:
+                color = R.color.warning;
+                break;
+            case ERROR:
+                color = R.color.danger;
+                break;
+            default:
+                color = R.color.lightGray;
+        }
+
+        Context context = icon.getContext();
+        int resid = (conn.isCleartext() || conn.isDecrypted()) ? R.drawable.ic_lock_open : R.drawable.ic_lock;
+
+        icon.setColorFilter(ContextCompat.getColor(context, color));
+        icon.setImageDrawable(ContextCompat.getDrawable(context, resid));
+    }
+
+    public static boolean isPrintable(byte c) {
+        return ((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t');
     }
 }

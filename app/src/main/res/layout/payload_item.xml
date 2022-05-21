@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:paddingHorizontal="3sp">
+
+    <LinearLayout
+        android:id="@+id/header_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginVertical="8dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            tools:text="#1 [TX] 11:02:03.154 — 120 B" />
+
+        <TextView
+            android:id="@+id/content_type"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="2dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textSize="11sp"
+            android:textStyle="italic"
+            android:singleLine="true"
+            android:ellipsize="start"
+            tools:text="application/javascript" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/dump_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:background="@color/sentPayloadBg">
+
+        <!-- Keep layout_width to "wrap_content" or text selection will fail in some cases (Android bug?) -->
+        <!-- Use dp to get a consistent size across devices: prevents splitting hexdump lines -->
+        <TextView
+            android:id="@+id/dump"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:textColor="@color/sentPayloadFg"
+            android:textIsSelectable="true"
+            android:fontFamily="@font/sourcecodepro_regular"
+            android:textDirection="ltr"
+            android:textSize="9dp"
+            android:textStyle="bold"
+            android:focusable="true"
+            tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/expand_button"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_expand_more"
+        android:tint="@color/colorTabText" />
+</LinearLayout>

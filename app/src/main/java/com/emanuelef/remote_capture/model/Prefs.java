@@ -26,21 +26,29 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
+    public static final String DUMP_NONE = "none";
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
     public static final String DUMP_PCAP_FILE = "pcap_file";
+    public static final String DEFAULT_DUMP_MODE = DUMP_NONE;
+
+    public static final String PAYLOAD_MODE_NONE = "none";
+    public static final String PAYLOAD_MODE_MINIMAL = "minimal";
+    public static final String PAYLOAD_MODE_FULL = "full";
+    public static final String DEFAULT_PAYLOAD_MODE = PAYLOAD_MODE_MINIMAL;
+
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
     public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
     public static final String PREF_MALWARE_DETECTION = "malware_detection";
-    public static final String PREF_TLS_DECRYPTION_ENABLED_KEY = "tls_decryption_enabled";
+    public static final String PREF_FIREWALL = "firewall";
+    public static final String PREF_TLS_DECRYPTION_KEY = "tls_decryption";
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
-    public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode";
+    public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_PCAP_URI = "pcap_uri";
-    public static final String DEFAULT_DUMP_MODE = DUMP_HTTP_SERVER;
     public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
@@ -53,6 +61,9 @@ public class Prefs {
     public static final String PREF_SNAPLEN = "snaplen";
     public static final String PREF_MAX_PKTS_PER_FLOW = "max_pkts_per_flow";
     public static final String PREF_MAX_DUMP_SIZE = "max_dump_size";
+    public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
+    public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
+    public static final String PREF_FULL_PAYLOAD = "full_payload";
 
     public enum DumpMode {
         NONE,
@@ -61,15 +72,27 @@ public class Prefs {
         UDP_EXPORTER
     }
 
+    public enum PayloadMode {
+        NONE,
+        MINIMAL,
+        FULL
+    }
+
     public static DumpMode getDumpMode(String pref) {
-        if(pref.equals(DUMP_HTTP_SERVER))
-            return(DumpMode.HTTP_SERVER);
-        else if(pref.equals(DUMP_PCAP_FILE))
-            return(DumpMode.PCAP_FILE);
-        else if(pref.equals(DUMP_UDP_EXPORTER))
-            return(DumpMode.UDP_EXPORTER);
-        else
-            return(DumpMode.NONE);
+        switch (pref) {
+            case DUMP_HTTP_SERVER:      return DumpMode.HTTP_SERVER;
+            case DUMP_PCAP_FILE:        return DumpMode.PCAP_FILE;
+            case DUMP_UDP_EXPORTER:     return DumpMode.UDP_EXPORTER;
+            default:                    return DumpMode.NONE;
+        }
+    }
+
+    public static PayloadMode getPayloadMode(String pref) {
+        switch (pref) {
+            case PAYLOAD_MODE_MINIMAL:  return PayloadMode.MINIMAL;
+            case PAYLOAD_MODE_FULL:     return PayloadMode.FULL;
+            default:                    return PayloadMode.NONE;
+        }
     }
 
     /* Prefs with defaults */
@@ -77,7 +100,8 @@ public class Prefs {
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
     public static DumpMode getDumpMode(SharedPreferences p)  { return(getDumpMode(p.getString(PREF_PCAP_DUMP_MODE, DEFAULT_DUMP_MODE))); }
     public static int getHttpServerPort(SharedPreferences p) { return(Integer.parseInt(p.getString(Prefs.PREF_HTTP_SERVER_PORT, "8080"))); }
-    public static boolean getTlsDecryptionEnabled(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_ENABLED_KEY, false)); }
+    public static boolean getTlsDecryptionEnabled(SharedPreferences p) { return(!isRootCaptureEnabled(p) && p.getBoolean(PREF_TLS_DECRYPTION_KEY, false)); }
+    public static boolean getSocks5Enabled(SharedPreferences p)     { return(p.getBoolean(PREF_SOCKS5_ENABLED_KEY, false)); }
     public static String getSocks5ProxyAddress(SharedPreferences p) { return(p.getString(PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0")); }
     public static int getSocks5ProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_SOCKS5_PROXY_PORT_KEY, "8080"))); }
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
@@ -88,8 +112,15 @@ public class Prefs {
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
     public static boolean isMalwareDetectionEnabled(Context ctx, SharedPreferences p) {
         return(Billing.newInstance(ctx).isRedeemed(Billing.MALWARE_DETECTION_SKU)
-                && p.getBoolean(PREF_MALWARE_DETECTION, false));
+                && p.getBoolean(PREF_MALWARE_DETECTION, true));
+    }
+    public static boolean isFirewallEnabled(Context ctx, SharedPreferences p) {
+        // NOTE: firewall can be disabled at runtime
+        return(Billing.newInstance(ctx).canUseFirewall()
+                && p.getBoolean(PREF_FIREWALL, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
+    public static boolean isTLSDecryptionSetupDone(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
+    public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
 }

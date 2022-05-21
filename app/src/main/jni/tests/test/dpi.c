@@ -17,6 +17,7 @@
  * Copyright 2022 - Emanuele Faranda
  */
 
+#define _GNU_SOURCE // for memmem
 #include "test_utils.h"
 
 /* ******************************************************* */
@@ -66,12 +67,17 @@ static void extract_proxy_cb(pcapdroid_t *pd) {
     conn_and_tuple_t * conn = assert_conn(pd, IPPROTO_TCP, "85.25.246.38", 8080, "weberblog.net");
     assert(conn->data->l7proto == NDPI_PROTOCOL_HTTP);
     assert(!strcmp(conn->data->url, "15.35.226.136:443"));
-    assert(strstr(conn->data->request_data, "CONNECT 15.35.226.136:443") != 0);
+
+    // payload extraction
+    payload_chunk_t *chunk = (payload_chunk_t*) conn->data->payload_chunks;
+    assert(chunk != NULL);
+    assert(memmem(chunk->payload, chunk->size, "CONNECT 15.35.226.136:443", 25) != 0);
 }
 
 static void test_proxy_extraction() {
     pcapdroid_t *pd = pd_init_test(PCAP_PATH "/http_proxy.pcap");
 
+    pd->cb.dump_payload_chunk = dump_cb_payload_chunk;
     pd->cb.send_connections_dump = extract_proxy_cb;
     pd_run(pd);
 

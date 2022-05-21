@@ -11,7 +11,6 @@
     <string name="blocked_pkts">Blokkert</string>
     <string name="not_hidden_filter">Ikke skjult</string>
     <string name="copy_action">Kopier …</string>
-    <string name="plaintext">Klartekst</string>
     <string name="yes">Ja</string>
     <string name="http_server">HTTP-tjener</string>
     <string name="source_code">Kildekode</string>
@@ -31,7 +30,6 @@
     <string name="protocol">Protokoll</string>
     <string name="source">Kilde</string>
     <string name="destination">Mål</string>
-    <string name="bytes">Byte</string>
     <string name="packets">Pakker</string>
     <string name="no_dump">Ingen</string>
     <string name="udp_exporter">UDP-eksportør</string>
@@ -54,14 +52,13 @@
     <string name="delete">Slett</string>
     <string name="ok">OK</string>
     <string name="delete_error">Kunne ikke slette filen</string>
-    <string name="conn_status_open">Åpne</string>
     <string name="first_seen">Først sett</string>
     <string name="last_seen">Sist sett</string>
     <string name="conn_status_closed">Lukket</string>
     <string name="copy_to_clipboard">Kopier til utklippstavle</string>
     <string name="save_to_file">Lagre som fil</string>
     <string name="unknown_app">Ukjent</string>
-    <string name="enable_ipv6">Skru på IPv6</string>
+    <string name="ipv6">Skru på IPv6</string>
     <string name="error">Feil</string>
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang</string>
@@ -69,7 +66,6 @@
     <string name="tls_how_to">Hvordan sette opp TLS-dekryptering</string>
     <string name="conn_status_unreachable">Kan ikke nåes</string>
     <string name="theme_light">Lys</string>
-    <string name="proxy">Mellomtjener</string>
     <string name="donate">Doner</string>
     <string name="root_log">Rot-logg</string>
     <string name="search">Søk …</string>
@@ -96,7 +92,6 @@
     <string name="malicious_connection_filter">Skadelig</string>
     <string name="status_filter">Status: %1$s</string>
     <string name="url_val">Nettadresse: %1$s</string>
-    <string name="show_only_plaintext">Klarteksttilkoblinger</string>
     <string name="malware_detection_ad0">Klar til å forbedre sikkerheten på enheten din\?</string>
     <string name="show_me">Vis meg</string>
     <string name="hint">Hint</string>
@@ -120,14 +115,12 @@
     <string name="loading">Laster inn …</string>
     <string name="learn_more">Lær mer</string>
     <string name="buy_action">Kjøp</string>
-    <string name="remove_ads_description">Fjern reklame fra dette programmet</string>
     <string name="no_connections">Ingen tilkoblinger</string>
     <string name="http_server_info">Start en HTTP-tjener for PCAP-nedlasting</string>
     <string name="bytes_rcvd">Byte mottatt</string>
     <string name="open_sockets">Åpne socket-er</string>
     <string name="app_language">Programspråk</string>
     <string name="theme_dark">Mørk</string>
-    <string name="remove_ads">Fjern reklame</string>
     <string name="search_apps">Søk i programmer</string>
     <string name="no_apps">Ingen programmer</string>
     <string name="deny">Nekt</string>
@@ -136,7 +129,7 @@
     <string name="lang_english">Engelsk</string>
     <string name="system_default">System</string>
     <string name="app_theme">Drakt</string>
-    <string name="enable_socks5_proxy">Skru på SOCKS5-mellomtjener</string>
+    <string name="socks5_proxy">Skru på SOCKS5-mellomtjener</string>
     <string name="blacklists">Svartelister</string>
     <string name="status_not_loaded">Ikke innlastet</string>
     <string name="allow">Tillat</string>
@@ -168,10 +161,8 @@
     <string name="private_dns_message_notice">Privat DNS forhindrer PCAPdroid fra å inspisere DNS-trafikk. Du kan skru det av fra Android-nettverksinnstillingene.</string>
     <string name="n_pkts">%1$s pakker</string>
     <string name="private_dns_hinders_detection">Privat DNS forhindrer oppdagelse</string>
-    <string name="firewall_help">Denne listen inneholder regler for blokkering av tilkoblinger</string>
     <string name="decryption_no_filter_warn">Velg et målprogram når du dekrypterer TLS for å unngå å miste tilkoblingen din til Internett</string>
     <string name="billing_failure">Kunne ikke koble til Google Play. Prøv igjen om en stund.</string>
-    <string name="item_redeemed">Anvendt</string>
     <string name="start_capture_first">Start opptak først</string>
     <string name="close_nav_drawer">Lukk skuff</string>
     <string name="save_ok">Lagret</string>
@@ -182,7 +173,6 @@
     <string name="open_nav_drawer">Åpne skuff</string>
     <string name="capture_all_apps">Fang trafikk for alle programmene</string>
     <string name="collector_info">UDP-innsamler: %1$s:%2$d</string>
-    <string name="dump_mode">Registreringsmodus</string>
     <string name="receiver_ip_address">Innsamler-IP-adresse</string>
     <string name="receiver_port">Innsamler-port</string>
     <string name="udp_exporter_info">Sender PCAP til en UDP-mottager annensteds hen</string>
@@ -194,7 +184,6 @@
     <string name="max_file_descriptor">Maks. FD</string>
     <string name="packets_dropped">Pakker som ikke kom fram</string>
     <string name="installed_on">Installert</string>
-    <string name="request_plaintext">Forespør klartekst</string>
     <string name="capture_prefs">Trafikkfangst</string>
     <string name="root_capture_summary">Lar PCAPdroid kjøre med andre VPN-programmer</string>
     <string name="netd_app_info">Systemnissen som utfører DNS-oppslag</string>
@@ -217,7 +206,6 @@
     <string name="valid">Gyldig</string>
     <string name="pcap_file_action">Trafikk lagret til «%1$s»-filen (%2$s)</string>
     <string name="internet">Internett</string>
-    <string name="malware_whitelist">Skadevare-hvitliste</string>
     <string name="malware_status_update_failed">Noen svartelister er utdatert</string>
     <string name="update_now">Oppdater nå</string>
     <string name="malware_detection">Skadevare-oppdagelse</string>
@@ -236,5 +224,4 @@
     <string name="no_dump_info">PCAP vil ikke bli registrert</string>
     <string name="malware_whitelist_help">Brukerdefinert hvitliste for å unngå skadevareoppdatelse. Lang-trykk på ondsinnede tilkoblinger for å opprette regler som avmarkerer dem som skadevare.</string>
     <string name="start_at_boot_summary">Starter opptak sammen med enheten</string>
-    <string name="ads_notice">Reklame i programmer får PCAPdroid til å generere trafikk til eksterne tjenere. Du kan fjerne reklamen ved å kjøpe den betalte funksjonen.</string>
 </resources>

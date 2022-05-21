@@ -20,9 +20,11 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -31,6 +33,8 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
+import java.util.Arrays;
 
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
@@ -69,6 +73,9 @@ public class AppsResolver {
         mApps.put(1000, new AppDescriptor("Android",
                 virtualIconLoader,"android", 1000, true)
                 .setDescription(mContext.getString(R.string.android_app_info)));
+        mApps.put(1001, new AppDescriptor(mContext.getString(R.string.phone_app),
+                virtualIconLoader,"phone", 1001, true)
+                .setDescription(mContext.getString(R.string.phone_app_info)));
         mApps.put(1013, new AppDescriptor("MediaServer",
                 virtualIconLoader,"mediaserver", 1013, true));
         mApps.put(1020, new AppDescriptor("MulticastDNSResponder",
@@ -100,13 +107,23 @@ public class AppsResolver {
         if(app != null)
             return app;
 
-        String[] packages = mPm.getPackagesForUid(uid);
+        String[] packages = null;
+
+        try {
+            packages = mPm.getPackagesForUid(uid);
+        } catch (SecurityException e) {
+            // this is a bug in some devices https://github.com/AdguardTeam/AdguardForAndroid/issues/173
+            e.printStackTrace();
+        }
 
         if((packages == null) || (packages.length < 1)) {
             Log.w(TAG, "could not retrieve package: uid=" + uid);
             return null;
         }
 
+        // Since multiple packages names may be returned, sort them and get the first to provide a
+        // consistent name
+        Arrays.sort(packages);
         String packageName = packages[0];
 
         app = resolve(mPm, packageName, pm_flags);
@@ -114,6 +131,46 @@ public class AppsResolver {
             mApps.put(uid, app);
 
         return app;
+    }
+
+    public @Nullable AppDescriptor getByPackage(String package_name, int pm_flags) {
+        int uid = getUid(package_name);
+        if(uid == Utils.UID_NO_FILTER)
+            return null;
+
+        return get(uid, pm_flags);
+    }
+
+    public @Nullable AppDescriptor lookup(int uid) {
+        return mApps.get(uid);
+    }
+
+    /* Lookup a UID by package name (including virtual apps).
+     * UID_NO_FILTER is returned if no match is found. */
+    public int getUid(String package_name) {
+        if(!package_name.contains(".")) {
+            // This is a virtual app
+            for(int i=0; i<mApps.size(); i++) {
+                AppDescriptor app = mApps.valueAt(i);
+
+                if(app.getPackageName().equals(package_name))
+                    return app.getUid();
+            }
+        } else {
+            try {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    return mPm.getPackageUid(package_name, 0);
+                } else {
+                    ApplicationInfo info = mPm.getApplicationInfo(package_name, 0);
+                    return info.uid;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Not found
+        return Utils.UID_NO_FILTER;
     }
 
     public void clear() {

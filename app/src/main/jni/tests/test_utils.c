@@ -31,6 +31,10 @@ static test_spec all_tests[MAX_TESTS] = {0};
 static FILE *out_fp = NULL;
 static u_char pcap_read_buf[65535];
 
+static payload_chunk_t **chunks_lists_heads = NULL;
+static int num_chunks_lists = 0;
+static void free_payload_chunks(pcapdroid_t *pd);
+
 /* ******************************************************* */
 
 static void getPcapdPath(struct pcapdroid *pd, const char *prog_name, char *buf, int bufsize) {
@@ -86,6 +90,7 @@ pcapdroid_t* pd_init_test(const char *ifname) {
   pd->root.as_root = false;   // don't run as root
   pd->app_filter = -1;        // don't filter
   pd->cb.get_libprog_path = getPcapdPath;
+  pd->payload_mode = PAYLOAD_MODE_FULL;
 
   strcpy(pd->cachedir, ".");
   pd->cachedir_len = 1;
@@ -100,6 +105,7 @@ void pd_free_test(pcapdroid_t *pd) {
 
   if(out_fp)
     fclose(out_fp);
+  free_payload_chunks(pd);
 }
 
 /* ******************************************************* */
@@ -205,4 +211,52 @@ u_char* next_pcap_record(pcaprec_hdr_s *rec) {
 
   assert(fread(pcap_read_buf, rec->incl_len, 1, out_fp) == 1);
   return pcap_read_buf;
+}
+
+/* ******************************************************* */
+
+/* Dumps all the payload chunks into a linked list. The linked list is accessible via
+ * (payload_chunk_t*)data->payload_chunks */
+bool dump_cb_payload_chunk(pcapdroid_t *pd, const pkt_context_t *pctx, int dump_size) {
+  payload_chunk_t *chunk = calloc(1, sizeof(payload_chunk_t));
+  assert(chunk != NULL);
+  chunk->payload = (u_char*)malloc(dump_size);
+  assert(chunk->payload != NULL);
+
+  memcpy(chunk->payload, pctx->pkt->l7, dump_size);
+  chunk->size = dump_size;
+  chunk->is_tx = pctx->is_tx;
+
+  // append to the linked list
+  payload_chunk_t *last = (payload_chunk_t*)pctx->data->payload_chunks;
+  if(last) {
+    while(last->next)
+      last = last->next;
+    last->next = chunk;
+  } else {
+    // First chunk
+    num_chunks_lists++;
+    chunks_lists_heads = realloc(chunks_lists_heads, num_chunks_lists * sizeof(void*));
+    chunks_lists_heads[num_chunks_lists - 1] = chunk;
+    pctx->data->payload_chunks = chunk;
+  }
+
+  return true;
+}
+
+/* ******************************************************* */
+
+static void free_payload_chunks(pcapdroid_t *pd) {
+  for(int i=0; i<num_chunks_lists; i++) {
+    payload_chunk_t *cur = chunks_lists_heads[i];
+
+    while(cur) {
+      payload_chunk_t *next = cur->next;
+      free(cur->payload);
+      free(cur);
+      cur = next;
+    }
+  }
+
+  free(chunks_lists_heads);
 }
