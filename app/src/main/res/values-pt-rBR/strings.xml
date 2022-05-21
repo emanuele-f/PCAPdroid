@@ -149,7 +149,6 @@
     <string name="not_hidden_filter">Não oculto</string>
     <string name="copy_action">Copiar…</string>
     <string name="url_val">URL: %1$s</string>
-    <string name="malware_detection_ad1">Conheça a detecção de malware do PCAPdroid!</string>
     <string name="show_me">Mostre-me</string>
     <string name="hint">Dica</string>
     <string name="once">Uma vez</string>
@@ -204,7 +203,6 @@
     <string name="file_saved_with_name">Arquivo salvo como \"%1$s\"</string>
     <string name="enable_socks5_proxy_summary">Redirecionar todas as conexões TCP para o proxy SOCKS5 especificado</string>
     <string name="malware_detection_summary">Detectar as conexões com hosts maliciosos conhecidos através de lista negra de terceiros</string>
-    <string name="malware_detection_ad0">Pronto para aumentar a segurança em seu dispositivo\?</string>
     <string name="send_report">Enviar relatório</string>
     <string name="start_at_boot">Executar ao iniciar</string>
     <string name="start_at_boot_summary">Auto-executar a captura após reinício</string>

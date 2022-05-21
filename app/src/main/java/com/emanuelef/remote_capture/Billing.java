@@ -48,18 +48,16 @@ public class Billing {
 
     // SKUs
     public static final String SUPPORTER_SKU = "pcapdroid_supporter";
-    public static final String NO_ADS_SKU = "no_ads";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
     public static final String FIREWALL_SKU = "no_root_firewall";
     public static final List<String> ALL_SKUS = Arrays.asList(
-            SUPPORTER_SKU, NO_ADS_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
+            SUPPORTER_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
     );
 
     // Resources used in the play build, referenced here to avoid being marked as unused resources
     private static final int[] res_placeholder = {
             R.string.billing_connecting, R.string.pending_transaction,
-            R.string.feature_not_available, R.string.malware_detection_ad0,
-            R.string.malware_detection_ad1, R.string.show_me,
+            R.string.feature_not_available, R.string.show_me,
             R.string.loading, R.string.purchased,
             R.string.no_items_for_purchase, R.string.billing_failure,
             R.string.learn_more, R.string.buy_action,
@@ -79,10 +77,10 @@ public class Billing {
     }
 
     public boolean isAvailable(String sku) {
-        return isRedeemed(sku);
+        return isPurchased(sku);
     }
 
-    public boolean isRedeemed(String sku) {
+    public boolean isPurchased(String sku) {
         return !getLicense().isEmpty();
     }
 
@@ -179,6 +177,6 @@ public class Billing {
     }
 
     public boolean canUseFirewall() {
-        return isRedeemed(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot();
+        return isPurchased(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot();
     }
 }

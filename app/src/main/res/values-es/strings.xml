@@ -148,8 +148,6 @@
     <string name="not_hidden_filter">No oculto</string>
     <string name="copy_action">Copiar…</string>
     <string name="url_val">"URL: %1$s"</string>
-    <string name="malware_detection_ad0">¿Listo para mejorar la seguridad de tu dispositivo\?</string>
-    <string name="malware_detection_ad1">¡Conoce la detección de malware PCAPdroid!</string>
     <string name="show_me">Muéstrame</string>
     <string name="hint">Pista</string>
     <string name="once">Una vez</string>

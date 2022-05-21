@@ -151,8 +151,6 @@
     <string name="not_hidden_filter">隠されていません</string>
     <string name="copy_action">コピー…</string>
     <string name="url_val">URL: %1$s</string>
-    <string name="malware_detection_ad0">あなたのデバイスのセキュリティを強化しませんか?</string>
-    <string name="malware_detection_ad1">PCAPdroid マルウェア検出機能をご覧ください!</string>
     <string name="show_me">表示</string>
     <string name="hint">ヒント</string>
     <string name="once">1 度のみ</string>
