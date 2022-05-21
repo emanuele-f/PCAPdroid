@@ -48,7 +48,6 @@
     <string name="protocol">Protocol</string>
     <string name="source">Source</string>
     <string name="destination">Destination</string>
-    <string name="bytes">Bytes</string>
     <string name="packets">Packets</string>
     <string name="duration">Duration</string>
     <string name="http_server">HTTP server</string>
@@ -94,7 +93,6 @@
     <string name="capture_running">Capture running</string>
     <string name="notification_msg">%1$s captured, %2$s connections</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Open</string>
     <string name="conn_status_active">Active</string>
     <string name="first_seen">First seen</string>
     <string name="last_seen">Last seen</string>
@@ -123,14 +121,12 @@
     <string name="socks5_proxy">SOCKS5</string>
     <string name="enable_socks5_proxy_summary">Redirect all the TCP connections to the specified SOCKS5 proxy</string>
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
-    <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
     <string name="root_capture_summary">Allows PCAPdroid to run with other VPN apps</string>
     <string name="donate">Donate</string>
     <string name="root_log">Root log</string>
-    <string name="request_plaintext">Request plaintext</string>
     <string name="search">Search…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">IP address: %1$s</string>
@@ -159,7 +155,6 @@
     <string name="pcapdroid_trailer">PCAPdroid trailer</string>
     <string name="pcapdroid_trailer_summary">A trailer containing additional metadata (such as the app name) will be added to the dumped packets</string>
     <string name="trailer_how_to">How to display the trailer data in Wireshark</string>
-    <string name="remove_ads">Remove ads</string>
     <string name="pending_transaction">Please complete your transaction to redeem this feature</string>
     <string name="ctrl_consent">An app wants to capture your device traffic.\nDeny it if you are not sure</string>
     <string name="deny">Deny</string>
@@ -181,7 +176,6 @@
     <string name="malware_detection">Malware detection</string>
     <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists</string>
     <string name="reset">Reset</string>
-    <string name="malware_whitelist">Malware whitelist</string>
     <string name="malware_whitelist_rules">Malware whitelist rules</string>
     <string name="feature_not_available">This feature is currently unavailable for your device</string>
     <string name="billing_connecting">The connection to Google Play is in progress, please retry in a while</string>
@@ -192,8 +186,6 @@
     <string name="not_hidden_filter">Not hidden</string>
     <string name="copy_action">Copy…</string>
     <string name="url_val">"URL: %1$s"</string>
-    <string name="show_only_plaintext">Plaintext connections</string>
-    <string name="plaintext">Plaintext</string>
     <string name="malware_detection_ad0">Ready to enhance the security of your device?</string>
     <string name="malware_detection_ad1">Meet the PCAPdroid malware detection!</string>
     <string name="show_me">Show me</string>
@@ -256,9 +248,6 @@
     <string name="billing_failure">Could not connect to Google Play. Please retry in a while</string>
     <string name="learn_more">Learn more</string>
     <string name="buy_action">Buy</string>
-    <string name="remove_ads_description">Remove ads from this app</string>
-    <string name="ads_notice">In-app ads cause PCAPdroid to generate traffic towards external servers. You can remove the ads by purchasing a paid feature</string>
-    <string name="item_redeemed">Redeemed</string>
     <string name="capture_not_running_status">The capture is not running</string>
     <string name="start_capture_first">Start the capture first</string>
     <string name="copied">Copied</string>
@@ -294,8 +283,6 @@
     <string name="mitm_addon_new_version">The PCAPdroid plugin must be upgraded</string>
     <string name="upgrade_action">Upgrade</string>
     <string name="export_failed">Export failed</string>
-    <string name="connection">Connection</string>
-    <string name="encrypted">Encrypted</string>
     <string name="not_encrypted">Not encrypted</string>
     <string name="request">Request</string>
     <string name="response">Response</string>

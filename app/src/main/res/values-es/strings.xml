@@ -19,7 +19,6 @@
     <string name="protocol">Protocolo</string>
     <string name="source">Fuente</string>
     <string name="destination">Destino</string>
-    <string name="bytes">Bytes</string>
     <string name="packets">Paquetes</string>
     <string name="duration">Duración</string>
     <string name="http_server">Servidor HTTP</string>
@@ -64,7 +63,6 @@
     <string name="capture_running">Ejecutando captura</string>
     <string name="notification_msg">%1$s capturado, %2$s conexiones</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Abrir</string>
     <string name="first_seen">Primera vez</string>
     <string name="last_seen">Última vez</string>
     <string name="conn_status_closed">Cerrado</string>
@@ -88,13 +86,11 @@
     <string name="theme_dark">Oscuro</string>
     <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Dirección IP proxy</string>
     <string name="proxy_port">Puerto proxy</string>
     <string name="root_capture">Capturar como root</string>
     <string name="donate">Donar</string>
     <string name="root_log">Registro root</string>
-    <string name="request_plaintext">Petición en texto sin formato</string>
     <string name="search">Buscar…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Dirección IP: %1$s</string>
@@ -122,7 +118,6 @@
     <string name="pcapdroid_trailer">Tráiler PCAPdroid</string>
     <string name="pcapdroid_trailer_summary">A los paquetes volcados se les añadirá un tráiler con metadatos adicionales, como el nombre de la aplicación</string>
     <string name="trailer_how_to">Cómo mostrar los datos del remolque en Wireshark</string>
-    <string name="remove_ads">Quitar anuncios</string>
     <string name="pending_transaction">Por favor, completa tu transacción para canjear esta función</string>
     <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.
 \nRecházala si no estás seguro</string>
@@ -145,7 +140,6 @@
     <string name="malware_detection">Detección de malware</string>
     <string name="malware_detection_summary">Detecta conexiones conocidas por host malévolos desde listas de bloqueos de terceros</string>
     <string name="reset">Reiniciar</string>
-    <string name="malware_whitelist">Lista blanca de malware</string>
     <string name="malware_whitelist_rules">Reglas de lista blanca de malware</string>
     <string name="feature_not_available">Esta función no está disponible actualmente para tu dispositivo</string>
     <string name="billing_connecting">La conexión con Google Play está en curso, por favor reintenta más tarde</string>
@@ -154,8 +148,6 @@
     <string name="not_hidden_filter">No oculto</string>
     <string name="copy_action">Copiar…</string>
     <string name="url_val">"URL: %1$s"</string>
-    <string name="show_only_plaintext">Conexiones en texto sin cifrar</string>
-    <string name="plaintext">Plaintext</string>
     <string name="malware_detection_ad0">¿Listo para mejorar la seguridad de tu dispositivo\?</string>
     <string name="malware_detection_ad1">¡Conoce la detección de malware PCAPdroid!</string>
     <string name="show_me">Muéstrame</string>
@@ -213,9 +205,7 @@
     <string name="decryption_no_filter_warn">Selecciona una aplicación de destino al descifrar TLS para evitar perder la conexión a Internet</string>
     <string name="file_saved_with_name">Archivo guardado como \"%1$s\"</string>
     <string name="loading">Cargando…</string>
-    <string name="ads_notice">Los anuncios en la aplicación hacen que PCAPdroid genere tráfico hacia servidores externos. Puedes quitar los anuncios comprando una función paga</string>
     <string name="unlock_code">Desbloquear código</string>
-    <string name="remove_ads_description">Quitar anuncios de esta aplicación</string>
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
     <string name="capture_all_apps">Capturar tráfico de todas las aplicaciones</string>
     <string name="disconnect_vpn_confirm">¿Desconectar la aplicación VPN activa y continuar\?</string>
@@ -230,7 +220,6 @@
     <string name="malware_whitelist_help">Lista blanca definida por el usuario para inhibir la detección de malware. Mantener presionadas las conexiones maliciosas para crear reglas que las desmarquen como malware</string>
     <string name="start_at_boot_summary">Iniciar captura automáticamente después de arrancar</string>
     <string name="start_capture_first">Iniciar la captura primero</string>
-    <string name="item_redeemed">Redimido</string>
     <string name="open_nav_drawer">Abrir cajón de navegación</string>
     <string name="close_nav_drawer">Cerrar cajón de navegación</string>
     <string name="no_intent_handler_found">No se encontró ninguna aplicación para realizar esta acción</string>

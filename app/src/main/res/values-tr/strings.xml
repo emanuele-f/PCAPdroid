@@ -10,7 +10,6 @@
     <string name="buy_action">Satın al</string>
     <string name="no_intent_handler_found">Bu eylemi gerçekleştirecek uygulama bulunamadı</string>
     <string name="network_interface">Arayüz</string>
-    <string name="ads_notice">Uygulama içi reklamlar, PCAPdroid\'in harici sunuculara yönelik trafik oluşturmasına neden olur. Ücretli bir özellik satın alarak reklamları kaldırabilirsiniz</string>
     <string name="can_use_purchased_feature">Artık satın alınan özelliği kullanabilirsiniz</string>
     <string name="disconnect_vpn_confirm">Etkin VPN uygulamasının bağlantısını kesip devam edilsin mi\?</string>
     <string name="http_server">HTTP sunucusu</string>
@@ -18,7 +17,6 @@
     <string name="ip_address_val">IP adresi: %1$s</string>
     <string name="start_button">Başla</string>
     <string name="protocol">Protokol</string>
-    <string name="remove_ads">Reklamları kaldır</string>
     <string name="malware_whitelist_help">Kötü amaçlı yazılım tespitini engellemek için kullanıcı tarafından tanımlanan beyaz liste. Kötü amaçlı yazılım olarak işaretlenmelerini kaldıran kurallar oluşturmak için kötü amaçlı bağlantılara uzun basın</string>
     <string name="n_rules">%1$s kural</string>
     <string name="malware_status_update_failed">Bazı kara listeler güncel değil</string>
@@ -33,7 +31,6 @@
     <string name="ready">Hazır</string>
     <string name="connections_view">Bağlantılar</string>
     <string name="no_connections">Bağlantı yok</string>
-    <string name="bytes">Bayt</string>
     <string name="udp_exporter">UDP aktarıcı</string>
     <string name="no_dump">Hiçbiri</string>
     <string name="http_server_info">PCAP indirmesi için bir HTTP sunucusu başlat</string>
@@ -56,7 +53,6 @@
     <string name="capture_running">Yakalanıyor</string>
     <string name="notification_msg">%1$s yakalandı, %2$s bağlantı</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Açık</string>
     <string name="first_seen">İlk görüldü</string>
     <string name="last_seen">Son görüldü</string>
     <string name="conn_status_closed">Kapalı</string>
@@ -70,7 +66,6 @@
     <string name="root_capture_summary">PCAPdroid\'in diğer VPN uygulamalarıyla çalışmasına izin verir</string>
     <string name="donate">Bağış yap</string>
     <string name="root_log">Root günlüğü</string>
-    <string name="request_plaintext">Düz metin iste</string>
     <string name="search">Ara…</string>
     <string name="app_val">Uygulama: %1$s</string>
     <string name="hide">Gizle…</string>
@@ -103,7 +98,6 @@
     <string name="security">Güvenlik</string>
     <string name="malware_detection">Kötü amaçlı yazılım algılama</string>
     <string name="reset">Sıfırla</string>
-    <string name="malware_whitelist">Kötü amaçlı yazılım beyaz listesi</string>
     <string name="malware_whitelist_rules">Kötü amaçlı yazılım beyaz listesi kuralları</string>
     <string name="feature_not_available">Bu özellik şu anda aygıtınız için kullanılabilir değil</string>
     <string name="hidden_connections_help">İlgili olanlara odaklanabilmeniz için bağlantı listesi girdilerini gizlemek için kurallar listesi</string>
@@ -112,8 +106,6 @@
     <string name="not_hidden_filter">Gizli değil</string>
     <string name="copy_action">Kopyala…</string>
     <string name="url_val">URL: %1$s</string>
-    <string name="show_only_plaintext">Düz metin bağlantıları</string>
-    <string name="plaintext">Düz metin</string>
     <string name="malware_detection_ad0">Aygıtınızın güvenliğini artırmaya hazır mısınız\?</string>
     <string name="malware_detection_ad1">PCAPdroid kötü amaçlı yazılım algılamasıyla tanışın!</string>
     <string name="show_me">Göster</string>
@@ -152,8 +144,6 @@
     <string name="invalid">Geçersiz</string>
     <string name="no_items_for_purchase">Satın alınabilecek ürün yok</string>
     <string name="billing_failure">Google Play\'e bağlanılamadı. Lütfen biraz sonra tekrar deneyin</string>
-    <string name="remove_ads_description">Bu uygulamadan reklamları kaldır</string>
-    <string name="item_redeemed">Kullanıldı</string>
     <string name="capture_not_running_status">Yakalama çalışmıyor</string>
     <string name="start_capture_first">Önce yakalamayı başlatın</string>
     <string name="copied">Kopyalandı</string>
@@ -213,7 +203,6 @@
     <string name="no_activity_file_selection">Dosya seçimini yapacak uygulama bulunamadı</string>
     <string name="theme_dark">Koyu</string>
     <string name="app_theme">Tema</string>
-    <string name="proxy">Vekil</string>
     <string name="proxy_port">Vekil bağlantı noktası</string>
     <string name="root_capture">Root olarak yakala</string>
     <string name="host_val">Ana makine: %1$s</string>

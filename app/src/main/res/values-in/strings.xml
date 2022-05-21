@@ -11,7 +11,6 @@
     <string name="unknown_app_info">\"Tidak diketahui\" menandai koneksi yang aplikasinya tidak dapat ditentukan</string>
     <string name="android_app_info">Sistem Android</string>
     <string name="trailer_how_to">Cara menampilkan data trailer di Wireshark</string>
-    <string name="remove_ads">Hilangkan iklan</string>
     <string name="pending_transaction">Silakan selesaikan transaksi Anda untuk menukarkan fitur ini</string>
     <string name="ctrl_consent">Sebuah aplikasi ingin menangkap lalu lintas perangkat Anda.
 \nTolak jika Anda tidak yakin</string>
@@ -55,7 +54,6 @@
     <string name="blocked_connection_filter">diblokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
-    <string name="ads_notice">Iklan dalam aplikasi menyebabkan PCAPdroid menghasilkan lalu lintas ke server eksternal. Anda dapat menghilangkan iklan dengan membeli fitur berbayar</string>
     <string name="start_capture_first">Mulai penangkapan terlebih dahulu</string>
     <string name="copied">Disalin</string>
     <string name="loading_apps">Memuat aplikasi…</string>
@@ -95,7 +93,6 @@
     <string name="ok">OK</string>
     <string name="notification_msg">%1$s ditangkap, %2$s koneksi</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Buka</string>
     <string name="first_seen">Terlihat</string>
     <string name="last_seen">Terakhir terlihat</string>
     <string name="conn_status_closed">Tertutup</string>
@@ -117,7 +114,6 @@
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protokol: %1$s</string>
     <string name="whitelist_action">Daftar putih…</string>
-    <string name="request_plaintext">Permintaan plaintext</string>
     <string name="app_val">Apl: %1$s</string>
     <string name="select_all">Pilih semua</string>
     <string name="uid">UID</string>
@@ -142,13 +138,10 @@
     <string name="security">Keamanan</string>
     <string name="malware_detection">Pendeteksi malware</string>
     <string name="malware_detection_summary">Deteksi koneksi ke host jahat yang diketahui melalui daftar hitam pihak ketiga</string>
-    <string name="malware_whitelist">Daftar putih malware</string>
     <string name="malware_whitelist_rules">Aturan daftar putih malware</string>
     <string name="feature_not_available">Saat ini fitur tidak tersedia untuk perangkat Anda</string>
     <string name="billing_connecting">Koneksi ke Google Play sedang berlangsung, silakan coba beberapa saat lagi</string>
     <string name="status_filter">Status: %1$s</string>
-    <string name="show_only_plaintext">Koneksi plaintext</string>
-    <string name="plaintext">Plaintext</string>
     <string name="malware_detection_ad0">Siap untuk meningkatkan keamanan perangkat Anda\?</string>
     <string name="show_me">Tunjukkan</string>
     <string name="hint">Petunjuk</string>
@@ -183,8 +176,6 @@
     <string name="purchased">Dibeli</string>
     <string name="no_items_for_purchase">Tidak ada item yang tersedia untuk dibeli</string>
     <string name="learn_more">Pelajari lebih lanjut</string>
-    <string name="remove_ads_description">Hilangkan iklan dari aplikasi ini</string>
-    <string name="item_redeemed">Ditebus</string>
     <string name="can_use_purchased_feature">Sekarang Anda dapat menggunakan fitur yang telah dibeli</string>
     <string name="disconnect_vpn_confirm">Putuskan sambungan aplikasi VPN aktif dan lanjutkan\?</string>
     <string name="open_nav_drawer">Buka drawer</string>
@@ -199,7 +190,6 @@
     <string name="query">Pertanyaan</string>
     <string name="status">Status</string>
     <string name="connections_view">Koneksi</string>
-    <string name="bytes">Byte</string>
     <string name="packets">Paket</string>
     <string name="duration">Durasi</string>
     <string name="udp_exporter_info">Mengirim PCAP ke penerima UDP jarak jauh</string>
@@ -231,6 +221,5 @@
     <string name="conn_status_unreachable">Tidak terjangkau</string>
     <string name="proxy_ip_address">Alamat IP proxy</string>
     <string name="theme_light">Terang</string>
-    <string name="proxy">Proksi</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
 </resources>

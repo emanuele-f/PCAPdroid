@@ -20,7 +20,6 @@
     <string name="protocol">Protocolo</string>
     <string name="source">Fonte</string>
     <string name="destination">Destino</string>
-    <string name="bytes">Bytes</string>
     <string name="packets">Pacotes</string>
     <string name="duration">Duração</string>
     <string name="http_server">Servidor HTTP</string>
@@ -65,7 +64,6 @@
     <string name="capture_running">Captura executada</string>
     <string name="notification_msg">%1$s capturados, %2$s conexões</string>
     <string name="proto_and_port">%1$s, %2$d</string>
-    <string name="conn_status_open">Aberto</string>
     <string name="first_seen">Começou</string>
     <string name="last_seen">Última atividade</string>
     <string name="conn_status_closed">Fechado</string>
@@ -89,13 +87,11 @@
     <string name="theme_dark">Escuro</string>
     <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Endereço IP de proxy</string>
     <string name="proxy_port">Porta de proxy</string>
     <string name="root_capture">Capturar como root</string>
     <string name="donate">Doar</string>
     <string name="root_log">Registro root</string>
-    <string name="request_plaintext">Solicite em texto puro</string>
     <string name="search">Pesquisar…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Endereço IP: %1$s</string>
@@ -122,7 +118,6 @@
     <string name="pcapdroid_trailer">Metadados adicionais do PCAPdroid</string>
     <string name="pcapdroid_trailer_summary">Um trailer contém metadados complementares como o nome do app, que serão adicionados aos dados brutos</string>
     <string name="trailer_how_to">Como exibir os dados do trailer em Wireshark</string>
-    <string name="remove_ads">Remover anúncios</string>
     <string name="pending_transaction">Por favor, finalize sua transação para liberar esta funcionalidade</string>
     <string name="ctrl_consent">Um app quer capturar o tráfego no seu dispositivo.
 \nSe não tiver certeza, melhor recusar</string>
@@ -146,7 +141,6 @@
     <string name="security">Segurança</string>
     <string name="malware_detection">Detecção de malware</string>
     <string name="reset">Resetar</string>
-    <string name="malware_whitelist">Lista branca de malware</string>
     <string name="malware_whitelist_rules">Regras da lista branca de malware</string>
     <string name="feature_not_available">Esta funcionalidade está atualmente indisponível para seu dispositivo</string>
     <string name="billing_connecting">A conexão com Google Play está em andamento, por favor, tente novamente daqui a pouco</string>
@@ -210,8 +204,6 @@
     <string name="file_saved_with_name">Arquivo salvo como \"%1$s\"</string>
     <string name="enable_socks5_proxy_summary">Redirecionar todas as conexões TCP para o proxy SOCKS5 especificado</string>
     <string name="malware_detection_summary">Detectar as conexões com hosts maliciosos conhecidos através de lista negra de terceiros</string>
-    <string name="show_only_plaintext">Conexões em texto puro</string>
-    <string name="plaintext">Texto puro</string>
     <string name="malware_detection_ad0">Pronto para aumentar a segurança em seu dispositivo\?</string>
     <string name="send_report">Enviar relatório</string>
     <string name="start_at_boot">Executar ao iniciar</string>
@@ -233,7 +225,4 @@
     <string name="purchased">Adquirido</string>
     <string name="no_items_for_purchase">Nenhum item disponível para compra</string>
     <string name="buy_action">Comprar</string>
-    <string name="remove_ads_description">Remover anúncios deste app</string>
-    <string name="ads_notice">Anúncios dentro do PCAPdroid geram tráfego para servidores externos. Você pode remover os anúncios fazendo a compra</string>
-    <string name="item_redeemed">Resgatar</string>
 </resources>

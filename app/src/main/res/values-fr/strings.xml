@@ -19,7 +19,6 @@
     <string name="no_connections">Aucune connexion</string>
     <string name="source">Source</string>
     <string name="destination">Destination</string>
-    <string name="bytes">Octets</string>
     <string name="packets">Paquets</string>
     <string name="duration">Durée</string>
     <string name="http_server">Serveur HTTP</string>
@@ -45,7 +44,6 @@
     <string name="pcap_file_action">Trafic enregistré dans le fichier « %1$s » (%2$s)</string>
     <string name="delete_error">Impossible de supprimer le fichier</string>
     <string name="capture_running">Capture en cours</string>
-    <string name="conn_status_open">Active</string>
     <string name="first_seen">Début</string>
     <string name="last_seen">Fin</string>
     <string name="conn_status_closed">Terminée</string>
@@ -63,7 +61,6 @@
     <string name="theme_light">Clair</string>
     <string name="donate">Faire un don</string>
     <string name="root_log">Journal racine</string>
-    <string name="request_plaintext">Demande de texte en clair</string>
     <string name="search">Recherche…</string>
     <string name="app_val">Appli : %1$s</string>
     <string name="ip_address_val">Adresse IP : %1$s</string>
@@ -98,7 +95,6 @@
     <string name="unknown_app">Inconnue</string>
     <string name="search_apps">Chercher des applis</string>
     <string name="pcap_file">Fichier PCAP</string>
-    <string name="remove_ads">Retirer les pubs</string>
     <string name="disconnect_vpn_confirm">Déconnecter l\'application RPV active et continuer \?</string>
     <string name="ipv6">Activer IPv6</string>
     <string name="version">Version</string>
@@ -118,7 +114,6 @@
     <string name="tls_how_to">Comment configurer un décryptage TLS</string>
     <string name="get_app">L\'obtenir :</string>
     <string name="about_text">PCAPdroid est un outil open-source de capture et de suivi de réseau qui fonctionne sans un compte administrateur</string>
-    <string name="proxy">Proxy</string>
     <string name="proxy_port">Port de proxy</string>
     <string name="root_capture">Capturer comme administrateur</string>
     <string name="enable_socks5_proxy_summary">Rediriger tous les connexions TCP vers le proxy SOCKS5 spécifié</string>
@@ -160,18 +155,15 @@
     <string name="url_val">URL : %1$s</string>
     <string name="billing_connecting">Connexion au Google Player en cours, veuillez réessayer plus tard</string>
     <string name="feature_not_available">Cette fonctionnalité n\'est actuellement pas disponible sur votre appareil</string>
-    <string name="malware_whitelist">Virus autorisés</string>
     <string name="malware_whitelist_rules">Règles d\'autorisation des virus</string>
     <string name="hidden_connections_help">La liste des règles pour masquer les connexions de la liste et ainsi se concentrer sur les plus pertinentes</string>
     <string name="malicious_connection_filter">Malveillant</string>
-    <string name="plaintext">Texte brut</string>
     <string name="hint">Astuce</string>
     <string name="once">Une fois</string>
     <string name="forever">Toujours</string>
     <string name="country">Pays</string>
     <string name="asn">ASN</string>
     <string name="whitelist">Autorisés</string>
-    <string name="show_only_plaintext">Connexions en clair</string>
     <string name="show_me">M\'afficher</string>
     <string name="control_permissions_item">%1$s : %2$s</string>
     <string name="country_val">Pays : %1$s</string>
@@ -227,9 +219,6 @@
     <string name="learn_more">Plus d\'info</string>
     <string name="no_items_for_purchase">Aucun élément à acheter</string>
     <string name="billing_failure">Échec de connexion au Google Play. Veuillez réessayer plus tard</string>
-    <string name="remove_ads_description">Retirer les publicités dans cette application</string>
-    <string name="ads_notice">Les publicités pour les achats intégrés pour PCAPdroid génèrent du trafic vers des serveurs internes. Vous pouvez les désactiver en achetant la fonctionnalité payante</string>
-    <string name="item_redeemed">Débloqué</string>
     <string name="capture_not_running_status">La capture n\'a pas été lancée</string>
     <string name="copied">Copié</string>
     <string name="can_use_purchased_feature">Vous pouvez maintenant la fonctionnalité d\'achat</string>
