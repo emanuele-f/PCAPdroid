@@ -1,0 +1,26 @@
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        app:key="status"
+        app:title="@string/database"
+        app:iconSpaceReserved="false"
+        android:summary="@string/geo_db_not_found">
+
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://db-ip.com/db/lite.php" />
+    </Preference>
+
+    <Preference
+        app:key="download"
+        app:title="@string/download"
+        android:summary="@string/geo_db_download"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        app:key="delete"
+        app:title="@string/delete"
+        android:summary="@string/geo_db_delete"
+        app:iconSpaceReserved="false" />
+</PreferenceScreen>

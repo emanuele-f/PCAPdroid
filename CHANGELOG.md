@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.4.8] - 2022-04-22
+- Fix corrupted PCAP file on Android 10+ when overwriting existing file
+- Start the capture by tapping "Ready"
+- Allow inspecting connections after the capture is stopped
+- Support UDP STUN in non-root mode
+- Faster uid resolution and other improvements
+
 ## [1.4.7] - 2022-02-10
 - Fix unsolicited capture start when swiping the app from recent apps
 - Fix ForegroundServiceStartNotAllowedException in Android 12

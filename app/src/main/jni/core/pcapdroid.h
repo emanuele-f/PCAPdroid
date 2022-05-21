@@ -39,15 +39,15 @@
 #define MAX_HOST_LRU_SIZE 256
 #define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
-#define MAX_PLAINTEXT_LENGTH 1024        // sync with PlaintextReceiver
-#define MIN_REQ_PLAINTEXT_CHARS 3        // Minimum length (e.g. of "GET") to avoid reporting non-requests
+#define MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE 512
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
 #define DNS_TYPE_RESPONSE 0x8000
 
-#define CONN_UPDATE_STATS 1
-#define CONN_UPDATE_INFO 2
+#define CONN_UPDATE_STATS   0x1
+#define CONN_UPDATE_INFO    0x2
+#define CONN_UPDATE_PAYLOAD 0x4
 
 typedef struct {
     jlong sent_bytes;
@@ -59,6 +59,13 @@ typedef struct {
     u_int64_t last_update_ms;
 } capture_stats_t;
 
+// NOTE: sync with Prefs.PayloadMode
+typedef enum {
+    PAYLOAD_MODE_NONE = 0,
+    PAYLOAD_MODE_MINIMAL,
+    PAYLOAD_MODE_FULL
+} payload_mode_t;
+
 typedef struct {
     jint incr_id; // an incremental number which identifies a specific connection
 
@@ -66,6 +73,7 @@ typedef struct {
     struct ndpi_flow_struct *ndpi_flow;
     struct ndpi_id_struct *src_id, *dst_id;
     uint16_t l7proto;
+    uint16_t alpn;
 
     union {
         struct {
@@ -78,8 +86,11 @@ typedef struct {
         } vpn;
     };
 
+    void* payload_chunks;
+
     jlong first_seen;
     jlong last_seen;
+    jlong payload_length;
     jlong sent_bytes;
     jlong rcvd_bytes;
     jint sent_pkts;
@@ -96,13 +107,15 @@ typedef struct {
     bool pending_notification;
     bool to_purge; // if true, free this pd_conn_t during the next sendConnectionsDump
     bool info_from_lru;
-    bool request_done;
     bool blacklisted_internal;
     bool blacklisted_ip;
     bool blacklisted_domain;
     bool whitelisted_app;
     bool to_block;
-    char *request_data;
+    bool proxied;
+    bool encrypted_l7;
+    bool payload_truncated;
+    bool has_payload[2]; // [0]: rx, [1] tx
     char *url;
     uint8_t update_type;
 } pd_conn_t;
@@ -147,6 +160,7 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, const pkt_context_t *pctx, int dump_size);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -174,6 +188,8 @@ typedef struct pcapdroid {
     // config
     jint app_filter;
     bool root_capture;
+    bool tls_decryption_enabled;
+    payload_mode_t payload_mode;
 
     // stats
     u_int num_dropped_pkts;
@@ -217,6 +233,8 @@ typedef struct pcapdroid {
         bool enabled;
         u_int32_t proxy_ip;
         u_int32_t proxy_port;
+        char proxy_user[32];
+        char proxy_pass[32];
     } socks5;
 
     struct {
@@ -239,6 +257,7 @@ typedef struct pcapdroid {
     } malware_detection;
 
     struct {
+        bool enabled;
         blacklist_t *bl;
         blacklist_t *new_bl;
     } firewall;
@@ -275,6 +294,7 @@ typedef struct {
     jmethodID connUpdateInit;
     jmethodID connUpdateSetStats;
     jmethodID connUpdateSetInfo;
+    jmethodID connUpdateSetPayload;
     jmethodID sendServiceStatus;
     jmethodID sendStatsDump;
     jmethodID statsInit;
@@ -285,6 +305,9 @@ typedef struct {
     jmethodID getBlacklistsInfo;
     jmethodID listSize;
     jmethodID listGet;
+    jmethodID arraylistNew;
+    jmethodID arraylistAdd;
+    jmethodID payloadChunkInit;
 } jni_methods_t;
 
 typedef struct {
@@ -296,6 +319,8 @@ typedef struct {
     jclass blacklist_descriptor;
     jclass matchlist_descriptor;
     jclass list;
+    jclass arraylist;
+    jclass payload_chunk;
 } jni_classes_t;
 
 typedef struct {
@@ -306,9 +331,16 @@ typedef struct {
     jfieldID ld_ips;
 } jni_fields_t;
 
+typedef struct {
+    jobject bltype_ip;
+    jobject chunktype_raw;
+    jobject chunktype_http;
+} jni_enum_t;
+
 extern jni_methods_t mids;
 extern jni_classes_t cls;
 extern jni_fields_t fields;
+extern jni_enum_t enums;
 
 #endif // ANDROID
 
@@ -320,6 +352,7 @@ extern bool block_private_dns;
 extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
 extern int bl_num_checked_connections;
+extern int fw_num_checked_connections;
 
 // capture API
 int pd_run(pcapdroid_t *pd);
@@ -327,12 +360,13 @@ void pd_refresh_time(pcapdroid_t *pd);
 void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
                        pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
+void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
-void pd_purge_connection(pd_conn_t *data);
+void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
 void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
-const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, int ipproto);
+const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, int ipproto);
 
 // Utility
 const char* get_cache_path(pcapdroid_t *pd, const char *subpath);
@@ -353,8 +387,9 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 
 // Internals
 struct pcapdroid_trailer;
-void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, pd_conn_t *conn);
-void init_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, int uid);
+void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 
 #endif //__PCAPDROID_H__

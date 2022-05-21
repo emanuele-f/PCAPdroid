@@ -19,14 +19,21 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.util.Log;
+
+import java.util.ArrayList;
+
 public class ConnectionUpdate {
-    public static final int UPDATE_STATS = 1;
-    public static final int UPDATE_INFO = 2;
+    public static final int UPDATE_STATS = 0x1;
+    public static final int UPDATE_INFO = 0x2;
+    public static final int UPDATE_PAYLOAD = 0x4;
+    public static final int UPDATE_INFO_FLAG_ENCRYPTED_L7 = 0x1;
     public final int incr_id;
     public int update_type;
 
     /* set if update_type & UPDATE_STATS */
     public long last_seen;
+    public long payload_length;
     public long sent_bytes;
     public long rcvd_bytes;
     public int sent_pkts;
@@ -34,23 +41,28 @@ public class ConnectionUpdate {
     public int blocked_pkts;
     public int tcp_flags;
     public int status;
+    public int info_flags;
 
     /* set if update_type & UPDATE_INFO */
     public String info;
     public String url;
-    public String request_plaintext;
     public String l7proto;
+
+    /* set if update_type & UPDATE_PAYLOAD */
+    public ArrayList<PayloadChunk> payload_chunks;
+    public boolean payload_truncated;
 
     public ConnectionUpdate(int _incr_id) {
         incr_id = _incr_id;
     }
 
-    public void setStats(long _last_seen, long _sent_bytes, long _rcvd_bytes,
+    public void setStats(long _last_seen, long _payload_length, long _sent_bytes, long _rcvd_bytes,
                          int _sent_pkts, int _rcvd_pkts, int _blocked_pkts,
                          int _tcp_flags, int _status) {
         update_type |= UPDATE_STATS;
 
         last_seen = _last_seen;
+        payload_length = _payload_length;
         sent_bytes = _sent_bytes;
         rcvd_bytes = _rcvd_bytes;
         sent_pkts = _sent_pkts;
@@ -60,12 +72,19 @@ public class ConnectionUpdate {
         status = _status;
     }
 
-    public void setInfo(String _info, String _url, String _req, String _l7proto) {
+    public void setInfo(String _info, String _url, String _l7proto, int flags) {
         update_type |= UPDATE_INFO;
 
         info = _info;
         url = _url;
-        request_plaintext = _req;
         l7proto = _l7proto;
+        info_flags = flags;
+    }
+
+    public void setPayload(ArrayList<PayloadChunk> _chunks, boolean _payload_truncated) {
+        update_type |= UPDATE_PAYLOAD;
+
+        payload_chunks = _chunks;
+        payload_truncated = _payload_truncated;
     }
 }

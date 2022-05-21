@@ -63,13 +63,14 @@ import android.widget.TextView;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
+import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
-import com.emanuelef.remote_capture.model.ListInfo;
+import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -77,7 +78,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Billing mIab;
@@ -85,6 +89,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private AppState mState;
     private AppStateListener mListener;
     private Uri mPcapUri;
+    private File mKeylogFile;
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
@@ -104,9 +109,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
     public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#51-malware-detection";
+    public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#52-firewall";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
+    private final ActivityResultLauncher<Intent> sslkeyfileExportLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::sslkeyfileExportResult);
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new RequestPermission(), isGranted ->
                 Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied"))
@@ -147,18 +155,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (status != null) {
                     Log.d(TAG, "Service status: " + status);
 
-                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED)) {
+                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED))
                         appStateRunning();
-                    } else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
+                    else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
                         // The service may still be active (on premature native termination)
                         if (CaptureService.isServiceActive())
                             CaptureService.stopService();
+
+                        mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+                        if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
+                            mKeylogFile = null;
+
+                        Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
                         if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
                             showPcapActionDialog(mPcapUri);
                             mPcapUri = null;
                             mPcapFname = null;
-                        }
+
+                            // will export the keylogfile after saving/sharing pcap
+                        } else if(mKeylogFile != null)
+                            startExportSslkeylogfile();
 
                         appStateReady();
                     }
@@ -194,7 +211,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(mIab.canUseFirewall());
     }
 
     private void setupNavigationDrawer() {
@@ -358,8 +375,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
         } else if(id == R.id.firewall) {
-            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.BLOCKLIST);
+            Intent intent = new Intent(MainActivity.this, FirewallActivity.class);
             startActivity(intent);
         } else if(id == R.id.open_root_log) {
             Intent intent = new Intent(MainActivity.this, LogviewActivity.class);
@@ -384,7 +400,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.action_share_app) {
             String description = getString(R.string.about_text);
             String getApp = getString(R.string.get_app);
-            String url = "http://play.google.com/store/apps/details?id=" + this.getPackageName();
+            String url = "https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture";
 
             Intent intent = new Intent(android.content.Intent.ACTION_SEND);
             intent.setType("text/plain");
@@ -484,11 +500,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mPcapFname = null;
         boolean hasPermission = false;
 
+        /* FLAG_GRANT_READ_URI_PERMISSION required for showPcapActionDialog (e.g. when auto-started at boot) */
+        int peristMode = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+
         // Revoke the previous permissions
         for(UriPermission permission : getContentResolver().getPersistedUriPermissions()) {
             if(!permission.getUri().equals(uri)) {
                 Log.d(TAG, "Releasing URI permission: " + permission.getUri().toString());
-                getContentResolver().releasePersistableUriPermission(permission.getUri(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().releasePersistableUriPermission(permission.getUri(), peristMode);
             } else
                 hasPermission = true;
         }
@@ -498,7 +517,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
          * or when starting the capture at boot. */
         if(persistable && !hasPermission) {
             try {
-                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().takePersistableUriPermission(uri, peristMode);
             } catch (SecurityException e) {
                 // This should never occur
                 Log.e(TAG, "Could not get PersistableUriPermission");
@@ -530,6 +549,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
+        if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
+            Intent intent = new Intent(this, MitmSetupWizard.class);
+            startActivity(intent);
+            return;
+        }
+
         if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
             openFileSelector();
             return;
@@ -650,6 +675,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             dialog.cancel();
         });
         builder.setNeutralButton(R.string.ok, (dialog, which) -> dialog.cancel());
+        builder.setOnDismissListener(dialogInterface -> {
+            if(mKeylogFile != null)
+                startExportSslkeylogfile();
+        });
 
         builder.create().show();
     }
@@ -683,5 +712,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         return null;
+    }
+
+    private void startExportSslkeylogfile() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, "sslkeylogfile.txt");
+
+        Utils.launchFileDialog(this, intent, sslkeyfileExportLauncher);
+    }
+
+    private void sslkeyfileExportResult(final ActivityResult result) {
+        if(result.getResultCode() == RESULT_OK && result.getData() != null) {
+            try(OutputStream out = getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
+                Utils.copy(mKeylogFile, out);
+                Utils.showToast(this, R.string.save_ok);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Utils.showToastLong(this, R.string.export_failed);
+            }
+        }
+
+        mKeylogFile = null;
     }
 }

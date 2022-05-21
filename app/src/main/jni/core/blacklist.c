@@ -17,6 +17,8 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
+#define _GNU_SOURCE
+#include <string.h>
 #include "pcapdroid.h"
 #include "common/utils.h"
 
@@ -265,14 +267,41 @@ bool blacklist_match_ipstr(blacklist_t *bl, const char *ip_str) {
 
 /* ******************************************************* */
 
+static char* get_second_level_domain(const char *domain) {
+    char *dot = (char*) memrchr(domain, '.', strlen(domain));
+    if(!dot || (dot == domain))
+        return (char*)domain;
+
+    dot = (char*) memrchr(domain, '.', dot - domain);
+    if(!dot)
+        return (char*)domain;
+
+    return dot + 1;
+}
+
+/* ******************************************************* */
+
 bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
+    // Keep in sync with MatchList.matchesHost
     string_entry_t *entry = NULL;
 
     if(strncmp(domain, "www.", 4) == 0)
         domain += 4;
 
+    // exact domain match
     HASH_FIND_STR(bl->domains, domain, entry);
-    return(entry != NULL);
+    if(entry != NULL)
+        return true;
+
+    // 2nd-level domain match
+    char *domain2 = get_second_level_domain(domain);
+    if(domain2 != domain) {
+        HASH_FIND_STR(bl->domains, domain2, entry);
+        if(entry != NULL)
+            return true;
+    }
+
+    return false;
 }
 
 /* ******************************************************* */

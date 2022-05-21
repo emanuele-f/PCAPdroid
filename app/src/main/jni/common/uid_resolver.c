@@ -87,9 +87,10 @@ static int get_uid_proc(int ipver, int ipproto, const char *conn_shex,
         if(sscanf(line, fmt, shex, &sport, dhex, &dport, &uid) == 5) {
             //log_d("[try] %s:%d -> %s:%d [%d]", shex, sport, dhex, dport, uid);
 
-            if((sport == src_port) && (dport == dst_port)
-               && (!strcmp(conn_dhex, dhex) || !strcmp(dhex, zero))
-               && (!strcmp(conn_shex, shex) || !strcmp(shex, zero))) {
+            if((sport == src_port)
+                    && ((dport == dst_port) || (dport == 0 /* ANY */))
+                    && (!strcmp(conn_dhex, dhex) || !strcmp(dhex, zero /* ANY */))
+                    && (!strcmp(conn_shex, shex) || !strcmp(shex, zero /* ANY */))) {
                 // found
                 rv = uid;
                 break;

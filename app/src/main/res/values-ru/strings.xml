@@ -31,7 +31,6 @@
     <string name="http_server_port">Порт HTTP сервера</string>
     <string name="receiver_ip_address">IP адрес сборщика</string>
     <string name="receiver_port">Порт сборщика</string>
-    <string name="dump_mode">Режим записи</string>
     <string name="user_guide">Руководство пользователя</string>
     <string name="open_telegram_group">Telegram сообщество</string>
     <string name="source_code">Исходный код</string>
@@ -76,7 +75,7 @@
     <string name="get_app">Получить его:</string>
     <string name="tls_how_to">Как настроить расшифровку TLS</string>
     <string name="unknown_app">Неизвестное</string>
-    <string name="enable_ipv6">Включить IPv6</string>
+    <string name="ipv6">Включить IPv6</string>
     <string name="enable_ipv6_summary">Разрешить IPv6 соединения с интернетом. Это следует включать только в сетях с IPv6 шлюзом</string>
     <string name="error">Ошибка</string>
     <string name="conn_status_unreachable">Недоступен</string>
@@ -88,7 +87,7 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="app_theme">Тема</string>
-    <string name="enable_socks5_proxy">Включить SOCKS5 прокси</string>
+    <string name="socks5_proxy">Включить SOCKS5 прокси</string>
     <string name="proxy">Прокси</string>
     <string name="proxy_ip_address">IP-адрес прокси</string>
     <string name="proxy_port">Порт прокси</string>

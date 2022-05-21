@@ -23,13 +23,13 @@ import androidx.annotation.NonNull;
 
 public class AppStats implements Cloneable {
     private final int uid;
-    public long bytes;
-    public int num_connections;
+    public long sentBytes;
+    public long rcvdBytes;
+    public int numConnections;
+    public int numBlockedConnections;
 
     public AppStats(int _uid) {
         uid = _uid;
-        bytes = 0;
-        num_connections = 0;
     }
 
     public int getUid() {
@@ -39,8 +39,10 @@ public class AppStats implements Cloneable {
     @NonNull
     public AppStats clone() {
         AppStats rv = new AppStats(uid);
-        rv.bytes = bytes;
-        rv.num_connections = num_connections;
+        rv.sentBytes = sentBytes;
+        rv.rcvdBytes = rcvdBytes;
+        rv.numConnections = numConnections;
+        rv.numBlockedConnections = numBlockedConnections;
 
         return rv;
     }

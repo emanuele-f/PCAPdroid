@@ -77,7 +77,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | collector_port          | int    |     | the UDP port of the collector in udp_exporter mode                 |
 | http_server_port        | int    |     | the HTTP server port in http_server mode                           |
 | pcap_uri                | string |     | the URI for the PCAP dump in pcap_file mode                        |
-| tls_decryption_enabled  | bool   |     | true to enable the SOCKS5 proxy (e.g. for TLS decryption)          |
+| socks5_enabled          | bool   |     | true to redirect the TCP connections to a SOCKS5 proxy             |
 | socks5_proxy_ip_address | string |     | the IP address of the SOCKS5 proxy                                 |
 | socks5_proxy_port       | int    |     | the TCP port of the SOCKS5 proxy                                   |
 | ipv6_enabled            | bool   |     | true to enable IPv6 support in non-root mode                       |
@@ -87,6 +87,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | snaplen                 | int    |  43 | max size in bytes for each individual packet in the PCAP  dump     |
 | max_pkts_per_flow       | int    |  43 | only dump the first max_pkts_per_flow packets per flow             |
 | max_dump_size           | int    |  43 | max size in bytes for the PCAP dump                                |
+| tls_decryption          | bool   |   - | true to enable the built-in TLS decryption                         |
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 

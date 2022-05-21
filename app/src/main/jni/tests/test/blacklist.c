@@ -34,7 +34,8 @@ static void test_match() {
 
   // Use blacklist
   assert1(blacklist_match_domain(bl, "www.example.org"));
-  //assert1(blacklist_match_domain(bl, "some.example.org")); // TODO support subdomains matching
+  assert1(blacklist_match_domain(bl, "some.example.org"));
+  assert1(blacklist_match_domain(bl, "evil.some.example.org"));
 
   assert0(blacklist_match_ipstr(bl, "1.2.3.0"));
   assert1(blacklist_match_ipstr(bl, "1.2.3.4"));

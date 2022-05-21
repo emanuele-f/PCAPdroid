@@ -55,7 +55,7 @@ You can help the PCAPdroid project in many ways:
 - Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
-You can [join the PCAPdroid community](https://t.me/PCAPdroid) on telegram.
+You can join the PCAPdroid community [on telegram](https://t.me/PCAPdroid) or [on matrix](https://matrix.to/#/#pcapdroid:matrix.org).
 The development of new features happens in the [dev branch](https://github.com/emanuele-f/PCAPdroid/tree/dev). Ensure to target the dev branch when making pull requests for new features. Here is the normal release cycle:
 
 1. Changes are developed and pushed to the dev branch
@@ -73,7 +73,6 @@ Some features of PCAPdroid can be integrated into a third-party app to provide p
 
 - [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
 - [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
-- [nanohttpd](https://github.com/NanoHttpd/nanohttpd): tiny HTTP server
 
 For the complete list of third party libraries and the corresponding licenses check out the "About" page in the app.
 

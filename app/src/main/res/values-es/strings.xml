@@ -31,7 +31,6 @@
     <string name="http_server_port">Puerto del servidor HTTP</string>
     <string name="receiver_ip_address">Dirección IP del colector</string>
     <string name="receiver_port">Puerto del colector</string>
-    <string name="dump_mode">Modo volcado</string>
     <string name="user_guide">Guía de usuario</string>
     <string name="open_telegram_group">Grupo de Telegram</string>
     <string name="source_code">Código fuente</string>
@@ -76,7 +75,7 @@
     <string name="get_app">Obténgalo:</string>
     <string name="tls_how_to">Cómo configurar el descifrado TLS</string>
     <string name="unknown_app">Desconocido</string>
-    <string name="enable_ipv6">Habilitar IPv6</string>
+    <string name="ipv6">IPv6</string>
     <string name="enable_ipv6_summary">Permite las conexiones IPv6 a Internet. Utilízalo solo en redes con una puerta de enlace IPv6</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Inalcanzable</string>
@@ -88,7 +87,7 @@
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy">Habilitar proxy SOCKS5</string>
+    <string name="socks5_proxy">SOCKS5</string>
     <string name="proxy">Proxy</string>
     <string name="proxy_ip_address">Dirección IP proxy</string>
     <string name="proxy_port">Puerto proxy</string>

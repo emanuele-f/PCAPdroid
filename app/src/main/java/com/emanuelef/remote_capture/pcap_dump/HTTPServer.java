@@ -28,7 +28,6 @@ import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,15 +113,6 @@ public class HTTPServer implements PcapDumper, Runnable {
             mOutputStream = mSocket.getOutputStream();
         }
 
-        /* Detects and returns the end of the HTTP request headers */
-        private int getEndOfRequestHeaders(byte[] buf) {
-            for(int i = 0; i < (buf.length - 4); i++) {
-                if((buf[i] == '\r') && (buf[i+1] == '\n') && (buf[i+2] == '\r') && (buf[i+3] == '\n'))
-                    return i+4;
-            }
-            return 0;
-        }
-
         private void close(String error) {
             if(isClosed())
                 return;
@@ -137,16 +127,16 @@ public class HTTPServer implements PcapDumper, Runnable {
                 } catch (IOException ignored) {}
             }
 
-            checkedClose(mChunkedOutputStream);
-            checkedClose(mOutputStream);
-            checkedClose(mInputStream);
-            checkedClose(mSocket);
+            Utils.safeClose(mChunkedOutputStream);
+            Utils.safeClose(mOutputStream);
+            Utils.safeClose(mInputStream);
+            Utils.safeClose(mSocket);
             mIsClosed = true;
         }
 
         public void stop() {
             // if running, will trigger a IOException
-            checkedClose(mSocket);
+            Utils.safeClose(mSocket);
         }
 
         @Override
@@ -158,7 +148,7 @@ public class HTTPServer implements PcapDumper, Runnable {
             try {
                 while(req_size <= 0) {
                     sofar += mInputStream.read(buf, sofar, buf.length - sofar);
-                    req_size = getEndOfRequestHeaders(buf);
+                    req_size = Utils.getEndOfHTTPHeaders(buf);
                 }
 
                 Log.d(TAG, "Request headers end at " + req_size);
@@ -186,9 +176,10 @@ public class HTTPServer implements PcapDumper, Runnable {
                     } else {
                         Log.d(TAG, "URL: " + url);
 
+                        // NOTE: compressing with gzip is almost useless as most HTTP data is already
+                        // gzip-compressed
                         mOutputStream.write(("HTTP/1.1 200 OK\r\n" +
                                 "Content-Type: " + PCAP_MIME + "\r\n" +
-                                //"Content-Encoding: gzip\r\n" + // TODO?
                                 "Connection: close\r\n" +
                                 "Transfer-Encoding: chunked\r\n" +
                                 "\r\n"
@@ -264,7 +255,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                 synchronized(this) {
                     if(mClients.size() >= MAX_CLIENTS) {
                         Log.w(TAG, "Clients limit reached");
-                        checkedClose(client);
+                        Utils.safeClose(client);
                         continue;
                     }
                 }
@@ -281,7 +272,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                     }
                 } catch (RejectedExecutionException e) {
                     Log.w(TAG, e.getLocalizedMessage());
-                    checkedClose(client);
+                    Utils.safeClose(client);
                 }
             } catch (IOException e) {
                 if(!mRunning)
@@ -291,7 +282,7 @@ public class HTTPServer implements PcapDumper, Runnable {
             }
         }
 
-        checkedClose(mSocket);
+        Utils.safeClose(mSocket);
 
         // Terminate the running clients threads
         pool.shutdown();
@@ -317,17 +308,6 @@ public class HTTPServer implements PcapDumper, Runnable {
             }
 
             mClients.clear();
-        }
-    }
-
-    private static void checkedClose(Closeable socket) {
-        if(socket == null)
-            return;
-
-        try {
-            socket.close();
-        } catch (IOException e) {
-            Log.d(TAG, e.getLocalizedMessage());
         }
     }
 

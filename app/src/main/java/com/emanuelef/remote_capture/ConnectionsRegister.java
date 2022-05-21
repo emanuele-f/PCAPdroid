@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
@@ -62,10 +63,13 @@ public class ConnectionsRegister {
     private int mCurItems;
     private int mUntrackedItems; // number of old connections which were discarded due to the rollover
     private int mNumMalicious;
+    private int mNumBlocked;
+    private long mLastFirewallBlock;
     private final SparseArray<AppStats> mAppsStats;
     private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
     private final Geolocation mGeo;
+    private final AppsResolver mAppsResolver;
 
     public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
@@ -77,6 +81,7 @@ public class ConnectionsRegister {
         mListeners = new ArrayList<>();
         mAppsStats = new SparseArray<>(); // uid -> AppStats
         mConnsByIface = new SparseIntArray();
+        mAppsResolver = new AppsResolver(ctx);
     }
 
     // returns the position in mItemsRing of the oldest connection
@@ -89,7 +94,7 @@ public class ConnectionsRegister {
         return (mTail - 1 + mSize) % mSize;
     }
 
-    private void processConnectionStatus(ConnectionDescriptor conn) {
+    private void processConnectionStatus(ConnectionDescriptor conn, AppStats stats) {
         boolean is_blacklisted = conn.isBlacklisted();
 
         if(!conn.alerted && is_blacklisted) {
@@ -101,6 +106,19 @@ public class ConnectionsRegister {
             conn.alerted = false;
             mNumMalicious--;
         }
+
+        if(!conn.block_accounted && conn.is_blocked) {
+            mNumBlocked++;
+            stats.numBlockedConnections++;
+            conn.block_accounted = true;
+        } else if(conn.block_accounted && !conn.is_blocked) {
+            mNumBlocked--;
+            stats.numBlockedConnections--;
+            conn.block_accounted = false;
+        }
+
+        if(conn.is_blocked)
+            mLastFirewallBlock = Math.max(conn.last_seen, mLastFirewallBlock);
     }
 
     // called by the CaptureService in a separate thread when new connections should be added to the register
@@ -132,9 +150,10 @@ public class ConnectionsRegister {
                     int uid = conn.uid;
                     AppStats stats = mAppsStats.get(uid);
                     assert stats != null;
-                    stats.bytes -= conn.rcvd_bytes + conn.sent_bytes;
+                    stats.sentBytes -= conn.sent_bytes;
+                    stats.rcvdBytes -= conn.rcvd_bytes;
 
-                    if(--stats.num_connections <= 0)
+                    if(--stats.numConnections <= 0)
                         mAppsStats.remove(uid);
 
                     if(conn.ifidx > 0) {
@@ -179,10 +198,15 @@ public class ConnectionsRegister {
             conn.asn = mGeo.getASN(dstAddr);
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
-            processConnectionStatus(conn);
+            AppDescriptor app = mAppsResolver.get(conn.uid, 0);
+            if(app != null)
+                conn.encrypted_payload = Utils.hasEncryptedPayload(app, conn);
 
-            stats.num_connections++;
-            stats.bytes += conn.rcvd_bytes + conn.sent_bytes;
+            processConnectionStatus(conn, stats);
+
+            stats.numConnections++;
+            stats.rcvdBytes += conn.rcvd_bytes;
+            stats.sentBytes += conn.sent_bytes;
         }
 
         mUntrackedItems += out_items;
@@ -220,13 +244,13 @@ public class ConnectionsRegister {
                 assert(conn.incr_id == id);
 
                 // update the app stats
-                long bytes_delta = (update.rcvd_bytes + update.sent_bytes) - (conn.rcvd_bytes + conn.sent_bytes);
                 AppStats stats = mAppsStats.get(conn.uid);
-                stats.bytes += bytes_delta;
+                stats.sentBytes += update.sent_bytes - conn.sent_bytes;
+                stats.rcvdBytes += update.rcvd_bytes - conn.rcvd_bytes;
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
                 conn.processUpdate(update);
-                processConnectionStatus(conn);
+                processConnectionStatus(conn, stats);
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }
@@ -290,17 +314,16 @@ public class ConnectionsRegister {
     }
 
     public synchronized int getConnPositionById(int incr_id) {
-        int first = firstPos();
+        if(mCurItems <= 0)
+            return -1;
 
-        for(int i = 0; i < mCurItems; i++) {
-            int pos = (first + i) % mSize;
-            ConnectionDescriptor item = mItemsRing[pos];
+        ConnectionDescriptor first = mItemsRing[firstPos()];
+        ConnectionDescriptor last = mItemsRing[lastPos()];
 
-            if((item != null) && (item.incr_id == incr_id))
-                return pos;
-        }
+        if((incr_id < first.incr_id) || (incr_id > last.incr_id))
+            return -1;
 
-        return -1;
+        return(incr_id - first.incr_id);
     }
 
     public synchronized @Nullable ConnectionDescriptor getConnById(int incr_id) {
@@ -309,6 +332,10 @@ public class ConnectionsRegister {
             return null;
 
         return getConn(pos);
+    }
+
+    public synchronized AppStats getAppStats(int uid) {
+        return mAppsStats.get(uid);
     }
 
     public synchronized List<AppStats> getAppsStats() {
@@ -335,6 +362,14 @@ public class ConnectionsRegister {
 
     public int getNumMaliciousConnections() {
         return mNumMalicious;
+    }
+
+    public int getNumBlockedConnections() {
+        return mNumBlocked;
+    }
+
+    public long getLastFirewallBlock() {
+        return mLastFirewallBlock;
     }
 
     public synchronized boolean hasSeenMultipleInterfaces() {

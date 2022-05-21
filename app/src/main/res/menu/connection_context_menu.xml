@@ -24,7 +24,7 @@
                 android:visible="false" />
 
             <item
-                android:id="@+id/hide_root_domain"
+                android:id="@+id/hide_domain"
                 android:title=""
                 tools:title="@string/host_val"
                 android:visible="false" />
@@ -58,7 +58,41 @@
             <item
                 android:id="@+id/block_host"
                 android:title=""
-                tools:title="@string/host_val" />
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/block_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+        </menu>
+    </item>
+
+    <item android:id="@+id/unblock_menu" android:title="@string/unblock">
+        <menu>
+            <item
+                android:id="@+id/unblock_app"
+                android:title=""
+                tools:title="@string/app_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/unblock_ip"
+                android:title=""
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/unblock_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/unblock_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
         </menu>
     </item>
 
@@ -106,8 +140,13 @@
                 android:visible="false" />
 
             <item
-                android:id="@+id/copy_request_plaintext"
-                android:title="@string/request_plaintext"
+                android:id="@+id/copy_http_request"
+                android:title="@string/string_http_request"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/copy_http_response"
+                android:title="@string/string_http_response"
                 android:visible="false" />
         </menu>
     </item>

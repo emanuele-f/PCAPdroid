@@ -370,8 +370,10 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-// TODO with built-in decryption, only proxy encrypted connections
 static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
+    // NOTE: connections must be proxied as soon as the first packet arrives.
+    // Since we cannot reliably determine TLS connections with 1 packet, we must proxy all the TCP
+    // connections.
     return pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP);
 }
 
@@ -429,6 +431,9 @@ int run_vpn(pcapdroid_t *pd) {
         zdtun_ip_t dnatip = {0};
         dnatip.ip4 = pd->socks5.proxy_ip;
         zdtun_set_socks5_proxy(zdt, &dnatip, pd->socks5.proxy_port, 4);
+
+        if(pd->socks5.proxy_user[0] && pd->socks5.proxy_pass[0])
+            zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);
     }
 
     zdtun_ip_t ip = {0};
@@ -513,6 +518,12 @@ int run_vpn(pcapdroid_t *pd) {
                 pkt_context_t pctx;
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
 
+                // To be run before pd_process_packet/process_payload
+                if((data->sent_pkts == 0) && should_proxy(pd, tuple)) {
+                    zdtun_conn_proxy(conn);
+                    data->proxied = true;
+                }
+
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
@@ -526,8 +537,7 @@ int run_vpn(pcapdroid_t *pd) {
                             spoof_dns_reply(pd, conn, &pctx);
                             zdtun_conn_close(zdt, conn, CONN_STATUS_CLOSED);
                         }
-                    } else if(should_proxy(pd, tuple))
-                        zdtun_conn_proxy(conn);
+                    }
                 }
 
                 if(data->to_block) {
@@ -561,7 +571,7 @@ int run_vpn(pcapdroid_t *pd) {
                         // The socket is open only after zdtun_forward is called
                         socket_t sock = zdtun_conn_get_socket(conn);
 
-                        // In SOCKS5 with the PlaintextReceiver, we need the local port to the SOCKS5 proxy
+                        // In SOCKS5 with the MitmReceiver, we need the local port to the SOCKS5 proxy
                         if((sock != INVALID_SOCKET) && (tuple->ipver == 4)) {
                             // NOTE: the zdtun SOCKS5 implementation only supports IPv4 right now.
                             // If it also supported IPv6, than we would need to expose "sock_ipver"

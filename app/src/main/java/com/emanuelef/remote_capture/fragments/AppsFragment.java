@@ -26,7 +26,11 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -36,13 +40,17 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class AppsFragment extends Fragment implements ConnectionsListener {
@@ -78,6 +86,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mRecyclerView = view.findViewById(R.id.apps_stats_view);
         mRecyclerView.setLayoutManager(new EmptyRecyclerView.MyLinearLayoutManager(getContext()));
+        registerForContextMenu(mRecyclerView);
 
         mAdapter = new AppsStatsAdapter(getContext());
         doRefreshApps();
@@ -127,6 +136,49 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
                     .unregisterReceiver(mReceiver);
             mReceiver = null;
         }
+    }
+
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+                                    @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        Log.d(TAG, "onCreateContextMenu");
+
+        MenuInflater inflater = requireActivity().getMenuInflater();
+        inflater.inflate(R.menu.app_context_menu, menu);
+
+        AppStats stats = mAdapter.getItem(mAdapter.getClickedItemPos());
+        if(stats == null)
+            return;
+
+        boolean isBlocked = PCAPdroid.getInstance().getBlocklist().matchesApp(stats.getUid());
+        menu.findItem(R.id.block_app).setVisible(!isBlocked);
+        menu.findItem(R.id.unblock_app).setVisible(isBlocked);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
+        int itemPos = mAdapter.getClickedItemPos();
+        AppStats app = mAdapter.getItem(itemPos);
+
+        if(id == R.id.block_app)
+            blocklist.addApp(app.getUid());
+        else if(id == R.id.unblock_app)
+            blocklist.removeApp(app.getUid());
+        else
+            return super.onContextItemSelected(item);
+
+        // refresh the blocklist
+        blocklist.save();
+        if(CaptureService.isServiceActive())
+            CaptureService.requireInstance().reloadBlocklist();
+
+        // refresh the item
+        mAdapter.notifyItemChanged(itemPos);
+
+        return true;
     }
 
     private void registerConnsListener() {

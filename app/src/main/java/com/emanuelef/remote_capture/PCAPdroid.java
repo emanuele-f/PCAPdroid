@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.ErrorActivity;
-import com.emanuelef.remote_capture.model.Blacklists;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
