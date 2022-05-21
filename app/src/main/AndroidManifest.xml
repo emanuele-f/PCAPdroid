@@ -33,10 +33,6 @@
         tools:replace="android:label"
         tools:targetApi="m">
 
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-5059485193178567~1334140424"/>
-
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/AppTheme.SplashScreen"

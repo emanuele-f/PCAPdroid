@@ -91,9 +91,9 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
     }
 
     private void reloadAvailableSkus() {
-        if(!mIab.isAvailable(Billing.NO_ADS_SKU)) {
+        if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
             // IAB not available
-            Log.d(TAG, "No SKUs available");
+            Log.i(TAG, "No SKUs available");
             mListEmpty.setVisibility(View.VISIBLE);
             mListView.removeAllViews();
             return;

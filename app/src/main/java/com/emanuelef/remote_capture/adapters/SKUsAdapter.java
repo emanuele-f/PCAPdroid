@@ -83,7 +83,6 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
 
         SKUItem item = getItem(position);
         boolean purchased = mIab.isPurchased(item.sku);
-        boolean redeemed = mIab.isRedeemed(item.sku);
 
         ((TextView)view.findViewById(R.id.label)).setText(item.label);
         ((TextView)view.findViewById(R.id.description)).setText(item.description);
@@ -91,14 +90,12 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         String text;
         if(purchased)
             text = mCtx.getString(R.string.purchased);
-        else if(redeemed)
-            text = mCtx.getString(R.string.item_redeemed);
         else
             text = item.price;
         ((TextView)view.findViewById(R.id.price)).setText(text);
 
         MaterialButton purchaseBtn = view.findViewById(R.id.purchase);
-        purchaseBtn.setEnabled(!redeemed);
+        purchaseBtn.setEnabled(!purchased);
         purchaseBtn.setOnClickListener(v -> mListener.onPurchaseClick(item));
 
         View moreBtn = view.findViewById(R.id.learn_more);
@@ -139,8 +136,6 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
     public void loadSKUs() {
         Log.d(TAG, "Populating SKUs...");
         clear();
-
-        addIfAvailable(Billing.NO_ADS_SKU, R.string.remove_ads, R.string.remove_ads_description, null);
 
         addIfAvailable(Billing.MALWARE_DETECTION_SKU, R.string.malware_detection,
                 R.string.malware_detection_summary, MainActivity.DOCS_URL + "/paid_features#51-malware-detection");

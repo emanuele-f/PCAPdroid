@@ -261,7 +261,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             // Billing code here
             mMalwareDetectionEnabled.setOnPreferenceClickListener(preference -> {
-                if(!mIab.isRedeemed(Billing.MALWARE_DETECTION_SKU)) {
+                if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU)) {
                     mMalwareDetectionEnabled.setChecked(false);
                     Intent intent = new Intent(requireActivity(), IABActivity.class);
                     startActivity(intent);
@@ -270,7 +270,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
                 return false;
             });
-            if(!mIab.isRedeemed(Billing.MALWARE_DETECTION_SKU))
+            if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU))
                 mMalwareDetectionEnabled.setChecked(false);
         }
 

@@ -60,8 +60,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.android.billingclient.api.Purchase.PurchaseState;
-import com.emanuelef.remote_capture.AD;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.BuildConfig;
@@ -87,8 +85,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private AD mAd;
-    private boolean showAdsNotice;
     private PlayBilling mIab;
     private ViewPager2 mPager;
     private AppState mState;
@@ -132,33 +128,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
 
-        mAd = new AD(this, "ca-app-pub-5059485193178567/9939820922");
         mIab = new PlayBilling(this);
-        mIab.setPurchaseReadyListener(new PlayBilling.PurchaseReadyListener() {
-            @Override
-            public void onPurchasesReady() {
-                checkPurchasesAvailable();
-            }
-
-            @Override
-            public void onPurchasesError() {}
-
-            @Override
-            public void onSKUStateUpdate(String sku, int state) {
-                // Any purchase
-                if(state == PurchaseState.PURCHASED) {
-                    mAd.hide();
-                    showAdsNotice = false;
-                } else
-                    mAd.show();
-            }
-        });
-
-        // Must show the AD here in the onCreate otherwise it will get stuck for some reason (generates exception)
-        // This causes the ad to be shown the first time the app is installed, regardless of the SKUs
-        // TODO (check if this is fixed after the Handler usage in PlayBilling)
-        if(!mIab.isPurchased(PlayBilling.NO_ADS_SKU))
-            mAd.show();
 
         initAppState();
         checkPermissions();
@@ -218,15 +188,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void checkPurchasesAvailable() {
-        if(!mIab.isAvailable(Billing.NO_ADS_SKU))
+        if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU))
             // purchases not available
             return;
-
-        if(mIab.isPurchased(Billing.NO_ADS_SKU)) {
-            mAd.hide();
-            showAdsNotice = false;
-        } else
-            showAdsNotice = true;
 
         // Show the paid features menu entry
         NavigationView navView = findViewById(R.id.nav_view);
@@ -237,7 +201,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mAd.hide();
 
         if(mReceiver != null)
             LocalBroadcastManager.getInstance(this)
@@ -256,11 +219,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onResume() {
         super.onResume();
         mIab.connectBilling();
-        if(mIab.isRedeemed(Billing.NO_ADS_SKU)) {
-            // May have just purchased it
-            mAd.hide();
-            showAdsNotice = false;
-        }
 
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
@@ -498,19 +456,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void appStateStarting() {
-        if(showAdsNotice && mAd.isShownAdmob()) {
-            new AlertDialog.Builder(MainActivity.this)
-                    .setMessage(R.string.ads_notice)
-                    .setPositiveButton(R.string.show_me, (dialog, whichButton) -> {
-                        Intent intent = new Intent(MainActivity.this, IABActivity.class);
-                        startActivity(intent);
-                    })
-                    .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
-                    .show();
-
-            showAdsNotice = false;
-        }
-
         mState = AppState.starting;
         notifyAppState();
     }

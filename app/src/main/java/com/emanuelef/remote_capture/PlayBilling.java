@@ -298,22 +298,6 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     @Override
-    public boolean isRedeemed(String sku) {
-        if(isPurchased(SUPPORTER_SKU))
-            return true;
-
-        if(sku.equals(NO_ADS_SKU)) {
-            // If the user purchases any feature, then remove ads
-            for(String other_sku: ALL_SKUS)
-                if(isPurchased(other_sku))
-                    return true;
-            return false;
-        }
-
-        return isPurchased(sku);
-    }
-
-    @Override
     public boolean isAvailable(String sku) {
         // mAvailability acts as a persistent cache that can be used before the billing connection
         // is established
@@ -329,6 +313,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     public void setLicense(String license) {}
 
     public boolean isPurchased(String sku) {
+        if(!(sku.equals(SUPPORTER_SKU)) && isPurchased(SUPPORTER_SKU))
+            return true;
+
         long purchaseTime = mPrefs.getLong(sku2pref(sku), 0);
         return(purchaseTime != 0);
     }
