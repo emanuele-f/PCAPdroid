@@ -466,6 +466,7 @@ public class CaptureService extends VpnService implements Runnable {
             // VPN running notification channel
             NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
                     NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
+            chan.setShowBadge(false);
             nm.createNotificationChannel(chan);
 
             // Blacklisted connection notification channel
