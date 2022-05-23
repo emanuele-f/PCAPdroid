@@ -69,7 +69,7 @@ This decryption error may occur for different reasons:
 
 If you are on Android 7 or newer and the app you are decrypting has target SDK > 23, which is usually the case, the mitm certificate will be rejected, as apps do not trust user certificates anymore. In order to overcome this issue, you either need to:
 
-- If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA
+- If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA. Please note that some libraries may use a custom trust store, refer to their documentation on this subject
 - On a device rooted with magisk, you can install the [MagiskTrustUserCerts plugin](https://github.com/NVISOsecurity/MagiskTrustUserCerts), which adds the user certs to the system store via a filesystem overlay. This is the suggested solution if you have magisk
 - On any rooted device, you can install the certificate [into the system store](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), by mounting the system partition as `rw`
 - You can use [apktool](https://ibotpeaches.github.io/Apktool) to decompile the app, lower its target SDK to 23, and rebuild it
