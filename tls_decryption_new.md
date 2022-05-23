@@ -63,6 +63,10 @@ This decryption error may occur for different reasons:
 - App uses a custom certificates trust store
 - [Certificate pinning](https://developer.android.com/training/articles/security-ssl#Pinning) enabled on the app
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/tls_cert_not_trusted.jpg" width="250" />
+</p>
+
 If you are on Android 7 or newer and the app you are decrypting has target SDK > 23, which is usually the case, the mitm certificate will be rejected, as apps do not trust user certificates anymore. In order to overcome this issue, you either need to:
 
 - If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA
