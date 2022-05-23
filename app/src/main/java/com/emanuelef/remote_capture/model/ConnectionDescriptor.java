@@ -103,6 +103,7 @@ public class ConnectionDescriptor {
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
+    public boolean netd_block_missed;
     private boolean payload_truncated;
     private boolean encrypted_l7;
     public boolean encrypted_payload;
@@ -143,6 +144,7 @@ public class ConnectionDescriptor {
             rcvd_pkts = update.rcvd_pkts;
             blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            netd_block_missed = (update.status & 0x0800) != 0;
             is_blocked = (update.status & 0x0400) != 0;
             blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;

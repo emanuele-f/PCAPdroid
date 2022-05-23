@@ -337,4 +337,5 @@
     <string name="app_info">App info</string>
     <string name="action_block">Block</string>
     <string name="action_unblock">Unblock</string>
+    <string name="netd_block_missed">This connection was initiated by netd so it could not be blocked</string>
 </resources>

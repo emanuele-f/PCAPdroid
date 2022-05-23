@@ -153,8 +153,11 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (blocked << 10) | (data->blacklisted_domain << 9) |
-                                    (data->blacklisted_ip << 8) | (data->status & 0xFF));
+                               (data->netd_block_missed << 11) |
+                                    (blocked << 10) |
+                                    (data->blacklisted_domain << 9) |
+                                    (data->blacklisted_ip << 8) |
+                                    (data->status & 0xFF) /* 8 bits */);
     }
     if(data->update_type & CONN_UPDATE_INFO) {
         jobject info = (*env)->NewStringUTF(env, data->info ? data->info : "");
