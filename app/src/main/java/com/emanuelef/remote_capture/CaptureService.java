@@ -466,6 +466,7 @@ public class CaptureService extends VpnService implements Runnable {
             // VPN running notification channel
             NotificationChannel chan = new NotificationChannel(NOTIFY_CHAN_VPNSERVICE,
                     NOTIFY_CHAN_VPNSERVICE, NotificationManager.IMPORTANCE_LOW); // low: no sound
+            chan.setShowBadge(false);
             nm.createNotificationChannel(chan);
 
             // Blacklisted connection notification channel
@@ -935,13 +936,6 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    public static boolean isFirewallEnabled(Context ctx, SharedPreferences prefs) {
-        if(INSTANCE != null)
-            return INSTANCE.mFirewallEnabled;
-
-        return Prefs.isFirewallEnabled(ctx, prefs);
-    }
-
     /* The following methods are called from native code */
 
     public String getVpnIPv4() {
@@ -1139,7 +1133,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reloadBlocklist() {
-        if(!mBilling.canUseFirewall())
+        if(!mBilling.isFirewallVisible())
             return;
 
         Log.d(TAG, "reloading firewall blocklist");

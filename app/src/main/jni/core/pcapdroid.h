@@ -112,6 +112,7 @@ typedef struct {
     bool blacklisted_domain;
     bool whitelisted_app;
     bool to_block;
+    bool netd_block_missed;
     bool proxied;
     bool encrypted_l7;
     bool payload_truncated;

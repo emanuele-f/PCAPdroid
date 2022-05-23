@@ -121,7 +121,7 @@ public class FirewallStatus extends Fragment {
 
         mToggle = (SwitchCompat) menu.findItem(R.id.toggle_btn).getActionView();
         mToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if(isChecked == CaptureService.isFirewallEnabled(requireContext(), mPrefs))
+            if(isChecked == Prefs.isFirewallEnabled(requireContext(), mPrefs))
                 return; // not changed
 
             Log.d(TAG, "Firwall is now " + (isChecked ? "enabled" : "disabled"));
@@ -152,7 +152,7 @@ public class FirewallStatus extends Fragment {
         Context ctx = requireContext();
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         boolean is_running = CaptureService.isServiceActive();
-        boolean is_enabled = CaptureService.isFirewallEnabled(ctx, mPrefs);
+        boolean is_enabled = Prefs.isFirewallEnabled(ctx, mPrefs);
 
         if(!is_running) {
             mStatusIcon.setImageResource(R.drawable.ic_shield);

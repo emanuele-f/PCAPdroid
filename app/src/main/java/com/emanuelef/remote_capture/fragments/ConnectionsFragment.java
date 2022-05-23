@@ -307,7 +307,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         MenuItem item;
 
-        boolean firewallAvailable = Billing.newInstance(ctx).canUseFirewall();
+        boolean firewallAvailable = Billing.newInstance(ctx).isFirewallVisible();
         boolean blockVisible = false;
         boolean unblockVisible = false;
         MatchList blocklist = PCAPdroid.getInstance().getBlocklist();

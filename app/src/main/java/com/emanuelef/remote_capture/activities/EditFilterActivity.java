@@ -116,7 +116,7 @@ public class EditFilterActivity extends BaseActivity {
         if(!Prefs.isMalwareDetectionEnabled(this, prefs))
             mOnlyBlacklisted.setVisibility(View.GONE);
 
-        if(!billing.canUseFirewall())
+        if(!billing.isFirewallVisible())
             mOnlyBlocked.setVisibility(View.GONE);
 
         ConnectionsRegister reg = CaptureService.getConnsRegister();

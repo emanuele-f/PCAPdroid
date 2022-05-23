@@ -47,6 +47,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.haipq.android.flagkit.FlagImageView;
 
 public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
@@ -261,6 +262,10 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         } else if(mConn.payload_length == 0) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.warn_no_app_data));
+            mError.setVisibility(View.VISIBLE);
+        } else if(mConn.netd_block_missed) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
+            mError.setText(context.getString(R.string.netd_block_missed));
             mError.setVisibility(View.VISIBLE);
         } else
             mError.setVisibility(View.GONE);
