@@ -23,7 +23,8 @@ Welcome to the PCAPdroid User Guide.
     - [4.4 Root Capture](advanced_features#44-root-capture)
     - [4.5 PCAPdroid Trailer](advanced_features#45-pcapdroid-trailer)
 - [5. Paid Features](paid_features)
-    - [5.1 Malware Detection](paid_features#51-malware-detection)
+    - [5.1 Firewall](paid_features#51-firewall)
+    - [5.2 Malware Detection](paid_features#52-malware-detection)
 - [6. FAQ](faq)
 - [7. Donate](donate)
 
