@@ -27,6 +27,8 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.model.Prefs;
+
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -176,7 +178,13 @@ public class Billing {
         return rv;
     }
 
-    public boolean canUseFirewall() {
-        return isPurchased(Billing.FIREWALL_SKU) && !CaptureService.isCapturingAsRoot();
+    public boolean isFirewallVisible() {
+        if(!isPurchased(Billing.FIREWALL_SKU))
+            return false;
+
+        if(CaptureService.isServiceActive())
+            return !CaptureService.isCapturingAsRoot();
+        else
+            return !Prefs.isRootCaptureEnabled(mPrefs);
     }
 }

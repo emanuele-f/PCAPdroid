@@ -100,7 +100,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mListener = null;
         mStats = new ArrayList<>();
-        mFirewallAvailable = Billing.newInstance(context).canUseFirewall();
+        mFirewallAvailable = Billing.newInstance(context).isFirewallVisible();
         setHasStableIds(true);
     }
 

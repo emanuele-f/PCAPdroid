@@ -108,8 +108,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
-    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#51-malware-detection";
-    public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#52-firewall";
+    public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#51-firewall";
+    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#52-malware-detection";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
@@ -211,7 +211,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(mIab.canUseFirewall());
+        navMenu.findItem(R.id.firewall).setVisible(mIab.isFirewallVisible());
     }
 
     private void setupNavigationDrawer() {

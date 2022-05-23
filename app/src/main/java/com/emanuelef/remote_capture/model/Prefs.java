@@ -116,7 +116,7 @@ public class Prefs {
     }
     public static boolean isFirewallEnabled(Context ctx, SharedPreferences p) {
         // NOTE: firewall can be disabled at runtime
-        return(Billing.newInstance(ctx).canUseFirewall()
+        return(Billing.newInstance(ctx).isFirewallVisible()
                 && p.getBoolean(PREF_FIREWALL, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
