@@ -4,7 +4,9 @@ Paid features are only available when the app is installed [via Google Play](htt
 
 **NOTE**: the firewall feature is not available with the [root capture](https://emanuele-f.github.io/PCAPdroid/advanced_features#44-root-capture)
 
-The firewall feature complements traffic visibility provided by PCAPdroid with the ability to block connections. This combination becomes a powerful tool to increase your privacy. Most apps implement some sort of analytics and periodically phone home, possibly sending out sensitive data. When monitoring traffic with PCAPdroid, you may have noticed that even some system apps like the camera or the photo gallery make connections to the Internet, which is at least unexpected. As most of the traffic is enrcrypted, it's not easy to determine what kind of information is sent to the remote server and if that connection is actually required to implement the app functionalities or it's only used to send out analytics.
+The firewall feature complements traffic visibility provided by PCAPdroid with the ability to block connections. This combination becomes a powerful tool to increase your privacy.
+
+Most apps implement some sort of analytics and periodically phone home, possibly sending out sensitive data. When monitoring traffic with PCAPdroid, you may have noticed that even some system apps like the camera or the photo gallery make connections to the Internet, which is at least unexpected. As most of the traffic is enrcrypted, it's not easy to determine what kind of information is sent to the remote server and if that connection is actually required to implement the app functionalities or it's only used to send out analytics.
 
 PCAPdroid allows you to define your own set of rules to block Internet access to specific apps, domains or IP addresses. This gives you the flexibility to choose what to block, being it a whole app, if you determine that such app should not require Internet access, or specific domains, if the app needs Internet access to work correctly but you still want to block specific domains which you suspect may affect your privacy.
 
@@ -14,7 +16,7 @@ To create a block rule, long tap a connection in the Connections tab and choose 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/firewall_block.jpg" width="250" />
 </p>
 
-The block rule will be applied both to the active connections and to the new connections. A *ban* sign helps you identify blocked connections. You can easily review all the blocked connections by tapping the filter icon in the action bar and appying a "Blocked by firewall" filter. You can unblock a connection by long pressing it and choosing *unblock* from the context menu. You can review and delete the blocking rules from the blocklist tab as explained below.
+The block rule will be applied both to the active connections and to the new connections. A *ban* sign helps you identify blocked connections. You can easily review all the blocked connections by tapping the filter icon in the action bar and appying a *Blocked by firewall* filter. You can unblock a connection by long pressing it and choosing *unblock* from the context menu. You can also review and delete the blocking rules from the blocklist tab as explained below.
 
 From the left drawer, you can access the firewall settings and status.
 
