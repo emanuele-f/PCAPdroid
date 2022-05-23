@@ -36,6 +36,7 @@ You can also block apps directly from the *Apps* view, by long pressing an app. 
 
 When blocking an app, keep in mind the following:
 
+- The app will still be able to perform name resolution (DNS). In Android, the `netd` daemon performs name resolution in behalf of the apps, so it's not possible to determine which app made the DNS query
 - The app may still communicate with Google services via IPC, e.g. receive push notifications and show ads
 - The app may show locally cached content (e.g. a cached web page)
 - The app may still request downloads via the [Download Manager](https://developer.android.com/reference/android/app/DownloadManager)
