@@ -34,6 +34,12 @@ You can also block apps directly from the *Apps* view, by long pressing an app. 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/firewall_apps.jpg" width="250" />
 </p>
 
+When blocking an app, keep in mind the following:
+
+- The app may still communicate with Google services via IPC, e.g. receive push notifications and show ads
+- The app may show locally cached content (e.g. a cached web page)
+- The app may still request downloads via the [Download Manager](https://developer.android.com/reference/android/app/DownloadManager)
+
 ## 5.2 Malware Detection
 
 **DISCLAIMER**: *the malware detection feature of PCAPdroid is not a comprehensive solution for the security of your device. The author provides no guarantee on the malware detection capabilities or on the accuracy of PCAPdroid and he can not be held liable for any direct or indirect damage caused by its use.*
