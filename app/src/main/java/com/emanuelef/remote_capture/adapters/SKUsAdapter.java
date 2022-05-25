@@ -137,7 +137,10 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         Log.d(TAG, "Populating SKUs...");
         clear();
 
+        addIfAvailable(Billing.FIREWALL_SKU, R.string.no_root_firewall,
+                R.string.firewall_summary, MainActivity.FIREWALL_DOCS_URL);
+
         addIfAvailable(Billing.MALWARE_DETECTION_SKU, R.string.malware_detection,
-                R.string.malware_detection_summary, MainActivity.DOCS_URL + "/paid_features#51-malware-detection");
+                R.string.malware_detection_summary, MainActivity.MALWARE_DETECTION_DOCS_URL);
     }
 }
