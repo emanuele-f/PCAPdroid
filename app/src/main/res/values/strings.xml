@@ -338,4 +338,6 @@
     <string name="action_block">Block</string>
     <string name="action_unblock">Unblock</string>
     <string name="netd_block_missed">This connection was initiated by netd so it could not be blocked</string>
+    <string name="firewall_summary">Block internet access to apps, configure rules for specific domains and IP addresses. Only works with the non-root capture</string>
+    <string name="no_root_firewall">No-root firewall</string>
 </resources>
