@@ -89,6 +89,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
     private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
+    private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -360,6 +361,7 @@ public class CaptureService extends VpnService implements Runnable {
                     .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
                     .addRoute("0.0.0.0", 1)
                     .addRoute("128.0.0.0", 1)
+                    .setMtu(VPN_MTU)
                     .addDnsServer(vpn_dns);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -983,6 +985,8 @@ public class CaptureService extends VpnService implements Runnable {
     public int getMaxDumpSize() {  return mSettings.max_dump_size; }
 
     public int getPayloadMode() { return getCurPayloadMode().ordinal(); }
+
+    public int getVpnMTU()      { return VPN_MTU; }
 
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);

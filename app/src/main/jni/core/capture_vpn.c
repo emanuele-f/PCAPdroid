@@ -418,11 +418,14 @@ int run_vpn(pcapdroid_t *pd) {
     add_known_dns_server(pd, "2606:4700:4700::6400");
 
     zdt = zdtun_init(&callbacks, pd);
-
     if(zdt == NULL) {
         log_f("zdtun_init failed");
         return(-2);
     }
+
+#if ANDROID
+    zdtun_set_mtu(zdt, getIntPref(pd->env, pd->capture_service, "getVpnMTU"));
+#endif
 
     pd->zdt = zdt;
     new_dns_server = 0;
