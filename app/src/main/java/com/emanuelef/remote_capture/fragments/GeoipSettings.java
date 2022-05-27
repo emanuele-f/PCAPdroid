@@ -70,8 +70,11 @@ public class GeoipSettings extends PreferenceFragmentCompat {
             mStatus.setSummary("DB-IP Lite free\n" +
                     String.format(getString(R.string.built_on), dateStr) + "\n" +
                     String.format(getString(R.string.size_x), Utils.formatBytes(Geolocation.getDbSize(requireContext()))));
-        } else
+            mStatus.setEnabled(true);
+        } else {
             mStatus.setSummary(R.string.geo_db_not_found);
+            mStatus.setEnabled(false);
+        }
 
         mDelete.setVisible((builtDate != null));
     }
