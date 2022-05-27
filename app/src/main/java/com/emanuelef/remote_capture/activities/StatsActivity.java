@@ -38,7 +38,7 @@ import android.widget.TextView;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.model.VPNStats;
+import com.emanuelef.remote_capture.model.CaptureStats;
 
 public class StatsActivity extends BaseActivity {
     private BroadcastReceiver mReceiver;
@@ -89,7 +89,7 @@ public class StatsActivity extends BaseActivity {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                updateVPNStats(intent);
+                updateStats(intent);
             }
         };
 
@@ -109,8 +109,8 @@ public class StatsActivity extends BaseActivity {
                     .unregisterReceiver(mReceiver);
     }
 
-    private void updateVPNStats(Intent intent) {
-        VPNStats stats = (VPNStats) intent.getSerializableExtra("value");
+    private void updateStats(Intent intent) {
+        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
 
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));

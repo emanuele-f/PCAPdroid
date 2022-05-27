@@ -51,6 +51,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
+import com.emanuelef.remote_capture.model.CaptureStats;
 
 public class CaptureCtrl extends AppCompatActivity {
     public static final String ACTION_START = "start";
@@ -204,12 +205,20 @@ public class CaptureCtrl extends AppCompatActivity {
 
             CaptureService.stopService();
             mStarterApp = null;
+
+            CaptureStats stats = CaptureService.getStats();
+            if(stats != null)
+                putStats(res, stats);
         } else if(action.equals(ACTION_STATUS)) {
             Log.d(TAG, "Returning status");
 
             res.putExtra("running", CaptureService.isServiceActive());
             res.putExtra("version_name", BuildConfig.VERSION_NAME);
             res.putExtra("version_code", BuildConfig.VERSION_CODE);
+
+            CaptureStats stats = CaptureService.getStats();
+            if(stats != null)
+                putStats(res, stats);
         } else {
             Log.e(TAG, "unknown action: " + action);
             abort();
@@ -220,12 +229,14 @@ public class CaptureCtrl extends AppCompatActivity {
         finish();
     }
 
-    public static void notifyCaptureStopped(Context ctx) {
+    public static void notifyCaptureStopped(Context ctx, CaptureStats stats) {
         if((mStarterApp != null) && (mReceiverClass != null)) {
             Log.d(TAG, "Notifying receiver");
 
             Intent intent = new Intent(ACTION_NOTIFY_STATUS);
             intent.putExtra("running", false);
+            if(stats != null)
+                putStats(intent, stats);
             intent.setComponent(new ComponentName(mStarterApp.getPackageName(), mReceiverClass));
 
             try {
@@ -237,5 +248,14 @@ public class CaptureCtrl extends AppCompatActivity {
 
         mStarterApp = null;
         mReceiverClass = null;
+    }
+
+    private static void putStats(Intent intent, CaptureStats stats) {
+        intent.putExtra("bytes_sent", stats.bytes_sent);
+        intent.putExtra("bytes_rcvd", stats.bytes_rcvd);
+        intent.putExtra("bytes_dumped", stats.pcap_dump_size);
+        intent.putExtra("pkts_sent", stats.pkts_sent);
+        intent.putExtra("pkts_rcvd", stats.pkts_rcvd);
+        intent.putExtra("pkts_dropped", stats.pkts_dropped);
     }
 }

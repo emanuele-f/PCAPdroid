@@ -67,7 +67,7 @@ import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.emanuelef.remote_capture.model.VPNStats;
+import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
 import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
@@ -134,6 +134,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Address;
     private int mSocks5Port;
     private String mSocks5Auth;
+    private CaptureStats mLastStats;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -873,7 +874,7 @@ public class CaptureService extends VpnService implements Runnable {
         // Notify
         mHandler.post(() -> {
             sendServiceStatus(SERVICE_STATUS_STOPPED);
-            CaptureCtrl.notifyCaptureStopped(this);
+            CaptureCtrl.notifyCaptureStopped(this, mLastStats);
         });
 
         mCaptureThread = null;
@@ -1015,7 +1016,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // from NetGuard
     @TargetApi(Build.VERSION_CODES.Q)
-    public int getUidQ(int version, int protocol, String saddr, int sport, String daddr, int dport) {
+    public int getUidQ(int protocol, String saddr, int sport, String daddr, int dport) {
         if (protocol != 6 /* TCP */ && protocol != 17 /* UDP */)
             return Utils.UID_UNKNOWN;
 
@@ -1044,8 +1045,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    public void sendStatsDump(VPNStats stats) {
+    public void sendStatsDump(CaptureStats stats) {
         //Log.d(TAG, "sendStatsDump");
+        mLastStats = stats;
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("value", stats);
@@ -1158,6 +1160,10 @@ public class CaptureService extends VpnService implements Runnable {
 
         INSTANCE.mFirewallEnabled = enabled;
         nativeSetFirewallEnabled(enabled);
+    }
+
+    public static CaptureStats getStats() {
+        return((INSTANCE != null) ? INSTANCE.mLastStats : null);
     }
 
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

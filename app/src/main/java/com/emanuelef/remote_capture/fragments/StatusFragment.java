@@ -59,7 +59,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.emanuelef.remote_capture.model.VPNStats;
+import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.views.AppsListView;
 import com.emanuelef.remote_capture.views.PrefSpinner;
 import com.pcapdroid.mitm.MitmAPI;
@@ -269,7 +269,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     private void processStatsUpdateIntent(Intent intent) {
-        VPNStats stats = (VPNStats) intent.getSerializableExtra("value");
+        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
 
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);

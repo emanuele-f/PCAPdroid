@@ -1191,6 +1191,8 @@ int pd_run(pcapdroid_t *pd) {
     log_d("Stopped packet loop");
 
     // send last dump
+    if(pd->cb.send_stats_dump)
+        pd->cb.send_stats_dump(pd);
     if(pd->cb.send_connections_dump)
         pd->cb.send_connections_dump(pd);
 

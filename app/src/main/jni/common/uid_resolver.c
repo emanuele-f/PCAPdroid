@@ -187,7 +187,7 @@ static int get_uid_q(uid_resolver_t *resolver,
         // Resolve method
         jclass vpn_service_cls = (*env)->GetObjectClass(env, resolver->vpn_service);
         resolver->getUidQ = jniGetMethodID(env, vpn_service_cls, "getUidQ",
-                "(IILjava/lang/String;ILjava/lang/String;I)I");
+                "(ILjava/lang/String;ILjava/lang/String;I)I");
 
         if(!resolver->getUidQ)
             return UID_UNKNOWN;
@@ -205,7 +205,7 @@ static int get_uid_q(uid_resolver_t *resolver,
     if((jsource != NULL) && (jdest != NULL)) {
         juid = (*env)->CallIntMethod(
             env, resolver->vpn_service, resolver->getUidQ,
-            version, conn_info->ipproto, jsource, sport, jdest, dport);
+            conn_info->ipproto, jsource, sport, jdest, dport);
         jniCheckException(env);
     }
 

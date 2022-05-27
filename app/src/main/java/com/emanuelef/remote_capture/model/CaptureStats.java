@@ -21,10 +21,11 @@ package com.emanuelef.remote_capture.model;
 
 import java.io.Serializable;
 
-public class VPNStats implements Serializable {
+public class CaptureStats implements Serializable {
     public String alloc_summary;
     public long bytes_sent;
     public long bytes_rcvd;
+    public long pcap_dump_size;
     public int pkts_sent;
     public int pkts_rcvd;
     public int pkts_dropped;
@@ -37,12 +38,14 @@ public class VPNStats implements Serializable {
 
     /* Invoked by native code */
     public void setData(String _alloc_summary,
-                        long _bytes_sent,  long _bytes_rcvd, int _pkts_sent, int _pkts_rcvd,
+                        long _bytes_sent,  long _bytes_rcvd, long _pcap_dump_size,
+                        int _pkts_sent, int _pkts_rcvd,
                         int _pkts_dropped, int _num_dropped_conns, int _num_open_sockets,
                         int _max_fd, int _active_conns, int _tot_conns, int _num_dns_queries) {
         alloc_summary = _alloc_summary;
         bytes_sent = _bytes_sent;
         bytes_rcvd = _bytes_rcvd;
+        pcap_dump_size = _pcap_dump_size;
         pkts_sent = _pkts_sent;
         pkts_rcvd = _pkts_rcvd;
         pkts_dropped = _pkts_dropped;
