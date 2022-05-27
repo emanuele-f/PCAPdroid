@@ -15,7 +15,7 @@ Most apps today employ TLS to secure their data against inspection and tampering
 Current limitations:
 
 - TLS decryption is not available with the root capture
-- Decrypting QUIC traffic [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4170)
+- Decrypting QUIC traffic [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4170). In PCAPdroid, you can enable blocking of QUIC, which causes some apps [to fallback to TLS](https://www.ietf.org/archive/id/draft-ietf-quic-applicability-09.html#section-2), thus making them decryptable
 - Decrypting STARTTLS [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4215)
 - There are some protocol-specific limitations, check out [the mitmproxy docs](https://docs.mitmproxy.org/stable/concepts-protocols/#protocols) for more details
 
