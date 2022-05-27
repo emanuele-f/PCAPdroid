@@ -87,7 +87,8 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | snaplen                 | int    |  43 | max size in bytes for each individual packet in the PCAP  dump     |
 | max_pkts_per_flow       | int    |  43 | only dump the first max_pkts_per_flow packets per flow             |
 | max_dump_size           | int    |  43 | max size in bytes for the PCAP dump                                |
-| tls_decryption          | bool   |   - | true to enable the built-in TLS decryption                         |
+| tls_decryption          | bool   |  49 | true to enable the built-in TLS decryption                         |
+| block_quic              | bool   |  51 | true to block QUIC traffic                                         |
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 

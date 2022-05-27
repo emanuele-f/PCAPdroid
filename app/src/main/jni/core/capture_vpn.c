@@ -397,6 +397,7 @@ int run_vpn(pcapdroid_t *pd) {
     pd->vpn.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.known_dns_servers = ndpi_ptree_create();
+    pd->vpn.block_quic = getIntPref(pd->env, pd->capture_service, "blockQuick");
 #endif
 
     zdtun_callbacks_t callbacks = {
@@ -530,7 +531,7 @@ int run_vpn(pcapdroid_t *pd) {
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
-                    data->blacklisted_internal = !check_dns_req_allowed(pd, conn, &pctx);
+                    data->blacklisted_internal |= !check_dns_req_allowed(pd, conn, &pctx);
                     data->to_block |= data->blacklisted_internal;
 
                     if(data->to_block) {

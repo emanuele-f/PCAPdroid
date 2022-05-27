@@ -64,6 +64,7 @@ public class Prefs {
     public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
     public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
     public static final String PREF_FULL_PAYLOAD = "full_payload";
+    public static final String PREF_BLOCK_QUIC = "block_quic";
 
     public enum DumpMode {
         NONE,
@@ -123,4 +124,5 @@ public class Prefs {
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
+    public static boolean blockQuic(SharedPreferences p)          { return(p.getBoolean(PREF_BLOCK_QUIC, false)); }
 }

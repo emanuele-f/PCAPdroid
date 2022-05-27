@@ -53,6 +53,13 @@
             app:defaultValue="false" />
 
         <SwitchPreference
+            app:key="block_quic"
+            app:title="@string/block_quick"
+            app:iconSpaceReserved="false"
+            app:summary="@string/block_quick_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
             app:key="full_payload"
             app:title="@string/full_payload"
             app:iconSpaceReserved="false"

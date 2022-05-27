@@ -203,6 +203,7 @@ typedef struct pcapdroid {
     union {
         struct {
             int tunfd;
+            bool block_quic;
             uint32_t dns_server;
             uint32_t internal_dns;
             uint32_t internal_ipv4;

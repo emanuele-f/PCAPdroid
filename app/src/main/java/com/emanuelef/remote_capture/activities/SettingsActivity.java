@@ -122,6 +122,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private SwitchPreference mSocks5Enabled;
         private SwitchPreference mTlsDecryption;
+        private SwitchPreference mBlockQuic;
         private SwitchPreference mFullPayloadEnabled;
         private SwitchPreference mRootCaptureEnabled;
         private EditTextPreference mSocks5ProxyIp;
@@ -150,6 +151,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
+            mBlockQuic.setVisible(mTlsDecryption.isChecked());
             rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
 
             Intent intent = requireActivity().getIntent();
@@ -262,11 +264,13 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 }
 
                 fullPayloadHideShow((boolean) newValue);
+                mBlockQuic.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked());
                 return true;
             });
 
             mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
+            mBlockQuic = requirePreference(Prefs.PREF_BLOCK_QUIC);
 
             mSocks5Enabled = requirePreference(Prefs.PREF_SOCKS5_ENABLED_KEY);
             mSocks5Enabled.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -366,9 +370,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mSocks5ProxyPort.setVisible(false);
                 mTlsHelp.setVisible(false);
                 mFullPayloadEnabled.setVisible(true);
+                mBlockQuic.setVisible(false);
             } else {
                 mTlsDecryption.setVisible(true);
                 fullPayloadHideShow(mTlsDecryption.isChecked());
+                mBlockQuic.setVisible(mTlsDecryption.isChecked());
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
             }
 

@@ -989,6 +989,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getVpnMTU()      { return VPN_MTU; }
 
+    public int blockQuick()     { return(mSettings.block_quic ? 1 : 0); }
+
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
 
