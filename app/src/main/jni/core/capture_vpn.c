@@ -62,19 +62,6 @@ static void protectSocketCallback(zdtun_t *zdt, socket_t sock) {
 
 /* ******************************************************* */
 
-static void add_known_dns_server(pcapdroid_t *pd, const char *ip) {
-    ndpi_ip_addr_t parsed;
-
-    if(ndpi_parse_ip_string(ip, &parsed) < 0) {
-        log_e("ndpi_parse_ip_string(%s) failed", ip);
-        return;
-    }
-
-    ndpi_ptree_insert(pd->vpn.known_dns_servers, &parsed, ndpi_is_ipv6(&parsed) ? 128 : 32, 1);
-}
-
-/* ******************************************************* */
-
 static struct timeval* get_pkt_timestamp(pcapdroid_t *pd, struct timeval *tv) {
     struct timespec ts;
 
@@ -179,23 +166,15 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
 
     if(!is_dns_server) {
         // try with known DNS servers
-        u_int64_t matched = 0;
-        ndpi_ip_addr_t addr = {0};
+        zdtun_ip_t dst_ip = tuple->dst_ip;
 
-        if(tuple->ipver == 4)
-            addr.ipv4 = tuple->dst_ip.ip4;
-        else
-            memcpy(&addr.ipv6, &tuple->dst_ip.ip6, 16);
-
-        ndpi_ptree_match_addr(pd->vpn.known_dns_servers, &addr, &matched);
-
-        if(matched) {
+        if(blacklist_match_ip(pd->vpn.known_dns_servers, &dst_ip, tuple->ipver)) {
             char ip[INET6_ADDRSTRLEN];
             int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
             is_dns_server = true;
             ip[0] = '\0';
-            inet_ntop(family, &tuple->dst_ip, (char *)&ip, sizeof(ip));
+            inet_ntop(family, &dst_ip, (char *)&ip, sizeof(ip));
 
             log_d("Matched known DNS server: %s", ip);
         }
@@ -379,6 +358,53 @@ static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
 
 /* ******************************************************* */
 
+void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    if(pd->vpn.block_quic && (data->l7proto == NDPI_PROTOCOL_QUIC)) {
+        data->blacklisted_internal = true;
+        data->to_block = true;
+    }
+
+    if(block_private_dns && !data->to_block &&
+            (data->l7proto == NDPI_PROTOCOL_TLS) &&
+            data->info && blacklist_match_domain(pd->vpn.known_dns_servers, data->info)) {
+        log_i("blocking connection to private DNS server");
+        data->blacklisted_internal = true;
+        data->to_block = true;
+    }
+}
+
+/* ******************************************************* */
+
+static bool load_dns_servers(pcapdroid_t *pd) {
+    // IP addresses (both legacy and private DNS). These are used to count DNS queries and
+    // redirect DNS queries to the public DNS server (see check_dns_req_allowed)
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "8.8.8.8");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "8.8.4.4");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.1.1.1");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.0.0.1");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8888");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8844");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::64");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::6400");
+
+    // Domains (only private DNS)
+    // https://help.firewalla.com/hc/en-us/articles/360060661873-Dealing-DNS-over-HTTPS-and-DNS-over-TLS-on-your-network
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.google");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "chrome.cloudflare-dns.com");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "mozilla.cloudflare-dns.com");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.cleanbrowsing.org");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "chromium.dns.nextdns.io");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "firefox.dns.nextdns.io");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.quad9.net");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.opendns.com");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.adguard.com");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dot.libredns.gr");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.dnslify.com");
+    blacklist_add_domain(pd->vpn.known_dns_servers, "dns-tls.qis.io");
+}
+
+/* ******************************************************* */
+
 int run_vpn(pcapdroid_t *pd) {
     zdtun_t *zdt;
     char buffer[VPN_BUFFER_SIZE];
@@ -396,7 +422,7 @@ int run_vpn(pcapdroid_t *pd) {
     pd->vpn.internal_dns = getIPv4Pref(pd->env, pd->capture_service, "getVpnDns");
     pd->vpn.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
-    pd->vpn.known_dns_servers = ndpi_ptree_create();
+    pd->vpn.known_dns_servers = blacklist_init();
     pd->vpn.block_quic = getIntPref(pd->env, pd->capture_service, "blockQuick");
 #endif
 
@@ -408,15 +434,7 @@ int run_vpn(pcapdroid_t *pd) {
         .on_connection_close = connection_closed,
     };
 
-    // List of known DNS servers
-    add_known_dns_server(pd, "8.8.8.8");
-    add_known_dns_server(pd, "8.8.4.4");
-    add_known_dns_server(pd, "1.1.1.1");
-    add_known_dns_server(pd, "1.0.0.1");
-    add_known_dns_server(pd, "2001:4860:4860::8888");
-    add_known_dns_server(pd, "2001:4860:4860::8844");
-    add_known_dns_server(pd, "2606:4700:4700::64");
-    add_known_dns_server(pd, "2606:4700:4700::6400");
+    load_dns_servers(pd);
 
     zdt = zdtun_init(&callbacks, pd);
     if(zdt == NULL) {
@@ -611,7 +629,7 @@ int run_vpn(pcapdroid_t *pd) {
 
 #if ANDROID
     destroy_uid_resolver(pd->vpn.resolver);
-    ndpi_ptree_destroy(pd->vpn.known_dns_servers);
+    blacklist_destroy(pd->vpn.known_dns_servers);
 #endif
 
     return(0);
