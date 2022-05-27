@@ -342,4 +342,6 @@
     <string name="no_root_firewall">No-root firewall</string>
     <string name="block_quick">Block QUIC</string>
     <string name="block_quick_summary">Block QUIC connections to possibly fallback to TLS. Some apps may stop working</string>
+    <string name="block_private_dns">Block private DNS</string>
+    <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder detection</string>
 </resources>

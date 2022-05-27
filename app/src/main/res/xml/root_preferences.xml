@@ -45,6 +45,13 @@
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/traffic_inspection" app:iconSpaceReserved="false"  app:key="traffic_inspection">
+        <SwitchPreference
+            android:key="auto_block_private_dns"
+            app:title="@string/block_private_dns"
+            app:summary="@string/block_private_dns_summary"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true" />
+
         <Preference
             android:key="geolocation"
             app:title="@string/geolocation"

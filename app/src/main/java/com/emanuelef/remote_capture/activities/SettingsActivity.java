@@ -125,6 +125,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mBlockQuic;
         private SwitchPreference mFullPayloadEnabled;
         private SwitchPreference mRootCaptureEnabled;
+        private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
         private Preference mTlsHelp;
@@ -251,6 +252,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         @SuppressWarnings("deprecation")
         private void setupTrafficInspectionPrefs() {
             mTlsHelp = requirePreference("tls_how_to");
+            mAutoBlockPrivateDNS = requirePreference("auto_block_private_dns");
 
             mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
             mTlsDecryption.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -365,6 +367,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private void rootCaptureHideShow(boolean enabled) {
             if(enabled) {
                 mTlsDecryption.setVisible(false);
+                mAutoBlockPrivateDNS.setVisible(false);
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
                 mSocks5ProxyPort.setVisible(false);
@@ -373,6 +376,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mBlockQuic.setVisible(false);
             } else {
                 mTlsDecryption.setVisible(true);
+                mAutoBlockPrivateDNS.setVisible(true);
                 fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(mTlsDecryption.isChecked());
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());

@@ -611,7 +611,7 @@ public class CaptureService extends VpnService implements Runnable {
             boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
 
             Log.d(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
-            if(!mSettings.root_capture) {
+            if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
                 mDnsEncrypted = strict_mode;
 
                 /* Private DNS can be in one of these modes:
