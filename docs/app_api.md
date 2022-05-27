@@ -126,6 +126,19 @@ captureStartLauncher.launch(intent);
 
 The receiver will get an intent with the `running` extra set to `false` when the capture is stopped.
 
+## Capture Stats
+
+In the result of the `stop` and `get_status` actions and in the broadcast of `CaptureStatus`, PCAPdroid provides the following capture stats in the form of Intent extras:
+
+| Field               | Type   | Ver |  Value                                                             |
+|---------------------|--------|-----|--------------------------------------------------------------------|
+| bytes_sent          | long   |  50 | bytes sent (from the device to the Internet)                       |
+| bytes_rcvd          | long   |  50 | bytes received (from the Internet to the device)                   |
+| bytes_dumped        | long   |  50 | size of the PCAP dump                                              |
+| pkts_sent           | int    |  50 | packets sent                                                       |
+| pkts_rcvd           | int    |  50 | packets received                                                   |
+| pkts_dropped        | int    |  50 | in root mode, number of packets not analyzed and not dumped        |
+
 ## Dumping PCAP to file
 
 Due to the restrictions introduced via the [scoped storage](https://developer.android.com/about/versions/11/privacy/storage), PCAPdroid can only create files inside its private directory, which is not accessible to you as a user. To dump the PCAP file to a publicly available directory, you must first perform the following steps:
