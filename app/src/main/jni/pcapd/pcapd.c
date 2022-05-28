@@ -752,10 +752,19 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         uid = uid_lru_find(rt->lru, &zpkt.tuple);
 
         if(uid == -2) {
-          if((rt->nldiag_sock > 0) && (zpkt.tuple.ipproto != IPPROTO_ICMP))
+          if((rt->nldiag_sock > 0) && (zpkt.tuple.ipproto != IPPROTO_ICMP)) {
             // retrieve via netlink
             uid = nl_get_uid(rt->nldiag_sock, &zpkt.tuple);
-          else
+
+            if((uid < 0) && (uid != UID_UNKNOWN)) {
+              log_e("nl_get_uid failed with error %d [%d]: %s", uid, errno, strerror(errno));
+              close(rt->nldiag_sock);
+              rt->nldiag_sock = -1;
+
+              // fallback to slow method
+              uid = get_uid(rt->resolver, &zpkt.tuple);
+            }
+          } else
             // slow method
             uid = get_uid(rt->resolver, &zpkt.tuple);
 
