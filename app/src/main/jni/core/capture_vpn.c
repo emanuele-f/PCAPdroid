@@ -375,7 +375,7 @@ void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *d
 
 /* ******************************************************* */
 
-static bool load_dns_servers(pcapdroid_t *pd) {
+static void load_dns_servers(pcapdroid_t *pd) {
     // IP addresses (both legacy and private DNS). These are used to count DNS queries and
     // redirect DNS queries to the public DNS server (see check_dns_req_allowed)
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "8.8.8.8");
