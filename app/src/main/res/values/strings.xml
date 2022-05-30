@@ -346,7 +346,7 @@
     <string name="block_private_dns">Block private DNS</string>
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder detection</string>
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
-    <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt the TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
     <string name="app_intro_skip_button">Skip</string>
     <string name="app_intro_next_button">Next</string>
     <string name="app_intro_back_button">Back</string>

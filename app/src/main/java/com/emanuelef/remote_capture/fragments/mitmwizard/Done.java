@@ -32,7 +32,6 @@ public class Done extends StepFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mStepIcon.setVisibility(View.GONE);
         mStepLabel.setText(R.string.mitm_setup_wizard_done);
 
         MitmAddon.setDecryptionSetupDone(requireContext(), true);

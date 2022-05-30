@@ -132,6 +132,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
+        private boolean mHasStartedMitmWizard;
 
         private final ActivityResultLauncher<String> requestPermissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
@@ -160,6 +161,17 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 if(target_pref != null)
                     scrollToPreference(target_pref);
             }
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            if(mHasStartedMitmWizard && !MitmAddon.needsSetup(requireContext())) {
+                Log.d(TAG, "mitm setup complete, enabling");
+                mTlsDecryption.setChecked(true);
+            }
+            mHasStartedMitmWizard = false;
         }
 
         private @NonNull <T extends Preference> T requirePreference(String key) {
@@ -258,6 +270,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 Context ctx = requireContext();
 
                 if(enabled && MitmAddon.needsSetup(ctx)) {
+                    mHasStartedMitmWizard = true;
                     Intent intent = new Intent(ctx, MitmSetupWizard.class);
                     startActivity(intent);
                     return false;
