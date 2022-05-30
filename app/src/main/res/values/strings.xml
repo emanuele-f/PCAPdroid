@@ -360,4 +360,5 @@
     <string name="country_and_asn">Country and ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid can query a local database to determine the country of a remote server\n\nYou must first download the database from the PCAPdroid settings</string>
     <string name="features_onboarding">On-boarding</string>
+    <string name="vpn_setup_msg">PCAPdroid simulates a VPN in order to capture the network traffic without root.\n\nTo start the capture, you need to accept the VPN request in the next screen</string>
 </resources>
