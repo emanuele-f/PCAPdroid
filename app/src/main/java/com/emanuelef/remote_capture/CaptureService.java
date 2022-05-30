@@ -681,13 +681,22 @@ public class CaptureService extends VpnService implements Runnable {
      * when mCaptureThread terminates. */
     public static void stopService() {
         CaptureService captureService = INSTANCE;
+        Log.d(TAG, "stopService called (instance? " + (captureService != null) + ")");
+
         if(captureService == null)
             return;
 
         stopPacketLoop();
         captureService.signalServicesTermination();
 
-        captureService.stopForeground(true /* remove notification */);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            captureService.stopForeground(STOP_FOREGROUND_REMOVE);
+        else
+            captureService.stopForeground(true);
+
+        // this fixes notification not removed (reproduced on the Android 12 emulator)
+        NotificationManagerCompat.from(captureService).deleteNotificationChannel(NOTIFY_CHAN_VPNSERVICE);
+
         captureService.stopSelf();
     }
 

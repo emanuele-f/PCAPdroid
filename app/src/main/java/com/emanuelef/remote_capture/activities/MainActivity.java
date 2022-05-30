@@ -732,6 +732,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_TITLE, "sslkeylogfile.txt");
 
+        Log.d(TAG, "startExportSslkeylogfile: launching dialog");
         Utils.launchFileDialog(this, intent, sslkeyfileExportLauncher);
     }
 
