@@ -35,7 +35,7 @@ public class InstallAddon extends StepFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mStepLabel.setText(R.string.install_mitm_addon);
+        Utils.setTextUrls(mStepLabel, R.string.install_mitm_addon, MitmAddon.REPOSITORY);
 
         if(MitmAddon.isInstalled(requireContext()))
             addonOk();

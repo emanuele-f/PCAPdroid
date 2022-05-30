@@ -66,14 +66,6 @@
             app:summary="@string/tls_decryption_summary"
             app:defaultValue="false" />
 
-        <Preference
-            app:key="tls_how_to"
-            app:title="@string/tls_how_to"
-            app:iconSpaceReserved="false">
-            <intent android:action="android.intent.action.VIEW"
-                android:data="https://emanuele-f.github.io/PCAPdroid/tls_decryption" />
-        </Preference>
-
         <SwitchPreference
             app:key="block_quic"
             app:title="@string/block_quick"

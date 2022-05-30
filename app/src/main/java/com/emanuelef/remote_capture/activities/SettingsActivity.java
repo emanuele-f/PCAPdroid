@@ -128,7 +128,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
-        private Preference mTlsHelp;
         private Preference mIpv6Enabled;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
@@ -251,7 +250,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         @SuppressWarnings("deprecation")
         private void setupTrafficInspectionPrefs() {
-            mTlsHelp = requirePreference("tls_how_to");
             mAutoBlockPrivateDNS = requirePreference("auto_block_private_dns");
 
             mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
@@ -305,9 +303,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mSocks5Enabled.setVisible(!tlsDecryption);
             mSocks5ProxyIp.setVisible(socks5Enabled && !tlsDecryption);
             mSocks5ProxyPort.setVisible(socks5Enabled && !tlsDecryption);
-
-            //mTlsHelp.setVisible(decryptionEnabled);
-            mTlsHelp.setVisible(true);
         }
 
         private void setupOtherPrefs() {
@@ -371,7 +366,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
                 mSocks5ProxyPort.setVisible(false);
-                mTlsHelp.setVisible(false);
                 mFullPayloadEnabled.setVisible(true);
                 mBlockQuic.setVisible(false);
             } else {

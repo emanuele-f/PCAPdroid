@@ -110,6 +110,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
     public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#51-firewall";
     public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#52-malware-detection";
+    public static final String TLS_DECRYPTION_DOCS_URL = DOCS_URL + "/tls_decryption";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);

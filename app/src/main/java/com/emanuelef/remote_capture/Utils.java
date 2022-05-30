@@ -55,7 +55,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.text.Html;
 import android.text.SpannableString;
+import android.text.SpannedString;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
@@ -1156,5 +1160,24 @@ public class Utils {
 
     public static boolean isPrintable(byte c) {
         return ((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t');
+    }
+
+    // Get a CharSequence which properly displays clickable links obtained by formatting a parametric
+    // string resource with the provided args. See setTextUrls
+    // https://stackoverflow.com/questions/23503642/how-to-use-formatted-strings-together-with-placeholders-in-android
+    public static CharSequence getText(Context context, int resid, String... args) {
+        for(int i = 0; i < args.length; ++i)
+            args[i] = TextUtils.htmlEncode(args[i]);
+
+        String htmlOnly = String.format(Html.toHtml(new SpannedString(context.getText(resid))), (Object[]) args);
+        //Log.d(TAG, htmlOnly);
+        return Html.fromHtml(htmlOnly);
+    }
+
+    // Format a resource containing URLs and display it in a TextView, making URls clickable
+    public static void setTextUrls(TextView tv, int resid, String... args) {
+        CharSequence text = getText(tv.getContext(), resid, args);
+        tv.setText(text);
+        tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

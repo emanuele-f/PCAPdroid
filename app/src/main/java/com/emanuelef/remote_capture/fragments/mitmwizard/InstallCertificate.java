@@ -88,13 +88,13 @@ public class InstallCertificate extends StepFragment implements MitmListener {
     }
 
     private void certOk() {
-        MitmAddon.setDecryptionSetupDone(requireContext(), true);
         mStepLabel.setText(R.string.cert_installed_correctly);
-        nextStep(0);
+        nextStep(R.id.navto_done);
     }
 
     private void certFail() {
-        mStepLabel.setText(R.string.ca_installation_failed);
+        mStepLabel.setText(R.string.ca_cert_export_failed);
+        Utils.setTextUrls(mStepLabel, R.string.ca_cert_export_failed, "https://www.vivo.com/en/support/questionByTitle?title=How%20to%20turn%20on/off%20Autostart%20for%20my%20apps");
         mStepIcon.setColorFilter(mDangerColor);
         MitmAddon.setDecryptionSetupDone(requireContext(), false);
     }

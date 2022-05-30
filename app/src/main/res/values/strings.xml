@@ -258,7 +258,7 @@
     <string name="save_ok">Saved</string>
     <string name="tls_decryption">TLS decryption</string>
     <string name="tls_decryption_summary">Decrypt the SSL/TLS traffic by performing mitm. This may now work with some apps, check out the user guide</string>
-    <string name="tls_decryption_starting">TLS decryption is starting</string>
+    <string name="tls_decryption_starting">TLS decryption is starting…</string>
     <string name="tls_decryption_running">TLS decryption is running</string>
     <string name="traffic_inspection">Traffic inspection</string>
     <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
@@ -266,13 +266,13 @@
     <string name="next_step">Next</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
-    <string name="install_mitm_addon">Install the PCAPdroid mitm addon</string>
+    <string name="install_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a>.\n\nNOTE: The addon depends on closed source software</string>
     <string name="configure_action">Configure</string>
-    <string name="grant_mitm_permission">Give PCAPdroid the ability to decrypt the network traffic</string>
+    <string name="grant_mitm_permission">Give PCAPdroid the permission to control the mitm addon</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
     <string name="install_ca_certificate">Install the PCAPdroid CA certificate, choosing \"VPN and apps\". Android will ask for your lockscreen or password</string>
     <string name="checking_the_certificate">Checking the certificate…</string>
-    <string name="ca_installation_failed">CA certificate installation failed</string>
+    <string name="ca_cert_export_failed">An error occurred while exporting the CA certificate\n\nIf your device implements Autostart or similar software to limit background services execution, be sure to <a href='%1$s'>whitelist PCAPdroid</a></string>
     <string name="cert_exported_now_installed">Certificate exported, now install it from the Android settings</string>
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
@@ -341,7 +341,9 @@
     <string name="firewall_summary">Block internet access to apps, configure rules for specific domains and IP addresses. Only works with the non-root capture</string>
     <string name="no_root_firewall">No-root firewall</string>
     <string name="block_quick">Block QUIC</string>
-    <string name="block_quick_summary">Block QUIC connections to possibly fallback to TLS. Some apps may stop working</string>
+    <string name="block_quick_summary">Block QUIC connections to possibly fall back to decryptable TLS. Some apps may stop working</string>
     <string name="block_private_dns">Block private DNS</string>
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder detection</string>
+    <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
 </resources>
