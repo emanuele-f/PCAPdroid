@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
@@ -66,6 +67,7 @@ public class Prefs {
     public static final String PREF_FULL_PAYLOAD = "full_payload";
     public static final String PREF_BLOCK_QUIC = "block_quic";
     public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
+    public static final String PREF_APP_VERSION = "appver";
 
     public enum DumpMode {
         NONE,
@@ -95,6 +97,14 @@ public class Prefs {
             case PAYLOAD_MODE_FULL:     return PayloadMode.FULL;
             default:                    return PayloadMode.NONE;
         }
+    }
+
+    public static int getAppVersion(SharedPreferences p) {
+        return p.getInt(PREF_APP_VERSION, 0);
+    }
+
+    public static void refreshAppVersion(SharedPreferences p) {
+        p.edit().putInt(PREF_APP_VERSION, BuildConfig.VERSION_CODE).apply();
     }
 
     /* Prefs with defaults */

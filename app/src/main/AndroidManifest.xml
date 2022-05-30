@@ -55,6 +55,8 @@
             android:parentActivityName=".activities.SettingsActivity" />
 
         <activity
+            android:name=".activities.OnBoardingActivity" />
+        <activity
             android:name=".activities.ErrorActivity" />
         <activity
             android:name=".activities.ConnectionDetailsActivity" />

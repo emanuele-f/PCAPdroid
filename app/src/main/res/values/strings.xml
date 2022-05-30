@@ -22,6 +22,7 @@
         - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
         - FlagKit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
         - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
+        - AppIntro: <a href='https://github.com/AppIntro/AppIntro/blob/main/LICENSE'>Apache-2.0</a>\n\n
         - Font Awesome: <a href='https://fontawesome.com/license/free'>Licenses</a>\n\n
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
@@ -346,4 +347,17 @@
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder detection</string>
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
     <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
+    <string name="app_intro_skip_button">Skip</string>
+    <string name="app_intro_next_button">Next</string>
+    <string name="app_intro_back_button">Back</string>
+    <string name="app_intro_done_button">Done</string>
+    <string name="welcome_to_pcapdroid">Welcome to PCAPdroid</string>
+    <string name="app_intro_welcome_msg">PCAPdroid is a privacy-friendly app which lets you track and analyze the connections made by the apps in your device\n\nMoreover, it allows you to export a PCAP dump of the traffic, extract metadata and much more!</string>
+    <string name="privacy_first">Privacy-first</string>
+    <string name="app_intro_privacy_msg">The app does not embed any tracking, analytics or calling home\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>
+    <string name="additional_features">Additional features</string>
+    <string name="app_intro_additional_features_msg">Monitoring is not enough? PCAPdroid gets you covered!\n\n&#8226; <a href='%1$s'>Firewall</a>: block apps, domains or IP addresses*\n&#8226; <a href='%2$s'>Malware detection</a> and blocking*\n&#8226; <a href='%3$s'>TLS decryption</a>\n\n*paid feature, only available on Google Play</string>
+    <string name="country_and_asn">Country and ASN</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid can query a local database to determine the country of a remote server\n\nYou must first download the database from the PCAPdroid settings</string>
+    <string name="features_onboarding">On-boarding</string>
 </resources>

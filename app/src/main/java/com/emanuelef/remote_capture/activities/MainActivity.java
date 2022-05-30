@@ -106,6 +106,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
+    public static final String PRIVACY_POLICY_URL = GITHUB_PROJECT_URL + "/TODO";
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
     public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#51-firewall";
@@ -127,6 +128,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        int appver = Prefs.getAppVersion(mPrefs);
+        if(appver <= 0) {
+            // First run, start on-boarding
+            Intent intent = new Intent(MainActivity.this, OnBoardingActivity.class);
+            startActivity(intent);
+            finish();
+            // only refresh app version on on-boarding done
+        } else
+            Prefs.refreshAppVersion(mPrefs);
 
         mIab = Billing.newInstance(this);
         mIab.setLicense(mIab.getLicense());
@@ -134,7 +146,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPcapUri = CaptureService.getPcapUri();
         mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {

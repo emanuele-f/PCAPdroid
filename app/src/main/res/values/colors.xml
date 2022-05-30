@@ -7,6 +7,7 @@
     <color name="colorPrimaryDark">#4D3294</color>
     <color name="colorActionBar">#512da8</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorAccentLight">#D8ADBD</color>
     <color name="colorBackgroundGray">#2C000000</color>
     <color name="navViewBackground">@color/design_default_color_surface</color>
     <color name="backgroundColor">@color/background_material_light</color>
