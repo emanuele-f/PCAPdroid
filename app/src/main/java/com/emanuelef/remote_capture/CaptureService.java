@@ -238,6 +238,7 @@ public class CaptureService extends VpnService implements Runnable {
         mBlockPrivateDns = false;
         mStrictDnsNoticeShown = false;
         mDnsEncrypted = false;
+        setPrivateDnsBlocked(false);
 
         // Map network interfaces
         mIfIndexToName = new SparseArray<>();
@@ -624,9 +625,11 @@ public class CaptureService extends VpnService implements Runnable {
                     mBlockPrivateDns = opportunistic_mode;
                     setPrivateDnsBlocked(mBlockPrivateDns);
                 }
-            } else
+            } else {
                 // in root capture we don't block private DNS requests in opportunistic mode
                 mDnsEncrypted = strict_mode || opportunistic_mode;
+                setPrivateDnsBlocked(false);
+            }
 
             if(mDnsEncrypted && !mStrictDnsNoticeShown) {
                 mStrictDnsNoticeShown = true;
