@@ -184,7 +184,7 @@
     <string name="private_dns_hinders_detection">Частный DNS препятствует обнаружению</string>
     <string name="firewall">Файрвол</string>
     <string name="paid_features">Платные возможности</string>
-    <string name="show_only_blocked">Заблокировано файрволом</string>
+    <string name="show_only_blocked">Заблокированные соединения</string>
     <string name="blocked_pkts">Заблокировано</string>
     <string name="n_pkts">%1$s пакетов</string>
     <string name="valid">Подтвержден</string>
@@ -232,11 +232,11 @@
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
     <string name="install_action">Установить</string>
     <string name="export_action">Экспорт</string>
-    <string name="grant_mitm_permission">Дать PCAPdroid возможность дешифрования сетевого траффика</string>
+    <string name="grant_mitm_permission">Дать PCAPdroid разрешение контролировать mitm дополнение</string>
     <string name="configure_action">Настроить</string>
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Сертификат ЦС не установлен, запустите мастер настройки mitm</string>
-    <string name="mitm_addon_new_version">Плагин для PCAPdroid необходимо обновить</string>
+    <string name="mitm_addon_new_version">Дополнение mitm для PCAPdroid необходимо обновить</string>
     <string name="upgrade_action">Обновить</string>
     <string name="string_http_request">HTTP запрос</string>
     <string name="string_http_response">HTTP ответ</string>
@@ -284,7 +284,9 @@
     <string name="export_ca_certificate">Экспортируйте сертификат PCAPdroid CA, откройте в Android настройки \"Шифрование и учетные данные\" и выберите установку в качестве \"Сертификат ЦС\"</string>
     <string name="socks5_info">SOCKS5 прокси: %1$s:%2$d</string>
     <string name="mitm_start_failed">Не удалось запустить mitm сервис. Переустановите mitm дополнение и повторите попытку</string>
-    <string name="install_mitm_addon">Установить mitm дополнение для PCAPdroid</string>
+    <string name="install_mitm_addon">Установить <a href="%1$s">mitm дополнение</a> для PCAPdroid
+\n
+\nПРИМЕЧАНИЕ: Дополнение зависит от программного обеспечения с закрытым кодом</string>
     <string name="install_ca_certificate">Установите сертификат PCAPdroid CA, выбрав \"VPN и приложения\". Android запросит ваш код или пароль блокировки экрана</string>
     <string name="checking_the_certificate">Проверяем сертификат…</string>
     <string name="cert_installed_correctly">Сертификат ЦС установлен</string>
@@ -303,5 +305,50 @@
     <string name="invalid_backup">Неверный формат резервной копии</string>
     <string name="geo_db_download">Нажмите для загрузки новейшей базы данных. Новые базы данных доступны каждый месяц</string>
     <string name="firewall_is_disabled">Файрвол выключен</string>
-    <string name="geolocation_summary">Добавление информации о стране и ASN посредством локальных проверок</string>
+    <string name="geolocation_summary">Отображать информацию о стране и ASN посредством локальных проверок</string>
+    <string name="no_root_firewall">Файрвол не требующий root</string>
+    <string name="block_quick">Блокировка QUIC</string>
+    <string name="block_private_dns">Блокировка приватных DNS</string>
+    <string name="welcome_to_pcapdroid">Добро пожаловать в PCAPdroid</string>
+    <string name="privacy_first">Конфиденциальность превыше всего</string>
+    <string name="country_and_asn">Страна и ASN</string>
+    <string name="app_intro_traffic_dump">PCAPdroid предоставляет <a href="%1$s">несколько способов</a> получить дамп траффика в формате PCAP для дальнейшего анализа
+\n
+\nС помощью <a href="%2$s">опции trailer</a>, вы можете добавить в дамп названия приложений, чтобы отобразить их в Wireshark</string>
+    <string name="app_intro_privacy_msg">Это приложение не использует функционал по отслеживанию, аналитике или негласному сбору данных
+\n
+\nКак в этом убедиться\? Ознакомьтесь с <a href="%1$s">политикой конфиденциальности</a> и <a href="%2$s">исходным кодом</a></string>
+    <string name="ca_cert_export_failed">При экспорте сертификата ЦС возникла ошибка
+\n
+\nЕсли на вашем устройстве есть Автозапуск или похожие программы, ограничивающие активность фоновых процессов, убедитесь в том, что <a href="%1$s">разрешили все для PCAPdroid</a></string>
+    <string name="netd_block_missed">Это соединение инициировано сервисом netd, поэтому оно не может быть заблокировано</string>
+    <string name="firewall_summary">Блокируйте доступ в интернет для приложений, настраивайте правила для доменов и IP адресов. Работает только при захвате без root</string>
+    <string name="block_quick_summary">Блокировка QUIC соединений возможно вернет к TLS, который можно дешифровать. Некоторые приложения могут перестать работать</string>
+    <string name="app_intro_back_button">Назад</string>
+    <string name="app_intro_done_button">Готово</string>
+    <string name="mitm_setup_wizard_intro">Этот мастер настройки проведет вас через установку mitm дополнения для PCAPdroid и центра сертификации, которые необходимы для проведения <a href="%1$s">дешифрования TLS</a></string>
+    <string name="app_intro_next_button">Далее</string>
+    <string name="app_intro_skip_button">Пропустить</string>
+    <string name="block_private_dns_summary">Обнаруживать и по возможности блокировать использование приватных DNS, чтобы инспектировать DNS траффик. Отключение этой опции может затруднить обнаружение хостов</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid теперь готов к дешифрованию TLS траффика
+\n
+\nОзнакомьтесь с <a href="%1$s">руководством пользователя</a> чтобы узнать больше о мерах безопасности, которые могут предотвратить дешифрование и как преодолеть их</string>
+    <string name="app_intro_welcome_msg">PCAPdroid это ориентированное на конфиденциальность приложение, которое позволяет вам отслеживатьи анализировать соединения, производимые приложениями с вашего устройства
+\n
+\nБолее того, приложение позволяет вам экспортировать дамп траффика в виде PCAP, извлекать метаданные и многое другое!</string>
+    <string name="vpn_setup_msg">PCAPdroid симулирует VPN чтобы захватывать весь траффик устройства без необходимости в root.
+\n
+\nЧтобы начать захват, вам необходимо принять запрос на включение VPN на следующем экране</string>
+    <string name="app_intro_firewall_msg">Со встроенным <a href="%1$s">файрволом</a> вы можете легко заблокировать доступ в интернет отдельным приложениям и доменам
+\n
+\nСкомбинируйте это со встроенной возможностью просматривать траффик и получите идеальный инструмент для защиты своей конфиденциальности</string>
+    <string name="app_intro_malware_detection">Повысьте безопасность своего устройства с функцией <a href="%1$s">обнаружения вредоносных соединений</a>
+\n
+\nИспользуя актуальные черные списки, эта функция может обнаруживать, блокировать и уведомлять о вредоносных соединениях в реальном времени</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid может использовать локальную базу данных для определения страны, в которой находится удаленный сервер
+\n
+\nВам необходимо сперва скачать базу данных из настроек PCAPdroid</string>
+    <string name="app_intro_traffic_inspection">Просматривать HTTP запросы, ответы и необработанные данные легко, благодаря встроенным декодерам
+\n
+\nПопалось зашифрованное соединение\? Вы можете включить<a href="%1$s">дешифрование TLS</a> чтобы получить дешифрованные данные</string>
 </resources>
