@@ -203,10 +203,11 @@ typedef struct pcapdroid {
     union {
         struct {
             int tunfd;
+            bool block_quic;
             uint32_t dns_server;
             uint32_t internal_dns;
             uint32_t internal_ipv4;
-            ndpi_ptree_t *known_dns_servers;
+            blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
         } vpn;
         struct {

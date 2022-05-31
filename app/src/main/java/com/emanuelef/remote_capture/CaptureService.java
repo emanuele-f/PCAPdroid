@@ -67,7 +67,7 @@ import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.emanuelef.remote_capture.model.VPNStats;
+import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
 import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
@@ -89,6 +89,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
     private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
+    private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -133,6 +134,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Address;
     private int mSocks5Port;
     private String mSocks5Auth;
+    private CaptureStats mLastStats;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -360,6 +362,7 @@ public class CaptureService extends VpnService implements Runnable {
                     .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
                     .addRoute("0.0.0.0", 1)
                     .addRoute("128.0.0.0", 1)
+                    .setMtu(VPN_MTU)
                     .addDnsServer(vpn_dns);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -608,7 +611,7 @@ public class CaptureService extends VpnService implements Runnable {
             boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
 
             Log.d(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
-            if(!mSettings.root_capture) {
+            if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
                 mDnsEncrypted = strict_mode;
 
                 /* Private DNS can be in one of these modes:
@@ -678,13 +681,22 @@ public class CaptureService extends VpnService implements Runnable {
      * when mCaptureThread terminates. */
     public static void stopService() {
         CaptureService captureService = INSTANCE;
+        Log.d(TAG, "stopService called (instance? " + (captureService != null) + ")");
+
         if(captureService == null)
             return;
 
         stopPacketLoop();
         captureService.signalServicesTermination();
 
-        captureService.stopForeground(true /* remove notification */);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            captureService.stopForeground(STOP_FOREGROUND_REMOVE);
+        else
+            captureService.stopForeground(true);
+
+        // this fixes notification not removed (reproduced on the Android 12 emulator)
+        NotificationManagerCompat.from(captureService).deleteNotificationChannel(NOTIFY_CHAN_VPNSERVICE);
+
         captureService.stopSelf();
     }
 
@@ -871,7 +883,7 @@ public class CaptureService extends VpnService implements Runnable {
         // Notify
         mHandler.post(() -> {
             sendServiceStatus(SERVICE_STATUS_STOPPED);
-            CaptureCtrl.notifyCaptureStopped(this);
+            CaptureCtrl.notifyCaptureStopped(this, mLastStats);
         });
 
         mCaptureThread = null;
@@ -984,6 +996,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getPayloadMode() { return getCurPayloadMode().ordinal(); }
 
+    public int getVpnMTU()      { return VPN_MTU; }
+
+    public int blockQuick()     { return(mSettings.block_quic ? 1 : 0); }
+
     public int getOwnAppUid() {
         AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
 
@@ -1011,7 +1027,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // from NetGuard
     @TargetApi(Build.VERSION_CODES.Q)
-    public int getUidQ(int version, int protocol, String saddr, int sport, String daddr, int dport) {
+    public int getUidQ(int protocol, String saddr, int sport, String daddr, int dport) {
         if (protocol != 6 /* TCP */ && protocol != 17 /* UDP */)
             return Utils.UID_UNKNOWN;
 
@@ -1040,8 +1056,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    public void sendStatsDump(VPNStats stats) {
+    public void sendStatsDump(CaptureStats stats) {
         //Log.d(TAG, "sendStatsDump");
+        mLastStats = stats;
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("value", stats);
@@ -1154,6 +1171,10 @@ public class CaptureService extends VpnService implements Runnable {
 
         INSTANCE.mFirewallEnabled = enabled;
         nativeSetFirewallEnabled(enabled);
+    }
+
+    public static CaptureStats getStats() {
+        return((INSTANCE != null) ? INSTANCE.mLastStats : null);
     }
 
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);

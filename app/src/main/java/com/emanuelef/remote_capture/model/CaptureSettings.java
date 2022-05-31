@@ -20,6 +20,8 @@ public class CaptureSettings implements Serializable {
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
+    public boolean block_quic;
+    public boolean auto_block_private_dns;
     public String capture_interface;
     public String pcap_uri;
     public int snaplen = 0;
@@ -42,6 +44,8 @@ public class CaptureSettings implements Serializable {
         pcap_uri = Prefs.getPCAPUri(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
+        block_quic = Prefs.blockQuic(prefs);
+        auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
     }
 
     public CaptureSettings(Intent intent) {
@@ -63,6 +67,8 @@ public class CaptureSettings implements Serializable {
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
         tls_decryption = getBool(intent, Prefs.PREF_TLS_DECRYPTION_KEY, false);
         full_payload = false;
+        block_quic = getBool(intent, Prefs.PREF_BLOCK_QUIC, false);
+        auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
     }
 
     private static String getString(Intent intent, String key, String def_value) {

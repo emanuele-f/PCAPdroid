@@ -71,7 +71,6 @@
     <string name="older_connections_notice">%1$d より古い接続は表示されません</string>
     <string name="about_text">PCAPdroid はルート権限なしで動作するオープン ソースのネットワーク キャプチャ、モニタリング ツールです</string>
     <string name="get_app">入手:</string>
-    <string name="tls_how_to">TLS 復号化のセットアップ方法</string>
     <string name="unknown_app">不明</string>
     <string name="ipv6">IPv6 を有効にする</string>
     <string name="enable_ipv6_summary">IPv6 インターネット接続を許可します。IPv6 ゲートウェイを搭載したネットワークでのみ有効にする必要があります</string>

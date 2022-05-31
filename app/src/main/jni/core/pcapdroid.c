@@ -29,6 +29,7 @@
 extern int run_vpn(pcapdroid_t *pd);
 extern int run_root(pcapdroid_t *pd);
 extern void root_iter_connections(pcapdroid_t *pd, conn_cb cb);
+extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 
 /* ******************************************************* */
 
@@ -503,6 +504,9 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
         check_blacklisted_domain(pd, data, tuple);
         data->update_type |= CONN_UPDATE_INFO;
     }
+
+    if(!pd->root_capture && data->info)
+        vpn_process_ndpi(pd, tuple, data);
 }
 
 /* ******************************************************* */
@@ -1191,6 +1195,8 @@ int pd_run(pcapdroid_t *pd) {
     log_d("Stopped packet loop");
 
     // send last dump
+    if(pd->cb.send_stats_dump)
+        pd->cb.send_stats_dump(pd);
     if(pd->cb.send_connections_dump)
         pd->cb.send_connections_dump(pd);
 

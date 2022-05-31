@@ -29,6 +29,7 @@
 #include <net/if.h>
 #include "nl_utils.h"
 #include "common/uid_resolver.h"
+#include "common/utils.h"
 
 int nl_route_socket(uint32_t groups) {
   struct sockaddr_nl snl;
@@ -165,6 +166,7 @@ static int diag_uid_lookup(int nlsock, int family, int ipproto,
   u_char buf[512];
   static int seq = 0;
   ssize_t rv;
+  uint8_t do_retry = 1;
 
   struct nlmsghdr *nmsg = (struct nlmsghdr*) buf;
   struct inet_diag_req_v2 *req = (struct inet_diag_req_v2*) (nmsg + 1);
@@ -208,15 +210,26 @@ static int diag_uid_lookup(int nlsock, int family, int ipproto,
   iov.iov_base = buf;
   iov.iov_len = sizeof(buf);
 
+retry:
   // Recv reply
   if((rv = recvmsg(nlsock, &msg, 0)) <= 0)
     return -3;
 
   // NOTE: nmsg points to buf
-  if(nmsg->nlmsg_len < (int)sizeof(*nmsg) || nmsg->nlmsg_len > rv ||
-      nmsg->nlmsg_seq != seq) {
+  if(nmsg->nlmsg_len < (int)sizeof(*nmsg) || nmsg->nlmsg_len > rv) {
     errno = EINVAL;
     return -4;
+  }
+
+  if(nmsg->nlmsg_seq != seq) {
+    if(do_retry && (nmsg->nlmsg_seq == (seq - 1))) {
+      do_retry = 0;
+      goto retry; // this issue is recoverable, retry once
+    }
+
+    log_e("out of sequence: %d/%d", nmsg->nlmsg_seq, seq);
+    errno = EINVAL;
+    return -5;
   }
 
   if(nmsg->nlmsg_type == NLMSG_ERROR) {
@@ -229,7 +242,7 @@ static int diag_uid_lookup(int nlsock, int family, int ipproto,
     } else
         errno = EINVAL;
 
-    return -5;
+    return -6;
   }
 
   if(nmsg->nlmsg_type == NLMSG_DONE)
@@ -237,7 +250,7 @@ static int diag_uid_lookup(int nlsock, int family, int ipproto,
 
   if(nmsg->nlmsg_len < NLMSG_LENGTH(sizeof(struct inet_diag_msg))) {
       errno = EINVAL;
-      return -6;
+      return -7;
   }
 
   struct inet_diag_msg *diag_msg = (struct inet_diag_msg*) NLMSG_DATA(nmsg);
@@ -280,13 +293,13 @@ int nl_get_uid(int nlsock, const zdtun_5tuple_t *tuple) {
   const pd_sockaddr_t *remote = (ipproto == IPPROTO_UDP) ? &src : &dst;
 
   uid = diag_uid_lookup(nlsock, family, ipproto, local, remote, NLM_F_REQUEST);
-  if(uid >= 0)
+  if((uid >= 0) || (uid != UID_UNKNOWN))
     return uid;
 
   // Search for IPv4-mapped IPv6 addresses
   if(family == AF_INET) {
     uid = diag_uid_lookup(nlsock, AF_INET6, ipproto, local, remote, NLM_F_REQUEST);
-    if(uid >= 0)
+    if((uid >= 0) || (uid != UID_UNKNOWN))
       return uid;
   }
 
@@ -296,13 +309,13 @@ int nl_get_uid(int nlsock, const zdtun_5tuple_t *tuple) {
     pd_sockaddr_t wildcard = {0};
 
     uid = diag_uid_lookup(nlsock, family, ipproto, &src, &wildcard, NLM_F_REQUEST | NLM_F_DUMP);
-    if(uid >= 0)
+    if((uid >= 0) || (uid != UID_UNKNOWN))
       return uid;
 
     // Search for IPv4-mapped IPv6 addresses
     if(family == AF_INET) {
       uid = diag_uid_lookup(nlsock, AF_INET6, ipproto, &src, &wildcard, NLM_F_REQUEST | NLM_F_DUMP);
-      if(uid >= 0)
+      if((uid >= 0) || (uid != UID_UNKNOWN))
         return uid;
     }
   }

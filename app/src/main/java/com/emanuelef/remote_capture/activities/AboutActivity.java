@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -60,19 +61,26 @@ public class AboutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.about_menu, menu);
+
         Billing billing = Billing.newInstance(this);
         if(billing.isPlayStore())
-            return false;
+            menu.findItem(R.id.unlock_code).setVisible(false);
 
-        getMenuInflater().inflate(R.menu.unlock_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.unlock_code) {
+        int id = item.getItemId();
+
+        if(id == R.id.unlock_code) {
             showUnlockDialog();
             return true;
+        } else if(id == R.id.on_boarding) {
+            Intent intent = new Intent(this, OnBoardingActivity.class);
+            intent.putExtra(OnBoardingActivity.ENABLE_BACK_BUTTON, true);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

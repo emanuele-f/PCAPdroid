@@ -64,6 +64,7 @@ public class Billing {
             R.string.no_items_for_purchase, R.string.billing_failure,
             R.string.learn_more, R.string.buy_action,
             R.string.can_use_purchased_feature, R.drawable.ic_shopping_cart,
+            R.string.firewall_summary, R.string.no_root_firewall
     };
 
     protected final Context mContext;

@@ -4,8 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/on_boarding"
+        android:title="@string/welcome_to_pcapdroid"
+        android:orderInCategory="10"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/unlock_code"
         android:title="@string/paid_features"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         app:showAsAction="never" />
 </menu>

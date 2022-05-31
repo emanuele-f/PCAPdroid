@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
@@ -64,6 +65,9 @@ public class Prefs {
     public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
     public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
     public static final String PREF_FULL_PAYLOAD = "full_payload";
+    public static final String PREF_BLOCK_QUIC = "block_quic";
+    public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
+    public static final String PREF_APP_VERSION = "appver";
 
     public enum DumpMode {
         NONE,
@@ -95,6 +99,14 @@ public class Prefs {
         }
     }
 
+    public static int getAppVersion(SharedPreferences p) {
+        return p.getInt(PREF_APP_VERSION, 0);
+    }
+
+    public static void refreshAppVersion(SharedPreferences p) {
+        p.edit().putInt(PREF_APP_VERSION, BuildConfig.VERSION_CODE).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -123,4 +135,6 @@ public class Prefs {
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
+    public static boolean blockQuic(SharedPreferences p)          { return(getTlsDecryptionEnabled(p) && p.getBoolean(PREF_BLOCK_QUIC, false)); }
+    public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
 }

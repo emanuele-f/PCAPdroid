@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     public static final long PACKAGE_VERSION_CODE = 7;
     public static final String PACKAGE_VERSION_NAME = "v0.7";
+    public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
     private final MitmListener mReceiver;
@@ -113,7 +114,7 @@ public class MitmAddon {
     }
 
     public static String getGithubReleaseUrl() {
-        return "https://github.com/emanuele-f/PCAPdroid-mitm/releases/download/" +
+        return REPOSITORY + "/releases/download/" +
                 PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
     }
 

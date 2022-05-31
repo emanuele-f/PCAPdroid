@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.VpnService;
@@ -48,8 +49,10 @@ public class CaptureHelper {
     private void captureServiceResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK)
             startCaptureOk();
-        else if(mListener != null)
+        else if(mListener != null) {
+            Utils.showToastLong(mActivity, R.string.vpn_setup_failed);
             mListener.onCaptureStartResult(false);
+        }
     }
 
     private void startCaptureOk() {
@@ -74,12 +77,21 @@ public class CaptureHelper {
 
         Intent vpnPrepareIntent = VpnService.prepare(mActivity);
         if(vpnPrepareIntent != null) {
-            try {
-                mLauncher.launch(vpnPrepareIntent);
-            } catch (ActivityNotFoundException e) {
-                Utils.showToastLong(mActivity, R.string.no_intent_handler_found);
-                mListener.onCaptureStartResult(false);
-            }
+            new AlertDialog.Builder(mActivity)
+                    .setMessage(R.string.vpn_setup_msg)
+                    .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+                        try {
+                            mLauncher.launch(vpnPrepareIntent);
+                        } catch (ActivityNotFoundException e) {
+                            Utils.showToastLong(mActivity, R.string.no_intent_handler_found);
+                            mListener.onCaptureStartResult(false);
+                        }
+                    })
+                    .setOnCancelListener(dialog -> {
+                        Utils.showToastLong(mActivity, R.string.vpn_setup_failed);
+                        mListener.onCaptureStartResult(false);
+                    })
+                    .show();
         } else
             startCaptureOk();
     }

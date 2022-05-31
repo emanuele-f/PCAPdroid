@@ -72,13 +72,13 @@ static void sendStatsDump(pcapdroid_t *pd) {
     jobject stats_obj = (*env)->NewObject(env, cls.stats, mids.statsInit);
 
     if((stats_obj == NULL) || jniCheckException(env)) {
-        log_e("NewObject(VPNStats) failed");
+        log_e("NewObject(CaptureStats) failed");
         return;
     }
 
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
                            allocs_summary,
-                           capstats->sent_bytes, capstats->rcvd_bytes,
+                           capstats->sent_bytes, capstats->rcvd_bytes, pd->pcap_dump.tot_size,
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
                            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
@@ -490,7 +490,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     cls.vpn_service = vpn_class;
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
     cls.conn_update = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionUpdate");
-    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/VPNStats");
+    cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/CaptureStats");
     cls.blacklist_status = jniFindClass(env, "com/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus");
     cls.blacklist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor");
     cls.matchlist_descriptor = jniFindClass(env, "com/emanuelef/remote_capture/model/MatchList$ListDescriptor");
@@ -505,7 +505,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
     mids.stopPcapDump = jniGetMethodID(env, vpn_class, "stopPcapDump", "()V");
     mids.updateConnections = jniGetMethodID(env, vpn_class, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
-    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/VPNStats;)V");
+    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/CaptureStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
     mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
     mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus;)V");
@@ -517,7 +517,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
     mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;Z)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJIIIIIIIII)V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJJIIIIIIIII)V");
     mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
     mids.listSize = jniGetMethodID(env, cls.list, "size", "()I");
     mids.listGet = jniGetMethodID(env, cls.list, "get", "(I)Ljava/lang/Object;");

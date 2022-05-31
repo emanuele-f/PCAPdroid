@@ -71,7 +71,6 @@
     <string name="older_connections_notice">%1$d conexiones antiguas no mostradas</string>
     <string name="about_text">PCAPdroid es una herramienta de captura y monitorización de red de código abierto que funciona sin privilegios root</string>
     <string name="get_app">Obténgalo:</string>
-    <string name="tls_how_to">Cómo configurar el descifrado TLS</string>
     <string name="unknown_app">Desconocido</string>
     <string name="ipv6">IPv6</string>
     <string name="enable_ipv6_summary">Permite las conexiones IPv6 a Internet. Utilízalo solo en redes con una puerta de enlace IPv6</string>
