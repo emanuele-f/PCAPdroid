@@ -111,7 +111,6 @@
     <string name="receiver_port">Port du collecteur</string>
     <string name="pcap_file_info">Créer une fichier PCAP dans l\'espace de stockage</string>
     <string name="enable_ipv6_summary">Autoriser les connexions internet IPv6. À n\'utiliser que sur les réseaux connecté en IPv6</string>
-    <string name="tls_how_to">Comment configurer un décryptage TLS</string>
     <string name="get_app">L\'obtenir :</string>
     <string name="about_text">PCAPdroid est un outil open-source de capture et de suivi de réseau qui fonctionne sans un compte administrateur</string>
     <string name="proxy_port">Port de proxy</string>
@@ -226,15 +225,12 @@
     <string name="phone_app">Téléphone</string>
     <string name="phone_app_info">Services téléphoniques</string>
     <string name="unblock">Débloquer…</string>
-    <string name="next_step">Suivant</string>
     <string name="tls_decryption">Décryptage TLS</string>
     <string name="traffic_inspection">Inspection du trafic</string>
     <string name="install_action">Installer</string>
     <string name="export_action">Exporter</string>
     <string name="configure_action">Configurer</string>
-    <string name="done">OK</string>
     <string name="cert_installed_correctly">Le certificat CA est installé</string>
-    <string name="ca_installation_failed">Échec de l\'installation du certificat CA</string>
     <string name="checking_the_certificate">Vérification du certificat…</string>
     <string name="upgrade_action">Mettre à jour</string>
     <string name="export_failed">Échec de l\'export</string>

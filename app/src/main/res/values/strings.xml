@@ -103,7 +103,6 @@
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges</string>
     <string name="get_app">Get it:</string>
-    <string name="tls_how_to">How to set up the TLS decryption</string>
     <string name="unknown_app">Unknown</string>
     <string name="phone_app">Phone</string>
     <string name="ipv6">IPv6</string>
@@ -264,9 +263,6 @@
     <string name="traffic_inspection">Traffic inspection</string>
     <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
-    <string name="app_intro_next_button">Next</string>
-    <string name="app_intro_skip_button">Skip</string>
-    <string name="app_intro_back_button">Back</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
     <string name="install_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a>.\n\nNOTE: The addon depends on closed source software</string>
@@ -279,7 +275,6 @@
     <string name="cert_exported_now_installed">Certificate exported, now install it from the Android settings</string>
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
-    <string name="app_intro_done_button">Done</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Uninstall it and retry</string>
     <string name="mitm_addon_new_version">The PCAPdroid plugin must be upgraded</string>
     <string name="upgrade_action">Upgrade</string>
@@ -350,6 +345,10 @@
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
     <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt the TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
     <string name="welcome_to_pcapdroid">Welcome to PCAPdroid</string>
+    <string name="app_intro_next_button">Next</string>
+    <string name="app_intro_skip_button">Skip</string>
+    <string name="app_intro_back_button">Back</string>
+    <string name="app_intro_done_button">Done</string>
     <string name="app_intro_welcome_msg">PCAPdroid is a privacy-friendly app which lets you track and analyze the connections made by the apps in your device\n\nMoreover, it allows you to export a PCAP dump of the traffic, extract metadata and much more!</string>
     <string name="privacy_first">Privacy first</string>
     <string name="app_intro_privacy_msg">The app does not employ any tracking, analytics or calling home anti-features\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>

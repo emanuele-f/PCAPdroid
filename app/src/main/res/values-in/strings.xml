@@ -97,7 +97,6 @@
     <string name="conn_status_closed">Tertutup</string>
     <string name="about_text">PCAPdroid adalah alat penangkapan dan pemantauan jaringan sumber terbuka yang bekerja tanpa hak akses root</string>
     <string name="get_app">Dapatkan:</string>
-    <string name="tls_how_to">Cara mengatur dekripsi TLS</string>
     <string name="error">Kesalahan</string>
     <string name="app_language">Bahasa</string>
     <string name="no_activity_file_selection">Tidak ada aplikasi yang ditemukan untuk menangani pemilihan file</string>

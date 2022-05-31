@@ -71,7 +71,6 @@
     <string name="older_connections_notice">%1$d connessioni precedenti nascoste</string>
     <string name="about_text">PCAPdroid è un software libero per la cattura e il monitoraggio di rete che funziona senza privilegi di root</string>
     <string name="get_app">Scaricala:</string>
-    <string name="tls_how_to">Come impostare la decrittazione TLS</string>
     <string name="unknown_app">Sconosciuta</string>
     <string name="ipv6">Abilita IPv6</string>
     <string name="enable_ipv6_summary">Permetti connessioni internet IPv6. Da abilitare soltanto in reti con gateway IPv6</string>

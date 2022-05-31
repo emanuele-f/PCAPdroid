@@ -57,7 +57,6 @@
     <string name="last_seen">Son görüldü</string>
     <string name="conn_status_closed">Kapalı</string>
     <string name="older_connections_notice">%1$d eski bağlantı gösterilmiyor</string>
-    <string name="tls_how_to">TLS şifre çözme nasıl kurulur</string>
     <string name="unknown_app">Bilinmeyen</string>
     <string name="enable_ipv6_summary">İnternete IPv6 bağlantıları yapmaya izin verin. Bunu yalnızca IPv6 ağ geçidi olan ağlarda kullanın</string>
     <string name="other_prefs">Diğer</string>
@@ -225,12 +224,10 @@
     <string name="tls_decryption">TLS şifre çözme</string>
     <string name="tls_decryption_starting">TLS şifre çözme başlıyor</string>
     <string name="mitm_setup_wizard">Ortadaki adam kurulum sihirbazı</string>
-    <string name="next_step">İleri</string>
     <string name="install_action">Kur</string>
     <string name="install_mitm_addon">PCAPdroid ortadaki adam eklentisini kur</string>
     <string name="export_ca_certificate">PCAPdroid CA sertifikasını dışa aktarın, ardından Android \"Şifreleme ve Kimlik Bilgileri\" ayarlarını açın ve \"CA sertifikası\" olarak kurmayı seçin</string>
     <string name="checking_the_certificate">Sertifika denetleniyor…</string>
-    <string name="ca_installation_failed">CA sertifikası kurulamadı</string>
     <string name="cert_exported_now_installed">Sertifika dışa aktarıldı, şimdi Android ayarlarından onu kurun</string>
     <string name="cert_installed_correctly">CA sertifikası kuruldu</string>
     <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Kaldırın ve tekrar deneyin</string>
@@ -280,7 +277,6 @@
     <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini yeniden kurun ve yeniden deneyin</string>
     <string name="not_encrypted">Şifrelenmedi</string>
     <string name="cert_reinstall_required">CA sertifikası kurulmadı, ortadaki adam kurulum sihirbazını çalıştırın</string>
-    <string name="done">Bitti</string>
     <string name="export_failed">Dışa aktarılamadı</string>
     <string name="response">Yanıt</string>
     <string name="string_http_request">HTTP isteği</string>

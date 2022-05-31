@@ -63,7 +63,6 @@
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang</string>
     <string name="get_app">Hent det:</string>
-    <string name="tls_how_to">Hvordan sette opp TLS-dekryptering</string>
     <string name="conn_status_unreachable">Kan ikke nåes</string>
     <string name="theme_light">Lys</string>
     <string name="donate">Doner</string>
