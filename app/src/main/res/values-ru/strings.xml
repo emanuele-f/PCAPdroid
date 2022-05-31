@@ -225,7 +225,7 @@
     <string name="phone_app_info">Службы телефонии</string>
     <string name="unblock">Разблокировать…</string>
     <string name="tls_decryption">Дешифрование TLS</string>
-    <string name="tls_decryption_starting">Дешифрование TLS запускается</string>
+    <string name="tls_decryption_starting">Дешифрование TLS запускается…</string>
     <string name="tls_decryption_running">Дешифрование TLS запущено</string>
     <string name="tls_decryption_summary">Дешифрование SSL/TLS траффика посредством mitm. Это может работать с некоторыми приложениями, ознакомьтесь с руководством пользователя</string>
     <string name="traffic_inspection">Просмотр траффика</string>
