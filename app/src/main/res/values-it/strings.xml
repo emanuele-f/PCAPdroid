@@ -23,8 +23,8 @@
     <string name="duration">Durata</string>
     <string name="http_server">Server HTTP</string>
     <string name="udp_exporter">Esportatore UDP</string>
-    <string name="no_dump">Esportazione disattivata</string>
-    <string name="no_dump_info">Il traffico di rete non sarà esportato</string>
+    <string name="no_dump">Salvataggio disattivato</string>
+    <string name="no_dump_info">Il traffico di rete non sarà salvato</string>
     <string name="http_server_info">Avvia un server HTTP per il download del PCAP</string>
     <string name="udp_exporter_info">Invia il PCAP a un collettore UDP remoto</string>
     <string name="http_server_port">Porta del server HTTP</string>
@@ -116,7 +116,7 @@
     <string name="packets_dropped">Pacchetti persi</string>
     <string name="capture_prefs">Cattura</string>
     <string name="pcapdroid_trailer">Trailer PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti esportati</string>
+    <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti salvati</string>
     <string name="trailer_how_to">Come visualizzare le info del trailer su Wireshark</string>
     <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
     <string name="ctrl_consent">Un\'altra app vuole catturare il traffico di questo dispositivo.\nNegare l\'accesso se non si è sicuri</string>
@@ -214,7 +214,7 @@
     <string name="close_nav_drawer">Chiudi menù</string>
     <string name="capture_all_apps">Cattura il traffico di tutte le app</string>
     <string name="save_ok">Salvato</string>
-    <string name="hidden_connections_help">Lista di regole per nascondere elementi dalla lista connessioni, per concentrarsi sulle connessioni rilevanti</string>
+    <string name="hidden_connections_help">Lista di regole per nascondere elementi dalla lista connessioni, mettendo in risalto solo connessioni rilevanti</string>
     <string name="file_saved_with_name">File salvato come \"%1$s\"</string>
     <string name="start_at_boot_summary">Avvia la cattura in automatico all\'avvio del dispositivo</string>
     <string name="malware_whitelist_help">Whitelist definita dall\'utente per inibire il rilevamento di malware. Tieni premuto su una connessione malevola per creare una regola</string>
@@ -241,14 +241,14 @@
     <string name="tx_direction">TX</string>
     <string name="not_decryptable">Non decrittabile</string>
     <string name="full_payload">Contenuto intero</string>
-    <string name="full_payload_summary">Mostra il contenuto delle connessioni per intero (e.s. l\'intera richiesta e risposta HTTP). Questo richiede molta memoria, non usare durante lunghe catture</string>
+    <string name="full_payload_summary">Mostra il contenuto delle connessioni per intero (e.s. l\'intera richiesta e risposta HTTP). Questa funzione richiede molta memoria, non usare per lunghe catture</string>
     <string name="connection_start_not_seen">PCAPdroid non ha visto l\'inizio della connessione. Alcune informazioni potrebbero essere mancanti</string>
     <string name="network_traffic">Traffico</string>
     <string name="warn_no_app_data">Non è stato scambiato alcun dato applicativo</string>
     <string name="waiting_application_data">In attesa di dati</string>
     <string name="display_as">Mostra come…</string>
     <string name="printable_text">Testo stampabile</string>
-    <string name="hexdump">Dump esadecimale</string>
+    <string name="hexdump">In esadecimale</string>
     <string name="geolocation">Geolocalizzazione</string>
     <string name="geolocation_summary">Mostra informazioni quali nazione e ASN tramite ricerche in un database locale</string>
     <string name="downloading">In scaricamento…</string>
@@ -280,7 +280,7 @@
     <string name="welcome_to_pcapdroid">Benvenuto in PCAPdroid</string>
     <string name="app_intro_welcome_msg">PCAPdroid è un\'app privacy-friendly che ti permette di tracciare ed analizzare le connessioni effettuate dalle app del dispositivo
 \n
-\nInoltre, ti permette di esportare il traffico nel formato PCAP, estrarre metadati e molto di più!</string>
+\nTi permette inoltre di salvare il traffico nel formato PCAP, estrarre metadati e molto altro!</string>
     <string name="country_and_asn">Nazione e ASN</string>
     <string name="vpn_setup_msg">Per poter catturare il traffico senza root, PCAPdroid simula una connessione VPN.
 \n
@@ -326,12 +326,12 @@
     <string name="mitm_setup_wizard_done">PCAPdroid è pronto a decrittare il traffico TLS
 \n
 \nPer saperne di più sulle misure di sicurezza adottate dalle app, che potrebbero interferire con la decrittazione, e su come bypassarle, far riferimento alla <a href="%1$s">guida utente</a></string>
-    <string name="app_intro_firewall_msg">Grazie al <a href="%1$s">Firewall</a> integrato puoi facilmente bloccare l\'accesso ad Internet di app o domini specifici
+    <string name="app_intro_firewall_msg">Grazie al <a href="%1$s">Firewall</a> integrato puoi facilmente bloccare l\'accesso Internet ad app o domini specifici
 \n
 \nCombina questa funzione con la visibilità sul traffico e otterrai lo strumento definitivo per proteggere la tua privacy</string>
     <string name="block_private_dns">Blocca il DNS privato</string>
     <string name="privacy_first">Prima la privacy</string>
-    <string name="block_private_dns_summary">Rileva e se possibile blocca il DNS privato per ispezionare il traffico DNS. Disabilitare l\'opzione potrebbe compromettere le funzioni di rilevamento</string>
+    <string name="block_private_dns_summary">Rileva e, se possibile, blocca il DNS privato per ispezionare il traffico DNS. Disabilitare l\'opzione potrebbe compromettere l\'analisi del traffico</string>
     <string name="mitm_setup_wizard_intro">Questo configuratore ti guiderà attraverso l\'installazione dell\'addon di mitm di PCAPdroid e della sua autorità di certificato, necessari per poter effetuare la <a href="%1$s">decrittazione TLS</a></string>
     <string name="app_intro_next_button">Prossimo</string>
     <string name="app_intro_back_button">Indietro</string>
@@ -339,16 +339,16 @@
     <string name="app_intro_privacy_msg">L\'app non effettua tracking, raccolta di analitiche o phoning-home
 \n
 \nCome puoi esserne certo\? Dai un\'occhiata alla sua <a href="%1$s">politica sulla privacy</a> e al suo <a href="%2$s">codice sorgente</a></string>
-    <string name="app_intro_geolocation_msg">PCAPdroid può cercare in un database locale per determinare la nazione di un server remoto
+    <string name="app_intro_geolocation_msg">PCAPdroid può usare un database locale per determinare la nazione dei server remoti
 \n
-\nPer far ciò è necessario prima scaricare il database dalle impostazioni</string>
+\nPer far questo è necessario prima scaricare il database di geolocalizzazione dalle impostazioni dell\'app</string>
     <string name="app_intro_traffic_inspection">Ispezionare richieste e risposte HTTP o dati grezzi è facile grazie ai decoder integrati
 \n
 \nLa connessione è cifrata\? Puoi abilitare la <a href="%1$s">decrittazione TLS</a> per ottenere i dati decifrati</string>
-    <string name="app_intro_malware_detection">Migliora la sicurezza del dispositivo tramite la funzione di <a href="%1$s">Rilevamento malware</a>
+    <string name="app_intro_malware_detection">Migliora la sicurezza del dispositivo tramite la funzione di <a href="%1$s">rilevamento malware</a>
 \n
-\nTramite l\'utilizzo di blacklist sempre aggiornate, è in grado di rilevare, bloccare e allertare connessioni malevole in tempo reale</string>
-    <string name="app_intro_traffic_dump">PCAPdroid dispone di <a href="%1$s">diversi metodi</a> per esportare il traffico in formato PCAP, per analisi successive
+\nUtilizzando blacklist in continuo aggiornamento, è in grado di rilevare, bloccare e allertare in tempo reale connessioni malevole</string>
+    <string name="app_intro_traffic_dump">PCAPdroid dispone di <a href="%1$s">diversi metodi</a> per salvare il traffico in formato PCAP ed effettuare analisi successive
 \n
-\nTramite <a href="%2$s">l\'opzione trailer</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
+\nTramite <a href="%2$s">l\'opzione di trailer</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
 </resources>
