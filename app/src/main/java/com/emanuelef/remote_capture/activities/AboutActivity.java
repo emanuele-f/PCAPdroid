@@ -79,6 +79,7 @@ public class AboutActivity extends BaseActivity {
             return true;
         } else if(id == R.id.on_boarding) {
             Intent intent = new Intent(this, OnBoardingActivity.class);
+            intent.putExtra(OnBoardingActivity.ENABLE_BACK_BUTTON, true);
             startActivity(intent);
         }
 

@@ -231,7 +231,7 @@
     <string name="firewall_rules">Firewall rules</string>
     <string name="blocked_pkts">Blocked</string>
     <string name="n_pkts">%1$s pkts</string>
-    <string name="show_only_blocked">Blocked by firewall</string>
+    <string name="show_only_blocked">Blocked connections</string>
     <string name="blocked_connection_filter">blocked</string>
     <string name="paid_features">Paid features</string>
     <string name="unlock_code">Unlock code</string>
@@ -353,12 +353,13 @@
     <string name="app_intro_done_button">Done</string>
     <string name="welcome_to_pcapdroid">Welcome to PCAPdroid</string>
     <string name="app_intro_welcome_msg">PCAPdroid is a privacy-friendly app which lets you track and analyze the connections made by the apps in your device\n\nMoreover, it allows you to export a PCAP dump of the traffic, extract metadata and much more!</string>
-    <string name="privacy_first">Privacy-first</string>
-    <string name="app_intro_privacy_msg">The app does not embed any tracking, analytics or calling home\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>
+    <string name="privacy_first">Privacy first</string>
+    <string name="app_intro_privacy_msg">The app does not employ any tracking, analytics or calling home anti-features\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>
     <string name="additional_features">Additional features</string>
-    <string name="app_intro_additional_features_msg">Monitoring is not enough? PCAPdroid gets you covered!\n\n&#8226; <a href='%1$s'>Firewall</a>: block apps, domains or IP addresses*\n&#8226; <a href='%2$s'>Malware detection</a> and blocking*\n&#8226; <a href='%3$s'>TLS decryption</a>\n\n*paid feature, only available on Google Play</string>
     <string name="country_and_asn">Country and ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid can query a local database to determine the country of a remote server\n\nYou must first download the database from the PCAPdroid settings</string>
-    <string name="features_onboarding">On-boarding</string>
     <string name="vpn_setup_msg">PCAPdroid simulates a VPN in order to capture the network traffic without root.\n\nTo start the capture, you need to accept the VPN request in the next screen</string>
+    <string name="app_intro_traffic_inspection">Inspecting HTTP requests, responses and raw data is easy, thanks to the built-in decoders\n\nThe connection is encrypted? You can decrypt it and display the decrypted data via the <a href='%1$s'>TLS decryption</a> feature</string>
+    <string name="app_intro_firewall_msg">With the <a href='%1$s'>Firewall</a> feature you can easily block Internet access to individual apps and domains\n\nCombine this with the built-in traffic visibility to get the ultimate tool to protect your privacy</string>
+    <string name="app_intro_malware_detection">Enhance the security of your device with the <a href='%1$s'>Malware detection</a> feature\n\nBy using up-to-date blacklists, it can detect, block and alert malicious connections in real-time</string>
 </resources>

@@ -75,6 +75,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
@@ -1169,9 +1170,10 @@ public class Utils {
         for(int i = 0; i < args.length; ++i)
             args[i] = TextUtils.htmlEncode(args[i]);
 
-        String htmlOnly = String.format(Html.toHtml(new SpannedString(context.getText(resid))), (Object[]) args);
+        String htmlOnly = String.format(HtmlCompat.toHtml(new SpannedString(context.getText(resid)),
+                HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE), (Object[]) args);
         //Log.d(TAG, htmlOnly);
-        return Html.fromHtml(htmlOnly);
+        return HtmlCompat.fromHtml(htmlOnly, HtmlCompat.FROM_HTML_MODE_LEGACY);
     }
 
     // Format a resource containing URLs and display it in a TextView, making URls clickable

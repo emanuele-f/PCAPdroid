@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -47,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OnBoardingActivity extends AppIntro {
     private static final String TAG = "OnBoardingActivity";
+    public static final String ENABLE_BACK_BUTTON = "back_enabled";
 
     public static class OnBoardingFragment extends AppIntroBaseFragment {
         @Override
@@ -54,7 +56,7 @@ public class OnBoardingActivity extends AppIntro {
             return R.layout.appintro_fragment_intro;
         }
 
-        public static OnBoardingFragment createInstance(CharSequence title, CharSequence description, int imageRes, int imageTint) {
+        public static OnBoardingFragment createInstance(CharSequence title, CharSequence description, int imageRes, int imageTint, boolean imageAutosize) {
             OnBoardingFragment fragment = new OnBoardingFragment();
             Bundle args = new SliderPagerBuilder()
                     .title(title)
@@ -67,6 +69,7 @@ public class OnBoardingActivity extends AppIntro {
 
             args.putCharSequence("pd_descr", description);
             args.putInt("pd_image_tint", imageTint);
+            args.putBoolean("pd_image_autosz", imageAutosize);
             fragment.setArguments(args);
 
             return fragment;
@@ -94,9 +97,11 @@ public class OnBoardingActivity extends AppIntro {
             int tint = args.getInt("pd_image_tint");
             if(tint > 0)
                 image.setColorFilter(ContextCompat.getColor(view.getContext(), tint));
-            image.setAdjustViewBounds(true);
-            ViewGroup.LayoutParams params = image.getLayoutParams();
-            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, getResources().getDisplayMetrics());
+            if(args.getBoolean("pd_image_autosz")) {
+                image.setAdjustViewBounds(true);
+                ViewGroup.LayoutParams params = image.getLayoutParams();
+                params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, getResources().getDisplayMetrics());
+            }
 
             return view;
         }
@@ -105,29 +110,47 @@ public class OnBoardingActivity extends AppIntro {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean backEnabled = false;
+        Billing billing = Billing.newInstance(this);
+
+        Intent intent = getIntent();
+        if(intent != null)
+            backEnabled = intent.getBooleanExtra(ENABLE_BACK_BUTTON, false);
 
         addSlide(OnBoardingFragment.createInstance(getString(R.string.welcome_to_pcapdroid),
                 getText(R.string.app_intro_welcome_msg),
-                R.drawable.ic_logo, R.color.colorAccent));
+                R.drawable.ic_logo, R.color.colorAccent, true));
 
         addSlide(OnBoardingFragment.createInstance(getString(R.string.privacy_first),
-                Utils.getText(this, R.string.app_intro_privacy_msg, MainActivity.PRIVACY_POLICY_URL,
-                        MainActivity.GITHUB_PROJECT_URL),
-                R.drawable.ic_shield, R.color.colorAccent));
+                Utils.getText(this, R.string.app_intro_privacy_msg,
+                        MainActivity.PRIVACY_POLICY_URL, MainActivity.GITHUB_PROJECT_URL),
+                R.drawable.ic_shield, R.color.colorAccent, true));
+
+        addSlide(OnBoardingFragment.createInstance(getString(R.string.traffic_inspection),
+                Utils.getText(this, R.string.app_intro_traffic_inspection,
+                        MainActivity.TLS_DECRYPTION_DOCS_URL),
+                R.drawable.http_inspection, 0, false));
+
+        if(billing.isPlayStore()) {
+            addSlide(OnBoardingFragment.createInstance(getString(R.string.firewall),
+                    Utils.getText(this, R.string.app_intro_firewall_msg,
+                            MainActivity.FIREWALL_DOCS_URL),
+                    R.drawable.firewall_block, 0, false));
+
+            addSlide(OnBoardingFragment.createInstance(getString(R.string.malware_detection),
+                    Utils.getText(this, R.string.app_intro_malware_detection,
+                            MainActivity.MALWARE_DETECTION_DOCS_URL),
+                    R.drawable.malware_notification, 0, false));
+        }
 
         addSlide(OnBoardingFragment.createInstance(getString(R.string.country_and_asn),
                 getText(R.string.app_intro_geolocation_msg),
-                R.drawable.ic_location_dot, R.color.colorAccent));
-
-        addSlide(OnBoardingFragment.createInstance(getString(R.string.additional_features),
-                Utils.getText(this, R.string.app_intro_additional_features_msg, MainActivity.FIREWALL_DOCS_URL,
-                        MainActivity.MALWARE_DETECTION_DOCS_URL, MainActivity.TLS_DECRYPTION_DOCS_URL),
-                R.drawable.ic_rocket_launch, R.color.colorAccent));
+                R.drawable.ic_location_dot, R.color.colorAccent, true));
 
         showStatusBar(true);
         setSkipButtonEnabled(false);
         setIndicatorEnabled(true);
-        setSystemBackButtonLocked(true);
+        setSystemBackButtonLocked(!backEnabled);
 
         // Theme
         int colorAccent = ContextCompat.getColor(this, R.color.colorAccent);
