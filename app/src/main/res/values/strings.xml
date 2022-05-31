@@ -264,7 +264,9 @@
     <string name="traffic_inspection">Traffic inspection</string>
     <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
-    <string name="next_step">Next</string>
+    <string name="app_intro_next_button">Next</string>
+    <string name="app_intro_skip_button">Skip</string>
+    <string name="app_intro_back_button">Back</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
     <string name="install_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a>.\n\nNOTE: The addon depends on closed source software</string>
@@ -277,7 +279,7 @@
     <string name="cert_exported_now_installed">Certificate exported, now install it from the Android settings</string>
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
-    <string name="done">Done</string>
+    <string name="app_intro_done_button">Done</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Uninstall it and retry</string>
     <string name="mitm_addon_new_version">The PCAPdroid plugin must be upgraded</string>
     <string name="upgrade_action">Upgrade</string>
@@ -347,19 +349,15 @@
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder detection</string>
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
     <string name="mitm_setup_wizard_done">PCAPdroid is now ready to decrypt the TLS traffic\n\nCheck out the <a href='%1$s'>user guide</a> to know more about the security measures which may prevent decryption and how to bypass them</string>
-    <string name="app_intro_skip_button">Skip</string>
-    <string name="app_intro_next_button">Next</string>
-    <string name="app_intro_back_button">Back</string>
-    <string name="app_intro_done_button">Done</string>
     <string name="welcome_to_pcapdroid">Welcome to PCAPdroid</string>
     <string name="app_intro_welcome_msg">PCAPdroid is a privacy-friendly app which lets you track and analyze the connections made by the apps in your device\n\nMoreover, it allows you to export a PCAP dump of the traffic, extract metadata and much more!</string>
     <string name="privacy_first">Privacy first</string>
     <string name="app_intro_privacy_msg">The app does not employ any tracking, analytics or calling home anti-features\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>
-    <string name="additional_features">Additional features</string>
     <string name="country_and_asn">Country and ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid can query a local database to determine the country of a remote server\n\nYou must first download the database from the PCAPdroid settings</string>
     <string name="vpn_setup_msg">PCAPdroid simulates a VPN in order to capture the network traffic without root.\n\nTo start the capture, you need to accept the VPN request in the next screen</string>
-    <string name="app_intro_traffic_inspection">Inspecting HTTP requests, responses and raw data is easy, thanks to the built-in decoders\n\nThe connection is encrypted? You can decrypt it and display the decrypted data via the <a href='%1$s'>TLS decryption</a> feature</string>
-    <string name="app_intro_firewall_msg">With the <a href='%1$s'>Firewall</a> feature you can easily block Internet access to individual apps and domains\n\nCombine this with the built-in traffic visibility to get the ultimate tool to protect your privacy</string>
+    <string name="app_intro_traffic_inspection">Inspecting HTTP requests, responses and raw data is easy, thanks to the built-in decoders\n\nGot an encrypted connection? You can enable the <a href='%1$s'>TLS decryption</a> to get the decrypted data</string>
+    <string name="app_intro_firewall_msg">With the integrated <a href='%1$s'>Firewall</a> you can easily block Internet access to individual apps and domains\n\nCombine this with the built-in traffic visibility to get the ultimate tool to protect your privacy</string>
     <string name="app_intro_malware_detection">Enhance the security of your device with the <a href='%1$s'>Malware detection</a> feature\n\nBy using up-to-date blacklists, it can detect, block and alert malicious connections in real-time</string>
+    <string name="app_intro_traffic_dump">PCAPdroid provides <a href='%1$s'>multiple ways</a> to dump the traffic in the standard PCAP format for further analysis\n\nVia the <a href='%2$s'>trailer option</a>, you can add app names to the packets and display them in Wireshark</string>
 </resources>

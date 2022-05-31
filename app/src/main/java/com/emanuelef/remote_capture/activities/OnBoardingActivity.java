@@ -143,12 +143,18 @@ public class OnBoardingActivity extends AppIntro {
                     R.drawable.malware_notification, 0, false));
         }
 
+        addSlide(OnBoardingFragment.createInstance(getString(R.string.traffic_dump),
+                Utils.getText(this, R.string.app_intro_traffic_dump,
+                        MainActivity.DOCS_URL + "/dump_modes",
+                        MainActivity.DOCS_URL + "/advanced_features#45-pcapdroid-trailer"),
+                R.drawable.dump_modes, 0, false));
+
         addSlide(OnBoardingFragment.createInstance(getString(R.string.country_and_asn),
                 getText(R.string.app_intro_geolocation_msg),
                 R.drawable.ic_location_dot, R.color.colorAccent, true));
 
         showStatusBar(true);
-        setSkipButtonEnabled(false);
+        setSkipButtonEnabled(true);
         setIndicatorEnabled(true);
         setSystemBackButtonLocked(!backEnabled);
 

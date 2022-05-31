@@ -78,7 +78,7 @@ public class StepFragment extends Fragment {
         mStepIcon.setColorFilter(mOkColor);
 
         mStepButton.setEnabled(true);
-        mStepButton.setText(!is_last_step ? R.string.next_step : R.string.done);
+        mStepButton.setText(!is_last_step ? R.string.app_intro_next_button : R.string.app_intro_done_button);
         mStepButton.setOnClickListener((view) -> {
             if(!is_last_step)
                 mNavController.navigate(action_or_dest);
