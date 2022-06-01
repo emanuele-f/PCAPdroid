@@ -583,7 +583,7 @@ int run_vpn(pcapdroid_t *pd) {
                 } else {
                     // zdtun_forward was successful
                     if(data->vpn.fw_pctx) {
-                        // not accounted in remote2vpn, account here
+                        // it was not accounted in remote2vpn, account here
                         pd_account_stats(pd, data->vpn.fw_pctx);
                         data->vpn.fw_pctx = NULL;
                     }

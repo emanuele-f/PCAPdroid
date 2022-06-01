@@ -83,6 +83,8 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
@@ -92,6 +94,8 @@ public class CaptureService extends VpnService implements Runnable {
     private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static CaptureService INSTANCE;
+    final ReentrantLock mLock = new ReentrantLock();
+    final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
     private boolean mIsAlwaysOnVPN;
     private SharedPreferences mPrefs;
@@ -883,13 +887,16 @@ public class CaptureService extends VpnService implements Runnable {
 
         stopService();
 
+        mLock.lock();
+        mCaptureThread = null;
+        mCaptureStopped.signalAll();
+        mLock.unlock();
+
         // Notify
         mHandler.post(() -> {
             sendServiceStatus(SERVICE_STATUS_STOPPED);
-            CaptureCtrl.notifyCaptureStopped(this, mLastStats);
+            CaptureCtrl.notifyCaptureStopped(this, getStats());
         });
-
-        mCaptureThread = null;
     }
 
     private void connUpdateWork() {
@@ -1176,8 +1183,27 @@ public class CaptureService extends VpnService implements Runnable {
         nativeSetFirewallEnabled(enabled);
     }
 
-    public static CaptureStats getStats() {
-        return((INSTANCE != null) ? INSTANCE.mLastStats : null);
+    public static @NonNull CaptureStats getStats() {
+        CaptureStats stats = (INSTANCE != null) ? INSTANCE.mLastStats : null;
+        return((stats != null) ? stats : new CaptureStats());
+    }
+
+    public static void waitForCaptureStop() {
+        if(INSTANCE == null)
+            return;
+
+        Log.d(TAG, "waitForCaptureStop " + Thread.currentThread().getName());
+        INSTANCE.mLock.lock();
+        try {
+            while(INSTANCE.mCaptureThread != null) {
+                try {
+                    INSTANCE.mCaptureStopped.await();
+                } catch (InterruptedException ignored) {}
+            }
+        } finally {
+            INSTANCE.mLock.unlock();
+        }
+        Log.d(TAG, "waitForCaptureStop done " + Thread.currentThread().getName());
     }
 
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
