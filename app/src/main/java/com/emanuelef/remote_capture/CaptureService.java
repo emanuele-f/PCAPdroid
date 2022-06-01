@@ -130,6 +130,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mDnsEncrypted;
     private boolean mStrictDnsNoticeShown;
     private boolean mQueueFull;
+    private boolean mStopping;
     private Blacklists mBlacklists;
     private MatchList mBlocklist;
     private MatchList mWhitelist;
@@ -196,6 +197,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        mStopping = false;
+
         // startForeground must always be called since the Service is being started with
         // ContextCompat.startForegroundService.
         // NOTE: since Android 12, startForeground cannot be called when the app is in background
@@ -516,6 +519,9 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void updateNotification() {
+        if(mStopping)
+            return;
+
         Notification notification = getStatusNotification();
         NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
     }
@@ -693,6 +699,8 @@ public class CaptureService extends VpnService implements Runnable {
         if(captureService == null)
             return;
 
+        captureService.mStopping = true;
+
         stopPacketLoop();
         captureService.signalServicesTermination();
 
@@ -700,9 +708,6 @@ public class CaptureService extends VpnService implements Runnable {
             captureService.stopForeground(STOP_FOREGROUND_REMOVE);
         else
             captureService.stopForeground(true);
-
-        // this fixes notification not removed (reproduced on the Android 12 emulator)
-        NotificationManagerCompat.from(captureService).deleteNotificationChannel(NOTIFY_CHAN_VPNSERVICE);
 
         captureService.stopSelf();
     }
