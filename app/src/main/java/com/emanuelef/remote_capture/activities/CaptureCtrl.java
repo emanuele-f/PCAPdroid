@@ -206,9 +206,10 @@ public class CaptureCtrl extends AppCompatActivity {
             CaptureService.stopService();
             mStarterApp = null;
 
-            CaptureStats stats = CaptureService.getStats();
-            if(stats != null)
-                putStats(res, stats);
+            // stopService returns immediately, need to wait for capture stop
+            CaptureService.waitForCaptureStop();
+
+            putStats(res, CaptureService.getStats());
         } else if(action.equals(ACTION_STATUS)) {
             Log.d(TAG, "Returning status");
 
@@ -216,9 +217,7 @@ public class CaptureCtrl extends AppCompatActivity {
             res.putExtra("version_name", BuildConfig.VERSION_NAME);
             res.putExtra("version_code", BuildConfig.VERSION_CODE);
 
-            CaptureStats stats = CaptureService.getStats();
-            if(stats != null)
-                putStats(res, stats);
+            putStats(res, CaptureService.getStats());
         } else {
             Log.e(TAG, "unknown action: " + action);
             abort();
@@ -230,6 +229,9 @@ public class CaptureCtrl extends AppCompatActivity {
     }
 
     public static void notifyCaptureStopped(Context ctx, CaptureStats stats) {
+        if(stats != null)
+            Log.d(TAG, "notifyCaptureStopped: " + (stats.pkts_sent + stats.pkts_rcvd) + " pkts");
+
         if((mStarterApp != null) && (mReceiverClass != null)) {
             Log.d(TAG, "Notifying receiver");
 

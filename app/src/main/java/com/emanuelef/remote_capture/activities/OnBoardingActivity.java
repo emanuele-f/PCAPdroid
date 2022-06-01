@@ -20,8 +20,10 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -32,7 +34,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
@@ -84,6 +88,7 @@ public class OnBoardingActivity extends AppIntro {
 
             Bundle args = getArguments();
             assert args != null;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
 
             // fixes links from Utils.getText not clickable
             TextView tv = view.findViewById(R.id.description);
@@ -91,6 +96,21 @@ public class OnBoardingActivity extends AppIntro {
             tv.setMovementMethod(LinkMovementMethod.getInstance());
             tv.setText(args.getCharSequence("pd_descr"));
             tv.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Disable auto-sizing, as it makes the text not readable
+                TextViewCompat.setAutoSizeTextTypeWithDefaults(tv, TextView.AUTO_SIZE_TEXT_TYPE_NONE);
+            }
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+
+            // Fix excessive vertical padding, causing scroll
+            ViewGroup.LayoutParams lp = tv.getLayoutParams();
+            if(lp instanceof ConstraintLayout.LayoutParams) {
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) lp;
+                params.setMargins(0, (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, metrics), 0, 0);
+                tv.setPadding(tv.getPaddingLeft(), 0, tv.getPaddingRight(), 0);
+                tv.setLayoutParams(params);
+            }
 
             // fix drawable tint and size
             ImageView image = view.findViewById(R.id.image);
@@ -100,7 +120,7 @@ public class OnBoardingActivity extends AppIntro {
             if(args.getBoolean("pd_image_autosz")) {
                 image.setAdjustViewBounds(true);
                 ViewGroup.LayoutParams params = image.getLayoutParams();
-                params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, getResources().getDisplayMetrics());
+                params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, metrics);
             }
 
             return view;

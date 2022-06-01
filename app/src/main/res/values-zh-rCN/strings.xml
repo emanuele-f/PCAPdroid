@@ -214,7 +214,7 @@
     <string name="firewall_rules">防火墙规则</string>
     <string name="blocked_pkts">已拦截</string>
     <string name="n_pkts">%1$s 个数据包</string>
-    <string name="show_only_blocked">由防火墙拦截</string>
+    <string name="show_only_blocked">拦截的连接</string>
     <string name="blocked_connection_filter">已拦截</string>
     <string name="paid_features">付费功能</string>
     <string name="unlock_code">解锁码</string>
@@ -253,21 +253,23 @@
     <string name="socks5_info">SOCKS5 代理: %1$s:%2$d</string>
     <string name="phone_app_info">拨号服务</string>
     <string name="tls_decryption">TLS 解密</string>
-    <string name="tls_decryption_starting">TLS 解密正在启动</string>
+    <string name="tls_decryption_starting">TLS 解密正在启动…</string>
     <string name="tls_decryption_running">TLS 解密运行中</string>
     <string name="traffic_inspection">流量检查</string>
     <string name="mitm_start_failed">无法启动 mitm 服务。重新安装 mitm 附加组件并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
-    <string name="install_mitm_addon">安装 PCAPdriod mitm 附加组件</string>
+    <string name="install_mitm_addon">安装 PCAPdriod <a href="%1$s">mitm 附加组件</a>。
+\n
+\n注：此附加组件依赖于其他闭源软件</string>
     <string name="configure_action">配置</string>
-    <string name="grant_mitm_permission">给予 PCAPdroid 解密网络流量的能力</string>
+    <string name="grant_mitm_permission">给予 PCAPdroid 控制 mitm 附加组件的权限</string>
     <string name="checking_the_certificate">检查证书…</string>
     <string name="cert_exported_now_installed">证书已导出，从 Android 系统设置安装它</string>
     <string name="cert_installed_correctly">CA 证书已安装</string>
     <string name="cert_reinstall_required">CA 证书未安装，运行 mitim 设置向导</string>
     <string name="mitm_addon_bad_version">PCAPdroid mitm 附加组件版本号不对。卸载它并重试</string>
-    <string name="mitm_addon_new_version">必须升级 PCAPdroid 插件</string>
+    <string name="mitm_addon_new_version">必须升级 PCAPdroid mitm 附加组件</string>
     <string name="upgrade_action">升级</string>
     <string name="export_failed">导出失败</string>
     <string name="not_encrypted">未加密</string>
@@ -292,7 +294,7 @@
     <string name="display_as">显示为…</string>
     <string name="printable_text">可打印文本</string>
     <string name="hexdump">十六进制转储</string>
-    <string name="geolocation_summary">执行离线查询添加国家和 ASN 信息</string>
+    <string name="geolocation_summary">执行离线查询显示国家和 ASN 信息</string>
     <string name="download_in_progress">正在下载，请等待</string>
     <string name="download_failed">下载失败</string>
     <string name="geo_db_not_found">未找到数据库。定位关闭</string>
@@ -331,4 +333,49 @@
     <string name="geo_db_delete">轻按删除数据库并节省空间</string>
     <string name="no_rules_to_export">无规则可导出</string>
     <string name="keep_action">保留</string>
+    <string name="app_intro_traffic_inspection">由于内置的解码器，检查 HTTP 请求、响应和原始数据很容易
+\n
+\n加密连接怎么办？你可以启用<a href="%1$s">TLS 解密</a>获得解密的数据</string>
+    <string name="app_intro_firewall_msg">借助集成的<a href="%1$s">防火墙</a>，你可轻松阻止个别应用联网和域名
+\n
+\n将此与内置的流量可见性相结合，以获得保护你隐私的终极工具</string>
+    <string name="app_intro_malware_detection">借助 <a href="%1$s">恶意软件检测</a>功能增强你设备的安全性
+\n
+\n通过使用最新的黑名单，它可以实时检测、阻止和警告恶意连接</string>
+    <string name="app_intro_traffic_dump">PCAPdroid 提供<a href="%1$s">多种方式</a>以标准的 PCAP 格式转储流量，以便深入分析
+\n
+\n通过 <a href="%2$s">trailer 选项</a>，可以向数据包添加应用名称，并在 Wireshark 中显示它们</string>
+    <string name="app_intro_welcome_msg">PCAPdroid 是一款隐私友好的应用，允许你追踪并分析你设备中应用所作的连接
+\n
+\n此外，它允许你导出流量的 PCAP 转储，提取元数据及其他更多功能！</string>
+    <string name="privacy_first">隐私优先</string>
+    <string name="app_intro_privacy_msg">本应用没有使用任何跟踪、分析，也不会进行与流量分析无关的网络连接
+\n
+\n如何确定所言非虚？您可检视其 <a href="%1$s">隐私政策</a>和<a href="%2$s">源代码</a></string>
+    <string name="country_and_asn">国家和 ASN</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid 可查询本地数据库确定远程服务器所在国家或地区
+\n
+\n你必须先从 PCAPdroid 设置下载数据库</string>
+    <string name="vpn_setup_msg">PCAPdroid 模拟 VPN，以便在没有获取根权限的情况下捕获网络流量。
+\n
+\n要开始捕获流量，你需要在下一个屏幕中接受 VPN 请求</string>
+    <string name="netd_block_missed">此连接由 netd 发起，因此无法被拦截</string>
+    <string name="firewall_summary">阻断应用联网，配置特定域和 IP 地址规则。仅适用于非 root 捕获</string>
+    <string name="block_private_dns_summary">检测并可能阻止私人 DNS 来检查 DNS 流量。禁用此选项会妨碍检测</string>
+    <string name="app_intro_next_button">下一步</string>
+    <string name="app_intro_done_button">完毕</string>
+    <string name="ca_cert_export_failed">导出 CA 证书时出错
+\n
+\n如果你的设备部署了 Autostart 或类似软件来限制后台服务执行，请确保将 <a href="%1$s">PCAPdroid 加入白名单</a></string>
+    <string name="block_quick">拦截 QUIC</string>
+    <string name="block_private_dns">拦截私人 DNS</string>
+    <string name="block_quick_summary">拦截 QUIC 连接，使其有可能回退到可解密的 TLS。一些应用可能会停止工作</string>
+    <string name="no_root_firewall">非 root 防火墙</string>
+    <string name="mitm_setup_wizard_intro">该向导将指导你安装 PCAPdroid mitm 附加组件和证书颁发机构。需要这两样东西才能执行 <a href="%1$s">TLS 解密</a></string>
+    <string name="welcome_to_pcapdroid">欢迎来到 PCAPdroid</string>
+    <string name="mitm_setup_wizard_done">PCAPDroid 已准备好解密 TLS 流量
+\n
+\n查看 <a href="%1$s">用户指南</a>了解更多可能防止解密的安全措施，以及如何绕过这些措施</string>
+    <string name="app_intro_skip_button">跳过</string>
+    <string name="app_intro_back_button">返回</string>
 </resources>

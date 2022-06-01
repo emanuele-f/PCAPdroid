@@ -133,7 +133,7 @@
     <string name="block">Engelle…</string>
     <string name="firewall">Güvenlik duvarı</string>
     <string name="n_pkts">%1$s paket</string>
-    <string name="show_only_blocked">Güvenlik duvarı tarafından engellendi</string>
+    <string name="show_only_blocked">Engellenen bağlantılar</string>
     <string name="blocked_connection_filter">engellendi</string>
     <string name="unlock_code">Kilit açma kodu</string>
     <string name="validate">Doğrula</string>
@@ -222,16 +222,18 @@
     <string name="socks5_info">SOCKS5 vekili: %1$s:%2$d</string>
     <string name="unblock">Engeli kaldır…</string>
     <string name="tls_decryption">TLS şifre çözme</string>
-    <string name="tls_decryption_starting">TLS şifre çözme başlıyor</string>
+    <string name="tls_decryption_starting">TLS şifre çözme başlıyor…</string>
     <string name="mitm_setup_wizard">Ortadaki adam kurulum sihirbazı</string>
     <string name="install_action">Kur</string>
-    <string name="install_mitm_addon">PCAPdroid ortadaki adam eklentisini kur</string>
+    <string name="install_mitm_addon">PCAPdroid <a href="%1$s">ortadaki adam eklentisini</a> kur.
+\n
+\nNOT: Eklenti, kapalı kaynaklı yazılıma bağlıdır</string>
     <string name="export_ca_certificate">PCAPdroid CA sertifikasını dışa aktarın, ardından Android \"Şifreleme ve Kimlik Bilgileri\" ayarlarını açın ve \"CA sertifikası\" olarak kurmayı seçin</string>
     <string name="checking_the_certificate">Sertifika denetleniyor…</string>
     <string name="cert_exported_now_installed">Sertifika dışa aktarıldı, şimdi Android ayarlarından onu kurun</string>
     <string name="cert_installed_correctly">CA sertifikası kuruldu</string>
     <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Kaldırın ve tekrar deneyin</string>
-    <string name="mitm_addon_new_version">PCAPdroid eklentisi yükseltilmelidir</string>
+    <string name="mitm_addon_new_version">PCAPdroid ortadaki adam eklentisi yükseltilmelidir</string>
     <string name="upgrade_action">Yükselt</string>
     <string name="request">İstek</string>
     <string name="overview">Genel bakış</string>
@@ -252,7 +254,7 @@
     <string name="printable_text">Yazdırılabilir metin</string>
     <string name="hexdump">Onaltılık sayı dökümü</string>
     <string name="geolocation">Coğrafi konum</string>
-    <string name="geolocation_summary">Çevrim dışı aramalar yaparak ülke ve ASN bilgilerini ekle</string>
+    <string name="geolocation_summary">Çevrim dışı aramalar yaparak ülke ve ASN bilgilerini göster</string>
     <string name="downloading">İndiriliyor…</string>
     <string name="database">Veri tabanı</string>
     <string name="built_on">Oluşturuldu: %1$s</string>
@@ -273,7 +275,7 @@
     <string name="tls_decryption_running">TLS şifre çözme çalışıyor</string>
     <string name="traffic_inspection">Trafik denetimi</string>
     <string name="export_action">Dışa aktar</string>
-    <string name="grant_mitm_permission">PCAPdroid\'e ağ trafiğinin şifresini çözme yeteneği verin</string>
+    <string name="grant_mitm_permission">PCAPdroid\'e ortadaki adam eklentisini denetleme izni verin</string>
     <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini yeniden kurun ve yeniden deneyin</string>
     <string name="not_encrypted">Şifrelenmedi</string>
     <string name="cert_reinstall_required">CA sertifikası kurulmadı, ortadaki adam kurulum sihirbazını çalıştırın</string>
@@ -305,4 +307,49 @@
     <string name="blocklist">Engelleme listesi</string>
     <string name="num_configured_rules">Yapılandırılan kurallar</string>
     <string name="firewall_is_enabled">Güvenlik duvarı etkin</string>
+    <string name="firewall_summary">Uygulamalara internet erişimini engelleyin, belirli etki alanları ve IP adresleri için kurallar yapılandırın. Yalnızca root olmayan yakalama ile çalışır</string>
+    <string name="block_quick">QUIC\'i engelle</string>
+    <string name="block_quick_summary">Muhtemelen şifresi çözülebilir TLS\'ye geri dönmek için QUIC bağlantılarını engelleyin. Bazı uygulamalar çalışmayı durdurabilir</string>
+    <string name="block_private_dns_summary">DNS trafiğini incelemek için özel DNS\'yi algılayın ve muhtemelen engelleyin. Bunu devre dışı bırakmak algılamayı engelleyebilir</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid artık TLS trafiğinin şifresini çözmeye hazır
+\n
+\nŞifre çözmeyi engelleyebilecek güvenlik önlemleri ve bunların nasıl aşılacağı hakkında daha fazla bilgi edinmek için <a href="%1$s">kullanıcı kılavuzuna</a> göz atın</string>
+    <string name="welcome_to_pcapdroid">PCAPdroid\'e hoş geldiniz</string>
+    <string name="app_intro_next_button">İleri</string>
+    <string name="app_intro_skip_button">Atla</string>
+    <string name="privacy_first">Önce gizlilik</string>
+    <string name="vpn_setup_msg">PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır.
+\n
+\nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir</string>
+    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz
+\n
+\nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
+    <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar
+\n
+\n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
+    <string name="mitm_setup_wizard_intro">Bu sihirbaz, <a href="%1$s">TLS şifre çözme</a> işlemini gerçekleştirmek için gerekli olan PCAPdroid ortadaki adam eklentisinin ve sertifika yetkilisinin kurulumunda size rehberlik edecektir</string>
+    <string name="app_intro_back_button">Geri</string>
+    <string name="netd_block_missed">Bu bağlantı netd tarafından başlatıldığı için engellenemedi</string>
+    <string name="ca_cert_export_failed">CA sertifikası dışa aktarılırken bir hata oluştu
+\n
+\nAygıtınız, arka plan hizmetlerinin yürütülmesini sınırlamak için Autostart veya benzeri bir yazılım kullanıyorsa, <a href="%1$s">PCAPdroid\'i beyaz listeye eklediğinizden</a> emin olun</string>
+    <string name="no_root_firewall">Rootsuz güvenlik duvarı</string>
+    <string name="block_private_dns">Özel DNS\'yi engelle</string>
+    <string name="app_intro_done_button">Bitti</string>
+    <string name="app_intro_welcome_msg">PCAPdroid, aygıtınızdaki uygulamalar tarafından yapılan bağlantıları izlemenizi ve incelemenizi sağlayan gizlilik dostu bir uygulamadır
+\n
+\nAyrıca, trafiğin PCAP dökümünü dışa aktarmanıza, üst verileri çıkarmanıza ve çok daha fazlasına olanak tanır!</string>
+    <string name="country_and_asn">Ülke ve ASN</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid, uzak bir sunucunun ülkesini belirlemek için yerel bir veri tabanını sorgulayabilir
+\n
+\nÖnce PCAPdroid ayarlarından veri tabanını indirmelisiniz</string>
+    <string name="app_intro_privacy_msg">Uygulama herhangi bir izleme, analiz veya belirli bir yere bağlanma karşıt özellikleri kullanmaz
+\n
+\nNasıl emin olabilirsiniz\? <a href="%1$s">Gizlilik politikasına</a> ve <a href="%2$s">kaynak koduna</a> göz atın</string>
+    <string name="app_intro_traffic_inspection">Yerleşik kod çözücüler sayesinde HTTP isteklerini, yanıtlarını ve ham verileri incelemek kolaydır
+\n
+\nŞifreli bir bağlantınız mı var\? Şifresi çözülmüş verileri almak için <a href="%1$s">TLS şifre çözme</a> özelliğini etkinleştirebilirsiniz</string>
+    <string name="app_intro_malware_detection"><a href="%1$s">Kötü amaçlı yazılım algılama</a> özelliği ile aygıtınızın güvenliğini artırın
+\n
+\nGüncel kara listeleri kullanarak, kötü niyetli bağlantıları gerçek zamanlı olarak tespit edebilir, engelleyebilir ve uyarabilir</string>
 </resources>
