@@ -310,7 +310,7 @@
     <string name="firewall_summary">Uygulamalara internet erişimini engelleyin, belirli etki alanları ve IP adresleri için kurallar yapılandırın. Yalnızca root olmayan yakalama ile çalışır</string>
     <string name="block_quick">QUIC\'i engelle</string>
     <string name="block_quick_summary">Muhtemelen şifresi çözülebilir TLS\'ye geri dönmek için QUIC bağlantılarını engelleyin. Bazı uygulamalar çalışmayı durdurabilir</string>
-    <string name="block_private_dns_summary">DNS trafiğini incelemek için özel DNS\'yi algılayın ve muhtemelen engelleyin. Bunu devre dışı bırakmak algılamayı engelleyebilir</string>
+    <string name="block_private_dns_summary">DNS trafiğini incelemek için özel DNS\'yi algılayın ve muhtemelen engelleyin. Bunu devre dışı bırakmak trafik incelemesini engelleyebilir</string>
     <string name="mitm_setup_wizard_done">PCAPdroid artık TLS trafiğinin şifresini çözmeye hazır
 \n
 \nŞifre çözmeyi engelleyebilecek güvenlik önlemleri ve bunların nasıl aşılacağı hakkında daha fazla bilgi edinmek için <a href="%1$s">kullanıcı kılavuzuna</a> göz atın</string>
@@ -342,7 +342,7 @@
     <string name="country_and_asn">Ülke ve ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid, uzak bir sunucunun ülkesini belirlemek için yerel bir veri tabanını sorgulayabilir
 \n
-\nÖnce PCAPdroid ayarlarından veri tabanını indirmelisiniz</string>
+\nÖnce uygulama ayarlarından coğrafi konum veri tabanını indirmelisiniz</string>
     <string name="app_intro_privacy_msg">Uygulama herhangi bir izleme, analiz veya belirli bir yere bağlanma karşıt özellikleri kullanmaz
 \n
 \nNasıl emin olabilirsiniz\? <a href="%1$s">Gizlilik politikasına</a> ve <a href="%2$s">kaynak koduna</a> göz atın</string>
