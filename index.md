@@ -29,6 +29,7 @@ Welcome to the PCAPdroid User Guide.
     - [5.2 Malware Detection](paid_features#52-malware-detection)
 - [6. FAQ](faq)
 - [7. Donate](donate)
+- [8. Privacy Policy](privacy)
 
 ## Other Languages
 
