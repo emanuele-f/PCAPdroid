@@ -107,8 +107,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
-    public static final String PRIVACY_POLICY_URL = GITHUB_PROJECT_URL + "/TODO";
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
+    public static final String PRIVACY_POLICY_URL = DOCS_URL + "/privacy";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
     public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#51-firewall";
     public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#52-malware-detection";
