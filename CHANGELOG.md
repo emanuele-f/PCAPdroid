@@ -2,6 +2,24 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.0] - 2022-06-02
+- No-root firewall: block apps, domains and IP addresses (paid feature)
+- Ability to decrypt TLS traffic, display decrypted data, export the SSLKEYLOGFILE
+- Inspect HTTP requests and replies thanks to the built-in decoders (brotli, deflate, gzip)
+- Uploads in VPN mode are now faster and less cpu intensive
+- Inspect the full connections' payload as hexdump/text
+- Add ability to import/export rules
+- Fix uid resolution failing with root after some time
+- Fix PCAP dump of invalid/unsupported packets in root
+- Reduce APK size: geolocation db is now optional
+- Intent-based API now reports traffic stats
+- Add app on-boarding on first start
+- Add ability to disable blocking of private DNS
+- Add German translation (credits: Robin)
+- Add Indonesian translation (credits: Reza Almanda)
+- Add Turkish translation (credits: Oğuz Ersen)
+- Minor fixes and improvements
+
 ## [1.4.8] - 2022-04-22
 - Fix corrupted PCAP file on Android 10+ when overwriting existing file
 - Start the capture by tapping "Ready"
