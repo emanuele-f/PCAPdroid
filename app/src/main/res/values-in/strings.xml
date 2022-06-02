@@ -49,7 +49,7 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="show_only_blocked">Diblokir oleh firewall</string>
+    <string name="show_only_blocked">Koneksi yang diblokir</string>
     <string name="blocked_connection_filter">diblokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
@@ -223,7 +223,7 @@
     <string name="warn_no_app_data">Tidak ada data aplikasi yang dipertukarkan</string>
     <string name="hexdump">Hexdump</string>
     <string name="geolocation">Geolokasi</string>
-    <string name="geolocation_summary">Menambahkan info negara dan ASN dengan melakukan pencarian offline</string>
+    <string name="geolocation_summary">Tampilkan info negara dan ASN dengan melakukan pencarian offline</string>
     <string name="download_failed">Gagal mengunduh</string>
     <string name="database">Basis data</string>
     <string name="size_x">Ukuran: %1$s</string>
@@ -259,4 +259,97 @@
     <string name="last_firewall_block">Blok terakhir</string>
     <string name="firewall_is_disabled">Firewall dinonaktifkan</string>
     <string name="firewall_is_enabled">Firewall diaktifkan</string>
+    <string name="traffic_dump">Pembuangan lalu lintas</string>
+    <string name="conn_status_active">Aktif</string>
+    <string name="phone_app">Telepon</string>
+    <string name="ipv6">IPv6</string>
+    <string name="socks5_proxy">SOCKS5</string>
+    <string name="socks5_info">Proksi SOCKS5: %1$s:%2$d</string>
+    <string name="phone_app_info">Layanan telepon</string>
+    <string name="unblock">Buka blokir…</string>
+    <string name="tls_decryption">Dekripsi TLS</string>
+    <string name="tls_decryption_summary">Dekripsi lalu lintas SSL/TLS dengan melakukan mitm. Saat ini dapat bekerja dengan beberapa aplikasi, lihat panduan pengguna</string>
+    <string name="tls_decryption_starting">Dekripsi TLS dimulai…</string>
+    <string name="tls_decryption_running">Dekripsi TLS sedang berjalan</string>
+    <string name="traffic_inspection">Inspeksi lalu lintas</string>
+    <string name="mitm_start_failed">Tidak dapat memulai layanan mitm. Instal ulang mitm addon dan coba lagi</string>
+    <string name="mitm_setup_wizard">Petunjuk instalasi Mitm</string>
+    <string name="install_action">Instal</string>
+    <string name="export_action">Ekspor</string>
+    <string name="install_mitm_addon">Instal PCAPdroid <a href="%1$s">tambahan mitm</a>.
+\n
+\nCATATAN: Addon tergantung pada perangkat lunak sumber tertutup</string>
+    <string name="configure_action">Konfigurasikan</string>
+    <string name="grant_mitm_permission">Berikan PCAPdroid izin untuk mengontrol mitm addon</string>
+    <string name="export_ca_certificate">Ekspor sertifikat CA PCAPdroid, lalu buka pengaturan \"Enkripsi &amp; Kredensial\" Android dan pilih instal sebagai \"sertifikat CA\"</string>
+    <string name="export_failed">Ekspor gagal</string>
+    <string name="not_encrypted">Tidak dienkripsi</string>
+    <string name="request">Permintaan</string>
+    <string name="response">Tanggapan</string>
+    <string name="overview">Ringkasan</string>
+    <string name="string_http_request">Permintaan HTTP</string>
+    <string name="string_http_response">Respon HTTP</string>
+    <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
+    <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Hapus penginstalan dan coba lagi</string>
+    <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
+    <string name="upgrade_action">Tingkatkan</string>
+    <string name="websocket">WebSocket</string>
+    <string name="http">HTTP</string>
+    <string name="payload">Muatan</string>
+    <string name="tx_direction">TX</string>
+    <string name="rx_direction">RX</string>
+    <string name="full_payload">Payload penuh</string>
+    <string name="full_payload_summary">Tampilkan payload koneksi penuh (mis. permintaan dan respons HTTP lengkap). Ini membutuhkan banyak memori, jangan gunakan dalam jangka panjang</string>
+    <string name="not_decryptable">Tidak dapat didekripsi</string>
+    <string name="action_block">Blokir</string>
+    <string name="cert_installed_correctly">Sertifikat CA diinstal</string>
+    <string name="cert_reinstall_required">Sertifikat CA tidak diinstal, jalankan wizard penginstalan mitm</string>
+    <string name="block_private_dns">Blokir DNS pribadi</string>
+    <string name="country_and_asn">Negara dan ASN</string>
+    <string name="cert_exported_now_installed">Sertifikat diekspor, sekarang instal dari pengaturan Android</string>
+    <string name="ca_cert_export_failed">Terjadi kesalahan saat mengekspor sertifikat CA
+\n
+\nJika perangkat Anda mengimplementasikan Autostart atau perangkat lunak serupa untuk membatasi eksekusi layanan latar belakang, pastikan untuk <a href="%1$s">PCAPdroid masuk daftar putih</a></string>
+    <string name="install_ca_certificate">Instal sertifikat CA PCAPdroid, pilih \"VPN dan aplikasi\". Android akan meminta kunci layar atau kata sandi Anda</string>
+    <string name="checking_the_certificate">Memeriksa sertifikat…</string>
+    <string name="app_intro_skip_button">Lewati</string>
+    <string name="firewall_summary">Blokir akses internet ke aplikasi, konfigurasikan aturan untuk domain dan alamat IP tertentu. Hanya berfungsi dengan tangkapan non-root</string>
+    <string name="no_root_firewall">Firewall tanpa root</string>
+    <string name="netd_block_missed">Koneksi ini dimulai oleh netd sehingga tidak dapat diblokir</string>
+    <string name="app_intro_next_button">Lanjut</string>
+    <string name="block_quick">Blokir QUIC</string>
+    <string name="block_quick_summary">Blokir koneksi QUIC untuk kemungkinan kembali ke TLS yang dapat didekripsi. Beberapa aplikasi mungkin berhenti bekerja</string>
+    <string name="block_private_dns_summary">Mendeteksi dan mungkin memblokir DNS pribadi untuk memeriksa lalu lintas DNS. Menonaktifkan ini dapat menghambat analisis lalu lintas</string>
+    <string name="app_intro_back_button">Kembali</string>
+    <string name="mitm_setup_wizard_intro">Wizard ini akan memandu Anda melalui penginstalan PCAPdroid mitm addon dan otoritas sertifikasi, yang diperlukan untuk melakukan <a href="%1$s">dekripsi TLS</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid sekarang siap untuk mendekripsi lalu lintas TLS
+\n
+\nLihat <a href="%1$s">panduan pengguna</a> untuk mengetahui lebih lanjut tentang langkah-langkah keamanan yang dapat mencegah dekripsi dan cara mengabaikannya</string>
+    <string name="welcome_to_pcapdroid">Selamat datang di PCAPdroid</string>
+    <string name="app_intro_done_button">Selesai</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid dapat meminta database lokal untuk menentukan negara dari server jarak jauh
+\n
+\nAnda harus terlebih dahulu mengunduh basis data geolokasi dari pengaturan aplikasi</string>
+    <string name="app_intro_welcome_msg">PCAPdroid adalah aplikasi ramah privasi yang memungkinkan Anda melacak dan menganalisis koneksi yang dibuat oleh aplikasi di perangkat Anda
+\n
+\nSelain itu, ini memungkinkan Anda untuk mengekspor dump PCAP dari lalu lintas, mengekstrak metadata, dan banyak lagi!</string>
+    <string name="app_intro_privacy_msg">Aplikasi ini tidak menggunakan pelacakan, analitik, atau anti-fitur telepon rumah
+\n
+\nBagaimana Anda bisa yakin\? Lihat <a href="%1$s">kebijakan privasi</a> dan <a href="%2$s">kode sumber</a>-nya</string>
+    <string name="privacy_first">Utamakan privasi</string>
+    <string name="vpn_setup_msg">PCAPdroid mensimulasikan VPN untuk menangkap lalu lintas jaringan tanpa root.
+\n
+\nUntuk memulai pengambilan, Anda harus menerima permintaan VPN di layar berikutnya</string>
+    <string name="app_intro_traffic_inspection">Memeriksa permintaan HTTP, respons, dan data mentah menjadi mudah, berkat dekoder bawaan
+\n
+\nPunya koneksi terenkripsi\? Anda dapat mengaktifkan <a href="%1$s">dekripsi TLS</a> untuk mendapatkan data yang didekripsi</string>
+    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain
+\n
+\nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
+    <string name="app_intro_malware_detection">Tingkatkan keamanan perangkat Anda dengan fitur <a href="%1$s">deteksi malware</a>
+\n
+\nDengan menggunakan daftar hitam terbaru, ini dapat mendeteksi, memblokir, dan memperingatkan koneksi berbahaya secara waktu nyata</string>
+    <string name="app_intro_traffic_dump">PCAPdroid menyediakan <a href="%1$s">berbagai cara</a> untuk membuang lalu lintas dalam format PCAP standar untuk analisis lebih lanjut
+\n
+\nMelalui <a href="%2$s">opsi cuplikan</a>, Anda dapat menambahkan nama aplikasi ke paket</string>
 </resources>
