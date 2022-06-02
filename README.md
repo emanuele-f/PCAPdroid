@@ -1,6 +1,6 @@
 # PCAPdroid
 
-PCAPdroid is a privacy-friendly open source app which lets you track and analyze the connections made by the apps in your device. It also allows you to export a PCAP dump of the traffic, extract metadata and much more!
+PCAPdroid is a privacy-friendly open source app which lets you track, analyze and block the connections made by the other apps in your device. It also allows you to export a PCAP dump of the traffic, extract metadata and much more!
 
 PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server. All the data is processed locally on the device.
 
