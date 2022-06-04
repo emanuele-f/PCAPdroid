@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,6 +34,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
@@ -42,6 +45,7 @@ import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+    private static final String TAG = "ConnectionPayload";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
     private PayloadAdapter mAdapter;
@@ -51,10 +55,11 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     private boolean mJustCreated;
     private boolean mShowAsPrintable;
 
-    public static ConnectionPayload newInstance(PayloadChunk.ChunkType mode) {
+    public static ConnectionPayload newInstance(PayloadChunk.ChunkType mode, int conn_id) {
         ConnectionPayload fragment = new ConnectionPayload();
         Bundle args = new Bundle();
         args.putSerializable("mode", mode);
+        args.putInt("conn_id", conn_id);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,7 +68,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mActivity = (ConnectionDetailsActivity) context;
-        mConn = mActivity.getConn();
         mActivity.addConnUpdateListener(this);
     }
 
@@ -85,10 +89,16 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
         PayloadChunk.ChunkType mode;
-        if((args != null) && args.containsKey("mode"))
-            mode = (PayloadChunk.ChunkType) args.getSerializable("mode");
-        else
-            mode = PayloadChunk.ChunkType.RAW;
+        assert args != null;
+        ConnectionsRegister reg = CaptureService.requireConnsRegister();
+        mode = (PayloadChunk.ChunkType) args.getSerializable("mode");
+
+        mConn = reg.getConnById(args.getInt("conn_id"));
+        if(mConn == null) {
+            Log.e(TAG, "null connection");
+            mActivity.finish();
+            return;
+        }
 
         EmptyRecyclerView recyclerView = view.findViewById(R.id.payload);
         EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());

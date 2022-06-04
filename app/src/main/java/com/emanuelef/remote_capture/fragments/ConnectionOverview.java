@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,15 +43,16 @@ import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.emanuelef.remote_capture.model.Prefs;
 import com.haipq.android.flagkit.FlagImageView;
 
 public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+    private static final String TAG = "ConnectionOverview";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
     private TableLayout mTable;
@@ -70,11 +72,18 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     private ImageView mBlacklistedIp;
     private ImageView mBlacklistedHost;
 
+    public static ConnectionOverview newInstance(int conn_id) {
+        ConnectionOverview fragment = new ConnectionOverview();
+        Bundle args = new Bundle();
+        args.putInt("conn_id", conn_id);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mActivity = (ConnectionDetailsActivity) context;
-        mConn = mActivity.getConn();
         mActivity.addConnUpdateListener(this);
     }
 
@@ -122,6 +131,17 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         mError = view.findViewById(R.id.error_msg);
         mBlacklistedIp = view.findViewById(R.id.blacklisted_ip);
         mBlacklistedHost = view.findViewById(R.id.blacklisted_host);
+
+        Bundle args = getArguments();
+        assert args != null;
+        ConnectionsRegister reg = CaptureService.requireConnsRegister();
+
+        mConn = reg.getConnById(args.getInt("conn_id"));
+        if(mConn == null) {
+            Log.e(TAG, "null connection");
+            mActivity.finish();
+            return;
+        }
 
         view.findViewById(R.id.whois_ip).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://search.arin.net/rdap/?query=" + mConn.dst_ip));

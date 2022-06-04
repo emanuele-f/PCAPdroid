@@ -132,17 +132,18 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         public Fragment createFragment(int position) {
             //Log.d(TAG, "createFragment");
             int pos = getVisibleTabsPositions()[position];
+            int conn_id = mConn.incr_id;
 
             switch (pos) {
                 case POS_WEBSOCKET:
-                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.WEBSOCKET);
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.WEBSOCKET, conn_id);
                 case POS_HTTP:
-                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.HTTP);
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.HTTP, conn_id);
                 case POS_RAW_PAYLOAD:
-                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.RAW);
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.RAW, conn_id);
                 case POS_OVERVIEW:
                 default:
-                    return new ConnectionOverview();
+                    return ConnectionOverview.newInstance(conn_id);
             }
         }
 
@@ -293,6 +294,4 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         if(mConn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
             unregisterConnsListener();
     }
-
-    public ConnectionDescriptor getConn() { return mConn; }
 }
