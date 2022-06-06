@@ -418,6 +418,12 @@ public class CaptureService extends VpnService implements Runnable {
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
+        } else {
+            // Root capture
+            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
+                boolean success = Utils.rootGrantPermission(Utils.INTERACT_ACROSS_USERS);
+                Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS");
+            }
         }
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
@@ -1224,4 +1230,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void nativeSetFirewallEnabled(boolean enabled);
     public static native int getNumCheckedMalwareConnections();
     public static native int getNumCheckedFirewallConnections();
+    public static native int rootCmd(String prog, String args);
 }

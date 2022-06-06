@@ -127,6 +127,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class Utils {
     static final String TAG = "Utils";
+    public static final String INTERACT_ACROSS_USERS = "android.permission.INTERACT_ACROSS_USERS";
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
@@ -502,13 +503,13 @@ public class Utils {
         return false;
     }
 
-    public static void showToast(Context context, int id) {
-        String msg = context.getResources().getString(id);
+    public static void showToast(Context context, int id, Object... args) {
+        String msg = context.getResources().getString(id, (Object[]) args);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 
-    public static void showToastLong(Context context, int id) {
-        String msg = context.getResources().getString(id);
+    public static void showToastLong(Context context, int id, Object... args) {
+        String msg = context.getResources().getString(id, (Object[]) args);
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
@@ -1181,5 +1182,9 @@ public class Utils {
         CharSequence text = getText(tv.getContext(), resid, args);
         tv.setText(text);
         tv.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    public static boolean rootGrantPermission(String perm) {
+        return CaptureService.rootCmd("pm", String.format("grant %s %s", BuildConfig.APPLICATION_ID, perm)) == 0;
     }
 }

@@ -793,6 +793,19 @@ Java_com_emanuelef_remote_1capture_CaptureService_nativeSetFirewallEnabled(JNIEn
 
 /* ******************************************************* */
 
+JNIEXPORT int JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_rootCmd(JNIEnv *env, jclass clazz, jstring prog,
+                                                          jstring args) {
+    const char *prog_s = (*env)->GetStringUTFChars(env, prog, 0);
+    const char *args_s = (*env)->GetStringUTFChars(env, args, 0);
+    int rv = run_shell_cmd(prog_s, args_s, true, true);
+
+    (*env)->ReleaseStringUTFChars(env, prog, prog_s);
+    (*env)->ReleaseStringUTFChars(env, args, args_s);
+
+    return rv;
+}
+
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize) {
     JNIEnv *env = pd->env;
 
@@ -905,4 +918,3 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
 }
 
 #endif // ANDROID
-

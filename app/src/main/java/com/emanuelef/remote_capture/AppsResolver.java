@@ -112,7 +112,8 @@ public class AppsResolver {
         try {
             packages = mPm.getPackagesForUid(uid);
         } catch (SecurityException e) {
-            // this is a bug in some devices https://github.com/AdguardTeam/AdguardForAndroid/issues/173
+            // A SecurityException is normally raised when trying to query a package of another user/profile
+            // without holding the INTERACT_ACROSS_USERS/INTERACT_ACROSS_PROFILES permissions
             e.printStackTrace();
         }
 
