@@ -21,6 +21,7 @@
 #define __LOG_UTILS_H__
 
 #include <sys/types.h>
+#include <stdbool.h>
 #include "zdtun.h"
 #include "memtrack.h"
 
