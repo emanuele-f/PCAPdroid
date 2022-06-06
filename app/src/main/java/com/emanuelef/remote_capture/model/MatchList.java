@@ -153,6 +153,7 @@ public class MatchList {
         }
 
         if(tp == RuleType.APP) {
+            // TODO handle cross-users/profiles?
             AppDescriptor app = AppsResolver.resolve(ctx.getPackageManager(), value, 0);
             if(app != null)
                 value = app.getName();
