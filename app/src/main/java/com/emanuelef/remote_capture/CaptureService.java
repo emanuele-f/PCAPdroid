@@ -421,7 +421,7 @@ public class CaptureService extends VpnService implements Runnable {
         } else {
             // Root capture
             if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
-                boolean success = Utils.rootGrantPermission(Utils.INTERACT_ACROSS_USERS);
+                boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
                 Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS");
             }
         }
@@ -1020,15 +1020,6 @@ public class CaptureService extends VpnService implements Runnable {
     public int getVpnMTU()      { return VPN_MTU; }
 
     public int blockQuick()     { return(mSettings.block_quic ? 1 : 0); }
-
-    public int getOwnAppUid() {
-        AppDescriptor app = AppsResolver.resolve(getPackageManager(), BuildConfig.APPLICATION_ID, 0);
-
-        if(app != null)
-            return app.getUid();
-
-        return Utils.UID_NO_FILTER;
-    }
 
     // returns 1 if dumpPcapData should be called
     public int pcapDumpEnabled() {

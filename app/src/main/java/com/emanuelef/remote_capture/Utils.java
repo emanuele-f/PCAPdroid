@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -128,6 +129,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class Utils {
     static final String TAG = "Utils";
     public static final String INTERACT_ACROSS_USERS = "android.permission.INTERACT_ACROSS_USERS";
+    public static final int PER_USER_RANGE = 100000;
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
     private static Boolean rootAvailable = null;
@@ -1184,7 +1186,21 @@ public class Utils {
         tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    public static boolean rootGrantPermission(String perm) {
-        return CaptureService.rootCmd("pm", String.format("grant %s %s", BuildConfig.APPLICATION_ID, perm)) == 0;
+    public static int getPCAPdroidUid(Context context) {
+        // NOTE: when called from a work profile, it correctly returns the work profile UID
+        AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), BuildConfig.APPLICATION_ID, 0);
+        if(app != null)
+            return app.getUid();
+        return Utils.UID_UNKNOWN;
+    }
+
+    // returns the user ID of a given app uid
+    public static int getUserId(int uid) {
+        return  uid / PER_USER_RANGE;
+    }
+
+    @SuppressLint("DefaultLocale")
+    public static boolean rootGrantPermission(Context context, String perm) {
+        return CaptureService.rootCmd("pm", String.format("grant --user %d %s %s", getUserId(getPCAPdroidUid(context)), BuildConfig.APPLICATION_ID, perm)) == 0;
     }
 }

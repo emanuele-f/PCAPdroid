@@ -41,7 +41,6 @@ import java.util.Arrays;
 
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
-    public static final int PER_USER_RANGE = 100000;
     private final SparseArray<AppDescriptor> mApps;
     private final PackageManager mPm;
     private final Context mContext;
@@ -140,7 +139,7 @@ public class AppsResolver {
                 if(getPackageInfoAsUser == null)
                     getPackageInfoAsUser = PackageManager.class.getDeclaredMethod("getPackageInfoAsUser", String.class, int.class, int.class);
 
-                PackageInfo pinfo = (PackageInfo) getPackageInfoAsUser.invoke(mPm, packageName, pm_flags, uid / PER_USER_RANGE);
+                PackageInfo pinfo = (PackageInfo) getPackageInfoAsUser.invoke(mPm, packageName, pm_flags, Utils.getUserId(uid));
                 if(pinfo != null)
                     return new AppDescriptor(mPm, pinfo);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
