@@ -737,7 +737,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void sslkeyfileExportResult(final ActivityResult result) {
-        if(result.getResultCode() == RESULT_OK && result.getData() != null) {
+        if((result.getResultCode() == RESULT_OK) && (result.getData() != null) && (mKeylogFile != null)) {
             try(OutputStream out = getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
                 Utils.copy(mKeylogFile, out);
                 Utils.showToast(this, R.string.save_ok);
