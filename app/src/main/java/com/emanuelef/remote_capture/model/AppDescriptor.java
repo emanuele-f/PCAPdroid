@@ -23,6 +23,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.UserHandle;
 
 import androidx.annotation.Nullable;
 
@@ -89,6 +91,12 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
 
         // NOTE: this call is expensive
         mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            UserHandle handle = UserHandle.getUserHandleForUid(mUid);
+            mIcon = mPm.getUserBadgedIcon(mIcon, handle);
+        }
+
         //Log.d("Icon size", mIcon.getIntrinsicWidth() + "x" + mIcon.getIntrinsicHeight());
 
         return mIcon;

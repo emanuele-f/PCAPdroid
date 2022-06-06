@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -34,6 +35,8 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class AppsResolver {
@@ -41,6 +44,8 @@ public class AppsResolver {
     private final SparseArray<AppDescriptor> mApps;
     private final PackageManager mPm;
     private final Context mContext;
+    private Method getPackageInfoAsUser;
+    private boolean mFallbackToGlobalResolution;
     private Drawable mVirtualAppIcon;
 
     public AppsResolver(Context context) {
@@ -102,6 +107,7 @@ public class AppsResolver {
         return new AppDescriptor(pm, pinfo);
     }
 
+    @SuppressLint("DiscouragedPrivateApi")
     public @Nullable AppDescriptor get(int uid, int pm_flags) {
         AppDescriptor app = mApps.get(uid);
         if(app != null)
@@ -112,7 +118,8 @@ public class AppsResolver {
         try {
             packages = mPm.getPackagesForUid(uid);
         } catch (SecurityException e) {
-            // this is a bug in some devices https://github.com/AdguardTeam/AdguardForAndroid/issues/173
+            // A SecurityException is normally raised when trying to query a package of another user/profile
+            // without holding the INTERACT_ACROSS_USERS/INTERACT_ACROSS_PROFILES permissions
             e.printStackTrace();
         }
 
@@ -125,6 +132,22 @@ public class AppsResolver {
         // consistent name
         Arrays.sort(packages);
         String packageName = packages[0];
+
+        if(!mFallbackToGlobalResolution && CaptureService.isCapturingAsRoot()) {
+            // Try to resolve for the specific user
+            try {
+                if(getPackageInfoAsUser == null)
+                    getPackageInfoAsUser = PackageManager.class.getDeclaredMethod("getPackageInfoAsUser", String.class, int.class, int.class);
+
+                PackageInfo pinfo = (PackageInfo) getPackageInfoAsUser.invoke(mPm, packageName, pm_flags, Utils.getUserId(uid));
+                if(pinfo != null)
+                    return new AppDescriptor(mPm, pinfo);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                Log.w(TAG, "getPackageInfoAsUser call fails, falling back to standard resolution");
+                e.printStackTrace();
+                mFallbackToGlobalResolution = true;
+            }
+        }
 
         app = resolve(mPm, packageName, pm_flags);
         if(app != null)

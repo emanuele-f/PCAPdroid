@@ -28,6 +28,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -69,6 +71,7 @@ import java.util.List;
 
 public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
     private static final String TAG = "StatusFragment";
+    private Handler mHandler;
     private Menu mMenu;
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
@@ -148,6 +151,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mHandler = new Handler(Looper.getMainLooper());
         mInterfaceInfo = view.findViewById(R.id.interface_info);
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
@@ -313,11 +317,14 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
 
             if((app != null) && (app.getIcon() != null)) {
-                int height = mCollectorInfo.getMeasuredHeight();
-                Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
+                // Rendering after mCollectorInfo.setText is deferred, so getMeasuredHeight must be postponed
+                mHandler.post(() -> {
+                    int height = mCollectorInfo.getMeasuredHeight();
+                    Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
-                if(drawable != null)
-                    mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+                    if(drawable != null)
+                        mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+                });
             } else
                 mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
         } else

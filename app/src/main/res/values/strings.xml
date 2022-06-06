@@ -359,4 +359,6 @@
     <string name="app_intro_firewall_msg">With the integrated <a href='%1$s'>Firewall</a> you can easily block Internet access to individual apps and domains\n\nCombine this with the built-in traffic visibility to get the ultimate tool to protect your privacy</string>
     <string name="app_intro_malware_detection">Enhance the security of your device with the <a href='%1$s'>malware detection</a> feature\n\nBy using up-to-date blacklists, it can detect, block and alert malicious connections in real-time</string>
     <string name="app_intro_traffic_dump">PCAPdroid provides <a href='%1$s'>multiple ways</a> to dump the traffic in the standard PCAP format for further analysis\n\nVia the <a href='%2$s'>trailer option</a>, you can add app names to the packets and display them in Wireshark</string>
+    <string name="permission_granted">%1$s permission was granted</string>
+    <string name="permission_grant_fail">%1$s permission could not be granted</string>
 </resources>

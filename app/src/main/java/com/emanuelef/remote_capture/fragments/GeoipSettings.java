@@ -18,6 +18,7 @@
  */
 
 package com.emanuelef.remote_capture.fragments;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,14 +46,15 @@ public class GeoipSettings extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.geoip_preferences, rootKey);
+        Context context = requireContext();
 
         mStatus = requirePreference("status");
         mDelete = requirePreference("delete");
-        refreshStatus();
+        refreshStatus(context);
 
         mDelete.setOnPreferenceClickListener(preference -> {
-            Geolocation.deleteDb(requireContext());
-            refreshStatus();
+            Geolocation.deleteDb(context);
+            refreshStatus(context);
             return true;
         });
 
@@ -63,13 +65,14 @@ public class GeoipSettings extends PreferenceFragmentCompat {
         });
     }
 
-    private void refreshStatus() {
-        Date builtDate = Geolocation.getDbDate(requireContext());
+    // NOTE: passing explicit context as this may be called when requireContext would return null
+    private void refreshStatus(Context context) {
+        Date builtDate = Geolocation.getDbDate(context);
         if(builtDate != null) {
-            String dateStr = Utils.formatEpochFull(requireContext(), builtDate.getTime() / 1000);
+            String dateStr = Utils.formatEpochFull(context, builtDate.getTime() / 1000);
             mStatus.setSummary("DB-IP Lite free\n" +
                     String.format(getString(R.string.built_on), dateStr) + "\n" +
-                    String.format(getString(R.string.size_x), Utils.formatBytes(Geolocation.getDbSize(requireContext()))));
+                    String.format(getString(R.string.size_x), Utils.formatBytes(Geolocation.getDbSize(context))));
             mStatus.setEnabled(true);
         } else {
             mStatus.setSummary(R.string.geo_db_not_found);
@@ -96,15 +99,17 @@ public class GeoipSettings extends PreferenceFragmentCompat {
             executor.shutdownNow();
         });
 
+        // Hold reference to context to avoid garbage collection before the handler is called
+        final Context context = requireContext();
         executor.execute(() -> {
-            boolean result = Geolocation.downloadDb(requireContext());
+            boolean result = Geolocation.downloadDb(context);
 
             handler.post(() -> {
                 if(!result)
-                    Utils.showToastLong(requireContext(), R.string.download_failed);
+                    Utils.showToastLong(context, R.string.download_failed);
 
                 alert.dismiss();
-                refreshStatus();
+                refreshStatus(context);
             });
         });
     }

@@ -1,7 +1,8 @@
 # PCAPdroid
 
-PCAPdroid is an open source app which lets you monitor and export the network traffic of your device. \
-The app simulates a VPN to achieve non-root capture but, contrary to a VPN, the traffic is processed locally into the device.
+PCAPdroid is a privacy-friendly open source app which lets you track, analyze and block the connections made by the other apps in your device. It also allows you to export a PCAP dump of the traffic, extract metadata and much more!
+
+PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server. All the data is processed locally on the device.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="190" />
@@ -11,15 +12,19 @@ The app simulates a VPN to achieve non-root capture but, contrary to a VPN, the 
 Features:
 
 - Log and examine the connections made by user and system apps
-- Extract the SNI, DNS query, HTTP request, HTTP URL and the remote IP address
+- Extract the SNI, DNS query, HTTP URL and the remote IP address
+- Inspect HTTP requests and replies thanks to the built-in decoders
+- Inspect the full connections payload as hexdump/text
+- [Decrypt the HTTPS/TLS traffic](https://emanuele-f.github.io/PCAPdroid/tls_decryption) and export the SSLKEYLOGFILE
+- Dump the traffic to a PCAP file, download it from a browser, or stream it to a remote receiver for real time analysis (e.g. wireshark)
 - Create rules to filter out the good traffic and easily spot anomalies
-- Dump the traffic into a PCAP file, download it from a browser, or stream it to a remote receiver for real time analysis (e.g. wireshark)
-- Use the app in combination with mitmproxy to [decrypt HTTPS/TLS traffic](https://emanuele-f.github.io/PCAPdroid/tls_decryption) (technical knowledge required)
+- Identify the country and ASN of remote server via offline db lookups
 - On rooted devices, capture the traffic while other VPN apps are running
 
-Paid Features:
+Paid features:
 
-- Detect malicious connections by using third-party blacklists
+- [Firewall](https://emanuele-f.github.io/PCAPdroid/paid_features#51-firewall): create rules to block individual apps, domains and IP addresses
+- [Malware detection](https://emanuele-f.github.io/PCAPdroid/paid_features#52-malware-detection): detect malicious connections by using third-party blacklists
 
 If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
 
@@ -39,7 +44,7 @@ Check out the [quick start instructions](https://emanuele-f.github.io/PCAPdroid/
 
 The PCAPdroid project is sponsored by [AVEQ GmbH](https://aveq.info).
 
-If you are a business and want to sponsor this project, you can [reach me via email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20sponsorship).
+If you want to sponsor this project [drop me an email](mailto:black.silver@hotmail.it?subject=PCAPdroid%20sponsorship).
 
 ## Community
 
@@ -68,6 +73,7 @@ Some features of PCAPdroid can be integrated into a third-party app to provide p
 
 - [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
 - [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
+- [mitmproxy](https://github.com/mitmproxy/mitmproxy): a local proxy used to perform TLS decryption
 
 For the complete list of third party libraries and the corresponding licenses check out the "About" page in the app.
 

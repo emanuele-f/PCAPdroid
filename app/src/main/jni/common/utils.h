@@ -62,5 +62,6 @@ void tupleSwapPeers(zdtun_5tuple_t *tuple);
 char loglvl2char(int lvl);
 char* humanSize(char *buf, int bufsize, double bytes);
 void hexdump(const char *buf, size_t bufsize);
+int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_error);
 
 #endif // __LOG_UTILS_H__

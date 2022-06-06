@@ -19,15 +19,10 @@
 
 #include <sys/un.h>
 #include <linux/limits.h>
-#include <sys/wait.h>
-#include <paths.h>
 #include "pcapdroid.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
-
-// Needed for local compilation, don't remove
-extern char **environ;
 
 #ifdef FUZZING
 extern int openPcap(pcapdroid_t *pd);
@@ -50,81 +45,6 @@ typedef struct pcap_conn_t {
 
 /* ******************************************************* */
 
-static int run_cmd(const char *prog, const char *args, bool as_root, bool check_error) {
-    int in_p[2], out_p[2];
-    int rv = -1;
-    pid_t pid;
-
-    if((pipe(in_p) != 0) || (pipe(out_p) != 0)) {
-        log_f("pipe failed[%d]: %s", errno, strerror(errno));
-        return -1;
-    }
-
-    if((pid = fork()) == 0) {
-        // child
-        char *argp[] = {"sh", "-c", as_root ? "su" : "sh", NULL};
-
-        close(in_p[1]);
-        close(out_p[0]);
-
-        dup2(in_p[0], STDIN_FILENO);
-        dup2(out_p[1], STDOUT_FILENO);
-        dup2(out_p[1], STDERR_FILENO);
-
-        execve(_PATH_BSHELL, argp, environ);
-        fprintf(stderr, "execve failed[%d]: %s", errno, strerror(errno));
-        exit(1);
-    } else if(pid > 0) {
-        // parent
-        int out = out_p[0];
-        close(in_p[0]);
-        close(out_p[1]);
-
-        // write "su" command input
-        log_d("run_cmd[%d]: %s %s", pid, prog, args);
-        write(in_p[1], prog, strlen(prog));
-        write(in_p[1], " ", 1);
-        write(in_p[1], args, strlen(args));
-        write(in_p[1], "\n", 1);
-        close(in_p[1]);
-
-        waitpid(pid, &rv, 0);
-
-        if(check_error && (rv != 0)) {
-            char buf[128];
-            struct timeval timeout = {0};
-            fd_set fds;
-
-            buf[0] = '\0';
-            FD_ZERO(&fds);
-            FD_SET(out, &fds);
-
-            select(out + 1, &fds, NULL, NULL, &timeout);
-            if (FD_ISSET(out, &fds)) {
-                int num = read(out, buf, sizeof(buf) - 1);
-                if (num > 0)
-                    buf[num] = '\0';
-            }
-
-            log_f("su \"%s\" invocation failed: %s", prog, buf);
-            rv = -1;
-        }
-
-        close(out_p[0]);
-    } else {
-        log_f("fork() failed[%d]: %s", errno, strerror(errno));
-        close(in_p[0]);
-        close(in_p[1]);
-        close(out_p[0]);
-        close(out_p[1]);
-        return -1;
-    }
-
-    return rv;
-}
-
-/* ******************************************************* */
-
 static void kill_pcapd(pcapdroid_t *nc) {
     int pid;
     char pid_s[8];
@@ -138,7 +58,7 @@ static void kill_pcapd(pcapdroid_t *nc) {
 
     if(pid != 0) {
         log_d("Killing old pcapd with pid %d", pid);
-        run_cmd("kill", pid_s, true, false);
+        run_shell_cmd("kill", pid_s, true, false);
     }
 
     fclose(f);
@@ -244,7 +164,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     // Start the daemon
     char args[256];
     snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->app_filter, bpf);
-    if(run_cmd(pcapd, args, pd->root.as_root, true) != 0)
+    if(run_shell_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
     // Wait for pcapd to start

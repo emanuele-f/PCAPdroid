@@ -355,13 +355,13 @@
     <string name="country_and_asn">国家和 ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid 可查询本地数据库确定远程服务器所在国家或地区
 \n
-\n你必须先从 PCAPdroid 设置下载数据库</string>
+\n你必须先从应用设置下载地理位置数据库</string>
     <string name="vpn_setup_msg">PCAPdroid 模拟 VPN，以便在没有获取根权限的情况下捕获网络流量。
 \n
 \n要开始捕获流量，你需要在下一个屏幕中接受 VPN 请求</string>
     <string name="netd_block_missed">此连接由 netd 发起，因此无法被拦截</string>
     <string name="firewall_summary">阻断应用联网，配置特定域和 IP 地址规则。仅适用于非 root 捕获</string>
-    <string name="block_private_dns_summary">检测并可能阻止私人 DNS 来检查 DNS 流量。禁用此选项会妨碍检测</string>
+    <string name="block_private_dns_summary">检测并可能阻止私人 DNS 来检查 DNS 流量。禁用此选项会妨碍流量分析</string>
     <string name="app_intro_next_button">下一步</string>
     <string name="app_intro_done_button">完毕</string>
     <string name="ca_cert_export_failed">导出 CA 证书时出错

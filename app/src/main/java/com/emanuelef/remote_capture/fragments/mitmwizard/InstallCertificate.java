@@ -163,6 +163,14 @@ public class InstallCertificate extends StepFragment implements MitmListener {
     @Override
     public void onMitmGetCaCertificateResult(@Nullable String ca_pem) {
         mAddon.disconnect();
+
+        // NOTE: this may be called when context is null
+        Context context = getContext();
+        if(context == null) {
+            Log.d(TAG, "null context");
+            return;
+        }
+
         mCaPem = ca_pem;
 
         // NOTE: onMitmGetCaCertificateResult can be called by fallbackToCertExport
@@ -178,7 +186,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                     certOk();
                 else {
                     // Cert not installed
-                    MitmAddon.setDecryptionSetupDone(requireContext(), false);
+                    MitmAddon.setDecryptionSetupDone(context, false);
                     mStepIcon.setColorFilter(mWarnColor);
                     mStepButton.setEnabled(true);
 
@@ -195,7 +203,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                     });
                 }
             } else {
-                Toast.makeText(requireContext(), "addon did not return certificate", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "addon did not return certificate", Toast.LENGTH_LONG).show();
                 certFail();
             }
         }
