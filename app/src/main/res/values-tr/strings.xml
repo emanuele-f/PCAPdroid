@@ -352,4 +352,6 @@
     <string name="app_intro_malware_detection"><a href="%1$s">Kötü amaçlı yazılım algılama</a> özelliği ile aygıtınızın güvenliğini artırın
 \n
 \nGüncel kara listeleri kullanarak, kötü niyetli bağlantıları gerçek zamanlı olarak tespit edebilir, engelleyebilir ve uyarabilir</string>
+    <string name="permission_granted">%1$s izni verildi</string>
+    <string name="permission_grant_fail">%1$s izni verilemedi</string>
 </resources>
