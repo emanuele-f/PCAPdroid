@@ -378,4 +378,6 @@
 \n查看 <a href="%1$s">用户指南</a>了解更多可能防止解密的安全措施，以及如何绕过这些措施</string>
     <string name="app_intro_skip_button">跳过</string>
     <string name="app_intro_back_button">返回</string>
+    <string name="permission_granted">已授予 %1$s 权限</string>
+    <string name="permission_grant_fail">无法授予 %1$s 权限</string>
 </resources>
