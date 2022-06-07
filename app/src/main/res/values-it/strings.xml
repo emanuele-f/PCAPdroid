@@ -351,4 +351,6 @@
     <string name="app_intro_traffic_dump">PCAPdroid dispone di <a href="%1$s">diversi metodi</a> per salvare il traffico in formato PCAP ed effettuare analisi successive
 \n
 \nTramite <a href="%2$s">l\'opzione di trailer</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
+    <string name="permission_granted">Il permesso %1$s è stato concesso</string>
+    <string name="permission_grant_fail">Non è stato possibile concedere il permesso %1$s</string>
 </resources>
