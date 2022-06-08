@@ -141,7 +141,7 @@ public class AppsResolver {
 
                 PackageInfo pinfo = (PackageInfo) getPackageInfoAsUser.invoke(mPm, packageName, pm_flags, Utils.getUserId(uid));
                 if(pinfo != null)
-                    return new AppDescriptor(mPm, pinfo);
+                    app = new AppDescriptor(mPm, pinfo);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 Log.w(TAG, "getPackageInfoAsUser call fails, falling back to standard resolution");
                 e.printStackTrace();
@@ -149,7 +149,9 @@ public class AppsResolver {
             }
         }
 
-        app = resolve(mPm, packageName, pm_flags);
+        if(app == null)
+            app = resolve(mPm, packageName, pm_flags);
+
         if(app != null)
             mApps.put(uid, app);
 
