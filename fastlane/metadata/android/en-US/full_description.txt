@@ -17,4 +17,4 @@ PCAPdroid simulates a VPN in order to capture the network traffic without root. 
 
 If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
 
-You can join the PCAPdroid community on <a href="https://t.me/PCAPdroid">telegram</a> or on <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a>.
+Join the PCAPdroid international community on <a href="https://t.me/PCAPdroid">telegram</a> or on <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a>.
