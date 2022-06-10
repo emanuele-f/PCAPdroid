@@ -1,6 +1,6 @@
 ## 3.1 Introduction
 
-PCAPdroid has the ability to decrypt the TLS traffic and display the decrypted payload directly into the app. Moreover, when dumping traffic to PCAP, it generates a `SSLKEYLOGFILE`, containing the decryption secrets, which can be loaded into other apps like Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the generated PCAP file.
+Since version 1.5.0, PCAPdroid has the ability to decrypt the TLS traffic and display the decrypted payload directly into the app. Moreover, it can generate a `SSLKEYLOGFILE` containing the decryption secrets, which can be used to decrypt the generated PCAP file in other tools.
 
 Most apps today employ TLS to secure their data against inspection and tampering. Such connections are reported in PCAPdroid with either the TLS or the HTTPS protocol. Decryption can be useful in the following contexts:
 
@@ -19,7 +19,7 @@ Current limitations:
 - Decrypting STARTTLS [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4215)
 - There are some protocol-specific limitations, check out [the mitmproxy docs](https://docs.mitmproxy.org/stable/concepts-protocols/#protocols) for more details
 
-TLS decryption on Android is not an easy task, technical knowledge and familiarity with the topic is required. There are many pitfalls and limitations which are be discussed below. A rooted device will help you being successful in most circumstances.
+TLS decryption on Android is not an easy task, technical knowledge and familiarity with the topic is required. There are many caveats and which are be discussed below. A rooted device will help you being successful in most circumstances.
 
 
 ## 3.2 Initial setup
@@ -50,8 +50,10 @@ The lock icon and color indicates the decryption status, which is also reported 
 You can easily show decrypted or decryption-failed connections via the "Edit Filter" dialog under the filter icon.
 If you tap on a decrypted connection, the payload and the HTTP tabs will show the decrypted payload data.
 
+If the PCAP dump is enabled, after you stop the capture you will be prompted to save the `SSLKEYLOGFILE`, which you can load in Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the PCAP file.
 
-## 3.4 Pitfalls and possible solutions
+
+## 3.4 Caveats and possible solutions
 
 Google chrome is a relatively easy app to decrypt. If you try to decrypt other apps you will soon face some problems, which can mostly addressed with a rooted device and the right tools.
 
