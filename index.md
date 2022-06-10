@@ -16,7 +16,7 @@ Welcome to the PCAPdroid User Guide.
     - [3.1 Introduction](tls_decryption#31-introduction)
     - [3.2 Initial setup](tls_decryption#32-initial-setup)
     - [3.3 Decrypting](tls_decryption#33-decrypting)
-    - [3.4 Pitfalls and possible solutions](tls_decryption#34-pitfalls-and-possible-solutions)
+    - [3.4 Caveats and possible solutions](tls_decryption#34-caveats-and-possible-solutions)
     - [3.5 Decrypting via an external mitmproxy](tls_decryption#35-decrypting-via-an-external-mitmproxy)
 - [4. Advanced Features](advanced_features)
     - [4.1 DNS Server](advanced_features#41-dns-server)
