@@ -50,6 +50,11 @@ The lock icon and color indicates the decryption status, which is also reported 
 You can easily show decrypted or decryption-failed connections via the "Edit Filter" dialog under the filter icon.
 If you tap on a decrypted connection, the payload and the HTTP tabs will show the decrypted payload data.
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/decryption_1.jpg" width="250" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/decryption_2.jpg" width="250" />
+</p>
+
 If the PCAP dump is enabled, after you stop the capture you will be prompted to save the `SSLKEYLOGFILE`, which you can load in Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the PCAP file.
 
 
