@@ -17,4 +17,4 @@ PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır. U
 
 Paket incelemesi yapmak için PCAPdroid kullanmayı düşünüyorsanız, lütfen kılavuzun <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>ilgili bölümüne</a> göz atın.
 
-PCAPdroid topluluğuna <a href="https://t.me/PCAPdroid">telegram</a> veya <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a> üzerinden katılabilirsiniz.
+PCAPdroid uluslararası topluluğuna <a href="https://t.me/PCAPdroid">telegram</a> veya <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a> üzerinden katılın.
