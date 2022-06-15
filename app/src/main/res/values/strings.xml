@@ -361,4 +361,5 @@
     <string name="app_intro_traffic_dump">PCAPdroid provides <a href='%1$s'>multiple ways</a> to dump the traffic in the standard PCAP format for further analysis\n\nVia the <a href='%2$s'>trailer option</a>, you can add app names to the packets and display them in Wireshark</string>
     <string name="permission_granted">%1$s permission was granted</string>
     <string name="permission_grant_fail">%1$s permission could not be granted</string>
+    <string name="connection_not_found">Could not find the given connection</string>
 </resources>
