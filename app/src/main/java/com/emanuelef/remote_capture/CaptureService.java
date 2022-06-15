@@ -599,10 +599,19 @@ public class CaptureService extends VpnService implements Runnable {
             }
         };
 
-        cm.registerNetworkCallback(
-                new NetworkRequest.Builder()
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
-                mNetworkCallback);
+        try {
+            cm.registerNetworkCallback(
+                    new NetworkRequest.Builder()
+                            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
+                    mNetworkCallback);
+        } catch (SecurityException e) {
+            // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
+            e.printStackTrace();
+
+            Log.w(TAG, "registerNetworkCallback failed, DNS server detection disabled");
+            dns_server = FALLBACK_DNS_SERVER;
+            mNetworkCallback = null;
+        }
     }
 
     private void unregisterNetworkCallbacks() {

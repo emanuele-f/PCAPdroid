@@ -490,15 +490,20 @@ public class Utils {
     public static boolean hasVPNRunning(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if(cm != null) {
-            Network[] networks = cm.getAllNetworks();
+            try {
+                Network[] networks = cm.getAllNetworks();
 
-            for(Network net : networks) {
-                NetworkCapabilities cap = cm.getNetworkCapabilities(net);
+                for(Network net : networks) {
+                    NetworkCapabilities cap = cm.getNetworkCapabilities(net);
 
-                if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                    Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
-                    return true;
+                    if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
+                        return true;
+                    }
                 }
+            } catch (SecurityException e) {
+                // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
+                e.printStackTrace();
             }
         }
 
