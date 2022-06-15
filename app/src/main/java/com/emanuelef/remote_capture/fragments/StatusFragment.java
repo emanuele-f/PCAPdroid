@@ -93,15 +93,14 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-
         mActivity = (MainActivity) context;
     }
 
     @Override
-    public void onDestroy() {
+    public void onDetach() {
+        super.onDetach();
         mActivity.setAppStateListener(null);
         mActivity = null;
-        super.onDestroy();
     }
 
     @Override
@@ -333,6 +332,9 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
     @Override
     public void appStateChanged(AppState state) {
+        if(getContext() == null)
+            return;
+
         if(mMenu != null) {
             if((state == AppState.running) || (state == AppState.stopping)) {
                 mStartBtn.setVisible(false);
