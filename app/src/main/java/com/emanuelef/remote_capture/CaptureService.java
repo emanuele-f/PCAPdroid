@@ -418,12 +418,6 @@ public class CaptureService extends VpnService implements Runnable {
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
-        } else {
-            // Root capture
-            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
-                boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
-                Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS");
-            }
         }
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
@@ -874,6 +868,12 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void run() {
         if(mSettings.root_capture) {
+            // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
+            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
+                boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
+                mHandler.post(() -> Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS"));
+            }
+
             runPacketLoop(-1, this, Build.VERSION.SDK_INT);
         } else {
             if(mParcelFileDescriptor != null) {
