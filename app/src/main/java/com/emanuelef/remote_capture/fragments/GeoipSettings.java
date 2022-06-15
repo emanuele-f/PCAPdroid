@@ -71,8 +71,8 @@ public class GeoipSettings extends PreferenceFragmentCompat {
         if(builtDate != null) {
             String dateStr = Utils.formatEpochFull(context, builtDate.getTime() / 1000);
             mStatus.setSummary("DB-IP Lite free\n" +
-                    String.format(getString(R.string.built_on), dateStr) + "\n" +
-                    String.format(getString(R.string.size_x), Utils.formatBytes(Geolocation.getDbSize(context))));
+                    String.format(context.getString(R.string.built_on), dateStr) + "\n" +
+                    String.format(context.getString(R.string.size_x), Utils.formatBytes(Geolocation.getDbSize(context))));
             mStatus.setEnabled(true);
         } else {
             mStatus.setSummary(R.string.geo_db_not_found);
