@@ -189,7 +189,7 @@
     <string name="blocked_pkts">Bloccata</string>
     <string name="n_pkts">%1$s pacchetti</string>
     <string name="show_only_blocked">Connessioni bloccate</string>
-    <string name="blocked_connection_filter">Bloccate</string>
+    <string name="blocked_connection_filter">Bloccata</string>
     <string name="paid_features">Funzioni a pagamento</string>
     <string name="unlock_code">Codice di sblocco</string>
     <string name="validate">Convalida</string>
@@ -355,7 +355,7 @@
     <string name="permission_grant_fail">Non è stato possibile concedere il permesso %1$s</string>
     <string name="low_memory_info">L\'app sta esaurendo la memoria disponibile, attenzione a possibili crash</string>
     <string name="firewall_filter">Firewall: %1$s</string>
-    <string name="allowed_connection_filter">Permesse</string>
+    <string name="allowed_connection_filter">Permessa</string>
     <string name="heap_usage">Utilizzo heap</string>
     <string name="memory_usage">Utilizzo della memoria</string>
     <string name="connection_not_found">Impossibile individuare questa connessione</string>
