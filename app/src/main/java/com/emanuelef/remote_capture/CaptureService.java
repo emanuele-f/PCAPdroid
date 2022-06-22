@@ -233,15 +233,19 @@ public class CaptureService extends VpnService implements Runnable {
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
-
             Log.d(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
-            if(mIsAlwaysOnVPN)
-                mSettings.root_capture = false;
         } else {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
         }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            mIsAlwaysOnVPN |= isAlwaysOn();
+
+        Log.d(TAG, "alwaysOn? " + mIsAlwaysOnVPN);
+        if(mIsAlwaysOnVPN)
+            mSettings.root_capture = false;
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
@@ -571,8 +575,8 @@ public class CaptureService extends VpnService implements Runnable {
     public void notifyLowMemory(CharSequence msg) {
         Notification notification = new NotificationCompat.Builder(this, NOTIFY_CHAN_OTHER)
                 .setAutoCancel(true)
-                .setSmallIcon(R.drawable.ic_exclamation_triangle_solid)
-                .setColor(ContextCompat.getColor(this, R.color.warning))
+                .setSmallIcon(R.drawable.ic_logo)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setWhen(System.currentTimeMillis())
@@ -1036,30 +1040,32 @@ public class CaptureService extends VpnService implements Runnable {
     private void handleLowMemory() {
         Log.w(TAG, "handleLowMemory called");
         mLowMemory = true;
+        boolean fullPayload = getCurPayloadMode() == Prefs.PayloadMode.FULL;
 
-        if(getCurPayloadMode() == Prefs.PayloadMode.FULL) {
-            Log.w(TAG, "Releasing full payload memory");
+        if(fullPayload) {
+            Log.w(TAG, "Disabling full payload");
 
             // Disable full payload for new connections
             mSettings.full_payload = false;
             setPayloadMode(Prefs.PayloadMode.NONE.ordinal());
 
-            // Release memory for existing connections
-            if(conn_reg != null) {
-                conn_reg.releasePayloadMemory();
-
-                // Reclaim released memory
-                System.gc();
-
-                Log.i(TAG, "Memory stats after GC:\n" + Utils.getMemoryStats(this));
-            }
-
             if(mSettings.tls_decryption) {
                 // TLS decryption without payload has little use, stop the capture all together
                 stopService();
                 notifyLowMemory(getString(R.string.capture_stopped_low_memory));
-            } else
+            } else {
+                // Release memory for existing connections
+                if(conn_reg != null) {
+                    conn_reg.releasePayloadMemory();
+
+                    // *possibly* call the gc
+                    System.gc();
+
+                    Log.i(TAG, "Memory stats full payload release:\n" + Utils.getMemoryStats(this));
+                }
+
                 notifyLowMemory(getString(R.string.full_payload_disabled));
+            }
         } else {
             // TODO lower memory consumption (e.g. reduce connections register size)
             Log.w(TAG, "low memory detected, expect crashes");
