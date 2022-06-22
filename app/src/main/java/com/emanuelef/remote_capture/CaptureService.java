@@ -1037,11 +1037,11 @@ public class CaptureService extends VpnService implements Runnable {
     public void onTrimMemory(int level) {
         String lvlStr = Utils.trimlvl2str(level);
         boolean lowMemory = (level != TRIM_MEMORY_UI_HIDDEN) && (level >= TRIM_MEMORY_RUNNING_LOW);
-        boolean critical = lowMemory && (level >= TRIM_MEMORY_RUNNING_CRITICAL);
+        boolean critical = lowMemory && (level >= TRIM_MEMORY_COMPLETE);
 
         Log.w(TAG, "onTrimMemory: " + lvlStr + " - low= " + lowMemory + ", critical=" + critical);
 
-        if(lowMemory)
+        if(critical && !mLowMemory)
             handleLowMemory();
     }
 
