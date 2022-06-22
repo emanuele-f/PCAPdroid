@@ -380,4 +380,16 @@
     <string name="app_intro_back_button">返回</string>
     <string name="permission_granted">已授予 %1$s 权限</string>
     <string name="permission_grant_fail">无法授予 %1$s 权限</string>
+    <string name="memory_usage">内存用量</string>
+    <string name="capture_stopped_low_memory">流量捕获已停止</string>
+    <string name="low_memory_info">应用程序内存不足，预计会崩溃</string>
+    <string name="allowed_connection_filter">已允许</string>
+    <string name="firewall_filter">防火墙：%1$s</string>
+    <string name="connection_not_found">找不到给定的连接</string>
+    <string name="low_memory">内存不足</string>
+    <string name="full_payload_disabled">完整载荷选项已被禁用</string>
+    <string name="heap_usage">堆使用</string>
+    <string name="vpn_lockdown_notice">为了防止应用在 PCAPdroid 未运行时（例如重启后）访问互联网，你可以将 PCAPdroid 设为锁定模式下“永远开启的VPN”。
+\n
+\n你现在要打开 VPN 设置吗？</string>
 </resources>

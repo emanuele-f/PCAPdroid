@@ -231,7 +231,9 @@
     <string name="blocked_pkts">Blocked</string>
     <string name="n_pkts">%1$s pkts</string>
     <string name="show_only_blocked">Blocked connections</string>
-    <string name="blocked_connection_filter">blocked</string>
+    <string name="blocked_connection_filter">Blocked</string>
+    <string name="allowed_connection_filter">Allowed</string>
+    <string name="firewall_filter">Firewall: %1$s</string>
     <string name="paid_features">Paid features</string>
     <string name="unlock_code">Unlock code</string>
     <string name="validate">Validate</string>
@@ -361,4 +363,12 @@
     <string name="app_intro_traffic_dump">PCAPdroid provides <a href='%1$s'>multiple ways</a> to dump the traffic in the standard PCAP format for further analysis\n\nVia the <a href='%2$s'>trailer option</a>, you can add app names to the packets and display them in Wireshark</string>
     <string name="permission_granted">%1$s permission was granted</string>
     <string name="permission_grant_fail">%1$s permission could not be granted</string>
+    <string name="connection_not_found">Could not find the given connection</string>
+    <string name="low_memory">Low memory</string>
+    <string name="low_memory_info">The app is running out of memory, expect crashes</string>
+    <string name="full_payload_disabled">The full payload option has been disabled</string>
+    <string name="capture_stopped_low_memory">Capture has been stopped</string>
+    <string name="heap_usage">Heap usage</string>
+    <string name="memory_usage">Memory usage</string>
+    <string name="vpn_lockdown_notice">To prevent apps from accessing the Internet when PCAPdroid is not running (e.g. after a reboot) you can set PCAPdroid as an always-on VPN in lockdown mode.\n\nDo you want to open the VPN settings now?</string>
 </resources>

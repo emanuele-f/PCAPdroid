@@ -90,9 +90,11 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
-    private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
+    private static final String NOTIFY_CHAN_MALWARE_DETECTION = "Malware detection";
+    private static final String NOTIFY_CHAN_OTHER = "Other";
     private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
+    private static final int NOTIFY_ID_LOW_MEMORY = 2;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -119,7 +121,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
     private NotificationCompat.Builder mStatusBuilder;
-    private NotificationCompat.Builder mBlacklistedBuilder;
+    private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
@@ -140,6 +142,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int mSocks5Port;
     private String mSocks5Auth;
     private CaptureStats mLastStats;
+    private boolean mLowMemory;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -230,15 +233,19 @@ public class CaptureService extends VpnService implements Runnable {
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
-
             Log.d(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
-            if(mIsAlwaysOnVPN)
-                mSettings.root_capture = false;
         } else {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
         }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            mIsAlwaysOnVPN |= isAlwaysOn();
+
+        Log.d(TAG, "alwaysOn? " + mIsAlwaysOnVPN);
+        if(mIsAlwaysOnVPN)
+            mSettings.root_capture = false;
 
         // Retrieve DNS server
         dns_server = FALLBACK_DNS_SERVER;
@@ -280,6 +287,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
         last_connections = 0;
+        mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
@@ -418,12 +426,6 @@ public class CaptureService extends VpnService implements Runnable {
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
-        } else {
-            // Root capture
-            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
-                boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
-                Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS");
-            }
         }
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
@@ -487,8 +489,13 @@ public class CaptureService extends VpnService implements Runnable {
             nm.createNotificationChannel(chan);
 
             // Blacklisted connection notification channel
-            chan = new NotificationChannel(NOTIFY_CHAN_BLACKLISTED,
-                    NOTIFY_CHAN_BLACKLISTED, NotificationManager.IMPORTANCE_HIGH);
+            chan = new NotificationChannel(NOTIFY_CHAN_MALWARE_DETECTION,
+                    getString(R.string.malware_detection), NotificationManager.IMPORTANCE_HIGH);
+            nm.createNotificationChannel(chan);
+
+            // Other notifications
+            chan = new NotificationChannel(NOTIFY_CHAN_OTHER,
+                    getString(R.string.other_prefs), NotificationManager.IMPORTANCE_DEFAULT);
             nm.createNotificationChannel(chan);
         }
 
@@ -506,8 +513,8 @@ public class CaptureService extends VpnService implements Runnable {
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
-        // Blacklisted notification builder
-        mBlacklistedBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_BLACKLISTED)
+        // Malware notification builder
+        mMalwareBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_MALWARE_DETECTION)
                 .setSmallIcon(R.drawable.ic_skull)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -554,15 +561,30 @@ public class CaptureService extends VpnService implements Runnable {
         else
             rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.IP, conn.dst_ip);
 
-        mBlacklistedBuilder
+        mMalwareBuilder
                 .setContentIntent(pi)
                 .setWhen(System.currentTimeMillis())
                 .setContentTitle(String.format(getResources().getString(R.string.malicious_connection_app), app.getName()))
                 .setContentText(rule_label);
-        Notification notification = mBlacklistedBuilder.build();
+        Notification notification = mMalwareBuilder.build();
 
         // Use the UID as the notification ID to group alerts from the same app
         mHandler.post(() -> NotificationManagerCompat.from(this).notify(uid, notification));
+    }
+
+    public void notifyLowMemory(CharSequence msg) {
+        Notification notification = new NotificationCompat.Builder(this, NOTIFY_CHAN_OTHER)
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_logo)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(getString(R.string.low_memory))
+                .setContentText(msg)
+                .build();
+
+        mHandler.post(() -> NotificationManagerCompat.from(this).notify(NOTIFY_ID_LOW_MEMORY, notification));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -599,10 +621,19 @@ public class CaptureService extends VpnService implements Runnable {
             }
         };
 
-        cm.registerNetworkCallback(
-                new NetworkRequest.Builder()
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
-                mNetworkCallback);
+        try {
+            cm.registerNetworkCallback(
+                    new NetworkRequest.Builder()
+                            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
+                    mNetworkCallback);
+        } catch (SecurityException e) {
+            // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
+            e.printStackTrace();
+
+            Log.w(TAG, "registerNetworkCallback failed, DNS server detection disabled");
+            dns_server = FALLBACK_DNS_SERVER;
+            mNetworkCallback = null;
+        }
     }
 
     private void unregisterNetworkCallbacks() {
@@ -728,8 +759,17 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && (INSTANCE.mMitmReceiver != null) && INSTANCE.mMitmReceiver.isProxyRunning());
     }
 
+    public static boolean isLowMemory() {
+        return((INSTANCE != null) && (INSTANCE.mLowMemory));
+    }
+
     public static boolean isAlwaysOnVPN() {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public static boolean isLockdownVPN() {
+        return ((INSTANCE != null) && INSTANCE.isLockdownEnabled());
     }
 
     private void checkBlacklistsUpdates() {
@@ -865,6 +905,12 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void run() {
         if(mSettings.root_capture) {
+            // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
+            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
+                boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
+                mHandler.post(() -> Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS"));
+            }
+
             runPacketLoop(-1, this, Build.VERSION.SDK_INT);
         } else {
             if(mParcelFileDescriptor != null) {
@@ -874,6 +920,9 @@ public class CaptureService extends VpnService implements Runnable {
                 if((fd > 0) && (fd < fd_setsize)) {
                     Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                     runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+
+                    // if always-on VPN is stopped, it's not an always-on anymore
+                    mIsAlwaysOnVPN = false;
                 } else
                     Log.e(TAG, "Invalid VPN fd: " + fd);
             }
@@ -927,6 +976,9 @@ public class CaptureService extends VpnService implements Runnable {
 
             checkBlacklistsUpdates();
 
+            if(!mLowMemory)
+                checkAvailableHeap();
+
             // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
             // thus preventing the ConnectionsAdapter from interleaving other operations
             synchronized (conn_reg) {
@@ -966,6 +1018,66 @@ public class CaptureService extends VpnService implements Runnable {
             mDumper.stopDumper();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void checkAvailableHeap() {
+        // This does not account per-app jvm limits
+        long availableHeap = Utils.getAvailableHeap();
+
+        if(availableHeap <= Utils.LOW_HEAP_THRESHOLD) {
+            Log.w(TAG, "Detected low HEAP memory: " + Utils.formatBytes(availableHeap));
+            handleLowMemory();
+        }
+    }
+
+    // NOTE: this is only called on low system memory (e.g. obtained via getMemoryInfo). The app
+    // may still run out of heap memory, whose monitoring requires polling (see checkAvailableHeap)
+    @Override
+    public void onTrimMemory(int level) {
+        String lvlStr = Utils.trimlvl2str(level);
+        boolean lowMemory = (level != TRIM_MEMORY_UI_HIDDEN) && (level >= TRIM_MEMORY_RUNNING_LOW);
+        boolean critical = lowMemory && (level >= TRIM_MEMORY_RUNNING_CRITICAL);
+
+        Log.w(TAG, "onTrimMemory: " + lvlStr + " - low= " + lowMemory + ", critical=" + critical);
+
+        if(lowMemory)
+            handleLowMemory();
+    }
+
+    private void handleLowMemory() {
+        Log.w(TAG, "handleLowMemory called");
+        mLowMemory = true;
+        boolean fullPayload = getCurPayloadMode() == Prefs.PayloadMode.FULL;
+
+        if(fullPayload) {
+            Log.w(TAG, "Disabling full payload");
+
+            // Disable full payload for new connections
+            mSettings.full_payload = false;
+            setPayloadMode(Prefs.PayloadMode.NONE.ordinal());
+
+            if(mSettings.tls_decryption) {
+                // TLS decryption without payload has little use, stop the capture all together
+                stopService();
+                notifyLowMemory(getString(R.string.capture_stopped_low_memory));
+            } else {
+                // Release memory for existing connections
+                if(conn_reg != null) {
+                    conn_reg.releasePayloadMemory();
+
+                    // *possibly* call the gc
+                    System.gc();
+
+                    Log.i(TAG, "Memory stats full payload release:\n" + Utils.getMemoryStats(this));
+                }
+
+                notifyLowMemory(getString(R.string.full_payload_disabled));
+            }
+        } else {
+            // TODO lower memory consumption (e.g. reduce connections register size)
+            Log.w(TAG, "low memory detected, expect crashes");
+            notifyLowMemory(getString(R.string.low_memory_info));
         }
     }
 
@@ -1222,4 +1334,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native int getNumCheckedMalwareConnections();
     public static native int getNumCheckedFirewallConnections();
     public static native int rootCmd(String prog, String args);
+    public static native void setPayloadMode(int mode);
 }

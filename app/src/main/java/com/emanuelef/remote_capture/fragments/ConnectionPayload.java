@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -95,7 +94,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
         mConn = reg.getConnById(args.getInt("conn_id"));
         if(mConn == null) {
-            Log.e(TAG, "null connection");
+            Utils.showToast(requireContext(), R.string.connection_not_found);
             mActivity.finish();
             return;
         }

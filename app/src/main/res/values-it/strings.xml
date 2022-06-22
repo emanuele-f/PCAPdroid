@@ -189,7 +189,7 @@
     <string name="blocked_pkts">Bloccata</string>
     <string name="n_pkts">%1$s pacchetti</string>
     <string name="show_only_blocked">Connessioni bloccate</string>
-    <string name="blocked_connection_filter">bloccate</string>
+    <string name="blocked_connection_filter">Bloccata</string>
     <string name="paid_features">Funzioni a pagamento</string>
     <string name="unlock_code">Codice di sblocco</string>
     <string name="validate">Convalida</string>
@@ -353,4 +353,16 @@
 \nTramite <a href="%2$s">l\'opzione di trailer</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
     <string name="permission_granted">Il permesso %1$s è stato concesso</string>
     <string name="permission_grant_fail">Non è stato possibile concedere il permesso %1$s</string>
+    <string name="low_memory_info">L\'app sta esaurendo la memoria disponibile, attenzione a possibili crash</string>
+    <string name="firewall_filter">Firewall: %1$s</string>
+    <string name="allowed_connection_filter">Permessa</string>
+    <string name="heap_usage">Utilizzo heap</string>
+    <string name="memory_usage">Utilizzo della memoria</string>
+    <string name="connection_not_found">Impossibile individuare questa connessione</string>
+    <string name="low_memory">Poca memoria</string>
+    <string name="capture_stopped_low_memory">La cattura è stata arrestata</string>
+    <string name="full_payload_disabled">L\'opzione di contenuto intero è stata disattivata</string>
+    <string name="vpn_lockdown_notice">Per evitare che le app accedano a Internet quando PCAPdroid non è attivo (e.s. al riavvio) è possibile abilitare la modalità di VPN sempre attiva con blocco.
+\n
+\nVuoi aprire le impostazioni delle VPN\?</string>
 </resources>

@@ -68,6 +68,7 @@ public class Prefs {
     public static final String PREF_BLOCK_QUIC = "block_quic";
     public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
     public static final String PREF_APP_VERSION = "appver";
+    public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
 
     public enum DumpMode {
         NONE,
@@ -107,6 +108,10 @@ public class Prefs {
         p.edit().putInt(PREF_APP_VERSION, BuildConfig.VERSION_CODE).apply();
     }
 
+    public static void setLockdownVpnNoticeShown(SharedPreferences p) {
+        p.edit().putBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, true).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -137,4 +142,5 @@ public class Prefs {
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
     public static boolean blockQuic(SharedPreferences p)          { return(getTlsDecryptionEnabled(p) && p.getBoolean(PREF_BLOCK_QUIC, false)); }
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
+    public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
 }

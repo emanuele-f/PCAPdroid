@@ -50,6 +50,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -95,7 +96,7 @@ public class FirewallStatus extends Fragment {
 
         view.findViewById(R.id.show_connections).setOnClickListener(v -> {
             FilterDescriptor filter = new FilterDescriptor();
-            filter.onlyBLocked = true;
+            filter.filteringStatus = ConnectionDescriptor.FilteringStatus.BLOCKED;
 
             Intent intent = new Intent(requireContext(), ConnectionsActivity.class)
                     .putExtra(ConnectionsFragment.FILTER_EXTRA, filter);

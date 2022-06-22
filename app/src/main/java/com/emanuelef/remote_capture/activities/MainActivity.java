@@ -36,6 +36,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -475,11 +476,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            checkVpnLockdownNotice();
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private void checkVpnLockdownNotice() {
+        if(!Prefs.lockdownVpnNoticeShown(mPrefs) && Prefs.isFirewallEnabled(this, mPrefs) && !CaptureService.isLockdownVPN()) {
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setMessage(R.string.vpn_lockdown_notice)
+                    .setPositiveButton(R.string.yes, (d, whichButton) -> Utils.startActivity(this, new Intent("android.net.vpn.SETTINGS")))
+                    .setNegativeButton(R.string.no, (d, whichButton) -> {})
+                    .show();
+            dialog.setCanceledOnTouchOutside(false);
+
+            Prefs.setLockdownVpnNoticeShown(mPrefs);
+        }
     }
 
     private void openTelegram() {

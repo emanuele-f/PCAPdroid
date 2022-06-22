@@ -138,7 +138,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
 
         mConn = reg.getConnById(args.getInt("conn_id"));
         if(mConn == null) {
-            Log.e(TAG, "null connection");
+            Utils.showToast(requireContext(), R.string.connection_not_found);
             mActivity.finish();
             return;
         }

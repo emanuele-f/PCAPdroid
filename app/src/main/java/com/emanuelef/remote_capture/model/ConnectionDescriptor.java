@@ -72,6 +72,12 @@ public class ConnectionDescriptor {
         ERROR,
     }
 
+    public enum FilteringStatus {
+        INVALID,
+        ALLOWED,
+        BLOCKED
+    }
+
     /* Metadata */
     public final int ipver;
     public final int ipproto;
@@ -169,8 +175,12 @@ public class ConnectionDescriptor {
             // Payload for decryptable connections should be received via the MitmReceiver
             assert(isNotDecryptable());
 
-            payload_chunks = update.payload_chunks;
-            payload_truncated = update.payload_truncated;
+            // Some pending updates with payload may still be received after low memory has been
+            // triggered and payload disabled
+            if(!CaptureService.isLowMemory()) {
+                payload_chunks = update.payload_chunks;
+                payload_truncated = update.payload_truncated;
+            }
         }
     }
 
@@ -296,6 +306,10 @@ public class ConnectionDescriptor {
             payload_chunks = new ArrayList<>();
         payload_chunks.add(chunk);
         payload_length += chunk.payload.length;
+    }
+
+    public void dropPayload() {
+        payload_chunks = null;
     }
 
     private boolean hasHttp(boolean is_sent) {

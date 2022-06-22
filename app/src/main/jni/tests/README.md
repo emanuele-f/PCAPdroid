@@ -7,6 +7,9 @@ The fuzzers use [LibFuzzer](https://llvm.org/docs/LibFuzzer.html).
 The targets can be run with the provided `Makefile` as follows:
 
 ```bash
+# Install dependencies
+apt install make clang libpcap-dev cmake
+
 # Run the tests
 # pcapd log at build/test/test/pcapd.log
 make run_tests
@@ -16,6 +19,22 @@ make fuzz_pcap
 
 # Fuzz the pcapdroid capture
 make fuzz_capture
+```
+
+Cmake `3.18.1` or newer is required. If that's not available for your distribution, you can install it as follows:
+
+```
+apt purge cmake
+
+cd /usr
+wget https://github.com/Kitware/CMake/releases/download/v3.23.2/cmake-3.23.2-linux-x86_64.sh
+chmod +x cmake-3.23.2-linux-x86_64.sh
+
+# answer "n" when prompted to extract in subdir
+./cmake-3.23.2-linux-x86_64.sh
+
+# version should now be 3.23.2
+cmake --version
 ```
 
 The following sections describe the PCAP files contained in the `pcap` directory.

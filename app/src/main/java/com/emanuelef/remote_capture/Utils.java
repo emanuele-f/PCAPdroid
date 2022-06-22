@@ -22,12 +22,14 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -132,6 +134,7 @@ public class Utils {
     public static final int PER_USER_RANGE = 100000;
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
+    public static final int LOW_HEAP_THRESHOLD = 10485760 /* 10 MB */;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
 
@@ -490,15 +493,20 @@ public class Utils {
     public static boolean hasVPNRunning(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if(cm != null) {
-            Network[] networks = cm.getAllNetworks();
+            try {
+                Network[] networks = cm.getAllNetworks();
 
-            for(Network net : networks) {
-                NetworkCapabilities cap = cm.getNetworkCapabilities(net);
+                for(Network net : networks) {
+                    NetworkCapabilities cap = cm.getNetworkCapabilities(net);
 
-                if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                    Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
-                    return true;
+                    if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
+                        return true;
+                    }
                 }
+            } catch (SecurityException e) {
+                // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
+                e.printStackTrace();
             }
         }
 
@@ -1202,5 +1210,50 @@ public class Utils {
     @SuppressLint("DefaultLocale")
     public static boolean rootGrantPermission(Context context, String perm) {
         return CaptureService.rootCmd("pm", String.format("grant --user %d %s %s", getUserId(getPCAPdroidUid(context)), BuildConfig.APPLICATION_ID, perm)) == 0;
+    }
+
+    // Returns the available dalvik vm heap size for this app. Exceeding this size will result into
+    // an OOM exception
+    public static long getAvailableHeap() {
+        Runtime runtime = Runtime.getRuntime();
+
+        // maxMemory: max memory which can be allocated on this app vm (should correspond to getMemoryClass)
+        // totalMemory: currently allocated memory (used/unused) by the vm
+        // freeMemory: free portion of the totalMemory
+        long unallocated = runtime.maxMemory() - runtime.totalMemory();
+        return unallocated + runtime.freeMemory();
+    }
+
+    public static String trimlvl2str(int lvl) {
+        switch (lvl) {
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN:         return "TRIM_MEMORY_UI_HIDDEN";
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE:  return "TRIM_MEMORY_RUNNING_MODERATE";
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW:       return "TRIM_MEMORY_RUNNING_LOW";
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL:  return "TRIM_MEMORY_RUNNING_CRITICAL";
+            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND:        return "TRIM_MEMORY_BACKGROUND";
+            case ComponentCallbacks2.TRIM_MEMORY_MODERATE:          return "TRIM_MEMORY_MODERATE";
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:          return "TRIM_MEMORY_COMPLETE";
+            default:                                                return "TRIM_UNKNOWN";
+        }
+    }
+
+    public static String getMemoryStats(Context context) {
+        // This accounts system-wide limits
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+
+        ActivityManager.RunningAppProcessInfo memState = new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(memState);
+
+        // This accounts app-specific limits (dalvik heap)
+        Runtime runtime = Runtime.getRuntime();
+        long heapAvailable = getAvailableHeap();
+        boolean heapLow = heapAvailable <= LOW_HEAP_THRESHOLD;
+
+        return "[Runtime] free: " + Utils.formatBytes(runtime.freeMemory()) + ", max: " + Utils.formatBytes(runtime.maxMemory()) + ", allocated: " + Utils.formatBytes(runtime.totalMemory()) + ", available: " + Utils.formatBytes(heapAvailable) + ", low=" + heapLow +
+                "\n[MemoryState] pid: " + memState.pid + ", trimlevel: " + trimlvl2str(memState.lastTrimLevel) +
+                "\n[MemoryInfo] available: " + Utils.formatBytes(memoryInfo.availMem) + ", total: " + Utils.formatBytes(memoryInfo.totalMem) + ", lowthresh: " + Utils.formatBytes(memoryInfo.threshold) + ", low=" + memoryInfo.lowMemory +
+                "\n[MemoryClass] standard: " + activityManager.getMemoryClass() + " MB, large: " + activityManager.getLargeMemoryClass() + " MB";
     }
 }

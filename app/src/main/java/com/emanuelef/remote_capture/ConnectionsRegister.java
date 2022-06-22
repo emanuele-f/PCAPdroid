@@ -391,4 +391,13 @@ public class ConnectionsRegister {
         Collections.sort(rv);
         return rv;
     }
+
+    public synchronized void releasePayloadMemory() {
+        Log.d(TAG, "releaseFullPayloadMemory called");
+
+        for(int i=0; i<mCurItems; i++) {
+            ConnectionDescriptor conn = mItemsRing[i];
+            conn.dropPayload();
+        }
+    }
 }

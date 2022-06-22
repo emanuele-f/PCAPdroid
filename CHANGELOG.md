@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.1] - 2022-06-07
+- Resolve correct apps details with work profiles in root mode
+- Fix app filter icon not shown on capture start
+- Fix crash on screen rotation in connection details
+- Fix some occasional crashes
+
 ## [1.5.0] - 2022-06-02
 - No-root firewall: block apps, domains and IP addresses (paid feature)
 - Ability to decrypt TLS traffic, display decrypted data, export the SSLKEYLOGFILE

@@ -61,6 +61,7 @@ public class AppOverview extends Fragment {
     private TableLayout mTable;
     private TextView mPermissions;
     private PackageInfo mPinfo;
+    private boolean mCreateError;
 
     public static AppOverview newInstance(int uid) {
         AppOverview fragment = new AppOverview();
@@ -87,6 +88,8 @@ public class AppOverview extends Fragment {
         AppsResolver res = new AppsResolver(ctx);
         AppDescriptor dsc = res.get(mUid, PackageManager.GET_PERMISSIONS);
         if(dsc == null) {
+            mCreateError = true;
+            Utils.showToast(ctx, R.string.app_not_found, mUid);
             requireActivity().finish();
             return;
         }
@@ -157,12 +160,18 @@ public class AppOverview extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if(mCreateError)
+            return;
+
         updateStatus();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if(mCreateError)
+            return;
+
         mHandler.removeCallbacksAndMessages(null);
     }
 
@@ -215,8 +224,7 @@ public class AppOverview extends Fragment {
         if(stats == null)
             return;
 
-        mBytes.setText(String.format(getResources().getString(R.string.rcvd_and_sent),
-                Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
+        mBytes.setText(getString(R.string.rcvd_and_sent, Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
         mConnections.setText(Utils.formatInteger(ctx, stats.numConnections));
 
         mBlockedConnsRow.setVisibility(stats.numBlockedConnections > 0 ? View.VISIBLE : View.GONE);

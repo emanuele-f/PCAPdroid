@@ -28,6 +28,7 @@ import android.os.UserHandle;
 
 import androidx.annotation.Nullable;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 
 import java.io.Serializable;
@@ -90,12 +91,16 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
             return null;
 
         // NOTE: this call is expensive
-        mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) && CaptureService.isCapturingAsRoot()) {
+            // Contrary to "loadIcon", this returns the correct icon for main-profile apps
+            // when PCAPdroid is running into a work profile with root. For work-profile apps,
+            // the badge is added below via getUserHandleForUid
+            mIcon = mPackageInfo.applicationInfo.loadUnbadgedIcon(mPm);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             UserHandle handle = UserHandle.getUserHandleForUid(mUid);
             mIcon = mPm.getUserBadgedIcon(mIcon, handle);
-        }
+        } else
+            mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
 
         //Log.d("Icon size", mIcon.getIntrinsicWidth() + "x" + mIcon.getIntrinsicHeight());
 
