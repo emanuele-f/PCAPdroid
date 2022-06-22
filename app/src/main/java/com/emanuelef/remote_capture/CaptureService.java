@@ -140,6 +140,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int mSocks5Port;
     private String mSocks5Auth;
     private CaptureStats mLastStats;
+    private boolean mLowMemory;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -280,6 +281,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
         last_connections = 0;
+        mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
         mPcapUri = null;
         mDumper = null;
@@ -731,6 +733,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && (INSTANCE.mMitmReceiver != null) && INSTANCE.mMitmReceiver.isProxyRunning());
     }
 
+    public static boolean isLowMemory() {
+        return((INSTANCE != null) && (INSTANCE.mLowMemory));
+    }
+
     public static boolean isAlwaysOnVPN() {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
     }
@@ -936,6 +942,9 @@ public class CaptureService extends VpnService implements Runnable {
 
             checkBlacklistsUpdates();
 
+            if(!mLowMemory)
+                checkAvailableHeap();
+
             // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
             // thus preventing the ConnectionsAdapter from interleaving other operations
             synchronized (conn_reg) {
@@ -976,6 +985,61 @@ public class CaptureService extends VpnService implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void checkAvailableHeap() {
+        // This does not account per-app jvm limits
+        long availableHeap = Utils.getAvailableHeap();
+
+        if(availableHeap <= Utils.LOW_HEAP_THRESHOLD) {
+            Log.w(TAG, "Detected low HEAP memory: " + Utils.formatBytes(availableHeap));
+            handleLowMemory();
+        }
+    }
+
+    // NOTE: this is only called on low system memory (e.g. obtained via getMemoryInfo). The app
+    // may still run out of heap memory, whose monitoring requires polling (see checkAvailableHeap)
+    @Override
+    public void onTrimMemory(int level) {
+        String lvlStr = Utils.trimlvl2str(level);
+        boolean lowMemory = (level != TRIM_MEMORY_UI_HIDDEN) && (level >= TRIM_MEMORY_RUNNING_LOW);
+        boolean critical = lowMemory && (level >= TRIM_MEMORY_RUNNING_CRITICAL);
+
+        Log.w(TAG, "onTrimMemory: " + lvlStr + " - low= " + lowMemory + ", critical=" + critical);
+
+        if(lowMemory)
+            handleLowMemory();
+    }
+
+    private void handleLowMemory() {
+        Log.w(TAG, "handleLowMemory called");
+        mLowMemory = true;
+
+        if(getCurPayloadMode() == Prefs.PayloadMode.FULL) {
+            Log.w(TAG, "Releasing full payload memory");
+
+            // Disable full payload for new connections
+            mSettings.full_payload = false;
+            setPayloadMode(Prefs.PayloadMode.NONE.ordinal());
+
+            // Release memory for existing connections
+            if(conn_reg != null) {
+                conn_reg.releasePayloadMemory();
+
+                // Reclaim released memory
+                System.gc();
+
+                Log.i(TAG, "Memory stats after GC:\n" + Utils.getMemoryStats(this));
+            }
+
+            if(mSettings.tls_decryption) {
+                // TLS decryption without payload has little use, stop the capture all together
+                stopService();
+                mHandler.post(() -> Utils.showToastLong(this, R.string.capture_stopped_low_memory));
+            } else
+                mHandler.post(() -> Utils.showToastLong(this, R.string.full_payload_memory_released));
+        } else // TODO lower memory consumption (e.g. reduce connections register size)
+            Log.w(TAG, "low memory detected, expect crashes");
     }
 
     /* The following methods are called from native code */
@@ -1231,4 +1295,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native int getNumCheckedMalwareConnections();
     public static native int getNumCheckedFirewallConnections();
     public static native int rootCmd(String prog, String args);
+    public static native void setPayloadMode(int mode);
 }

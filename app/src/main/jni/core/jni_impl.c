@@ -806,6 +806,21 @@ Java_com_emanuelef_remote_1capture_CaptureService_rootCmd(JNIEnv *env, jclass cl
     return rv;
 }
 
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setPayloadMode(JNIEnv *env, jclass clazz, jint mode) {
+    pcapdroid_t *pd = global_pd;
+    if(!pd) {
+        log_e("NULL pd instance");
+        return;
+    }
+
+    pd->payload_mode = mode;
+}
+
+/* ******************************************************* */
+
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize) {
     JNIEnv *env = pd->env;
 
