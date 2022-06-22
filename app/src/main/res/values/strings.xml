@@ -368,4 +368,5 @@
     <string name="capture_stopped_low_memory">Capture has been stopped</string>
     <string name="heap_usage">Heap usage</string>
     <string name="memory_usage">Memory usage</string>
+    <string name="vpn_lockdown_notice">To prevent apps from accessing the Internet when PCAPdroid is not running (e.g. after a reboot) you can set PCAPdroid as an always-on VPN in lockdown mode.\n\nDo you want to open the VPN settings now?</string>
 </resources>

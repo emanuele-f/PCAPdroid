@@ -767,6 +767,11 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public static boolean isLockdownVPN() {
+        return ((INSTANCE != null) && INSTANCE.isLockdownEnabled());
+    }
+
     private void checkBlacklistsUpdates() {
         if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
@@ -915,6 +920,9 @@ public class CaptureService extends VpnService implements Runnable {
                 if((fd > 0) && (fd < fd_setsize)) {
                     Log.d(TAG, "VPN fd: " + fd + " - FD_SETSIZE: " + fd_setsize);
                     runPacketLoop(fd, this, Build.VERSION.SDK_INT);
+
+                    // if always-on VPN is stopped, it's not an always-on anymore
+                    mIsAlwaysOnVPN = false;
                 } else
                     Log.e(TAG, "Invalid VPN fd: " + fd);
             }
