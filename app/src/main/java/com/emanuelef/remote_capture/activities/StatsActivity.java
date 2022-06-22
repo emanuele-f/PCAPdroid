@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.activities;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,8 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.CaptureStats;
 
+import java.util.Locale;
+
 public class StatsActivity extends BaseActivity {
     private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
@@ -50,7 +53,9 @@ public class StatsActivity extends BaseActivity {
     private TextView mDroppedConns;
     private TextView mDroppedPkts;
     private TextView mTotConns;
-    private TextView mMaxFd;
+    private TextView mHeapUsage;
+    private TextView mMemUsage;
+    private TextView mLowMem;
     private TextView mOpenSocks;
     private TextView mDnsServer;
     private TextView mDnsQueries;
@@ -73,7 +78,9 @@ public class StatsActivity extends BaseActivity {
         mDroppedConns = findViewById(R.id.dropped_connections);
         mDroppedPkts = findViewById(R.id.pkts_dropped);
         mTotConns = findViewById(R.id.tot_connections);
-        mMaxFd = findViewById(R.id.max_fd);
+        mHeapUsage = findViewById(R.id.heap_usage);
+        mMemUsage = findViewById(R.id.mem_usage);
+        mLowMem = findViewById(R.id.low_mem_detected);
         mOpenSocks = findViewById(R.id.open_sockets);
         mDnsQueries = findViewById(R.id.dns_queries);
         mDnsServer = findViewById(R.id.dns_server);
@@ -81,7 +88,6 @@ public class StatsActivity extends BaseActivity {
 
         if(CaptureService.isCapturingAsRoot()) {
             findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
-            findViewById(R.id.max_fd_row).setVisibility(View.GONE);
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
         } else
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
@@ -120,9 +126,10 @@ public class StatsActivity extends BaseActivity {
         mDroppedConns.setText(Utils.formatNumber(this, stats.num_dropped_conns));
         mDroppedPkts.setText(Utils.formatNumber(this, stats.pkts_dropped));
         mTotConns.setText(Utils.formatNumber(this, stats.tot_conns));
-        mMaxFd.setText(Utils.formatNumber(this, stats.max_fd));
         mOpenSocks.setText(Utils.formatNumber(this, stats.num_open_sockets));
         mDnsQueries.setText(Utils.formatNumber(this, stats.num_dns_queries));
+
+        updateMemoryStats();
 
         if(!CaptureService.isDNSEncrypted()) {
             findViewById(R.id.dns_server_row).setVisibility(View.VISIBLE);
@@ -140,6 +147,26 @@ public class StatsActivity extends BaseActivity {
             mAllocStats.setVisibility(View.VISIBLE);
             mAllocStats.setText(stats.alloc_summary);
         }
+    }
+
+    private void updateMemoryStats() {
+        Locale locale = Utils.getPrimaryLocale(this);
+        long heapAvailable = Utils.getAvailableHeap();
+        long heapMax = Runtime.getRuntime().maxMemory();
+
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+
+        mHeapUsage.setText(String.format(locale, "%s / %s (%d%%)", Utils.formatBytes(heapMax - heapAvailable),
+                Utils.formatBytes(heapMax),
+                (heapMax - heapAvailable) * 100 / heapMax));
+
+        mMemUsage.setText(String.format(locale, "%s / %s (%d%%)", Utils.formatBytes(memoryInfo.totalMem - memoryInfo.availMem),
+                Utils.formatBytes(memoryInfo.totalMem),
+                (memoryInfo.totalMem - memoryInfo.availMem) * 100 / memoryInfo.totalMem));
+
+        mLowMem.setText(getString(CaptureService.isLowMemory() ? R.string.yes : R.string.no));
     }
 
     @Override

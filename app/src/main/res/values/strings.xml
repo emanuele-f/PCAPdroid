@@ -366,4 +366,6 @@
     <string name="low_memory_info">The app is running out of memory, expect crashes</string>
     <string name="full_payload_disabled">The full payload option has been disabled</string>
     <string name="capture_stopped_low_memory">Capture has been stopped</string>
+    <string name="heap_usage">Heap usage</string>
+    <string name="memory_usage">Memory usage</string>
 </resources>
