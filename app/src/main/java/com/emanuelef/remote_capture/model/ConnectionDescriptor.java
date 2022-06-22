@@ -72,6 +72,12 @@ public class ConnectionDescriptor {
         ERROR,
     }
 
+    public enum FilteringStatus {
+        INVALID,
+        ALLOWED,
+        BLOCKED
+    }
+
     /* Metadata */
     public final int ipver;
     public final int ipproto;

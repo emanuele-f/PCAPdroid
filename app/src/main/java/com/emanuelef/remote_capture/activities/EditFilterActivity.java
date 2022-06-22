@@ -39,6 +39,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.DecryptionStatus;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor.FilteringStatus;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
@@ -54,8 +55,8 @@ public class EditFilterActivity extends BaseActivity {
     private static final String TAG = "FilterEditActivity";
     private FilterDescriptor mFilter;
     private CheckBox mHideMasked;
-    private CheckBox mOnlyBlocked;
     private CheckBox mOnlyBlacklisted;
+    private ArrayList<Pair<FilteringStatus, Chip>> mFirewallChips;
     private ArrayList<Pair<Status, Chip>> mStatusChips;
     private ArrayList<Pair<DecryptionStatus, Chip>> mDecChips;
     private ChipGroup mInterfaceGroup;
@@ -82,7 +83,6 @@ public class EditFilterActivity extends BaseActivity {
             mFilter = new FilterDescriptor();
 
         mHideMasked = findViewById(R.id.not_hidden);
-        mOnlyBlocked = findViewById(R.id.only_blocked);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
         mInterfaceGroup = findViewById(R.id.interfaces);
 
@@ -91,6 +91,11 @@ public class EditFilterActivity extends BaseActivity {
             editIntent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.VISUALIZATION_MASK);
             startActivity(editIntent);
         });
+
+        mFirewallChips = new ArrayList<>(Arrays.asList(
+                new Pair<>(FilteringStatus.BLOCKED, findViewById(R.id.status_blocked)),
+                new Pair<>(FilteringStatus.ALLOWED, findViewById(R.id.status_allowed))
+        ));
 
         mStatusChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(Status.STATUS_ACTIVE, findViewById(R.id.status_active)),
@@ -116,8 +121,10 @@ public class EditFilterActivity extends BaseActivity {
         if(!Prefs.isMalwareDetectionEnabled(this, prefs))
             mOnlyBlacklisted.setVisibility(View.GONE);
 
-        if(!billing.isFirewallVisible())
-            mOnlyBlocked.setVisibility(View.GONE);
+        if(billing.isFirewallVisible()) {
+            findViewById(R.id.firewall_label).setVisibility(View.VISIBLE);
+            findViewById(R.id.firewall_group).setVisibility(View.VISIBLE);
+        }
 
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         if((reg != null) && (reg.hasSeenMultipleInterfaces())) {
@@ -165,11 +172,11 @@ public class EditFilterActivity extends BaseActivity {
 
     private void model2view() {
         mHideMasked.setChecked(!mFilter.showMasked);
-        mOnlyBlocked.setChecked(mFilter.onlyBLocked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
 
         setCheckedChip(mStatusChips, mFilter.status);
         setCheckedChip(mDecChips, mFilter.decStatus);
+        setCheckedChip(mFirewallChips, mFilter.filteringStatus);
 
         if(mFilter.iface != null) {
             int num_chips = mInterfaceGroup.getChildCount();
@@ -185,11 +192,11 @@ public class EditFilterActivity extends BaseActivity {
 
     private void view2model() {
         mFilter.showMasked = !mHideMasked.isChecked();
-        mFilter.onlyBLocked = mOnlyBlocked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
 
         mFilter.status = getCheckedChip(mStatusChips, Status.STATUS_INVALID);
         mFilter.decStatus = getCheckedChip(mDecChips, DecryptionStatus.INVALID);
+        mFilter.filteringStatus = getCheckedChip(mFirewallChips, FilteringStatus.INVALID);
 
         int num_chips = mInterfaceGroup.getChildCount();
         for(int i=0; i<num_chips; i++) {

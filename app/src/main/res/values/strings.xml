@@ -231,7 +231,9 @@
     <string name="blocked_pkts">Blocked</string>
     <string name="n_pkts">%1$s pkts</string>
     <string name="show_only_blocked">Blocked connections</string>
-    <string name="blocked_connection_filter">blocked</string>
+    <string name="blocked_connection_filter">Blocked</string>
+    <string name="allowed_connection_filter">Allowed</string>
+    <string name="firewall_filter">Firewall: %1$s</string>
     <string name="paid_features">Paid features</string>
     <string name="unlock_code">Unlock code</string>
     <string name="validate">Validate</string>

@@ -27,6 +27,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.DecryptionStatus;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor.FilteringStatus;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -35,8 +36,8 @@ import java.io.Serializable;
 public class FilterDescriptor implements Serializable {
     public Status status;
     public boolean showMasked;
-    public boolean onlyBLocked;
     public boolean onlyBlacklisted;
+    public FilteringStatus filteringStatus;
     public DecryptionStatus decStatus;
     public String iface;
     public int uid = -2; // this is persistent and used internally (AppDetailsActivity)
@@ -48,8 +49,8 @@ public class FilterDescriptor implements Serializable {
     public boolean isSet() {
         return (status != Status.STATUS_INVALID)
                 || (decStatus != DecryptionStatus.INVALID)
+                || (filteringStatus != FilteringStatus.INVALID)
                 || (iface != null)
-                || onlyBLocked
                 || onlyBlacklisted
                 || (uid != 2)
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
@@ -57,10 +58,10 @@ public class FilterDescriptor implements Serializable {
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
-                && (!onlyBLocked || conn.is_blocked)
                 && (!onlyBlacklisted || conn.isBlacklisted())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
                 && ((decStatus == DecryptionStatus.INVALID) || (conn.getDecryptionStatus() == decStatus))
+                && ((filteringStatus == FilteringStatus.INVALID) || ((filteringStatus == FilteringStatus.BLOCKED) == conn.is_blocked))
                 && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)))
                 && ((uid == -2) || (uid == conn.uid));
     }
@@ -77,8 +78,6 @@ public class FilterDescriptor implements Serializable {
 
         if(!showMasked)
             addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
-        if(onlyBLocked)
-            addChip(inflater, group, R.id.blocked, ctx.getString(R.string.blocked_connection_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
         if(status != Status.STATUS_INVALID) {
@@ -89,6 +88,11 @@ public class FilterDescriptor implements Serializable {
             String label = String.format(ctx.getString(R.string.decryption_filter), ConnectionDescriptor.getDecryptionStatusLabel(decStatus, ctx));
             addChip(inflater, group, R.id.decryption_status, label);
         }
+        if(filteringStatus != FilteringStatus.INVALID) {
+            String label = ctx.getString(R.string.firewall_filter, ctx.getString((filteringStatus == FilteringStatus.BLOCKED) ?
+                    R.string.blocked_connection_filter : R.string.allowed_connection_filter));
+            addChip(inflater, group, R.id.firewall, label);
+        }
         if(iface != null)
             addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
     }
@@ -96,24 +100,24 @@ public class FilterDescriptor implements Serializable {
     public void clear(int filter_id) {
         if(filter_id == R.id.not_hidden)
             showMasked = true;
-        else if(filter_id == R.id.blocked)
-            onlyBLocked = false;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
         else if(filter_id == R.id.decryption_status)
             decStatus = DecryptionStatus.INVALID;
+        else if(filter_id == R.id.firewall)
+            filteringStatus = FilteringStatus.INVALID;
         else if(filter_id == R.id.capture_interface)
             iface = null;
     }
 
     public void clear() {
         showMasked = true;
-        onlyBLocked = false;
         onlyBlacklisted = false;
         status = Status.STATUS_INVALID;
         decStatus = DecryptionStatus.INVALID;
+        filteringStatus = FilteringStatus.INVALID;
         iface = null;
     }
 }

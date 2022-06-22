@@ -37,13 +37,6 @@
         </RelativeLayout>
 
         <CheckBox
-            android:id="@+id/only_blocked"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/show_only_blocked" />
-
-        <CheckBox
             android:id="@+id/only_blacklisted"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -133,6 +126,41 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/error"/>
+        </com.google.android.material.chip.ChipGroup>
+
+        <TextView
+            android:id="@+id/firewall_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/firewall"
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_marginBottom="5dp"/>
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/firewall_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/status_blocked"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/blocked_connection_filter"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/status_allowed"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/allowed_connection_filter"/>
         </com.google.android.material.chip.ChipGroup>
 
         <TextView
