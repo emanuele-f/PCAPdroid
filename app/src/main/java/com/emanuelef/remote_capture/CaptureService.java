@@ -90,9 +90,11 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
     private static final String NOTIFY_CHAN_VPNSERVICE = "VPNService";
-    private static final String NOTIFY_CHAN_BLACKLISTED = "Blacklisted";
+    private static final String NOTIFY_CHAN_MALWARE_DETECTION = "Malware detection";
+    private static final String NOTIFY_CHAN_OTHER = "Other";
     private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
+    private static final int NOTIFY_ID_LOW_MEMORY = 2;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -119,7 +121,7 @@ public class CaptureService extends VpnService implements Runnable {
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
     private NotificationCompat.Builder mStatusBuilder;
-    private NotificationCompat.Builder mBlacklistedBuilder;
+    private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver appsResolver;
@@ -483,8 +485,13 @@ public class CaptureService extends VpnService implements Runnable {
             nm.createNotificationChannel(chan);
 
             // Blacklisted connection notification channel
-            chan = new NotificationChannel(NOTIFY_CHAN_BLACKLISTED,
-                    NOTIFY_CHAN_BLACKLISTED, NotificationManager.IMPORTANCE_HIGH);
+            chan = new NotificationChannel(NOTIFY_CHAN_MALWARE_DETECTION,
+                    getString(R.string.malware_detection), NotificationManager.IMPORTANCE_HIGH);
+            nm.createNotificationChannel(chan);
+
+            // Other notifications
+            chan = new NotificationChannel(NOTIFY_CHAN_OTHER,
+                    getString(R.string.other_prefs), NotificationManager.IMPORTANCE_DEFAULT);
             nm.createNotificationChannel(chan);
         }
 
@@ -502,8 +509,8 @@ public class CaptureService extends VpnService implements Runnable {
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setPriority(NotificationCompat.PRIORITY_LOW); // see IMPORTANCE_LOW
 
-        // Blacklisted notification builder
-        mBlacklistedBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_BLACKLISTED)
+        // Malware notification builder
+        mMalwareBuilder = new NotificationCompat.Builder(this, NOTIFY_CHAN_MALWARE_DETECTION)
                 .setSmallIcon(R.drawable.ic_skull)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -550,15 +557,30 @@ public class CaptureService extends VpnService implements Runnable {
         else
             rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.IP, conn.dst_ip);
 
-        mBlacklistedBuilder
+        mMalwareBuilder
                 .setContentIntent(pi)
                 .setWhen(System.currentTimeMillis())
                 .setContentTitle(String.format(getResources().getString(R.string.malicious_connection_app), app.getName()))
                 .setContentText(rule_label);
-        Notification notification = mBlacklistedBuilder.build();
+        Notification notification = mMalwareBuilder.build();
 
         // Use the UID as the notification ID to group alerts from the same app
         mHandler.post(() -> NotificationManagerCompat.from(this).notify(uid, notification));
+    }
+
+    public void notifyLowMemory(CharSequence msg) {
+        Notification notification = new NotificationCompat.Builder(this, NOTIFY_CHAN_OTHER)
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_exclamation_triangle_solid)
+                .setColor(ContextCompat.getColor(this, R.color.warning))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(getString(R.string.low_memory))
+                .setContentText(msg)
+                .build();
+
+        mHandler.post(() -> NotificationManagerCompat.from(this).notify(NOTIFY_ID_LOW_MEMORY, notification));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -1035,11 +1057,14 @@ public class CaptureService extends VpnService implements Runnable {
             if(mSettings.tls_decryption) {
                 // TLS decryption without payload has little use, stop the capture all together
                 stopService();
-                mHandler.post(() -> Utils.showToastLong(this, R.string.capture_stopped_low_memory));
+                notifyLowMemory(getString(R.string.capture_stopped_low_memory));
             } else
-                mHandler.post(() -> Utils.showToastLong(this, R.string.full_payload_memory_released));
-        } else // TODO lower memory consumption (e.g. reduce connections register size)
+                notifyLowMemory(getString(R.string.full_payload_disabled));
+        } else {
+            // TODO lower memory consumption (e.g. reduce connections register size)
             Log.w(TAG, "low memory detected, expect crashes");
+            notifyLowMemory(getString(R.string.low_memory_info));
+        }
     }
 
     /* The following methods are called from native code */

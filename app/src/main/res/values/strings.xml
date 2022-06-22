@@ -362,6 +362,8 @@
     <string name="permission_granted">%1$s permission was granted</string>
     <string name="permission_grant_fail">%1$s permission could not be granted</string>
     <string name="connection_not_found">Could not find the given connection</string>
-    <string name="full_payload_memory_released">The app ran out of memory. Connections payload is now disabled</string>
-    <string name="capture_stopped_low_memory">Capture stopped due to low memory</string>
+    <string name="low_memory">Low memory</string>
+    <string name="low_memory_info">The app is running out of memory, expect crashes</string>
+    <string name="full_payload_disabled">The full payload option has been disabled</string>
+    <string name="capture_stopped_low_memory">Capture has been stopped</string>
 </resources>
