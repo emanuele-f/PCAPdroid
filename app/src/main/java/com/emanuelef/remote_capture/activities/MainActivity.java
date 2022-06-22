@@ -460,11 +460,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @RequiresApi(api = Build.VERSION_CODES.Q)
     private void checkVpnLockdownNotice() {
         if(!Prefs.lockdownVpnNoticeShown(mPrefs) && Prefs.isFirewallEnabled(this, mPrefs) && !CaptureService.isLockdownVPN()) {
-            new AlertDialog.Builder(this)
+            AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage(R.string.vpn_lockdown_notice)
-                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> Utils.startActivity(this, new Intent("android.net.vpn.SETTINGS")))
-                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                    .setPositiveButton(R.string.yes, (d, whichButton) -> Utils.startActivity(this, new Intent("android.net.vpn.SETTINGS")))
+                    .setNegativeButton(R.string.no, (d, whichButton) -> {})
                     .show();
+            dialog.setCanceledOnTouchOutside(false);
 
             Prefs.setLockdownVpnNoticeShown(mPrefs);
         }
