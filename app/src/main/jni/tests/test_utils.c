@@ -126,11 +126,12 @@ conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip,
 
   for(int i=0; i < pd->new_conns.cur_items; i++) {
     conn_and_tuple_t *conn = &pd->new_conns.items[i];
+    zdtun_ip_t dst_ip = conn->tuple.dst_ip;
 
     if((conn->tuple.ipproto == ipproto) &&
        (conn->tuple.dst_port == dst_port) &&
        (conn->tuple.ipver == ipver) &&
-       (!zdtun_cmp_ip(ipver, &conn->tuple.dst_ip, &ip)) &&
+       (!zdtun_cmp_ip(ipver, &dst_ip, &ip)) &&
        ((info == NULL) || ((conn->data->info != NULL) && !strcmp(info, conn->data->info)))) {
       found = conn;
       break;
