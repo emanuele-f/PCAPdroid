@@ -366,7 +366,7 @@ void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struc
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
-void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
+int pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
 const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, int ipproto);
 

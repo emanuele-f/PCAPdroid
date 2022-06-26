@@ -327,7 +327,10 @@ static void connection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
     // Send last notification
     // Will free the data in sendConnectionsDump
     data->update_type |= CONN_UPDATE_STATS;
-    pd_notify_connection_update(pd, tuple, data);
+    if(pd_notify_connection_update(pd, tuple, data) < 0) {
+        pd_purge_connection(pd, data);
+        return;
+    }
 
     pd_giveup_dpi(pd, data, tuple);
     data->status = zdtun_conn_get_status(conn_info);
