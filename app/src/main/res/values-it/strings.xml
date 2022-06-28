@@ -42,7 +42,6 @@
     <string name="dropped_connections">Connessioni interrotte</string>
     <string name="tot_connections">Connessioni totali</string>
     <string name="open_sockets">Socket aperti</string>
-    <string name="max_file_descriptor">FD massimo</string>
     <string name="bytes_sent">Bytes inviati</string>
     <string name="bytes_rcvd">Bytes ricevuti</string>
     <string name="packets_sent">Pacchetti inviati</string>
@@ -188,7 +187,6 @@
     <string name="firewall_rules">Regole del firewall</string>
     <string name="blocked_pkts">Bloccata</string>
     <string name="n_pkts">%1$s pacchetti</string>
-    <string name="show_only_blocked">Connessioni bloccate</string>
     <string name="blocked_connection_filter">Bloccata</string>
     <string name="paid_features">Funzioni a pagamento</string>
     <string name="unlock_code">Codice di sblocco</string>

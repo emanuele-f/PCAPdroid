@@ -178,7 +178,6 @@
     <string name="tot_connections">Alle tilkoblinger</string>
     <string name="capture_running">Fangst kjører</string>
     <string name="enable_ipv6_summary">Tillat IPv6-tilkoblinger til Internett. Kun bruk dette på nettverk med en IPv6-portner.</string>
-    <string name="max_file_descriptor">Maks. FD</string>
     <string name="packets_dropped">Pakker som ikke kom fram</string>
     <string name="installed_on">Installert</string>
     <string name="capture_prefs">Trafikkfangst</string>
@@ -208,7 +207,6 @@
     <string name="malware_detection">Skadevare-oppdagelse</string>
     <string name="connections_checked">Tilkoblinger sjekket</string>
     <string name="root_app_info">Systemnisser kjører med alle privilegier</string>
-    <string name="show_only_blocked">Blokkert av brannmur</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="last_update">Siste oppdatering</string>
     <string name="malicious_connections">Skadelige tilkoblinger</string>

@@ -49,7 +49,6 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="show_only_blocked">Koneksi yang diblokir</string>
     <string name="blocked_connection_filter">diblokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
@@ -80,7 +79,6 @@
     <string name="stats">Statistik</string>
     <string name="tot_connections">Jumlah koneksi</string>
     <string name="open_sockets">Buka soket</string>
-    <string name="max_file_descriptor">Maks FD</string>
     <string name="bytes_sent">Byte terkirim</string>
     <string name="packets_rcvd">Paket diterima</string>
     <string name="dropped_connections">Koneksi disingkirkan</string>

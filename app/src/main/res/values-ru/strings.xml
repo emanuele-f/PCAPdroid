@@ -42,7 +42,6 @@
     <string name="dropped_connections">Прерванные соединения</string>
     <string name="tot_connections">Всего соединений</string>
     <string name="open_sockets">Открытые сокеты</string>
-    <string name="max_file_descriptor">Максимальный ФД</string>
     <string name="bytes_sent">Байтов отправлено</string>
     <string name="bytes_rcvd">Байтов получено</string>
     <string name="packets_sent">Пакетов отправлено</string>
@@ -184,7 +183,6 @@
     <string name="private_dns_hinders_detection">Частный DNS препятствует обнаружению</string>
     <string name="firewall">Файрвол</string>
     <string name="paid_features">Платные возможности</string>
-    <string name="show_only_blocked">Заблокированные соединения</string>
     <string name="blocked_pkts">Заблокировано</string>
     <string name="n_pkts">%1$s пакетов</string>
     <string name="valid">Подтвержден</string>

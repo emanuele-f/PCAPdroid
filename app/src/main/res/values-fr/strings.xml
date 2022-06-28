@@ -104,7 +104,6 @@
     <string name="no_dump_info">Les PCAP ne seront pas extraits</string>
     <string name="http_server_info">Démarrer un serveur HTTP pour le téléchargement du PCAP</string>
     <string name="udp_exporter_info">Envoie le PCAP à un receveur UCP distant</string>
-    <string name="max_file_descriptor">Desc. fich. max</string>
     <string name="open_sockets">Ouvrir les sockets</string>
     <string name="http_server_port">Port du serveur HTTP</string>
     <string name="receiver_ip_address">Adresse IP du collecteur</string>
@@ -204,7 +203,6 @@
     <string name="firewall_rules">Règles du par-feu</string>
     <string name="paid_features">Fonctionnalités payantes</string>
     <string name="unlock_code">Code de déverrouillage</string>
-    <string name="show_only_blocked">Bloqué par le par-feu</string>
     <string name="no_intent_handler_found">Aucune application pour cette action</string>
     <string name="decryption_no_filter_warn">Sélectionnez une application cible lors du décryptage TLS pour éviter de perdre votre connexion internet</string>
     <string name="n_pkts">%1$s paq.</string>

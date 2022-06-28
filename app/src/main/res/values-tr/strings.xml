@@ -42,7 +42,6 @@
     <string name="dropped_connections">Düşürülen bağlantılar</string>
     <string name="tot_connections">Toplam bağlantı</string>
     <string name="open_sockets">Açık soketler</string>
-    <string name="max_file_descriptor">Azami dosya tanımlayıcısı</string>
     <string name="bytes_sent">Gönderilen bayt</string>
     <string name="bytes_rcvd">Alınan bayt</string>
     <string name="packets_sent">Gönderilen paketler</string>
@@ -133,7 +132,6 @@
     <string name="block">Engelle…</string>
     <string name="firewall">Güvenlik duvarı</string>
     <string name="n_pkts">%1$s paket</string>
-    <string name="show_only_blocked">Engellenen bağlantılar</string>
     <string name="blocked_connection_filter">Engellendi</string>
     <string name="unlock_code">Kilit açma kodu</string>
     <string name="validate">Doğrula</string>
