@@ -318,6 +318,9 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             if((app != null) && (app.getIcon() != null)) {
                 // Rendering after mCollectorInfo.setText is deferred, so getMeasuredHeight must be postponed
                 mHandler.post(() -> {
+                    if(getContext() == null)
+                        return;
+
                     int height = mCollectorInfo.getMeasuredHeight();
                     Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
 
