@@ -147,11 +147,11 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
 
     if(new_dns_server != 0) {
         // Reload DNS server
-        pd->vpn.dns_server = new_dns_server;
+        pd->vpn.ipv4.dns_server = new_dns_server;
         new_dns_server = 0;
 
         zdtun_ip_t ip = {0};
-        ip.ip4 = pd->vpn.dns_server;
+        ip.ip4 = pd->vpn.ipv4.dns_server;
         zdtun_set_dnat_info(pd->zdt, &ip, htons(53), 4);
 
         log_d("Using new DNS server");
@@ -160,9 +160,9 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
     if(pctx->tuple->ipproto == IPPROTO_ICMP)
         return true;
 
-    bool is_internal_dns = (tuple->ipver == 4) && (tuple->dst_ip.ip4 == pd->vpn.internal_dns);
+    bool is_internal_dns = pd->vpn.ipv4.enabled && (tuple->ipver == 4) && (tuple->dst_ip.ip4 == pd->vpn.ipv4.internal_dns);
     bool is_dns_server = is_internal_dns
-                         || ((tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &pd->ipv6.dns_server, 16) == 0));
+                         || (pd->vpn.ipv6.enabled && (tuple->ipver == 6) && (memcmp(&tuple->dst_ip.ip6, &pd->vpn.ipv6.dns_server, 16) == 0));
 
     if(!is_dns_server) {
         // try with known DNS servers
@@ -421,12 +421,16 @@ int run_vpn(pcapdroid_t *pd) {
     }
 
 #if ANDROID
-    pd->vpn.internal_ipv4 = getIPv4Pref(pd->env, pd->capture_service, "getVpnIPv4");
-    pd->vpn.internal_dns = getIPv4Pref(pd->env, pd->capture_service, "getVpnDns");
-    pd->vpn.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.known_dns_servers = blacklist_init();
     pd->vpn.block_quic = getIntPref(pd->env, pd->capture_service, "blockQuick");
+
+    pd->vpn.ipv4.enabled = (bool) getIntPref(pd->env, pd->capture_service, "getIPv4Enabled");
+    pd->vpn.ipv4.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
+    pd->vpn.ipv4.internal_dns = getIPv4Pref(pd->env, pd->capture_service, "getVpnDns");
+
+    pd->vpn.ipv6.enabled = (bool) getIntPref(pd->env, pd->capture_service, "getIPv6Enabled");
+    pd->vpn.ipv6.dns_server = getIPv6Pref(pd->env, pd->capture_service, "getIpv6DnsServer");
 #endif
 
     zdtun_callbacks_t callbacks = {
@@ -461,9 +465,11 @@ int run_vpn(pcapdroid_t *pd) {
             zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);
     }
 
-    zdtun_ip_t ip = {0};
-    ip.ip4 = pd->vpn.dns_server;
-    zdtun_set_dnat_info(zdt, &ip, ntohs(53), 4);
+    if(pd->vpn.ipv4.enabled) {
+        zdtun_ip_t ip = {0};
+        ip.ip4 = pd->vpn.ipv4.dns_server;
+        zdtun_set_dnat_info(zdt, &ip, ntohs(53), 4);
+    }
 
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -508,10 +514,11 @@ int run_vpn(pcapdroid_t *pd) {
                     goto housekeeping;
                 }
 
-                if((pkt.tuple.ipver == 6) && (!pd->ipv6.enabled)) {
+                if(((pkt.tuple.ipver == 6) && !pd->vpn.ipv6.enabled) ||
+                        ((pkt.tuple.ipver == 4) && !pd->vpn.ipv4.enabled)) {
                     char buf[512];
 
-                    log_d("ignoring IPv6 packet: %s",
+                    log_d("ignoring IPv%d packet: %s", pkt.tuple.ipver,
                                 zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
                     goto housekeeping;
                 }

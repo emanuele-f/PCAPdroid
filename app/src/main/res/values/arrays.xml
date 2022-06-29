@@ -28,6 +28,17 @@
         <item>@string/lang_english</item>
     </string-array>
 
+    <string-array name="ip_mode">
+        <item>ipv4</item>
+        <item>ipv6</item>
+        <item>both</item>
+    </string-array>
+    <string-array name="ip_mode_labels">
+        <item>@string/ipv4_only</item>
+        <item>@string/ipv6_only</item>
+        <item>@string/ip_both</item>
+    </string-array>
+
     <string-array name="app_theme">
         <item>system</item>
         <item>light</item>

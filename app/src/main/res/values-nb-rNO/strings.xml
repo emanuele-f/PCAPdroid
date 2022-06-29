@@ -58,7 +58,6 @@
     <string name="copy_to_clipboard">Kopier til utklippstavle</string>
     <string name="save_to_file">Lagre som fil</string>
     <string name="unknown_app">Ukjent</string>
-    <string name="ipv6">Skru på IPv6</string>
     <string name="error">Feil</string>
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang</string>
@@ -177,7 +176,6 @@
     <string name="pcap_file_info">Opprett en PCAP-fil i enhetslagring</string>
     <string name="tot_connections">Alle tilkoblinger</string>
     <string name="capture_running">Fangst kjører</string>
-    <string name="enable_ipv6_summary">Tillat IPv6-tilkoblinger til Internett. Kun bruk dette på nettverk med en IPv6-portner.</string>
     <string name="packets_dropped">Pakker som ikke kom fram</string>
     <string name="installed_on">Installert</string>
     <string name="capture_prefs">Trafikkfangst</string>

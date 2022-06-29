@@ -71,8 +71,6 @@
     <string name="about_text">PCAPdroid はルート権限なしで動作するオープン ソースのネットワーク キャプチャ、モニタリング ツールです</string>
     <string name="get_app">入手:</string>
     <string name="unknown_app">不明</string>
-    <string name="ipv6">IPv6 を有効にする</string>
-    <string name="enable_ipv6_summary">IPv6 インターネット接続を許可します。IPv6 ゲートウェイを搭載したネットワークでのみ有効にする必要があります</string>
     <string name="error">エラー</string>
     <string name="conn_status_unreachable">到達不能</string>
     <string name="other_prefs">その他</string>

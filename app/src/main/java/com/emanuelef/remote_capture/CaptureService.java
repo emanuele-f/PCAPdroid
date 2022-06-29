@@ -375,16 +375,19 @@ public class CaptureService extends VpnService implements Runnable {
             /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
              * server. */
             Builder builder = new Builder()
-                    .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
-                    .addRoute("0.0.0.0", 1)
-                    .addRoute("128.0.0.0", 1)
-                    .setMtu(VPN_MTU)
-                    .addDnsServer(vpn_dns);
+                    .setMtu(VPN_MTU);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 builder.setMetered(false);
 
-            if (mSettings.ipv6_enabled) {
+            if (getIPv4Enabled() == 1) {
+                builder.addAddress(vpn_ipv4, 30)
+                        .addRoute("0.0.0.0", 1)
+                        .addRoute("128.0.0.0", 1)
+                        .addDnsServer(vpn_dns);
+            }
+
+            if (getIPv6Enabled() == 1) {
                 builder.addAddress(VPN_IP6_ADDRESS, 128);
 
                 // Route unicast IPv6 addresses
@@ -1105,7 +1108,9 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getSocks5ProxyAuth() {  return(mSocks5Auth);  }
 
-    public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
+    public int getIPv4Enabled() { return((mSettings.ip_mode != Prefs.IpMode.IPV6_ONLY) ? 1 : 0); }
+
+    public int getIPv6Enabled() { return((mSettings.ip_mode != Prefs.IpMode.IPV4_ONLY) ? 1 : 0); }
 
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
 

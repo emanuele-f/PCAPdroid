@@ -204,11 +204,18 @@ typedef struct pcapdroid {
         struct {
             int tunfd;
             bool block_quic;
-            uint32_t dns_server;
-            uint32_t internal_dns;
-            uint32_t internal_ipv4;
             blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
+
+            struct {
+                bool enabled;
+                uint32_t dns_server;
+                uint32_t internal_dns;
+            } ipv4;
+            struct {
+                bool enabled;
+                struct in6_addr dns_server;
+            } ipv6;
         } vpn;
         struct {
             struct pcap_conn_t *connections;
@@ -238,11 +245,6 @@ typedef struct pcapdroid {
         char proxy_user[32];
         char proxy_pass[32];
     } socks5;
-
-    struct {
-        bool enabled;
-        struct in6_addr dns_server;
-    } ipv6;
 
     struct {
         bool enabled;

@@ -97,8 +97,6 @@
     <string name="about_text">PCAPdroid 是一款无需获取根权限便可进行网络捕获和监视的开源工具</string>
     <string name="get_app">获取应用:</string>
     <string name="unknown_app">未知</string>
-    <string name="ipv6">启用 IPv6</string>
-    <string name="enable_ipv6_summary">允许 IPv6 网络连接。仅在带有 IPv6 网关的网络中使用</string>
     <string name="error">错误</string>
     <string name="conn_status_unreachable">不可达</string>
     <string name="other_prefs">其他</string>

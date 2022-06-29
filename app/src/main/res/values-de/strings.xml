@@ -92,7 +92,6 @@
     <string name="save_to_file">Speichern unter</string>
     <string name="older_connections_notice">%1$d älter Verbindungen werden nicht angezeigt</string>
     <string name="unknown_app">Unbekannt</string>
-    <string name="enable_ipv6_summary">IPv6-Verbindungen zum Internet zulassen. Verwende dies nur in Netzwerken mit einem IPv6-Gateway</string>
     <string name="error">Fehler</string>
     <string name="conn_status_unreachable">Unerreichbar</string>
     <string name="other_prefs">Andere</string>

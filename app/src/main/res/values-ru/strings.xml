@@ -71,8 +71,6 @@
     <string name="about_text">PCAPdroid это свободный инструмент захвата и отслеживания сетевого трафика, который работает без привилегий суперпользователя</string>
     <string name="get_app">Получить его:</string>
     <string name="unknown_app">Неизвестное</string>
-    <string name="ipv6">Включить IPv6</string>
-    <string name="enable_ipv6_summary">Разрешить IPv6 соединения с интернетом. Это следует включать только в сетях с IPv6 шлюзом</string>
     <string name="error">Ошибка</string>
     <string name="conn_status_unreachable">Недоступен</string>
     <string name="other_prefs">Другое</string>

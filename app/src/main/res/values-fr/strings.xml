@@ -96,7 +96,6 @@
     <string name="search_apps">Chercher des applis</string>
     <string name="pcap_file">Fichier PCAP</string>
     <string name="disconnect_vpn_confirm">Déconnecter l\'application RPV active et continuer \?</string>
-    <string name="ipv6">Activer IPv6</string>
     <string name="version">Version</string>
     <string name="loading_apps">Chargement des applis…</string>
     <string name="close_nav_drawer">Fermer le menu</string>
@@ -109,7 +108,6 @@
     <string name="receiver_ip_address">Adresse IP du collecteur</string>
     <string name="receiver_port">Port du collecteur</string>
     <string name="pcap_file_info">Créer une fichier PCAP dans l\'espace de stockage</string>
-    <string name="enable_ipv6_summary">Autoriser les connexions internet IPv6. À n\'utiliser que sur les réseaux connecté en IPv6</string>
     <string name="get_app">L\'obtenir :</string>
     <string name="about_text">PCAPdroid est un outil open-source de capture et de suivi de réseau qui fonctionne sans un compte administrateur</string>
     <string name="proxy_port">Port de proxy</string>

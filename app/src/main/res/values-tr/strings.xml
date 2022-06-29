@@ -57,7 +57,6 @@
     <string name="conn_status_closed">Kapalı</string>
     <string name="older_connections_notice">%1$d eski bağlantı gösterilmiyor</string>
     <string name="unknown_app">Bilinmeyen</string>
-    <string name="enable_ipv6_summary">İnternete IPv6 bağlantıları yapmaya izin verin. Bunu yalnızca IPv6 ağ geçidi olan ağlarda kullanın</string>
     <string name="other_prefs">Diğer</string>
     <string name="app_language">Uygulama dili</string>
     <string name="lang_english">İngilizce</string>
@@ -266,7 +265,6 @@
     <string name="phone_app">Telefon</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="phone_app_info">Telefon hizmetleri</string>
-    <string name="ipv6">IPv6</string>
     <string name="configure_action">Yapılandır</string>
     <string name="install_ca_certificate">\"VPN ve uygulamalar\" seçeneğini seçerek PCAPdroid CA sertifikasını kurun. Android, kilit ekranınızı veya parolanızı soracak</string>
     <string name="tls_decryption_summary">Ortadaki adam gerçekleştirerek SSL/TLS trafiğinin şifresini çöz. Bu artık bazı uygulamalarla çalışabilir, kullanım kılavuzuna bakın</string>

@@ -176,12 +176,14 @@
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
 
-        <SwitchPreference
-            app:key="ipv6_enabled"
-            app:title="@string/ipv6"
+        <DropDownPreference
+            app:key="ip_mode"
+            app:title="@string/ip_mode"
+            android:entries="@array/ip_mode_labels"
+            android:entryValues="@array/ip_mode"
             app:iconSpaceReserved="false"
-            app:summary="@string/enable_ipv6_summary"
-            app:defaultValue="false" />
+            app:defaultValue="ipv4"
+            app:useSimpleSummaryProvider="true" />
 
         <Preference
             app:key="control_permissions"

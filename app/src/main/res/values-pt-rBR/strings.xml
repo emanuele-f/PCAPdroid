@@ -72,8 +72,6 @@
     <string name="about_text">PCAPdroid é uma ferramenta de software livre de captura e monitoramento de rede que funciona sem acesso root</string>
     <string name="get_app">Baixar:</string>
     <string name="unknown_app">Desconhecido</string>
-    <string name="ipv6">IPv6</string>
-    <string name="enable_ipv6_summary">Permitir conexões IPv6. Deveria usar apenas em redes com um gateway IPv6</string>
     <string name="error">Erro</string>
     <string name="conn_status_unreachable">Inacessível</string>
     <string name="other_prefs">Outro</string>

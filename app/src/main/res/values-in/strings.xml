@@ -211,7 +211,6 @@
     <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
     <string name="root_log">Log root</string>
-    <string name="enable_ipv6_summary">Izinkan koneksi IPv6 ke Internet. Hanya gunakan ini di jaringan dengan gateway IPv6</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
     <string name="proxy_ip_address">Alamat IP proxy</string>
@@ -260,7 +259,6 @@
     <string name="traffic_dump">Pembuangan lalu lintas</string>
     <string name="conn_status_active">Aktif</string>
     <string name="phone_app">Telepon</string>
-    <string name="ipv6">IPv6</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="socks5_info">Proksi SOCKS5: %1$s:%2$d</string>
     <string name="phone_app_info">Layanan telepon</string>

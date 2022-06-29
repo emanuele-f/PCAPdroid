@@ -128,7 +128,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
-        private Preference mIpv6Enabled;
+        private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
@@ -359,7 +359,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else
                 mRootCaptureEnabled.setVisible(false);
 
-            mIpv6Enabled = requirePreference(Prefs.PREF_IPV6_ENABLED);
+            mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
             Preference ctrlPerm = requirePreference("control_permissions");
             if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
@@ -389,7 +389,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
             }
 
-            mIpv6Enabled.setVisible(!enabled);
+            mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
         }
     }
