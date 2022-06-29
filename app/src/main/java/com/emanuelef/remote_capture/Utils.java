@@ -24,6 +24,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ActivityNotFoundException;
@@ -77,6 +78,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.preference.PreferenceManager;
@@ -1255,5 +1257,21 @@ public class Utils {
                 "\n[MemoryState] pid: " + memState.pid + ", trimlevel: " + trimlvl2str(memState.lastTrimLevel) +
                 "\n[MemoryInfo] available: " + Utils.formatBytes(memoryInfo.availMem) + ", total: " + Utils.formatBytes(memoryInfo.totalMem) + ", lowthresh: " + Utils.formatBytes(memoryInfo.threshold) + ", low=" + memoryInfo.lowMemory +
                 "\n[MemoryClass] standard: " + activityManager.getMemoryClass() + " MB, large: " + activityManager.getLargeMemoryClass() + " MB";
+    }
+
+    public static void sendImportantNotification(Context context, int id, Notification notification) {
+        NotificationManagerCompat man = NotificationManagerCompat.from(context);
+
+        if(!man.areNotificationsEnabled()) {
+            String title = notification.extras.getString(Notification.EXTRA_TITLE);
+            String description = notification.extras.getString(Notification.EXTRA_TEXT);
+            String text = title + " - " + description;
+
+            Log.w(TAG, "Important notification not sent because notifications are disabled: " + text);
+
+            // Try with toast (will only work if PCAPdroid is in the foreground)
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+        } else
+            man.notify(id, notification);
     }
 }

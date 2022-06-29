@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     buildToolsVersion "31.0.0"
     ndkVersion "24.0.8215888"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 55
         versionName "1.5.2"
     }
@@ -78,7 +78,7 @@ dependencies {
 
 // Google
     implementation 'com.google.android.material:material:1.6.1'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party

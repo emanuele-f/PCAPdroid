@@ -287,6 +287,29 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 }
             }
         }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            if(checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                if(shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    AlertDialog dialog = new AlertDialog.Builder(this)
+                            .setMessage(R.string.notifications_notice)
+                            .setPositiveButton(R.string.ok, (d, whichButton) -> requestNotificationPermission())
+                            .show();
+
+                    dialog.setCanceledOnTouchOutside(false);
+                } else
+                    requestNotificationPermission();
+            }
+        }
+    }
+
+    @RequiresApi(api = 33)
+    private void requestNotificationPermission() {
+        try {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        } catch (ActivityNotFoundException e) {
+            Utils.showToastLong(this, R.string.no_intent_handler_found);
+        }
     }
 
     private static class MainStateAdapter extends FragmentStateAdapter {

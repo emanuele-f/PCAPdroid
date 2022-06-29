@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.WRITE_CLIPS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="com.pcapdroid.permission.MITM" android:required="false"/>
 
     <!-- Required with root to properly resolve UIDs cross-users/profiles. Granted via root -->
