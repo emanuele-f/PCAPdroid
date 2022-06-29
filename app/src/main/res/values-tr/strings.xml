@@ -362,4 +362,29 @@
     <string name="vpn_lockdown_notice">PCAPdroid çalışmıyorken (örneğin yeniden başlattıktan sonra) uygulamaların internete erişmesini önlemek için PCAPdroid\'i kilitleme modunda her zaman açık bir VPN olarak ayarlayabilirsiniz.
 \n
 \nŞimdi VPN ayarlarını açmak istiyor musunuz\?</string>
+    <string name="ip_mode">VPN IP adresleri</string>
+    <string name="ipv4_only">Yalnızca IPv4</string>
+    <string name="ipv6_only">Yalnızca IPv6</string>
+    <string name="ip_both">IPv4 ve IPv6</string>
+    <string name="vpn_exemptions">VPN Muafiyetleri</string>
+    <string name="unblock_for_n_hours">%1$dsa için engellemeyi kaldır</string>
+    <string name="block_new_apps">Yeni kurulan uygulamaları engelle</string>
+    <string name="app_blocked">Uygulama engellendi</string>
+    <string name="no_matches_found">Eşleşme yok</string>
+    <string name="unblock_permanently">Kalıcı olarak engellemeyi kaldır</string>
+    <string name="app_blocked_info">%1$s uygulaması güvenlik duvarı tarafından engellendi</string>
+    <string name="show_only_cleartext">Açık metin bağlantıları</string>
+    <string name="vpn_exemptions_summary">Bazı uygulamaları VPN bağlantısından muaf tutun. Onların trafiği izlenmeyecektir</string>
+    <string name="notifications_notice">Uygulama, olağan dışı olaylar durumunda uyarı göndermek için bildirimleri kullanır. Bir sonraki ekranda bildirim gönderme izni verin</string>
+    <string name="cleartext_connection">Açık metin</string>
+    <string name="scam_alert">Dolandırıcılık uyarısı</string>
+    <string name="cancel_action">İptal</string>
+    <string name="show_data_action">Verileri göster</string>
+    <string name="remote_server_warning">Güvenlik nedeniyle, \"%1$s\" uzak sunucusuna trafik gönderilmesine izin verilmiyor</string>
+    <string name="payload_scams_notice">Bu görünüm, parolalarınız ve erişim belirteçleriniz gibi hassas bilgiler içerebilir.
+\n
+\nBu bilgileri asla kimseye vermeyin, bu bir dolandırıcılık girişimi olabilir</string>
+    <string name="remote_collector_notice">PCAPdroid\'i uzak bir sunucuya trafik gönderecek şekilde yapılandırdınız. Sunucu hassas bilgilerinize erişebilecek.
+\n
+\nEğer birisi sizden bunu yapmanızı istediyse, bu muhtemelen bir dolandırıcılık girişimidir</string>
 </resources>
