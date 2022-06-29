@@ -388,4 +388,29 @@
     <string name="vpn_lockdown_notice">为了防止应用在 PCAPdroid 未运行时（例如重启后）访问互联网，你可以将 PCAPdroid 设为锁定模式下“永远开启的VPN”。
 \n
 \n你现在要打开 VPN 设置吗？</string>
+    <string name="ip_mode">VPN IP 地址</string>
+    <string name="ipv4_only">仅 IPv4</string>
+    <string name="ipv6_only">仅 IPv6</string>
+    <string name="ip_both">IPv4 和 IPv6</string>
+    <string name="vpn_exemptions">VPN 排除</string>
+    <string name="vpn_exemptions_summary">将某些应用程序排除在 VPN 连接外。 它们的流量不会被监控</string>
+    <string name="no_matches_found">无匹配</string>
+    <string name="cleartext_connection">明文</string>
+    <string name="unblock_permanently">永久解除拦截</string>
+    <string name="unblock_for_n_hours">解除拦截 %1$d 小时</string>
+    <string name="block_new_apps">拦截新安装的应用</string>
+    <string name="app_blocked_info">防火墙拦截了 %1$s 应用</string>
+    <string name="app_blocked">应用被拦截</string>
+    <string name="show_only_cleartext">明文连接</string>
+    <string name="notifications_notice">该应用程序使用通知在发生异常事件时发送警报。 在下一个屏幕授予它发送通知的权限</string>
+    <string name="remote_server_warning">出于安全原因，不允许将流量发送到远程服务器“%1$s”</string>
+    <string name="scam_alert">欺诈警告</string>
+    <string name="payload_scams_notice">这个视图可能包含敏感信息，比如密码和访问令牌。
+\n
+\n千万不要把这个信息透露给任何人，这可能是一个骗局</string>
+    <string name="cancel_action">取消</string>
+    <string name="show_data_action">显示数据</string>
+    <string name="remote_collector_notice">你已经将 PCAPdroid 配置为将流量发送到远程服务器。该服务器将能够访问你的敏感信息。
+\n
+\n如果有人让你这样做，这可能是一个骗局</string>
 </resources>
