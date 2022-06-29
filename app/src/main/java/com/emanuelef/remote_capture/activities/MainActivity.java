@@ -288,7 +288,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         }
 
-        if (Build.VERSION.SDK_INT >= 33) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if(checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 if(shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                     AlertDialog dialog = new AlertDialog.Builder(this)
@@ -303,7 +303,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    @RequiresApi(api = 33)
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void requestNotificationPermission() {
         try {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
