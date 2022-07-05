@@ -20,9 +20,11 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -35,6 +37,7 @@ import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.AppsTogglesAdapter;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -47,9 +50,11 @@ import kotlin.NotImplementedError;
 
 public abstract class AppsToggles extends Fragment implements AppsLoadListener,
         AppsTogglesAdapter.AppToggleListener, SearchView.OnQueryTextListener {
+    private static final String TAG = "AppsToggles";
     private AppsTogglesAdapter mAdapter;
     private SearchView mSearchView;
     private TextView mEmptyText;
+    private String mQueryToApply;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -71,16 +76,50 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
         mEmptyText.setText(R.string.loading_apps);
         recyclerView.setEmptyView(mEmptyText);
 
+        if(savedInstanceState != null) {
+            String filter = savedInstanceState.getString("filter");
+            if((filter != null) && !filter.isEmpty())
+                mQueryToApply = filter;
+        }
+
+        Log.d(TAG, "mQueryToApply: " + mQueryToApply);
+
         (new AppsLoader((AppCompatActivity) requireActivity()))
                 .setAppsLoadListener(this)
                 .loadAllApps();
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        if(mSearchView != null)
+            mQueryToApply = mSearchView.getQuery().toString();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.search_menu, menu);
-        mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        MenuItem searchItem = menu.findItem(R.id.search);
+        mSearchView = (SearchView) searchItem.getActionView();
         mSearchView.setOnQueryTextListener(this);
+
+        if((mQueryToApply != null) && (!mQueryToApply.isEmpty())) {
+            Log.d(TAG, "Initial filter: " + mQueryToApply);
+            Utils.setSearchQuery(mSearchView, searchItem, mQueryToApply);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // this is complemented by the activity onSaveInstanceState
+        if(mSearchView != null) {
+            String query = mSearchView.getQuery().toString();
+            Log.d(TAG, "Saving filter: " + query);
+            outState.putString("filter", query);
+        }
     }
 
     @Override

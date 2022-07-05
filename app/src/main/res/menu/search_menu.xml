@@ -3,13 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- NOTE: "always|collapseActionView" must be set to prevent the search button from
-         disappearing and to avoid hiding the other elements. -->
     <item
         android:id="@+id/search"
         android:title="@string/search"
         android:icon="@drawable/ic_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="always|collapseActionView"
-        tools:ignore="AlwaysShowAction" />
+        app:showAsAction="ifRoom" />
 </menu>

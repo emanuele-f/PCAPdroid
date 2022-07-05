@@ -37,15 +37,28 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class VpnExceptionsActivity extends BaseActivity {
+    private VpnExceptionsFragment mFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.vpn_exceptions);
         setContentView(R.layout.fragment_activity);
 
+        if(savedInstanceState != null)
+            mFragment = (VpnExceptionsFragment) getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+        if(mFragment == null)
+            mFragment = new VpnExceptionsFragment();
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new VpnExceptionsFragment())
+                .replace(R.id.fragment, mFragment)
                 .commit();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getSupportFragmentManager().putFragment(outState, "fragment", mFragment);
     }
 
     public static class VpnExceptionsFragment extends AppsToggles {

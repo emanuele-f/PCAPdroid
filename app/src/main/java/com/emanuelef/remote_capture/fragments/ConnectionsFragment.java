@@ -556,14 +556,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void setQuery(String query) {
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        // Delay otherwise the query won't be set when the activity is just started.
-        mSearchView.post(() -> mSearchView.setQuery(query, true));
+        Utils.setSearchQuery(mSearchView, mMenuItemSearch, query);
     }
 
     private void recheckScroll() {

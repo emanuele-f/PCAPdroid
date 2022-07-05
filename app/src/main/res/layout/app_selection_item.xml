@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:background="?attr/selectableItemBackground"
     android:orientation="horizontal"
-    android:padding="4dp"
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="8dp"
     android:gravity="center_vertical"
     android:layout_height="wrap_content">
 

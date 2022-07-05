@@ -66,6 +66,7 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -1273,5 +1274,17 @@ public class Utils {
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
         } else
             man.notify(id, notification);
+    }
+
+    // Set the SearchView query and expand it
+    public static void setSearchQuery(SearchView searchView, MenuItem searchItem, String query) {
+        searchView.setIconified(false);
+        searchItem.expandActionView();
+
+        searchView.setIconified(false);
+        searchItem.expandActionView();
+
+        // Delay otherwise the query won't be set when the activity is just started
+        searchView.post(() -> searchView.setQuery(query, true));
     }
 }
