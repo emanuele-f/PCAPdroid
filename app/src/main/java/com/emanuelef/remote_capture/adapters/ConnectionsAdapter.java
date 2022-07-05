@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -370,6 +371,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             fixFilteredPositions(first_removed_pos);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void refreshFilteredConnections() {
         final ConnectionsRegister reg = CaptureService.getConnsRegister();
         if(reg == null)

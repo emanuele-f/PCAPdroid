@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -28,6 +30,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.AppsLoader;
@@ -42,8 +45,11 @@ import java.util.Set;
 
 import kotlin.NotImplementedError;
 
-public abstract class AppsToggles extends Fragment implements AppsLoadListener, AppsTogglesAdapter.AppToggleListener {
+public abstract class AppsToggles extends Fragment implements AppsLoadListener,
+        AppsTogglesAdapter.AppToggleListener, SearchView.OnQueryTextListener {
     private AppsTogglesAdapter mAdapter;
+    private SearchView mSearchView;
+    private TextView mEmptyText;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -61,9 +67,9 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener, 
         recyclerView.setAdapter(mAdapter);
         mAdapter.setAppToggleListener(this);
 
-        TextView emptyAppsView = view.findViewById(R.id.no_apps);
-        emptyAppsView.setText(R.string.loading_apps);
-        recyclerView.setEmptyView(emptyAppsView);
+        mEmptyText = view.findViewById(R.id.no_apps);
+        mEmptyText.setText(R.string.loading_apps);
+        recyclerView.setEmptyView(mEmptyText);
 
         (new AppsLoader((AppCompatActivity) requireActivity()))
                 .setAppsLoadListener(this)
@@ -71,8 +77,25 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener, 
     }
 
     @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.search_menu, menu);
+        mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        mSearchView.setOnQueryTextListener(this);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) { return true; }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        mAdapter.setFilter(newText);
+        return true;
+    }
+
+    @Override
     public void onAppsInfoLoaded(List<AppDescriptor> apps) {
         mAdapter.setApps(apps);
+        mEmptyText.setText(R.string.no_matches_found);
     }
 
     // Must be implemented in sub-classes

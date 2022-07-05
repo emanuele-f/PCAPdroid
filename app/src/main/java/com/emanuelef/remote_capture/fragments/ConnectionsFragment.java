@@ -107,10 +107,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
-        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
-            mEmptyText.setText(R.string.no_connections);
-        else
-            mEmptyText.setText(R.string.capture_not_running_status);
+        refreshEmptyText();
 
         registerConnsListener();
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
@@ -144,6 +141,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.connections, container, false);
+    }
+
+    private void refreshEmptyText() {
+        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
+            mEmptyText.setText(mAdapter.hasFilter() ? R.string.no_matches_found : R.string.no_connections);
+        else
+            mEmptyText.setText(R.string.capture_not_running_status);
     }
 
     private void registerConnsListener() {
@@ -810,6 +814,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public boolean onQueryTextChange(String newText) {
         mAdapter.setSearch(newText);
         recheckScroll();
+        refreshEmptyText();
         return true;
     }
 

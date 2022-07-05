@@ -47,7 +47,9 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
     private final LayoutInflater mLayoutInflater;
     private final Set<String> mCheckedItems;
     private AppToggleListener mListener;
+    private String mFilter = "";
     private List<AppDescriptor> mApps = new ArrayList<>();
+    private final List<AppDescriptor> mFilteredApps = new ArrayList<>();
     private @Nullable RecyclerView mRecyclerView;
 
     public AppsTogglesAdapter(Context context, Set<String> checkedItems) {
@@ -125,16 +127,23 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
             holder.icon.setImageDrawable(app.getIcon());
     }
 
+    private List<AppDescriptor> getApps() {
+        if(mFilter.isEmpty())
+            return mApps;
+        else
+            return mFilteredApps;
+    }
+
     @Override
     public int getItemCount() {
-        return mApps.size();
+        return getApps().size();
     }
 
     public AppDescriptor getItem(int pos) {
-        if((pos < 0) || (pos > mApps.size()))
+        if((pos < 0) || (pos > getItemCount()))
             return null;
 
-        return mApps.get(pos);
+        return getApps().get(pos);
     }
 
     private void handleToggle(int old_pos, boolean checked) {
@@ -152,10 +161,12 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         if(mListener != null)
             mListener.onAppToggled(app, checked);
 
+        List<AppDescriptor> apps = getApps();
+
         // determine the new item position
         int new_pos = old_pos;
-        for(int i=0; i<mApps.size(); i++) {
-            AppDescriptor other = mApps.get(i);
+        for(int i=0; i<apps.size(); i++) {
+            AppDescriptor other = apps.get(i);
 
             if((i != old_pos) && compareCheckedFirst(app, other) <= 0) {
                 new_pos = i;
@@ -170,8 +181,8 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         notifyItemChanged(old_pos);
 
         if(new_pos != old_pos) {
-            mApps.remove(old_pos);
-            mApps.add(new_pos, app);
+            apps.remove(old_pos);
+            apps.add(new_pos, app);
             notifyItemMoved(old_pos, new_pos);
 
             if(mRecyclerView != null) {
@@ -196,11 +207,28 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
     }
 
     @SuppressLint("NotifyDataSetChanged")
+    private void refreshedFiteredApps() {
+        mFilteredApps.clear();
+
+        if(!mFilter.isEmpty()) {
+            for(AppDescriptor app: mApps) {
+                if(app.matches(mFilter, false))
+                    mFilteredApps.add(app);
+            }
+        }
+
+        Collections.sort(getApps(), this::compareCheckedFirst);
+        notifyDataSetChanged();
+    }
+
     public void setApps(List<AppDescriptor> apps) {
         mApps = apps;
-        Collections.sort(mApps, this::compareCheckedFirst);
+        refreshedFiteredApps();
+    }
 
-        notifyDataSetChanged();
+    public void setFilter(String text) {
+        mFilter = text;
+        refreshedFiteredApps();
     }
 
     public void setAppToggleListener(final AppToggleListener listener) {
