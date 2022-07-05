@@ -244,8 +244,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         String verStr = Utils.getAppVersion(this);
         appVer.setText(verStr);
         appVer.setOnClickListener((ev) -> {
-            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
+            // e.g. it can be "1.5.2" or "1.5.2-2f2d3c8"
+            String ref = verStr;
+            int sep = ref.indexOf('-');
+            if(sep != -1)
+                ref = ref.substring(sep + 1);
+
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + ref));
             Utils.startActivity(this, browserIntent);
         });
     }
