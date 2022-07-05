@@ -44,6 +44,7 @@ public class FilterDescriptor implements Serializable {
 
     public FilterDescriptor() {
         clear();
+        assert(!isSet());
     }
 
     public boolean isSet() {
@@ -52,7 +53,7 @@ public class FilterDescriptor implements Serializable {
                 || (filteringStatus != FilteringStatus.INVALID)
                 || (iface != null)
                 || onlyBlacklisted
-                || (uid != 2)
+                || (uid != -2)
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
