@@ -1287,4 +1287,14 @@ public class Utils {
         // Delay otherwise the query won't be set when the activity is just started
         searchView.post(() -> searchView.setQuery(query, true));
     }
+
+    public static boolean backHandleSearchview(SearchView searchView) {
+        if((searchView != null) && !searchView.isIconified()) {
+            // Required to close the SearchView when the search submit button was not pressed
+            searchView.setIconified(true);
+            return true;
+        }
+
+        return false;
+    }
 }

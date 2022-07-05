@@ -122,6 +122,12 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
         }
     }
 
+    // NOTE: must be called from the activity
+    public boolean onBackPressed() {
+        Log.d(TAG, "onBackPressed");
+        return Utils.backHandleSearchview(mSearchView);
+    }
+
     @Override
     public boolean onQueryTextSubmit(String query) { return true; }
 

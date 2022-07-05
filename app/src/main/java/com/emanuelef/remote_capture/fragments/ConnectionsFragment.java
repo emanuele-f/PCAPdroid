@@ -811,13 +811,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         return true;
     }
 
+    // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
-        if((mSearchView != null) && !mSearchView.isIconified()) {
-            // Required to close the SearchView when the search submit button was not pressed
-            mSearchView.setIconified(true);
-            return true;
-        }
-
-        return false;
+        return Utils.backHandleSearchview(mSearchView);
     }
 }
