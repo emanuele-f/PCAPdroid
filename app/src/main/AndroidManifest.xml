@@ -80,6 +80,10 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
+            android:name=".activities.VpnExceptionsActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.SettingsActivity" />
+        <activity
             android:name=".activities.AboutActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />

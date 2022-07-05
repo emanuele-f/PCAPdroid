@@ -81,7 +81,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -413,13 +415,25 @@ public class CaptureService extends VpnService implements Runnable {
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     return abortStart();
                 }
-            } else if(mSettings.tls_decryption) {
-                // Exclude the mitm addon traffic in case system-wide decryption is performed
-                // Important: cannot call addDisallowedApplication with addAllowedApplication
-                try {
-                    builder.addDisallowedApplication(MitmAPI.PACKAGE_NAME);
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
+            } else {
+                // VPN exceptions
+                Set<String> exceptions = mPrefs.getStringSet(Prefs.PREF_VPN_EXCEPTIONS, new HashSet<>());
+                for(String packageName: exceptions) {
+                    try {
+                        builder.addDisallowedApplication(packageName);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(mSettings.tls_decryption) {
+                    // Exclude the mitm addon traffic in case system-wide decryption is performed
+                    // Important: cannot call addDisallowedApplication with addAllowedApplication
+                    try {
+                        builder.addDisallowedApplication(MitmAPI.PACKAGE_NAME);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 

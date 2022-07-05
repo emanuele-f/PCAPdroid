@@ -74,6 +74,7 @@ public class Prefs {
     public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
     public static final String PREF_APP_VERSION = "appver";
     public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
+    public static final String PREF_VPN_EXCEPTIONS = "vpn_exceptions";
 
     public enum DumpMode {
         NONE,

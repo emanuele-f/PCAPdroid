@@ -117,6 +117,13 @@
             app:useSimpleSummaryProvider="true"
             app:defaultValue="\@inet" />
 
+        <Preference
+            android:key="vpn_exceptions"
+            app:title="@string/vpn_exceptions"
+            app:summary="@string/vpn_exceptions_summary"
+            app:iconSpaceReserved="false"
+            app:fragment="com.emanuelef.remote_capture.fragments.VpnExceptions" />
+
         <SwitchPreference
             app:key="start_at_boot"
             android:title="@string/start_at_boot"

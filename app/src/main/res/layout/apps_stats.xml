@@ -4,7 +4,7 @@
     android:layout_height="match_parent">
 
     <com.emanuelef.remote_capture.views.EmptyRecyclerView
-        android:id="@+id/apps_stats_view"
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"

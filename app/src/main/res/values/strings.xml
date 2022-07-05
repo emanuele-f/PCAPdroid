@@ -372,4 +372,6 @@
     <string name="ipv6_only">IPv6 only</string>
     <string name="ip_both">IPv4 and IPv6</string>
     <string name="notifications_notice">The app uses notifications to send alerts in case of anomalous events. Grant it the permission to send notifications in the next screen</string>
+    <string name="vpn_exceptions">VPN Exceptions</string>
+    <string name="vpn_exceptions_summary">Exclude some apps from the VPN connection. Their traffic will not be monitored</string>
 </resources>
