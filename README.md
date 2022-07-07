@@ -34,7 +34,7 @@ If you plan to use PCAPdroid to perform packet analysis, please check out <a hre
     height="80">
 </a> <a href='https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture'><img height="80" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
-<sub>Google Play and the Google Play logo are trademarks of Google LLC.</sub>
+You can test the latest features before the official release by adding the [Beta repository](https://pcapdroid.org/fdroid/repo/) to the F-Droid app.
 
 ## User Guide
 

@@ -20,7 +20,7 @@ android {
         debug {
             // Use a different app ID for debug to allow its coexistence with release builds
             applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
+            versionNameSuffix '-beta'
             pseudoLocalesEnabled true
 
             if(project.hasProperty("doNotStrip")) {
