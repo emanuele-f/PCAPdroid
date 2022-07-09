@@ -253,7 +253,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             refreshInterfaces();
 
             mVpnExceptions.setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(requireContext(), VpnExceptionsActivity.class);
+                Intent intent = new Intent(requireContext(), VpnExemptionsActivity.class);
                 startActivity(intent);
                 return true;
             });

@@ -37,13 +37,13 @@ import com.emanuelef.remote_capture.model.Prefs;
 import java.util.HashSet;
 import java.util.Set;
 
-public class VpnExceptionsActivity extends BaseActivity {
+public class VpnExemptionsActivity extends BaseActivity {
     private VpnExceptionsFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.vpn_exceptions);
+        setTitle(R.string.vpn_exemptions);
         setContentView(R.layout.fragment_activity);
 
         if(savedInstanceState != null)

@@ -119,8 +119,8 @@
 
         <Preference
             android:key="vpn_exceptions"
-            app:title="@string/vpn_exceptions"
-            app:summary="@string/vpn_exceptions_summary"
+            app:title="@string/vpn_exemptions"
+            app:summary="@string/vpn_exemptions_summary"
             app:iconSpaceReserved="false"
             app:fragment="com.emanuelef.remote_capture.fragments.VpnExceptions" />
 
