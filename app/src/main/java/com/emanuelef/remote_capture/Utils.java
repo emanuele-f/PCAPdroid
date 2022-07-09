@@ -144,7 +144,6 @@ public class Utils {
     public enum BuildType {
         UNKNOWN,
         DEBUG,
-        WORKFLOW,   // debug build from the Github workflow
         GITHUB,     // Github release
         FDROID,     // F-droid release
         PLAYSTORE,  // Google play release
@@ -1051,8 +1050,6 @@ public class Utils {
                     return isPlaystore() ? BuildType.PLAYSTORE : BuildType.GITHUB;
                 case "72777D6939EF150099219BBB68C17220DB28EA8E":
                     return BuildType.FDROID;
-                case "9F030FABC158A428CFDB90570A426EA88B39A153":
-                    return BuildType.WORKFLOW;
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
             Log.e(TAG, "Could not determine the build type");
