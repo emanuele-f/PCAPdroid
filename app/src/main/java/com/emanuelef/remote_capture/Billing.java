@@ -40,6 +40,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /* Billing stub */
@@ -69,6 +70,7 @@ public class Billing {
 
     protected final Context mContext;
     protected SharedPreferences mPrefs;
+    private final HashSet<String> mPeerSkus = new HashSet<>();
 
     protected Billing(Context ctx) {
         mContext = ctx;
@@ -84,6 +86,9 @@ public class Billing {
     }
 
     public boolean isPurchased(String sku) {
+        if(mPeerSkus.contains(sku))
+            return true;
+
         return !getLicense().isEmpty();
     }
 
@@ -187,5 +192,9 @@ public class Billing {
             return !CaptureService.isCapturingAsRoot();
         else
             return !Prefs.isRootCaptureEnabled(mPrefs);
+    }
+
+    public void addPeerSku(String sku) {
+        mPeerSkus.add(sku);
     }
 }

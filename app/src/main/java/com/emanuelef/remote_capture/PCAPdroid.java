@@ -60,7 +60,7 @@ public class PCAPdroid extends Application {
     public void onCreate() {
         super.onCreate();
 
-        Utils.BuildType buildtp = Utils.getBuildType(this);
+        Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
         Log.d(TAG, "Build type: " + buildtp);
 
         CaocConfig.Builder builder = CaocConfig.Builder.create();

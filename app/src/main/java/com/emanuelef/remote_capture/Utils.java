@@ -59,7 +59,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.text.Html;
 import android.text.SpannableString;
 import android.text.SpannedString;
 import android.text.TextUtils;
@@ -1020,16 +1019,16 @@ public class Utils {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
-    public static BuildType getBuildType(Context ctx) {
+    public static BuildType getVerifiedBuild(Context ctx, String package_name) {
         try {
             Signature[] signatures;
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 // NOTE: PCAPdroid does not use multiple signatures
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(package_name, PackageManager.GET_SIGNING_CERTIFICATES);
                 signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
             } else {
+                @SuppressLint("PackageManagerGetSignatures")
                 PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
                 signatures = pInfo.signatures;
             }
@@ -1055,6 +1054,10 @@ public class Utils {
             Log.e(TAG, "Could not determine the build type");
         }
         return BuildType.UNKNOWN;
+    }
+
+    public static BuildType getVerifiedBuild(Context ctx) {
+        return getVerifiedBuild(ctx, ctx.getPackageName());
     }
 
     public static X509Certificate x509FromPem(String pem) {

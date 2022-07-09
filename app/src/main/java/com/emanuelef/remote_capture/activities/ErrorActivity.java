@@ -38,8 +38,6 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.emanuelef.remote_capture.Utils;
 
-import java.util.Arrays;
-
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 import cat.ereza.customactivityoncrash.R;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
@@ -158,7 +156,7 @@ public final class ErrorActivity extends AppCompatActivity {
     }
 
     private String getErrorDetails() {
-        return "Build type: " + Utils.getBuildType(this).toString().toLowerCase() + "\n" +
+        return "Build type: " + Utils.getVerifiedBuild(this).toString().toLowerCase() + "\n" +
                 CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
     }
 }
