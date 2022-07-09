@@ -111,8 +111,8 @@ public class ConnectionDescriptor {
     public boolean is_blocked;
     public boolean netd_block_missed;
     private boolean payload_truncated;
-    private boolean encrypted_l7;
-    public boolean encrypted_payload;
+    private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
+    public boolean encrypted_payload; // actual payload is encrypted (e.g. telegram - see Utils.hasEncryptedPayload)
     public String decryption_error;
     public String country;
     public Geomodel.ASN asn;
@@ -231,7 +231,7 @@ public class ConnectionDescriptor {
 
         return(((info != null) && (info.contains(filter))) ||
                 dst_ip.contains(filter) ||
-                l7proto.toLowerCase().contains(filter) ||
+                l7proto.toLowerCase().equals(filter) ||
                 Integer.toString(uid).equals(filter) ||
                 Integer.toString(dst_port).contains(filter) ||
                 Integer.toString(src_port).equals(filter) ||

@@ -43,6 +43,13 @@
             android:layout_marginBottom="10dp"
             android:text="@string/show_only_malicious" />
 
+        <CheckBox
+            android:id="@+id/only_cleartext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/show_only_cleartext" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

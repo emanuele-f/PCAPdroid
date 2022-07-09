@@ -169,6 +169,7 @@
     <string name="list_is_empty">The list is empty</string>
     <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
     <string name="show_only_malicious">Malicious connections</string>
+    <string name="show_only_cleartext">Cleartext connections</string>
     <string name="security">Security</string>
     <string name="malware_detection">Malware detection</string>
     <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists</string>
@@ -375,4 +376,5 @@
     <string name="vpn_exemptions">VPN Exemptions</string>
     <string name="vpn_exemptions_summary">Exempt some apps from the VPN connection. Their traffic will not be monitored</string>
     <string name="no_matches_found">No matches</string>
+    <string name="cleartext_connection">Cleartext</string>
 </resources>
