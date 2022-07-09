@@ -416,7 +416,7 @@ public class MatchList {
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
      * Only the following RuleTypes are supported: APP, IP, HOST.
      */
-    public ListDescriptor toListDescriptor() {
+    public ListDescriptor toListDescriptor(GraceList exemptions) {
         final ListDescriptor rv = new ListDescriptor();
 
         Iterator<MatchList.Rule> it = iterRules();
@@ -434,8 +434,10 @@ public class MatchList {
         }
 
         // Apps are matched via their UID
-        for(int uid: mUids)
-            rv.apps.add(Integer.toString(uid));
+        for(int uid: mUids) {
+            if((exemptions == null) || (!exemptions.containsApp(uid)))
+                rv.apps.add(Integer.toString(uid));
+        }
 
         return rv;
     }

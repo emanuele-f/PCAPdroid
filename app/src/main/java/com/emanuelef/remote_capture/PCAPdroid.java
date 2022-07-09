@@ -29,6 +29,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.ErrorActivity;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
+import com.emanuelef.remote_capture.model.GraceList;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
@@ -49,6 +50,7 @@ public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
     private MatchList mBlocklist;
+    private GraceList mGracelist;
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
@@ -115,6 +117,12 @@ public class PCAPdroid extends Application {
         if(mBlocklist == null)
             mBlocklist = new MatchList(mLocalizedContext, Prefs.PREF_BLOCKLIST);
         return mBlocklist;
+    }
+
+    public GraceList getGracelist() {
+        if(mGracelist == null)
+            mGracelist = new GraceList();
+        return mGracelist;
     }
 
     public CtrlPermissions getCtrlPermissions() {

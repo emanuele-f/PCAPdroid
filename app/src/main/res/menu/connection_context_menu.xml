@@ -75,7 +75,23 @@
                 android:id="@+id/unblock_app"
                 android:title=""
                 tools:title="@string/app_val"
-                android:visible="false" />
+                android:visible="false">
+
+                <menu>
+                    <item
+                        android:id="@+id/unblock_app_permanently"
+                        android:title="@string/unblock_permanently" />
+                    <item
+                        android:id="@+id/unblock_app_1h"
+                        android:title="" />
+                    <item
+                        android:id="@+id/unblock_app_2h"
+                        android:title="" />
+                    <item
+                        android:id="@+id/unblock_app_8h"
+                        android:title="" />
+                </menu>
+            </item>
 
             <item
                 android:id="@+id/unblock_ip"

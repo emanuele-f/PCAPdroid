@@ -65,6 +65,7 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.GraceList;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
@@ -136,6 +137,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mQueueFull;
     private boolean mStopping;
     private Blacklists mBlacklists;
+    private GraceList mGracelist;
     private MatchList mBlocklist;
     private MatchList mWhitelist;
     private SparseArray<String> mIfIndexToName;
@@ -447,6 +449,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
+        mGracelist = PCAPdroid.getInstance().getGracelist();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
@@ -992,6 +995,8 @@ public class CaptureService extends VpnService implements Runnable {
             ConnectionUpdate[] conns_updates = item.second;
 
             checkBlacklistsUpdates();
+            if(mGracelist.checkGracePeriods())
+                mHandler.post(this::reloadBlocklist);
 
             if(!mLowMemory)
                 checkAvailableHeap();
@@ -1297,7 +1302,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading firewall blocklist");
-        reloadBlocklist(mBlocklist.toListDescriptor());
+        reloadBlocklist(mBlocklist.toListDescriptor(mGracelist));
     }
 
     public static void reloadMalwareWhitelist() {
@@ -1305,7 +1310,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading malware whitelist");
-        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
+        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor(null));
     }
 
     public static void setFirewallEnabled(boolean enabled) {

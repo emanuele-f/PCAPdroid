@@ -377,4 +377,6 @@
     <string name="vpn_exemptions_summary">Exempt some apps from the VPN connection. Their traffic will not be monitored</string>
     <string name="no_matches_found">No matches</string>
     <string name="cleartext_connection">Cleartext</string>
+    <string name="unblock_permanently">Unblock permanently</string>
+    <string name="unblock_for_n_hours">Unblock for %1$dh</string>
 </resources>
