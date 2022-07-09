@@ -62,7 +62,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.Billing;
-import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;

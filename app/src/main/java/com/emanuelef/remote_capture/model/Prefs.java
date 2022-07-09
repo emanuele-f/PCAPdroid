@@ -75,6 +75,7 @@ public class Prefs {
     public static final String PREF_APP_VERSION = "appver";
     public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
     public static final String PREF_VPN_EXCEPTIONS = "vpn_exceptions";
+    public static final String PREF_BLOCK_NEW_APPS = "block_new_apps";
 
     public enum DumpMode {
         NONE,
@@ -163,4 +164,5 @@ public class Prefs {
     public static boolean blockQuic(SharedPreferences p)          { return(getTlsDecryptionEnabled(p) && p.getBoolean(PREF_BLOCK_QUIC, false)); }
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
     public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
+    public static boolean blockNewApps(SharedPreferences p)       { return(p.getBoolean(PREF_BLOCK_NEW_APPS, false)); }
 }

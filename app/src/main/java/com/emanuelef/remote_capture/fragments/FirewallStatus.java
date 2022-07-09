@@ -133,6 +133,8 @@ public class FirewallStatus extends Fragment {
             updateStatus();
         });
 
+        menu.findItem(R.id.block_new_apps).setChecked(Prefs.blockNewApps(mPrefs));
+
         updateStatus();
     }
 
@@ -143,6 +145,11 @@ public class FirewallStatus extends Fragment {
         if(id == R.id.user_guide) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.FIREWALL_DOCS_URL));
             Utils.startActivity(requireContext(), browserIntent);
+            return true;
+        } else if(id == R.id.block_new_apps) {
+            boolean checked = !item.isChecked();
+            item.setChecked(checked);
+            mPrefs.edit().putBoolean(Prefs.PREF_BLOCK_NEW_APPS, checked).apply();
             return true;
         }
 

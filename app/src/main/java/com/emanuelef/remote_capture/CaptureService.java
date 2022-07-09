@@ -25,8 +25,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -98,6 +100,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static final int NOTIFY_ID_LOW_MEMORY = 2;
+    private static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -147,6 +150,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Auth;
     private CaptureStats mLastStats;
     private boolean mLowMemory;
+    private BroadcastReceiver mNewAppsInstallReceiver;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -464,6 +468,50 @@ public class CaptureService extends VpnService implements Runnable {
             mDumperThread.start();
         }
 
+        if(mFirewallEnabled) {
+            mNewAppsInstallReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // executed on the main thread
+                    if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+                        boolean newInstall = !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
+                        String packageName = intent.getData().getSchemeSpecificPart();
+                        Log.d(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
+
+                        if(newInstall && Prefs.blockNewApps(mPrefs)) {
+                            Log.i(TAG, "Blocking newly installed app: " + packageName);
+                            mBlocklist.addApp(packageName);
+                            mBlocklist.save();
+                            reloadBlocklist();
+
+                            AppDescriptor app = appsResolver.getByPackage(packageName, 0);
+                            String label = (app != null) ? app.getName() : packageName;
+
+                            // Notify the user
+                            NotificationManagerCompat man = NotificationManagerCompat.from(context);
+                            if(man.areNotificationsEnabled()) {
+                                Notification notification = new NotificationCompat.Builder(CaptureService.this, NOTIFY_CHAN_OTHER)
+                                        .setSmallIcon(R.drawable.ic_logo)
+                                        .setColor(ContextCompat.getColor(CaptureService.this, R.color.colorPrimary))
+                                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                                        .setCategory(NotificationCompat.CATEGORY_STATUS)
+                                        .setContentTitle(getString(R.string.app_blocked))
+                                        .setContentText(getString(R.string.app_blocked_info, label))
+                                        .build();
+
+                                man.notify(NOTIFY_ID_APP_BLOCKED, notification);
+                            }
+                        }
+                    }
+                }
+            };
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+            filter.addDataScheme("package");
+            registerReceiver(mNewAppsInstallReceiver, filter);
+        }
+
         // Start the native capture thread
         mQueueFull = false;
         mCaptureThread = new Thread(this, "PacketCapture");
@@ -493,7 +541,10 @@ public class CaptureService extends VpnService implements Runnable {
         if(mBlacklistsUpdateThread != null)
             mBlacklistsUpdateThread.interrupt();
 
-        unregisterNetworkCallbacks();
+        if(mNewAppsInstallReceiver != null) {
+            unregisterReceiver(mNewAppsInstallReceiver);
+            mNewAppsInstallReceiver = null;
+        }
 
         super.onDestroy();
     }
