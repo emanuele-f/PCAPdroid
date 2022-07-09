@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -58,13 +59,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
 
-public class EditListFragment extends Fragment {
+public class EditListFragment extends Fragment implements MatchList.ListChangeListener {
     private ListEditAdapter mAdapter;
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
     private MatchList mList;
     private ListInfo mListInfo;
     private ListView mListView;
+    private boolean mIsOwnUpdate;
+    private ActionMode mActionMode;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 
@@ -97,8 +100,9 @@ public class EditListFragment extends Fragment {
         assert getArguments() != null;
         mListInfo = new ListInfo((ListInfo.Type)getArguments().getSerializable(LIST_TYPE_ARG));
         mList = mListInfo.getList();
+        mList.addListChangeListener(this);
 
-        mAdapter = new ListEditAdapter(requireContext(), mList.iterRules());
+        mAdapter = new ListEditAdapter(requireContext());
         mListView.setAdapter(mAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
@@ -118,6 +122,7 @@ public class EditListFragment extends Fragment {
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                 MenuInflater inflater = requireActivity().getMenuInflater();
                 inflater.inflate(R.menu.list_edit_cab, menu);
+                mActionMode = mode;
                 return true;
             }
 
@@ -151,10 +156,18 @@ public class EditListFragment extends Fragment {
             @Override
             public void onDestroyActionMode(ActionMode mode) {
                 mSelected = new ArrayList<>();
+                mActionMode = null;
             }
         });
 
+        mAdapter.reload(mList.iterRules());
         recheckListSize();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mList.removeListChangeListener(this);
     }
 
     private void confirmDelete(ActionMode mode) {
@@ -259,6 +272,8 @@ public class EditListFragment extends Fragment {
                 mList.removeRule(rule);
             mList.save();
         }
+
+        mIsOwnUpdate = true;
     }
 
     private String getExportName() {
@@ -334,7 +349,7 @@ public class EditListFragment extends Fragment {
         builder.setCancelable(true);
         builder.setPositiveButton(R.string.keep_action, (dialog, which) -> importRules(rules));
         builder.setNegativeButton(R.string.discard_action, (dialog, which) -> {
-            mList.clear();
+            mList.clear(false);
             importRules(rules);
         });
 
@@ -350,12 +365,27 @@ public class EditListFragment extends Fragment {
         mList.save();
         reloadListRules();
 
-        // reload view
-        mAdapter = new ListEditAdapter(context, mList.iterRules());
-        mListView.setAdapter(mAdapter);
-        recheckListSize();
-
         String msg = String.format(context.getResources().getString(R.string.rules_import_success), num_imported);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onListChanged() {
+        if(mIsOwnUpdate) {
+            mIsOwnUpdate = false;
+            return;
+        }
+
+        Log.d(TAG, "onListChanged");
+
+        if(mActionMode != null) {
+            mActionMode.finish();
+            mActionMode = null;
+        }
+
+        // reload view
+        mAdapter.reload(mList.iterRules());
+        mListView.setAdapter(mAdapter);
+        recheckListSize();
     }
 }
