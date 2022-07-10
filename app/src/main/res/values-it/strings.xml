@@ -361,4 +361,29 @@
     <string name="vpn_lockdown_notice">Per evitare che le app accedano a Internet quando PCAPdroid non è attivo (e.s. al riavvio) è possibile abilitare la modalità di VPN sempre attiva con blocco.
 \n
 \nVuoi aprire le impostazioni delle VPN\?</string>
+    <string name="vpn_exemptions">Esenzioni VPN</string>
+    <string name="unblock_permanently">Sblocca permanentemente</string>
+    <string name="unblock_for_n_hours">Sblocca per %1$dh</string>
+    <string name="app_blocked_info">L\'app %1$s è stata bloccata dal firewall</string>
+    <string name="ipv4_only">Solo IPv4</string>
+    <string name="ip_both">IPv4 e IPv6</string>
+    <string name="show_only_cleartext">Connessioni in chiaro</string>
+    <string name="ipv6_only">Solo IPv6</string>
+    <string name="vpn_exemptions_summary">Esimi app dalla connessione VPN. Il traffico di tali app non sarà monitorato</string>
+    <string name="notifications_notice">L\'app invia notifiche per allertare in caso di eventi anomali. Si prega di acconsentire all\'invio di notifiche nella prossima schermata</string>
+    <string name="no_matches_found">Nessuna corrispondenza</string>
+    <string name="cleartext_connection">In chiaro</string>
+    <string name="app_blocked">App bloccata</string>
+    <string name="block_new_apps">Blocca le nuove app installate</string>
+    <string name="ip_mode">Indirizzi della VPN</string>
+    <string name="payload_scams_notice">Questa vista potrebbe contenere dati sensibili, quali le tue password o token di accesso.
+\n
+\nNon comunicare mai a nessuno questi dati, potrebbe essere un tentativo di truffa</string>
+    <string name="scam_alert">Avviso truffa</string>
+    <string name="cancel_action">Annulla</string>
+    <string name="show_data_action">Mostra i dati</string>
+    <string name="remote_collector_notice">Hai configurato PCAPdroid per inviare il traffic a un server remoto. Il server potrà accedere ai tuoi dati sensibili.
+\n
+\nSe qualcuno ti ha chiesto di farlo, questo è probabilmente un tentativo di truffa</string>
+    <string name="remote_server_warning">Per ragioni di sicurezza, l\'invio del traffico al server remoto \"%1$s\" non è permesso</string>
 </resources>
