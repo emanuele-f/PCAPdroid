@@ -16,7 +16,7 @@ To create a block rule, long tap a connection in the Connections tab and choose 
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/firewall_block.jpg" width="250" />
 </p>
 
-The block rule will be applied both to the active connections and to the new connections. A *ban* sign helps you identify blocked connections. You can easily review all the blocked connections by tapping the filter icon in the action bar and appying a *Blocked by firewall* filter. You can unblock a connection by long pressing it and choosing *unblock* from the context menu. You can also review and delete the blocking rules from the blocklist tab as explained below.
+The block rule will be applied both to the active connections and to the new connections. A *ban* sign helps you identify blocked connections. You can easily review all the blocked connections by tapping the filter icon in the action bar and appying a *Blocked by firewall* filter. You can unblock a connection by long pressing it and choosing *unblock* from the context menu. When unblocking an app, you can decide to unblock it permanently, by removing it from the blocklist, or give it a grace period and reblock it automatically after some hours. You can also review and delete the blocking rules from the blocklist tab as explained below.
 
 From the left drawer, you can access the firewall settings and status.
 
@@ -24,7 +24,7 @@ From the left drawer, you can access the firewall settings and status.
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/firewall_status.jpg" width="250" />
 </p>
 
-In the status tab you can see some statistics about the firewall, like the number of blocked connections and the time of the last block. Tap on the "Connections blocked" card to show the list of blocked connections. Via the on/off toggle in the action bar, you can enable/disable the firewall at runtime. When disabled, connections won't be blocked.
+In the status tab you can see some statistics about the firewall, like the number of blocked connections and the time of the last block. Tap on the "Connections blocked" card to show the list of blocked connections. Via the on/off toggle in the action bar, you can enable/disable the firewall at runtime. From the action bar menu, you can also enable the ability to *block newly install apps*. This will automatically add new apps to the blocklist and block their traffic as soon as they are installed.
 
 In the blocklist tab you can see the set of blocking rules. You can long press rules to select and delete them. You can also export the rules to a file to backup them or share it with other people, who can add them to their existing rules.
 
