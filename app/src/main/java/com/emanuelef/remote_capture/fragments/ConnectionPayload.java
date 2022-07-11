@@ -20,7 +20,9 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,7 +33,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -41,6 +45,7 @@ import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
@@ -49,6 +54,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     private ConnectionDescriptor mConn;
     private PayloadAdapter mAdapter;
     private TextView mTruncatedWarning;
+    private EmptyRecyclerView mRecyclerView;
     private int mCurChunks;
     private Menu mMenu;
     private boolean mJustCreated;
@@ -99,9 +105,9 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
             return;
         }
 
-        EmptyRecyclerView recyclerView = view.findViewById(R.id.payload);
+        mRecyclerView = view.findViewById(R.id.payload);
         EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
-        recyclerView.setLayoutManager(layoutMan);
+        mRecyclerView.setLayoutManager(layoutMan);
 
         mTruncatedWarning = view.findViewById(R.id.truncated_warning);
         mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.full_payload)));
@@ -110,8 +116,39 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
         mAdapter = new PayloadAdapter(requireContext(), mConn, mode);
         mCurChunks = mConn.getNumPayloadChunks();
-        recyclerView.setAdapter(mAdapter);
         mJustCreated = true;
+
+        // only set adapter after acknowledged (see setMenuVisibility below)
+        if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
+            mRecyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void setMenuVisibility(boolean menuVisible) {
+        super.setMenuVisibility(menuVisible);
+        Log.d(TAG, "setMenuVisibility : " + menuVisible);
+        Context context = requireContext();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if(menuVisible && !payloadNoticeAcknowledged(prefs)) {
+            AlertDialog dialog = new AlertDialog.Builder(context)
+                    .setTitle(R.string.scam_alert)
+                    .setMessage(R.string.payload_scams_notice)
+                    .setOnCancelListener((d) -> requireActivity().finish())
+                    .setNegativeButton(R.string.cancel_action, (d, b) -> requireActivity().finish())
+                    .setPositiveButton(R.string.show_data_action, (d, whichButton) -> {
+                        // show the data
+                        mRecyclerView.setAdapter(mAdapter);
+
+                        prefs.edit().putBoolean(Prefs.PREF_PAYLOAD_NOTICE_ACK, true).apply();
+                    }).show();
+
+            dialog.setCanceledOnTouchOutside(false);
+        }
+    }
+
+    private boolean payloadNoticeAcknowledged(SharedPreferences prefs) {
+        return prefs.getBoolean(Prefs.PREF_PAYLOAD_NOTICE_ACK, false);
     }
 
     @Override

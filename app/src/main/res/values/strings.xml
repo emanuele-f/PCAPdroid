@@ -382,4 +382,8 @@
     <string name="block_new_apps">Block newly installed apps</string>
     <string name="app_blocked">App blocked</string>
     <string name="app_blocked_info">The %1$s app has been blocked by the firewall</string>
+    <string name="scam_alert">Scam alert</string>
+    <string name="payload_scams_notice">This view may contain sensitive information, like your passwords and access tokens.\n\nNever give out this information to anyone, it may be a scam attempt</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="show_data_action">Show data</string>
 </resources>

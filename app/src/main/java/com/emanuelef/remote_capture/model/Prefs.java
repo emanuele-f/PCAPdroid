@@ -76,6 +76,7 @@ public class Prefs {
     public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
     public static final String PREF_VPN_EXCEPTIONS = "vpn_exceptions";
     public static final String PREF_BLOCK_NEW_APPS = "block_new_apps";
+    public static final String PREF_PAYLOAD_NOTICE_ACK = "payload_notice";
 
     public enum DumpMode {
         NONE,
