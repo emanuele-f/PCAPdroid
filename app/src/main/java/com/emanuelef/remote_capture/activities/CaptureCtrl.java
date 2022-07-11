@@ -40,6 +40,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Billing;
@@ -53,6 +54,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
 import com.emanuelef.remote_capture.model.CaptureStats;
+import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.HashSet;
 
@@ -206,8 +208,18 @@ public class CaptureCtrl extends AppCompatActivity {
             mReceiverClass = req_intent.getStringExtra("broadcast_receiver");
             Log.d(TAG, "Starting capture, caller=" + mStarterApp);
 
+            CaptureSettings settings = new CaptureSettings(req_intent);
+            if((settings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) && (!Utils.isLocalNetworkAddress(settings.collector_address))) {
+                if(!Prefs.getCollectorIp(PreferenceManager.getDefaultSharedPreferences(this)).equals(settings.collector_address)) {
+                    Log.w(TAG, "For security reasons, exporting to the remote UDP collector \"" + settings.collector_address + "\" is disabled");
+                    abort();
+                    return;
+                } else
+                    Log.i(TAG, "Allowing export to remote collector as it matches user pref");
+            }
+
             // will call the mCapHelper listener
-            mCapHelper.startCapture(new CaptureSettings(req_intent));
+            mCapHelper.startCapture(settings);
             return;
         } else if(action.equals(ACTION_STOP)) {
             Log.d(TAG, "Stopping capture");

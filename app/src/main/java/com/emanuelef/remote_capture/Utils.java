@@ -102,6 +102,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -398,6 +399,58 @@ public class Utils {
         // Fallback
         Log.d("getLocalIPAddress", "Using fallback IP");
         return "127.0.0.1";
+    }
+
+    public static boolean subnetContains(InetAddress subnet, int prefix, InetAddress address) {
+        int addrlen = subnet.getAddress().length;
+        ByteBuffer maskBuf = ByteBuffer.allocate(addrlen);
+
+        for(int i=0; i<addrlen / 4; i++)
+            maskBuf.putInt(-1);
+
+        // 0xFFFFF...0000000
+        BigInteger mask = ((new BigInteger(1, maskBuf.array())).shiftRight(prefix)).not();
+
+        BigInteger start = new BigInteger(1, subnet.getAddress()).and(mask);
+        BigInteger end = start.add(mask.not());
+        BigInteger toCheck = new BigInteger(1, address.getAddress());
+
+        return((toCheck.compareTo(start) >= 0) && (toCheck.compareTo(end) <= 0));
+    }
+
+    public static boolean subnetContains(String subnet, int prefix, String address) {
+        try {
+            return subnetContains(InetAddress.getByName(subnet), prefix, InetAddress.getByName(address));
+        } catch (UnknownHostException ignored) {
+            return false;
+        }
+    }
+
+    public static boolean isLocalNetworkAddress(InetAddress checkAddress) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                if(!intf.isVirtual()) {
+                    List<InterfaceAddress> addrs = intf.getInterfaceAddresses();
+                    for (InterfaceAddress addr : addrs) {
+                        if(subnetContains(addr.getAddress(), addr.getNetworkPrefixLength(), checkAddress))
+                            return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean isLocalNetworkAddress(String checkAddress) {
+        try {
+            return isLocalNetworkAddress(InetAddress.getByName(checkAddress));
+        } catch (UnknownHostException ignored) {
+            return false;
+        }
     }
 
     // returns current timestamp in seconds
