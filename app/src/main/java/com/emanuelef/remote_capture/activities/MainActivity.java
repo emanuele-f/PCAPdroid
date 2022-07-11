@@ -674,6 +674,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
+        if(showRemoteServerAlert())
+            return;
+
         if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
             Intent intent = new Intent(this, MitmSetupWizard.class);
             startActivity(intent);
@@ -700,7 +703,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         CaptureService.stopService();
     }
 
-    public void openFileSelector() {
+    // see also CaptureCtrl.checkRemoteServerNotAllowed
+    private boolean showRemoteServerAlert() {
+        if(mPrefs.getBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, false))
+            return false; // already acknowledged
+
+        if(((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
+                (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyAddress(mPrefs)))) {
+            Log.i(TAG, "Showing possible scan notice");
+
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.scam_alert)
+                    .setMessage(R.string.remote_collector_notice)
+                    .setPositiveButton(R.string.ok, (d, whichButton) -> mPrefs.edit().putBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, true).apply())
+                    .show();
+            dialog.setCanceledOnTouchOutside(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void openFileSelector() {
         boolean noFileDialog = false;
         String fname = Utils.getUniquePcapFileName(this);
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);

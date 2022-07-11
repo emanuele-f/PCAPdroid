@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.activities;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -199,6 +200,27 @@ public class CaptureCtrl extends AppCompatActivity {
         finish();
     }
 
+    // Check if the capture is requesting to send traffic to a remote server.
+    // For security reasons, this is only allowed if such server is already configured by
+    // the user in the app prefs.
+    // see also MainActivity.showRemoteServerAlert
+    private String checkRemoteServerNotAllowed(CaptureSettings settings) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if((settings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) &&
+                !Utils.isLocalNetworkAddress(settings.collector_address) &&
+                !Prefs.getCollectorIp(prefs).equals(settings.collector_address))
+            return settings.collector_address;
+
+        if(settings.socks5_enabled &&
+                !Utils.isLocalNetworkAddress(settings.socks5_proxy_address) &&
+                !Prefs.getSocks5ProxyAddress(prefs).equals(settings.socks5_proxy_address))
+            return settings.socks5_proxy_address;
+
+        // ok
+        return null;
+    }
+
     private void processRequest(Intent req_intent, @NonNull String action) {
         Intent res = new Intent();
         Utils.showToast(this, R.string.ctrl_consent_allowed);
@@ -209,13 +231,11 @@ public class CaptureCtrl extends AppCompatActivity {
             Log.d(TAG, "Starting capture, caller=" + mStarterApp);
 
             CaptureSettings settings = new CaptureSettings(req_intent);
-            if((settings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) && (!Utils.isLocalNetworkAddress(settings.collector_address))) {
-                if(!Prefs.getCollectorIp(PreferenceManager.getDefaultSharedPreferences(this)).equals(settings.collector_address)) {
-                    Log.w(TAG, "For security reasons, exporting to the remote UDP collector \"" + settings.collector_address + "\" is disabled");
-                    abort();
-                    return;
-                } else
-                    Log.i(TAG, "Allowing export to remote collector as it matches user pref");
+            String disallowedServer = checkRemoteServerNotAllowed(settings);
+            if(disallowedServer != null) {
+                Utils.showToastLong(this, R.string.remote_server_warning, disallowedServer);
+                abort();
+                return;
             }
 
             // will call the mCapHelper listener
