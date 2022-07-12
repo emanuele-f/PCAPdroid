@@ -377,7 +377,6 @@
     <string name="vpn_exemptions_summary">Bazı uygulamaları VPN bağlantısından muaf tutun. Onların trafiği izlenmeyecektir</string>
     <string name="notifications_notice">Uygulama, olağan dışı olaylar durumunda uyarı göndermek için bildirimleri kullanır. Bir sonraki ekranda bildirim gönderme izni verin</string>
     <string name="cleartext_connection">Açık metin</string>
-    <string name="scam_alert">Dolandırıcılık uyarısı</string>
     <string name="cancel_action">İptal</string>
     <string name="show_data_action">Verileri göster</string>
     <string name="remote_server_warning">Güvenlik nedeniyle, \"%1$s\" uzak sunucusuna trafik gönderilmesine izin verilmiyor</string>

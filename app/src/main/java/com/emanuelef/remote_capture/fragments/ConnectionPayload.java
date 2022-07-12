@@ -132,7 +132,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
         if(menuVisible && !payloadNoticeAcknowledged(prefs)) {
             AlertDialog dialog = new AlertDialog.Builder(context)
-                    .setTitle(R.string.scam_alert)
+                    .setTitle(R.string.warning)
                     .setMessage(R.string.payload_scams_notice)
                     .setOnCancelListener((d) -> requireActivity().finish())
                     .setNegativeButton(R.string.cancel_action, (d, b) -> requireActivity().finish())

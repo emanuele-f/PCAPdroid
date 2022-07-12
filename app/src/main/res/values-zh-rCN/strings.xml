@@ -404,7 +404,6 @@
     <string name="show_only_cleartext">明文连接</string>
     <string name="notifications_notice">该应用程序使用通知在发生异常事件时发送警报。 在下一个屏幕授予它发送通知的权限</string>
     <string name="remote_server_warning">出于安全原因，不允许将流量发送到远程服务器“%1$s”</string>
-    <string name="scam_alert">欺诈警告</string>
     <string name="payload_scams_notice">这个视图可能包含敏感信息，比如密码和访问令牌。
 \n
 \n千万不要把这个信息透露给任何人，这可能是一个骗局</string>
