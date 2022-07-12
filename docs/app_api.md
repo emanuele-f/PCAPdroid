@@ -80,7 +80,6 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | socks5_enabled          | bool   |     | vpn  | true to redirect the TCP connections to a SOCKS5 proxy             |
 | socks5_proxy_ip_address | string |     | vpn  | the IP address of the SOCKS5 proxy                                 |
 | socks5_proxy_port       | int    |     | vpn  | the TCP port of the SOCKS5 proxy                                   |
-| ipv6_enabled            | bool   |     | vpn  | true to enable IPv6 support                                        |
 | root_capture            | bool   |     |      | true to capture packets in root mode, false to use the VPNService  |
 | pcapdroid_trailer       | bool   |     |      | true to enable the PCAPdroid trailer                               |
 | capture_interface       | string |     | root | @inet \| any \| ifname - network interface to use in root mode     |
@@ -90,6 +89,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | tls_decryption          | bool   |  49 | vpn  | true to enable the built-in TLS decryption                         |
 | block_quic              | bool   |  51 | vpn  | true to block QUIC traffic                                         |
 | auto_block_private_dns  | bool   |  51 | vpn  | true to detect and possibly block private DNS to inspect traffic   |
+| ip_mode                 | string |  56 | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both        |
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 The `Mode` column indicates if the option applies to any mode or only to the VPN or root mode.

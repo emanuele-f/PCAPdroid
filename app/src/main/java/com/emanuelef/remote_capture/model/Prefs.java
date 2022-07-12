@@ -33,6 +33,11 @@ public class Prefs {
     public static final String DUMP_PCAP_FILE = "pcap_file";
     public static final String DEFAULT_DUMP_MODE = DUMP_NONE;
 
+    public static final String IP_MODE_IPV4_ONLY = "ipv4";
+    public static final String IP_MODE_IPV6_ONLY = "ipv6";
+    public static final String IP_MODE_BOTH = "both";
+    public static final String IP_MODE_DEFAULT = IP_MODE_IPV4_ONLY;
+
     public static final String PAYLOAD_MODE_NONE = "none";
     public static final String PAYLOAD_MODE_MINIMAL = "minimal";
     public static final String PAYLOAD_MODE_FULL = "full";
@@ -50,7 +55,7 @@ public class Prefs {
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_PCAP_URI = "pcap_uri";
-    public static final String PREF_IPV6_ENABLED = "ipv6_enabled";
+    public static final String PREF_IP_MODE = "ip_mode";
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
@@ -69,12 +74,22 @@ public class Prefs {
     public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
     public static final String PREF_APP_VERSION = "appver";
     public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
+    public static final String PREF_VPN_EXCEPTIONS = "vpn_exceptions";
+    public static final String PREF_BLOCK_NEW_APPS = "block_new_apps";
+    public static final String PREF_PAYLOAD_NOTICE_ACK = "payload_notice";
+    public static final String PREF_REMOTE_COLLECTOR_ACK = "remote_collector_notice";
 
     public enum DumpMode {
         NONE,
         HTTP_SERVER,
         PCAP_FILE,
         UDP_EXPORTER
+    }
+
+    public enum IpMode {
+        IPV4_ONLY,
+        IPV6_ONLY,
+        BOTH,
     }
 
     public enum PayloadMode {
@@ -89,6 +104,14 @@ public class Prefs {
             case DUMP_PCAP_FILE:        return DumpMode.PCAP_FILE;
             case DUMP_UDP_EXPORTER:     return DumpMode.UDP_EXPORTER;
             default:                    return DumpMode.NONE;
+        }
+    }
+
+    public static IpMode getIPMode(String pref) {
+        switch (pref) {
+            case IP_MODE_IPV6_ONLY:     return IpMode.IPV6_ONLY;
+            case IP_MODE_BOTH:          return IpMode.BOTH;
+            default:                    return IpMode.IPV4_ONLY;
         }
     }
 
@@ -122,7 +145,7 @@ public class Prefs {
     public static String getSocks5ProxyAddress(SharedPreferences p) { return(p.getString(PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0")); }
     public static int getSocks5ProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_SOCKS5_PROXY_PORT_KEY, "8080"))); }
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
-    public static boolean getIPv6Enabled(SharedPreferences p)    { return(p.getBoolean(PREF_IPV6_ENABLED, false)); }
+    public static IpMode getIPMode(SharedPreferences p)          { return(getIPMode(p.getString(PREF_IP_MODE, IP_MODE_DEFAULT))); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
     public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
@@ -143,4 +166,5 @@ public class Prefs {
     public static boolean blockQuic(SharedPreferences p)          { return(getTlsDecryptionEnabled(p) && p.getBoolean(PREF_BLOCK_QUIC, false)); }
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
     public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
+    public static boolean blockNewApps(SharedPreferences p)       { return(p.getBoolean(PREF_BLOCK_NEW_APPS, false)); }
 }

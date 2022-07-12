@@ -64,6 +64,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.GraceList;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
@@ -107,10 +108,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onResume() {
         super.onResume();
 
-        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
-            mEmptyText.setText(R.string.no_connections);
-        else
-            mEmptyText.setText(R.string.capture_not_running_status);
+        refreshEmptyText();
 
         registerConnsListener();
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
@@ -144,6 +142,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.connections, container, false);
+    }
+
+    private void refreshEmptyText() {
+        if((CaptureService.getConnsRegister() != null) || CaptureService.isServiceActive())
+            mEmptyText.setText(mAdapter.hasFilter() ? R.string.no_matches_found : R.string.no_connections);
+        else
+            mEmptyText.setText(R.string.capture_not_running_status);
     }
 
     private void registerConnsListener() {
@@ -334,6 +339,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setTitle(label);
             item.setVisible(appBlocked);
 
+            menu.findItem(R.id.unblock_app_1h).setTitle(getString(R.string.unblock_for_n_hours, 1));
+            menu.findItem(R.id.unblock_app_2h).setTitle(getString(R.string.unblock_for_n_hours, 2));
+            menu.findItem(R.id.unblock_app_8h).setTitle(getString(R.string.unblock_for_n_hours, 8));
+
             if(conn.isBlacklisted()) {
                 item = menu.findItem(R.id.whitelist_app);
                 item.setTitle(label);
@@ -449,9 +458,11 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionDescriptor conn = mAdapter.getClickedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
+        GraceList gracelist = PCAPdroid.getInstance().getGracelist();
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
+        boolean gracelist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -506,9 +517,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.block_domain) {
             blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
-        } else if(id == R.id.unblock_app) {
+        } else if(id == R.id.unblock_app_permanently) {
             blocklist.removeApp(conn.uid);
+            gracelist.removeApp(conn.uid);
             blocklist_changed = true;
+            gracelist_changed = true;
+        } else if(id == R.id.unblock_app_1h) {
+            gracelist_changed = gracelist.unblockAppForMinutes(conn.uid, 60);
+        } else if(id == R.id.unblock_app_2h) {
+            gracelist_changed = gracelist.unblockAppForMinutes(conn.uid, 120);
+        } else if(id == R.id.unblock_app_8h) {
+            gracelist_changed = gracelist.unblockAppForMinutes(conn.uid, 480);
         } else if(id == R.id.unblock_ip) {
             blocklist.removeIp(conn.dst_ip);
             blocklist_changed = true;
@@ -542,8 +561,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(whitelist_changed) {
             whitelist.save();
             CaptureService.reloadMalwareWhitelist();
-        } else if(blocklist_changed) {
-            blocklist.save();
+        } else if(blocklist_changed || gracelist_changed) {
+            if(blocklist_changed)
+                blocklist.save();
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadBlocklist();
         }
@@ -552,14 +572,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void setQuery(String query) {
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        mSearchView.setIconified(false);
-        mMenuItemSearch.expandActionView();
-
-        // Delay otherwise the query won't be set when the activity is just started.
-        mSearchView.post(() -> mSearchView.setQuery(query, true));
+        Utils.setSearchQuery(mSearchView, mMenuItemSearch, query);
     }
 
     private void recheckScroll() {
@@ -810,16 +823,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public boolean onQueryTextChange(String newText) {
         mAdapter.setSearch(newText);
         recheckScroll();
+        refreshEmptyText();
         return true;
     }
 
+    // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
-        if((mSearchView != null) && !mSearchView.isIconified()) {
-            // Required to close the SearchView when the search submit button was not pressed
-            mSearchView.setIconified(true);
-            return true;
-        }
-
-        return false;
+        return Utils.backHandleSearchview(mSearchView);
     }
 }

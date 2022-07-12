@@ -42,7 +42,6 @@
     <string name="dropped_connections">Düşürülen bağlantılar</string>
     <string name="tot_connections">Toplam bağlantı</string>
     <string name="open_sockets">Açık soketler</string>
-    <string name="max_file_descriptor">Azami dosya tanımlayıcısı</string>
     <string name="bytes_sent">Gönderilen bayt</string>
     <string name="bytes_rcvd">Alınan bayt</string>
     <string name="packets_sent">Gönderilen paketler</string>
@@ -58,7 +57,6 @@
     <string name="conn_status_closed">Kapalı</string>
     <string name="older_connections_notice">%1$d eski bağlantı gösterilmiyor</string>
     <string name="unknown_app">Bilinmeyen</string>
-    <string name="enable_ipv6_summary">İnternete IPv6 bağlantıları yapmaya izin verin. Bunu yalnızca IPv6 ağ geçidi olan ağlarda kullanın</string>
     <string name="other_prefs">Diğer</string>
     <string name="app_language">Uygulama dili</string>
     <string name="lang_english">İngilizce</string>
@@ -133,8 +131,7 @@
     <string name="block">Engelle…</string>
     <string name="firewall">Güvenlik duvarı</string>
     <string name="n_pkts">%1$s paket</string>
-    <string name="show_only_blocked">Engellenen bağlantılar</string>
-    <string name="blocked_connection_filter">engellendi</string>
+    <string name="blocked_connection_filter">Engellendi</string>
     <string name="unlock_code">Kilit açma kodu</string>
     <string name="validate">Doğrula</string>
     <string name="valid">Geçerli</string>
@@ -268,7 +265,6 @@
     <string name="phone_app">Telefon</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="phone_app_info">Telefon hizmetleri</string>
-    <string name="ipv6">IPv6</string>
     <string name="configure_action">Yapılandır</string>
     <string name="install_ca_certificate">\"VPN ve uygulamalar\" seçeneğini seçerek PCAPdroid CA sertifikasını kurun. Android, kilit ekranınızı veya parolanızı soracak</string>
     <string name="tls_decryption_summary">Ortadaki adam gerçekleştirerek SSL/TLS trafiğinin şifresini çöz. Bu artık bazı uygulamalarla çalışabilir, kullanım kılavuzuna bakın</string>
@@ -354,4 +350,41 @@
 \nGüncel kara listeleri kullanarak, kötü niyetli bağlantıları gerçek zamanlı olarak tespit edebilir, engelleyebilir ve uyarabilir</string>
     <string name="permission_granted">%1$s izni verildi</string>
     <string name="permission_grant_fail">%1$s izni verilemedi</string>
+    <string name="memory_usage">Bellek kullanımı</string>
+    <string name="allowed_connection_filter">İzin verildi</string>
+    <string name="firewall_filter">Güvenlik duvarı: %1$s</string>
+    <string name="heap_usage">Yığın kullanımı</string>
+    <string name="connection_not_found">Verilen bağlantı bulunamadı</string>
+    <string name="low_memory">Düşük bellek</string>
+    <string name="low_memory_info">Uygulamanın belleği tükeniyor, çökmeler bekleniyor</string>
+    <string name="capture_stopped_low_memory">Yakalama durduruldu</string>
+    <string name="full_payload_disabled">Tam yük seçeneği devre dışı bırakıldı</string>
+    <string name="vpn_lockdown_notice">PCAPdroid çalışmıyorken (örneğin yeniden başlattıktan sonra) uygulamaların internete erişmesini önlemek için PCAPdroid\'i kilitleme modunda her zaman açık bir VPN olarak ayarlayabilirsiniz.
+\n
+\nŞimdi VPN ayarlarını açmak istiyor musunuz\?</string>
+    <string name="ip_mode">VPN IP adresleri</string>
+    <string name="ipv4_only">Yalnızca IPv4</string>
+    <string name="ipv6_only">Yalnızca IPv6</string>
+    <string name="ip_both">IPv4 ve IPv6</string>
+    <string name="vpn_exemptions">VPN Muafiyetleri</string>
+    <string name="unblock_for_n_hours">%1$dsa için engellemeyi kaldır</string>
+    <string name="block_new_apps">Yeni kurulan uygulamaları engelle</string>
+    <string name="app_blocked">Uygulama engellendi</string>
+    <string name="no_matches_found">Eşleşme yok</string>
+    <string name="unblock_permanently">Kalıcı olarak engellemeyi kaldır</string>
+    <string name="app_blocked_info">%1$s uygulaması güvenlik duvarı tarafından engellendi</string>
+    <string name="show_only_cleartext">Açık metin bağlantıları</string>
+    <string name="vpn_exemptions_summary">Bazı uygulamaları VPN bağlantısından muaf tutun. Onların trafiği izlenmeyecektir</string>
+    <string name="notifications_notice">Uygulama, olağan dışı olaylar durumunda uyarı göndermek için bildirimleri kullanır. Bir sonraki ekranda bildirim gönderme izni verin</string>
+    <string name="cleartext_connection">Açık metin</string>
+    <string name="scam_alert">Dolandırıcılık uyarısı</string>
+    <string name="cancel_action">İptal</string>
+    <string name="show_data_action">Verileri göster</string>
+    <string name="remote_server_warning">Güvenlik nedeniyle, \"%1$s\" uzak sunucusuna trafik gönderilmesine izin verilmiyor</string>
+    <string name="payload_scams_notice">Bu görünüm, parolalarınız ve erişim belirteçleriniz gibi hassas bilgiler içerebilir.
+\n
+\nBu bilgileri asla kimseye vermeyin, bu bir dolandırıcılık girişimi olabilir</string>
+    <string name="remote_collector_notice">PCAPdroid\'i uzak bir sunucuya trafik gönderecek şekilde yapılandırdınız. Sunucu hassas bilgilerinize erişebilecek.
+\n
+\nEğer birisi sizden bunu yapmanızı istediyse, bu muhtemelen bir dolandırıcılık girişimidir</string>
 </resources>

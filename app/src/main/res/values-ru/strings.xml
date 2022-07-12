@@ -42,7 +42,6 @@
     <string name="dropped_connections">Прерванные соединения</string>
     <string name="tot_connections">Всего соединений</string>
     <string name="open_sockets">Открытые сокеты</string>
-    <string name="max_file_descriptor">Максимальный ФД</string>
     <string name="bytes_sent">Байтов отправлено</string>
     <string name="bytes_rcvd">Байтов получено</string>
     <string name="packets_sent">Пакетов отправлено</string>
@@ -72,8 +71,6 @@
     <string name="about_text">PCAPdroid это свободный инструмент захвата и отслеживания сетевого трафика, который работает без привилегий суперпользователя</string>
     <string name="get_app">Получить его:</string>
     <string name="unknown_app">Неизвестное</string>
-    <string name="ipv6">Включить IPv6</string>
-    <string name="enable_ipv6_summary">Разрешить IPv6 соединения с интернетом. Это следует включать только в сетях с IPv6 шлюзом</string>
     <string name="error">Ошибка</string>
     <string name="conn_status_unreachable">Недоступен</string>
     <string name="other_prefs">Другое</string>
@@ -184,7 +181,6 @@
     <string name="private_dns_hinders_detection">Частный DNS препятствует обнаружению</string>
     <string name="firewall">Файрвол</string>
     <string name="paid_features">Платные возможности</string>
-    <string name="show_only_blocked">Заблокированные соединения</string>
     <string name="blocked_pkts">Заблокировано</string>
     <string name="n_pkts">%1$s пакетов</string>
     <string name="valid">Подтвержден</string>
@@ -195,7 +191,7 @@
     <string name="learn_more">Узнать больше</string>
     <string name="no_items_for_purchase">Отсутствуют опции доступные для покупки</string>
     <string name="buy_action">Купить</string>
-    <string name="blocked_connection_filter">заблокировано</string>
+    <string name="blocked_connection_filter">Заблокировано</string>
     <string name="block">Заблокировать…</string>
     <string name="firewall_rules">Правила для файрвола</string>
     <string name="validate">Подтвердить</string>
@@ -351,4 +347,43 @@
     <string name="app_intro_traffic_inspection">Просматривать HTTP запросы, ответы и необработанные данные легко, благодаря встроенным декодерам
 \n
 \nПопалось зашифрованное соединение\? Вы можете включить<a href="%1$s">дешифрование TLS</a> чтобы получить дешифрованные данные</string>
+    <string name="allowed_connection_filter">Разрешенные</string>
+    <string name="unblock_for_n_hours">Разблокировать на %1$dч</string>
+    <string name="unblock_permanently">Разблокировать навсегда</string>
+    <string name="app_blocked_info">Приложение %1$s было заблокировано файрволом</string>
+    <string name="permission_granted">Разрешение %1$s было получено</string>
+    <string name="app_blocked">Приложение заблокировано</string>
+    <string name="block_new_apps">Блокировать недавно установленные приложения</string>
+    <string name="no_matches_found">Нет совпадений</string>
+    <string name="full_payload_disabled">Опция отображения полного содержимого была отключена</string>
+    <string name="capture_stopped_low_memory">Захват был остановлен</string>
+    <string name="firewall_filter">Файрвол: %1$s</string>
+    <string name="low_memory_info">Приложению не хватает памяти, ожидайте сбоев в работе</string>
+    <string name="permission_grant_fail">Разрешение %1$s не может быть получено</string>
+    <string name="connection_not_found">Не удалось найти заданное соединение</string>
+    <string name="low_memory">Мало памяти</string>
+    <string name="show_only_cleartext">Соединения c открытым текстом</string>
+    <string name="ip_both">IPv4 и IPv6</string>
+    <string name="memory_usage">Использование памяти</string>
+    <string name="cleartext_connection">Открытый текст</string>
+    <string name="vpn_exemptions_summary">Исключение некоторых приложений из VPN соединения. Их траффик не будет отслеживаться</string>
+    <string name="vpn_exemptions">VPN Исключения</string>
+    <string name="notifications_notice">Приложение использует уведомления для оповещения в случае аномальных событий. Предоставьте ему разрешение на отправку уведомлений на следующем экране</string>
+    <string name="cancel_action">Отмена</string>
+    <string name="show_data_action">Показать данные</string>
+    <string name="remote_collector_notice">Вы настроили отправку траффика на удаленный сервер в PCAPdroid. Сервер будет иметь доступ к вашим конфидециальным сведениям.
+\n
+\nЕсли кто-либо попросил вас сделать это, вероятно это попытка мошенничества</string>
+    <string name="payload_scams_notice">Это окно может содержать конфиденциальную информацию, например пароли или токены доступа
+\n
+\nНикогда не предоставляйте эту информацию посторонним лицам, т.к. это могут быть попытки мошенничества</string>
+    <string name="scam_alert">Предупреждение о мошенничестве</string>
+    <string name="remote_server_warning">Из соображений безопасности, отправка траффика на удаленный сервер \"%1$s\" недопустима</string>
+    <string name="heap_usage">Использование кучи</string>
+    <string name="vpn_lockdown_notice">Чтобы предотвратить доступ к интернету для приложений когда PCAPdroid не запущен (например после перезагрузки), вы можете настроить PCAPdroid для работы в качестве всегда активного VPN в режиме блокировки.
+\n
+\nВы хотите открыть настройки VPN сейчас\?</string>
+    <string name="ip_mode">IP адреса для VPN</string>
+    <string name="ipv4_only">Только IPv4</string>
+    <string name="ipv6_only">Только IPv6</string>
 </resources>

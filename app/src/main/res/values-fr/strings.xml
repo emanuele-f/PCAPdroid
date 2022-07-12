@@ -96,7 +96,6 @@
     <string name="search_apps">Chercher des applis</string>
     <string name="pcap_file">Fichier PCAP</string>
     <string name="disconnect_vpn_confirm">Déconnecter l\'application RPV active et continuer \?</string>
-    <string name="ipv6">Activer IPv6</string>
     <string name="version">Version</string>
     <string name="loading_apps">Chargement des applis…</string>
     <string name="close_nav_drawer">Fermer le menu</string>
@@ -104,13 +103,11 @@
     <string name="no_dump_info">Les PCAP ne seront pas extraits</string>
     <string name="http_server_info">Démarrer un serveur HTTP pour le téléchargement du PCAP</string>
     <string name="udp_exporter_info">Envoie le PCAP à un receveur UCP distant</string>
-    <string name="max_file_descriptor">Desc. fich. max</string>
     <string name="open_sockets">Ouvrir les sockets</string>
     <string name="http_server_port">Port du serveur HTTP</string>
     <string name="receiver_ip_address">Adresse IP du collecteur</string>
     <string name="receiver_port">Port du collecteur</string>
     <string name="pcap_file_info">Créer une fichier PCAP dans l\'espace de stockage</string>
-    <string name="enable_ipv6_summary">Autoriser les connexions internet IPv6. À n\'utiliser que sur les réseaux connecté en IPv6</string>
     <string name="get_app">L\'obtenir :</string>
     <string name="about_text">PCAPdroid est un outil open-source de capture et de suivi de réseau qui fonctionne sans un compte administrateur</string>
     <string name="proxy_port">Port de proxy</string>
@@ -204,7 +201,6 @@
     <string name="firewall_rules">Règles du par-feu</string>
     <string name="paid_features">Fonctionnalités payantes</string>
     <string name="unlock_code">Code de déverrouillage</string>
-    <string name="show_only_blocked">Bloqué par le par-feu</string>
     <string name="no_intent_handler_found">Aucune application pour cette action</string>
     <string name="decryption_no_filter_warn">Sélectionnez une application cible lors du décryptage TLS pour éviter de perdre votre connexion internet</string>
     <string name="n_pkts">%1$s paq.</string>

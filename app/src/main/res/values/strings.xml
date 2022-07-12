@@ -73,7 +73,6 @@
     <string name="dropped_connections">Dropped connections</string>
     <string name="tot_connections">Total connections</string>
     <string name="open_sockets">Open sockets</string>
-    <string name="max_file_descriptor">Max FD</string>
     <string name="bytes_sent">Bytes sent</string>
     <string name="bytes_rcvd">Bytes received</string>
     <string name="packets_sent">Packets sent</string>
@@ -105,8 +104,6 @@
     <string name="get_app">Get it:</string>
     <string name="unknown_app">Unknown</string>
     <string name="phone_app">Phone</string>
-    <string name="ipv6">IPv6</string>
-    <string name="enable_ipv6_summary">Allow IPv6 connections to the Internet. Only use this on networks with an IPv6 gateway</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Unreachable</string>
     <string name="other_prefs">Other</string>
@@ -172,6 +169,7 @@
     <string name="list_is_empty">The list is empty</string>
     <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
     <string name="show_only_malicious">Malicious connections</string>
+    <string name="show_only_cleartext">Cleartext connections</string>
     <string name="security">Security</string>
     <string name="malware_detection">Malware detection</string>
     <string name="malware_detection_summary">Detect connections to known malicious hosts via third-party blacklists</string>
@@ -230,7 +228,6 @@
     <string name="firewall_rules">Firewall rules</string>
     <string name="blocked_pkts">Blocked</string>
     <string name="n_pkts">%1$s pkts</string>
-    <string name="show_only_blocked">Blocked connections</string>
     <string name="blocked_connection_filter">Blocked</string>
     <string name="allowed_connection_filter">Allowed</string>
     <string name="firewall_filter">Firewall: %1$s</string>
@@ -371,4 +368,24 @@
     <string name="heap_usage">Heap usage</string>
     <string name="memory_usage">Memory usage</string>
     <string name="vpn_lockdown_notice">To prevent apps from accessing the Internet when PCAPdroid is not running (e.g. after a reboot) you can set PCAPdroid as an always-on VPN in lockdown mode.\n\nDo you want to open the VPN settings now?</string>
+    <string name="ip_mode">VPN IP addresses</string>
+    <string name="ipv4_only">IPv4 only</string>
+    <string name="ipv6_only">IPv6 only</string>
+    <string name="ip_both">IPv4 and IPv6</string>
+    <string name="notifications_notice">The app uses notifications to send alerts in case of anomalous events. Grant it the permission to send notifications in the next screen</string>
+    <string name="vpn_exemptions">VPN Exemptions</string>
+    <string name="vpn_exemptions_summary">Exempt some apps from the VPN connection. Their traffic will not be monitored</string>
+    <string name="no_matches_found">No matches</string>
+    <string name="cleartext_connection">Cleartext</string>
+    <string name="unblock_permanently">Unblock permanently</string>
+    <string name="unblock_for_n_hours">Unblock for %1$dh</string>
+    <string name="block_new_apps">Block newly installed apps</string>
+    <string name="app_blocked">App blocked</string>
+    <string name="app_blocked_info">The %1$s app has been blocked by the firewall</string>
+    <string name="scam_alert">Scam alert</string>
+    <string name="payload_scams_notice">This view may contain sensitive information, like your passwords and access tokens.\n\nNever give out this information to anyone, it may be a scam attempt</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="show_data_action">Show data</string>
+    <string name="remote_collector_notice">You have configured PCAPdroid to send traffic to a remote server. The server will be able to access your sensitive information.\n\nIf someone asked you to do this, it is probably a scam attempt</string>
+    <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed"</string>
 </resources>

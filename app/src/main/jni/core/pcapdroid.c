@@ -114,14 +114,14 @@ void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data) {
 
 /* ******************************************************* */
 
-static void notif_connection(pcapdroid_t *pd, conn_array_t *arr, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+static int notif_connection(pcapdroid_t *pd, conn_array_t *arr, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     // End the detection when the connection is closed
     // Always check this, even pending_notification are present
     if(data->status >= CONN_STATUS_CLOSED)
         pd_giveup_dpi(pd, data, tuple);
 
     if(data->pending_notification)
-        return;
+        return 0;
 
     if(arr->cur_items >= arr->size) {
         /* Extend array */
@@ -130,7 +130,7 @@ static void notif_connection(pcapdroid_t *pd, conn_array_t *arr, const zdtun_5tu
 
         if(arr->items == NULL) {
             log_e("realloc(conn_array_t) (%d items) failed", arr->size);
-            return;
+            return -1;
         }
     }
 
@@ -138,12 +138,14 @@ static void notif_connection(pcapdroid_t *pd, conn_array_t *arr, const zdtun_5tu
     slot->tuple = *tuple;
     slot->data = data;
     data->pending_notification = true;
+    return 0;
 }
 
-/* Call this when the connection data has changed. The connection data will sent to JAVA during the
- * next sendConnectionsDump. The type of change is determined by the data->update_type. */
-void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    notif_connection(pd, &pd->conns_updates, tuple, data);
+/* Call this when the connection data has changed. The connection data will be sent to JAVA during the
+ * next sendConnectionsDump. The type of change is determined by the data->update_type.
+ * A negative value is returned if the connection update could not be enqueued. */
+int pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    return notif_connection(pd, &pd->conns_updates, tuple, data);
 }
 
 /* ******************************************************* */
@@ -319,7 +321,13 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
     /* nDPI */
     if((data->ndpi_flow = ndpi_calloc(1, SIZEOF_FLOW_STRUCT)) == NULL) {
         log_e("ndpi_flow_malloc failed");
-        conn_free_ndpi(data);
+        pd_purge_connection(pd, data);
+        return(NULL);
+    }
+
+    if(notif_connection(pd, &pd->new_conns, tuple, data) < 0) {
+        pd_purge_connection(pd, data);
+        return(NULL);
     }
 
     data->uid = uid;
@@ -430,8 +438,6 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
         fw_num_checked_connections++;
     }
-
-    notif_connection(pd, &pd->new_conns, tuple, data);
 
     return(data);
 }

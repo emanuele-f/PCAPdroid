@@ -49,7 +49,6 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="show_only_blocked">Koneksi yang diblokir</string>
     <string name="blocked_connection_filter">diblokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
@@ -80,7 +79,6 @@
     <string name="stats">Statistik</string>
     <string name="tot_connections">Jumlah koneksi</string>
     <string name="open_sockets">Buka soket</string>
-    <string name="max_file_descriptor">Maks FD</string>
     <string name="bytes_sent">Byte terkirim</string>
     <string name="packets_rcvd">Paket diterima</string>
     <string name="dropped_connections">Koneksi disingkirkan</string>
@@ -213,7 +211,6 @@
     <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
     <string name="root_log">Log root</string>
-    <string name="enable_ipv6_summary">Izinkan koneksi IPv6 ke Internet. Hanya gunakan ini di jaringan dengan gateway IPv6</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
     <string name="proxy_ip_address">Alamat IP proxy</string>
@@ -262,7 +259,6 @@
     <string name="traffic_dump">Pembuangan lalu lintas</string>
     <string name="conn_status_active">Aktif</string>
     <string name="phone_app">Telepon</string>
-    <string name="ipv6">IPv6</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="socks5_info">Proksi SOCKS5: %1$s:%2$d</string>
     <string name="phone_app_info">Layanan telepon</string>

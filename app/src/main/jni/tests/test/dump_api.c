@@ -85,10 +85,14 @@ static void max_pkts_per_flow() {
     zdtun_pkt_t pkt;
     zdtun_ip_t *expected_ip;
     zdtun_ip_t *remote_ip;
+    zdtun_ip_t src_ip, dst_ip;
 
     assert0(zdtun_parse_pkt(pd->zdt, (char*)buf, rec.incl_len, &pkt));
+    src_ip = pkt.tuple.src_ip;
+    dst_ip = pkt.tuple.dst_ip;
+
     remote_ip = (zdtun_cmp_ip(4, &pkt.tuple.src_ip, &local_ip) == 0) ?
-        &pkt.tuple.dst_ip : &pkt.tuple.src_ip;
+        &dst_ip : &src_ip;
 
 #if 0
     char ip[INET_ADDRSTRLEN];

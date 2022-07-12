@@ -81,9 +81,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     @Override
     public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
         PreferenceFragmentCompat targetFragment = null;
-        Log.d(TAG, "startFragment: " + pref.getKey());
+        String prefKey = pref.getKey();
 
-        if(pref.getKey().equals("geolocation")) {
+        Log.d(TAG, "startFragment: " + prefKey);
+
+        if(prefKey.equals("geolocation")) {
             targetFragment = new GeoipSettings();
             setTitle(R.string.geolocation);
         }
@@ -130,8 +132,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
-        private Preference mIpv6Enabled;
+        private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
+        private Preference mVpnExceptions;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
@@ -262,7 +265,14 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private void setupCapturePrefs() {
             mCapInterface = requirePreference(Prefs.PREF_CAPTURE_INTERFACE);
+            mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
             refreshInterfaces();
+
+            mVpnExceptions.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), VpnExemptionsActivity.class);
+                startActivity(intent);
+                return true;
+            });
         }
 
         private void setupSecurityPrefs() {
@@ -387,7 +397,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else
                 mRootCaptureEnabled.setVisible(false);
 
-            mIpv6Enabled = requirePreference(Prefs.PREF_IPV6_ENABLED);
+            mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
             Preference ctrlPerm = requirePreference("control_permissions");
             if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
@@ -417,8 +427,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
             }
 
-            mIpv6Enabled.setVisible(!enabled);
+            mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
+            mVpnExceptions.setVisible(!enabled);
         }
     }
 }

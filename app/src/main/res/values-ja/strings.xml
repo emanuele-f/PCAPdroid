@@ -42,7 +42,6 @@
     <string name="dropped_connections">ドロップされた接続</string>
     <string name="tot_connections">接続の合計</string>
     <string name="open_sockets">オープン ソケット</string>
-    <string name="max_file_descriptor">最大 FD</string>
     <string name="bytes_sent">バイト送信</string>
     <string name="bytes_rcvd">バイト受信</string>
     <string name="packets_sent">パケット送信</string>
@@ -72,8 +71,6 @@
     <string name="about_text">PCAPdroid はルート権限なしで動作するオープン ソースのネットワーク キャプチャ、モニタリング ツールです</string>
     <string name="get_app">入手:</string>
     <string name="unknown_app">不明</string>
-    <string name="ipv6">IPv6 を有効にする</string>
-    <string name="enable_ipv6_summary">IPv6 インターネット接続を許可します。IPv6 ゲートウェイを搭載したネットワークでのみ有効にする必要があります</string>
     <string name="error">エラー</string>
     <string name="conn_status_unreachable">到達不能</string>
     <string name="other_prefs">その他</string>
@@ -192,7 +189,6 @@
     <string name="firewall_rules">ファイアウォール ルール</string>
     <string name="blocked_pkts">ブロック済み</string>
     <string name="n_pkts">%1$s パケット</string>
-    <string name="show_only_blocked">ファイアウォールによるブロック</string>
     <string name="blocked_connection_filter">ブロック済み</string>
     <string name="paid_features">有料機能</string>
     <string name="validate">検証</string>

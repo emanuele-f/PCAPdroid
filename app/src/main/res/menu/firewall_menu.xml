@@ -6,13 +6,21 @@
     <item
         android:id="@+id/toggle_btn"
         android:title=""
-        android:orderInCategory="20"
+        android:orderInCategory="10"
         app:showAsAction="always"
         app:actionViewClass="androidx.appcompat.widget.SwitchCompat" />
+
     <item
         android:id="@+id/user_guide"
         android:title="@string/user_guide"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         android:icon="@drawable/ic_book"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/block_new_apps"
+        android:title="@string/block_new_apps"
+        android:orderInCategory="30"
+        android:checkable="true"
+        app:showAsAction="never" />
 </menu>

@@ -24,6 +24,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
 import android.content.ActivityNotFoundException;
@@ -58,13 +59,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.text.Html;
 import android.text.SpannableString;
 import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -77,6 +78,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.preference.PreferenceManager;
@@ -100,6 +102,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -141,7 +144,6 @@ public class Utils {
     public enum BuildType {
         UNKNOWN,
         DEBUG,
-        WORKFLOW,   // debug build from the Github workflow
         GITHUB,     // Github release
         FDROID,     // F-droid release
         PLAYSTORE,  // Google play release
@@ -397,6 +399,58 @@ public class Utils {
         // Fallback
         Log.d("getLocalIPAddress", "Using fallback IP");
         return "127.0.0.1";
+    }
+
+    public static boolean subnetContains(InetAddress subnet, int prefix, InetAddress address) {
+        int addrlen = subnet.getAddress().length;
+        ByteBuffer maskBuf = ByteBuffer.allocate(addrlen);
+
+        for(int i=0; i<addrlen / 4; i++)
+            maskBuf.putInt(-1);
+
+        // 0xFFFFF...0000000
+        BigInteger mask = ((new BigInteger(1, maskBuf.array())).shiftRight(prefix)).not();
+
+        BigInteger start = new BigInteger(1, subnet.getAddress()).and(mask);
+        BigInteger end = start.add(mask.not());
+        BigInteger toCheck = new BigInteger(1, address.getAddress());
+
+        return((toCheck.compareTo(start) >= 0) && (toCheck.compareTo(end) <= 0));
+    }
+
+    public static boolean subnetContains(String subnet, int prefix, String address) {
+        try {
+            return subnetContains(InetAddress.getByName(subnet), prefix, InetAddress.getByName(address));
+        } catch (UnknownHostException ignored) {
+            return false;
+        }
+    }
+
+    public static boolean isLocalNetworkAddress(InetAddress checkAddress) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                if(!intf.isVirtual()) {
+                    List<InterfaceAddress> addrs = intf.getInterfaceAddresses();
+                    for (InterfaceAddress addr : addrs) {
+                        if(subnetContains(addr.getAddress(), addr.getNetworkPrefixLength(), checkAddress))
+                            return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean isLocalNetworkAddress(String checkAddress) {
+        try {
+            return isLocalNetworkAddress(InetAddress.getByName(checkAddress));
+        } catch (UnknownHostException ignored) {
+            return false;
+        }
     }
 
     // returns current timestamp in seconds
@@ -1018,16 +1072,16 @@ public class Utils {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
-    public static BuildType getBuildType(Context ctx) {
+    public static BuildType getVerifiedBuild(Context ctx, String package_name) {
         try {
             Signature[] signatures;
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 // NOTE: PCAPdroid does not use multiple signatures
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(package_name, PackageManager.GET_SIGNING_CERTIFICATES);
                 signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
             } else {
+                @SuppressLint("PackageManagerGetSignatures")
                 PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
                 signatures = pInfo.signatures;
             }
@@ -1048,13 +1102,15 @@ public class Utils {
                     return isPlaystore() ? BuildType.PLAYSTORE : BuildType.GITHUB;
                 case "72777D6939EF150099219BBB68C17220DB28EA8E":
                     return BuildType.FDROID;
-                case "9F030FABC158A428CFDB90570A426EA88B39A153":
-                    return BuildType.WORKFLOW;
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
             Log.e(TAG, "Could not determine the build type");
         }
         return BuildType.UNKNOWN;
+    }
+
+    public static BuildType getVerifiedBuild(Context ctx) {
+        return getVerifiedBuild(ctx, ctx.getPackageName());
     }
 
     public static X509Certificate x509FromPem(String pem) {
@@ -1255,5 +1311,43 @@ public class Utils {
                 "\n[MemoryState] pid: " + memState.pid + ", trimlevel: " + trimlvl2str(memState.lastTrimLevel) +
                 "\n[MemoryInfo] available: " + Utils.formatBytes(memoryInfo.availMem) + ", total: " + Utils.formatBytes(memoryInfo.totalMem) + ", lowthresh: " + Utils.formatBytes(memoryInfo.threshold) + ", low=" + memoryInfo.lowMemory +
                 "\n[MemoryClass] standard: " + activityManager.getMemoryClass() + " MB, large: " + activityManager.getLargeMemoryClass() + " MB";
+    }
+
+    public static void sendImportantNotification(Context context, int id, Notification notification) {
+        NotificationManagerCompat man = NotificationManagerCompat.from(context);
+
+        if(!man.areNotificationsEnabled()) {
+            String title = notification.extras.getString(Notification.EXTRA_TITLE);
+            String description = notification.extras.getString(Notification.EXTRA_TEXT);
+            String text = title + " - " + description;
+
+            Log.w(TAG, "Important notification not sent because notifications are disabled: " + text);
+
+            // Try with toast (will only work if PCAPdroid is in the foreground)
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+        } else
+            man.notify(id, notification);
+    }
+
+    // Set the SearchView query and expand it
+    public static void setSearchQuery(SearchView searchView, MenuItem searchItem, String query) {
+        searchView.setIconified(false);
+        searchItem.expandActionView();
+
+        searchView.setIconified(false);
+        searchItem.expandActionView();
+
+        // Delay otherwise the query won't be set when the activity is just started
+        searchView.post(() -> searchView.setQuery(query, true));
+    }
+
+    public static boolean backHandleSearchview(SearchView searchView) {
+        if((searchView != null) && !searchView.isIconified()) {
+            // Required to close the SearchView when the search submit button was not pressed
+            searchView.setIconified(true);
+            return true;
+        }
+
+        return false;
     }
 }

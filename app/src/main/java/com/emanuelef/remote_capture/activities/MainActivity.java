@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -61,6 +62,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.BuildConfig;
@@ -69,6 +71,7 @@ import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
@@ -84,6 +87,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.HashSet;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private PlayBilling mIab;
@@ -123,6 +128,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             registerForActivityResult(new RequestPermission(), isGranted ->
                 Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied"))
             );
+    private final ActivityResultLauncher<Intent> peerInfoLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::peerInfoResult);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +151,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         mIab = new PlayBilling(this);
 
+        initPeerAppInfo();
         initAppState();
         checkPermissions();
 
@@ -262,8 +270,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         String verStr = Utils.getAppVersion(this);
         appVer.setText(verStr);
         appVer.setOnClickListener((ev) -> {
-            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
+            // e.g. it can be "1.5.2" or "1.5.2-2f2d3c8"
+            String ref = verStr;
+            int sep = ref.indexOf('-');
+            if(sep != -1)
+                ref = ref.substring(sep + 1);
+
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + ref));
             Utils.startActivity(this, browserIntent);
         });
 
@@ -313,6 +326,88 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 }
             }
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if(checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                if(shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    AlertDialog dialog = new AlertDialog.Builder(this)
+                            .setMessage(R.string.notifications_notice)
+                            .setPositiveButton(R.string.ok, (d, whichButton) -> requestNotificationPermission())
+                            .show();
+
+                    dialog.setCanceledOnTouchOutside(false);
+                } else
+                    requestNotificationPermission();
+            }
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private void requestNotificationPermission() {
+        try {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        } catch (ActivityNotFoundException e) {
+            Utils.showToastLong(this, R.string.no_intent_handler_found);
+        }
+    }
+
+    // On debug builds, if the user also has the non-debug app installed (peer app), unlock the
+    // already-purchased features also on this beta app
+    private void initPeerAppInfo() {
+        if(!BuildConfig.DEBUG)
+            return;
+
+        final String peerAppPackage = "com.emanuelef.remote_capture";
+
+        AppDescriptor peer = AppsResolver.resolve(getPackageManager(), peerAppPackage, 0);
+        if(peer == null) {
+            Log.d(TAG, "Peer app not found");
+            return;
+        }
+
+        PackageInfo pInfo = peer.getPackageInfo();
+        if((pInfo == null) || (pInfo.versionCode < 56)) {
+            Log.d(TAG, "Unsupported peer app version found");
+            return;
+        }
+
+        // Verify that the peer signature
+        Utils.BuildType buildType = Utils.getVerifiedBuild(this, peerAppPackage);
+        if((buildType != Utils.BuildType.FDROID) && (buildType != Utils.BuildType.PLAYSTORE) && (buildType != Utils.BuildType.GITHUB)) {
+            Log.d(TAG, "Unsupported peer app build: " + buildType.name());
+            return;
+        }
+
+        Log.d(TAG, "Valid peer app found (" + pInfo.versionName + " - " + pInfo.versionCode + ")");
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setClassName(peerAppPackage, "com.emanuelef.remote_capture.activities.CaptureCtrl");
+        intent.putExtra("action", "get_peer_info");
+
+        try {
+            peerInfoLauncher.launch(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.d(TAG, "Peer app launch failed");
+        }
+    }
+
+    private void peerInfoResult(final ActivityResult result) {
+        if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
+            Intent data = result.getData();
+            Serializable skus_extra = data.getSerializableExtra("skus");
+            if(skus_extra instanceof HashSet) {
+                HashSet<String> skus = (HashSet<String>) skus_extra;
+                Log.d(TAG, "Found peer app info");
+
+                for(String sku: skus) {
+                    Log.d(TAG, "Peer sku: " + sku);
+                    mIab.addPeerSku(sku);
+                }
+
+                return;
+            }
+        }
+
+        Log.d(TAG, "Invalid peer app result");
     }
 
     private static class MainStateAdapter extends FragmentStateAdapter {
@@ -608,6 +703,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
+        if(showRemoteServerAlert())
+            return;
+
         if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
             Intent intent = new Intent(this, MitmSetupWizard.class);
             startActivity(intent);
@@ -634,7 +732,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         CaptureService.stopService();
     }
 
-    public void openFileSelector() {
+    // see also CaptureCtrl.checkRemoteServerNotAllowed
+    private boolean showRemoteServerAlert() {
+        if(mPrefs.getBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, false))
+            return false; // already acknowledged
+
+        if(((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
+                (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyAddress(mPrefs)))) {
+            Log.i(TAG, "Showing possible scan notice");
+
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.scam_alert)
+                    .setMessage(R.string.remote_collector_notice)
+                    .setPositiveButton(R.string.ok, (d, whichButton) -> mPrefs.edit().putBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, true).apply())
+                    .show();
+            dialog.setCanceledOnTouchOutside(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void openFileSelector() {
         boolean noFileDialog = false;
         String fname = Utils.getUniquePcapFileName(this);
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);

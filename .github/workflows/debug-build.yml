@@ -12,10 +12,5 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: '11'
-    - run: ./gradlew test
+    #- run: ./gradlew test
     - run: ./gradlew assembleDebug -PdoNotStrip
-    - uses: actions/upload-artifact@v2
-      with:
-        name: PCAPdroid build ${{github.sha}}
-        path: app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 7

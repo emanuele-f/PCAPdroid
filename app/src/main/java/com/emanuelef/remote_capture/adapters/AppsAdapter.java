@@ -53,7 +53,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder>
         public AppViewHolder(View view) {
             super(view);
 
-            textInListView = view.findViewById(R.id.list_app_name);
+            textInListView = view.findViewById(R.id.app_name);
             imageInListView = view.findViewById(R.id.app_icon);
             packageInListView= view.findViewById(R.id.app_package);
         }

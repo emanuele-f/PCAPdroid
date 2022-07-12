@@ -42,7 +42,6 @@
     <string name="dropped_connections">Conexiones interrumpidas</string>
     <string name="tot_connections">Total de conexiones</string>
     <string name="open_sockets">Sockets abiertos</string>
-    <string name="max_file_descriptor">Máximo de FD</string>
     <string name="bytes_sent">Bytes enviados</string>
     <string name="bytes_rcvd">Bytes recibidos</string>
     <string name="packets_sent">Paquetes enviados</string>
@@ -72,8 +71,6 @@
     <string name="about_text">PCAPdroid es una herramienta de captura y monitorización de red de código abierto que funciona sin privilegios root</string>
     <string name="get_app">Obténgalo:</string>
     <string name="unknown_app">Desconocido</string>
-    <string name="ipv6">IPv6</string>
-    <string name="enable_ipv6_summary">Permite las conexiones IPv6 a Internet. Utilízalo solo en redes con una puerta de enlace IPv6</string>
     <string name="error">Error</string>
     <string name="conn_status_unreachable">Inalcanzable</string>
     <string name="other_prefs">Otros</string>
@@ -188,7 +185,6 @@
     <string name="invalid">No válido</string>
     <string name="block">Bloquear…</string>
     <string name="blocked_connection_filter">bloqueado</string>
-    <string name="show_only_blocked">Bloqueado por el cortafuegos</string>
     <string name="firewall">Cortafuegos</string>
     <string name="firewall_rules">Reglas del cortafuegos</string>
     <string name="paid_features">Funciones de pago</string>

@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.2] - 2022-06-22
+- Add ability to only show the connections allowed by the firewall
+- Monitor memory usage and disable full payload on low memory
+- Fix possible SecurityException in Android 11
+- Fix crash on tap on uninstalled app
+- Fix ANR on first root capture start
+
 ## [1.5.1] - 2022-06-07
 - Resolve correct apps details with work profiles in root mode
 - Fix app filter icon not shown on capture start

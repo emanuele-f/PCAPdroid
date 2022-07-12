@@ -47,7 +47,7 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
     private final Drawable mDefaultIcon;
     private final Drawable mUnknownIcon;
 
-    public ListEditAdapter(Context context, Iterator<MatchList.Rule> items) {
+    public ListEditAdapter(Context context) {
         super(context, R.layout.rule_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mApps = new AppsResolver(context);
@@ -55,11 +55,6 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
         mDefaultIcon = ContextCompat.getDrawable(context, R.drawable.ic_short_text);
         assert mDefaultIcon != null;
         DrawableCompat.setTint(mDefaultIcon, ContextCompat.getColor(context, R.color.colorTabText));
-
-        while(items.hasNext()) {
-            MatchList.Rule item = items.next();
-            add(item);
-        }
     }
 
     @NonNull
@@ -86,5 +81,14 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
     @Override
     public String getItemText(int pos) {
         return getItem(pos).getLabel();
+    }
+
+    public void reload(Iterator<MatchList.Rule> items) {
+        clear();
+
+        while(items.hasNext()) {
+            MatchList.Rule item = items.next();
+            add(item);
+        }
     }
 }

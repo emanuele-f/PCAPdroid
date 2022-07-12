@@ -16,7 +16,7 @@ public class CaptureSettings implements Serializable {
     public boolean tls_decryption;
     public String socks5_proxy_address;
     public int socks5_proxy_port;
-    public boolean ipv6_enabled;
+    public Prefs.IpMode ip_mode;
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
@@ -37,7 +37,7 @@ public class CaptureSettings implements Serializable {
         socks5_enabled = Prefs.getSocks5Enabled(prefs);
         socks5_proxy_address = Prefs.getSocks5ProxyAddress(prefs);
         socks5_proxy_port = Prefs.getSocks5ProxyPort(prefs);
-        ipv6_enabled = Prefs.getIPv6Enabled(prefs);
+        ip_mode = Prefs.getIPMode(prefs);
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         capture_interface = Prefs.getCaptureInterface(prefs);
@@ -57,7 +57,7 @@ public class CaptureSettings implements Serializable {
         socks5_enabled = getBool(intent, Prefs.PREF_SOCKS5_ENABLED_KEY, false);
         socks5_proxy_address = getString(intent, Prefs.PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0");
         socks5_proxy_port = getInt(intent, Prefs.PREF_SOCKS5_PROXY_PORT_KEY, 8080);
-        ipv6_enabled = getBool(intent, Prefs.PREF_IPV6_ENABLED, false);
+        ip_mode = Prefs.getIPMode(getString(intent, Prefs.PREF_IP_MODE, Prefs.IP_MODE_DEFAULT));
         root_capture = getBool(intent, Prefs.PREF_ROOT_CAPTURE, false);
         pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");

@@ -56,6 +56,7 @@ public class MatchList {
     private final Context mContext;
     private final SharedPreferences mPrefs;
     private final String mPrefName;
+    private final ArrayList<ListChangeListener> mListeners = new ArrayList<>();
     private final ArrayList<Rule> mRules = new ArrayList<>();
     private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
     private final ArraySet<Integer> mUids = new ArraySet<>();
@@ -101,6 +102,10 @@ public class MatchList {
             Rule other = (Rule) obj;
             return((mType == other.mType) && (mValue.equals(other.mValue)));
         }
+    }
+
+    public interface ListChangeListener {
+        void onListChanged();
     }
 
     public static class ListDescriptor {
@@ -191,7 +196,7 @@ public class MatchList {
             if(ruleArray == null)
                 return false;
 
-            clear();
+            clear(false);
 
             for(JsonElement el: ruleArray) {
                 JsonObject ruleObj = el.getAsJsonObject();
@@ -295,6 +300,7 @@ public class MatchList {
 
         mRules.add(rule);
         mMatches.put(key, rule);
+        notifyListeners();
         return true;
     }
 
@@ -308,13 +314,16 @@ public class MatchList {
                 num_added++;
         }
 
+        if(num_added > 0)
+            notifyListeners();
+
         return num_added;
     }
 
     public void removeRule(Rule rule) {
         String val = rule.getValue().toString();
         String key = matchKey(rule.getType(), val);
-        mRules.remove(rule);
+        boolean removed = mRules.remove(rule);
         mMatches.remove(key);
 
         if(rule.getType() == RuleType.APP) {
@@ -324,6 +333,9 @@ public class MatchList {
             else
                 Log.w(TAG, "removeRule: no uid found for package " + val);
         }
+
+        if(removed)
+            notifyListeners();
     }
 
     public boolean matchesApp(int uid) {
@@ -377,10 +389,18 @@ public class MatchList {
         return mRules.iterator();
     }
 
-    public void clear() {
+    public void clear(boolean notify) {
+        boolean hasRules = mRules.size() > 0;
         mRules.clear();
         mMatches.clear();
         mUids.clear();
+
+        if(notify && hasRules)
+            notifyListeners();
+    }
+
+    public void clear() {
+        clear(true);
     }
 
     public boolean isEmpty() {
@@ -416,7 +436,7 @@ public class MatchList {
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
      * Only the following RuleTypes are supported: APP, IP, HOST.
      */
-    public ListDescriptor toListDescriptor() {
+    public ListDescriptor toListDescriptor(GraceList exemptions) {
         final ListDescriptor rv = new ListDescriptor();
 
         Iterator<MatchList.Rule> it = iterRules();
@@ -434,9 +454,24 @@ public class MatchList {
         }
 
         // Apps are matched via their UID
-        for(int uid: mUids)
-            rv.apps.add(Integer.toString(uid));
+        for(int uid: mUids) {
+            if((exemptions == null) || (!exemptions.containsApp(uid)))
+                rv.apps.add(Integer.toString(uid));
+        }
 
         return rv;
+    }
+
+    public void addListChangeListener(ListChangeListener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeListChangeListener(ListChangeListener listener) {
+        mListeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        for(ListChangeListener listener: mListeners)
+            listener.onListChanged();
     }
 }

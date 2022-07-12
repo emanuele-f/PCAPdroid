@@ -37,6 +37,7 @@ public class FilterDescriptor implements Serializable {
     public Status status;
     public boolean showMasked;
     public boolean onlyBlacklisted;
+    public boolean onlyCleartext;
     public FilteringStatus filteringStatus;
     public DecryptionStatus decStatus;
     public String iface;
@@ -44,6 +45,7 @@ public class FilterDescriptor implements Serializable {
 
     public FilterDescriptor() {
         clear();
+        assert(!isSet());
     }
 
     public boolean isSet() {
@@ -52,13 +54,15 @@ public class FilterDescriptor implements Serializable {
                 || (filteringStatus != FilteringStatus.INVALID)
                 || (iface != null)
                 || onlyBlacklisted
-                || (uid != 2)
+                || onlyCleartext
+                || (uid != -2)
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
     public boolean matches(ConnectionDescriptor conn) {
         return (showMasked || !PCAPdroid.getInstance().getVisualizationMask().matches(conn))
                 && (!onlyBlacklisted || conn.isBlacklisted())
+                && (!onlyCleartext || conn.isCleartext())
                 && ((status == Status.STATUS_INVALID) || (conn.getStatus().equals(status)))
                 && ((decStatus == DecryptionStatus.INVALID) || (conn.getDecryptionStatus() == decStatus))
                 && ((filteringStatus == FilteringStatus.INVALID) || ((filteringStatus == FilteringStatus.BLOCKED) == conn.is_blocked))
@@ -80,6 +84,8 @@ public class FilterDescriptor implements Serializable {
             addChip(inflater, group, R.id.not_hidden, ctx.getString(R.string.not_hidden_filter));
         if(onlyBlacklisted)
             addChip(inflater, group, R.id.blacklisted, ctx.getString(R.string.malicious_connection_filter));
+        if(onlyCleartext)
+            addChip(inflater, group, R.id.only_cleartext, ctx.getString(R.string.cleartext_connection));
         if(status != Status.STATUS_INVALID) {
             String label = String.format(ctx.getString(R.string.status_filter), ConnectionDescriptor.getStatusLabel(status, ctx));
             addChip(inflater, group, R.id.status_ind, label);
@@ -102,6 +108,8 @@ public class FilterDescriptor implements Serializable {
             showMasked = true;
         else if(filter_id == R.id.blacklisted)
             onlyBlacklisted = false;
+        else if(filter_id == R.id.only_cleartext)
+            onlyCleartext = false;
         else if(filter_id == R.id.status_ind)
             status = Status.STATUS_INVALID;
         else if(filter_id == R.id.decryption_status)
@@ -115,6 +123,7 @@ public class FilterDescriptor implements Serializable {
     public void clear() {
         showMasked = true;
         onlyBlacklisted = false;
+        onlyCleartext = false;
         status = Status.STATUS_INVALID;
         decStatus = DecryptionStatus.INVALID;
         filteringStatus = FilteringStatus.INVALID;

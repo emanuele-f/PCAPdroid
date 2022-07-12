@@ -25,8 +25,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -65,6 +67,7 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.GraceList;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
@@ -81,7 +84,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -95,6 +100,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final int VPN_MTU = 10000;
     private static final int NOTIFY_ID_VPNSERVICE = 1;
     private static final int NOTIFY_ID_LOW_MEMORY = 2;
+    private static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -134,6 +140,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mQueueFull;
     private boolean mStopping;
     private Blacklists mBlacklists;
+    private GraceList mGracelist;
     private MatchList mBlocklist;
     private MatchList mWhitelist;
     private SparseArray<String> mIfIndexToName;
@@ -143,6 +150,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Auth;
     private CaptureStats mLastStats;
     private boolean mLowMemory;
+    private BroadcastReceiver mNewAppsInstallReceiver;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -375,16 +383,19 @@ public class CaptureService extends VpnService implements Runnable {
             /* In order to see the DNS packets into the VPN we must set an internal address as the DNS
              * server. */
             Builder builder = new Builder()
-                    .addAddress(vpn_ipv4, 30) // using a random IP as an address is needed
-                    .addRoute("0.0.0.0", 1)
-                    .addRoute("128.0.0.0", 1)
-                    .setMtu(VPN_MTU)
-                    .addDnsServer(vpn_dns);
+                    .setMtu(VPN_MTU);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 builder.setMetered(false);
 
-            if (mSettings.ipv6_enabled) {
+            if (getIPv4Enabled() == 1) {
+                builder.addAddress(vpn_ipv4, 30)
+                        .addRoute("0.0.0.0", 1)
+                        .addRoute("128.0.0.0", 1)
+                        .addDnsServer(vpn_dns);
+            }
+
+            if (getIPv6Enabled() == 1) {
                 builder.addAddress(VPN_IP6_ADDRESS, 128);
 
                 // Route unicast IPv6 addresses
@@ -410,13 +421,25 @@ public class CaptureService extends VpnService implements Runnable {
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     return abortStart();
                 }
-            } else if(mSettings.tls_decryption) {
-                // Exclude the mitm addon traffic in case system-wide decryption is performed
-                // Important: cannot call addDisallowedApplication with addAllowedApplication
-                try {
-                    builder.addDisallowedApplication(MitmAPI.PACKAGE_NAME);
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
+            } else {
+                // VPN exceptions
+                Set<String> exceptions = mPrefs.getStringSet(Prefs.PREF_VPN_EXCEPTIONS, new HashSet<>());
+                for(String packageName: exceptions) {
+                    try {
+                        builder.addDisallowedApplication(packageName);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(mSettings.tls_decryption) {
+                    // Exclude the mitm addon traffic in case system-wide decryption is performed
+                    // Important: cannot call addDisallowedApplication with addAllowedApplication
+                    try {
+                        builder.addDisallowedApplication(MitmAPI.PACKAGE_NAME);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -430,6 +453,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
+        mGracelist = PCAPdroid.getInstance().getGracelist();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
@@ -442,6 +466,50 @@ public class CaptureService extends VpnService implements Runnable {
         if(mDumper != null) {
             mDumperThread = new Thread(this::dumpWork, "DumperThread");
             mDumperThread.start();
+        }
+
+        if(mFirewallEnabled) {
+            mNewAppsInstallReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // executed on the main thread
+                    if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+                        boolean newInstall = !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
+                        String packageName = intent.getData().getSchemeSpecificPart();
+                        Log.d(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
+
+                        if(newInstall && Prefs.blockNewApps(mPrefs)) {
+                            Log.i(TAG, "Blocking newly installed app: " + packageName);
+                            mBlocklist.addApp(packageName);
+                            mBlocklist.save();
+                            reloadBlocklist();
+
+                            AppDescriptor app = appsResolver.getByPackage(packageName, 0);
+                            String label = (app != null) ? app.getName() : packageName;
+
+                            // Notify the user
+                            NotificationManagerCompat man = NotificationManagerCompat.from(context);
+                            if(man.areNotificationsEnabled()) {
+                                Notification notification = new NotificationCompat.Builder(CaptureService.this, NOTIFY_CHAN_OTHER)
+                                        .setSmallIcon(R.drawable.ic_logo)
+                                        .setColor(ContextCompat.getColor(CaptureService.this, R.color.colorPrimary))
+                                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                                        .setCategory(NotificationCompat.CATEGORY_STATUS)
+                                        .setContentTitle(getString(R.string.app_blocked))
+                                        .setContentText(getString(R.string.app_blocked_info, label))
+                                        .build();
+
+                                man.notify(NOTIFY_ID_APP_BLOCKED, notification);
+                            }
+                        }
+                    }
+                }
+            };
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+            filter.addDataScheme("package");
+            registerReceiver(mNewAppsInstallReceiver, filter);
         }
 
         // Start the native capture thread
@@ -473,7 +541,10 @@ public class CaptureService extends VpnService implements Runnable {
         if(mBlacklistsUpdateThread != null)
             mBlacklistsUpdateThread.interrupt();
 
-        unregisterNetworkCallbacks();
+        if(mNewAppsInstallReceiver != null) {
+            unregisterReceiver(mNewAppsInstallReceiver);
+            mNewAppsInstallReceiver = null;
+        }
 
         super.onDestroy();
     }
@@ -569,7 +640,7 @@ public class CaptureService extends VpnService implements Runnable {
         Notification notification = mMalwareBuilder.build();
 
         // Use the UID as the notification ID to group alerts from the same app
-        mHandler.post(() -> NotificationManagerCompat.from(this).notify(uid, notification));
+        mHandler.post(() -> Utils.sendImportantNotification(this, uid, notification));
     }
 
     public void notifyLowMemory(CharSequence msg) {
@@ -584,7 +655,7 @@ public class CaptureService extends VpnService implements Runnable {
                 .setContentText(msg)
                 .build();
 
-        mHandler.post(() -> NotificationManagerCompat.from(this).notify(NOTIFY_ID_LOW_MEMORY, notification));
+        mHandler.post(() -> Utils.sendImportantNotification(this, NOTIFY_ID_LOW_MEMORY, notification));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -975,6 +1046,8 @@ public class CaptureService extends VpnService implements Runnable {
             ConnectionUpdate[] conns_updates = item.second;
 
             checkBlacklistsUpdates();
+            if(mGracelist.checkGracePeriods())
+                mHandler.post(this::reloadBlocklist);
 
             if(!mLowMemory)
                 checkAvailableHeap();
@@ -1105,7 +1178,9 @@ public class CaptureService extends VpnService implements Runnable {
 
     public String getSocks5ProxyAuth() {  return(mSocks5Auth);  }
 
-    public int getIPv6Enabled() { return(mSettings.ipv6_enabled ? 1 : 0); }
+    public int getIPv4Enabled() { return((mSettings.ip_mode != Prefs.IpMode.IPV6_ONLY) ? 1 : 0); }
+
+    public int getIPv6Enabled() { return((mSettings.ip_mode != Prefs.IpMode.IPV4_ONLY) ? 1 : 0); }
 
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
 
@@ -1278,7 +1353,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading firewall blocklist");
-        reloadBlocklist(mBlocklist.toListDescriptor());
+        reloadBlocklist(mBlocklist.toListDescriptor(mGracelist));
     }
 
     public static void reloadMalwareWhitelist() {
@@ -1286,7 +1361,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading malware whitelist");
-        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
+        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor(null));
     }
 
     public static void setFirewallEnabled(boolean enabled) {

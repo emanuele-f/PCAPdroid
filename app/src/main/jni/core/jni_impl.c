@@ -567,10 +567,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .proxy_ip = getIPv4Pref(env, vpn, "getSocks5ProxyAddress"),
                     .proxy_port = htons(getIntPref(env, vpn, "getSocks5ProxyPort")),
             },
-            .ipv6 = {
-                    .enabled = (bool) getIntPref(env, vpn, "getIPv6Enabled"),
-                    .dns_server = getIPv6Pref(env, vpn, "getIpv6DnsServer"),
-            },
             .malware_detection = {
                     .enabled = (bool) getIntPref(env, vpn, "malwareDetectionEnabled"),
             },

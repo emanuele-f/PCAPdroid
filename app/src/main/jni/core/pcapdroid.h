@@ -204,11 +204,18 @@ typedef struct pcapdroid {
         struct {
             int tunfd;
             bool block_quic;
-            uint32_t dns_server;
-            uint32_t internal_dns;
-            uint32_t internal_ipv4;
             blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
+
+            struct {
+                bool enabled;
+                uint32_t dns_server;
+                uint32_t internal_dns;
+            } ipv4;
+            struct {
+                bool enabled;
+                struct in6_addr dns_server;
+            } ipv6;
         } vpn;
         struct {
             struct pcap_conn_t *connections;
@@ -238,11 +245,6 @@ typedef struct pcapdroid {
         char proxy_user[32];
         char proxy_pass[32];
     } socks5;
-
-    struct {
-        bool enabled;
-        struct in6_addr dns_server;
-    } ipv6;
 
     struct {
         bool enabled;
@@ -366,7 +368,7 @@ void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struc
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
-void pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
+int pd_notify_connection_update(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple);
 const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, int ipproto);
 

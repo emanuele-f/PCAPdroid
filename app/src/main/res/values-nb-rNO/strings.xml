@@ -58,7 +58,6 @@
     <string name="copy_to_clipboard">Kopier til utklippstavle</string>
     <string name="save_to_file">Lagre som fil</string>
     <string name="unknown_app">Ukjent</string>
-    <string name="ipv6">Skru på IPv6</string>
     <string name="error">Feil</string>
     <string name="older_connections_notice">%1$d eldre tilkoblinger vises ikke</string>
     <string name="about_text">PCAPdroid er et fritt verktøy for nettverksovervåkning og lagring, som fungerer uten rot-tilgang</string>
@@ -160,7 +159,7 @@
     <string name="private_dns_hinders_detection">Privat DNS forhindrer oppdagelse</string>
     <string name="decryption_no_filter_warn">Velg et målprogram når du dekrypterer TLS for å unngå å miste tilkoblingen din til Internett</string>
     <string name="billing_failure">Kunne ikke koble til Google Play. Prøv igjen om en stund</string>
-    <string name="start_capture_first">Start opptak først</string>
+    <string name="start_capture_first">Start fangst først</string>
     <string name="close_nav_drawer">Lukk skuff</string>
     <string name="save_ok">Lagret</string>
     <string name="copied">Kopiert</string>
@@ -176,9 +175,7 @@
     <string name="dropped_connections">Droppede tilkoblinger</string>
     <string name="pcap_file_info">Opprett en PCAP-fil i enhetslagring</string>
     <string name="tot_connections">Alle tilkoblinger</string>
-    <string name="capture_running">Opptak kjører</string>
-    <string name="enable_ipv6_summary">Tillat IPv6-tilkoblinger til Internett. Kun bruk dette på nettverk med en IPv6-portner.</string>
-    <string name="max_file_descriptor">Maks. FD</string>
+    <string name="capture_running">Fangst kjører</string>
     <string name="packets_dropped">Pakker som ikke kom fram</string>
     <string name="installed_on">Installert</string>
     <string name="capture_prefs">Trafikkfangst</string>
@@ -208,17 +205,161 @@
     <string name="malware_detection">Skadevare-oppdagelse</string>
     <string name="connections_checked">Tilkoblinger sjekket</string>
     <string name="root_app_info">Systemnisser kjører med alle privilegier</string>
-    <string name="show_only_blocked">Blokkert av brannmur</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="last_update">Siste oppdatering</string>
     <string name="malicious_connections">Skadelige tilkoblinger</string>
     <string name="notification_msg">%1$s fanget, %2$s tilkoblinger</string>
-    <string name="capture_not_running_status">Opptak kjører ikke</string>
+    <string name="capture_not_running_status">Fangst kjører ikke</string>
     <string name="pending_transaction">Fullfør kjøpet for å bruke denne funksjonen</string>
     <string name="ctrl_consent_title">PCAPdroid-kontrollforespørsel</string>
     <string name="capturing_from">Fanger pakker fra «%1$s»</string>
     <string name="capture_interface">Fangstgrensesnitt</string>
     <string name="no_dump_info">PCAP vil ikke bli registrert</string>
     <string name="malware_whitelist_help">Brukerdefinert hvitliste for å unngå skadevareoppdatelse. Lang-trykk på ondsinnede tilkoblinger for å opprette regler som avmarkerer dem som skadevare</string>
-    <string name="start_at_boot_summary">Starter opptak sammen med enheten</string>
+    <string name="start_at_boot_summary">Starter fangst sammen med enheten</string>
+    <string name="app_intro_back_button">Tilbake</string>
+    <string name="firewall_filter">Brannmur: %1$s</string>
+    <string name="connection_not_found">Fant ikke angitt tilkobling</string>
+    <string name="allowed_connection_filter">Tillatt</string>
+    <string name="connection_blocked">Denne tilkoblingen har blitt blokkert av PCAPdroid</string>
+    <string name="low_memory">Lite minne igjen</string>
+    <string name="full_payload_disabled">Alternativet for full nyttelast har blitt avskrudd</string>
+    <string name="block_private_dns_summary">Oppdag og potensielt blokker privat DNS for å inspisere DNS-trafikk. Å skru av dette kan forhindre trafikk-analyse.</string>
+    <string name="app_intro_firewall_msg">Med den integrerte <a href="%1$s">brannmuren</a> kan du blokkere tilgang til Internett for individuelle programmer og domener.
+\n
+\nKombiner dette med den innebygde trafikk-synligheten for å få det ultimate verktøyet for å beskytte ditt personvern.</string>
+    <string name="heap_usage">Haugbruk</string>
+    <string name="app_intro_done_button">Ferdig</string>
+    <string name="download">Last ned</string>
+    <string name="capture_stopped_low_memory">Fangst stoppet</string>
+    <string name="permission_granted">%1$s-tilgang ble innvilget</string>
+    <string name="memory_usage">Minnebruk</string>
+    <string name="permission_grant_fail">%1$s-tilgang kunne ikke innvilges</string>
+    <string name="vpn_lockdown_notice">For å forhindre programmer fra å bruke Internett når PCAPdroid ikke kjører (f.eks. etter en omstart) kan du sette PCAPdroid til VPN i nedlåst modus som alltid er påslått.
+\n
+\nÅpne VPN-innstillingene nå\?</string>
+    <string name="low_memory_info">Programmet er i ferd med å slippe opp for minne. Forvent krasj.</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid kan utføre spørring av en lokal database for å fastsette landsopprinnelse for en fjerntjener.
+\n
+\nDu må laste ned geoposisjoneringsdatabasen først fra programinnstillingene.</string>
+    <string name="install_ca_certificate">Installer sertifikatmyndighetssertifikatet tilhørende PCAPdroid ved å velge «VPN og programmer». Android vil spørre deg om din låseskjerm og passord.</string>
+    <string name="ca_cert_export_failed">En feil oppstod under eksport av sertifikatmyndighetssertifikatet.
+\n
+\nHvis enheten din implementerer automatisk start eller lignende programvare for å forhindre kjøring av bakgrunnstjenester må du <a href="%1$s">hvitliste PCAPdroid</a></string>
+    <string name="payload_truncated">Nyttelasten er forkortet. Skru på «%1$s» for å vise den i sin helhet.</string>
+    <string name="firewall_summary">Blokker Internett-tilgang for programmer, sett opp roller for spesifikke domener og IP-adresser. Fungerer kun med fangst uten rot-tilgang.</string>
+    <string name="mitm_setup_wizard_intro">Denne veiledningen tar deg gjennom installasjon av sertifikatmyndighets-sertifikat og MITM-tillegget for PCAPdroid, som trengs for å utføre <a href="%1$s">TLS-dekryptering</a>.</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid er nå klar til å dekryptere TLS-trafikk.
+\n
+\nSjekk ut <a href="%1$s">brukerveiledningen</a> for å finne ut mer om sikkerhetsfunksjoner som kan forhindre dekryptering og hvordan du omgår dem.</string>
+    <string name="app_intro_welcome_msg">PCAPdroid er et personvernsvennlig program som lar deg spore og analysere tilkoblinger gjort av programmer på enheten din.
+\n
+\nDet lar deg også eksporter en PCAP-dump av trafikken, pakke ut matadata, med mer.</string>
+    <string name="app_intro_privacy_msg">Programmet utfører ingen sporing, analyse, og ringer heller ikke hjem.
+\n
+\nDu kan forsikre deg om dette i <a href="%1$s">personvernspraksisen</a> og <a href="%2$s">kildekoden</a>.</string>
+    <string name="app_intro_traffic_inspection">Inspeksjon av HTTP-forespørsler, svar, og rådata er enkelt, takket være de innebygde dekoderne.
+\n
+\nFikk du en kryptert tilkobling\? Du kan skru på <a href="%1$s">TLS-dekryptering</a> for å hente den dekrypterte dataen.</string>
+    <string name="app_intro_malware_detection">Forbedre sikkerheten din på enheten din med funksjonen for <a href="%1$s">skadevareoppdagelse</a>.
+\n
+\nVe då bruke oppdaterte svartelister kan det oppdage, blokkere, og varsle om skadelige tilkoblinger i sanntid.</string>
+    <string name="traffic_dump">Trafikk-dump</string>
+    <string name="conn_status_active">Aktiv</string>
+    <string name="phone_app">Telefonprogram</string>
+    <string name="socks5_info">SOCKS5-mellomtjener: %1$s:%2$d</string>
+    <string name="phone_app_info">Telefonitjenester</string>
+    <string name="unblock">Avblokker …</string>
+    <string name="tls_decryption_starting">Starter TLS-dekryptering …</string>
+    <string name="traffic_inspection">Trafikk-inspeksjon</string>
+    <string name="tls_decryption_running">Dekrypterer TLS …</string>
+    <string name="mitm_start_failed">Kunne ikke starte MITM-tjenesten. Reinstaller MITM-tillegget og prøv igjen.</string>
+    <string name="install_action">Installer</string>
+    <string name="mitm_setup_wizard">Oppsettsveileder for MITM</string>
+    <string name="overview">Oversikt</string>
+    <string name="string_http_request">HTTP-forespørsel</string>
+    <string name="string_http_response">HTTP-svar</string>
+    <string name="websocket">WebSocket</string>
+    <string name="full_payload">Full nyttelast</string>
+    <string name="full_payload_summary">Vis nyttelasten for tilkoblinger i sin helhet (altså hele HTTP-forespørselen og svaret). Dette krever mye minne, så ikke bruk det på sikt.</string>
+    <string name="decrypted">Dekryptert</string>
+    <string name="decryption">Dekryptering</string>
+    <string name="decryption_filter">Dekryptering: %1$s</string>
+    <string name="network_traffic">Trafikk</string>
+    <string name="connection_start_not_seen">PCAPdroid har ikke sett starten på denne tilkoblingen. Noe av infoen kan mangle.</string>
+    <string name="waiting_application_data">Venter på data …</string>
+    <string name="downloading">Laster ned …</string>
+    <string name="download_in_progress">Laster ned …</string>
+    <string name="download_failed">Nedlasting mislyktes</string>
+    <string name="geo_db_not_found">Fant ikke databasen. Geoposisjonering er avskrudd.</string>
+    <string name="built_on">Bygd %1$s</string>
+    <string name="database">Database</string>
+    <string name="size_x">Størrelse: %1$s</string>
+    <string name="import_action">Importer</string>
+    <string name="discard_action">Forkast</string>
+    <string name="rules_delete_confirm">Slett valgte regler\?</string>
+    <string name="firewall_is_disabled">Brannmur av</string>
+    <string name="action_unblock">Avblokker</string>
+    <string name="configure_action">Sett opp</string>
+    <string name="export_action">Eksporter</string>
+    <string name="tls_decryption">TLS-dekryptering</string>
+    <string name="tls_decryption_summary">Dekrypter SSL/TLS-trafikk ved å utføre MITM. Dette kan fungere med noen programmer nå. Sjekk brukerveiledningen.</string>
+    <string name="install_mitm_addon">Installer <a href="%1$s">MITM-tillegget</a> for PCAPdroid.
+\n
+\nMerk: Tillegget avhenger av lukket programvare.</string>
+    <string name="grant_mitm_permission">Gi PCAPdroid tilgang til å kontrollere MITM-tillegget</string>
+    <string name="export_ca_certificate">Eksporter sertifikatmyndighetssertifikatet tilhørende PCAPdroid, åpne så «Kryptering og identitetsdetaljer» i Android og veld å installere det som et «CA-sertifikat».</string>
+    <string name="checking_the_certificate">Sjekker sertifikatet …</string>
+    <string name="cert_exported_now_installed">Sertifikat eksporter. Installer det nå fra Android-innstillingene.</string>
+    <string name="cert_installed_correctly">Sertifikatmyndighetssertifikatet er installert</string>
+    <string name="cert_reinstall_required">Sertifikatmyndighetssertifikatet er ikke installert. Kjør MITM-oppsettsveilederen.</string>
+    <string name="mitm_addon_bad_version">Feilaktig versjon for MITM-tillegget i PCAPdroid. Avinstaller det og prøv igjen.</string>
+    <string name="upgrade_action">Oppgrader</string>
+    <string name="export_failed">Eksport mislyktes</string>
+    <string name="not_encrypted">Ikke kryptert</string>
+    <string name="request">Forespørsel</string>
+    <string name="response">Svar</string>
+    <string name="payload">Nyttelast</string>
+    <string name="tx_direction">TX</string>
+    <string name="warn_no_app_data">Ingen programdata har blitt utvekslet</string>
+    <string name="http">HTTP</string>
+    <string name="not_decryptable">Ikke dekrypterbar</string>
+    <string name="rx_direction">RX</string>
+    <string name="display_as">Vis som …</string>
+    <string name="printable_text">Utskrivbar tekst</string>
+    <string name="hexdump">Heksadesimal dump</string>
+    <string name="geolocation">Geoposisjon</string>
+    <string name="geolocation_summary">Vis land og ASN-info ved å utføre frakoblet oppslag</string>
+    <string name="geo_db_download">Trykk for å laste ned siste database. De slippes månedlig.</string>
+    <string name="geo_db_delete">Trykk for å slette databasen og spare plass.</string>
+    <string name="import_failed">Import mislyktes</string>
+    <string name="invalid_backup">Ugyldig sikkerhetskopieringsformat</string>
+    <string name="rules_import_success">Importerte %1$d regler</string>
+    <string name="no_rules_to_export">Ingen regler å eksportere</string>
+    <string name="keep_action">Behold</string>
+    <string name="blocklist">Svarteliste</string>
+    <string name="rules_merge_msg">Behold eksisterende regler\?</string>
+    <string name="firewall_is_enabled">Brannmur på</string>
+    <string name="connections_blocked">Tilkoblinger blokkert</string>
+    <string name="last_firewall_block">Siste blokkering</string>
+    <string name="num_configured_rules">Oppsatte regler</string>
+    <string name="app_info">Programinfo</string>
+    <string name="action_block">Blokker</string>
+    <string name="netd_block_missed">Denne tilkoblingen ble igangsatt av netd så den kan ikke blokkeres</string>
+    <string name="no_root_firewall">Brannmur uten rot-tilgang</string>
+    <string name="block_quick">Blokker QUIC</string>
+    <string name="block_private_dns">Blokker privat DNS</string>
+    <string name="block_quick_summary">Blokker QUIC-tilkoblinger for å potensielt falle tilbake til dekrypterbar TLS. Noen programmer kan slutte å fungere.</string>
+    <string name="welcome_to_pcapdroid">Velkommen til PCAPdroid</string>
+    <string name="app_intro_next_button">Neste</string>
+    <string name="app_intro_skip_button">Hopp over</string>
+    <string name="privacy_first">Personvern først</string>
+    <string name="country_and_asn">Land og ASN</string>
+    <string name="vpn_setup_msg">PCAPdroid simulerer VPN for å fange nettverkstrafikk uten rot-tilgang.
+\n
+\nFor å starte fangst må du godta VPN-forespørselen i neste steg.</string>
+    <string name="app_intro_traffic_dump">PCAPdroid tillater dumping av data på <a href="%1$s">flere vis</a> for dumping av data i forvalgt PCAP-format for videre analyse.
+\n
+\nVia <a href="%2$s">trailer-alternativet</a>, kan du legge til programnavn i pakkene og vise dem i Wireshark.</string>
+    <string name="mitm_addon_new_version">MITM-tillegget for PCAPdroid må oppgraderes.</string>
 </resources>

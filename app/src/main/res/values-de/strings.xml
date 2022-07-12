@@ -39,7 +39,6 @@
     <string name="dropped_connections">Abgebrochene Verbindungen</string>
     <string name="tot_connections">Verbindungen insgesamt</string>
     <string name="open_sockets">Offene Sockets</string>
-    <string name="max_file_descriptor">Max FD</string>
     <string name="bytes_sent">Bytes gesendet</string>
     <string name="bytes_rcvd">Bytes empfangen</string>
     <string name="packets_sent">Pakete gesendet</string>
@@ -93,7 +92,6 @@
     <string name="save_to_file">Speichern unter</string>
     <string name="older_connections_notice">%1$d älter Verbindungen werden nicht angezeigt</string>
     <string name="unknown_app">Unbekannt</string>
-    <string name="enable_ipv6_summary">IPv6-Verbindungen zum Internet zulassen. Verwende dies nur in Netzwerken mit einem IPv6-Gateway</string>
     <string name="error">Fehler</string>
     <string name="conn_status_unreachable">Unerreichbar</string>
     <string name="other_prefs">Andere</string>
@@ -194,7 +192,6 @@
     <string name="firewall_rules">Firewall-Regeln</string>
     <string name="blocked_pkts">Blockiert</string>
     <string name="n_pkts">%1$s Pkt</string>
-    <string name="show_only_blocked">Blockiert durch Firewall</string>
     <string name="blocked_connection_filter">blockiert</string>
     <string name="unlock_code">Entsperrungs-Code</string>
     <string name="validate">Bestätigen</string>

@@ -56,6 +56,7 @@ public class EditFilterActivity extends BaseActivity {
     private FilterDescriptor mFilter;
     private CheckBox mHideMasked;
     private CheckBox mOnlyBlacklisted;
+    private CheckBox mOnlyCleartext;
     private ArrayList<Pair<FilteringStatus, Chip>> mFirewallChips;
     private ArrayList<Pair<Status, Chip>> mStatusChips;
     private ArrayList<Pair<DecryptionStatus, Chip>> mDecChips;
@@ -84,6 +85,7 @@ public class EditFilterActivity extends BaseActivity {
 
         mHideMasked = findViewById(R.id.not_hidden);
         mOnlyBlacklisted = findViewById(R.id.only_blacklisted);
+        mOnlyCleartext = findViewById(R.id.only_cleartext);
         mInterfaceGroup = findViewById(R.id.interfaces);
 
         findViewById(R.id.edit_mask).setOnClickListener(v -> {
@@ -113,6 +115,7 @@ public class EditFilterActivity extends BaseActivity {
         if(CaptureService.isDecryptingTLS()) {
             findViewById(R.id.decryption_status_label).setVisibility(View.VISIBLE);
             findViewById(R.id.decryption_status_group).setVisibility(View.VISIBLE);
+            mOnlyCleartext.setVisibility(View.GONE);
         }
 
         Billing billing = Billing.newInstance(this);
@@ -173,6 +176,7 @@ public class EditFilterActivity extends BaseActivity {
     private void model2view() {
         mHideMasked.setChecked(!mFilter.showMasked);
         mOnlyBlacklisted.setChecked(mFilter.onlyBlacklisted);
+        mOnlyCleartext.setChecked(mFilter.onlyCleartext);
 
         setCheckedChip(mStatusChips, mFilter.status);
         setCheckedChip(mDecChips, mFilter.decStatus);
@@ -193,6 +197,7 @@ public class EditFilterActivity extends BaseActivity {
     private void view2model() {
         mFilter.showMasked = !mHideMasked.isChecked();
         mFilter.onlyBlacklisted = mOnlyBlacklisted.isChecked();
+        mFilter.onlyCleartext = mOnlyCleartext.isChecked();
 
         mFilter.status = getCheckedChip(mStatusChips, Status.STATUS_INVALID);
         mFilter.decStatus = getCheckedChip(mDecChips, DecryptionStatus.INVALID);

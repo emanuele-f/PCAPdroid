@@ -431,11 +431,9 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
                 conn->data->update_type |= CONN_UPDATE_STATS;
             }
 
-            if(conn->data->update_type != 0) {
-                // The connection data cannot be free now as it is enqueued in a conn_array_t.
-                // It will be free in sendConnectionsDump.
-                pd_notify_connection_update(pd, &conn->tuple, conn->data);
-            } else {
+            // If there is a pending notification, the connection data cannot be free now as it is enqueued in a conn_array_t
+            if((conn->data->update_type == 0) || (pd_notify_connection_update(pd, &conn->tuple, conn->data) < 0)) {
+                // no pending notification/pd_notify_connection_update failed, free now
                 pd_purge_connection(pd, conn->data);
                 conn->data = NULL;
             }
