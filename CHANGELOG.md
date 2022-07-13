@@ -2,6 +2,17 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.3] - 2022-07-13
+- Add support for Android 13 Tiramisu
+- Add VPN exemptions to exclude specific apps from the VPN
+- Ability to set IPv6-only VPN mode
+- Add filter to only show cleartext connections
+- Ability to block newly installed apps (firewall)
+- Ability to temporary unblock an app (firewall)
+- Show scam-prevention messages
+- Deny sending traffic to remote servers via CaptureCtrl to prevent scams
+- Fix possible IllegalStateException in the status view
+
 ## [1.5.2] - 2022-06-22
 - Add ability to only show the connections allowed by the firewall
 - Monitor memory usage and disable full payload on low memory
