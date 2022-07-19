@@ -1,16 +1,20 @@
-<i>PCAPdroid</i> es una aplicación de código abierto que te permite monitorizar y exportar el tráfico de red de tu dispositivo. La aplicación simula una VPN para lograr una captura sin root pero, al contrario que una VPN, el tráfico se procesa localmente en el dispositivo.
+<i>PCAPdroid</i> es una aplicación amigable con la privacidad que te permite rastrear y analizar la conexiones hechas por las otras aplicaciones en tu dispositivo.
+Incluso te permite exportar el trafico a un archivo PCAP, inspeccionar el HTTP, descifrar el trafico TLS y mucho más.
+
+PCAPdroid simula un VPN para lograr una captura de trafico de red sin root. No utiliza un servidor VPN remoto. Todos los datos se procesan localmente en el dispositivo.
 
 <b>Características:</b>
 
-* Registra y examina conexiones realizadas por el usuario y las aplicaciones del sistema
-* Obtiene el SNI, la consulta DNS, la solicitud HTTP, la URL HTTP y la dirección IP remota
-* Crea reglas para filtrar el tráfico útil y detecta fácilmente algunas anomalías
-* Vuelca el tráfico en un archivo PCAP, para descargar desde un navegador, o transmitirlo a un receptor remoto para su análisis en tiempo real (por ejemplo, wireshark)
-* Utiliza la aplicación en combinación con mitmproxy para descifrar el tráfico HTTPS/TLS (se necesitan conocimientos técnicos)
+* Registra y examina conexiones realizadas por aplicaciones del usuario y del sistema
+* Obtén el SNI, la consulta de DNS, la URL HTTP y la dirección IP remota
+* Inspecciona solicitudes y respuestas HTTP por medio de los decodificadores incorporados
+* Inspecciona la conexión completa en formato hex o textual
+* Descifra el trafico HTTPS/TLS y exporta el "SSLKEYLOGFILE"
+* Guarda el tráfico en un archivo PCAP, para descargar desde un navegador, o transmitirlo a un receptor remoto para análisis en tiempo real (por ejemplo, wireshark)
+* Crea reglas para filtrar el tráfico útil y detectar fácilmente las anomalías
+* Identifica el país y ASN de servidores remotes con la base de datos local
 * En los dispositivos con root, captura el tráfico mientras se ejecutan otras aplicaciones VPN
 
-Si piensas utilizar PCAPdroid para realizar análisis de paquetes, consulta <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>la sección específica</a> del manual.
+Si planificas utilizar PCAPdroid para realizar análisis de paquetes, consulta <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>la sección específica</a> del manual.
 
-Visita <a href='https://github.com/emanuele-f/PCAPdroid'>el repositorio del proyecto en Github</a> para más detalles.
-
-Puedes <a href="https://t.me/PCAPdroid">unirte a la comunidad PCAPdroid</a> en Telegram para discutir y recibir las últimas actualizaciones.
+Únete a la comunidad internacional de PCAPdroid en <a href="https://t.me/PCAPdroid">Telegram</a> o en <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a>.

@@ -24,7 +24,7 @@
     <string name="http_server">Servidor HTTP</string>
     <string name="udp_exporter">Exportador UDP</string>
     <string name="no_dump">Sin volcado</string>
-    <string name="no_dump_info">PCAP no será volcado</string>
+    <string name="no_dump_info">El trafico no será guardado</string>
     <string name="http_server_info">Inicia el servidor HTTP para la descarga de PCAP</string>
     <string name="udp_exporter_info">Envia el PCAP al colector remoto UDP</string>
     <string name="http_server_port">Puerto del servidor HTTP</string>
@@ -76,7 +76,7 @@
     <string name="other_prefs">Otros</string>
     <string name="app_language">Idioma de la app</string>
     <string name="lang_english">Inglés</string>
-    <string name="system_default">Establecido por el sistema</string>
+    <string name="system_default">Sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como administrador de archivos</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
@@ -184,7 +184,7 @@
     <string name="valid">Válido</string>
     <string name="invalid">No válido</string>
     <string name="block">Bloquear…</string>
-    <string name="blocked_connection_filter">bloqueado</string>
+    <string name="blocked_connection_filter">Bloqueado</string>
     <string name="firewall">Cortafuegos</string>
     <string name="firewall_rules">Reglas del cortafuegos</string>
     <string name="paid_features">Funciones de pago</string>
@@ -217,4 +217,33 @@
     <string name="close_nav_drawer">Cerrar cajón de navegación</string>
     <string name="no_intent_handler_found">No se encontró ninguna aplicación para realizar esta acción</string>
     <string name="billing_failure">No se pudo conectar con Google Play. Por favor reintenta más tarde</string>
+    <string name="show_only_cleartext">Conexiones al descubierto</string>
+    <string name="allowed_connection_filter">Permitido</string>
+    <string name="firewall_filter">Cortafuegos: %1$s</string>
+    <string name="phone_app">Teléfono</string>
+    <string name="socks5_info">Proxy SOCKS5: %1$s:%2$d</string>
+    <string name="unblock">Desbloquear…</string>
+    <string name="tls_decryption">Descifrado TLS</string>
+    <string name="tls_decryption_summary">Descifra el trafico SSL/TLS por medio de un ataque de intermediario (mitm). Esto podría funcionar con algunas aplicaciones, verifica la quía de usuario</string>
+    <string name="tls_decryption_starting">Descifrado TLS esta comenzando…</string>
+    <string name="tls_decryption_running">Descifrado TLS esta corriendo</string>
+    <string name="traffic_inspection">Inspección de trafico</string>
+    <string name="mitm_start_failed">No se pudo comenzar el servicio mitm. Reinstala el complemento mitm e intenta de nuevo</string>
+    <string name="mitm_setup_wizard">Asistente de configuración mitm</string>
+    <string name="install_action">Instalar</string>
+    <string name="export_action">Exportar</string>
+    <string name="install_mitm_addon">Instala el <a href="%1$s">complemento mitm</a> de PCAPdroid.
+\n
+\nNOTA: El complemento depende de software de fuente cerrada</string>
+    <string name="configure_action">Configurar</string>
+    <string name="grant_mitm_permission">Otorga a PCAPdroid el permiso de controlar el complemento mitm</string>
+    <string name="checking_the_certificate">Verificando el certificado…</string>
+    <string name="cert_exported_now_installed">Certificado exportado, ahora instálalo en los ajustes de Android</string>
+    <string name="ca_cert_export_failed">Un error ha ocurrido mientras se exportaba el certificado CA
+\n
+\nAsegúrese de poner a <a href="%1$s">PCAPdroid en la lista blanca</a>, si su dispositivo implementa software que limita los servicios de fondo o de arranque automático</string>
+    <string name="cert_installed_correctly">El certificado CA esta instalado</string>
+    <string name="cert_reinstall_required">El certificado CA no esta instalado, corra el asistente de configuración de mitm</string>
+    <string name="conn_status_active">Activo</string>
+    <string name="phone_app_info">Servicios Telefónicos</string>
 </resources>
