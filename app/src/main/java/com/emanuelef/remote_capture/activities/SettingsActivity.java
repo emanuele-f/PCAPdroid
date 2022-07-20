@@ -193,18 +193,20 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             }
         }
 
+        private boolean validateIp(String value) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                return (InetAddresses.isNumericAddress(value));
+            else {
+                Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
+                return(matcher.matches());
+            }
+        }
+
         @SuppressWarnings("deprecation")
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
-            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    return (InetAddresses.isNumericAddress(newValue.toString()));
-                else {
-                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                    return(matcher.matches());
-                }
-            });
+            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> validateIp(newValue.toString()));
 
             /* Collector port validation */
             EditTextPreference mRemoteCollectorPort = requirePreference(Prefs.PREF_COLLECTOR_PORT_KEY);
