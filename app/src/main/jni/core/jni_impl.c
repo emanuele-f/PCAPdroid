@@ -215,7 +215,7 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     u_int ifidx = (pd->root_capture ? data->root.ifidx : 0);
-    u_int local_port = (!pd->root_capture ? data->vpn.local_port : 0);
+    u_int local_port = (!pd->root_capture ? data->vpn.local_port : conn_info->src_port);
     bool mitm_decrypt = (pd->tls_decryption_enabled && data->proxied);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
                                                 conn_info->ipver, conn_info->ipproto,
@@ -553,6 +553,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .dump_payload_chunk = dumpPayloadChunk,
             },
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
+            .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
             .tls_decryption_enabled = (bool) getIntPref(env, vpn, "isTlsDecryptionEnabled"),
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),

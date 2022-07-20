@@ -347,7 +347,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
                 mSocks5Auth = Utils.genRandomString(8) + ":" + Utils.genRandomString(8);
 
-                mMitmReceiver = new MitmReceiver(this, mSocks5Auth);
+                mMitmReceiver = new MitmReceiver(this, mSettings.root_capture, mSocks5Auth);
                 try {
                     if(!mMitmReceiver.start())
                         return abortStart();
@@ -1193,6 +1193,10 @@ public class CaptureService extends VpnService implements Runnable {
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
+
+    public int getMitmAddonUid() {
+        return MitmAddon.getUid(this);
+    }
 
     public String getCaptureInterface() { return(mSettings.capture_interface); }
 

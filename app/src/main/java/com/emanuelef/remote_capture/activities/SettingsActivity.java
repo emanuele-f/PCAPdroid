@@ -386,7 +386,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private void rootCaptureHideShow(boolean enabled) {
             if(enabled) {
-                mTlsDecryption.setVisible(false);
                 mAutoBlockPrivateDNS.setVisible(false);
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
@@ -394,7 +393,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mFullPayloadEnabled.setVisible(true);
                 mBlockQuic.setVisible(false);
             } else {
-                mTlsDecryption.setVisible(true);
                 mAutoBlockPrivateDNS.setVisible(true);
                 fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(mTlsDecryption.isChecked());

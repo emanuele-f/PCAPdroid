@@ -112,7 +112,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    public MitmReceiver(Context ctx, String proxyAuth) {
+    public MitmReceiver(Context ctx, boolean rootCapture, String proxyAuth) {
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
@@ -126,6 +126,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
            accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
            https://github.com/mitmproxy/mitmproxy/issues/5109 */
         mConfig.sslInsecure = true;
+
+        // root capture uses transparent mode (redirection via iptables)
+        mConfig.transparentMode = rootCapture;
 
         //noinspection ResultOfMethodCallIgnored
         getKeylogFilePath(mContext).delete();
@@ -222,7 +225,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 }
 
                 MsgType type = parseMsgType(msg_type);
-                //Log.d(TAG, "MSG." + type.name() + "[" + message_len + " B]: port=" + port);
+                //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port);
 
                 byte[] msg = new byte[msg_len];
                 istream.readFully(msg);
@@ -233,7 +236,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                     handleProxyRunning();
                 else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
-                    //Log.d(TAG, "MSG." + type.name() + "[" + message_len + " B]: port=" + port + ", match=" + (conn != null));
+                    //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port + ", match=" + (conn != null));
 
                     if(conn != null)
                         handleMessage(conn, type, msg, tstamp);
