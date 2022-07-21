@@ -104,9 +104,16 @@ public class AboutActivity extends BaseActivity {
 
         content.findViewById(R.id.copy_id).setOnClickListener(v -> Utils.copyToClipboard(this, systemId));
 
+        boolean was_valid = billing.isPurchased(Billing.SUPPORTER_SKU);
+
         AlertDialog myDialog = new AlertDialog.Builder(this)
                 .setView(content)
-                .setPositiveButton(R.string.ok, (dialog, whichButton) -> billing.setLicense(unlockCode.getText().toString()))
+                .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+                    billing.setLicense(unlockCode.getText().toString());
+
+                    if(!was_valid && billing.isPurchased(Billing.SUPPORTER_SKU))
+                        Utils.showToastLong(this, R.string.paid_features_unlocked);
+                })
                 .setNeutralButton(R.string.validate, (dialog, which) -> {}) // see below
                 .create();
 

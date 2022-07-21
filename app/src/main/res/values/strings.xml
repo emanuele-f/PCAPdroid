@@ -388,4 +388,5 @@
     <string name="remote_collector_notice">You have configured PCAPdroid to send traffic to a remote server. The server will be able to access your sensitive information.\n\nIf someone asked you to do this, it is probably a scam attempt</string>
     <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed"</string>
     <string name="warning">Warning</string>
+    <string name="paid_features_unlocked">Paid features unlocked. Restart the capture if running</string>
 </resources>
