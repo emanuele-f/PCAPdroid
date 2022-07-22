@@ -8,6 +8,15 @@
         android:title="@string/action_block" />
 
     <item
-        android:id="@+id/unblock_app"
-        android:title="@string/action_unblock" />
+        android:id="@+id/unblock_app_permanently"
+        android:title="@string/unblock_permanently" />
+    <item
+        android:id="@+id/unblock_app_10m"
+        android:title="" />
+    <item
+        android:id="@+id/unblock_app_1h"
+        android:title="" />
+    <item
+        android:id="@+id/unblock_app_8h"
+        android:title="" />
 </menu>

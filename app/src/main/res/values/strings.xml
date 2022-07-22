@@ -379,6 +379,7 @@
     <string name="cleartext_connection">Cleartext</string>
     <string name="unblock_permanently">Unblock permanently</string>
     <string name="unblock_for_n_hours">Unblock for %1$dh</string>
+    <string name="unblock_for_n_minutes">Unblock for %1$dm</string>
     <string name="block_new_apps">Block newly installed apps</string>
     <string name="app_blocked">App blocked</string>
     <string name="app_blocked_info">The %1$s app has been blocked by the firewall</string>

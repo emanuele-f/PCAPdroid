@@ -50,9 +50,9 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
-import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
 public class FirewallStatus extends Fragment {
@@ -66,7 +66,7 @@ public class FirewallStatus extends Fragment {
     private TextView mNumChecked;
     private TextView mNumRules;
     private TextView mLastBlock;
-    private MatchList mBlocklist;
+    private Blocklist mBlocklist;
     private int mOkColor, mWarnColor, mGrayColor;
 
     @Override

@@ -433,10 +433,15 @@ public class MatchList {
         }
     }
 
+    // can be used by a subclass to exempt specific app (e.g. Blocklist grace apps)
+    protected boolean isExemptedApp(int uid) {
+        return false;
+    }
+
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
      * Only the following RuleTypes are supported: APP, IP, HOST.
      */
-    public ListDescriptor toListDescriptor(GraceList exemptions) {
+    public ListDescriptor toListDescriptor() {
         final ListDescriptor rv = new ListDescriptor();
 
         Iterator<MatchList.Rule> it = iterRules();
@@ -455,7 +460,7 @@ public class MatchList {
 
         // Apps are matched via their UID
         for(int uid: mUids) {
-            if((exemptions == null) || (!exemptions.containsApp(uid)))
+            if(!isExemptedApp(uid))
                 rv.apps.add(Integer.toString(uid));
         }
 

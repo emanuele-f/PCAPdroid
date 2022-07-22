@@ -32,6 +32,13 @@
         android:layout_width="wrap_content"
         android:layout_height="12sp" />
 
+    <ImageView
+        android:id="@+id/temp_unblocked"
+        android:src="@drawable/ic_hourglass_top"
+        android:layout_marginHorizontal="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="14sp" />
+
     <TextView
         android:layout_width="8sp"
         android:layout_height="fill_parent"
