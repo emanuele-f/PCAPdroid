@@ -146,7 +146,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.app_context_menu, menu);
 
-        AppStats stats = mAdapter.getItem(mAdapter.getClickedItemPos());
+        AppStats stats = mAdapter.getSelectedItem();
         if(stats == null)
             return;
 
@@ -166,8 +166,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
-        int itemPos = mAdapter.getClickedItemPos();
-        AppStats app = mAdapter.getItem(itemPos);
+        AppStats app = mAdapter.getSelectedItem();
 
         if(id == R.id.block_app)
             blocklist.addApp(app.getUid());
@@ -187,7 +186,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
             CaptureService.requireInstance().reloadBlocklist();
 
         // refresh the item
-        mAdapter.notifyItemChanged(itemPos);
+        mAdapter.notifyItemChanged(app);
 
         return true;
     }

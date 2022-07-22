@@ -304,7 +304,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         inflater.inflate(R.menu.connection_context_menu, menu);
         int max_length = 32;
 
-        ConnectionDescriptor conn = mAdapter.getClickedItem();
+        ConnectionDescriptor conn = mAdapter.getSelectedItem();
         if(conn == null)
             return;
 
@@ -455,7 +455,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         Context ctx = requireContext();
-        ConnectionDescriptor conn = mAdapter.getClickedItem();
+        ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean mask_changed = false;

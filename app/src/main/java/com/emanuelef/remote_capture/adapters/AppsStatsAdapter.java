@@ -54,7 +54,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
-    private int mClickedPosition;
+    private AppStats mSelectedItem;
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -131,7 +131,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             view.setOnLongClickListener(v -> {
                 // see registerForContextMenu
-                mClickedPosition = holder.getAbsoluteAdapterPosition();
+                mSelectedItem = getItem(holder.getAbsoluteAdapterPosition());
                 return false;
             });
         }
@@ -160,8 +160,14 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         return mStats.get(pos);
     }
 
-    public int getClickedItemPos() {
-        return mClickedPosition;
+    public AppStats getSelectedItem() {
+        return mSelectedItem;
+    }
+
+    public void notifyItemChanged(AppStats app) {
+        int pos = mStats.indexOf(app);
+        if(pos >= 0)
+            notifyItemChanged(pos);
     }
 
     public String getItemPackage(int pos) {
