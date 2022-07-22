@@ -557,11 +557,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(whitelist_changed) {
             whitelist.save();
             CaptureService.reloadMalwareWhitelist();
-        } else if(blocklist_changed) {
-            blocklist.save();
-            if(CaptureService.isServiceActive())
-                CaptureService.requireInstance().reloadBlocklist();
-        }
+        } else if(blocklist_changed)
+            blocklist.saveAndReload();
 
         return true;
     }

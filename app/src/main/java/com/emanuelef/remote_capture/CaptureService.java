@@ -59,6 +59,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.CaptureCtrl;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
+import com.emanuelef.remote_capture.activities.FirewallActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -98,9 +99,9 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String NOTIFY_CHAN_MALWARE_DETECTION = "Malware detection";
     private static final String NOTIFY_CHAN_OTHER = "Other";
     private static final int VPN_MTU = 10000;
-    private static final int NOTIFY_ID_VPNSERVICE = 1;
-    private static final int NOTIFY_ID_LOW_MEMORY = 2;
-    private static final int NOTIFY_ID_APP_BLOCKED = 3;
+    public static final int NOTIFY_ID_VPNSERVICE = 1;
+    public static final int NOTIFY_ID_LOW_MEMORY = 2;
+    public static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -485,16 +486,26 @@ public class CaptureService extends VpnService implements Runnable {
                             AppDescriptor app = appsResolver.getByPackage(packageName, 0);
                             String label = (app != null) ? app.getName() : packageName;
 
+                            PendingIntent pi = PendingIntent.getActivity(CaptureService.this, 0,
+                                    new Intent(CaptureService.this, FirewallActivity.class), Utils.getIntentFlags(0));
+
+                            PendingIntent unblockIntent = PendingIntent.getBroadcast(CaptureService.this, 0,
+                                    new Intent(CaptureService.this, ActionReceiver.class)
+                                            .putExtra(ActionReceiver.EXTRA_UNBLOCK_APP, packageName), Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+
                             // Notify the user
                             NotificationManagerCompat man = NotificationManagerCompat.from(context);
                             if(man.areNotificationsEnabled()) {
                                 Notification notification = new NotificationCompat.Builder(CaptureService.this, NOTIFY_CHAN_OTHER)
+                                        .setContentIntent(pi)
                                         .setSmallIcon(R.drawable.ic_logo)
                                         .setColor(ContextCompat.getColor(CaptureService.this, R.color.colorPrimary))
                                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                                         .setCategory(NotificationCompat.CATEGORY_STATUS)
                                         .setContentTitle(getString(R.string.app_blocked))
                                         .setContentText(getString(R.string.app_blocked_info, label))
+                                        .setAutoCancel(true)
+                                        .addAction(R.drawable.ic_check_solid, getString(R.string.action_unblock), unblockIntent)
                                         .build();
 
                                 man.notify(NOTIFY_ID_APP_BLOCKED, notification);

@@ -5,6 +5,8 @@ import android.os.SystemClock;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import com.emanuelef.remote_capture.CaptureService;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -68,5 +70,12 @@ public class Blocklist extends MatchList {
     public synchronized void addApp(int uid) {
         mUidToGrace.remove(uid);
         super.addApp(uid);
+    }
+
+    public void saveAndReload() {
+        save();
+
+        if(CaptureService.isServiceActive())
+            CaptureService.requireInstance().reloadBlocklist();
     }
 }

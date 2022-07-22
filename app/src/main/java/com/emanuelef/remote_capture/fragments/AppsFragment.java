@@ -181,9 +181,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         else
             return super.onContextItemSelected(item);
 
-        blocklist.save();
-        if(CaptureService.isServiceActive())
-            CaptureService.requireInstance().reloadBlocklist();
+        blocklist.saveAndReload();
 
         // refresh the item
         mAdapter.notifyItemChanged(app);
