@@ -1,1 +1,1 @@
-Ferramenta de monitoramento de rede sem acesso root para Android
+Ferramenta de monitoramento e despejo de tráfego para dispositivos Android

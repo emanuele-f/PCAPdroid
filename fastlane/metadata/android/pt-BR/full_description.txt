@@ -1,16 +1,20 @@
-<i>PCAPdroid</i> é um app de software livre que permite monitorar e exportar o tráfego de rede de seu dispositivo. O app simula uma VPN para conseguir uma captura não-root, mas ao contrário de uma VPN, o tráfego é processado localmente no dispositivo.
+<i>PCAPdroid</i> é um app que respeita sua privacidade, permite rastrear e analisar as conexões feitas pelos apps no seu dispositivo.
+Também permite que você exporte o PCAP dump do tráfego, inspecione HTTP, decodifique o tráfego TLS e muito mais.
+
+PCAPdroid simula uma VPN a fim de capturar o tráfego da rede sem acesso root. Não utiliza nenhum servidor remoto da VPN. Todos os dados são processados localmente no dispositivo.
 
 <b>Funcionalidades:</b>
 
-* Registe e examine as conexões feitas pelo usuário e os apps de sistema
-* Extraia SNI, consultas de DNS, URLs e endereços de IP remotos
-* Crie regras para filtrar o bom tráfego e detectar facilmente as anomalias
-* Extraia o tráfego para um arquivo PCAP, baixá-lo de um navegador ou enviá-lo para um receptor remoto para análise em tempo real (p.ex. wireshark)
-* Use o app com o mitmproxy para descriptografar o tráfego de HTTPS/TLS (conhecimento técnico necessário)
-* Em dispositivos com acesso root, você pode capturar os pacotes enquanto outros apps de VPN estão funcionando
+* Regista e examina conexões feitas pelo usuário e apps do sistema
+* Extrai SNI, consultas do DNS, URLs e endereços IP remotos
+* Inspeciona solicitações e respostas HTTP graças aos decodificadores integrados
+* Inspeciona payload completo de conexões via hexdump/texto
+* Descriptografa o tráfego HTTPS/TLS e exporta o SSLKEYLOGFILE
+* Despeja o tráfego a um arquivo PCAP, pode baixá-lo de um navegador ou transmiti-lo para um receptor remoto para análise em tempo real (p.ex. wireshark)
+* Cria regras para filtrar o bom tráfego e detectar facilmente as anomalias
+* Identifica o país e o ASN do servidor remoto via buscas offline de db
+* Em dispositivos com acesso root, pode capturar o tráfego enquanto outros apps da VPN estão em execução
 
 Se você planeja usar o PCAPdroid para realizar análise de pacotes, verifique <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>a seção específica</a> do manual.
 
-Visite <a href='https://github.com/emanuele-f/PCAPdroid'>o repo do projeto no Github</a> para mais detalhes.
-
-Você pode <a href="https://t.me/PCAPdroid">participar em comunidade do PCAPdroid</a> no telegram para discutir e receber atualizações sobre as últimas funcionalidades.
+Junte-se à comunidade internacional do PCAPdroid no <a href="https://t.me/PCAPdroid">telegram</a> ou no <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a>.
