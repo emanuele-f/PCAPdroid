@@ -190,7 +190,8 @@ public class AppsResolver {
                     return info.uid;
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+                Log.w(TAG, "Could not retrieve package " + package_name);
+                //e.printStackTrace();
             }
         }
 
