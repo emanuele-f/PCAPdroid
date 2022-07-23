@@ -155,7 +155,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mPcapUri = CaptureService.getPcapUri();
+        mPcapUri = CaptureService.isServiceActive() ? CaptureService.getPcapUri() : null;
         mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {
             if(!success) {
