@@ -1350,4 +1350,22 @@ public class Utils {
 
         return false;
     }
+
+    public static String getBuildInfo(Context ctx) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        String deviceModel;
+        boolean rooted = Utils.isRootAvailable();
+
+        if(Build.MODEL.startsWith(Build.MANUFACTURER))
+            deviceModel = Build.MANUFACTURER;
+        else
+            deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
+
+        return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() + "\n" +
+                "Build version: " + BuildConfig.VERSION_NAME + "\n" +
+                "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
+                "Current date: " + dateFormat.format(new Date()) + "\n" +
+                "Device: " + deviceModel + (rooted ? " (rooted)" : "") + "\n" +
+                "OS version: Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")\n";
+    }
 }

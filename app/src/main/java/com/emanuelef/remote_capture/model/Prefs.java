@@ -22,6 +22,8 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.preference.PreferenceManager;
+
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.Utils;
@@ -60,7 +62,7 @@ public class Prefs {
     public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
     public static final String PREF_VISUALIZATION_MASK = "vis_mask";
-    public static final String PREF_MALWARE_WHITELIST = "maware_whitelist";
+    public static final String PREF_MALWARE_WHITELIST = "malware_whitelist";
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
     public static final String PREF_BLOCKLIST = "bl";
     public static final String PREF_START_AT_BOOT = "start_at_boot";
@@ -167,4 +169,27 @@ public class Prefs {
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
     public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
     public static boolean blockNewApps(SharedPreferences p)       { return(p.getBoolean(PREF_BLOCK_NEW_APPS, false)); }
+
+
+    public static String asString(Context ctx) {
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+        // NOTE: possibly sensitive info like the collector IP address not shown
+        return "DumpMode: " + getDumpMode(p) +
+                "\nFullPayload: " + getFullPayloadMode(p) +
+                "\nTLSDecryption: " + getTlsDecryptionEnabled(p) +
+                "\nTLSSetupOk: " + isTLSDecryptionSetupDone(p) +
+                "\nBlockQuic: " + blockQuic(p) +
+                "\nRootCapture: " + isRootCaptureEnabled(p) +
+                "\nSocks5: " + getSocks5Enabled(p) +
+                "\nBlockPrivateDns: " + isPrivateDnsBlockingEnabled(p) +
+                "\nCaptureInterface: " + getCaptureInterface(p) +
+                "\nMalwareDetection: " + isMalwareDetectionEnabled(ctx, p) +
+                "\nFirewall: " + isFirewallEnabled(ctx, p) +
+                "\nBlockNewApps: " + blockNewApps(p) +
+                "\nAppFilter: " + getAppFilter(p) +
+                "\nIpMode: " + getIPMode(p) +
+                "\nTrailer: " + isPcapdroidTrailerEnabled(p) +
+                "\nStartAtBoot: " + startAtBoot(p);
+    }
 }

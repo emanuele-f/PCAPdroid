@@ -37,6 +37,7 @@ import androidx.core.text.HtmlCompat;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.Prefs;
 
 public class AboutActivity extends BaseActivity {
     private static final String TAG = "AboutActivity";
@@ -81,6 +82,19 @@ public class AboutActivity extends BaseActivity {
             Intent intent = new Intent(this, OnBoardingActivity.class);
             intent.putExtra(OnBoardingActivity.ENABLE_BACK_BUTTON, true);
             startActivity(intent);
+        } else if(id == R.id.build_info) {
+            final String deviceInfo = Utils.getBuildInfo(this) + "\n\n" + Prefs.asString(this);
+
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View view = inflater.inflate(R.layout.scrollable_dialog, null);
+            ((TextView)view.findViewById(R.id.text)).setText(deviceInfo);
+
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.build_info)
+                    .setView(view)
+                    .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
+                    .setNeutralButton(R.string.copy_to_clipboard, (dialogInterface, i) ->
+                            Utils.copyToClipboard(this, deviceInfo)).show();
         }
 
         return super.onOptionsItemSelected(item);

@@ -11,6 +11,8 @@ android {
         targetSdkVersion 33
         versionCode 57
         versionName "1.5.3"
+
+        buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
     buildTypes {

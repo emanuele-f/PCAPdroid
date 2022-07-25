@@ -4,6 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/build_info"
+        android:title="@string/build_info"
+        android:orderInCategory="5"
+        android:icon="@drawable/ic_info"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/on_boarding"
         android:title="@string/welcome_to_pcapdroid"
         android:orderInCategory="10"

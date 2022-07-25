@@ -97,7 +97,7 @@
     <string name="first_seen">First seen</string>
     <string name="last_seen">Last seen</string>
     <string name="conn_status_closed">Closed</string>
-    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copy_to_clipboard">Copy</string>
     <string name="save_to_file">Save to file</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges</string>
@@ -391,4 +391,5 @@
     <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed"</string>
     <string name="warning">Warning</string>
     <string name="paid_features_unlocked">Paid features unlocked. Restart the capture if running</string>
+    <string name="build_info">Build info</string>
 </resources>
