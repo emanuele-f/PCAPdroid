@@ -222,9 +222,6 @@
     <string name="tls_decryption_starting">TLS şifre çözme başlıyor…</string>
     <string name="mitm_setup_wizard">Ortadaki adam kurulum sihirbazı</string>
     <string name="install_action">Kur</string>
-    <string name="install_mitm_addon">PCAPdroid <a href="%1$s">ortadaki adam eklentisini</a> kur.
-\n
-\nNOT: Eklenti, kapalı kaynaklı yazılıma bağlıdır</string>
     <string name="export_ca_certificate">PCAPdroid CA sertifikasını dışa aktarın, ardından Android \"Şifreleme ve Kimlik Bilgileri\" ayarlarını açın ve \"CA sertifikası\" olarak kurmayı seçin</string>
     <string name="checking_the_certificate">Sertifika denetleniyor…</string>
     <string name="cert_exported_now_installed">Sertifika dışa aktarıldı, şimdi Android ayarlarından onu kurun</string>

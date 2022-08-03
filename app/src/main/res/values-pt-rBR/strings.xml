@@ -266,9 +266,6 @@
     <string name="traffic_inspection">Inspeção de tráfego</string>
     <string name="mitm_start_failed">Não foi possível iniciar o serviço do mitm. Reinstale o mitm addon e tente novamente</string>
     <string name="mitm_setup_wizard">Assistente de configuração do mitm</string>
-    <string name="install_mitm_addon">Instalar o <a href="%1$s">mitm addon</a> do PCAPdroid.
-\n
-\nAVISO: O addon baseado em software proprietário</string>
     <string name="configure_action">Configurar</string>
     <string name="checking_the_certificate">Verificando o certificado…</string>
     <string name="cert_exported_now_installed">Certificado exportado, agora instale-o em configurações do Android</string>
@@ -378,7 +375,6 @@
     <string name="unblock_permanently">Desbloquear permanentemente</string>
     <string name="unblock_for_n_hours">Desbloquear por %1$dh</string>
     <string name="block_new_apps">Bloquear apps recém instalados</string>
-    <string name="scam_alert">Aviso do fraude</string>
     <string name="cancel_action">Cancelar</string>
     <string name="remote_collector_notice">Você configurou o PCAPdroid permitindo o envio de tráfego a um servidor remoto. Aquele servidor será capaz de acessar suas informações confidenciais.
 \n

@@ -280,9 +280,6 @@
     <string name="export_ca_certificate">Экспортируйте сертификат PCAPdroid CA, откройте в Android настройки \"Шифрование и учетные данные\" и выберите установку в качестве \"Сертификат ЦС\"</string>
     <string name="socks5_info">SOCKS5 прокси: %1$s:%2$d</string>
     <string name="mitm_start_failed">Не удалось запустить mitm сервис. Переустановите mitm дополнение и повторите попытку</string>
-    <string name="install_mitm_addon">Установить <a href="%1$s">mitm дополнение</a> для PCAPdroid
-\n
-\nПРИМЕЧАНИЕ: Дополнение зависит от программного обеспечения с закрытым кодом</string>
     <string name="install_ca_certificate">Установите сертификат PCAPdroid CA, выбрав \"VPN и приложения\". Android запросит ваш код или пароль блокировки экрана</string>
     <string name="checking_the_certificate">Проверяем сертификат…</string>
     <string name="cert_installed_correctly">Сертификат ЦС установлен</string>

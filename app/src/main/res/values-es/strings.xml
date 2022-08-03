@@ -232,9 +232,6 @@
     <string name="mitm_setup_wizard">Asistente de configuración mitm</string>
     <string name="install_action">Instalar</string>
     <string name="export_action">Exportar</string>
-    <string name="install_mitm_addon">Instala el <a href="%1$s">complemento mitm</a> de PCAPdroid.
-\n
-\nNOTA: El complemento depende de software de fuente cerrada</string>
     <string name="configure_action">Configurar</string>
     <string name="grant_mitm_permission">Otorga a PCAPdroid el permiso de controlar el complemento mitm</string>
     <string name="checking_the_certificate">Verificando el certificado…</string>

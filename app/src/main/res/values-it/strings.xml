@@ -284,9 +284,6 @@
     <string name="tls_decryption_summary">Decritta il traffico SSL/TLS tramite mitm. Potrebbe non funzionare con alcune app, far riferimento alla guida utente</string>
     <string name="tls_decryption_starting">Avvio decrittazione TLS…</string>
     <string name="traffic_inspection">Ispezione del traffico</string>
-    <string name="install_mitm_addon">Installa <a href="%1$s">l\'addon di mitm</a> di PCAPdroid.
-\n
-\nNOTA: L\'addon utilizza software proprietario</string>
     <string name="install_action">Installa</string>
     <string name="export_action">Esporta</string>
     <string name="configure_action">Configura</string>

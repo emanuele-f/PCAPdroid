@@ -255,9 +255,6 @@
     <string name="mitm_start_failed">无法启动 mitm 服务。重新安装 mitm 附加组件并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
-    <string name="install_mitm_addon">安装 PCAPdriod <a href="%1$s">mitm 附加组件</a>。
-\n
-\n注：此附加组件依赖于其他闭源软件</string>
     <string name="configure_action">配置</string>
     <string name="grant_mitm_permission">给予 PCAPdroid 控制 mitm 附加组件的权限</string>
     <string name="checking_the_certificate">检查证书…</string>
