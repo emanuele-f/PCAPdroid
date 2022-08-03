@@ -62,8 +62,6 @@ android {
 }
 
 dependencies {
-    def billing_version = "4.0.0"
-
 // Tests
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.4.0'
@@ -90,5 +88,5 @@ dependencies {
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
     implementation 'com.github.AppIntro:AppIntro:6.2.0'
 
-    implementation "com.android.billingclient:billing:$billing_version"
+    implementation "com.android.billingclient:billing:5.0.0"
 }
