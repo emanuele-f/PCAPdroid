@@ -32,6 +32,7 @@ import android.util.Patterns;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -136,6 +137,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
+        private boolean mRootDecryptionNoticeShown = false;
 
         private final ActivityResultLauncher<String> requestPermissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
@@ -292,6 +294,8 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return false;
                 }
 
+                checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue);
+
                 fullPayloadHideShow((boolean) newValue);
                 mBlockQuic.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
@@ -371,6 +375,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             if(Utils.isRootAvailable()) {
                 mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                     rootCaptureHideShow((Boolean) newValue);
+                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
                     return true;
                 });
             } else
@@ -407,6 +412,18 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
             mVpnExceptions.setVisible(!enabled);
+        }
+
+        private void checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {
+            if(mRootDecryptionNoticeShown || !rootEnabled || !tlsDecryption)
+                return;
+
+            new AlertDialog.Builder(requireContext())
+                    .setMessage(R.string.tls_decryption_with_root_msg)
+                    .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
+                    .show();
+
+            mRootDecryptionNoticeShown = true;
         }
     }
 }
