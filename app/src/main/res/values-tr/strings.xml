@@ -386,4 +386,17 @@
     <string name="remote_collector_notice">PCAPdroid\'i uzak bir sunucuya trafik gönderecek şekilde yapılandırdınız. Sunucu hassas bilgilerinize erişebilecek.
 \n
 \nEğer birisi sizden bunu yapmanızı istediyse, bu muhtemelen bir dolandırıcılık girişimidir</string>
+    <string name="app_unblocked">%1$s uygulamasının engellemesi kaldırıldı</string>
+    <string name="build_info">Derleme bilgisi</string>
+    <string name="unblock_for_n_minutes">%1$d dakika için engellemeyi kaldır</string>
+    <string name="warning">Uyarı</string>
+    <string name="paid_features_unlocked">Ücretli özelliklerin kilidi açıldı. Çalışıyorsa yakalamayı yeniden başlatın</string>
+    <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">ortadaki adam eklentisini</a> kurun</string>
+    <string name="tls_decryption_with_root_msg">TLS şifre çözme işlemini root ile çalıştırma yeteneği deneysel bir özelliktir. Bilinen hataların bir listesi şöyledir:
+\n
+\n - PCAPdroid\'de trafiği orijinal uygulama yerine ortadaki adam eklentisi uygulamasından oluşturulduğu şekilde göreceksiniz
+\n - bir uygulama filtresi ayarlandığında, şifre çözme yalnızca hedef uygulama için gerçekleşecektir, ancak PCAPdroid diğer uygulamaların trafiğini göstermeye devam edecektir
+\n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla)
+\n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir
+\n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
 </resources>
