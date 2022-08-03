@@ -255,9 +255,6 @@
     <string name="mitm_start_failed">无法启动 mitm 服务。重新安装 mitm 附加组件并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
-    <string name="install_mitm_addon">安装 PCAPdriod <a href="%1$s">mitm 附加组件</a>。
-\n
-\n注：此附加组件依赖于其他闭源软件</string>
     <string name="configure_action">配置</string>
     <string name="grant_mitm_permission">给予 PCAPdroid 控制 mitm 附加组件的权限</string>
     <string name="checking_the_certificate">检查证书…</string>
@@ -404,7 +401,6 @@
     <string name="show_only_cleartext">明文连接</string>
     <string name="notifications_notice">该应用程序使用通知在发生异常事件时发送警报。 在下一个屏幕授予它发送通知的权限</string>
     <string name="remote_server_warning">出于安全原因，不允许将流量发送到远程服务器“%1$s”</string>
-    <string name="scam_alert">欺诈警告</string>
     <string name="payload_scams_notice">这个视图可能包含敏感信息，比如密码和访问令牌。
 \n
 \n千万不要把这个信息透露给任何人，这可能是一个骗局</string>
@@ -413,4 +409,17 @@
     <string name="remote_collector_notice">你已经将 PCAPdroid 配置为将流量发送到远程服务器。该服务器将能够访问你的敏感信息。
 \n
 \n如果有人让你这样做，这可能是一个骗局</string>
+    <string name="warning">警告</string>
+    <string name="app_unblocked">已解除对 %1$s 应用的封锁</string>
+    <string name="build_info">构建信息</string>
+    <string name="paid_features_unlocked">付费功能已解锁。 如果正在运行，请重启流量捕获</string>
+    <string name="unblock_for_n_minutes">解封 %1$d 分钟</string>
+    <string name="install_the_mitm_addon">安装 PCAPdroid <a href="%1$s">mitm 附加组件</a></string>
+    <string name="tls_decryption_with_root_msg">使用 root 权限运行 TLS 解密是一项实验性功能。 这是已知错误的列表：:
+\n
+\n - 在 PCAPdroid 中，流量看起来像是从 mitm-addon 应用生成的，而不是原始应用程序
+\n - 设置应用过滤器后，只会对目标应用进行解密，但 PCAPdroid 仍会显示其他应用的流量
+\n - 如果流量捕获无法启动，请确保你实际上可以以 root 身份运行 iptables 命令（例如，通过 termux）
+\n - 此功能可能不适用于 Android 12 及更高版本
+\n - 如果 VPN 应用正在运行，你应该针对特定应用进行解密或从 VPN 中排除 PCAPdroid mitm 附加组件，否则流量将进入循环</string>
 </resources>

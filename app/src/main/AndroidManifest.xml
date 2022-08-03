@@ -122,6 +122,8 @@
             </intent-filter>
         </service>
 
+        <receiver android:name="com.emanuelef.remote_capture.ActionReceiver" />
+
         <receiver
             android:name=".BootReceiver"
             android:exported="false">

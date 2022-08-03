@@ -3,14 +3,16 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 33
     buildToolsVersion "31.0.0"
-    ndkVersion "24.0.8215888"
+    ndkVersion "25.0.8775105"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 55
-        versionName "1.5.2"
+        versionCode 57
+        versionName "1.5.3"
+
+        buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
     buildTypes {
@@ -71,12 +73,12 @@ dependencies {
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.fragment:fragment:1.5.0'
+    implementation 'androidx.fragment:fragment:1.5.1'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation "androidx.navigation:navigation-fragment:2.5.0"
-    implementation "androidx.navigation:navigation-ui:2.5.0"
+    implementation "androidx.navigation:navigation-fragment:2.5.1"
+    implementation "androidx.navigation:navigation-ui:2.5.1"
 
 // Google
     implementation 'com.google.android.material:material:1.6.1'

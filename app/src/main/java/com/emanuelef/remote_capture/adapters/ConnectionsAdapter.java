@@ -60,7 +60,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private View.OnClickListener mListener;
     private final AppsResolver mApps;
     private final Context mContext;
-    private int mClickedPosition;
+    private ConnectionDescriptor mSelectedItem;
     private int mNumRemovedItems;
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
@@ -201,7 +201,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
         view.setOnLongClickListener(v -> {
             // see registerForContextMenu
-            mClickedPosition = holder.getAbsoluteAdapterPosition();
+            mSelectedItem = getItem(holder.getAbsoluteAdapterPosition());
             return false;
         });
 
@@ -431,8 +431,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mListener = listener;
     }
 
-    public ConnectionDescriptor getClickedItem() {
-        return getItem(mClickedPosition);
+    public ConnectionDescriptor getSelectedItem() {
+        return mSelectedItem;
     }
 
     public boolean hasFilter() {

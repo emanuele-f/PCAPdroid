@@ -37,6 +37,7 @@ public class MitmAPI {
 
     public static final class MitmConfig implements Serializable {
         public int proxyPort;              // the SOCKS5 port to use to accept mitm-ed connections
+        public boolean transparentMode;    // true to use transparent proxy mode, false to use SOCKS5 proxy mode
         public boolean sslInsecure;        // true to disable upstream certificate check
         public boolean dumpMasterSecrets;  // true to enable the TLS master secrets dump messages (similar to SSLKEYLOG)
         public String proxyAuth;           // SOCKS5 proxy authentication, "user:pass"

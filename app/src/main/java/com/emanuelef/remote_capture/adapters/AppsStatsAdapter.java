@@ -38,7 +38,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.AppsResolver;
-import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Blocklist;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,16 +49,17 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private final Context mContext;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
-    private final MatchList mBlocklist;
+    private final Blocklist mBlocklist;
     private final boolean mFirewallAvailable;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
-    private int mClickedPosition;
+    private AppStats mSelectedItem;
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         ImageView blockedFlag;
+        ImageView tempUnblocked;
         TextView info;
         TextView traffic;
 
@@ -67,6 +68,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             icon = itemView.findViewById(R.id.icon);
             blockedFlag = itemView.findViewById(R.id.blocked);
+            tempUnblocked = itemView.findViewById(R.id.temp_unblocked);
             info = itemView.findViewById(R.id.app_info);
             traffic = itemView.findViewById(R.id.traffic);
         }
@@ -87,8 +89,12 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             info.setText(info_txt);
 
+            boolean isGracedApp = mBlocklist.isExemptedApp(stats.getUid());
+            boolean isBlockedApp = mBlocklist.matchesApp(stats.getUid());
+
             traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
-            blockedFlag.setVisibility(mBlocklist.matchesApp(stats.getUid()) ? View.VISIBLE : View.INVISIBLE);
+            blockedFlag.setVisibility(isBlockedApp ? View.VISIBLE : View.GONE);
+            tempUnblocked.setVisibility(isGracedApp ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -125,7 +131,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             view.setOnLongClickListener(v -> {
                 // see registerForContextMenu
-                mClickedPosition = holder.getAbsoluteAdapterPosition();
+                mSelectedItem = getItem(holder.getAbsoluteAdapterPosition());
                 return false;
             });
         }
@@ -154,8 +160,14 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         return mStats.get(pos);
     }
 
-    public int getClickedItemPos() {
-        return mClickedPosition;
+    public AppStats getSelectedItem() {
+        return mSelectedItem;
+    }
+
+    public void notifyItemChanged(AppStats app) {
+        int pos = mStats.indexOf(app);
+        if(pos >= 0)
+            notifyItemChanged(pos);
     }
 
     public String getItemPackage(int pos) {

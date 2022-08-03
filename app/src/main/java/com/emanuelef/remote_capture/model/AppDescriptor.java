@@ -133,8 +133,10 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     }
 
     public boolean matches(String filter, boolean exactPackage) {
+        String package_name = getPackageName().toLowerCase();
+
         return getName().toLowerCase().contains(filter) ||
-                (exactPackage && getPackageName().equals(filter)) ||
-                (!exactPackage && getPackageName().contains(filter));
+                (exactPackage && package_name.equals(filter)) ||
+                (!exactPackage && package_name.contains(filter));
     }
 }

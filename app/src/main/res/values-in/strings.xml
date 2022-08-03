@@ -272,9 +272,6 @@
     <string name="mitm_setup_wizard">Petunjuk instalasi Mitm</string>
     <string name="install_action">Instal</string>
     <string name="export_action">Ekspor</string>
-    <string name="install_mitm_addon">Instal PCAPdroid <a href="%1$s">tambahan mitm</a>.
-\n
-\nCATATAN: Addon tergantung pada perangkat lunak sumber tertutup</string>
     <string name="configure_action">Konfigurasikan</string>
     <string name="grant_mitm_permission">Berikan PCAPdroid izin untuk mengontrol mitm addon</string>
     <string name="export_ca_certificate">Ekspor sertifikat CA PCAPdroid, lalu buka pengaturan \"Enkripsi &amp; Kredensial\" Android dan pilih instal sebagai \"sertifikat CA\"</string>

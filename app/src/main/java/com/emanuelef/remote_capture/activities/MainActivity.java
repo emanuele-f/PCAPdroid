@@ -155,7 +155,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mPcapUri = CaptureService.getPcapUri();
+        mPcapUri = CaptureService.isServiceActive() ? CaptureService.getPcapUri() : null;
         mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {
             if(!success) {
@@ -742,7 +742,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Log.i(TAG, "Showing possible scan notice");
 
             AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle(R.string.scam_alert)
+                    .setTitle(R.string.warning)
                     .setMessage(R.string.remote_collector_notice)
                     .setPositiveButton(R.string.ok, (d, whichButton) -> mPrefs.edit().putBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, true).apply())
                     .show();

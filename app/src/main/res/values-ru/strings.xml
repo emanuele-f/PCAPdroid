@@ -280,9 +280,6 @@
     <string name="export_ca_certificate">Экспортируйте сертификат PCAPdroid CA, откройте в Android настройки \"Шифрование и учетные данные\" и выберите установку в качестве \"Сертификат ЦС\"</string>
     <string name="socks5_info">SOCKS5 прокси: %1$s:%2$d</string>
     <string name="mitm_start_failed">Не удалось запустить mitm сервис. Переустановите mitm дополнение и повторите попытку</string>
-    <string name="install_mitm_addon">Установить <a href="%1$s">mitm дополнение</a> для PCAPdroid
-\n
-\nПРИМЕЧАНИЕ: Дополнение зависит от программного обеспечения с закрытым кодом</string>
     <string name="install_ca_certificate">Установите сертификат PCAPdroid CA, выбрав \"VPN и приложения\". Android запросит ваш код или пароль блокировки экрана</string>
     <string name="checking_the_certificate">Проверяем сертификат…</string>
     <string name="cert_installed_correctly">Сертификат ЦС установлен</string>
@@ -377,7 +374,6 @@
     <string name="payload_scams_notice">Это окно может содержать конфиденциальную информацию, например пароли или токены доступа
 \n
 \nНикогда не предоставляйте эту информацию посторонним лицам, т.к. это могут быть попытки мошенничества</string>
-    <string name="scam_alert">Предупреждение о мошенничестве</string>
     <string name="remote_server_warning">Из соображений безопасности, отправка траффика на удаленный сервер \"%1$s\" недопустима</string>
     <string name="heap_usage">Использование кучи</string>
     <string name="vpn_lockdown_notice">Чтобы предотвратить доступ к интернету для приложений когда PCAPdroid не запущен (например после перезагрузки), вы можете настроить PCAPdroid для работы в качестве всегда активного VPN в режиме блокировки.

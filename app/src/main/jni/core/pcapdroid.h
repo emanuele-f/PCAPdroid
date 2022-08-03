@@ -188,6 +188,7 @@ typedef struct pcapdroid {
 
     // config
     jint app_filter;
+    jint mitm_addon_uid;
     bool root_capture;
     bool tls_decryption_enabled;
     payload_mode_t payload_mode;

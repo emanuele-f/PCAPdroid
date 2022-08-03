@@ -65,7 +65,7 @@
     <string name="first_seen">Inizio</string>
     <string name="last_seen">Fine</string>
     <string name="conn_status_closed">Terminata</string>
-    <string name="copy_to_clipboard">Copia negli appunti</string>
+    <string name="copy_to_clipboard">Copia</string>
     <string name="save_to_file">Esporta in un file</string>
     <string name="older_connections_notice">%1$d connessioni precedenti nascoste</string>
     <string name="about_text">PCAPdroid è un software libero per la cattura e il monitoraggio di rete che funziona senza privilegi di root</string>
@@ -284,9 +284,6 @@
     <string name="tls_decryption_summary">Decritta il traffico SSL/TLS tramite mitm. Potrebbe non funzionare con alcune app, far riferimento alla guida utente</string>
     <string name="tls_decryption_starting">Avvio decrittazione TLS…</string>
     <string name="traffic_inspection">Ispezione del traffico</string>
-    <string name="install_mitm_addon">Installa <a href="%1$s">l\'addon di mitm</a> di PCAPdroid.
-\n
-\nNOTA: L\'addon utilizza software proprietario</string>
     <string name="install_action">Installa</string>
     <string name="export_action">Esporta</string>
     <string name="configure_action">Configura</string>
@@ -379,11 +376,23 @@
     <string name="payload_scams_notice">Questa vista potrebbe contenere dati sensibili, quali le tue password o token di accesso.
 \n
 \nNon comunicare mai a nessuno questi dati, potrebbe essere un tentativo di truffa</string>
-    <string name="scam_alert">Avviso truffa</string>
     <string name="cancel_action">Annulla</string>
     <string name="show_data_action">Mostra i dati</string>
     <string name="remote_collector_notice">Hai configurato PCAPdroid per inviare il traffic a un server remoto. Il server potrà accedere ai tuoi dati sensibili.
 \n
 \nSe qualcuno ti ha chiesto di farlo, questo è probabilmente un tentativo di truffa</string>
     <string name="remote_server_warning">Per ragioni di sicurezza, l\'invio del traffico al server remoto \"%1$s\" non è permesso</string>
+    <string name="app_unblocked">L\'app %1$s è stata sbloccata</string>
+    <string name="warning">Attenzione</string>
+    <string name="install_the_mitm_addon">Installa l\'<a href="%1$s">addon di mitm</a> di PCAPdroid</string>
+    <string name="unblock_for_n_minutes">Sblocca per %1$dm</string>
+    <string name="paid_features_unlocked">Le funzioni a pagamento sono state sbloccate. Riavvia la cattura</string>
+    <string name="build_info">Informazioni</string>
+    <string name="tls_decryption_with_root_msg">La possibilità di eseguire la decrittazione TLS in modalità root è una funzione sperimentale. Ecco una lista di bug noti:
+\n
+\n- in PCAPdroid vedrai il traffico come se fosse generato dall\'addon di mitm invece che dall\'app originale
+\n- quando un filtro app è impostato, la decrittazione avverrà solo per tale app, tuttavia PCAPdroid mostrarà anche il traffico delle altre app
+\n- se la cattura non si avvia, controllare se sia possibile eseguire il comando iptables come root (es. tramite termux)
+\n- questa funzione potrebbe non funzionare in Android 12 e successivi
+\n- se un\'app di VPN è in esecuzione, assicurati di impostare un filtro app oppure di escludere l\'addon di mitm di PCAPdroid dalla VPN, altrimenti il traffico del dispostivio andrà in loop</string>
 </resources>

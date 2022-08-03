@@ -59,15 +59,16 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.CaptureCtrl;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
+import com.emanuelef.remote_capture.activities.FirewallActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.BlacklistDescriptor;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
-import com.emanuelef.remote_capture.model.GraceList;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
@@ -98,9 +99,9 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String NOTIFY_CHAN_MALWARE_DETECTION = "Malware detection";
     private static final String NOTIFY_CHAN_OTHER = "Other";
     private static final int VPN_MTU = 10000;
-    private static final int NOTIFY_ID_VPNSERVICE = 1;
-    private static final int NOTIFY_ID_LOW_MEMORY = 2;
-    private static final int NOTIFY_ID_APP_BLOCKED = 3;
+    public static final int NOTIFY_ID_VPNSERVICE = 1;
+    public static final int NOTIFY_ID_LOW_MEMORY = 2;
+    public static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
@@ -140,8 +141,7 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mQueueFull;
     private boolean mStopping;
     private Blacklists mBlacklists;
-    private GraceList mGracelist;
-    private MatchList mBlocklist;
+    private Blocklist mBlocklist;
     private MatchList mWhitelist;
     private SparseArray<String> mIfIndexToName;
     private boolean mSocks5Enabled;
@@ -347,7 +347,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
                 mSocks5Auth = Utils.genRandomString(8) + ":" + Utils.genRandomString(8);
 
-                mMitmReceiver = new MitmReceiver(this, mSocks5Auth);
+                mMitmReceiver = new MitmReceiver(this, mSettings.root_capture, mSocks5Auth);
                 try {
                     if(!mMitmReceiver.start())
                         return abortStart();
@@ -453,7 +453,6 @@ public class CaptureService extends VpnService implements Runnable {
 
         mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
-        mGracelist = PCAPdroid.getInstance().getGracelist();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
@@ -487,16 +486,26 @@ public class CaptureService extends VpnService implements Runnable {
                             AppDescriptor app = appsResolver.getByPackage(packageName, 0);
                             String label = (app != null) ? app.getName() : packageName;
 
+                            PendingIntent pi = PendingIntent.getActivity(CaptureService.this, 0,
+                                    new Intent(CaptureService.this, FirewallActivity.class), Utils.getIntentFlags(0));
+
+                            PendingIntent unblockIntent = PendingIntent.getBroadcast(CaptureService.this, 0,
+                                    new Intent(CaptureService.this, ActionReceiver.class)
+                                            .putExtra(ActionReceiver.EXTRA_UNBLOCK_APP, packageName), Utils.getIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT));
+
                             // Notify the user
                             NotificationManagerCompat man = NotificationManagerCompat.from(context);
                             if(man.areNotificationsEnabled()) {
                                 Notification notification = new NotificationCompat.Builder(CaptureService.this, NOTIFY_CHAN_OTHER)
+                                        .setContentIntent(pi)
                                         .setSmallIcon(R.drawable.ic_logo)
                                         .setColor(ContextCompat.getColor(CaptureService.this, R.color.colorPrimary))
                                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                                         .setCategory(NotificationCompat.CATEGORY_STATUS)
                                         .setContentTitle(getString(R.string.app_blocked))
                                         .setContentText(getString(R.string.app_blocked_info, label))
+                                        .setAutoCancel(true)
+                                        .addAction(R.drawable.ic_check_solid, getString(R.string.action_unblock), unblockIntent)
                                         .build();
 
                                 man.notify(NOTIFY_ID_APP_BLOCKED, notification);
@@ -1046,7 +1055,7 @@ public class CaptureService extends VpnService implements Runnable {
             ConnectionUpdate[] conns_updates = item.second;
 
             checkBlacklistsUpdates();
-            if(mGracelist.checkGracePeriods())
+            if(mBlocklist.checkGracePeriods())
                 mHandler.post(this::reloadBlocklist);
 
             if(!mLowMemory)
@@ -1193,6 +1202,10 @@ public class CaptureService extends VpnService implements Runnable {
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
     public int getAppFilterUid() { return(app_filter_uid); }
+
+    public int getMitmAddonUid() {
+        return MitmAddon.getUid(this);
+    }
 
     public String getCaptureInterface() { return(mSettings.capture_interface); }
 
@@ -1353,7 +1366,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading firewall blocklist");
-        reloadBlocklist(mBlocklist.toListDescriptor(mGracelist));
+        reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
     public static void reloadMalwareWhitelist() {
@@ -1361,7 +1374,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Log.d(TAG, "reloading malware whitelist");
-        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor(null));
+        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
     }
 
     public static void setFirewallEnabled(boolean enabled) {

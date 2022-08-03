@@ -19,10 +19,12 @@ package com.emanuelef.remote_capture.activities;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
@@ -31,12 +33,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.Prefs;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 import cat.ereza.customactivityoncrash.R;
@@ -155,8 +165,23 @@ public final class ErrorActivity extends AppCompatActivity {
         }
     }
 
+    @NonNull
+    public static String getAllErrorDetailsFromIntent(@NonNull Context context, @NonNull Intent intent) {
+        String errorDetails = Utils.getBuildInfo(context);
+        errorDetails += "\nStack trace:  \n";
+        errorDetails += CustomActivityOnCrash.getStackTraceFromIntent(intent);
+
+        String activityLog = CustomActivityOnCrash.getActivityLogFromIntent(intent);
+        if (activityLog != null) {
+            errorDetails += "\nUser actions: \n";
+            errorDetails += activityLog;
+        }
+
+        errorDetails += "\n" + Prefs.asString(context);
+        return errorDetails;
+    }
+
     private String getErrorDetails() {
-        return "Build type: " + Utils.getVerifiedBuild(this).toString().toLowerCase() + "\n" +
-                CustomActivityOnCrash.getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
+        return getAllErrorDetailsFromIntent(ErrorActivity.this, getIntent());
     }
 }

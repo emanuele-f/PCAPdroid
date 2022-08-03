@@ -48,8 +48,8 @@ import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class AppsFragment extends Fragment implements ConnectionsListener {
@@ -146,36 +146,45 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.app_context_menu, menu);
 
-        AppStats stats = mAdapter.getItem(mAdapter.getClickedItemPos());
+        AppStats stats = mAdapter.getSelectedItem();
         if(stats == null)
             return;
 
         boolean isBlocked = PCAPdroid.getInstance().getBlocklist().matchesApp(stats.getUid());
         menu.findItem(R.id.block_app).setVisible(!isBlocked);
-        menu.findItem(R.id.unblock_app).setVisible(isBlocked);
+
+        menu.findItem(R.id.unblock_app_permanently).setVisible(isBlocked);
+        menu.findItem(R.id.unblock_app_10m).setVisible(isBlocked)
+                .setTitle(getString(R.string.unblock_for_n_minutes, 10));
+        menu.findItem(R.id.unblock_app_1h).setVisible(isBlocked)
+                .setTitle(getString(R.string.unblock_for_n_hours, 1));
+        menu.findItem(R.id.unblock_app_8h).setVisible(isBlocked)
+                .setTitle(getString(R.string.unblock_for_n_hours, 8));
     }
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        MatchList blocklist = PCAPdroid.getInstance().getBlocklist();
-        int itemPos = mAdapter.getClickedItemPos();
-        AppStats app = mAdapter.getItem(itemPos);
+        Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        AppStats app = mAdapter.getSelectedItem();
 
         if(id == R.id.block_app)
             blocklist.addApp(app.getUid());
-        else if(id == R.id.unblock_app)
+        else if(id == R.id.unblock_app_permanently)
             blocklist.removeApp(app.getUid());
+        else if(id == R.id.unblock_app_10m)
+            blocklist.unblockAppForMinutes(app.getUid(), 10);
+        else if(id == R.id.unblock_app_1h)
+            blocklist.unblockAppForMinutes(app.getUid(), 60);
+        else if(id == R.id.unblock_app_8h)
+            blocklist.unblockAppForMinutes(app.getUid(), 480);
         else
             return super.onContextItemSelected(item);
 
-        // refresh the blocklist
-        blocklist.save();
-        if(CaptureService.isServiceActive())
-            CaptureService.requireInstance().reloadBlocklist();
+        blocklist.saveAndReload();
 
         // refresh the item
-        mAdapter.notifyItemChanged(itemPos);
+        mAdapter.notifyItemChanged(app);
 
         return true;
     }

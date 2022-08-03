@@ -488,7 +488,7 @@ int run_vpn(pcapdroid_t *pd) {
         FD_SET(pd->vpn.tunfd, &fdset);
         max_fd = max(max_fd, pd->vpn.tunfd);
 
-        if(select(max_fd + 1, &fdset, &wrfds, NULL, &timeout) < 0) {
+        if((select(max_fd + 1, &fdset, &wrfds, NULL, &timeout) < 0) && (errno != EINTR)) {
             log_e("select failed[%d]: %s", errno, strerror(errno));
             break;
         }

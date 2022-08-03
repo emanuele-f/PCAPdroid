@@ -19,6 +19,7 @@
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Brotli decoder: <a href='https://github.com/google/brotli/blob/master/LICENSE'>MIT</a>\n\n
         - mitmproxy: <a href='https://github.com/mitmproxy/mitmproxy/blob/main/LICENSE'>MIT</a>\n\n
+        - Chaquopy: <a href='https://github.com/chaquo/chaquopy/blob/master/LICENSE.txt'>MIT</a>\n\n
         - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
         - FlagKit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
         - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
@@ -97,7 +98,7 @@
     <string name="first_seen">First seen</string>
     <string name="last_seen">Last seen</string>
     <string name="conn_status_closed">Closed</string>
-    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copy_to_clipboard">Copy</string>
     <string name="save_to_file">Save to file</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges</string>
@@ -264,7 +265,7 @@
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
-    <string name="install_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a>.\n\nNOTE: The addon depends on closed source software</string>
+    <string name="install_the_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a></string>
     <string name="configure_action">Configure</string>
     <string name="grant_mitm_permission">Give PCAPdroid the permission to control the mitm addon</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
@@ -379,13 +380,24 @@
     <string name="cleartext_connection">Cleartext</string>
     <string name="unblock_permanently">Unblock permanently</string>
     <string name="unblock_for_n_hours">Unblock for %1$dh</string>
+    <string name="unblock_for_n_minutes">Unblock for %1$dm</string>
     <string name="block_new_apps">Block newly installed apps</string>
     <string name="app_blocked">App blocked</string>
     <string name="app_blocked_info">The %1$s app has been blocked by the firewall</string>
-    <string name="scam_alert">Scam alert</string>
+    <string name="app_unblocked">The %1$s app has been unblocked</string>
     <string name="payload_scams_notice">This view may contain sensitive information, like your passwords and access tokens.\n\nNever give out this information to anyone, it may be a scam attempt</string>
     <string name="cancel_action">Cancel</string>
     <string name="show_data_action">Show data</string>
     <string name="remote_collector_notice">You have configured PCAPdroid to send traffic to a remote server. The server will be able to access your sensitive information.\n\nIf someone asked you to do this, it is probably a scam attempt</string>
     <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed"</string>
+    <string name="warning">Warning</string>
+    <string name="paid_features_unlocked">Paid features unlocked. Restart the capture if running</string>
+    <string name="build_info">Build info</string>
+    <string name="tls_decryption_with_root_msg">The ability to run TLS decryption with root is an experimental feature. This is a list of known bugs:\n\n
+- in PCAPdroid you will see the traffic as it was generated from the mitm-addon app in place of the original app\n
+- when an app filter is set, decryption will only occur for the target app, but PCAPdroid will still show the other apps traffic\n
+- if the capture fails to start, ensure that you can actually run the iptables command as root (e.g. via termux)\n
+- this may not work on Android 12 and later\n
+- if a VPN app is running, you should either target a specific app for decryption or exclude the PCAPdroid mitm addon from the VPN, otherwise traffic will go in a loop
+</string>
 </resources>

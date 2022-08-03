@@ -163,7 +163,7 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->tls_decryption_enabled ? -1 : pd->app_filter, bpf);
     if(run_shell_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
@@ -192,6 +192,19 @@ cleanup:
     close(sock);
 
     return client;
+}
+
+/* ******************************************************* */
+
+static char* get_mitm_redirection_args(pcapdroid_t *pd, char *buf, bool add) {
+    int off = sprintf(buf, "-t nat -%c OUTPUT -p tcp -m owner ", add ? 'I' : 'D');
+    if(pd->app_filter >= 0)
+        off += sprintf(buf + off, "--uid-owner %d", pd->app_filter);
+    else
+        off += sprintf(buf + off, "! --uid-owner %d", pd->mitm_addon_uid);
+    sprintf(buf + off, " -j REDIRECT --to 7780");
+
+    return buf;
 }
 
 /* ******************************************************* */
@@ -379,6 +392,9 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
                     pd->stats.num_icmp_opened++;
                     break;
             }
+
+            // assume connection proxy via iptables
+            data->proxied = pd->tls_decryption_enabled && (conn->tuple.ipproto == IPPROTO_TCP);
         }
     }
 
@@ -460,6 +476,7 @@ int run_root(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
     char buffer[PCAPD_SNAPLEN];
+    bool iptables_cleanup = false;
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
@@ -488,6 +505,15 @@ int run_root(pcapdroid_t *pd) {
         goto cleanup;
     }
 #endif
+
+    if(pd->tls_decryption_enabled) {
+        char args[128];
+
+        if(run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, true), true, true) != 0)
+            goto cleanup;
+
+        iptables_cleanup = true;
+    }
 
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
@@ -572,6 +598,11 @@ cleanup:
 
     if(pd->zdt) zdtun_finalize(pd->zdt);
     if(sock > 0) close(sock);
+
+    if(iptables_cleanup) {
+        char args[128];
+        run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
+    }
 
     return rv;
 }

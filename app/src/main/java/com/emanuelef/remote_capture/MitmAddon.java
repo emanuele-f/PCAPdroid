@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -49,8 +50,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 7;
-    public static final String PACKAGE_VERSION_NAME = "v0.7";
+    public static final long PACKAGE_VERSION_CODE = 9;
+    public static final String PACKAGE_VERSION_NAME = "v0.9";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -104,6 +105,20 @@ public class MitmAddon {
         try {
             PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(MitmAPI.PACKAGE_NAME, 0);
             return PackageInfoCompat.getLongVersionCode(pInfo);
+        } catch (PackageManager.NameNotFoundException e) {
+            return -1;
+        }
+    }
+
+    public static int getUid(Context ctx) {
+        PackageManager pm = ctx.getPackageManager();
+
+        try {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return pm.getPackageUid(MitmAPI.PACKAGE_NAME, 0);
+            } else {
+                return pm.getApplicationInfo(MitmAPI.PACKAGE_NAME, 0).uid;
+            }
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }
