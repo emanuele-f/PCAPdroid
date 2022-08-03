@@ -154,9 +154,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupOtherPrefs();
 
             fullPayloadHideShow(mTlsDecryption.isChecked());
-            socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
+            socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), rootCaptureEnabled());
             mBlockQuic.setVisible(mTlsDecryption.isChecked());
-            rootCaptureHideShow(Utils.isRootAvailable() && mRootCaptureEnabled.isChecked());
+            rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
             if(intent != null) {
@@ -218,6 +218,10 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             /* HTTP Server port validation */
             EditTextPreference mHttpServerPort = requirePreference(Prefs.PREF_HTTP_SERVER_PORT);
             mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+        }
+
+        private boolean rootCaptureEnabled() {
+            return Utils.isRootAvailable() && mRootCaptureEnabled.isChecked();
         }
 
         private void refreshInterfaces() {
@@ -290,7 +294,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
                 fullPayloadHideShow((boolean) newValue);
                 mBlockQuic.setVisible((boolean) newValue);
-                socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked());
+                socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
                 return true;
             });
 
@@ -299,7 +303,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             mSocks5Enabled = requirePreference(Prefs.PREF_SOCKS5_ENABLED_KEY);
             mSocks5Enabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                socks5ProxyHideShow(mTlsDecryption.isChecked(), (boolean)newValue);
+                socks5ProxyHideShow(mTlsDecryption.isChecked(), (boolean)newValue, rootCaptureEnabled());
                 return true;
             });
 
@@ -324,10 +328,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mFullPayloadEnabled.setVisible(!tlsDecryption);
         }
 
-        private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled) {
-            mSocks5Enabled.setVisible(!tlsDecryption);
-            mSocks5ProxyIp.setVisible(socks5Enabled && !tlsDecryption);
-            mSocks5ProxyPort.setVisible(socks5Enabled && !tlsDecryption);
+        private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled, boolean rootEnabled) {
+            boolean available = !tlsDecryption && !rootEnabled;
+            mSocks5Enabled.setVisible(available);
+            mSocks5ProxyIp.setVisible(socks5Enabled && available);
+            mSocks5ProxyPort.setVisible(socks5Enabled && available);
         }
 
         private void setupOtherPrefs() {
@@ -390,13 +395,13 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
                 mSocks5ProxyPort.setVisible(false);
-                mFullPayloadEnabled.setVisible(true);
+                fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(false);
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
                 fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(mTlsDecryption.isChecked());
-                socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked());
+                socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), false);
             }
 
             mIpMode.setVisible(!enabled);
