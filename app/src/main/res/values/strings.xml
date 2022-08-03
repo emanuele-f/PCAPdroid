@@ -19,6 +19,7 @@
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Brotli decoder: <a href='https://github.com/google/brotli/blob/master/LICENSE'>MIT</a>\n\n
         - mitmproxy: <a href='https://github.com/mitmproxy/mitmproxy/blob/main/LICENSE'>MIT</a>\n\n
+        - Chaquopy: <a href='https://github.com/chaquo/chaquopy/blob/master/LICENSE.txt'>MIT</a>\n\n
         - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n
         - FlagKit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
         - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
@@ -264,7 +265,7 @@
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
-    <string name="install_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a>.\n\nNOTE: The addon depends on closed source software</string>
+    <string name="install_the_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a></string>
     <string name="configure_action">Configure</string>
     <string name="grant_mitm_permission">Give PCAPdroid the permission to control the mitm addon</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>

@@ -50,8 +50,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 8;
-    public static final String PACKAGE_VERSION_NAME = "v0.8";
+    public static final long PACKAGE_VERSION_CODE = 9;
+    public static final String PACKAGE_VERSION_NAME = "v0.9";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
