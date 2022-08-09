@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.4] - 2022-08-04
+- Unblock newly installed apps via notification action (firewall)
+- Fix context menu action possibly applied to wrong item
+- Fix ICMPv6 not captured with root and app filter
+- Fix package search with uppercase letters
+- Fix PCAP file selection dialog sometimes not appearing
+
 ## [1.5.3] - 2022-07-13
 - Add support for Android 13 Tiramisu
 - Add VPN exemptions to exclude specific apps from the VPN
