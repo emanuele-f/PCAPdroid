@@ -115,8 +115,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String PRIVACY_POLICY_URL = DOCS_URL + "/privacy";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
-    public static final String FIREWALL_DOCS_URL = DOCS_URL + "/paid_features#51-firewall";
-    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + "/paid_features#52-malware-detection";
+    public static final String PAID_FEATURES_URL = DOCS_URL + "/paid_features";
+    public static final String FIREWALL_DOCS_URL = DOCS_URL + PAID_FEATURES_URL + "#51-firewall";
+    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + PAID_FEATURES_URL + "#52-malware-detection";
     public static final String TLS_DECRYPTION_DOCS_URL = DOCS_URL + "/tls_decryption";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
@@ -328,7 +329,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     // On debug builds, if the user also has the non-debug app installed (peer app), unlock the
     // already-purchased features also on this beta app
     private void initPeerAppInfo() {
-        if(!BuildConfig.DEBUG)
+        if(!BuildConfig.APPLICATION_ID.equals("com.emanuelef.remote_capture.debug"))
             return;
 
         final String peerAppPackage = "com.emanuelef.remote_capture";

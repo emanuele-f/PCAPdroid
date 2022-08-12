@@ -7,7 +7,8 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
-    <string name="system_id" translatable="false">System ID</string>
+    <string name="installation_id" translatable="false">Installation ID</string>
+    <string name="license_code" translatable="false">License code</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License or later</a> for
@@ -233,7 +234,6 @@
     <string name="allowed_connection_filter">Allowed</string>
     <string name="firewall_filter">Firewall: %1$s</string>
     <string name="paid_features">Paid features</string>
-    <string name="unlock_code">Unlock code</string>
     <string name="validate">Validate</string>
     <string name="valid">Valid</string>
     <string name="invalid">Invalid</string>
@@ -400,4 +400,12 @@
 - this may not work on Android 12 and later\n
 - if a VPN app is running, you should either target a specific app for decryption or exclude the PCAPdroid mitm addon from the VPN, otherwise traffic will go in a loop
 </string>
+    <string name="unlock_token">Unlock token</string>
+    <string name="unlock_token_summary">A token which can be used to unlock the paid features in non-Google-Play builds of the app (e.g. F-Droid/Github)</string>
+    <string name="unlock_token_error">Could not request unlock token [%1$d]: %2$s</string>
+    <string name="access_paid_features_msg">Check out <a href='%1$s'>the user guide</a> to learn how to access the paid features</string>
+    <string name="license_service_unavailable">The PCAPdroid license service is currently unavailable. Please retry in some minutes</string>
+    <string name="requesting_unlock_token">Requesting an unlock token, please wait</string>
+    <string name="show_action">Show</string>
+    <string name="unlock_token_msg1">This is your unlock token. Note it down as you will need it <a href='%1$s'>to generate your license codes</a></string>
 </resources>

@@ -15,7 +15,7 @@
         android:orderInCategory="10"
         app:showAsAction="never" />
     <item
-        android:id="@+id/unlock_code"
+        android:id="@+id/paid_features"
         android:title="@string/paid_features"
         android:orderInCategory="20"
         app:showAsAction="never" />

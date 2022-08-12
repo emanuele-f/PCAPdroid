@@ -1368,4 +1368,8 @@ public class Utils {
                 "Device: " + deviceModel + (rooted ? " (rooted)" : "") + "\n" +
                 "OS version: Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")\n";
     }
+
+    public static String getUserAgent() {
+        return "PCAPdroid v" + BuildConfig.VERSION_NAME;
+    }
 }
