@@ -4,7 +4,7 @@ If you install beta builds of PCAPdroid from the [beta repository](https://pcapd
 
 If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps. In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code for your device. Here are the steps you need to follow:
 
-1. Purchase an *unlock token* from the Google Play app. Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
+1. Purchase an *unlock token* from the Google Play app (NOTE: you need to install [this 1.5.4_1 apk](https://www.dropbox.com/s/katgdrdneipw7lk/PCAPdroid_1.5.4_1_play.apk?dl=1) as 1.5.5 is not released yet). Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
 2. Install the non-Google-Play build of PCAPdroid on your device and retrieve its *installation ID*. You can find it in the "About" page in the left drawer
 3. Generate a license code for your build on [pcapdroid.org/getlicense](https://pcapdroid.org/getlicense), by providing the unlock token and the installation ID
 4. Paste your license code in the About page of PCAPdroid, below your installation ID
