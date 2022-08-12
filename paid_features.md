@@ -2,6 +2,8 @@ Some extra features of PCAPdroid require a purchase. If you installed the app fr
 
 If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps.
 
+If you install beta builds of PCAPdroid from the [beta repository](https://pcapdroid.org/fdroid/repo), you can access paid features in the beta build as long as you have the official app installed (you can install both the official release and the beta builds alongside) and you have purchased them in the official app.
+
 In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code to get access to the paid features on your device. Here are the steps you need to follow:
 
 1. Purchase an *unlock token* from the Google Play app. Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
