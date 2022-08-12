@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file("$rootDir/keystore")
+            storePassword 'android'
+            keyAlias 'key0'
+            keyPassword 'android'
+        }
+    }
     compileSdkVersion 33
     buildToolsVersion "31.0.0"
     ndkVersion "25.0.8775105"
@@ -18,10 +26,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.debug
         }
         debug {
             // Use a different app ID for debug to allow its coexistence with release builds
-            applicationIdSuffix '.debug'
+            //applicationIdSuffix '.debug'
             versionNameSuffix '-beta'
             pseudoLocalesEnabled true
 

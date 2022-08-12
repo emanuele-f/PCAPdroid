@@ -64,6 +64,7 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
 
     public interface SKUClickListener {
         void onPurchaseClick(SKUItem item);
+        void onShowClick(SKUItem item);
         void onLearnMoreClick(SKUItem item);
     }
 
@@ -93,6 +94,10 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         else
             text = item.price;
         ((TextView)view.findViewById(R.id.price)).setText(text);
+
+        MaterialButton showBtn = view.findViewById(R.id.show);
+        showBtn.setVisibility((item.sku.equals(Billing.UNLOCK_TOKEN_SKU) && !mIab.getLatestUnlockToken().isEmpty()) ? View.VISIBLE : View.GONE);
+        showBtn.setOnClickListener(v -> mListener.onShowClick(item));
 
         MaterialButton purchaseBtn = view.findViewById(R.id.purchase);
         purchaseBtn.setEnabled(!purchased);
@@ -142,5 +147,10 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
 
         addIfAvailable(Billing.MALWARE_DETECTION_SKU, R.string.malware_detection,
                 R.string.malware_detection_summary, MainActivity.MALWARE_DETECTION_DOCS_URL);
+
+        addIfAvailable(Billing.UNLOCK_TOKEN_SKU, R.string.unlock_token,
+                R.string.unlock_token_summary, MainActivity.PAID_FEATURES_URL);
+
+        notifyDataSetChanged();
     }
 }

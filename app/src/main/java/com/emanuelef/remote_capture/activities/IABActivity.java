@@ -104,6 +104,12 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
     }
 
     @Override
+    public void onShowClick(SKUsAdapter.SKUItem item) {
+        if(item.sku.equals(Billing.UNLOCK_TOKEN_SKU))
+            mIab.showUnlockToken();
+    }
+
+    @Override
     public void onPurchaseClick(SKUsAdapter.SKUItem item) {
         mIab.purchase(this, item.sku);
     }

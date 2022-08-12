@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-22 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -26,10 +26,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.collection.ArraySet;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
@@ -47,16 +51,26 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, SkuDetailsResponseListener {
     public static final String TAG = "PlayBilling";
+    private static final String PREF_LAST_UNLOCK_TOKEN = "unlock_token";
+    private static final String LICENSE_GEN_URL = "https://pcapdroid.org/getlicense";
     private final Handler mHandler;
     private final ArrayMap<String, SkuDetails> mDetails;
     private final ArrayMap<String, String> mSkuToPurchToken;
     private BillingClient mBillingClient;
     private PurchaseReadyListener mListener;
     private boolean mWaitingStart;
+    private Thread mRequestTokenThread = null;
     private static boolean mPendingNoticeShown = false; // static to make it work across the app
     private final SkusAvailability mAvailability;
 
@@ -117,7 +131,17 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                 });
                             break;
                         case PurchaseState.PURCHASED:
-                            if(!isPurchased(sku) && setPurchased(sku, true)) {
+                            if(sku.equals(Billing.UNLOCK_TOKEN_SKU)) {
+                                Log.d(TAG, "Purchased unlock token: " + purchase.getPurchaseToken() + " - " + purchase.getOrderId());
+
+                                // It will be consumed as soon as we get an unlock token
+                                // purchase sku -> get unlock token -> consume sku -> use the token
+                                if(mRequestTokenThread == null) {
+                                    mRequestTokenThread = new Thread(() -> requestUnlockToken(purchase.getPurchaseToken()), "RequestUnlockToken");
+                                    mRequestTokenThread.start();
+                                    mHandler.post(() -> Utils.showToast(mContext, R.string.requesting_unlock_token));
+                                }
+                            } else if(!isPurchased(sku) && setPurchased(sku, true)) {
                                 newPurchase = true;
                                 Log.d(TAG, "New purchase: " + sku);
 
@@ -362,5 +386,85 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         Log.d(TAG, "BillingFlow result: " + res.getResponseCode() + " " + res.getDebugMessage());
 
         return(res.getResponseCode() == BillingResponseCode.OK);
+    }
+
+    private void requestUnlockToken(String purchaseToken) {
+        Log.i(TAG, "Requesting an unlock token...");
+
+        try {
+            URL url = new URL(LICENSE_GEN_URL + "/token?purchase_token=" +
+                    URLEncoder.encode(purchaseToken, StandardCharsets.US_ASCII.toString()));
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            try {
+                // Necessary otherwise the connection will stay open
+                con.setRequestProperty("Connection", "Close");
+                con.setRequestProperty("User-Agent", Utils.getUserAgent());
+                con.setRequestMethod("POST");
+
+                StringBuilder builder = new StringBuilder();
+                try(BufferedReader br = new BufferedReader(
+                        new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        builder.append(line);
+                }
+
+                int code = con.getResponseCode();
+                String token = builder.toString();
+
+                if((code != 200) || token.isEmpty()) {
+                    Log.i(TAG, "requestUnlockToken error [" + code + "]: " + token);
+                    mHandler.post(() -> Utils.showToastLong(mContext, R.string.unlock_token_error, code, token));
+                    return;
+                }
+
+                Log.i(TAG, "requestUnlockToken: " + token);
+
+                // Success, consume the purchase
+                mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(), (billingResult, s) -> {
+                        Log.d(TAG, "consumeAsync[unlockToken] response: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
+                        if(billingResult.getResponseCode() == BillingResponseCode.OK) {
+                            mHandler.post(() -> {
+                                if (mListener != null)
+                                    mListener.onSKUStateUpdate(Billing.UNLOCK_TOKEN_SKU, PurchaseState.UNSPECIFIED_STATE);
+
+                                mPrefs.edit().putString(PREF_LAST_UNLOCK_TOKEN, token).apply();
+                                showUnlockToken();
+                            });
+                        }
+                });
+            } finally {
+                con.disconnect();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            mHandler.post(() -> Utils.showToastLong(mContext, R.string.license_service_unavailable));
+        } finally {
+            mRequestTokenThread = null;
+        }
+    }
+
+    public String getLatestUnlockToken() {
+        return mPrefs.getString(PREF_LAST_UNLOCK_TOKEN, "");
+    }
+
+    public void showUnlockToken() {
+        String token = getLatestUnlockToken();
+        if(token.isEmpty())
+            return;
+
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View content = inflater.inflate(R.layout.unlock_token_dialog, null);
+        ((TextView)content.findViewById(R.id.unlock_token)).setText(token);
+        Utils.setTextUrls(content.findViewById(R.id.unlock_token_msg), R.string.unlock_token_msg1, LICENSE_GEN_URL + "/?unlock_token=" + token);
+
+        new AlertDialog.Builder(mContext)
+                .setTitle(R.string.unlock_token)
+                .setView(content)
+                .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
+                .setNeutralButton(R.string.copy_to_clipboard, (dialogInterface, i) -> Utils.copyToClipboard(mContext, token))
+                .show();
     }
 }

@@ -46,10 +46,29 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/description">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/show"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingVertical="2dp"
+            android:paddingHorizontal="5dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:text="@string/show_action" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/learn_more"
