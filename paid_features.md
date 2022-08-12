@@ -1,4 +1,22 @@
-Paid features are only available when the app is installed [via Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture).
+Some extra features of PCAPdroid require a purchase. If you installed the app from [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture), you can buy them from the "Paid Features" entry in the left drawer. Purchase from the Google Play store are bound to your Google Play account, so you can buy them once and access them on all your devices.
+
+If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps.
+
+In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code to get access to the paid features on your device. Here are the steps you need to follow:
+
+1. Purchase an *unlock token* from the Google Play app. Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
+2. Install the non-Google-Play build of PCAPdroid on your deivce and retrieve its *installation ID*. You can find it in the "About" page in the left drawer
+3. Generate a license code for your build on [https://pcapdroid.org/getlicense](https://pcapdroid.org/getlicense), by providing the unlock token and the installation ID
+4. Paste your license code in the About page of PCAPdroid, below your installation ID. Congratulations, you can now access the paid features of PCAPdroid!
+
+Please note that the installation ID will change as a result of the following events:
+
+- Uninstall and reinstall the app
+- Factory reset
+- Reinstall the system rom
+
+If your installation ID changes, you will need to generate a new license code for your device. Thanksfully, with a single unlock token you can generate up to 3 license codes to use on your devices.
+
 
 ## 5.1 Firewall
 
