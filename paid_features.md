@@ -1,10 +1,8 @@
 PCAPdroid provides some paid features which extend the functionalities of the app. If you installed the app from [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture), you can buy them from the "Paid Features" entry in the left drawer. Purchases from the Google Play store are bound to your Google Play account, so you can buy them once and access them on all your devices.
 
-If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps, see below.
-
 If you install beta builds of PCAPdroid from the [beta repository](https://pcapdroid.org/fdroid/repo), you can access paid features in the beta build as long as you have the official app installed (you can install both the official release and the beta builds alongside) and you have purchased them in the official app.
 
-In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code for your device. Here are the steps you need to follow:
+If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps. In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code for your device. Here are the steps you need to follow:
 
 1. Purchase an *unlock token* from the Google Play app. Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
 2. Install the non-Google-Play build of PCAPdroid on your device and retrieve its *installation ID*. You can find it in the "About" page in the left drawer
