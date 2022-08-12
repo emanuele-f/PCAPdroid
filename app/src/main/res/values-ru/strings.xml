@@ -195,7 +195,6 @@
     <string name="block">Заблокировать…</string>
     <string name="firewall_rules">Правила для файрвола</string>
     <string name="validate">Подтвердить</string>
-    <string name="unlock_code">Код разблокировки</string>
     <string name="billing_failure">Не удалось подключиться к Google Play, пожалуйста повторите позже</string>
     <string name="loading">Загрузка…</string>
     <string name="no_intent_handler_found">Не найдено приложения для выполнения этого действия</string>

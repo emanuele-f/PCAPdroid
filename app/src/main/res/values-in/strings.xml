@@ -162,7 +162,6 @@
     <string name="firewall_rules">Aturan firewall</string>
     <string name="blocked_pkts">Diblokir</string>
     <string name="n_pkts">%1$s pkt</string>
-    <string name="unlock_code">Buka kode</string>
     <string name="validate">Validasi</string>
     <string name="valid">Sah</string>
     <string name="network_interface">Interface</string>

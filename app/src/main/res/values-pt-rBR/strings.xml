@@ -179,7 +179,6 @@
     <string name="n_pkts">%1$s pcts</string>
     <string name="blocked_connection_filter">Bloqueado</string>
     <string name="paid_features">Funcionalidades não gratuitas</string>
-    <string name="unlock_code">Código para desbloquear</string>
     <string name="validate">Validar</string>
     <string name="interface_filter">Interface: %1$s</string>
     <string name="loading">Carregando…</string>
