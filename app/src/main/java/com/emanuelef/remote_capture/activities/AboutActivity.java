@@ -66,7 +66,7 @@ public class AboutActivity extends BaseActivity {
 
         Billing billing = Billing.newInstance(this);
         if(billing.isPlayStore())
-            menu.findItem(R.id.unlock_code).setVisible(false);
+            menu.findItem(R.id.paid_features).setVisible(false);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -75,8 +75,8 @@ public class AboutActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.unlock_code) {
-            showUnlockDialog();
+        if(id == R.id.paid_features) {
+            showLicenseDialog();
             return true;
         } else if(id == R.id.on_boarding) {
             Intent intent = new Intent(this, OnBoardingActivity.class);
@@ -100,30 +100,30 @@ public class AboutActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void showUnlockDialog() {
+    private void showLicenseDialog() {
         Billing billing = Billing.newInstance(this);
         LayoutInflater inflater = getLayoutInflater();
-        View content = inflater.inflate(R.layout.unlock_dialog, null);
+        View content = inflater.inflate(R.layout.license_dialog, null);
 
-        String systemId = billing.getSystemId();
-        TextView systemIdText = content.findViewById(R.id.system_id);
-        systemIdText.setText(systemId);
-        if(Utils.isTv(this)) {
-            systemIdText.setOnClickListener(v -> Utils.shareText(this, getString(R.string.system_id), systemId));
-        }
+        String instId = billing.getInstallationId();
+        TextView instIdText = content.findViewById(R.id.installation_id);
+        instIdText.setText(instId);
+        if(Utils.isTv(this))
+            instIdText.setOnClickListener(v -> Utils.shareText(this, getString(R.string.installation_id), instId));
 
         TextView validationRc = content.findViewById(R.id.validation_rc);
-        EditText unlockCode = content.findViewById(R.id.unlock_code);
-        unlockCode.setText(billing.getLicense());
+        EditText licenseCode = content.findViewById(R.id.license_code);
+        licenseCode.setText(billing.getLicense());
+        Utils.setTextUrls((content.findViewById(R.id.paid_features_msg)), R.string.access_paid_features_msg, MainActivity.PAID_FEATURES_URL);
 
-        content.findViewById(R.id.copy_id).setOnClickListener(v -> Utils.copyToClipboard(this, systemId));
+        content.findViewById(R.id.copy_id).setOnClickListener(v -> Utils.copyToClipboard(this, instId));
 
         boolean was_valid = billing.isPurchased(Billing.SUPPORTER_SKU);
 
         AlertDialog myDialog = new AlertDialog.Builder(this)
                 .setView(content)
                 .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
-                    billing.setLicense(unlockCode.getText().toString());
+                    billing.setLicense(licenseCode.getText().toString());
 
                     if(!was_valid && billing.isPurchased(Billing.SUPPORTER_SKU))
                         Utils.showToastLong(this, R.string.paid_features_unlocked);
@@ -133,7 +133,7 @@ public class AboutActivity extends BaseActivity {
 
         myDialog.show();
         myDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-            boolean valid = billing.isValidLicense(unlockCode.getText().toString());
+            boolean valid = billing.isValidLicense(licenseCode.getText().toString());
             validationRc.setText(valid ? R.string.valid : R.string.invalid);
             validationRc.setTextColor(ContextCompat.getColor(this, valid ? R.color.ok : R.color.danger));
         });

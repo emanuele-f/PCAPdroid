@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:textStyle="bold"
-        android:text="@string/system_id" />
+        android:text="@string/installation_id" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/system_id"
+            android:id="@+id/installation_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
@@ -36,14 +36,21 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/paid_features_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:text="@string/access_paid_features_msg" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:textStyle="bold"
-        android:text="@string/unlock_code" />
+        android:text="@string/license_code" />
 
     <EditText
-        android:id="@+id/unlock_code"
+        android:id="@+id/license_code"
         android:fontFamily="monospace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

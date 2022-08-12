@@ -17,6 +17,7 @@ captures/
 .cxx
 app/release/
 app/debug/
+keystore
 
 # Python
 __pycache__

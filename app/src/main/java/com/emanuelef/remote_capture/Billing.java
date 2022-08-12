@@ -51,10 +51,11 @@ public class Billing {
 
     // SKUs
     public static final String SUPPORTER_SKU = "pcapdroid_supporter";
+    public static final String UNLOCK_TOKEN_SKU = "unlock_code";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
     public static final String FIREWALL_SKU = "no_root_firewall";
     public static final List<String> ALL_SKUS = Arrays.asList(
-            SUPPORTER_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
+            SUPPORTER_SKU, UNLOCK_TOKEN_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
     );
 
     // Resources used in the play build, referenced here to avoid being marked as unused resources
@@ -65,12 +66,15 @@ public class Billing {
             R.string.no_items_for_purchase, R.string.billing_failure,
             R.string.learn_more, R.string.buy_action,
             R.string.can_use_purchased_feature, R.drawable.ic_shopping_cart,
-            R.string.firewall_summary, R.string.no_root_firewall
+            R.string.firewall_summary, R.string.no_root_firewall,
+            R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error
     };
 
     protected final Context mContext;
     protected SharedPreferences mPrefs;
-    private final HashSet<String> mPeerSkus = new HashSet<>();
+
+    // this is initialized in MainActivity
+    private static final HashSet<String> mPeerSkus = new HashSet<>();
 
     protected Billing(Context ctx) {
         mContext = ctx;
@@ -127,7 +131,7 @@ public class Billing {
             Signature sig = Signature.getInstance("SHA1withECDSA");
             sig.initVerify(pk);
 
-            String msg = SUPPORTER_SKU + "@" + getSystemId();
+            String msg = SUPPORTER_SKU + "@" + getInstallationId();
             sig.update(msg.getBytes(StandardCharsets.US_ASCII));
             return sig.verify(getASN1(data, 4));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException
@@ -138,24 +142,24 @@ public class Billing {
     }
 
     @SuppressWarnings("deprecation")
-    public String getSystemId() {
+    public String getInstallationId() {
         // NOTE: On Android >= O, the ID is unique to each combination of package, key, user and device
-        String system_id = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
+        String installation_id = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
                 Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID) :
                 Build.SERIAL;
 
         try {
             // Calculate the MD5 to provide a consistent output and to increase privacy on Android < O
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] digest = md5.digest(system_id.getBytes());
-            system_id = "M" + Utils.byteArrayToHex(digest, 8);
+            byte[] digest = md5.digest(installation_id.getBytes());
+            installation_id = "M" + Utils.byteArrayToHex(digest, 8);
         } catch (NoSuchAlgorithmException e) {
             // Should never happen
             e.printStackTrace();
-            system_id = "D" + system_id;
+            installation_id = "D" + installation_id;
         }
 
-        return system_id;
+        return installation_id;
     }
 
     private byte[] getASN1(byte[] signature, int offset) {
