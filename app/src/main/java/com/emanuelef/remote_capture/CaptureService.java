@@ -545,6 +545,8 @@ public class CaptureService extends VpnService implements Runnable {
         // after the capture is stopped
         //INSTANCE = null;
 
+        unregisterNetworkCallbacks();
+
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
         if(mBlacklistsUpdateThread != null)
@@ -702,6 +704,7 @@ public class CaptureService extends VpnService implements Runnable {
         };
 
         try {
+            Log.d(TAG, "registerNetworkCallback");
             cm.registerNetworkCallback(
                     new NetworkRequest.Builder()
                             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
@@ -721,6 +724,7 @@ public class CaptureService extends VpnService implements Runnable {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
 
             try {
+                Log.d(TAG, "unregisterNetworkCallback");
                 cm.unregisterNetworkCallback(mNetworkCallback);
             } catch(IllegalArgumentException e) {
                 Log.w(TAG, "unregisterNetworkCallback failed: " + e);
