@@ -134,7 +134,6 @@ public class ConnectionDescriptor {
         src_port = _src_port;
         dst_port = _dst_port;
         local_port = _local_port;
-        Log.d("ConnectionDescriptor", "local_port=" + local_port);
         uid = _uid;
         ifidx = _ifidx;
         first_seen = last_seen = when;
