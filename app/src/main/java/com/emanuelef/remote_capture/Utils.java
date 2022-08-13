@@ -1043,7 +1043,7 @@ public class Utils {
     public static void startActivity(Context ctx, Intent intent) {
         try {
             ctx.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException | SecurityException e) {
             showToastLong(ctx, R.string.no_intent_handler_found);
         }
     }
