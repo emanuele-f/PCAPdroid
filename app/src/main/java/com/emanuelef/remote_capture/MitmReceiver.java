@@ -306,7 +306,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         } else
-            conn.addPayloadChunk(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
+            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
     private synchronized void addPendingMessage(PendingMessage pending) {

@@ -172,9 +172,12 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->DeleteLocalRef(env, url);
         (*env)->DeleteLocalRef(env, l7proto);
     }
-    if(data->update_type & CONN_UPDATE_PAYLOAD)
+    if(data->update_type & CONN_UPDATE_PAYLOAD) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetPayload, data->payload_chunks,
                                data->payload_truncated);
+        (*pd->env)->DeleteLocalRef(pd->env, data->payload_chunks);
+        data->payload_chunks = NULL;
+    }
 
     // reset the update flag
     data->update_type = 0;
@@ -273,6 +276,8 @@ static int dumpConnectionUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn, j
 /* Perform a full dump of the active connections */
 static void sendConnectionsDump(pcapdroid_t *pd) {
     JNIEnv *env = pd->env;
+    //jniDumpReferences(env);
+
     jobject new_conns = (*env)->NewObjectArray(env, pd->new_conns.cur_items, cls.conn, NULL);
     jobject conns_updates = (*env)->NewObjectArray(env, pd->conns_updates.cur_items, cls.conn_update, NULL);
 
@@ -311,6 +316,7 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
 cleanup:
     (*env)->DeleteLocalRef(env, new_conns);
     (*env)->DeleteLocalRef(env, conns_updates);
+    //jniDumpReferences(env);
 }
 
 /* ******************************************************* */
@@ -405,6 +411,9 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
     bool rv = false;
 
     if(pctx->data->payload_chunks == NULL) {
+        // Directly allocating an ArrayList<bytes> rather than creating it afterwards saves us from a data copy.
+        // However, this creates a local reference, which is retained until sendConnectionsDump is called.
+        // NOTE: Android only allows up to 512 local references.
         pctx->data->payload_chunks = (*env)->NewObject(env, cls.arraylist, mids.arraylistNew);
         if((pctx->data->payload_chunks == NULL) || jniCheckException(env))
             return false;

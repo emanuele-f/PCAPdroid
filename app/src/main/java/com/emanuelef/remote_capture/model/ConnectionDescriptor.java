@@ -101,7 +101,7 @@ public class ConnectionDescriptor {
     public String info;
     public String url;
     public String l7proto;
-    private ArrayList<PayloadChunk> payload_chunks;
+    private final ArrayList<PayloadChunk> payload_chunks; // must be synchronized
     public final int uid;
     public final int ifidx;
     public final int incr_id;
@@ -140,6 +140,7 @@ public class ConnectionDescriptor {
         l7proto = "";
         country = "";
         asn = new Geomodel.ASN();
+        payload_chunks = new ArrayList<>();
         mitm_decrypt = _mitm_decrypt;
     }
 
@@ -180,8 +181,10 @@ public class ConnectionDescriptor {
             // Some pending updates with payload may still be received after low memory has been
             // triggered and payload disabled
             if(!CaptureService.isLowMemory()) {
-                payload_chunks = update.payload_chunks;
-                payload_truncated = update.payload_truncated;
+                synchronized (this) {
+                    payload_chunks.addAll(update.payload_chunks);
+                    payload_truncated = update.payload_truncated;
+                }
             }
         }
     }
@@ -294,29 +297,24 @@ public class ConnectionDescriptor {
     public boolean isDecrypted()        { return !isNotDecryptable() && (getNumPayloadChunks() > 0); }
     public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }
 
-    public int getNumPayloadChunks() { return (payload_chunks == null) ? 0 : payload_chunks.size(); }
+    public synchronized int getNumPayloadChunks() { return payload_chunks.size(); }
 
-    public @Nullable PayloadChunk getPayloadChunk(int idx) {
+    public synchronized @Nullable PayloadChunk getPayloadChunk(int idx) {
         if(getNumPayloadChunks() <= idx)
             return null;
         return payload_chunks.get(idx);
     }
 
-    public void addPayloadChunk(PayloadChunk chunk) {
-        if(payload_chunks == null)
-            payload_chunks = new ArrayList<>();
+    public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
         payload_chunks.add(chunk);
         payload_length += chunk.payload.length;
     }
 
-    public void dropPayload() {
-        payload_chunks = null;
+    public synchronized void dropPayload() {
+        payload_chunks.clear();
     }
 
-    private boolean hasHttp(boolean is_sent) {
-        if(getNumPayloadChunks() == 0)
-            return false;
-
+    private synchronized boolean hasHttp(boolean is_sent) {
         for(PayloadChunk chunk: payload_chunks) {
             if(chunk.is_sent == is_sent)
                 return (chunk.type == PayloadChunk.ChunkType.HTTP);
@@ -327,7 +325,7 @@ public class ConnectionDescriptor {
     public boolean hasHttpRequest() { return hasHttp(true); }
     public boolean hasHttpResponse() { return hasHttp(false); }
 
-    private String getHttp(boolean is_sent) {
+    private synchronized String getHttp(boolean is_sent) {
         if(getNumPayloadChunks() == 0)
             return "";
 
