@@ -182,7 +182,8 @@ public class ConnectionDescriptor {
             // triggered and payload disabled
             if(!CaptureService.isLowMemory()) {
                 synchronized (this) {
-                    payload_chunks.addAll(update.payload_chunks);
+                    if(update.payload_chunks != null)
+                        payload_chunks.addAll(update.payload_chunks);
                     payload_truncated = update.payload_truncated;
                 }
             }
