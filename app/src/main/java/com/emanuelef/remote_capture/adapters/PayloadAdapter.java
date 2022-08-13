@@ -274,6 +274,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
     @Override
     public int getItemCount() {
+        // TODO remove loop, as it can generate ANRs on high number of elements
         int count = 0;
 
         for(AdapterChunk aChunk: mChunks)
@@ -336,6 +337,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     }
 
     public void handleChunksAdded(int tot_chunks) {
+        int items_count = -1;
+
         for(int i = mHandledChunks; i<tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
             if(chunk == null)
@@ -352,9 +355,12 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
                 else
                     mHttpRes.handleChunk(chunk);
             } else {
-                int insert_pos = getItemCount();
+                // TODO remove temporary caching due to slow getItemCount
+                if(items_count == -1)
+                    items_count = getItemCount();
                 mChunks.add(new AdapterChunk(chunk, mChunks.size()));
-                notifyItemInserted(insert_pos);
+                notifyItemInserted(items_count);
+                items_count += 1;
             }
         }
 
