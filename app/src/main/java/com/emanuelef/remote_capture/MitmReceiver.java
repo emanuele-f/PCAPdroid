@@ -180,8 +180,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     @Override
     public void run() {
-        Log.d(TAG, "Receiving data...");
+        if(mSocketFd == null) {
+            Log.d(TAG, "Null socket, abort");
+            mProxyRunning = false;
+            return;
+        }
 
+        Log.d(TAG, "Receiving data...");
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
                 String msg_type;

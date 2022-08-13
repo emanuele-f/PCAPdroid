@@ -815,7 +815,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
                 else
                     deleted = DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
-            } catch (FileNotFoundException | UnsupportedOperationException e) {
+            } catch (FileNotFoundException | UnsupportedOperationException | SecurityException e) {
                 e.printStackTrace();
             }
 

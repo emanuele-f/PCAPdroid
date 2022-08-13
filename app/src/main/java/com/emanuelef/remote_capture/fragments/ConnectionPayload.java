@@ -188,7 +188,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
             return mConn.l7proto.equals("HTTPS");
 
         PayloadChunk firstChunk = mConn.getPayloadChunk(0);
-        if(firstChunk.type == PayloadChunk.ChunkType.HTTP)
+        if((firstChunk == null) || (firstChunk.type == PayloadChunk.ChunkType.HTTP))
             return true;
 
         // guess based on the actual data

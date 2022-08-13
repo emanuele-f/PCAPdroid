@@ -23,6 +23,7 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
@@ -296,7 +297,7 @@ public class ConnectionDescriptor {
 
     public int getNumPayloadChunks() { return (payload_chunks == null) ? 0 : payload_chunks.size(); }
 
-    public PayloadChunk getPayloadChunk(int idx) {
+    public @Nullable PayloadChunk getPayloadChunk(int idx) {
         if(getNumPayloadChunks() <= idx)
             return null;
         return payload_chunks.get(idx);

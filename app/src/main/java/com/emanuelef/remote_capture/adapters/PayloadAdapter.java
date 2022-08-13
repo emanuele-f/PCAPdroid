@@ -338,6 +338,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     public void handleChunksAdded(int tot_chunks) {
         for(int i = mHandledChunks; i<tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
+            if(chunk == null)
+                continue;
 
             // Exclude unrelated chunks
             if((mMode != ChunkType.RAW) && (mMode != chunk.type))
