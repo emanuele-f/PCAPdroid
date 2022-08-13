@@ -232,6 +232,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     private void refreshFilterInfo() {
+        Context context = getContext();
+        if(context == null)
+            return;
+
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.capture_all_apps);
             mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
@@ -241,7 +245,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
+        AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), mAppFilter, 0);
         String description;
 
         if(app == null)
@@ -251,7 +255,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             int height = mFilterDescription.getMeasuredHeight();
 
             if((height > 0) && (app.getIcon() != null)) {
-                Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
+                Drawable drawable = Utils.scaleDrawable(context.getResources(), app.getIcon(), height, height);
 
                 if(drawable != null)
                     mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
