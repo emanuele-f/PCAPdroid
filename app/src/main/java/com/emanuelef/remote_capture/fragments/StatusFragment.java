@@ -283,7 +283,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     }
 
     private void processStatsUpdateIntent(Intent intent) {
-        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
+        CaptureStats stats = Utils.getSerializableExtra(intent, "value", CaptureStats.class);
+        assert(stats != null);
 
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);

@@ -22,7 +22,7 @@ package com.emanuelef.remote_capture.activities;
 import android.os.Bundle;
 
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.EditListFragment;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 
@@ -37,7 +37,7 @@ public class EditListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         assert(getIntent() != null);
-        ListInfo.Type ltype = (ListInfo.Type) getIntent().getSerializableExtra(LIST_TYPE_EXTRA);
+        ListInfo.Type ltype = Utils.getSerializableExtra(getIntent(), LIST_TYPE_EXTRA, ListInfo.Type.class);
         assert(ltype != null);
         mListInfo = new ListInfo(ltype);
 

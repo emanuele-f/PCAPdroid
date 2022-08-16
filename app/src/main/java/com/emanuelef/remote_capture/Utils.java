@@ -54,6 +54,7 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -75,6 +76,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
@@ -99,6 +101,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -1072,6 +1075,7 @@ public class Utils {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     public static BuildType getVerifiedBuild(Context ctx, String package_name) {
         try {
             Signature[] signatures;
@@ -1371,5 +1375,31 @@ public class Utils {
 
     public static String getUserAgent() {
         return "PCAPdroid v" + BuildConfig.VERSION_NAME;
+    }
+
+    @SuppressWarnings({"unchecked", "deprecation"})
+    public static @Nullable <T extends Serializable> T getSerializableExtra(Intent intent, String key, Class<T> clazz) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return intent.getSerializableExtra(key, clazz);
+        else {
+            try {
+                return (T)intent.getSerializableExtra(key);
+            } catch (ClassCastException unused) {
+                return null;
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "deprecation"})
+    public static @Nullable <T extends Serializable> T getSerializable(Bundle bundle, String key, Class<T> clazz) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return bundle.getSerializable(key, clazz);
+        else {
+            try {
+                return (T)bundle.getSerializable(key);
+            } catch (ClassCastException unused) {
+                return null;
+            }
+        }
     }
 }

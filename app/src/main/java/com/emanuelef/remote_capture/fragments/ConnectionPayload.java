@@ -98,7 +98,8 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         PayloadChunk.ChunkType mode;
         assert args != null;
         ConnectionsRegister reg = CaptureService.requireConnsRegister();
-        mode = (PayloadChunk.ChunkType) args.getSerializable("mode");
+        mode = Utils.getSerializable(args, "mode", PayloadChunk.ChunkType.class);
+        assert(mode != null);
 
         mConn = reg.getConnById(args.getInt("conn_id"));
         if(mConn == null) {

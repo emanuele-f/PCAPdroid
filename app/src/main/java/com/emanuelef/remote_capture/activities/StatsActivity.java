@@ -118,7 +118,8 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
     }
 
     private void updateStats(Intent intent) {
-        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
+        CaptureStats stats = Utils.getSerializableExtra(intent, "value", CaptureStats.class);
+        assert(stats != null);
 
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));

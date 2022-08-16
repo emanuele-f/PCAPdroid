@@ -79,20 +79,20 @@ public class CaptureSettings implements Serializable {
     // get a integer value from the bundle. The value may be represented as an int or as a string.
     private static int getInt(Intent intent, String key, int def_value) {
         Bundle bundle = intent.getExtras();
-        Object o = bundle.get(key);
 
-        if(o != null)
-            return Integer.parseInt(o.toString());
-        return def_value;
+        String s = bundle.getString(key);
+        if(s != null)
+            return Integer.parseInt(s);
+        return bundle.getInt(key, def_value);
     }
 
     // get a boolean value from the bundle. The value may be represented as a bool or as a string.
     private static boolean getBool(Intent intent, String key, boolean def_value) {
         Bundle bundle = intent.getExtras();
-        Object o = bundle.get(key);
 
-        if(o != null)
-            return Boolean.parseBoolean(o.toString());
-        return def_value;
+        String s = bundle.getString(key);
+        if(s != null)
+            return Boolean.parseBoolean(s);
+        return bundle.getBoolean(key, def_value);
     }
 }

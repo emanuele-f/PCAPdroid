@@ -100,7 +100,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         mEmptyText = view.findViewById(R.id.list_empty);
 
         assert getArguments() != null;
-        mListInfo = new ListInfo((ListInfo.Type)getArguments().getSerializable(LIST_TYPE_ARG));
+        mListInfo = new ListInfo(Utils.getSerializable(getArguments(), LIST_TYPE_ARG, ListInfo.Type.class));
         mList = mListInfo.getList();
         mList.addListChangeListener(this);
 

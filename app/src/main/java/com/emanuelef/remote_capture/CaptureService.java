@@ -234,7 +234,7 @@ public class CaptureService extends VpnService implements Runnable {
         // NOTE: a null intent may be delivered due to START_STICKY
         // It can be simulated by starting the capture, putting PCAPdroid in the background and then running:
         //  adb shell ps | grep remote_capture | awk '{print $2}' | xargs adb shell run-as com.emanuelef.remote_capture.debug kill
-        CaptureSettings settings = (CaptureSettings) ((intent == null) ? null : intent.getSerializableExtra("settings"));
+        CaptureSettings settings = ((intent == null) ? null : Utils.getSerializableExtra(intent, "settings", CaptureSettings.class));
         if(settings == null) {
             // Use the settings from mPrefs
 
@@ -813,6 +813,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     /* Stops the running Service. The SERVICE_STATUS_STOPPED notification is sent asynchronously
      * when mCaptureThread terminates. */
+    @SuppressWarnings("deprecation")
     public static void stopService() {
         CaptureService captureService = INSTANCE;
         Log.d(TAG, "stopService called (instance? " + (captureService != null) + ")");

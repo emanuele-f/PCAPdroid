@@ -368,20 +368,26 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void peerInfoResult(final ActivityResult result) {
         if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
             Intent data = result.getData();
-            Serializable skus_extra = data.getSerializableExtra("skus");
-            if(skus_extra instanceof HashSet) {
-                HashSet<String> skus = (HashSet<String>) skus_extra;
-                Log.d(TAG, "Found peer app info");
 
-                for(String sku: skus) {
-                    Log.d(TAG, "Peer sku: " + sku);
-                    mIab.addPeerSku(sku);
+            try {
+                @SuppressWarnings("unchecked")
+                HashSet<String> skus = Utils.getSerializableExtra(data, "skus", HashSet.class);
+
+                if(skus != null) {
+                    Log.d(TAG, "Found peer app info");
+
+                    for(String sku: skus) {
+                        Log.d(TAG, "Peer sku: " + sku);
+                        mIab.addPeerSku(sku);
+                    }
+
+                    // success
+                    return;
                 }
-
-                return;
-            }
+            } catch (ClassCastException ignored) {}
         }
 
+        // fail
         Log.d(TAG, "Invalid peer app result");
     }
 

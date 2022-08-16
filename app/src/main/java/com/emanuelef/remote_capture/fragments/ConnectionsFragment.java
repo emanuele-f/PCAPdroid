@@ -233,7 +233,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            FilterDescriptor filter = (FilterDescriptor) intent.getSerializableExtra(FILTER_EXTRA);
+            FilterDescriptor filter = Utils.getSerializableExtra(intent, FILTER_EXTRA, FilterDescriptor.class);
             if(filter != null) {
                 mAdapter.mFilter = filter;
                 fromIntent = true;
@@ -252,7 +252,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 search = savedInstanceState.getString("search");
 
             if(!fromIntent && savedInstanceState.containsKey("filter_desc"))
-                mAdapter.mFilter = (FilterDescriptor) savedInstanceState.getSerializable("filter_desc");
+                mAdapter.mFilter = Utils.getSerializable(savedInstanceState, "filter_desc", FilterDescriptor.class);
         }
         refreshActiveFilter();
 
@@ -801,7 +801,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-            FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
+            FilterDescriptor descriptor = Utils.getSerializableExtra(result.getData(), EditFilterActivity.FILTER_DESCRIPTOR, FilterDescriptor.class);
             if(descriptor != null) {
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();
