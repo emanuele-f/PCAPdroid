@@ -39,7 +39,6 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
@@ -54,7 +53,9 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.activities.CaptureCtrl;
@@ -148,7 +149,8 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Address;
     private int mSocks5Port;
     private String mSocks5Auth;
-    private CaptureStats mLastStats;
+    private static final MutableLiveData<CaptureStats> lastStats = new MutableLiveData<>();
+    private static final MutableLiveData<ServiceStatus> serviceStatus = new MutableLiveData<>();
     private boolean mLowMemory;
     private BroadcastReceiver mNewAppsInstallReceiver;
 
@@ -168,11 +170,10 @@ public class CaptureService extends VpnService implements Runnable {
      * After the analysis, requests will be routed to the primary DNS server. */
     public static final String VPN_VIRTUAL_DNS_SERVER = "10.215.173.2";
 
-    public static final String ACTION_STATS_DUMP = "stats_dump";
-    public static final String ACTION_SERVICE_STATUS = "service_status";
-    public static final String SERVICE_STATUS_KEY = "status";
-    public static final String SERVICE_STATUS_STARTED = "started";
-    public static final String SERVICE_STATUS_STOPPED = "stopped";
+    public enum ServiceStatus {
+        STOPPED,
+        STARTED
+    }
 
     static {
         /* Load native library */
@@ -202,7 +203,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     private int abortStart() {
         stopService();
-        sendServiceStatus(SERVICE_STATUS_STOPPED);
+        updateServiceStatus(ServiceStatus.STOPPED);
         return START_NOT_STICKY;
     }
 
@@ -1039,7 +1040,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Notify
         mHandler.post(() -> {
-            sendServiceStatus(SERVICE_STATUS_STOPPED);
+            updateServiceStatus(ServiceStatus.STOPPED);
             CaptureCtrl.notifyCaptureStopped(this, getStats());
         });
     }
@@ -1273,29 +1274,28 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
+    // called from native
     public void sendStatsDump(CaptureStats stats) {
         //Log.d(TAG, "sendStatsDump");
-        mLastStats = stats;
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("value", stats);
-        Intent intent = new Intent(ACTION_STATS_DUMP);
-        intent.putExtras(bundle);
 
         last_bytes = stats.bytes_sent + stats.bytes_rcvd;
         last_connections = stats.tot_conns;
         mHandler.post(this::updateNotification);
 
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        // notify the observers
+        lastStats.postValue(stats);
     }
 
-    // also called from native
+    // called from native
     private void sendServiceStatus(String cur_status) {
-        Intent intent = new Intent(ACTION_SERVICE_STATUS);
-        intent.putExtra(SERVICE_STATUS_KEY, cur_status);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        updateServiceStatus(cur_status.equals("started") ? ServiceStatus.STARTED : ServiceStatus.STOPPED);
+    }
 
-        if(cur_status.equals(SERVICE_STATUS_STARTED)) {
+    private void updateServiceStatus(ServiceStatus cur_status) {
+        // notify the observers
+        serviceStatus.postValue(cur_status);
+
+        if(cur_status == ServiceStatus.STARTED) {
             if(mMalwareDetectionEnabled)
                 reloadMalwareWhitelist();
             reloadBlocklist();
@@ -1391,8 +1391,16 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public static @NonNull CaptureStats getStats() {
-        CaptureStats stats = (INSTANCE != null) ? INSTANCE.mLastStats : null;
+        CaptureStats stats = lastStats.getValue();
         return((stats != null) ? stats : new CaptureStats());
+    }
+
+    public static void observeStats(LifecycleOwner lifecycleOwner, Observer<CaptureStats> observer) {
+        lastStats.observe(lifecycleOwner, observer);
+    }
+
+    public static void observeStatus(LifecycleOwner lifecycleOwner, Observer<ServiceStatus> observer) {
+        serviceStatus.observe(lifecycleOwner, observer);
     }
 
     public static void waitForCaptureStop() {

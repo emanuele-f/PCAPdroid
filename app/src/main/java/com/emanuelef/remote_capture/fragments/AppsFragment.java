@@ -19,10 +19,7 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -38,7 +35,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -59,7 +55,6 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
-    private BroadcastReceiver mReceiver;
 
     @Override
     public void onPause() {
@@ -107,34 +102,15 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         });
 
         /* Register for service status */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
-
-                if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
-                    if(listenerSet) {
-                        // register the new connection register
-                        unregisterConnsListener();
-                        registerConnsListener();
-                    }
+        CaptureService.observeStatus(this, serviceStatus -> {
+            if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
+                if(listenerSet) {
+                    // register the new connection register
+                    unregisterConnsListener();
+                    registerConnsListener();
                 }
             }
-        };
-
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-            mReceiver = null;
-        }
+        });
     }
 
     @Override

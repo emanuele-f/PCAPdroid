@@ -19,10 +19,6 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,7 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -54,7 +49,6 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
     private BlacklistsAdapter mAdapter;
     private Blacklists mBlacklists;
     private MenuItem mUpdateItem;
-    private BroadcastReceiver mReceiver;
     private Handler mHandler;
 
     @Override
@@ -73,33 +67,19 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
 
         mHandler = new Handler(Looper.getMainLooper());
 
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
-
-                if(status != null)
-                    refreshStatus();
-            }
-        };
+        CaptureService.observeStatus(this, serviceStatus -> refreshStatus());
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mBlacklists.addOnChangeListener(this);
-
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
     @Override
     public void onPause() {
         super.onPause();
         mBlacklists.removeOnChangeListener(this);
-
-        LocalBroadcastManager.getInstance(requireContext())
-                .unregisterReceiver(mReceiver);
     }
 
     @Override

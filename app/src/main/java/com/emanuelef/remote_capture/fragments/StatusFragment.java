@@ -21,10 +21,7 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -48,7 +45,6 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
@@ -84,7 +80,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private View mQuickSettings;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
-    private BroadcastReceiver mReceiver;
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
@@ -109,37 +104,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     public void onResume() {
         super.onResume();
         refreshStatus();
-
-        /* Register for stats update */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-
-                if(action.equals(CaptureService.ACTION_STATS_DUMP))
-                    processStatsUpdateIntent(intent);
-                else if(action.equals(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED))
-                    refreshDecryptionStatus();
-            }
-        };
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CaptureService.ACTION_STATS_DUMP);
-        filter.addAction(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED);
-
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, filter);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-            mReceiver = null;
-        }
     }
 
     @Override
@@ -204,6 +168,10 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             if(mActivity.getState() == AppState.ready)
                 mActivity.startCapture();
         });
+
+        // Register for updates
+        MitmReceiver.observeRunning(this, running -> refreshDecryptionStatus());
+        CaptureService.observeStats(this, this::onStatsUpdate);
 
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
@@ -282,10 +250,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         recheckFilterWarning();
     }
 
-    private void processStatsUpdateIntent(Intent intent) {
-        CaptureStats stats = Utils.getSerializableExtra(intent, "value", CaptureStats.class);
-        assert(stats != null);
-
+    private void onStatsUpdate(CaptureStats stats) {
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
 
@@ -431,7 +396,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         dialog.show();
 
         // NOTE: run this after dialog.show
-        mOpenAppsList = (AppsListView) dialog.findViewById(R.id.apps_list);
+        mOpenAppsList = dialog.findViewById(R.id.apps_list);
         mEmptyAppsView = dialog.findViewById(R.id.no_apps);
         mEmptyAppsView.setText(R.string.loading_apps);
 

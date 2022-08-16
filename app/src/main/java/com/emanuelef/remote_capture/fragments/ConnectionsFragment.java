@@ -21,10 +21,8 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,7 +47,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -95,7 +92,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
-    private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
     private AppsResolver mApps;
     private SearchView mSearchView;
@@ -261,41 +257,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mQueryToApply = search;
 
         // Register for service status
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
-
-                if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
-                    // register the new connection register
-                    if(listenerSet) {
-                        unregisterConnsListener();
-                        registerConnsListener();
-                    }
-
-                    autoScroll = true;
-                    showFabDown(false);
-                    mOldConnectionsText.setVisibility(View.GONE);
-                    mEmptyText.setText(R.string.no_connections);
-                    mApps.clear();
+        CaptureService.observeStatus(this, serviceStatus -> {
+            if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
+                // register the new connection register
+                if(listenerSet) {
+                    unregisterConnsListener();
+                    registerConnsListener();
                 }
 
-                refreshMenuIcons();
+                autoScroll = true;
+                showFabDown(false);
+                mOldConnectionsText.setVisibility(View.GONE);
+                mEmptyText.setText(R.string.no_connections);
+                mApps.clear();
             }
-        };
 
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-        }
+            refreshMenuIcons();
+        });
     }
 
     @Override
@@ -718,7 +696,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
-        Context ctx = requireContext();
 
         mMenuItemSearch.setVisible(is_enabled); // NOTE: setEnabled does not work for this
         //mMenuFilter.setEnabled(is_enabled);

@@ -21,13 +21,9 @@ package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.MenuProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.ActivityManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -45,7 +41,6 @@ import com.emanuelef.remote_capture.model.CaptureStats;
 import java.util.Locale;
 
 public class StatsActivity extends BaseActivity implements MenuProvider {
-    private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
     private TextView mBytesRcvd;
     private TextView mPacketsSent;
@@ -94,33 +89,13 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         } else
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
 
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateStats(intent);
-            }
-        };
-
-        /* Register for updates */
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+        // Listen for stats updates
+        CaptureService.observeStats(this, this::updateStats);
 
         CaptureService.askStatsDump();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(mReceiver != null)
-            LocalBroadcastManager.getInstance(this)
-                    .unregisterReceiver(mReceiver);
-    }
-
-    private void updateStats(Intent intent) {
-        CaptureStats stats = Utils.getSerializableExtra(intent, "value", CaptureStats.class);
-        assert(stats != null);
-
+    private void updateStats(CaptureStats stats) {
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
