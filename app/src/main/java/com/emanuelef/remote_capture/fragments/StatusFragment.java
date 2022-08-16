@@ -45,7 +45,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
@@ -69,7 +71,7 @@ import com.pcapdroid.mitm.MitmAPI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
+public class StatusFragment extends Fragment implements AppStateListener, MenuProvider, AppsLoadListener {
     private static final String TAG = "StatusFragment";
     private Handler mHandler;
     private Menu mMenu;
@@ -143,7 +145,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.status, container, false);
     }
 
@@ -212,7 +214,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.main_menu, menu);
 
         mMenu = menu;
@@ -220,6 +222,11 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         refreshStatus();
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
+        return false;
     }
 
     private void recheckFilterWarning() {

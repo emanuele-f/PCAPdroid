@@ -33,7 +33,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.R;
@@ -49,7 +51,7 @@ import java.util.Set;
 import kotlin.NotImplementedError;
 
 public abstract class AppsToggles extends Fragment implements AppsLoadListener,
-        AppsTogglesAdapter.AppToggleListener, SearchView.OnQueryTextListener {
+        AppsTogglesAdapter.AppToggleListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "AppsToggles";
     private AppsTogglesAdapter mAdapter;
     private SearchView mSearchView;
@@ -59,7 +61,7 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
@@ -98,7 +100,7 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
         mSearchView = (SearchView) searchItem.getActionView();
@@ -108,6 +110,11 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
             Log.d(TAG, "Initial filter: " + mQueryToApply);
             Utils.setSearchQuery(mSearchView, searchItem, mQueryToApply);
         }
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 
     @Override

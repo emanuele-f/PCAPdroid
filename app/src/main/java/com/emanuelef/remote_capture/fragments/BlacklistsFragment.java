@@ -37,7 +37,9 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -47,7 +49,7 @@ import com.emanuelef.remote_capture.adapters.BlacklistsAdapter;
 import com.emanuelef.remote_capture.interfaces.BlacklistsStateListener;
 import com.emanuelef.remote_capture.Blacklists;
 
-public class BlacklistsFragment extends Fragment implements BlacklistsStateListener {
+public class BlacklistsFragment extends Fragment implements BlacklistsStateListener, MenuProvider {
     private static final String TAG = "BlacklistsFragment";
     private BlacklistsAdapter mAdapter;
     private Blacklists mBlacklists;
@@ -58,7 +60,7 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.malware_detection_blacklists, container, false);
     }
 
@@ -101,14 +103,14 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.blacklists_menu, menu);
         mUpdateItem = menu.findItem(R.id.update);
         refreshStatus();
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.update) {

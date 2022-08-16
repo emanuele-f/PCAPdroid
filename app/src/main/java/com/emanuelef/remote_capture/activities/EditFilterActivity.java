@@ -24,12 +24,14 @@ import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.view.MenuProvider;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Billing;
@@ -50,9 +52,9 @@ import com.google.android.material.chip.ChipGroup;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-public class EditFilterActivity extends BaseActivity {
+public class EditFilterActivity extends BaseActivity implements MenuProvider {
     public static final String FILTER_DESCRIPTOR = "filter";
-    private static final String TAG = "FilterEditActivity";
+    private static final String TAG = "EditFilterActivity";
     private FilterDescriptor mFilter;
     private CheckBox mHideMasked;
     private CheckBox mOnlyBlacklisted;
@@ -67,6 +69,7 @@ public class EditFilterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_filter_activity);
         setTitle(R.string.edit_filter);
+        addMenuProvider(this);
 
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -233,19 +236,18 @@ public class EditFilterActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.edit_filter_menu, menu);
-        return super.onCreateOptionsMenu(menu);
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.edit_filter_menu, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.reset_changes) {
             mFilter.clear();
             model2view();
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }

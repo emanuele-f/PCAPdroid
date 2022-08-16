@@ -24,22 +24,25 @@ import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
+import androidx.core.view.MenuProvider;
 
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 
-public class AboutActivity extends BaseActivity {
+public class AboutActivity extends BaseActivity implements MenuProvider {
     private static final String TAG = "AboutActivity";
 
     @Override
@@ -47,6 +50,7 @@ public class AboutActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setTitle(R.string.about);
         setContentView(R.layout.about_activity);
+        addMenuProvider(this);
 
         TextView appVersion = findViewById(R.id.app_version);
         appVersion.setText("PCAPdroid " + Utils.getAppVersion(this));
@@ -61,18 +65,16 @@ public class AboutActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.about_menu, menu);
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.about_menu, menu);
 
         Billing billing = Billing.newInstance(this);
         if(billing.isPlayStore())
             menu.findItem(R.id.paid_features).setVisible(false);
-
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onMenuItemSelected(MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.paid_features) {
@@ -82,6 +84,7 @@ public class AboutActivity extends BaseActivity {
             Intent intent = new Intent(this, OnBoardingActivity.class);
             intent.putExtra(OnBoardingActivity.ENABLE_BACK_BUTTON, true);
             startActivity(intent);
+            return true;
         } else if(id == R.id.build_info) {
             final String deviceInfo = Utils.getBuildInfo(this) + "\n\n" + Prefs.asString(this);
 
@@ -95,9 +98,10 @@ public class AboutActivity extends BaseActivity {
                     .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
                     .setNeutralButton(R.string.copy_to_clipboard, (dialogInterface, i) ->
                             Utils.copyToClipboard(this, deviceInfo)).show();
+            return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private void showLicenseDialog() {

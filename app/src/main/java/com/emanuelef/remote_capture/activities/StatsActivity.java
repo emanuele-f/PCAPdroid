@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.ActivityManager;
@@ -43,7 +44,7 @@ import com.emanuelef.remote_capture.model.CaptureStats;
 
 import java.util.Locale;
 
-public class StatsActivity extends BaseActivity {
+public class StatsActivity extends BaseActivity implements MenuProvider {
     private BroadcastReceiver mReceiver;
     private TextView mBytesSent;
     private TextView mBytesRcvd;
@@ -68,6 +69,7 @@ public class StatsActivity extends BaseActivity {
         setTitle(R.string.stats);
         displayBackAction();
         setContentView(R.layout.activity_stats);
+        addMenuProvider(this);
 
         mTable = findViewById(R.id.table);
         mBytesSent = findViewById(R.id.bytes_sent);
@@ -170,11 +172,8 @@ public class StatsActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.copy_share_menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
     }
 
     private String getContents() {
@@ -182,7 +181,7 @@ public class StatsActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
@@ -193,6 +192,6 @@ public class StatsActivity extends BaseActivity {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }

@@ -34,7 +34,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -48,7 +50,7 @@ import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener, MenuProvider {
     private static final String TAG = "ConnectionPayload";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
@@ -86,7 +88,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.connection_payload, container, false);
     }
 
@@ -152,7 +154,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.connection_payload, menu);
         mMenu = menu;
         if((mCurChunks > 0) && mJustCreated) {
@@ -164,7 +166,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.printable_text) {
@@ -179,7 +181,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private boolean guessDisplayAsPrintable() {

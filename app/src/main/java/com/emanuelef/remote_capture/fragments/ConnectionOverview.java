@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,7 +38,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
@@ -51,7 +52,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.haipq.android.flagkit.FlagImageView;
 
-public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener, MenuProvider {
     private static final String TAG = "ConnectionOverview";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
@@ -97,7 +98,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.connection_overview, container, false);
     }
 
@@ -214,12 +215,12 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.copy_share_menu, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
@@ -234,7 +235,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private String getContents() {
