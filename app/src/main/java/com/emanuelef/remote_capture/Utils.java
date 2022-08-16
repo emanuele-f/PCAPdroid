@@ -707,7 +707,7 @@ public class Utils {
         String appver;
 
         try {
-            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            PackageInfo pInfo = Utils.getPackageInfo(context.getPackageManager(), context.getPackageName(), 0);
             String version = pInfo.versionName;
             boolean isRelease = version.contains(".");
 
@@ -1082,11 +1082,11 @@ public class Utils {
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 // NOTE: PCAPdroid does not use multiple signatures
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(package_name, PackageManager.GET_SIGNING_CERTIFICATES);
+                PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), package_name, PackageManager.GET_SIGNING_CERTIFICATES);
                 signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
             } else {
                 @SuppressLint("PackageManagerGetSignatures")
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
+                PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), package_name, PackageManager.GET_SIGNATURES);
                 signatures = pInfo.signatures;
             }
 
@@ -1401,5 +1401,32 @@ public class Utils {
                 return null;
             }
         }
+    }
+
+    @SuppressWarnings({"deprecation"})
+    public static PackageInfo getPackageInfo(PackageManager pm, String package_name, int flags) throws PackageManager.NameNotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getPackageInfo(package_name, PackageManager.PackageInfoFlags.of(flags));
+        else
+            return pm.getPackageInfo(package_name, flags);
+    }
+
+    @SuppressWarnings({"deprecation"})
+    public static int getPackageUid(PackageManager pm, String package_name, int flags) throws PackageManager.NameNotFoundException {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getPackageUid(package_name, PackageManager.PackageInfoFlags.of(flags));
+        else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            return pm.getPackageUid(package_name, 0);
+        else
+            return pm.getApplicationInfo(package_name, 0).uid;
+    }
+
+    @SuppressLint({"QueryPermissionsNeeded"})
+    @SuppressWarnings({"deprecation"})
+    public static List<PackageInfo> getInstalledPackages(PackageManager pm, int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(flags));
+        else
+            return pm.getInstalledPackages(flags);
     }
 }

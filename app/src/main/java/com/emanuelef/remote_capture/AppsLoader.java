@@ -62,11 +62,7 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         ArraySet<Integer> uids = new ArraySet<>();
 
         Log.d(TAG, "Loading APPs...");
-        List<PackageInfo> packs;
-        if (android.os.Build.VERSION.SDK_INT >= 33)
-            packs = pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(0));
-        else
-            packs = pm.getInstalledPackages(0);
+        List<PackageInfo> packs = Utils.getInstalledPackages(pm, 0);
 
         String app_package = mContext.getApplicationContext().getPackageName();
 

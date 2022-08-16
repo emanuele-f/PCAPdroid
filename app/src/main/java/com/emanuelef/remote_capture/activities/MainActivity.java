@@ -41,6 +41,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -341,7 +342,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         PackageInfo pInfo = peer.getPackageInfo();
-        if((pInfo == null) || (pInfo.versionCode < 56)) {
+        if((pInfo == null) || (PackageInfoCompat.getLongVersionCode(pInfo) < 56)) {
             Log.d(TAG, "Unsupported peer app version found");
             return;
         }
@@ -353,7 +354,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             return;
         }
 
-        Log.d(TAG, "Valid peer app found (" + pInfo.versionName + " - " + pInfo.versionCode + ")");
+        Log.d(TAG, "Valid peer app found (" + pInfo.versionName + " - " + PackageInfoCompat.getLongVersionCode(pInfo) + ")");
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClassName(peerAppPackage, "com.emanuelef.remote_capture.activities.CaptureCtrl");
         intent.putExtra("action", "get_peer_info");
@@ -577,7 +578,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Intent intent;
 
         try {
-            getPackageManager().getPackageInfo("org.telegram.messenger", 0);
+            Utils.getPackageInfo(getPackageManager(), "org.telegram.messenger", 0);
 
             // Open directly into the telegram app
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + TELEGRAM_GROUP_NAME));

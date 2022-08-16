@@ -365,7 +365,7 @@ public class CaptureService extends VpnService implements Runnable {
 
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
             try {
-                app_filter_uid = getPackageManager().getApplicationInfo(mSettings.app_filter, 0).uid;
+                app_filter_uid = Utils.getPackageUid(getPackageManager(), mSettings.app_filter, 0);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
                 app_filter_uid = -1;

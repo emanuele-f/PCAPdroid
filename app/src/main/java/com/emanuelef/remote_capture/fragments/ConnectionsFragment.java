@@ -186,9 +186,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mEmptyText = view.findViewById(R.id.no_connections);
         mActiveFilter = view.findViewById(R.id.active_filter);
-        mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
+        mActiveFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if(mAdapter != null) {
-                mAdapter.mFilter.clear(checkedId);
+                for(int checkedId: checkedIds)
+                    mAdapter.mFilter.clear(checkedId);
                 refreshFilteredConnections();
             }
         });
