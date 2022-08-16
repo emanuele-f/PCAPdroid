@@ -352,7 +352,10 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 mQuickSettings.setVisibility(View.GONE);
                 CaptureService service = CaptureService.requireInstance();
 
-                if(CaptureService.isCapturingAsRoot()) {
+                if(CaptureService.isDecryptingTLS()) {
+                    refreshDecryptionStatus();
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(CaptureService.isCapturingAsRoot()) {
                     String capiface = service.getCaptureInterface();
 
                     if(capiface.equals("@inet"))
@@ -361,9 +364,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                         capiface = getString(R.string.all_interfaces);
 
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
-                    mInterfaceInfo.setVisibility(View.VISIBLE);
-                } else if(CaptureService.isDecryptingTLS()) {
-                    refreshDecryptionStatus();
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 } else if(service.getSocks5Enabled() == 1) {
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),
