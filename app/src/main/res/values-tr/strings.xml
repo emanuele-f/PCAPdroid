@@ -395,4 +395,12 @@
 \n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla)
 \n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir
 \n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
+    <string name="unlock_token">Kilit açma belirteci</string>
+    <string name="unlock_token_summary">Uygulamanın Google-Play dışı sürümlerinde (örn. F-Droid/Github) ücretli özelliklerin kilidini açmak için kullanılabilecek bir belirteç</string>
+    <string name="license_service_unavailable">PCAPdroid lisans hizmeti şu anda kullanılamıyor. Lütfen birkaç dakika içinde yeniden deneyin</string>
+    <string name="access_paid_features_msg">Ücretli özelliklere nasıl erişeceğinizi öğrenmek için <a href="%1$s">kullanıcı kılavuzuna</a> göz atın</string>
+    <string name="unlock_token_error">Kilit açma belirteci istenemedi [%1$d]: %2$s</string>
+    <string name="requesting_unlock_token">Kilit açma belirteci isteniyor, lütfen bekleyin</string>
+    <string name="show_action">Göster</string>
+    <string name="unlock_token_msg1">Bu sizin kilit açma belirtecinizdir. <a href="%1$s">Lisans kodlarınızı oluşturmak için</a> ihtiyacınız olacağından bunu not edin</string>
 </resources>
