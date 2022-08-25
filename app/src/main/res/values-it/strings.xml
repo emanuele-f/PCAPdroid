@@ -394,4 +394,13 @@
 \n- se la cattura non si avvia, controllare se sia possibile eseguire il comando iptables come root (es. tramite termux)
 \n- questa funzione potrebbe non funzionare in Android 12 e successivi
 \n- se un\'app di VPN è in esecuzione, assicurati di impostare un filtro app oppure di escludere l\'addon di mitm di PCAPdroid dalla VPN, altrimenti il traffico del dispostivio andrà in loop</string>
+    <string name="paid_feature">Funzione a pagamento</string>
+    <string name="firewall_purchase_msg">Acquista la funzione di <i>%1$s</i> e inizia a bloccare le connessioni</string>
+    <string name="unlock_token_summary">Un token che può essere usato per sbloccare le funzioni a pagamento in build diverse da Google-Play (e.s. F-Droid/Github)</string>
+    <string name="unlock_token_error">Impossibile richiedere l\'unlock token [%1$d]: %2$s</string>
+    <string name="access_paid_features_msg">Fai riferimento <a href="%1$s">alla guida utente</a> per conoscere come accedere alle funzioni a pagamento</string>
+    <string name="license_service_unavailable">Il servizio di licenza di PCAPdroid non è attualmente disponibile. Riprovare tra qualche minuto</string>
+    <string name="requesting_unlock_token">In attesa di un unlock token, attendere</string>
+    <string name="show_action">Mostra</string>
+    <string name="unlock_token_msg1">Questo è il tuo unlock token. Prendine nota in quanto ti servità <a href="%1$s">per generare i codici di licenza</a></string>
 </resources>
