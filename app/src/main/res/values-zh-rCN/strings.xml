@@ -420,7 +420,6 @@
 \n - 如果流量捕获无法启动，请确保你实际上可以以 root 身份运行 iptables 命令（例如，通过 termux）
 \n - 此功能可能不适用于 Android 12 及更高版本
 \n - 如果 VPN 应用正在运行，你应该针对特定应用进行解密或从 VPN 中排除 PCAPdroid mitm 附加组件，否则流量将进入循环</string>
-    <string name="unlock_token">解锁令牌</string>
     <string name="unlock_token_summary">可用于解锁非 Google-Play 应用版本（例如 F-Droid/Github）中付费功能的令牌</string>
     <string name="unlock_token_error">无法请求解锁令牌 [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">查看 <a href="%1$s">用户指南</a>了解如何访问付费功能</string>

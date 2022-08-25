@@ -30,6 +30,7 @@
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
         </string>
     <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
+    <string name="unlock_token" translatable="false">Unlock token</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -400,7 +401,6 @@
 - this may not work on Android 12 and later\n
 - if a VPN app is running, you should either target a specific app for decryption or exclude the PCAPdroid mitm addon from the VPN, otherwise traffic will go in a loop
 </string>
-    <string name="unlock_token">Unlock token</string>
     <string name="unlock_token_summary">A token which can be used to unlock the paid features in non-Google-Play builds of the app (e.g. F-Droid/Github)</string>
     <string name="unlock_token_error">Could not request unlock token [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">Check out <a href='%1$s'>the user guide</a> to learn how to access the paid features</string>
