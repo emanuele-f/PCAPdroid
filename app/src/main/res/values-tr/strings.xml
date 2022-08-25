@@ -132,7 +132,6 @@
     <string name="firewall">Güvenlik duvarı</string>
     <string name="n_pkts">%1$s paket</string>
     <string name="blocked_connection_filter">Engellendi</string>
-    <string name="unlock_code">Kilit açma kodu</string>
     <string name="validate">Doğrula</string>
     <string name="valid">Geçerli</string>
     <string name="invalid">Geçersiz</string>

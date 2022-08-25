@@ -42,7 +42,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
@@ -59,7 +61,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Scanner;
 
-public class EditListFragment extends Fragment implements MatchList.ListChangeListener {
+public class EditListFragment extends Fragment implements MatchList.ListChangeListener, MenuProvider {
     private ListEditAdapter mAdapter;
     private TextView mEmptyText;
     private ArrayList<MatchList.Rule> mSelected = new ArrayList<>();
@@ -88,7 +90,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.simple_list, container, false);
     }
 
@@ -98,7 +100,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         mEmptyText = view.findViewById(R.id.list_empty);
 
         assert getArguments() != null;
-        mListInfo = new ListInfo((ListInfo.Type)getArguments().getSerializable(LIST_TYPE_ARG));
+        mListInfo = new ListInfo(Utils.getSerializable(getArguments(), LIST_TYPE_ARG, ListInfo.Type.class));
         mList = mListInfo.getList();
         mList.addListChangeListener(this);
 
@@ -197,7 +199,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.list_edit_menu, menu);
 
         if(!Utils.supportsFileDialog(requireContext())) {
@@ -210,7 +212,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         ListView lv = requireActivity().findViewById(R.id.listview);
 

@@ -20,11 +20,10 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,8 +45,9 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -77,7 +77,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 
-public class ConnectionsFragment extends Fragment implements ConnectionsListener, SearchView.OnQueryTextListener {
+public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
     public static final String FILTER_EXTRA = "filter";
     public static final String QUERY_EXTRA = "query";
@@ -93,7 +93,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
-    private BroadcastReceiver mReceiver;
     private Uri mCsvFname;
     private AppsResolver mApps;
     private SearchView mSearchView;
@@ -140,7 +139,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.connections, container, false);
     }
 
@@ -184,9 +183,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mEmptyText = view.findViewById(R.id.no_connections);
         mActiveFilter = view.findViewById(R.id.active_filter);
-        mActiveFilter.setOnCheckedChangeListener((group, checkedId) -> {
+        mActiveFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if(mAdapter != null) {
-                mAdapter.mFilter.clear(checkedId);
+                for(int checkedId: checkedIds)
+                    mAdapter.mFilter.clear(checkedId);
                 refreshFilteredConnections();
             }
         });
@@ -231,7 +231,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Intent intent = requireActivity().getIntent();
 
         if(intent != null) {
-            FilterDescriptor filter = (FilterDescriptor) intent.getSerializableExtra(FILTER_EXTRA);
+            FilterDescriptor filter = Utils.getSerializableExtra(intent, FILTER_EXTRA, FilterDescriptor.class);
             if(filter != null) {
                 mAdapter.mFilter = filter;
                 fromIntent = true;
@@ -250,7 +250,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 search = savedInstanceState.getString("search");
 
             if(!fromIntent && savedInstanceState.containsKey("filter_desc"))
-                mAdapter.mFilter = (FilterDescriptor) savedInstanceState.getSerializable("filter_desc");
+                mAdapter.mFilter = Utils.getSerializable(savedInstanceState, "filter_desc", FilterDescriptor.class);
         }
         refreshActiveFilter();
 
@@ -258,41 +258,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mQueryToApply = search;
 
         // Register for service status
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
-
-                if(CaptureService.SERVICE_STATUS_STARTED.equals(status)) {
-                    // register the new connection register
-                    if(listenerSet) {
-                        unregisterConnsListener();
-                        registerConnsListener();
-                    }
-
-                    autoScroll = true;
-                    showFabDown(false);
-                    mOldConnectionsText.setVisibility(View.GONE);
-                    mEmptyText.setText(R.string.no_connections);
-                    mApps.clear();
+        CaptureService.observeStatus(this, serviceStatus -> {
+            if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
+                // register the new connection register
+                if(listenerSet) {
+                    unregisterConnsListener();
+                    registerConnsListener();
                 }
 
-                refreshMenuIcons();
+                autoScroll = true;
+                showFabDown(false);
+                mOldConnectionsText.setVisibility(View.GONE);
+                mEmptyText.setText(R.string.no_connections);
+                mApps.clear();
             }
-        };
 
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-        }
+            refreshMenuIcons();
+        });
     }
 
     @Override
@@ -312,7 +294,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         MenuItem item;
 
-        boolean firewallAvailable = Billing.newInstance(ctx).isFirewallVisible();
+        Billing billing = Billing.newInstance(ctx);
+
+        boolean firewallVisible = billing.isFirewallVisible();
+        boolean showPurchaseFirewall = (!billing.isPurchased(Billing.FIREWALL_SKU) && billing.isAvailable(Billing.FIREWALL_SKU)) && !CaptureService.isCapturingAsRoot();
         boolean blockVisible = false;
         boolean unblockVisible = false;
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
@@ -445,8 +430,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
 
-        menu.findItem(R.id.block_menu).setVisible(firewallAvailable && blockVisible);
-        menu.findItem(R.id.unblock_menu).setVisible(firewallAvailable && unblockVisible);
+        menu.findItem(R.id.block_menu).setVisible((firewallVisible || showPurchaseFirewall) && blockVisible);
+        menu.findItem(R.id.unblock_menu).setVisible(firewallVisible && unblockVisible);
 
         if(!conn.isBlacklisted())
             menu.findItem(R.id.whitelist_menu).setVisible(false);
@@ -458,6 +443,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
@@ -504,17 +490,29 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             whitelist.addHost(conn.info);
             whitelist_changed = true;
         } else if(id == R.id.block_app) {
-            blocklist.addApp(conn.uid);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addApp(conn.uid);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_ip) {
-            blocklist.addIp(conn.dst_ip);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addIp(conn.dst_ip);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_host) {
-            blocklist.addHost(conn.info);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addHost(conn.info);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_domain) {
-            blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.unblock_app_permanently) {
             blocklist.removeApp(conn.uid);
             blocklist_changed = true;
@@ -561,6 +559,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             blocklist.saveAndReload();
 
         return true;
+    }
+
+    private void showFirewallPurchaseDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.paid_feature)
+                .setMessage(Utils.getText(requireContext(), R.string.firewall_purchase_msg, getString(R.string.no_root_firewall)))
+                .setPositiveButton(R.string.show_me, (dialogInterface, i) -> {
+                    // Billing code here
+                })
+                .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
+                .show();
     }
 
     private void setQuery(String query) {
@@ -674,7 +683,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.connections_menu, menu);
 
         mSave = menu.findItem(R.id.save);
@@ -694,7 +703,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.save) {
@@ -715,7 +724,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             return;
 
         boolean is_enabled = (CaptureService.getConnsRegister() != null);
-        Context ctx = requireContext();
 
         mMenuItemSearch.setVisible(is_enabled); // NOTE: setEnabled does not work for this
         //mMenuFilter.setEnabled(is_enabled);
@@ -799,7 +807,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     private void filterResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-            FilterDescriptor descriptor = (FilterDescriptor)result.getData().getSerializableExtra(EditFilterActivity.FILTER_DESCRIPTOR);
+            FilterDescriptor descriptor = Utils.getSerializableExtra(result.getData(), EditFilterActivity.FILTER_DESCRIPTOR, FilterDescriptor.class);
             if(descriptor != null) {
                 mAdapter.mFilter = descriptor;
                 mAdapter.refreshFilteredConnections();

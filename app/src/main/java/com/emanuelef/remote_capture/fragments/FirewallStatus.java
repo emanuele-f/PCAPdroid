@@ -40,7 +40,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -55,7 +57,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 
-public class FirewallStatus extends Fragment {
+public class FirewallStatus extends Fragment implements MenuProvider {
     private static final String TAG = "FirewallStatus";
     private Handler mHandler;
     private SharedPreferences mPrefs;
@@ -72,7 +74,7 @@ public class FirewallStatus extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.firewall_status, container, false);
     }
 
@@ -117,7 +119,7 @@ public class FirewallStatus extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.firewall_menu, menu);
 
         mToggle = (SwitchCompat) menu.findItem(R.id.toggle_btn).getActionView();
@@ -139,7 +141,7 @@ public class FirewallStatus extends Fragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.user_guide) {

@@ -66,7 +66,7 @@
     <string name="first_seen">Começou</string>
     <string name="last_seen">Última atividade</string>
     <string name="conn_status_closed">Fechado</string>
-    <string name="copy_to_clipboard">Copiar ao clipboard</string>
+    <string name="copy_to_clipboard">Copiar</string>
     <string name="save_to_file">Salvar em arquivo</string>
     <string name="older_connections_notice">%1$d conexões antigas não exibidas</string>
     <string name="about_text">PCAPdroid é uma ferramenta de captura e monitoramento de rede de software livre que funciona sem privilégios root</string>
@@ -179,7 +179,6 @@
     <string name="n_pkts">%1$s pcts</string>
     <string name="blocked_connection_filter">Bloqueado</string>
     <string name="paid_features">Funcionalidades não gratuitas</string>
-    <string name="unlock_code">Código para desbloquear</string>
     <string name="validate">Validar</string>
     <string name="interface_filter">Interface: %1$s</string>
     <string name="loading">Carregando…</string>
@@ -260,7 +259,7 @@
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
     <string name="phone_app_info">Serviço de telefonia</string>
     <string name="unblock">Desbloquear…</string>
-    <string name="tls_decryption">Decodificação do TLS</string>
+    <string name="tls_decryption">Decriptação do TLS</string>
     <string name="tls_decryption_summary">Decodifique o tráfego SSL/TLS via mitm. Isto pode funcionar com alguns apps, confira o manual de usuário</string>
     <string name="tls_decryption_running">Decriptação do TLS está em execução</string>
     <string name="traffic_inspection">Inspeção de tráfego</string>
@@ -302,8 +301,8 @@
     <string name="full_payload">Payload total</string>
     <string name="not_decryptable">Não decodificável</string>
     <string name="decrypted">Descriptografado</string>
-    <string name="decryption">Decodificação</string>
-    <string name="decryption_filter">Decodificação: %1$s</string>
+    <string name="decryption">Decriptação</string>
+    <string name="decryption_filter">Decriptação: %1$s</string>
     <string name="connection_start_not_seen">O PCAPdroid ainda não examinou o início desta conexão. Algumas informações podem estar faltando</string>
     <string name="network_traffic">Tráfego</string>
     <string name="warn_no_app_data">Nenhum dado do app foi intercambiado</string>
@@ -384,4 +383,17 @@
     <string name="payload_scams_notice">Esta visualização pode conter informações sensíveis, como suas senhas e tokens de acesso.
 \n
 \nNunca forneça estas informações a ninguém, pode ser uma tentativa de fraude</string>
+    <string name="unblock_for_n_minutes">Desbloquear por %1$dm</string>
+    <string name="app_unblocked">O %1$s app foi desbloqueado</string>
+    <string name="paid_features_unlocked">Funcionalidades pagas desbloqueadas. Reinicie a captura se estiver funcionando</string>
+    <string name="build_info">Detalhes da compilação</string>
+    <string name="install_the_mitm_addon">Instalar a <a href="%1$s">extensão mitm</a> do PCAPdroid</string>
+    <string name="warning">Aviso</string>
+    <string name="tls_decryption_with_root_msg">A possibilidade de executar a decodificação do TLS com root ainda está em fase experimental. Abaixo vê uma lista de problemas conhecidos:
+\n
+\n - no PCAPdroid você verá o tráfego como ele foi gerado via extensão-mitm no lugar do app original
+\n - quando um filtro de aplicativos é definido, a decodificação só ocorrerá para o app alvo, mas o PCAPdroid ainda mostrará tráfego de outros aplicativos
+\n - se a captura não começou, certifique-se de que você pode realmente executou o comando de iptables como root (p.ex., via termux)
+\n - isto pode não funcionar no Android 12 e mais recentes
+\n - se um app da VPN estiver executado, você deve definir um app específico para decriptação ou definir uma exceção à extensão mitm do PCAPdroid na VPN, caso contrário, o tráfego vai entrar em um loop</string>
 </resources>

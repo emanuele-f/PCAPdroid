@@ -19,7 +19,7 @@
 
 #ifdef ANDROID
 
-#include <jni.h>
+#include "jni_utils.h"
 #include "common/utils.h"
 
 /* ******************************************************* */
@@ -33,6 +33,16 @@ int jniCheckException(JNIEnv *env) {
         return 1;
     }
     return 0;
+}
+
+/* ******************************************************* */
+
+// Dumps JNI reference tables to logcat to detect possible reference leaks
+void jniDumpReferences(JNIEnv *env) {
+    jclass vm_class = jniFindClass(env, "dalvik/system/VMDebug");
+    jmethodID dump_mid = jniGetStaticMethodID(env, vm_class, "dumpReferenceTables", "()V" );
+    (*env)->CallStaticVoidMethod(env, vm_class, dump_mid);
+    (*env)->DeleteLocalRef(env, vm_class);
 }
 
 /* ******************************************************* */
@@ -52,6 +62,18 @@ jmethodID jniGetMethodID(JNIEnv *env, jclass cls, const char *name, const char *
     jmethodID method = (*env)->GetMethodID(env, cls, name, signature);
     if (method == NULL) {
         log_e("Method %s %s not found", name, signature);
+        jniCheckException(env);
+    }
+
+    return method;
+}
+
+/* ******************************************************* */
+
+jmethodID jniGetStaticMethodID(JNIEnv *env, jclass cls, const char *name, const char *signature) {
+    jmethodID method = (*env)->GetStaticMethodID(env, cls, name, signature);
+    if (method == NULL) {
+        log_e("Static method %s %s not found", name, signature);
         jniCheckException(env);
     }
 
@@ -93,6 +115,7 @@ jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key) {
         jniCheckException(env);
     }
 
+    (*env)->DeleteLocalRef(env, cls);
     return val;
 }
 

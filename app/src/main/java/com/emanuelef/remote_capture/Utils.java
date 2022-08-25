@@ -54,6 +54,7 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -75,6 +76,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
@@ -99,6 +101,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -704,7 +707,7 @@ public class Utils {
         String appver;
 
         try {
-            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            PackageInfo pInfo = Utils.getPackageInfo(context.getPackageManager(), context.getPackageName(), 0);
             String version = pInfo.versionName;
             boolean isRelease = version.contains(".");
 
@@ -1043,7 +1046,7 @@ public class Utils {
     public static void startActivity(Context ctx, Intent intent) {
         try {
             ctx.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException | SecurityException e) {
             showToastLong(ctx, R.string.no_intent_handler_found);
         }
     }
@@ -1072,17 +1075,18 @@ public class Utils {
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     public static BuildType getVerifiedBuild(Context ctx, String package_name) {
         try {
             Signature[] signatures;
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 // NOTE: PCAPdroid does not use multiple signatures
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(package_name, PackageManager.GET_SIGNING_CERTIFICATES);
+                PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), package_name, PackageManager.GET_SIGNING_CERTIFICATES);
                 signatures = (pInfo.signingInfo == null) ? null : pInfo.signingInfo.getSigningCertificateHistory();
             } else {
                 @SuppressLint("PackageManagerGetSignatures")
-                PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
+                PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), package_name, PackageManager.GET_SIGNATURES);
                 signatures = pInfo.signatures;
             }
 
@@ -1371,5 +1375,58 @@ public class Utils {
 
     public static String getUserAgent() {
         return "PCAPdroid v" + BuildConfig.VERSION_NAME;
+    }
+
+    @SuppressWarnings({"unchecked", "deprecation"})
+    public static @Nullable <T extends Serializable> T getSerializableExtra(Intent intent, String key, Class<T> clazz) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return intent.getSerializableExtra(key, clazz);
+        else {
+            try {
+                return (T)intent.getSerializableExtra(key);
+            } catch (ClassCastException unused) {
+                return null;
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "deprecation"})
+    public static @Nullable <T extends Serializable> T getSerializable(Bundle bundle, String key, Class<T> clazz) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return bundle.getSerializable(key, clazz);
+        else {
+            try {
+                return (T)bundle.getSerializable(key);
+            } catch (ClassCastException unused) {
+                return null;
+            }
+        }
+    }
+
+    @SuppressWarnings({"deprecation"})
+    public static PackageInfo getPackageInfo(PackageManager pm, String package_name, int flags) throws PackageManager.NameNotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getPackageInfo(package_name, PackageManager.PackageInfoFlags.of(flags));
+        else
+            return pm.getPackageInfo(package_name, flags);
+    }
+
+    @SuppressWarnings({"deprecation"})
+    public static int getPackageUid(PackageManager pm, String package_name, int flags) throws PackageManager.NameNotFoundException {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getPackageUid(package_name, PackageManager.PackageInfoFlags.of(flags));
+        else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            return pm.getPackageUid(package_name, 0);
+        else
+            return pm.getApplicationInfo(package_name, 0).uid;
+    }
+
+    @SuppressLint({"QueryPermissionsNeeded"})
+    @SuppressWarnings({"deprecation"})
+    public static List<PackageInfo> getInstalledPackages(PackageManager pm, int flags) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            return pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(flags));
+        else
+            return pm.getInstalledPackages(flags);
     }
 }

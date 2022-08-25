@@ -268,6 +268,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
         for(int i=mCurChunks; i<max_check; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
+            if(chunk == null)
+                continue;
 
             if(!mHasHttpTab && (chunk.type == PayloadChunk.ChunkType.HTTP)) {
                 mHasHttpTab = true;

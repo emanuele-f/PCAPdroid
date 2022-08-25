@@ -211,6 +211,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             }
         }
 
+        @SuppressWarnings("deprecation")
         private boolean validateIp(String value) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                 return (InetAddresses.isNumericAddress(value));

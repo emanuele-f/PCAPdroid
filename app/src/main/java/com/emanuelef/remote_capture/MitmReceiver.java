@@ -20,17 +20,16 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.LruCache;
 import android.util.SparseArray;
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
@@ -67,15 +66,14 @@ import java.util.StringTokenizer;
 public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener {
     private static final String TAG = "MitmReceiver";
     public static final int TLS_DECRYPTION_PROXY_PORT = 7780;
-    public static final String ACTION_MITM_ADDON_STATUS_CHANGED = "addon_status_changed";
     private Thread mThread;
     private final ConnectionsRegister mReg;
     private final Context mContext;
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
+    private static final MutableLiveData<Boolean> proxyRunning = new MutableLiveData<>();
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
-    private boolean mProxyRunning;
 
     // Shared state
     private final LruCache<Integer, Integer> mPortToConnId = new LruCache<>(64);
@@ -140,7 +138,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     public boolean start() throws IOException {
         Log.d(TAG, "starting");
-        mProxyRunning = false;
+        proxyRunning.postValue(false);
 
         if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);
@@ -180,8 +178,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     @Override
     public void run() {
-        Log.d(TAG, "Receiving data...");
+        if(mSocketFd == null) {
+            Log.d(TAG, "Null socket, abort");
+            proxyRunning.postValue(false);
+            return;
+        }
 
+        Log.d(TAG, "Receiving data...");
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
                 String msg_type;
@@ -232,9 +235,10 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
                 if(type == MsgType.MASTER_SECRET)
                     logMasterSecret(msg);
-                else if(type == MsgType.RUNNING)
-                    handleProxyRunning();
-                else {
+                else if(type == MsgType.RUNNING) {
+                    Log.d(TAG, "MITM proxy is running");
+                    proxyRunning.postValue(true);
+                } else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
                     //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port + ", match=" + (conn != null));
 
@@ -253,7 +257,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             mKeylog = null;
         }
 
-        mProxyRunning = false;
+        proxyRunning.postValue(false);
         Log.d(TAG, "End receiving data");
     }
 
@@ -281,17 +285,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    private void handleProxyRunning() {
-        Log.d(TAG, "MITM proxy is running");
-        mProxyRunning = true;
-
-        // Notify the StatusFragment
-        new Handler(Looper.getMainLooper()).post(() -> {
-            Intent intent = new Intent(ACTION_MITM_ADDON_STATUS_CHANGED);
-            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
-        });
-    }
-
     private void handleMessage(ConnectionDescriptor conn, MsgType type, byte[] message, long tstamp) {
         // NOTE: we are possibly accessing the conn concurrently
         if((type == MsgType.TLS_ERROR) || (type == MsgType.HTTP_ERROR) || (type == MsgType.TCP_ERROR)) {
@@ -301,7 +294,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
         } else
-            conn.addPayloadChunk(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
+            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
     private synchronized void addPendingMessage(PendingMessage pending) {
@@ -371,7 +364,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     }
 
     public boolean isProxyRunning() {
-        return mProxyRunning;
+        return Boolean.TRUE.equals(proxyRunning.getValue());
+    }
+
+    public static void observeRunning(LifecycleOwner lifecycleOwner, Observer<Boolean> observer) {
+        proxyRunning.observe(lifecycleOwner, observer);
     }
 
     @Override

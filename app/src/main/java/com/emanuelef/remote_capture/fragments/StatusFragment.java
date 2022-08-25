@@ -21,10 +21,7 @@ package com.emanuelef.remote_capture.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -45,8 +42,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
@@ -69,7 +67,7 @@ import com.pcapdroid.mitm.MitmAPI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatusFragment extends Fragment implements AppStateListener, AppsLoadListener {
+public class StatusFragment extends Fragment implements AppStateListener, MenuProvider, AppsLoadListener {
     private static final String TAG = "StatusFragment";
     private Handler mHandler;
     private Menu mMenu;
@@ -82,7 +80,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private View mQuickSettings;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
-    private BroadcastReceiver mReceiver;
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
@@ -107,43 +104,12 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     public void onResume() {
         super.onResume();
         refreshStatus();
-
-        /* Register for stats update */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-
-                if(action.equals(CaptureService.ACTION_STATS_DUMP))
-                    processStatsUpdateIntent(intent);
-                else if(action.equals(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED))
-                    refreshDecryptionStatus();
-            }
-        };
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CaptureService.ACTION_STATS_DUMP);
-        filter.addAction(MitmReceiver.ACTION_MITM_ADDON_STATUS_CHANGED);
-
-        LocalBroadcastManager.getInstance(requireContext())
-                .registerReceiver(mReceiver, filter);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if(mReceiver != null) {
-            LocalBroadcastManager.getInstance(requireContext())
-                    .unregisterReceiver(mReceiver);
-            mReceiver = null;
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.status, container, false);
     }
 
@@ -203,6 +169,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 mActivity.startCapture();
         });
 
+        // Register for updates
+        MitmReceiver.observeRunning(this, running -> refreshDecryptionStatus());
+        CaptureService.observeStats(this, this::onStatsUpdate);
+
         // Make URLs clickable
         mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -212,7 +182,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.main_menu, menu);
 
         mMenu = menu;
@@ -220,6 +190,11 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         refreshStatus();
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
+        return false;
     }
 
     private void recheckFilterWarning() {
@@ -232,6 +207,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     }
 
     private void refreshFilterInfo() {
+        Context context = getContext();
+        if(context == null)
+            return;
+
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.capture_all_apps);
             mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
@@ -241,7 +220,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
+        AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), mAppFilter, 0);
         String description;
 
         if(app == null)
@@ -251,7 +230,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             int height = mFilterDescription.getMeasuredHeight();
 
             if((height > 0) && (app.getIcon() != null)) {
-                Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
+                Drawable drawable = Utils.scaleDrawable(context.getResources(), app.getIcon(), height, height);
 
                 if(drawable != null)
                     mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
@@ -271,9 +250,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         recheckFilterWarning();
     }
 
-    private void processStatsUpdateIntent(Intent intent) {
-        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
-
+    private void onStatsUpdate(CaptureStats stats) {
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
 
@@ -375,7 +352,10 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                 mQuickSettings.setVisibility(View.GONE);
                 CaptureService service = CaptureService.requireInstance();
 
-                if(CaptureService.isCapturingAsRoot()) {
+                if(CaptureService.isDecryptingTLS()) {
+                    refreshDecryptionStatus();
+                    mInterfaceInfo.setVisibility(View.VISIBLE);
+                } else if(CaptureService.isCapturingAsRoot()) {
                     String capiface = service.getCaptureInterface();
 
                     if(capiface.equals("@inet"))
@@ -384,9 +364,6 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
                         capiface = getString(R.string.all_interfaces);
 
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.capturing_from), capiface));
-                    mInterfaceInfo.setVisibility(View.VISIBLE);
-                } else if(CaptureService.isDecryptingTLS()) {
-                    refreshDecryptionStatus();
                     mInterfaceInfo.setVisibility(View.VISIBLE);
                 } else if(service.getSocks5Enabled() == 1) {
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),
@@ -419,7 +396,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         dialog.show();
 
         // NOTE: run this after dialog.show
-        mOpenAppsList = (AppsListView) dialog.findViewById(R.id.apps_list);
+        mOpenAppsList = dialog.findViewById(R.id.apps_list);
         mEmptyAppsView = dialog.findViewById(R.id.no_apps);
         mEmptyAppsView.setText(R.string.loading_apps);
 

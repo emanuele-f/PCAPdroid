@@ -21,11 +21,9 @@ package com.emanuelef.remote_capture;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -98,7 +96,7 @@ public class AppsResolver {
         PackageInfo pinfo;
 
         try {
-            pinfo = pm.getPackageInfo(packageName, pm_flags);
+            pinfo = Utils.getPackageInfo(pm, packageName, pm_flags);
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "could not retrieve package: " + packageName);
             return null;
@@ -183,12 +181,7 @@ public class AppsResolver {
             }
         } else {
             try {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    return mPm.getPackageUid(package_name, 0);
-                } else {
-                    ApplicationInfo info = mPm.getApplicationInfo(package_name, 0);
-                    return info.uid;
-                }
+                return Utils.getPackageUid(mPm, package_name, 0);
             } catch (PackageManager.NameNotFoundException e) {
                 Log.w(TAG, "Could not retrieve package " + package_name);
                 //e.printStackTrace();

@@ -19,10 +19,6 @@
 
 package com.emanuelef.remote_capture.fragments;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -37,8 +33,9 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -47,18 +44,17 @@ import com.emanuelef.remote_capture.adapters.BlacklistsAdapter;
 import com.emanuelef.remote_capture.interfaces.BlacklistsStateListener;
 import com.emanuelef.remote_capture.Blacklists;
 
-public class BlacklistsFragment extends Fragment implements BlacklistsStateListener {
+public class BlacklistsFragment extends Fragment implements BlacklistsStateListener, MenuProvider {
     private static final String TAG = "BlacklistsFragment";
     private BlacklistsAdapter mAdapter;
     private Blacklists mBlacklists;
     private MenuItem mUpdateItem;
-    private BroadcastReceiver mReceiver;
     private Handler mHandler;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.malware_detection_blacklists, container, false);
     }
 
@@ -71,44 +67,30 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
 
         mHandler = new Handler(Looper.getMainLooper());
 
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
-
-                if(status != null)
-                    refreshStatus();
-            }
-        };
+        CaptureService.observeStatus(this, serviceStatus -> refreshStatus());
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mBlacklists.addOnChangeListener(this);
-
-        LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
     }
 
     @Override
     public void onPause() {
         super.onPause();
         mBlacklists.removeOnChangeListener(this);
-
-        LocalBroadcastManager.getInstance(requireContext())
-                .unregisterReceiver(mReceiver);
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.blacklists_menu, menu);
         mUpdateItem = menu.findItem(R.id.update);
         refreshStatus();
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.update) {

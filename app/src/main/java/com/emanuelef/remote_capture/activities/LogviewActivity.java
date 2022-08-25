@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,8 +26,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 
-import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 
@@ -36,7 +35,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class LogviewActivity extends BaseActivity {
+public class LogviewActivity extends BaseActivity implements MenuProvider {
     private static final String TAG = "LogviewActivity";
     private String mLogText;
 
@@ -45,6 +44,7 @@ public class LogviewActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setTitle(R.string.root_log);
         setContentView(R.layout.logview_activity);
+        addMenuProvider(this);
 
         TextView logView = findViewById(R.id.log);
         mLogText = readLog();
@@ -74,15 +74,12 @@ public class LogviewActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.copy_share_menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
@@ -93,6 +90,6 @@ public class LogviewActivity extends BaseActivity {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }

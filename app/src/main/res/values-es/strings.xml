@@ -198,7 +198,6 @@
     <string name="decryption_no_filter_warn">Selecciona una aplicación de destino al descifrar TLS para evitar perder la conexión a Internet</string>
     <string name="file_saved_with_name">Archivo guardado como \"%1$s\"</string>
     <string name="loading">Cargando…</string>
-    <string name="unlock_code">Desbloquear código</string>
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
     <string name="capture_all_apps">Capturar tráfico de todas las aplicaciones</string>
     <string name="disconnect_vpn_confirm">¿Desconectar la aplicación VPN activa y continuar\?</string>

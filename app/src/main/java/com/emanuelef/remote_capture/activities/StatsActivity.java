@@ -20,13 +20,10 @@
 package com.emanuelef.remote_capture.activities;
 
 import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.core.view.MenuProvider;
 
 import android.app.ActivityManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -43,8 +40,7 @@ import com.emanuelef.remote_capture.model.CaptureStats;
 
 import java.util.Locale;
 
-public class StatsActivity extends BaseActivity {
-    private BroadcastReceiver mReceiver;
+public class StatsActivity extends BaseActivity implements MenuProvider {
     private TextView mBytesSent;
     private TextView mBytesRcvd;
     private TextView mPacketsSent;
@@ -68,6 +64,7 @@ public class StatsActivity extends BaseActivity {
         setTitle(R.string.stats);
         displayBackAction();
         setContentView(R.layout.activity_stats);
+        addMenuProvider(this);
 
         mTable = findViewById(R.id.table);
         mBytesSent = findViewById(R.id.bytes_sent);
@@ -92,32 +89,13 @@ public class StatsActivity extends BaseActivity {
         } else
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
 
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateStats(intent);
-            }
-        };
-
-        /* Register for updates */
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_STATS_DUMP));
+        // Listen for stats updates
+        CaptureService.observeStats(this, this::updateStats);
 
         CaptureService.askStatsDump();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if(mReceiver != null)
-            LocalBroadcastManager.getInstance(this)
-                    .unregisterReceiver(mReceiver);
-    }
-
-    private void updateStats(Intent intent) {
-        CaptureStats stats = (CaptureStats) intent.getSerializableExtra("value");
-
+    private void updateStats(CaptureStats stats) {
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
@@ -170,11 +148,8 @@ public class StatsActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.copy_share_menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
     }
 
     private String getContents() {
@@ -182,7 +157,7 @@ public class StatsActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {
@@ -193,6 +168,6 @@ public class StatsActivity extends BaseActivity {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }

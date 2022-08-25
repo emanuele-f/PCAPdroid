@@ -172,9 +172,12 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->DeleteLocalRef(env, url);
         (*env)->DeleteLocalRef(env, l7proto);
     }
-    if(data->update_type & CONN_UPDATE_PAYLOAD)
+    if(data->update_type & CONN_UPDATE_PAYLOAD) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetPayload, data->payload_chunks,
                                data->payload_truncated);
+        (*pd->env)->DeleteLocalRef(pd->env, data->payload_chunks);
+        data->payload_chunks = NULL;
+    }
 
     // reset the update flag
     data->update_type = 0;
@@ -273,6 +276,8 @@ static int dumpConnectionUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn, j
 /* Perform a full dump of the active connections */
 static void sendConnectionsDump(pcapdroid_t *pd) {
     JNIEnv *env = pd->env;
+    //jniDumpReferences(env);
+
     jobject new_conns = (*env)->NewObjectArray(env, pd->new_conns.cur_items, cls.conn, NULL);
     jobject conns_updates = (*env)->NewObjectArray(env, pd->conns_updates.cur_items, cls.conn_update, NULL);
 
@@ -311,11 +316,12 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
 cleanup:
     (*env)->DeleteLocalRef(env, new_conns);
     (*env)->DeleteLocalRef(env, conns_updates);
+    //jniDumpReferences(env);
 }
 
 /* ******************************************************* */
 
-// Load information about the blacklists to use (pd->malware_detection.bls_info)
+// Load information about the blacklists to use (into pd->malware_detection.bls_info)
 static int loadBlacklistsInfo(pcapdroid_t *pd) {
     int rv = 0;
     JNIEnv *env = pd->env;
@@ -353,6 +359,7 @@ static int loadBlacklistsInfo(pcapdroid_t *pd) {
             (*pd->env)->DeleteLocalRef(pd->env, bl_type);
 
             //log_d("[+] Blacklist: %s (%s)", blinfo->fname, (blinfo->type == IP_BLACKLIST) ? "IP" : "domain");
+            (*pd->env)->DeleteLocalRef(pd->env, bl_descr);
         }
     }
 
@@ -380,19 +387,21 @@ static void notifyBlacklistsLoaded(pcapdroid_t *pd, bl_status_arr_t *status_arr)
 
         jobject stats = (*env)->NewObject(env, cls.blacklist_status, mids.blacklistStatusInit,
                                               fname, st->num_rules);
-        if((stats == NULL) || jniCheckException(env)) {
-            (*env)->DeleteLocalRef(env, fname);
+        (*env)->DeleteLocalRef(env, fname);
+
+        if((stats == NULL) || jniCheckException(env))
             break;
-        }
 
         (*env)->SetObjectArrayElement(env, status_obj, i, stats);
+        (*env)->DeleteLocalRef(env, stats);
+
         if(jniCheckException(env)) {
-            (*env)->DeleteLocalRef(env, stats);
             break;
         }
     }
 
-    (*pd->env)->CallVoidMethod(pd->env, pd->capture_service, mids.notifyBlacklistsLoaded, status_obj);
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.notifyBlacklistsLoaded, status_obj);
+    (*env)->DeleteLocalRef(env, status_obj);
 }
 
 /* ******************************************************* */
@@ -402,7 +411,10 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
     bool rv = false;
 
     if(pctx->data->payload_chunks == NULL) {
-        pctx->data->payload_chunks = (*pd->env)->NewObject(pd->env, cls.arraylist, mids.arraylistNew);
+        // Directly allocating an ArrayList<bytes> rather than creating it afterwards saves us from a data copy.
+        // However, this creates a local reference, which is retained until sendConnectionsDump is called.
+        // NOTE: Android only allows up to 512 local references.
+        pctx->data->payload_chunks = (*env)->NewObject(env, cls.arraylist, mids.arraylistNew);
         if((pctx->data->payload_chunks == NULL) || jniCheckException(env))
             return false;
     }
@@ -413,10 +425,10 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
 
     jobject chunk_type = (pctx->data->l7proto == NDPI_PROTOCOL_HTTP) ? enums.chunktype_http : enums.chunktype_raw;
 
-    jobject chunk = (*pd->env)->NewObject(pd->env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, pctx->is_tx, pctx->ms);
+    jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, pctx->is_tx, pctx->ms);
     if(chunk && !jniCheckException(env)) {
         (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*)pctx->pkt->l7);
-        rv = (*pd->env)->CallBooleanMethod(pd->env, pctx->data->payload_chunks, mids.arraylistAdd, chunk);
+        rv = (*env)->CallBooleanMethod(env, pctx->data->payload_chunks, mids.arraylistAdd, chunk);
     }
 
     //log_d("Dump chunk [size=%d]: %d", rv, dump_size);
@@ -441,6 +453,7 @@ static void getLibprogPath(pcapdroid_t *pd, const char *prog_name, char *buf, in
     }
 
     jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getLibprogPath, prog_str);
+    (*env)->DeleteLocalRef(env, prog_str);
 
     if(!jniCheckException(env)) {
         const char *value = (*env)->GetStringUTFChars(env, obj, 0);
@@ -602,6 +615,21 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
 
     global_pd = NULL;
     logcallback = NULL;
+
+#if 0
+    // free JNI local objects to ease references leak detection
+    for(int i=0; i<sizeof(cls)/sizeof(jclass); i++) {
+        jclass cur = ((jclass*)&cls)[i];
+        (*env)->DeleteLocalRef(env, cur);
+    }
+    for(int i=0; i<sizeof(enums)/sizeof(jobject); i++) {
+        jobject cur = ((jobject*)&enums)[i];
+        (*env)->DeleteLocalRef(env, cur);
+    }
+
+    // at this point the local reference table should only contain 2 entries (VMDebug + Thread)
+    jniDumpReferences(env);
+#endif
 
 #ifdef PCAPDROID_TRACK_ALLOCS
     log_i(get_allocs_summary());

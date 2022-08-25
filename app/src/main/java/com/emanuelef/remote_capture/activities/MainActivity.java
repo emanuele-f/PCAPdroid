@@ -21,10 +21,7 @@ package com.emanuelef.remote_capture.activities;
 
 import android.Manifest;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.content.pm.PackageInfo;
@@ -41,11 +38,11 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -87,7 +84,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.HashSet;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -97,7 +93,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private AppStateListener mListener;
     private Uri mPcapUri;
     private File mKeylogFile;
-    private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
     private SharedPreferences mPrefs;
@@ -169,44 +164,34 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setupTabs();
 
         /* Register for service status */
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra(CaptureService.SERVICE_STATUS_KEY);
+        CaptureService.observeStatus(this, serviceStatus -> {
+            Log.d(TAG, "Service status: " + serviceStatus.name());
 
-                if (status != null) {
-                    Log.d(TAG, "Service status: " + status);
+            if (serviceStatus == CaptureService.ServiceStatus.STARTED)
+                appStateRunning();
+            else /* STOPPED */ {
+                // The service may still be active (on premature native termination)
+                if (CaptureService.isServiceActive())
+                    CaptureService.stopService();
 
-                    if (status.equals(CaptureService.SERVICE_STATUS_STARTED))
-                        appStateRunning();
-                    else if (status.equals(CaptureService.SERVICE_STATUS_STOPPED)) {
-                        // The service may still be active (on premature native termination)
-                        if (CaptureService.isServiceActive())
-                            CaptureService.stopService();
+                mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+                if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
+                    mKeylogFile = null;
 
-                        mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
-                        if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
-                            mKeylogFile = null;
+                Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
-                        Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
+                if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                    showPcapActionDialog(mPcapUri);
+                    mPcapUri = null;
+                    mPcapFname = null;
 
-                        if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-                            showPcapActionDialog(mPcapUri);
-                            mPcapUri = null;
-                            mPcapFname = null;
+                    // will export the keylogfile after saving/sharing pcap
+                } else if(mKeylogFile != null)
+                    startExportSslkeylogfile();
 
-                            // will export the keylogfile after saving/sharing pcap
-                        } else if(mKeylogFile != null)
-                            startExportSslkeylogfile();
-
-                        appStateReady();
-                    }
-                }
+                appStateReady();
             }
-        };
-
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
+        });
     }
 
     private void checkPurchasesAvailable() {
@@ -223,10 +208,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if(mReceiver != null)
-            LocalBroadcastManager.getInstance(this)
-                    .unregisterReceiver(mReceiver);
 
         mCapHelper = null;
     }
@@ -367,7 +348,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         PackageInfo pInfo = peer.getPackageInfo();
-        if((pInfo == null) || (pInfo.versionCode < 56)) {
+        if((pInfo == null) || (PackageInfoCompat.getLongVersionCode(pInfo) < 56)) {
             Log.d(TAG, "Unsupported peer app version found");
             return;
         }
@@ -379,7 +360,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             return;
         }
 
-        Log.d(TAG, "Valid peer app found (" + pInfo.versionName + " - " + pInfo.versionCode + ")");
+        Log.d(TAG, "Valid peer app found (" + pInfo.versionName + " - " + PackageInfoCompat.getLongVersionCode(pInfo) + ")");
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClassName(peerAppPackage, "com.emanuelef.remote_capture.activities.CaptureCtrl");
         intent.putExtra("action", "get_peer_info");
@@ -394,20 +375,26 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void peerInfoResult(final ActivityResult result) {
         if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
             Intent data = result.getData();
-            Serializable skus_extra = data.getSerializableExtra("skus");
-            if(skus_extra instanceof HashSet) {
-                HashSet<String> skus = (HashSet<String>) skus_extra;
-                Log.d(TAG, "Found peer app info");
 
-                for(String sku: skus) {
-                    Log.d(TAG, "Peer sku: " + sku);
-                    mIab.addPeerSku(sku);
+            try {
+                @SuppressWarnings("unchecked")
+                HashSet<String> skus = Utils.getSerializableExtra(data, "skus", HashSet.class);
+
+                if(skus != null) {
+                    Log.d(TAG, "Found peer app info");
+
+                    for(String sku: skus) {
+                        Log.d(TAG, "Peer sku: " + sku);
+                        mIab.addPeerSku(sku);
+                    }
+
+                    // success
+                    return;
                 }
-
-                return;
-            }
+            } catch (ClassCastException ignored) {}
         }
 
+        // fail
         Log.d(TAG, "Invalid peer app result");
     }
 
@@ -600,7 +587,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Intent intent;
 
         try {
-            getPackageManager().getPackageInfo("org.telegram.messenger", 0);
+            Utils.getPackageInfo(getPackageManager(), "org.telegram.messenger", 0);
 
             // Open directly into the telegram app
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + TELEGRAM_GROUP_NAME));
@@ -844,7 +831,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
                 else
                     deleted = DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
-            } catch (FileNotFoundException | UnsupportedOperationException e) {
+            } catch (FileNotFoundException | UnsupportedOperationException | SecurityException e) {
                 e.printStackTrace();
             }
 

@@ -8,7 +8,6 @@
     <string name="sni" translatable="false">SNI</string>
     <string name="url" translatable="false">URL</string>
     <string name="whois_lookup" translatable="false">WHOIS</string>
-    <string name="system_id" translatable="false">System ID</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href="https://www.gnu.org/licenses/gpl-3.0-standalone.html">GNU General Public License</a> for
@@ -213,7 +212,6 @@
     <string name="n_pkts">%1$s 个数据包</string>
     <string name="blocked_connection_filter">已拦截</string>
     <string name="paid_features">付费功能</string>
-    <string name="unlock_code">解锁码</string>
     <string name="validate">验证</string>
     <string name="valid">有效</string>
     <string name="invalid">无效</string>

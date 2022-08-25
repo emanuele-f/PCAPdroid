@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -103,7 +102,7 @@ public class MitmAddon {
 
     public static long getInstalledVersion(Context ctx) {
         try {
-            PackageInfo pInfo = ctx.getPackageManager().getPackageInfo(MitmAPI.PACKAGE_NAME, 0);
+            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
             return PackageInfoCompat.getLongVersionCode(pInfo);
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
@@ -111,14 +110,8 @@ public class MitmAddon {
     }
 
     public static int getUid(Context ctx) {
-        PackageManager pm = ctx.getPackageManager();
-
         try {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                return pm.getPackageUid(MitmAPI.PACKAGE_NAME, 0);
-            } else {
-                return pm.getApplicationInfo(MitmAPI.PACKAGE_NAME, 0).uid;
-            }
+            return Utils.getPackageUid(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
         } catch (PackageManager.NameNotFoundException e) {
             return -1;
         }

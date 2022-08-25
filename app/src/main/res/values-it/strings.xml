@@ -187,7 +187,6 @@
     <string name="n_pkts">%1$s pacchetti</string>
     <string name="blocked_connection_filter">Bloccata</string>
     <string name="paid_features">Funzioni a pagamento</string>
-    <string name="unlock_code">Codice di sblocco</string>
     <string name="validate">Convalida</string>
     <string name="valid">Valido</string>
     <string name="invalid">Invalido</string>

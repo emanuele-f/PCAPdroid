@@ -40,7 +40,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
@@ -50,7 +52,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 
-public class AppOverview extends Fragment {
+public class AppOverview extends Fragment implements MenuProvider {
     private static final String UID_ARG = "UID";
     private int mUid;
     private Handler mHandler;
@@ -75,7 +77,7 @@ public class AppOverview extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.app_overview, container, false);
     }
 
@@ -187,7 +189,7 @@ public class AppOverview extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.app_overview_menu, menu);
 
         if(mPinfo == null)
@@ -195,7 +197,7 @@ public class AppOverview extends Fragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.app_info) {
@@ -211,7 +213,7 @@ public class AppOverview extends Fragment {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private void updateStatus() {
