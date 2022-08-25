@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -293,7 +294,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         MenuItem item;
 
-        boolean firewallAvailable = Billing.newInstance(ctx).isFirewallVisible();
+        Billing billing = Billing.newInstance(ctx);
+
+        boolean firewallVisible = billing.isFirewallVisible();
+        boolean showPurchaseFirewall = (!billing.isPurchased(Billing.FIREWALL_SKU) && billing.isAvailable(Billing.FIREWALL_SKU)) && !CaptureService.isCapturingAsRoot();
         boolean blockVisible = false;
         boolean unblockVisible = false;
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
@@ -426,8 +430,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_proto).setTitle(label);
         menu.findItem(R.id.search_proto).setTitle(label);
 
-        menu.findItem(R.id.block_menu).setVisible(firewallAvailable && blockVisible);
-        menu.findItem(R.id.unblock_menu).setVisible(firewallAvailable && unblockVisible);
+        menu.findItem(R.id.block_menu).setVisible((firewallVisible || showPurchaseFirewall) && blockVisible);
+        menu.findItem(R.id.unblock_menu).setVisible(firewallVisible && unblockVisible);
 
         if(!conn.isBlacklisted())
             menu.findItem(R.id.whitelist_menu).setVisible(false);
@@ -439,6 +443,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
@@ -485,17 +490,29 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             whitelist.addHost(conn.info);
             whitelist_changed = true;
         } else if(id == R.id.block_app) {
-            blocklist.addApp(conn.uid);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addApp(conn.uid);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_ip) {
-            blocklist.addIp(conn.dst_ip);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addIp(conn.dst_ip);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_host) {
-            blocklist.addHost(conn.info);
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addHost(conn.info);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.block_domain) {
-            blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
-            blocklist_changed = true;
+            if(firewallPurchased) {
+                blocklist.addHost(Utils.getSecondLevelDomain(conn.info));
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.unblock_app_permanently) {
             blocklist.removeApp(conn.uid);
             blocklist_changed = true;
@@ -542,6 +559,17 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             blocklist.saveAndReload();
 
         return true;
+    }
+
+    private void showFirewallPurchaseDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.paid_feature)
+                .setMessage(Utils.getText(requireContext(), R.string.firewall_purchase_msg, getString(R.string.no_root_firewall)))
+                .setPositiveButton(R.string.show_me, (dialogInterface, i) -> {
+                    // Billing code here
+                })
+                .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
+                .show();
     }
 
     private void setQuery(String query) {
