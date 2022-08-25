@@ -337,6 +337,10 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     public void setLicense(String license) {}
 
     public boolean isPurchased(String sku) {
+        // one-use items
+        if(sku.equals(UNLOCK_TOKEN_SKU))
+            return false;
+
         if(!(sku.equals(SUPPORTER_SKU)) && isPurchased(SUPPORTER_SKU))
             return true;
 
