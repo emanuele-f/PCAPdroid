@@ -59,6 +59,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
+import com.emanuelef.remote_capture.activities.IABActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
@@ -567,6 +568,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setMessage(Utils.getText(requireContext(), R.string.firewall_purchase_msg, getString(R.string.no_root_firewall)))
                 .setPositiveButton(R.string.show_me, (dialogInterface, i) -> {
                     // Billing code here
+                    Intent intent = new Intent(requireContext(), IABActivity.class);
+                    startActivity(intent);
                 })
                 .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
                 .show();
