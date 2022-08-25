@@ -402,4 +402,6 @@
     <string name="requesting_unlock_token">Kilit açma belirteci isteniyor, lütfen bekleyin</string>
     <string name="show_action">Göster</string>
     <string name="unlock_token_msg1">Bu sizin kilit açma belirtecinizdir. <a href="%1$s">Lisans kodlarınızı oluşturmak için</a> ihtiyacınız olacağından bunu not edin</string>
+    <string name="paid_feature">Ücretli özellik</string>
+    <string name="firewall_purchase_msg">Bağlantıları engellemeye başlamak için <i>%1$s</i> özelliğini satın alın</string>
 </resources>
