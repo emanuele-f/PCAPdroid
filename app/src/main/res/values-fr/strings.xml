@@ -308,4 +308,42 @@
     <string name="ipv6_only">IPv6 uniquement</string>
     <string name="build_info">Informations de la version</string>
     <string name="unblock_for_n_minutes">Débloquer pour %1$dm</string>
+    <string name="permission_grant_fail">La permission %1$s n\'a pu être obtenue</string>
+    <string name="app_unblocked">L\'application %1$s a été débloquée</string>
+    <string name="privacy_first">La confidentialité avant tout</string>
+    <string name="permission_granted">Permission %1$s acceptée</string>
+    <string name="low_memory_info">Cette application n\'a plus de mémoire, il est possible qu\'elle plante</string>
+    <string name="capture_stopped_low_memory">La capture a été arrêtée</string>
+    <string name="heap_usage">Utilisation de la mémoire de tas</string>
+    <string name="connection_not_found">Cette connexion n\'a pu être trouvée</string>
+    <string name="ip_mode">Adresses IP VPN</string>
+    <string name="mitm_setup_wizard">Assistance de configuration Mitm</string>
+    <string name="mitm_start_failed">Le service mitm n\'a pu être lancé. Veuillez réinstaller ce greffon et réessayer</string>
+    <string name="mitm_addon_new_version">Le greffon mitm de PCAPdroid doit être mis à jour</string>
+    <string name="full_payload">Payload complet</string>
+    <string name="waiting_application_data">En attente des données</string>
+    <string name="no_root_firewall">Pare-feu non-root</string>
+    <string name="block_quick">Bloquer QUIC</string>
+    <string name="paid_feature">Fonctionnalité payante</string>
+    <string name="firewall_purchase_msg">Achetez la fonctionnalité <i>%1$s</i> pour commencer à bloquer des connexions</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid peut demander à une base de données locale le pays du serveur distant
+\n
+\nVous devez d\'abord télécharger cette base de géolocalisation depuis les préférences de l\'application</string>
+    <string name="install_the_mitm_addon">Installer <a href="%1$s">le greffon mitm</a> de PCAPdroid</string>
+    <string name="app_blocked_info">L\'application %1$s a été bloquée par le pare-feu</string>
+    <string name="paid_features_unlocked">Les fonctionnalités payantes ont été débloquées. Relancez la capture si déjà lancée</string>
+    <string name="access_paid_features_msg">Consultez <a href="%1$s">le guide utilisateur</a> pour savoir comment accéder au fonctionnalités payantes</string>
+    <string name="unlock_token_error">Le \"unlock token\" [%1$d] n\'a pu être demandé : %2$s</string>
+    <string name="show_action">Afficher</string>
+    <string name="license_service_unavailable">Le service de licences PCAPdroid n\'a actuellement pas disponible. Veuillez réessayer dans quelques instants</string>
+    <string name="requesting_unlock_token">Demande d\'un \"unlock token\", veuillez patienter</string>
+    <string name="vpn_exemptions">Exception du VPN</string>
+    <string name="remote_server_warning">Pour des raisons de sécurité, envoyer du trafic au serveur distant \"%1$s\" n\'est pas autorisé</string>
+    <string name="vpn_setup_msg">PCAPdroid simule un VPN pour pouvoir capturer le trafic réseau sans être root.
+\n
+\nPour lancer la capture, vous devez accepter la requête VPN de la page suivante</string>
+    <string name="vpn_exemptions_summary">Exclure certaines applications de la connexion VPN. Leur trafic ne pourra pas être suivi</string>
+    <string name="payload_scams_notice">Cette vue peut contenir des informations sensibles, comme des mots de passe ou des jetons d\'accès.
+\n
+\nNe montrer jamais cette vue à qui que ce soit, cela peut être une tentative d\'arnaque</string>
 </resources>
