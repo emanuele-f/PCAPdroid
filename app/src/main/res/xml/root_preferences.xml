@@ -66,6 +66,12 @@
             app:summary="@string/tls_decryption_summary"
             app:defaultValue="false" />
 
+        <Preference
+            app:key="mitm_setup_wizard"
+            app:title="@string/mitm_setup_wizard"
+            app:summary="@string/mitm_wizard_description"
+            app:iconSpaceReserved="false" />
+
         <SwitchPreference
             app:key="block_quic"
             app:title="@string/block_quick"
