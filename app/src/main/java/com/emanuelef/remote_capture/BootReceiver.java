@@ -46,22 +46,30 @@ public class BootReceiver extends BroadcastReceiver {
             return;
         }
 
-        if(Prefs.startAtBoot(prefs)) {
-            CaptureSettings settings = new CaptureSettings(prefs);
+        if(!Prefs.startAtBoot(prefs))
+            return;
 
-            if(!settings.root_capture) {
-                Intent vpnPrepareIntent = VpnService.prepare(context);
-                if(vpnPrepareIntent != null) {
-                    // Cannot perform the VPN setup without an Activity
-                    Utils.showToastLong(context, R.string.vpn_setup_failed);
-                    return;
-                }
-            }
-
-            Log.i(TAG, "Starting capture service");
-            Intent capIntent = new Intent(context, CaptureService.class);
-            capIntent.putExtra("settings", settings);
-            ContextCompat.startForegroundService(context, capIntent);
+        if(CaptureService.isServiceActive()) {
+            // this can happen, for example, if always-on VPN is enabled, which causes PCAPdroid
+            // to be started early
+            Log.i(TAG, "Service already active, nothing to do");
+            return;
         }
+
+        CaptureSettings settings = new CaptureSettings(prefs);
+
+        if(!settings.root_capture) {
+            Intent vpnPrepareIntent = VpnService.prepare(context);
+            if(vpnPrepareIntent != null) {
+                // Cannot perform the VPN setup without an Activity
+                Utils.showToastLong(context, R.string.vpn_setup_failed);
+                return;
+            }
+        }
+
+        Log.i(TAG, "Starting capture service");
+        Intent capIntent = new Intent(context, CaptureService.class);
+        capIntent.putExtra("settings", settings);
+        ContextCompat.startForegroundService(context, capIntent);
     }
 }
