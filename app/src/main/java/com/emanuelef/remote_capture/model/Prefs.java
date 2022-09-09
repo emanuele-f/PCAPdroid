@@ -26,6 +26,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
+import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.Utils;
 
 public class Prefs {
@@ -71,6 +72,7 @@ public class Prefs {
     public static final String PREF_MAX_DUMP_SIZE = "max_dump_size";
     public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
     public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
+    public static final String PREF_CA_INSTALLATION_SKIPPED = "ca_install_skipped";
     public static final String PREF_FULL_PAYLOAD = "full_payload";
     public static final String PREF_BLOCK_QUIC = "block_quic";
     public static final String PREF_AUTO_BLOCK_PRIVATE_DNS = "auto_block_private_dns";
@@ -163,7 +165,7 @@ public class Prefs {
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
     public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
-    public static boolean isTLSDecryptionSetupDone(SharedPreferences p) { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
+    public static boolean isTLSDecryptionSetupDone(SharedPreferences p)     { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
     public static boolean blockQuic(SharedPreferences p)          { return(getTlsDecryptionEnabled(p) && p.getBoolean(PREF_BLOCK_QUIC, false)); }
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
@@ -179,6 +181,7 @@ public class Prefs {
                 "\nFullPayload: " + getFullPayloadMode(p) +
                 "\nTLSDecryption: " + getTlsDecryptionEnabled(p) +
                 "\nTLSSetupOk: " + isTLSDecryptionSetupDone(p) +
+                "\nCAInstallSkipped: " + MitmAddon.isCAInstallationSkipped(ctx) +
                 "\nBlockQuic: " + blockQuic(p) +
                 "\nRootCapture: " + isRootCaptureEnabled(p) +
                 "\nSocks5: " + getSocks5Enabled(p) +

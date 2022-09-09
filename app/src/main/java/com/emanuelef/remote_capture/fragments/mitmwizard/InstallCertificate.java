@@ -71,7 +71,10 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                 .setTitle(R.string.warning)
                 .setMessage(R.string.mitm_skip_notice)
                 .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
-                .setPositiveButton(R.string.app_intro_skip_button, (d, whichButton) -> gotoStep(R.id.navto_done))
+                .setPositiveButton(R.string.app_intro_skip_button, (d, whichButton) -> {
+                    MitmAddon.setCAInstallationSkipped(requireContext(), true);
+                    gotoStep(R.id.navto_done);
+                })
                 .show());
 
         mAddon = new MitmAddon(requireContext(), this);
@@ -97,6 +100,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     private void certOk() {
         mStepLabel.setText(R.string.cert_installed_correctly);
+        MitmAddon.setCAInstallationSkipped(requireContext(), false);
         nextStep(R.id.navto_done);
     }
 
