@@ -42,12 +42,14 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /* Billing stub */
 public class Billing {
     private static final String TAG = "Billing";
     private static final String KEY = "ME4wEAYHKoZIzj0CAQYFK4EEACEDOgAE6cS1N1P0kaiuxq0g70OVVE0uIOD+t809" +
             "Etg3k2h11k8uNvfkx3mL1HTjQyzSfdueyY4DqTW7+sk=";
+    private static final String PEER_SKU_KEY = "peer_skus";
 
     // SKUs
     public static final String SUPPORTER_SKU = "pcapdroid_supporter";
@@ -79,6 +81,11 @@ public class Billing {
     protected Billing(Context ctx) {
         mContext = ctx;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+        // Load peer skus
+        Set<String> peer_skus = mPrefs.getStringSet(PEER_SKU_KEY, null);
+        if(peer_skus != null)
+            mPeerSkus.addAll(peer_skus);
     }
 
     public static Billing newInstance(Context ctx) {
@@ -198,7 +205,21 @@ public class Billing {
             return !Prefs.isRootCaptureEnabled(mPrefs);
     }
 
-    public void addPeerSku(String sku) {
-        mPeerSkus.add(sku);
+    public void handlePeerSkus(Set<String> skus) {
+        if(skus.equals(mPeerSkus))
+            return; // nothing changed
+
+        mPeerSkus.clear();
+        mPeerSkus.addAll(skus);
+
+        Log.i(TAG, "Peer skus updated: " + skus);
+
+        mPrefs.edit()
+                .putStringSet(PEER_SKU_KEY, mPeerSkus)
+                .apply();
+    }
+
+    public void clearPeerSkus() {
+        handlePeerSkus(new HashSet<>());
     }
 }
