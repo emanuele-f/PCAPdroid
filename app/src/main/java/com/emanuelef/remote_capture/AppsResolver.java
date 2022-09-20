@@ -93,6 +93,7 @@ public class AppsResolver {
 
     // Get the AppDescriptor corresponding to the given package name
     // No caching occurs. Virtual apps cannot be used.
+    // This is public to provide a fast resolution alternative to getAppByPackage
     public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags) {
         PackageInfo pinfo;
 
@@ -129,7 +130,9 @@ public class AppsResolver {
         }
 
         // Impose order to guarantee that a uid is always mapped to the same package name.
-        //
+        // The mapping may change if a package sharing this UID is installed/removed.
+        // For simplicity we ignore this change at runtime, and only address it in persistent data
+        // (e.g. in the MatchList to ensure that a user can always remove rules see #257)
         String packageName = packages[0];
         for(String pkg: packages) {
             if(pkg.compareTo(packageName) < 0)
