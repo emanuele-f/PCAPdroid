@@ -152,7 +152,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
     private AppDescriptor getCallingApp() {
         String callp = getCallingPackage();
-        return (callp != null) ? AppsResolver.resolve(getPackageManager(), callp, 0) : null;
+        return (callp != null) ? AppsResolver.resolveInstalledApp(getPackageManager(), callp, 0) : null;
     }
 
     private void controlAction(Intent intent, String action, boolean allow) {

@@ -159,7 +159,7 @@ public class MatchList {
 
         if(tp == RuleType.APP) {
             // TODO handle cross-users/profiles?
-            AppDescriptor app = AppsResolver.resolve(ctx.getPackageManager(), value, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0);
             if(app != null)
                 value = app.getName();
         } else if(tp == RuleType.HOST)
@@ -223,7 +223,7 @@ public class MatchList {
                     try {
                         int uid = Integer.parseInt(val);
 
-                        AppDescriptor app = mResolver.get(uid, 0);
+                        AppDescriptor app = mResolver.getAppByUid(uid, 0);
                         if(app != null) {
                             val = app.getPackageName();
                             Log.i(TAG, String.format("UID %d resolved to package %s", uid, val));
@@ -253,7 +253,7 @@ public class MatchList {
     public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
     public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
     public void addApp(int uid) {
-        AppDescriptor app = mResolver.get(uid, 0);
+        AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
             return;
@@ -269,7 +269,7 @@ public class MatchList {
     public void removeCountry(String country_code) { removeRule(new Rule(RuleType.COUNTRY, country_code)); }
     public void removeApp(String pkg)     { removeRule(new Rule(RuleType.APP, pkg)); }
     public void removeApp(int uid) {
-        AppDescriptor app = mResolver.get(uid, 0);
+        AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
             return;

@@ -47,7 +47,7 @@ public class ActionReceiver extends BroadcastReceiver {
             NotificationManagerCompat man = NotificationManagerCompat.from(context);
             man.cancel(CaptureService.NOTIFY_ID_APP_BLOCKED);
 
-            AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), unblock_app, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(context.getPackageManager(), unblock_app, 0);
             String label = (app != null) ? app.getName() : unblock_app;
             Utils.showToastLong(context, R.string.app_unblocked, label);
         }

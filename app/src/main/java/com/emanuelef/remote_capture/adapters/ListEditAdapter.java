@@ -69,7 +69,7 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
 
         if(rule.getType() == MatchList.RuleType.APP) {
             String package_name = (String)rule.getValue();
-            AppDescriptor app = mApps.getByPackage(package_name, 0);
+            AppDescriptor app = mApps.getAppByPackage(package_name, 0);
             Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
             icon.setImageDrawable(drawable);
         } else

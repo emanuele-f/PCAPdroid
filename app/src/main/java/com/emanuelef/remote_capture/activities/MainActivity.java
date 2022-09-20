@@ -315,7 +315,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         final String peerAppPackage = "com.emanuelef.remote_capture";
 
-        AppDescriptor peer = AppsResolver.resolve(getPackageManager(), peerAppPackage, 0);
+        AppDescriptor peer = AppsResolver.resolveInstalledApp(getPackageManager(), peerAppPackage, 0);
         if(peer == null) {
             Log.d(TAG, "Peer app not found");
             mIab.clearPeerSkus();

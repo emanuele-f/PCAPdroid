@@ -63,7 +63,7 @@ public class CtrlPermissionsAdapter extends ArrayAdapter<CtrlPermissions.Rule> i
 
         while(it.hasNext()) {
             CtrlPermissions.Rule rule = it.next();
-            AppDescriptor app = AppsResolver.resolve(pm, rule.package_name, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(pm, rule.package_name, 0);
             if(app != null)
                 mPkgToApp.put(rule.package_name, app);
 

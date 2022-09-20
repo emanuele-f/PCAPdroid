@@ -1256,7 +1256,7 @@ public class Utils {
 
     public static int getPCAPdroidUid(Context context) {
         // NOTE: when called from a work profile, it correctly returns the work profile UID
-        AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), BuildConfig.APPLICATION_ID, 0);
+        AppDescriptor app = AppsResolver.resolveInstalledApp(context.getPackageManager(), BuildConfig.APPLICATION_ID, 0);
         if(app != null)
             return app.getUid();
         return Utils.UID_UNKNOWN;

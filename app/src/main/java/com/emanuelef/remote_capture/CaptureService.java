@@ -132,7 +132,7 @@ public class CaptureService extends VpnService implements Runnable {
     private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
-    private AppsResolver appsResolver;
+    private AppsResolver nativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
     private boolean mMalwareDetectionEnabled;
     private boolean mBlacklistsUpdateRequested;
     private boolean mFirewallEnabled;
@@ -193,7 +193,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
-        appsResolver = new AppsResolver(this);
+        nativeAppsResolver = new AppsResolver(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
@@ -484,7 +484,7 @@ public class CaptureService extends VpnService implements Runnable {
                             mBlocklist.save();
                             reloadBlocklist();
 
-                            AppDescriptor app = appsResolver.getByPackage(packageName, 0);
+                            AppDescriptor app = AppsResolver.resolveInstalledApp(getPackageManager(), packageName, 0);
                             String label = (app != null) ? app.getName() : packageName;
 
                             PendingIntent pi = PendingIntent.getActivity(CaptureService.this, 0,
@@ -625,7 +625,8 @@ public class CaptureService extends VpnService implements Runnable {
     public void notifyBlacklistedConnection(ConnectionDescriptor conn) {
         int uid = conn.uid;
 
-        AppDescriptor app = appsResolver.get(conn.uid, 0);
+        AppsResolver resolver = new AppsResolver(this);
+        AppDescriptor app = resolver.getAppByUid(conn.uid, 0);
         if(app == null)
             return;
 
@@ -1304,7 +1305,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // NOTE: to be invoked only by the native code
     public String getApplicationByUid(int uid) {
-        AppDescriptor dsc = appsResolver.get(uid, 0);
+        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
 
         if(dsc == null)
             return "";

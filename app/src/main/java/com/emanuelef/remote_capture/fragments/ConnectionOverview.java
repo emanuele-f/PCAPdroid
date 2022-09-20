@@ -177,7 +177,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
                 info_row.setVisibility(View.GONE);
 
             String uid_str = Integer.toString(mConn.uid);
-            AppDescriptor app = (new AppsResolver(mActivity)).get(mConn.uid, 0);
+            AppDescriptor app = (new AppsResolver(mActivity)).getAppByUid(mConn.uid, 0);
             if(app != null)
                 appLabel.setText(String.format(getResources().getString(R.string.app_and_proto), app.getName(), uid_str));
             else

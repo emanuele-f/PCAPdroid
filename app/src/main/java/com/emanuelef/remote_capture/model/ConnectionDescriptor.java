@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -233,7 +232,7 @@ public class ConnectionDescriptor {
 
     public boolean matches(AppsResolver res, String filter) {
         filter = filter.toLowerCase();
-        AppDescriptor app = res.get(uid, 0);
+        AppDescriptor app = res.getAppByUid(uid, 0);
 
         return(((info != null) && (info.contains(filter))) ||
                 dst_ip.contains(filter) ||
