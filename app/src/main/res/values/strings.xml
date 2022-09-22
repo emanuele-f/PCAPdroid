@@ -410,4 +410,6 @@
     <string name="unlock_token_msg1">This is your unlock token. Note it down as you will need it <a href='%1$s'>to generate your license codes</a></string>
     <string name="paid_feature">Paid feature</string>
     <string name="firewall_purchase_msg">Buy the <i>%1$s</i> feature to start blocking connections</string>
+    <string name="mitm_skip_notice">The mitm certificate does not seem to be installed. If you proceed, decryption may fail</string>
+    <string name="mitm_wizard_description">Configure the device for the TLS decryption</string>
 </resources>

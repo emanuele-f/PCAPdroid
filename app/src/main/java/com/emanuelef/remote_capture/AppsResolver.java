@@ -35,7 +35,6 @@ import androidx.core.content.ContextCompat;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
@@ -92,7 +91,10 @@ public class AppsResolver {
                 virtualIconLoader,"nobody", 9999, true));
     }
 
-    public static AppDescriptor resolve(PackageManager pm, String packageName, int pm_flags) {
+    // Get the AppDescriptor corresponding to the given package name
+    // No caching occurs. Virtual apps cannot be used.
+    // This is public to provide a fast resolution alternative to getAppByPackage
+    public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags) {
         PackageInfo pinfo;
 
         try {
@@ -106,11 +108,12 @@ public class AppsResolver {
     }
 
     @SuppressLint("DiscouragedPrivateApi")
-    public @Nullable AppDescriptor get(int uid, int pm_flags) {
+    public @Nullable AppDescriptor getAppByUid(int uid, int pm_flags) {
         AppDescriptor app = mApps.get(uid);
         if(app != null)
             return app;
 
+        // Map the uid to the package name(s)
         String[] packages = null;
 
         try {
@@ -126,13 +129,19 @@ public class AppsResolver {
             return null;
         }
 
-        // Since multiple packages names may be returned, sort them and get the first to provide a
-        // consistent name
-        Arrays.sort(packages);
+        // Impose order to guarantee that a uid is always mapped to the same package name.
+        // The mapping may change if a package sharing this UID is installed/removed.
+        // For simplicity we ignore this change at runtime, and only address it in persistent data
+        // (e.g. in the MatchList to ensure that a user can always remove rules see #257)
         String packageName = packages[0];
+        for(String pkg: packages) {
+            if(pkg.compareTo(packageName) < 0)
+                packageName = pkg;
+        }
 
+        // In case of root capture, we may be capturing traffic of different users/work profiles.
+        // To get the correct label and icon, try to resolve the app as the specific user of the connection.
         if(!mFallbackToGlobalResolution && CaptureService.isCapturingAsRoot()) {
-            // Try to resolve for the specific user
             try {
                 if(getPackageInfoAsUser == null)
                     getPackageInfoAsUser = PackageManager.class.getDeclaredMethod("getPackageInfoAsUser", String.class, int.class, int.class);
@@ -148,7 +157,7 @@ public class AppsResolver {
         }
 
         if(app == null)
-            app = resolve(mPm, packageName, pm_flags);
+            app = resolveInstalledApp(mPm, packageName, pm_flags);
 
         if(app != null)
             mApps.put(uid, app);
@@ -156,16 +165,12 @@ public class AppsResolver {
         return app;
     }
 
-    public @Nullable AppDescriptor getByPackage(String package_name, int pm_flags) {
+    public @Nullable AppDescriptor getAppByPackage(String package_name, int pm_flags) {
         int uid = getUid(package_name);
         if(uid == Utils.UID_NO_FILTER)
             return null;
 
-        return get(uid, pm_flags);
-    }
-
-    public @Nullable AppDescriptor lookup(int uid) {
-        return mApps.get(uid);
+        return getAppByUid(uid, pm_flags);
     }
 
     /* Lookup a UID by package name (including virtual apps).

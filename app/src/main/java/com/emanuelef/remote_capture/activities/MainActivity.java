@@ -341,15 +341,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         final String peerAppPackage = "com.emanuelef.remote_capture";
 
-        AppDescriptor peer = AppsResolver.resolve(getPackageManager(), peerAppPackage, 0);
+        AppDescriptor peer = AppsResolver.resolveInstalledApp(getPackageManager(), peerAppPackage, 0);
         if(peer == null) {
             Log.d(TAG, "Peer app not found");
+            mIab.clearPeerSkus();
             return;
         }
 
         PackageInfo pInfo = peer.getPackageInfo();
         if((pInfo == null) || (PackageInfoCompat.getLongVersionCode(pInfo) < 56)) {
             Log.d(TAG, "Unsupported peer app version found");
+            mIab.clearPeerSkus();
             return;
         }
 
@@ -357,6 +359,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Utils.BuildType buildType = Utils.getVerifiedBuild(this, peerAppPackage);
         if((buildType != Utils.BuildType.FDROID) && (buildType != Utils.BuildType.PLAYSTORE) && (buildType != Utils.BuildType.GITHUB)) {
             Log.d(TAG, "Unsupported peer app build: " + buildType.name());
+            mIab.clearPeerSkus();
             return;
         }
 
@@ -369,6 +372,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             peerInfoLauncher.launch(intent);
         } catch (ActivityNotFoundException e) {
             Log.d(TAG, "Peer app launch failed");
+            mIab.clearPeerSkus();
         }
     }
 
@@ -383,10 +387,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if(skus != null) {
                     Log.d(TAG, "Found peer app info");
 
-                    for(String sku: skus) {
-                        Log.d(TAG, "Peer sku: " + sku);
-                        mIab.addPeerSku(sku);
-                    }
+                    mIab.handlePeerSkus(skus);
 
                     // success
                     return;
@@ -396,6 +397,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         // fail
         Log.d(TAG, "Invalid peer app result");
+        mIab.clearPeerSkus();
     }
 
     private static class MainStateAdapter extends FragmentStateAdapter {

@@ -61,7 +61,7 @@ public class MatchList {
     private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
     private final ArraySet<Integer> mUids = new ArraySet<>();
     private final AppsResolver mResolver;
-    private boolean mFormatMigration = false;
+    private boolean mMigration = false;
 
     public enum RuleType {
         APP,
@@ -129,10 +129,10 @@ public class MatchList {
         if(!serialized.isEmpty()) {
             fromJson(serialized);
 
-            if(mFormatMigration) {
+            if(mMigration) {
                 Log.i(TAG, "Migration completed");
                 save();
-                mFormatMigration = false;
+                mMigration = false;
             }
         } else
             clear();
@@ -159,7 +159,7 @@ public class MatchList {
 
         if(tp == RuleType.APP) {
             // TODO handle cross-users/profiles?
-            AppDescriptor app = AppsResolver.resolve(ctx.getPackageManager(), value, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0);
             if(app != null)
                 value = app.getName();
         } else if(tp == RuleType.HOST)
@@ -211,29 +211,39 @@ public class MatchList {
                     if(typeStr.equals("ROOT_DOMAIN")) {
                         Log.i(TAG, String.format("ROOT_DOMAIN %s migrated", val));
                         type = RuleType.HOST;
-                        mFormatMigration = true;
+                        mMigration = true;
                     } else {
                         e.printStackTrace();
                         continue;
                     }
                 }
 
-                // Handle migration from old uid-based format
                 if(type == RuleType.APP) {
+                    // Handle migration from the old uid-based format
                     try {
                         int uid = Integer.parseInt(val);
 
-                        AppDescriptor app = mResolver.get(uid, 0);
+                        AppDescriptor app = mResolver.getAppByUid(uid, 0);
                         if(app != null) {
                             val = app.getPackageName();
                             Log.i(TAG, String.format("UID %d resolved to package %s", uid, val));
-                            mFormatMigration = true;
+                            mMigration = true;
                         } else {
                             Log.w(TAG, "Ignoring unknown UID " + uid);
                             continue;
                         }
                     } catch (NumberFormatException ignored) {
                         // ok, package name
+                    }
+
+                    // Validate the uid->package_name mapping (see AppsResolver for more details).
+                    // If the uid is mapped to a different package name, we must update the MatchList
+                    // otherwise the user may not be able to remove the rule (see #257).
+                    AppDescriptor app = mResolver.getAppByPackage(val, 0);
+                    if((app != null) && !app.getPackageName().equals(val)) {
+                        Log.i(TAG, "The UID " + app.getUid() + " mapping has changed from " + val + " to " + app.getPackageName());
+                        val = app.getPackageName();
+                        mMigration = true;
                     }
                 }
 
@@ -253,7 +263,7 @@ public class MatchList {
     public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
     public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
     public void addApp(int uid) {
-        AppDescriptor app = mResolver.get(uid, 0);
+        AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
             return;
@@ -269,7 +279,7 @@ public class MatchList {
     public void removeCountry(String country_code) { removeRule(new Rule(RuleType.COUNTRY, country_code)); }
     public void removeApp(String pkg)     { removeRule(new Rule(RuleType.APP, pkg)); }
     public void removeApp(int uid) {
-        AppDescriptor app = mResolver.get(uid, 0);
+        AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
             return;

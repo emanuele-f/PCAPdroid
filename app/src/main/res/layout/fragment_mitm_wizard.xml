@@ -34,6 +34,18 @@
             app:layout_constraintBottom_toBottomOf="parent"/>
 
         <Button
+            android:id="@+id/skip_button"
+            style="?materialButtonOutlinedStyle"
+            android:text="@string/app_intro_skip_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/step_button"/>
+
+        <Button
             android:id="@+id/step_button"
             tools:text="Action"
             android:layout_width="match_parent"

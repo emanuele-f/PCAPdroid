@@ -291,7 +291,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(conn == null)
             return;
 
-        AppDescriptor app = mApps.get(conn.uid, 0);
+        AppDescriptor app = mApps.getAppByUid(conn.uid, 0);
         Context ctx = requireContext();
         MenuItem item;
 
@@ -474,7 +474,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mask_changed = true;
         } else if(id == R.id.search_app)
             setQuery(Objects.requireNonNull(
-                    mApps.get(conn.uid, 0)).getPackageName());
+                    mApps.getAppByUid(conn.uid, 0)).getPackageName());
         else if(id == R.id.search_host)
             setQuery(conn.info);
         else if(id == R.id.search_ip)

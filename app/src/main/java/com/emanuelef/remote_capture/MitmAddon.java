@@ -133,6 +133,18 @@ public class MitmAddon {
         return true;
     }
 
+    public static void setCAInstallationSkipped(Context ctx, boolean skipped) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        prefs.edit()
+                .putBoolean(Prefs.PREF_CA_INSTALLATION_SKIPPED, skipped)
+                .apply();
+    }
+
+    public static boolean isCAInstallationSkipped(Context ctx) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return prefs.getBoolean(Prefs.PREF_CA_INSTALLATION_SKIPPED, false);
+    }
+
     public static void setDecryptionSetupDone(Context ctx, boolean done) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         prefs.edit()

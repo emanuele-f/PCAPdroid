@@ -77,7 +77,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             Drawable appIcon;
 
             // NOTE: can be null
-            AppDescriptor app = (mApps != null) ? mApps.get(stats.getUid(), 0) : null;
+            AppDescriptor app = (mApps != null) ? mApps.getAppByUid(stats.getUid(), 0) : null;
 
             appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
             icon.setImageDrawable(appIcon);
@@ -176,7 +176,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         if(stats == null)
             return null;
 
-        AppDescriptor descr = mApps.get(stats.getUid(), 0);
+        AppDescriptor descr = mApps.getAppByUid(stats.getUid(), 0);
 
         return((descr != null) ? descr.getPackageName() : null);
     }
@@ -187,8 +187,8 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
     public void setStats(List<AppStats> stats) {
         Collections.sort(stats, (o1, o2) -> {
-            AppDescriptor a1 = mApps.get(o1.getUid(), 0);
-            AppDescriptor a2 = mApps.get(o2.getUid(), 0);
+            AppDescriptor a1 = mApps.getAppByUid(o1.getUid(), 0);
+            AppDescriptor a2 = mApps.getAppByUid(o2.getUid(), 0);
 
             if((a1 == null) && (a2 == null))
                 return 0;

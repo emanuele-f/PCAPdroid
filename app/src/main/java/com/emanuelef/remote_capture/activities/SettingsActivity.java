@@ -136,6 +136,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private Preference mVpnExceptions;
+        private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
@@ -173,7 +174,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), rootCaptureEnabled());
-            mBlockQuic.setVisible(mTlsDecryption.isChecked());
+            mBlockQuic.setVisible(mTlsDecryption.isChecked() && !rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
@@ -316,6 +317,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 boolean enabled = (boolean) newValue;
                 Context ctx = requireContext();
 
+                if(checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
+                    return false;
+
                 if(enabled && MitmAddon.needsSetup(ctx)) {
                     mHasStartedMitmWizard = true;
                     Intent intent = new Intent(ctx, MitmSetupWizard.class);
@@ -323,16 +327,23 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return false;
                 }
 
-                checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue);
-
                 fullPayloadHideShow((boolean) newValue);
-                mBlockQuic.setVisible((boolean) newValue);
+                mBlockQuic.setVisible(((boolean) newValue) && !rootCaptureEnabled());
+                mMitmWizard.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
                 return true;
             });
 
             mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
             mBlockQuic = requirePreference(Prefs.PREF_BLOCK_QUIC);
+            mMitmWizard = requirePreference("mitm_setup_wizard");
+            mMitmWizard.setVisible(mTlsDecryption.isChecked());
+            mMitmWizard.setOnPreferenceClickListener(preference -> {
+                mHasStartedMitmWizard = true;
+                Intent intent = new Intent(requireContext(), MitmSetupWizard.class);
+                startActivity(intent);
+                return true;
+            });
 
             mSocks5Enabled = requirePreference(Prefs.PREF_SOCKS5_ENABLED_KEY);
             mSocks5Enabled.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -443,9 +454,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mVpnExceptions.setVisible(!enabled);
         }
 
-        private void checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {
+        private boolean checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {
             if(mRootDecryptionNoticeShown || !rootEnabled || !tlsDecryption)
-                return;
+                return false;
 
             new AlertDialog.Builder(requireContext())
                     .setMessage(R.string.tls_decryption_with_root_msg)
@@ -453,6 +464,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     .show();
 
             mRootDecryptionNoticeShown = true;
+            return true;
         }
     }
 }

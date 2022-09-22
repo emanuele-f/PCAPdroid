@@ -85,5 +85,5 @@ For the complete list of third party libraries and the corresponding licenses ch
 4. Open the project in Android Studio, install the appropriate SDK and the NDK
 5. Build the app
 
-*Note*: If you get "No valid CMake executable was found", be sure to install the CMake version used by PCAPdroid (currently [3.18.1](https://github.com/emanuele-f/PCAPdroid/blob/master/app/build.gradle)) from the SDK manager
+*Note*: If you get "No valid CMake executable was found", be sure to install the CMake version used by PCAPdroid (currently [3.22.1](https://github.com/emanuele-f/PCAPdroid/blob/master/app/build.gradle)) from the SDK manager
 

@@ -198,7 +198,7 @@ public class ConnectionsRegister {
             conn.asn = mGeo.getASN(dstAddr);
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
-            AppDescriptor app = mAppsResolver.get(conn.uid, 0);
+            AppDescriptor app = mAppsResolver.getAppByUid(conn.uid, 0);
             if(app != null)
                 conn.encrypted_payload = Utils.hasEncryptedPayload(app, conn);
 

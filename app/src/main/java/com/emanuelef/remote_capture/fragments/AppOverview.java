@@ -88,7 +88,7 @@ public class AppOverview extends Fragment implements MenuProvider {
         Context ctx = requireContext();
 
         AppsResolver res = new AppsResolver(ctx);
-        AppDescriptor dsc = res.get(mUid, PackageManager.GET_PERMISSIONS);
+        AppDescriptor dsc = res.getAppByUid(mUid, PackageManager.GET_PERMISSIONS);
         if(dsc == null) {
             mCreateError = true;
             Utils.showToast(ctx, R.string.app_not_found, mUid);

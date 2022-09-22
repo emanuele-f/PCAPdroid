@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.5] - 2022-08-25
+- You can now buy unlock tokens to access paid features in non-Play builds
+- Fix minor crashes and ANR
+- Fix JNI leaks and prevent local references overflow
+- Fix deprecations
+
 ## [1.5.4] - 2022-08-04
 - Unblock newly installed apps via notification action (firewall)
 - Fix context menu action possibly applied to wrong item

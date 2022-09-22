@@ -42,6 +42,7 @@ public class StepFragment extends Fragment {
     protected TextView mStepLabel;
     protected ImageView mStepIcon;
     protected Button mStepButton;
+    protected Button mSkipButton;
     protected NavController mNavController;
     protected int mOkColor;
     protected int mWarnColor;
@@ -64,11 +65,21 @@ public class StepFragment extends Fragment {
         mStepLabel = view.findViewById(R.id.step_label);
         mStepIcon = view.findViewById(R.id.step_status);
         mStepButton = view.findViewById(R.id.step_button);
+        mSkipButton = view.findViewById(R.id.skip_button);
 
         Context ctx = requireContext();
         mOkColor = ContextCompat.getColor(ctx, R.color.ok);
         mWarnColor = ContextCompat.getColor(ctx, R.color.warning);
         mDangerColor = ContextCompat.getColor(ctx, R.color.danger);
+    }
+
+    protected void gotoStep(int action_or_dest) {
+        boolean is_last_step = (action_or_dest <= 0);
+
+        if(!is_last_step)
+            mNavController.navigate(action_or_dest);
+        else
+            requireActivity().finish();
     }
 
     protected void nextStep(int action_or_dest) {
@@ -77,13 +88,14 @@ public class StepFragment extends Fragment {
         mStepIcon.setImageDrawable(AppCompatResources.getDrawable(ctx, R.drawable.ic_check_solid));
         mStepIcon.setColorFilter(mOkColor);
 
+        mSkipButton.setVisibility(View.GONE);
         mStepButton.setEnabled(true);
         mStepButton.setText(!is_last_step ? R.string.app_intro_next_button : R.string.app_intro_done_button);
-        mStepButton.setOnClickListener((view) -> {
-            if(!is_last_step)
-                mNavController.navigate(action_or_dest);
-            else
-                requireActivity().finish();
-        });
+        mStepButton.setOnClickListener((view) -> gotoStep(action_or_dest));
+    }
+
+    protected void showSkipButton(View.OnClickListener l) {
+        mSkipButton.setVisibility(View.VISIBLE);
+        mSkipButton.setOnClickListener(l);
     }
 }

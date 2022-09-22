@@ -220,7 +220,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = AppsResolver.resolve(context.getPackageManager(), mAppFilter, 0);
+        AppDescriptor app = AppsResolver.resolveInstalledApp(context.getPackageManager(), mAppFilter, 0);
         String description;
 
         if(app == null)
@@ -290,7 +290,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
         // Check if a filter is set
         if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
-            AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(requireContext().getPackageManager(), mAppFilter, 0);
 
             if((app != null) && (app.getIcon() != null)) {
                 // Rendering after mCollectorInfo.setText is deferred, so getMeasuredHeight must be postponed

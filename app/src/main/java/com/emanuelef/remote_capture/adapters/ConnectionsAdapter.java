@@ -58,7 +58,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Drawable mUnknownIcon;
     private int mUnfilteredItemsCount;
     private View.OnClickListener mListener;
-    private final AppsResolver mApps;
+    private final AppsResolver mAppsResolver;
     private final Context mContext;
     private ConnectionDescriptor mSelectedItem;
     private int mNumRemovedItems;
@@ -109,7 +109,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
         @SuppressWarnings("deprecation")
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
-            AppDescriptor app = apps.get(conn.uid, 0);
+            AppDescriptor app = apps.getAppByUid(conn.uid, 0);
             Drawable appIcon;
             String l7Text;
 
@@ -168,7 +168,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public ConnectionsAdapter(Context context, AppsResolver resolver) {
         mContext = context;
-        mApps = resolver;
+        mAppsResolver = resolver;
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(context, R.drawable.ic_image);
         mListener = null;
@@ -216,7 +216,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             return;
         }
 
-        holder.bindConn(mContext, conn, mApps, mUnknownIcon);
+        holder.bindConn(mContext, conn, mAppsResolver, mUnknownIcon);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private boolean matches(ConnectionDescriptor conn) {
         return((conn != null)
                 && mFilter.matches(conn)
-                && ((mSearch == null) || conn.matches(mApps, mSearch)));
+                && ((mSearch == null) || conn.matches(mAppsResolver, mSearch)));
     }
 
     // Given an incrId, return the position of the connection into the mFilteredConn array
@@ -455,7 +455,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             ConnectionDescriptor conn = getItem(i);
 
             if(conn != null) {
-                AppDescriptor app = resolver.get(conn.uid, 0);
+                AppDescriptor app = resolver.getAppByUid(conn.uid, 0);
 
                 builder.append(conn.ipproto);                               builder.append(",");
                 builder.append(conn.src_ip);                                builder.append(",");

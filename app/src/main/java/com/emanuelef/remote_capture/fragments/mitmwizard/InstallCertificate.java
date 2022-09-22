@@ -36,6 +36,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -66,6 +67,16 @@ public class InstallCertificate extends StepFragment implements MitmListener {
         mStepButton.setText(canInstallCertViaIntent() ? R.string.install_action : R.string.export_action);
         mStepButton.setEnabled(false);
 
+        showSkipButton(view1 -> new AlertDialog.Builder(view1.getContext())
+                .setTitle(R.string.warning)
+                .setMessage(R.string.mitm_skip_notice)
+                .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
+                .setPositiveButton(R.string.app_intro_skip_button, (d, whichButton) -> {
+                    MitmAddon.setCAInstallationSkipped(requireContext(), true);
+                    gotoStep(R.id.navto_done);
+                })
+                .show());
+
         mAddon = new MitmAddon(requireContext(), this);
         if(!mAddon.connect(0)) {
             Toast.makeText(requireContext(), "addon connect failed", Toast.LENGTH_LONG).show();
@@ -89,6 +100,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     private void certOk() {
         mStepLabel.setText(R.string.cert_installed_correctly);
+        MitmAddon.setCAInstallationSkipped(requireContext(), false);
         nextStep(R.id.navto_done);
     }
 
