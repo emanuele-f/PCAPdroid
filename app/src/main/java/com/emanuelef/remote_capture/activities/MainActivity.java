@@ -111,10 +111,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String DOCS_URL = "https://emanuele-f.github.io/PCAPdroid";
     public static final String PRIVACY_POLICY_URL = DOCS_URL + "/privacy";
     public static final String DONATE_URL = "https://emanuele-f.github.io/PCAPdroid/donate";
-    public static final String PAID_FEATURES_URL = DOCS_URL + "/paid_features";
-    public static final String FIREWALL_DOCS_URL = DOCS_URL + PAID_FEATURES_URL + "#51-firewall";
-    public static final String MALWARE_DETECTION_DOCS_URL = DOCS_URL + PAID_FEATURES_URL + "#52-malware-detection";
     public static final String TLS_DECRYPTION_DOCS_URL = DOCS_URL + "/tls_decryption";
+    public static final String PAID_FEATURES_URL = DOCS_URL + "/paid_features";
+    public static final String FIREWALL_DOCS_URL = PAID_FEATURES_URL + "#51-firewall";
+    public static final String MALWARE_DETECTION_DOCS_URL = PAID_FEATURES_URL + "#52-malware-detection";
 
     private final ActivityResultLauncher<Intent> pcapFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
@@ -225,8 +225,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
-        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(mIab.isFirewallVisible());
+        checkPaidDrawerEntries();
     }
 
     @Override
@@ -269,6 +268,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         navMenu.findItem(R.id.action_donate).setVisible(false);
         checkPurchasesAvailable();
+    }
+
+    // keep this in a separate function, used by play billing code
+    private void checkPaidDrawerEntries() {
+        if(mNavView == null)
+            return;
+        Menu navMenu = mNavView.getMenu();
+        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
+        navMenu.findItem(R.id.firewall).setVisible(mIab.isFirewallVisible());
     }
 
     @Override
