@@ -81,9 +81,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
      *  Clear billing cache: adb shell pm clear com.android.vending
      */
     public interface PurchaseReadyListener {
-        void onPurchasesReady();
-        void onPurchasesError();
-        void onSKUStateUpdate(String sku, int state);
+        default void onPurchasesReady() {}
+        default void onPurchasesError() {}
+        default void onSKUStateUpdate(String sku, int state) {}
     }
 
     public PlayBilling(Context ctx) {

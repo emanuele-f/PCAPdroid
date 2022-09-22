@@ -146,6 +146,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Prefs.refreshAppVersion(mPrefs);
 
         mIab = new PlayBilling(this);
+        mIab.setPurchaseReadyListener(new PlayBilling.PurchaseReadyListener() {
+            @Override
+            public void onPurchasesReady() {
+                checkPurchasesAvailable();
+                checkPaidDrawerEntries();
+            }
+        });
 
         initPeerAppInfo();
         initAppState();
