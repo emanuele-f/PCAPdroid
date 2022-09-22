@@ -403,4 +403,6 @@
     <string name="requesting_unlock_token">In attesa di un unlock token, attendere</string>
     <string name="show_action">Mostra</string>
     <string name="unlock_token_msg1">Questo è il tuo unlock token. Prendine nota in quanto ti servità <a href="%1$s">per generare i codici di licenza</a></string>
+    <string name="mitm_skip_notice">Il certificato di mitm non sembra essere installato. Se procedi, la decrittazione potrebbe fallire</string>
+    <string name="mitm_wizard_description">Configura il dispositivo per la decrittazione TLS</string>
 </resources>
