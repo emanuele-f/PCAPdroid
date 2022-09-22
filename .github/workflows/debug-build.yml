@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    branches-ignore:
+    - playstore
     steps:
     - uses: actions/checkout@v2
       with:
