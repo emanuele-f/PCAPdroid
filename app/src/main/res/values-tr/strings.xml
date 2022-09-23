@@ -404,4 +404,6 @@
     <string name="unlock_token_msg1">Bu sizin kilit açma belirtecinizdir. <a href="%1$s">Lisans kodlarınızı oluşturmak için</a> ihtiyacınız olacağından bunu not edin</string>
     <string name="paid_feature">Ücretli özellik</string>
     <string name="firewall_purchase_msg">Bağlantıları engellemeye başlamak için <i>%1$s</i> özelliğini satın alın</string>
+    <string name="mitm_wizard_description">TLS şifre çözme için aygıtı yapılandır</string>
+    <string name="mitm_skip_notice">Ortadaki adam sertifikası kurulu görünmüyor. Devam ederseniz, şifre çözme başarısız olabilir</string>
 </resources>
