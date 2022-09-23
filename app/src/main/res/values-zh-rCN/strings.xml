@@ -429,4 +429,6 @@
     <string name="unlock_token_msg1">这是您的解锁令牌。 请记下它，因为你需要它<a href="%1$s">生成许可证代码</a></string>
     <string name="paid_feature">付费功能</string>
     <string name="firewall_purchase_msg">购买 <i>%1$s</i> 功能开始拦截连接</string>
+    <string name="mitm_skip_notice">似乎未安装 mitm 证书。如果继续，解密会失败</string>
+    <string name="mitm_wizard_description">配置设备以进行 TLS 解密</string>
 </resources>

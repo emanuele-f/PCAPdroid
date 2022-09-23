@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/playstore'
     steps:
     - uses: actions/checkout@v2
       with:
