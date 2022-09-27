@@ -223,16 +223,24 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     @Override
     public void onMitmServiceConnect() {
+        context ctx = getcontext();
+        if(ctx == null)
+            return;
+
         if(!mAddon.requestCaCertificate()) {
-            Toast.makeText(requireContext(), "requestCaCertificate failed", Toast.LENGTH_LONG).show();
+            Toast.makeText(ctx, "requestCaCertificate failed", Toast.LENGTH_LONG).show();
             certFail();
         }
     }
 
     @Override
     public void onMitmServiceDisconnect() {
+        context ctx = getcontext();
+        if(ctx == null)
+            return;
+
         if(mCaPem == null) {
-            Toast.makeText(requireContext(), "addon disconnected", Toast.LENGTH_LONG).show();
+            Toast.makeText(ctx, "addon disconnected", Toast.LENGTH_LONG).show();
             certFail();
         }
     }
