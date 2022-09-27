@@ -435,8 +435,11 @@ public class MatchList {
 
     public boolean fromJson(String json_str) {
         try {
-            JsonObject obj = JsonParser.parseString(json_str).getAsJsonObject();
-            return deserialize(obj);
+            JsonElement el = JsonParser.parseString(json_str);
+            if(!el.isJsonObject())
+              return false;
+
+            return deserialize(el.getAsJsonObject());
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
             return false;
