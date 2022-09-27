@@ -223,7 +223,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     @Override
     public void onMitmServiceConnect() {
-        context ctx = getcontext();
+        context ctx = getContext();
         if(ctx == null)
             return;
 
@@ -235,7 +235,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     @Override
     public void onMitmServiceDisconnect() {
-        context ctx = getcontext();
+        context ctx = getContext();
         if(ctx == null)
             return;
 
