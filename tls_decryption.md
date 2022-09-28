@@ -24,7 +24,11 @@ TLS decryption on Android is not an easy task, technical knowledge and familiari
 
 ## 3.2 Initial setup
 
-TLS decryption can be enabled from the PCAPdroid settings. The first time decryption is enabled, a setup wizard will help you properly setting up decryption. It includes the following steps:
+TLS decryption can be enabled from the PCAPdroid settings.
+
+         In PCAPdroid settings (top right ⚙️ icon), toggle **TLS decryption** switch under **Traffic inspection** menu.
+
+The first time decryption is enabled, a setup wizard will help you properly setting up decryption. It includes the following steps:
 
 1. Download and installation of the [PCAPdroid-mitm addon](https://github.com/emanuele-f/PCAPdroid-mitm). The actual decryption is performed by [mitmproxy](https://github.com/mitmproxy/mitmproxy), which is bundled into the addon
 2. Permission to control the mitm addon. This is a security measure to prevent other apps from controlling the addon
