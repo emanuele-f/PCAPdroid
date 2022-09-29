@@ -49,7 +49,7 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="blocked_connection_filter">diblokir</string>
+    <string name="blocked_connection_filter">DiBlokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
     <string name="start_capture_first">Mulai penangkapan terlebih dahulu</string>
@@ -206,7 +206,7 @@
     <string name="other_prefs">Lainnya</string>
     <string name="delete">Hapus</string>
     <string name="capture_running">Capture berjalan</string>
-    <string name="copy_to_clipboard">Salin ke clipboard</string>
+    <string name="copy_to_clipboard">Salin ke papan klip</string>
     <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
     <string name="root_log">Log root</string>
@@ -344,4 +344,59 @@
     <string name="app_intro_traffic_dump">PCAPdroid menyediakan <a href="%1$s">berbagai cara</a> untuk membuang lalu lintas dalam format PCAP standar untuk analisis lebih lanjut
 \n
 \nMelalui <a href="%2$s">opsi cuplikan</a>, Anda dapat menambahkan nama aplikasi ke paket</string>
+    <string name="low_memory">Memori rendah</string>
+    <string name="heap_usage">memori menumpuk</string>
+    <string name="no_matches_found">Tidak ada yang cocok</string>
+    <string name="cleartext_connection">Teks bersih</string>
+    <string name="unblock_permanently">Buka blokir secara permanen</string>
+    <string name="block_new_apps">Blokir aplikasi yang baru diinstal</string>
+    <string name="cancel_action">Membatalkan</string>
+    <string name="payload_scams_notice">Tampilan ini mungkin berisi informasi sensitif, seperti kata sandi dan token akses Anda.
+\n
+\nJangan pernah memberikan informasi ini kepada siapa pun, ini mungkin upaya penipuan</string>
+    <string name="show_data_action">Lihat data</string>
+    <string name="unblock_for_n_minutes">Buka blokir untuk %1$dmenit</string>
+    <string name="remote_collector_notice">Anda telah mengonfigurasi PCAPdroid untuk mengirim lalu lintas ke server jauh. Server akan dapat mengakses informasi sensitif Anda.
+\n
+\nJika seseorang meminta Anda untuk melakukan ini, itu mungkin upaya penipuan</string>
+    <string name="memory_usage">Memori telah digunakan</string>
+    <string name="ip_mode">Alamat IP VPN</string>
+    <string name="mitm_skip_notice">Sertifikat mitm tampaknya tidak diinstal. Jika Anda melanjutkan, dekripsi mungkin gagal</string>
+    <string name="mitm_wizard_description">Konfigurasikan perangkat untuk dekripsi TLS</string>
+    <string name="install_the_mitm_addon">Pasang PCAPdroid <a href="%1$s">add-on mitm</a></string>
+    <string name="permission_grant_fail">%1$s izin tidak dapat diberikan</string>
+    <string name="low_memory_info">Aplikasi kehabisan memori, perkirakan macet</string>
+    <string name="full_payload_disabled">Opsi muatan penuh telah dinonaktifkan</string>
+    <string name="ipv4_only">Hanya IPv4</string>
+    <string name="ipv6_only">Hanya IPv6</string>
+    <string name="ip_both">IPv4 dan IPv6</string>
+    <string name="notifications_notice">Aplikasi ini menggunakan pemberitahuan untuk mengirim peringatan jika terjadi peristiwa anomali. Berikan izin untuk mengirim notifikasi di layar berikutnya</string>
+    <string name="vpn_exemptions">Pengecualian VPN</string>
+    <string name="app_blocked">App terblokir</string>
+    <string name="app_blocked_info">Aplikasi %1$s telah diblokir oleh firewall</string>
+    <string name="app_unblocked">Aplikasi %1$s telah dibuka blokirnya</string>
+    <string name="unlock_token_summary">Token yang dapat digunakan untuk membuka kunci fitur berbayar di versi aplikasi non-Google-Play (mis. F-Droid/Github)</string>
+    <string name="unlock_token_error">Tidak dapat meminta unlock token [%1$d]: %2$s</string>
+    <string name="access_paid_features_msg">Lihat <a href="%1$s">panduan pengguna</a> untuk mempelajari cara mengakses fitur berbayar</string>
+    <string name="license_service_unavailable">Layanan lisensi PCAPdroid saat ini tidak tersedia. Silakan coba lagi dalam beberapa menit</string>
+    <string name="requesting_unlock_token">Meminta sebuah unlock token, tunggu sebentar</string>
+    <string name="show_action">Lihat</string>
+    <string name="unlock_token_msg1">Ini adalah token pembuka kunci Anda. Catat karena Anda akan memerlukannya <a href="%1$s">untuk membuat kode lisensi</a></string>
+    <string name="show_only_cleartext">Koneksi teks yang jelas</string>
+    <string name="allowed_connection_filter">Di Izinkan</string>
+    <string name="permission_granted">%1$s Izin diberikan</string>
+    <string name="firewall_filter">Firewall : %1$s</string>
+    <string name="connection_not_found">Tidak dapat menemukan koneksi yang diberikan</string>
+    <string name="capture_stopped_low_memory">Penangkapan telah berhenti</string>
+    <string name="vpn_lockdown_notice">Untuk mencegah aplikasi mengakses Internet saat PCAPdroid tidak berjalan (misalnya setelah reboot), Anda dapat mengatur PCAPdroid sebagai VPN yang selalu aktif dalam mode penguncian.
+\n
+\nApakah Anda ingin membuka pengaturan VPN sekarang\?</string>
+    <string name="vpn_exemptions_summary">Mengecualikan beberapa aplikasi dari koneksi VPN. Lalu lintas mereka tidak akan dipantau</string>
+    <string name="unblock_for_n_hours">Buka blokir untuk %1$djam</string>
+    <string name="remote_server_warning">Untuk alasan keamanan, pengiriman lalu lintas ke server jarak jauh \"%1$s\" tidak diperbolehkan</string>
+    <string name="warning">Peringatan</string>
+    <string name="firewall_purchase_msg">Beli fitur <i>%1$s</i> untuk mulai memblokir koneksi</string>
+    <string name="paid_features_unlocked">Fitur berbayar tidak terkunci. Mulai ulang penangkapan jika berjalan</string>
+    <string name="build_info">Info build</string>
+    <string name="paid_feature">Fitur berbayar</string>
 </resources>
