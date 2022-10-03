@@ -20,7 +20,7 @@
     <string name="status">Status</string>
     <string name="app">App</string>
     <string name="http_server">HTTP-Server</string>
-    <string name="no_dump">Keiner</string>
+    <string name="no_dump">Kein Dump</string>
     <string name="http_server_info">Starte einen HTTP-Server für den PCAP download</string>
     <string name="user_guide">Benutzerhandbuch</string>
     <string name="open_telegram_group">Telegram-Gruppe</string>
@@ -55,7 +55,7 @@
     <string name="pcap_file_action">In der Datei \"%1$s\" gespeicherter Netzwerktraffic (%2$s)</string>
     <string name="proto_and_port">%1$s, %2$d</string>
     <string name="conn_status_closed">Geschlossen</string>
-    <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
+    <string name="copy_to_clipboard">Kopieren</string>
     <string name="first_seen">Start der Verbindung</string>
     <string name="last_seen">Letztes Verbindungspaket erhalten</string>
     <string name="capture_running">Aufnahme läuft</string>
@@ -78,7 +78,7 @@
     <string name="private_dns_message_notice">Ein privates DNS verhindert, dass PCAPdroid den DNS-Datenverkehr untersucht. Diese Einstellung kann in den Android-Netzwerkeinstellungen deaktiviert werden</string>
     <string name="last_blacklists_update">Letzte Aktualisierung</string>
     <string name="select_all">Alles auswählen</string>
-    <string name="enable_socks5_proxy_summary">Leite alle TCP-Verbindungen zum spezifizierten SOCKS5-Proxy um</string>
+    <string name="enable_socks5_proxy_summary">Alle TCP-Verbindungen an den angegebenen SOCKS5-Proxy umleiten</string>
     <string name="theme_dark">Dunkel</string>
     <string name="receiver_ip_address">Empfänger-IP-Adresse</string>
     <string name="malware_detection_learn_more">Erfahre mehr über die Malware-Erkennungsfunktion</string>
@@ -187,12 +187,12 @@
     <string name="status_updating">Aktualisierung…</string>
     <string name="private_dns_hinders_detection">Privates DNS verhindert die Erkennung</string>
     <string name="decryption_no_filter_warn">Wähle beim Entschlüsseln von TLS eine Ziel-App aus, um die Internetverbindung nicht zu verlieren</string>
-    <string name="block">Blockieren…</string>
+    <string name="block">Sperren…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall-Regeln</string>
-    <string name="blocked_pkts">Blockiert</string>
+    <string name="blocked_pkts">Gesperrt</string>
     <string name="n_pkts">%1$s Pkt</string>
-    <string name="blocked_connection_filter">blockiert</string>
+    <string name="blocked_connection_filter">Gesperrt</string>
     <string name="validate">Bestätigen</string>
     <string name="valid">Gültig</string>
     <string name="invalid">Ungültig</string>
@@ -215,4 +215,46 @@
     <string name="capture_not_running_status">Die Aufnahme läuft nicht</string>
     <string name="start_capture_first">Starte zuerst die Aufnahme</string>
     <string name="capture_all_apps">Datenverkehr aller Apps aufnehmen</string>
+    <string name="socks5_proxy">SOCKS5</string>
+    <string name="socks5_info">SOCKS5-Proxy: %1$s:%2$d</string>
+    <string name="phone_app_info">Telefoniedienste</string>
+    <string name="action_block">Sperren</string>
+    <string name="connection_blocked">Diese Verbindung wurde von PCAPdroid gesperrt</string>
+    <string name="netd_block_missed">Diese Verbindung wurde von netd initiiert und konnte daher nicht gesperrt werden</string>
+    <string name="action_unblock">Entsperren</string>
+    <string name="conn_status_active">Aktiv</string>
+    <string name="blocklist">Sperrliste</string>
+    <string name="connections_blocked">Gesperrte Verbindungen</string>
+    <string name="block_private_dns">Privates DNS sperren</string>
+    <string name="firewall_summary">Sperre den Internetzugang für Apps, konfiguriere Regeln für bestimmte Domänen und IP-Adressen. Funktioniert nur mit der Nicht-Root-Erfassung</string>
+    <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren
+\n
+\nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
+    <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a> 
+\n
+\nDurch die Verwendung aktueller Blacklists kann es bösartige Verbindungen in Echtzeit erkennen, blockieren und warnen</string>
+    <string name="block_new_apps">Neu installierte Apps sperren</string>
+    <string name="app_blocked">App gesperrt</string>
+    <string name="allowed_connection_filter">Erlaubt</string>
+    <string name="unblock">Entsperren…</string>
+    <string name="tls_decryption">TLS-Entschlüsselung</string>
+    <string name="last_firewall_block">Letzte Sperre</string>
+    <string name="firewall_purchase_msg">Kaufe die Funktion <i>%1$s</i>, um Verbindungen zu sperren</string>
+    <string name="show_only_cleartext">Klartext-Verbindungen</string>
+    <string name="block_quick">QUIC sperren</string>
+    <string name="block_quick_summary">QUIC-Verbindungen sperren, um möglicherweise auf entschlüsselbares TLS zurückzugreifen. Einige Apps funktionieren möglicherweise nicht mehr</string>
+    <string name="block_private_dns_summary">Private DNS erkennen und möglicherweise sperren, um DNS-Verkehr zu untersuchen. Die Deaktivierung dieser Funktion kann die Analyse des Datenverkehrs behindern</string>
+    <string name="firewall_filter">Firewall: %1$s</string>
+    <string name="unblock_permanently">Dauerhaft entsperren</string>
+    <string name="unblock_for_n_hours">Entsperren für %1$dh</string>
+    <string name="unblock_for_n_minutes">Entsperren für %1$dm</string>
+    <string name="app_blocked_info">Die %1$s App wurde von der Firewall gesperrt</string>
+    <string name="app_unblocked">Die App %1$s wurde entsperrt</string>
+    <string name="phone_app">Telefon</string>
+    <string name="tls_decryption_starting">TLS-Entschlüsselung wird gestartet…</string>
+    <string name="tls_decryption_running">TLS-Entschlüsselung wird ausgeführt</string>
+    <string name="install_action">Installieren</string>
+    <string name="export_action">Exportieren</string>
+    <string name="configure_action">Konfigurieren</string>
+    <string name="checking_the_certificate">Zertifikat wird überprüft…</string>
 </resources>
