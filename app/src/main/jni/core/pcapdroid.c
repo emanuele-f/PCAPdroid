@@ -302,7 +302,7 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
                 char buf[512];
 
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_w("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                log_i("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
     }
@@ -424,7 +424,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             char buf[256];
 
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            log_i("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         } else {
             data->to_block |= blacklist_match_uid(pd->firewall.bl, data->uid);
             if(data->to_block) {
@@ -432,7 +432,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
                 char buf[256];
 
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_w("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                log_i("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
 

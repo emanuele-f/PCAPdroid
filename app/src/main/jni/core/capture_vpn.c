@@ -583,11 +583,16 @@ int run_vpn(pcapdroid_t *pd) {
                 data->vpn.fw_pctx = &pctx;
                 if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
+                    zdtun_conn_status_t status = zdtun_conn_get_status(conn);
 
-                    log_e("zdtun_forward failed: %s",
-                                zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+                    if(status != CONN_STATUS_UNREACHABLE) {
+                        log_e("zdtun_forward failed[%d]: %s", status,
+                              zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
 
-                    pd->num_dropped_connections++;
+                        pd->num_dropped_connections++;
+                    } else
+                        log_w("%s: net/host unreachable", zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+
                     zdtun_conn_close(zdt, conn, CONN_STATUS_ERROR);
                     goto housekeeping;
                 } else {
