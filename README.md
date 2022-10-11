@@ -2,7 +2,7 @@
 
 PCAPdroid is a privacy-friendly open source app which lets you track, analyze and block the connections made by the other apps in your device. It also allows you to export a PCAP dump of the traffic, inspect HTTP, decrypt TLS traffic and much more!
 
-PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server. All the data is processed locally on the device.
+PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server, as data is processed locally on the device.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="190" />
@@ -16,9 +16,9 @@ Features:
 - Inspect HTTP requests and replies thanks to the built-in decoders
 - Inspect the full connections payload as hexdump/text
 - [Decrypt the HTTPS/TLS traffic](https://emanuele-f.github.io/PCAPdroid/tls_decryption) and export the SSLKEYLOGFILE
-- Dump the traffic to a PCAP file, download it from a browser, or stream it to a remote receiver for real time analysis (e.g. wireshark)
+- Dump the traffic to a PCAP file, download it from a browser, or stream it to a remote receiver for real-time analysis (e.g. Wireshark)
 - Create rules to filter out the good traffic and easily spot anomalies
-- Identify the country and ASN of remote server via offline db lookups
+- Identify the country and ASN of remote server via offline DB lookups
 - On rooted devices, capture the traffic while other VPN apps are running
 
 Paid features:
@@ -60,7 +60,7 @@ You can help the PCAPdroid project in many ways:
 - Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!
 
-Join the international PCAPdroid community [on telegram](https://t.me/PCAPdroid) or [on matrix](https://matrix.to/#/#pcapdroid:matrix.org).
+Join the international PCAPdroid community [on Telegram](https://t.me/PCAPdroid) or [on Matrix](https://matrix.to/#/#pcapdroid:matrix.org).
 
 ## Integrating into your APP
 
