@@ -116,6 +116,12 @@ For better flexibility, e.g. to modify the traffic or use an upstream proxy, you
 On a PC, you can install `mitmproxy` by following the [official installation guide](https://docs.mitmproxy.org/stable/overview-installation). Both the Android device and the PC should be connected to the same network for this to work. As an alternative, you can install `mitmproxy` directly on the Android device in `termux`. After installing the `termux` app, open it and run the following commands:
 
 ```bash
+pkg update
+pkg install python openssl-1.1-static
+python3 -m pip install --upgrade pip
+CRYPTOGRAPHY_DONT_BUILD_RUST=1 CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
+  LDFLAGS="$PREFIX/lib/openssl-1.1/libssl.a $PREFIX/lib/openssl-1.1/libcrypto.a" \
+  CFLAGS="-I$PREFIX/include/openssl-1.1" \
 pip install mitmproxy
 ```
 
