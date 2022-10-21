@@ -394,4 +394,15 @@
 \n - если захват пакетов не может начаться, убедитесь, что вы можете запускать команду iptables от имени суперпользователя (например через termux)
 \n - функция может не работать на Android 12 и выше
 \n - если VPN приложение запущено, вы должны, либо указать целевое приложение для дешифрования, либо исключить PCAPdroid mitm-дополнение из VPN, иначе трафик будет закольцован</string>
+    <string name="paid_feature">Платная функция</string>
+    <string name="unlock_token_summary">Токен может быть использован для разблокировки платных функций в версиях приложения, полученных из сторонних источников (F-Droid/Github)</string>
+    <string name="access_paid_features_msg">Ознакомьтесь <a href="%1$s">с руководством</a>, чтобы узнать как получить доступ к платным функциям</string>
+    <string name="requesting_unlock_token">Запрашивается unlock token, пожалуйста подождите</string>
+    <string name="show_action">Показать</string>
+    <string name="mitm_wizard_description">Настройте устройство для дешифрования TLS</string>
+    <string name="mitm_skip_notice">Похоже, что mitm сертификат не установлен. Если Вы продолжите, дешифрование может завершиться неудачей</string>
+    <string name="firewall_purchase_msg">Приобретите функцию <i>%1$s</i>, чтобы начать блокировать соединения</string>
+    <string name="unlock_token_error">Не удалось запросить unlock token [%1$d]: %2$s</string>
+    <string name="unlock_token_msg1">Это ваш unlock token. Не потеряйте его, так как он используется для <a href="%1$s">генерации ваших лицензионных ключей</a></string>
+    <string name="license_service_unavailable">Сервис лицензирования PCAPdroid в данный момент недоступен. Пожалуйста, попробуйте вновь через несколько минут</string>
 </resources>
