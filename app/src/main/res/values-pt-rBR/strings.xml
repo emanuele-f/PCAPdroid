@@ -31,7 +31,7 @@
     <string name="http_server_port">Porta do servidor HTTP</string>
     <string name="receiver_ip_address">Endereço IP do coletor</string>
     <string name="receiver_port">Porta do coletor</string>
-    <string name="user_guide">Manual do usuário</string>
+    <string name="user_guide">Guia de usuario</string>
     <string name="open_telegram_group">Grupo no Telegram</string>
     <string name="source_code">Código-fonte</string>
     <string name="yes">Sim</string>
@@ -230,8 +230,8 @@
     <string name="heap_usage">Uso do heap</string>
     <string name="ipv6_only">Somente IPv6</string>
     <string name="firewall_filter">Firewall: %1$s</string>
-    <string name="grant_mitm_permission">Conceda ao PCAPdroid a permissão para controlar o mitm addon</string>
-    <string name="mitm_addon_new_version">O mitm addon do PCAPdroid precisa ser atualizado</string>
+    <string name="grant_mitm_permission">Conceda ao PCAPdroid uma permissão para controlar a extensão de mitm</string>
+    <string name="mitm_addon_new_version">A extensão de mitm do PCAPdroid precisa ser atualizada</string>
     <string name="app_intro_traffic_dump">PCAPdroid fornece <a href="%1$s">múltiplas formas</a> para fazer o dump do tráfego no formato PCAP padrão para análise posterior
 \n
 \nAtravés da <a href="%2$s">opção do trailer</a>, você pode adicionar apps aos pacotes e exibi-los em Wireshark</string>
@@ -256,14 +256,14 @@
     <string name="traffic_dump">Dump do tráfego</string>
     <string name="conn_status_active">Ativo</string>
     <string name="phone_app">Telefone</string>
-    <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
+    <string name="socks5_info">Proxy de SOCKS5: %1$s:%2$d</string>
     <string name="phone_app_info">Serviço de telefonia</string>
     <string name="unblock">Desbloquear…</string>
     <string name="tls_decryption">Decriptação do TLS</string>
-    <string name="tls_decryption_summary">Decodifique o tráfego SSL/TLS via mitm. Isto pode funcionar com alguns apps, confira o manual de usuário</string>
+    <string name="tls_decryption_summary">Decripte o tráfego SSL/TLS via mitm. Isto agora pode funcionar com alguns apps, confira o guia de usuario</string>
     <string name="tls_decryption_running">Decriptação do TLS está em execução</string>
     <string name="traffic_inspection">Inspeção de tráfego</string>
-    <string name="mitm_start_failed">Não foi possível iniciar o serviço do mitm. Reinstale o mitm addon e tente novamente</string>
+    <string name="mitm_start_failed">Não foi possível iniciar o serviço do mitm. Reinstale a extensão mitm e tente novamente</string>
     <string name="mitm_setup_wizard">Assistente de configuração do mitm</string>
     <string name="configure_action">Configurar</string>
     <string name="checking_the_certificate">Verificando o certificado…</string>
@@ -285,7 +285,7 @@
     <string name="export_action">Exportar</string>
     <string name="export_ca_certificate">Exporte o certificado PCAPdroid CA, logo abra em configurações do Android \"Criptografia e Credenciais\" e escolha instalar como um \"certificado CA\"</string>
     <string name="install_ca_certificate">Instale o certificado PCAPdroid CA, escolhendo \"VPN e aplicativos\". O Android solicitará desbloqueio da tela ou a senha</string>
-    <string name="mitm_addon_bad_version">A versão do mitm addon do PCAPdroid é incorreta. Desinstale-o e tente novamente</string>
+    <string name="mitm_addon_bad_version">A versão da extensão de mitm do PCAPdroid é incorreta. Desinstale-a e tente novamente</string>
     <string name="upgrade_action">Atualizar</string>
     <string name="not_encrypted">Não criptografado</string>
     <string name="request">Solicitação</string>
@@ -342,11 +342,11 @@
     <string name="block_quick">Bloquear QUIC</string>
     <string name="block_quick_summary">Bloquear conexões QUIC para possivelmente usar o TLS descriptografável. Alguns apps podem parar de funcionar</string>
     <string name="block_private_dns">Bloquear DNS privado</string>
-    <string name="mitm_setup_wizard_intro">Este assistente mostrará como instalar o mitm addon do PCAPdroid e autoridade de certificação, que são necessários para realizar a <a href="%1$s">Decriptação do TLS</a></string>
+    <string name="mitm_setup_wizard_intro">Este assistente mostrará você como instalar a extensão de mitm do PCAPdroid e autoridade de certificação, que são necessários para realizar a <a href="%1$s">Decriptação do TLS</a></string>
     <string name="app_intro_skip_button">Pular</string>
     <string name="mitm_setup_wizard_done">O PCAPdroid está pronto para decodificar o tráfego do TLS
 \n
-\nConfira a <a href="%1$s">manual do usuário</a> para saber mais sobre as medidas de segurança que podem impedir a decriptação e como contorná-la</string>
+\nConfira o <a href="%1$s">guia de usuário</a> para saber mais sobre as medidas de segurança que podem impedir a decriptação e como contorná-la</string>
     <string name="app_intro_next_button">Próximo</string>
     <string name="app_intro_back_button">Voltar</string>
     <string name="app_intro_done_button">Concluído</string>
@@ -387,13 +387,24 @@
     <string name="app_unblocked">O %1$s app foi desbloqueado</string>
     <string name="paid_features_unlocked">Funcionalidades pagas desbloqueadas. Reinicie a captura se estiver funcionando</string>
     <string name="build_info">Detalhes da compilação</string>
-    <string name="install_the_mitm_addon">Instalar a <a href="%1$s">extensão mitm</a> do PCAPdroid</string>
+    <string name="install_the_mitm_addon">Instalar a <a href="%1$s">extensão de mitm</a> do PCAPdroid</string>
     <string name="warning">Aviso</string>
-    <string name="tls_decryption_with_root_msg">A possibilidade de executar a decodificação do TLS com root ainda está em fase experimental. Abaixo vê uma lista de problemas conhecidos:
+    <string name="tls_decryption_with_root_msg">A possibilidade de executar a decriptação do TLS via root ainda está em fase experimental. Abaixo vê uma lista de problemas conhecidos:
 \n
-\n - no PCAPdroid você verá o tráfego como ele foi gerado via extensão-mitm no lugar do app original
-\n - quando um filtro de aplicativos é definido, a decodificação só ocorrerá para o app alvo, mas o PCAPdroid ainda mostrará tráfego de outros aplicativos
+\n - no PCAPdroid você verá o tráfego como ele foi gerado via extensão de mitm no lugar do app original
+\n - quando um filtro de aplicativos é definido, a decriptação só ocorrerá para o app alvo, mas o PCAPdroid ainda mostrará tráfego de outros aplicativos
 \n - se a captura não começou, certifique-se de que você pode realmente executou o comando de iptables como root (p.ex., via termux)
 \n - isto pode não funcionar no Android 12 e mais recentes
-\n - se um app da VPN estiver executado, você deve definir um app específico para decriptação ou definir uma exceção à extensão mitm do PCAPdroid na VPN, caso contrário, o tráfego vai entrar em um loop</string>
+\n - se um app da VPN estiver executado, você deve definir um app específico para decriptação ou definir uma exceção à extensão de mitm do PCAPdroid na VPN, caso contrário, o tráfego vai entrar em um loop</string>
+    <string name="mitm_skip_notice">O certificado de mitm não parece estar instalado. Se continuar, o processo de decriptação pode falhar</string>
+    <string name="mitm_wizard_description">Configurar o dispositivo para a decriptação do TLS</string>
+    <string name="paid_feature">Funcionalidades não gratuitas</string>
+    <string name="firewall_purchase_msg">Adquira a funcionalidade <i>%1$s</i> para começar a bloquear conexões</string>
+    <string name="unlock_token_summary">Um token que pode ser usado para desbloquear as funcionalidades pagas em versões do app que não são da loja do Google Play (p.ex. de fontes como F-Droid/Github)</string>
+    <string name="unlock_token_error">Não foi possível solicitar um token de desbloqueio [%1$d]: %2$s</string>
+    <string name="access_paid_features_msg">Confira <a href="%1$s">o guia do usuário</a> para ver como acessar as funcionalidades pagas</string>
+    <string name="license_service_unavailable">O serviço de licença do PCAPdroid não está disponível no momento. Tente novamente em alguns minutos</string>
+    <string name="requesting_unlock_token">Solicitando um token de desbloqueio, aguarde</string>
+    <string name="show_action">Mostrar</string>
+    <string name="unlock_token_msg1">Este é seu token de desbloqueio. Anote-o, porque será preciso <a href="%1$s">para gerar seus códigos de licença</a></string>
 </resources>
