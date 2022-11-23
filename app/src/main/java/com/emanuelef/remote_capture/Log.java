@@ -34,7 +34,8 @@ public class Log {
     }
 
     public static void writeLog(int logger, int level, @Nullable String tag, @NonNull String message) {
-        CaptureService.writeLog(logger, level, "[" + tag + "] " + message);
+        if(!PCAPdroid.isUnderTest())
+            CaptureService.writeLog(logger, level, "[" + tag + "] " + message);
     }
 
     public static void d(@Nullable String tag, @NonNull String message) {

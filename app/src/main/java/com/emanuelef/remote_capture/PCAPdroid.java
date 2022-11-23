@@ -53,12 +53,15 @@ public class PCAPdroid extends Application {
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
+    protected static boolean isUnderTest = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        Log.init(getCacheDir().getAbsolutePath());
+        if(!isUnderTest())
+            Log.init(getCacheDir().getAbsolutePath());
+
         Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
         Log.i(TAG, "Build type: " + buildtp);
 
@@ -91,6 +94,10 @@ public class PCAPdroid extends Application {
 
     public static @NonNull PCAPdroid getInstance() {
         return mInstance.get();
+    }
+
+    public static boolean isUnderTest() {
+        return isUnderTest;
     }
 
     public MatchList getVisualizationMask() {
