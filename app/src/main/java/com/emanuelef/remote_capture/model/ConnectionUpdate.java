@@ -19,8 +19,6 @@
 
 package com.emanuelef.remote_capture.model;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 public class ConnectionUpdate {

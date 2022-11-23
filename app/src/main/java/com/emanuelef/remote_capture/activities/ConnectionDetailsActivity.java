@@ -29,10 +29,10 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.ConnectionOverview;
 import com.emanuelef.remote_capture.fragments.ConnectionPayload;

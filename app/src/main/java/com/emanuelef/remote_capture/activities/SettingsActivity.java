@@ -26,7 +26,6 @@ import android.net.InetAddresses;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.util.Patterns;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,6 +43,7 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;

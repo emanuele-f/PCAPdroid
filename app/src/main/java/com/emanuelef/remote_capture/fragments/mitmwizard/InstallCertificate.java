@@ -27,7 +27,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.security.KeyChain;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -38,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.MitmListener;

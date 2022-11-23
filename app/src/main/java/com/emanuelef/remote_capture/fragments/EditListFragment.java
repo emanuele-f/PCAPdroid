@@ -23,7 +23,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,6 +46,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;

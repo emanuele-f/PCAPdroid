@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 

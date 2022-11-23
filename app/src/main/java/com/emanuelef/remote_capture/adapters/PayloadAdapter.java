@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;

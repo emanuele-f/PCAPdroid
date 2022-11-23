@@ -9,6 +9,7 @@ add_library(capture SHARED
         crc32.c
         blacklist.c
         pcap_utils.c
+        log_writer.c
         jni_impl.c)
 
 # nDPI

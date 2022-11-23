@@ -42,7 +42,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -242,7 +241,7 @@ public class CaptureService extends VpnService implements Runnable {
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
-            Log.d(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
+            Log.i(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
         } else {
             // Use the provided settings
             mSettings = settings;
@@ -476,7 +475,7 @@ public class CaptureService extends VpnService implements Runnable {
                     if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
                         boolean newInstall = !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
                         String packageName = intent.getData().getSchemeSpecificPart();
-                        Log.d(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
+                        Log.i(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
 
                         if(newInstall && Prefs.blockNewApps(mPrefs)) {
                             Log.i(TAG, "Blocking newly installed app: " + packageName);
@@ -685,7 +684,7 @@ public class CaptureService extends VpnService implements Runnable {
                 // If the network goes offline we roll back to the fallback DNS server to
                 // avoid possibly using a private IP DNS server not reachable anymore
                 if(network.getNetworkHandle() == mMonitoredNetwork) {
-                    Log.d(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
+                    Log.i(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
                     dns_server = FALLBACK_DNS_SERVER;
                     mMonitoredNetwork = 0;
                     unregisterNetworkCallbacks();
@@ -744,7 +743,7 @@ public class CaptureService extends VpnService implements Runnable {
             boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
             boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
 
-            Log.d(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
+            Log.i(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
             if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
                 mDnsEncrypted = strict_mode;
 
@@ -1371,7 +1370,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(!mBilling.isFirewallVisible())
             return;
 
-        Log.d(TAG, "reloading firewall blocklist");
+        Log.i(TAG, "reloading firewall blocklist");
         reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
@@ -1379,7 +1378,7 @@ public class CaptureService extends VpnService implements Runnable {
         if((INSTANCE == null) || !INSTANCE.mMalwareDetectionEnabled)
             return;
 
-        Log.d(TAG, "reloading malware whitelist");
+        Log.i(TAG, "reloading malware whitelist");
         reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
     }
 
@@ -1422,6 +1421,8 @@ public class CaptureService extends VpnService implements Runnable {
         Log.d(TAG, "waitForCaptureStop done " + Thread.currentThread().getName());
     }
 
+    public static native int initLogger(String path, int level);
+    public static native int writeLog(int logger, int lvl, String message);
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();

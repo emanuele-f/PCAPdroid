@@ -3,9 +3,9 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.os.SystemClock;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Log;
 
 import java.util.Iterator;
 import java.util.Map;

@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
@@ -192,7 +191,7 @@ public class Blacklists {
         if(files != null) {
             for(File f: files) {
                 if(!validLists.contains(f)) {
-                    Log.d(TAG, "Removing unknown list: " + f.getPath());
+                    Log.i(TAG, "Removing unknown list: " + f.getPath());
 
                     //noinspection ResultOfMethodCallIgnored
                     f.delete();
@@ -214,11 +213,11 @@ public class Blacklists {
             bl.setUpdating();
         notifyListeners();
 
-        Log.d(TAG, "Updating " + mLists.size() + " blacklists...");
+        Log.i(TAG, "Updating " + mLists.size() + " blacklists...");
         mFirstUpdate = false;
 
         for(BlacklistDescriptor bl: mLists) {
-            Log.d(TAG, "\tupdating " + bl.fname + "...");
+            Log.i(TAG, "\tupdating " + bl.fname + "...");
 
             if(Utils.downloadFile(bl.url, getListPath(bl)))
                 bl.setUpdated(System.currentTimeMillis());
@@ -275,7 +274,7 @@ public class Blacklists {
             }
         }
 
-        Log.d(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
+        Log.i(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
         mNumDomainRules = num_domains;
         mNumIPRules = num_ips;
         mUpdateInProgress = false;

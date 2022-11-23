@@ -26,7 +26,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,6 +46,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;

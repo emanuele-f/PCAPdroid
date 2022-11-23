@@ -57,7 +57,7 @@ static void kill_pcapd(pcapdroid_t *nc) {
     pid = atoi(pid_s);
 
     if(pid != 0) {
-        log_d("Killing old pcapd with pid %d", pid);
+        log_i("Killing old pcapd with pid %d", pid);
         run_shell_cmd("kill", pid_s, true, false);
     }
 
@@ -185,7 +185,7 @@ static int connectPcapd(pcapdroid_t *pd) {
         goto cleanup;
     }
 
-    log_d("Connected to pcapd");
+    log_i("Connected to pcapd");
 
 cleanup:
     unlink(PCAPD_SOCKET_PATH);
@@ -518,7 +518,7 @@ int run_root(pcapdroid_t *pd) {
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
-    log_d("Starting packet loop");
+    log_i("Starting packet loop");
 
     while(running) {
         pcapd_hdr_t hdr;

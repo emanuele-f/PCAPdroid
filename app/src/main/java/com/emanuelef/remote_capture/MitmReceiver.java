@@ -23,7 +23,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
-import android.util.Log;
 import android.util.LruCache;
 import android.util.SparseArray;
 
@@ -179,12 +178,12 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     @Override
     public void run() {
         if(mSocketFd == null) {
-            Log.d(TAG, "Null socket, abort");
+            Log.e(TAG, "Null socket, abort");
             proxyRunning.postValue(false);
             return;
         }
 
-        Log.d(TAG, "Receiving data...");
+        Log.i(TAG, "Receiving data...");
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
                 String msg_type;
@@ -236,7 +235,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 if(type == MsgType.MASTER_SECRET)
                     logMasterSecret(msg);
                 else if(type == MsgType.RUNNING) {
-                    Log.d(TAG, "MITM proxy is running");
+                    Log.i(TAG, "MITM proxy is running");
                     proxyRunning.postValue(true);
                 } else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
@@ -258,7 +257,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
 
         proxyRunning.postValue(false);
-        Log.d(TAG, "End receiving data");
+        Log.i(TAG, "End receiving data");
     }
 
     private boolean isSent(MsgType type) {

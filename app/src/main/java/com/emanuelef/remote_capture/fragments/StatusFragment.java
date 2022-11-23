@@ -28,7 +28,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +48,7 @@ import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;

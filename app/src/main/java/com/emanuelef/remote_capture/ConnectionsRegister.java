@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
@@ -393,7 +392,7 @@ public class ConnectionsRegister {
     }
 
     public synchronized void releasePayloadMemory() {
-        Log.d(TAG, "releaseFullPayloadMemory called");
+        Log.i(TAG, "releaseFullPayloadMemory called");
 
         for(int i=0; i<mCurItems; i++) {
             ConnectionDescriptor conn = mItemsRing[i];

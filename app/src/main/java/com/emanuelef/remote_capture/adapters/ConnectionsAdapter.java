@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture.adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +34,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;

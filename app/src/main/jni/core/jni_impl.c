@@ -19,15 +19,18 @@
 
 #if ANDROID
 
+#include <pthread.h>
 #include "pcapdroid.h"
 #include "pcap_utils.h"
 #include "common/utils.h"
+#include "log_writer.h"
 
 // This files contains functions to make the capture core communicate
 // with the Android system.
 // Exported functions are defined in pcapdroid.h
 
 static pcapdroid_t *global_pd = NULL;
+static pthread_t jni_thread;
 
 jni_classes_t cls;
 jni_methods_t mids;
@@ -37,9 +40,19 @@ jni_enum_t enums;
 /* ******************************************************* */
 
 static void log_callback(int lvl, const char *line) {
-    if(lvl >= ANDROID_LOG_FATAL) {
-        pcapdroid_t *pd = global_pd;
+    pcapdroid_t *pd = global_pd;
 
+    // quick path for debug logs
+    if(lvl < PD_DEFAULT_LOGGER_LEVEL)
+        return;
+
+    pd_log_write(PD_DEFAULT_LOGGER, lvl, line);
+
+    // ensure that we are invoking jni from the attached thread
+    if(!pd || !(pthread_equal(jni_thread, pthread_self())))
+        return;
+
+    if(lvl >= ANDROID_LOG_FATAL) {
         // This is a fatal error, report it to the gui
         jobject info_string = (*pd->env)->NewStringUTF(pd->env, line);
 
@@ -607,6 +620,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     pd.filesdir_len = strlen(pd.filesdir);
 
     global_pd = &pd;
+    jni_thread = pthread_self();
     logcallback = log_callback;
     signal(SIGPIPE, SIG_IGN);
 
@@ -641,7 +655,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jclass type) {
     /* NOTE: the select on the packets loop uses a timeout to wake up periodically */
-    log_i( "stopPacketLoop called");
+    log_i("stopPacketLoop called");
     running = false;
 }
 
@@ -842,6 +856,28 @@ Java_com_emanuelef_remote_1capture_CaptureService_setPayloadMode(JNIEnv *env, jc
     }
 
     pd->payload_mode = mode;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_initLogger(JNIEnv *env, jclass clazz,
+                                                             jstring path, jint level) {
+    const char *path_s = (*env)->GetStringUTFChars(env, path, 0);
+    int rv = pd_init_logger(path_s, level);
+    (*env)->ReleaseStringUTFChars(env, path, path_s);
+    return rv;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jint JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_writeLog(JNIEnv *env, jclass clazz,
+                                                      jint logger, jint lvl, jstring message) {
+    const char *message_s = (*env)->GetStringUTFChars(env, message, 0);
+    int rv = pd_log_write(logger, lvl, message_s);
+    (*env)->ReleaseStringUTFChars(env, message, message_s);
+    return rv;
 }
 
 /* ******************************************************* */

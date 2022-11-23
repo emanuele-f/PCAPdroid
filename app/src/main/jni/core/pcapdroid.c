@@ -1100,7 +1100,7 @@ void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struc
               JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
     else if((pd->pcap_dump.max_dump_size > 0) &&
             ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
-        log_d("Max dump size reached, stop the dump");
+        log_i("Max dump size reached, stop the dump");
         stop_pcap_dump(pd);
     } else {
         pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
@@ -1198,7 +1198,7 @@ int pd_run(pcapdroid_t *pd) {
     // Run the capture
     int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
 
-    log_d("Stopped packet loop");
+    log_i("Stopped packet loop");
 
     // send last dump
     if(pd->cb.send_stats_dump)
@@ -1216,7 +1216,7 @@ int pd_run(pcapdroid_t *pd) {
 
     if(pd->malware_detection.enabled) {
         if(pd->malware_detection.reload_in_progress) {
-            log_d("Joining blacklists reload_worker");
+            log_i("Joining blacklists reload_worker");
             pthread_join(pd->malware_detection.reload_worker, NULL);
         }
         if(pd->malware_detection.bl)
@@ -1245,8 +1245,8 @@ int pd_run(pcapdroid_t *pd) {
         pd_free(e);
     }
 
-    log_d("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
-    log_d("Discarded fragments: %ld", pd->num_discarded_fragments);
+    log_i("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
+    log_i("Discarded fragments: %ld", pd->num_discarded_fragments);
     ip_lru_destroy(pd->ip_to_host);
 
     return(rv);

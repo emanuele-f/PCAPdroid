@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -59,8 +58,9 @@ public class PCAPdroid extends Application {
     public void onCreate() {
         super.onCreate();
 
+        Log.init(getCacheDir().getAbsolutePath());
         Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
-        Log.d(TAG, "Build type: " + buildtp);
+        Log.i(TAG, "Build type: " + buildtp);
 
         CaocConfig.Builder builder = CaocConfig.Builder.create();
         if((buildtp == Utils.BuildType.PLAYSTORE) || (buildtp == Utils.BuildType.UNKNOWN)) {

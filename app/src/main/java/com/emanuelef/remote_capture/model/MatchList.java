@@ -24,13 +24,13 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;

@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 

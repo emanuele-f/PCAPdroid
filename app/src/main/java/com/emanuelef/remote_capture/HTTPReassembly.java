@@ -19,8 +19,6 @@
 
 package com.emanuelef.remote_capture;
 
-import android.util.Log;
-
 import com.emanuelef.remote_capture.model.PayloadChunk;
 
 import java.io.BufferedReader;

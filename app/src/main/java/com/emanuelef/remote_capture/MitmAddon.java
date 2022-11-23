@@ -35,7 +35,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.PackageInfoCompat;
@@ -69,7 +68,7 @@ public class MitmAddon {
     private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            Log.d(TAG, "Service connected");
+            Log.i(TAG, "Service connected");
             mService = new Messenger(service);
 
             if(mStopRequested)
@@ -80,7 +79,7 @@ public class MitmAddon {
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            Log.d(TAG, "Service disconnected");
+            Log.i(TAG, "Service disconnected");
             disconnect(); // call unbind to prevent new connections
             mReceiver.onMitmServiceDisconnect();
         }
@@ -211,7 +210,7 @@ public class MitmAddon {
     // This must be always called after connect, e.g. in the OnDestroy
     public void disconnect() {
         if(mService != null) {
-            Log.d(TAG, "Unbinding service...");
+            Log.i(TAG, "Unbinding service...");
             mContext.unbindService(mConnection);
             mService = null;
         }
@@ -278,12 +277,12 @@ public class MitmAddon {
 
     public boolean stopProxy() {
         if(mService == null) {
-            Log.d(TAG, "Not connected, postponing stop message");
+            Log.i(TAG, "Not connected, postponing stop message");
             mStopRequested = true;
             return true;
         }
 
-        Log.d(TAG, "Send stop message");
+        Log.i(TAG, "Send stop message");
         Message msg = Message.obtain(null, MitmAPI.MSG_STOP_MITM);
         try {
             mService.send(msg);

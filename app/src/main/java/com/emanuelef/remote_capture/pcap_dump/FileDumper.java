@@ -2,9 +2,9 @@ package com.emanuelef.remote_capture.pcap_dump;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 

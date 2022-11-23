@@ -33,7 +33,7 @@ static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
         char appbuf[64];
 
         get_appname_by_uid(pd, uid, appbuf, sizeof(appbuf));
-        log_i( "%s [%d/%s]", buf, uid, appbuf);
+        log_d( "%s [%d/%s]", buf, uid, appbuf);
     } else {
         uid = UID_UNKNOWN;
         log_w("%s => UID not found!", buf);
@@ -154,7 +154,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
         ip.ip4 = pd->vpn.ipv4.dns_server;
         zdtun_set_dnat_info(pd->zdt, &ip, htons(53), 4);
 
-        log_d("Using new DNS server");
+        log_i("Using new DNS server");
     }
 
     if(pctx->tuple->ipproto == IPPROTO_ICMP)
@@ -209,7 +209,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
     }
 
     if(block_private_dns) {
-        log_i("blocking packet directed to the DNS server");
+        log_d("blocking packet directed to the DNS server");
         return(false);
     }
 
@@ -370,7 +370,7 @@ void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *d
     if(block_private_dns && !data->to_block &&
             (data->l7proto == NDPI_PROTOCOL_TLS) &&
             data->info && blacklist_match_domain(pd->vpn.known_dns_servers, data->info)) {
-        log_i("blocking connection to private DNS server");
+        log_d("blocking connection to private DNS server");
         data->blacklisted_internal = true;
         data->to_block = true;
     }
@@ -474,7 +474,7 @@ int run_vpn(pcapdroid_t *pd) {
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
-    log_d("Starting packet loop [tunfd=%d]", pd->vpn.tunfd);
+    log_i("Starting packet loop");
 
     while(running) {
         int max_fd;

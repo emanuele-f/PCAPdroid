@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
