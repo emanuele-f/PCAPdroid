@@ -23,70 +23,112 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.MenuProvider;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import com.emanuelef.remote_capture.fragments.LogviewFragment;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class LogviewActivity extends BaseActivity implements MenuProvider {
     private static final String TAG = "LogviewActivity";
-    private String mLogText;
+    private ViewPager2 mPager;
+    private StateAdapter mPagerAdapter;
+
+    private static final int POS_APP_LOG = 0;
+    private static final int POS_ROOT_LOG = 1;
+    private static final int POS_MITM_LOG = 2;
+    private static final int NUM_POS = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.root_log);
-        setContentView(R.layout.logview_activity);
+        setTitle(R.string.app_log);
+        setContentView(R.layout.tabs_activity_fixed);
         addMenuProvider(this);
 
-        TextView logView = findViewById(R.id.log);
-        mLogText = readLog();
-
-        logView.setText(!mLogText.isEmpty() ? mLogText : getString(R.string.error));
+        mPager = findViewById(R.id.pager);
+        setupTabs();
     }
 
-    private String readLog() {
-        try {
-            String logpath = getCacheDir().getPath() + "/pcapd.log";
-            BufferedReader reader = new BufferedReader(new FileReader(logpath));
+    private void setupTabs() {
+        mPagerAdapter = new StateAdapter(this);
+        mPager.setAdapter(mPagerAdapter);
 
-            StringBuilder builder = new StringBuilder();
-            String line;
+        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
+                tab.setText(getString(mPagerAdapter.getPageTitle(position)))
+        ).attach();
+    }
 
-            while((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append("\n");
-            }
+    private static class StateAdapter extends FragmentStateAdapter {
+        final String mCacheDir;
 
-            return builder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
+        StateAdapter(final FragmentActivity fa) {
+            super(fa);
+            mCacheDir = fa.getCacheDir().getAbsolutePath();
         }
 
-        return "";
+        @NonNull
+        @Override
+        public Fragment createFragment(int pos) {
+            switch (pos) {
+                case POS_APP_LOG:
+                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.DEFAULT_LOGGER_PATH);
+                case POS_ROOT_LOG:
+                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.ROOT_LOGGER_PATH);
+                case POS_MITM_LOG:
+                default:
+                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.MITM_LOGGER_PATH);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return NUM_POS;
+        }
+
+        public int getPageTitle(final int pos) {
+            switch (pos) {
+                case POS_APP_LOG:
+                    return R.string.app;
+                case POS_ROOT_LOG:
+                    return R.string.root;
+                case POS_MITM_LOG:
+                default:
+                    return R.string.mitm_addon;
+            }
+        }
     }
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.copy_share_menu, menu);
+        inflater.inflate(R.menu.log_menu, menu);
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+        LogviewFragment fragment = (LogviewFragment) getFragmentAtPos(mPager.getCurrentItem());
+        if(fragment == null)
+            return false;
 
-        if(id == R.id.copy_to_clipboard) {
-            Utils.copyToClipboard(this, mLogText);
+        String logText = fragment.getLog();
+
+        if(id == R.id.reload) {
+            fragment.reloadLog();
+            return true;
+        } else if(id == R.id.copy_to_clipboard) {
+            Utils.copyToClipboard(this, logText);
             return true;
         } else if(id == R.id.share) {
-            Utils.shareText(this, getString(R.string.root_log), mLogText);
+            Utils.shareText(this, getString(R.string.app_log), logText);
             return true;
         }
 

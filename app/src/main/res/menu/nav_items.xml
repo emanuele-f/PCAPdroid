@@ -18,10 +18,9 @@
             android:title="@string/malware_detection"
             android:icon="@drawable/ic_bug" />
         <item
-            android:id="@+id/open_root_log"
-            android:title="@string/root_log"
-            android:icon="@drawable/ic_text_snippet"
-            android:visible="false" />
+            android:id="@+id/open_log"
+            android:title="@string/app_log"
+            android:icon="@drawable/ic_text_snippet" />
         <item
             android:id="@+id/paid_features"
             android:visible="false"

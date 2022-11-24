@@ -9,6 +9,7 @@
     <string name="whois_lookup" translatable="false">WHOIS</string>
     <string name="installation_id" translatable="false">Installation ID</string>
     <string name="license_code" translatable="false">License code</string>
+    <string name="root" translatable="false">root</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License or later</a> for
@@ -126,7 +127,8 @@
     <string name="root_capture">Capture as root</string>
     <string name="root_capture_summary">Allows PCAPdroid to run with other VPN apps</string>
     <string name="donate">Donate</string>
-    <string name="root_log">Root log</string>
+    <string name="app_log">Log</string>
+    <string name="no_data">No data</string>
     <string name="search">Search…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">IP address: %1$s</string>
@@ -278,6 +280,7 @@
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Uninstall it and retry</string>
     <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be upgraded</string>
+    <string name="mitm_addon">mitm addon</string>
     <string name="upgrade_action">Upgrade</string>
     <string name="export_failed">Export failed</string>
     <string name="not_encrypted">Not encrypted</string>

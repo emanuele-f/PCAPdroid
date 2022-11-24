@@ -41,6 +41,10 @@ class BaseActivity extends AppCompatActivity {
         return null;
     }
 
+    protected Fragment getFragmentAtPos(int pos) {
+        return getSupportFragmentManager().findFragmentByTag("f" + pos);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(mBackAction && (item.getItemId() == android.R.id.home)) {

@@ -91,6 +91,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         WEBSOCKET_CLIENT_MSG,
         WEBSOCKET_SERVER_MSG,
         MASTER_SECRET,
+        LOG,
     }
 
     private static class PendingMessage {
@@ -234,7 +235,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
                 if(type == MsgType.MASTER_SECRET)
                     logMasterSecret(msg);
-                else if(type == MsgType.RUNNING) {
+                else if(type == MsgType.LOG) {
+                    handleLog(msg);
+                } else if(type == MsgType.RUNNING) {
                     Log.i(TAG, "MITM proxy is running");
                     proxyRunning.postValue(true);
                 } else {
@@ -347,6 +350,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return MsgType.WEBSOCKET_SERVER_MSG;
             case "secret":
                 return MsgType.MASTER_SECRET;
+            case "log":
+                return MsgType.LOG;
             default:
                 return MsgType.UNKNOWN;
         }
@@ -360,6 +365,19 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
         mKeylog.write(master_secret);
         mKeylog.write(0xa);
+    }
+
+    private void handleLog(byte[] message) {
+        try {
+            String msg = new String(message, StandardCharsets.US_ASCII);
+
+            // format: 1:message
+            if (msg.length() < 3)
+                return;
+
+            int lvl = Integer.parseInt(msg.substring(0, 1));
+            Log.level(Log.MITMADDON_LOGGER, lvl, msg.substring(2));
+        } catch (NumberFormatException ignored) {}
     }
 
     public boolean isProxyRunning() {

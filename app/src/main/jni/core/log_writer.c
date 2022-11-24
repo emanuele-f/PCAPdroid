@@ -11,12 +11,16 @@ static int num_loggers = 0;
 
 struct log_writer {
     FILE *f;
+    char *path;
     int id;
     int level;
+    bool errored;
 };
 
 static void pd_destroy_logger(struct log_writer *logger) {
-    fclose(logger->f);
+    if(logger->f)
+        fclose(logger->f);
+    pd_free(logger->path);
     pd_free(logger);
 }
 
@@ -33,26 +37,17 @@ void pd_close_loggers() {
 }
 
 int pd_init_logger(const char *path, int min_lvl) {
-    FILE *f = fopen(path, "w");
     int rv;
-
-    if(!f) {
-#ifdef ANDROID
-        __android_log_print(ANDROID_LOG_ERROR, logtag,
-                            "pd_init_logger %s failed[%d]: %s", path, errno, strerror(errno));
-#endif
-        return -errno;
-    }
-
     struct log_writer *logger = (struct log_writer*) pd_calloc(1, sizeof(struct log_writer));
-    if(!logger) {
-        rv = -errno;
-        fclose(f);
-        return rv;
-    }
+    if(!logger)
+        return -errno;
 
     logger->level = min_lvl;
-    logger->f = f;
+    logger->path = pd_strdup(path);
+    if(!logger->path) {
+        pd_free(logger);
+        return -errno;
+    }
 
     pthread_mutex_lock(&mutex);
     loggers = pd_realloc(loggers, sizeof(void*) * (num_loggers + 1));
@@ -60,8 +55,8 @@ int pd_init_logger(const char *path, int min_lvl) {
         pd_destroy_logger(logger);
         rv = -1;
     } else {
-        loggers[num_loggers++] = logger;
-        logger->id = rv = num_loggers;
+        loggers[num_loggers] = logger;
+        logger->id = rv = num_loggers++;
     }
     pthread_mutex_unlock(&mutex);
 
@@ -73,7 +68,6 @@ int pd_log_write(int logger_id, int lvl, const char *msg) {
     char dtbuf[64];
     struct tm tm;
     time_t tnow = time(NULL);
-
     strftime(dtbuf, sizeof(dtbuf), "%d/%b/%Y %H:%M:%S", localtime_r(&tnow, &tm));
 
     pthread_mutex_lock(&mutex);
@@ -88,7 +82,22 @@ int pd_log_write(int logger_id, int lvl, const char *msg) {
     if(logger->level > lvl)
         goto unlock;
 
-    if(ferror(logger->f)) {
+    if(!logger->f && !logger->errored) {
+        // only overwrite the file when writing to it
+        logger->f = fopen(logger->path, "w");
+
+        if(!logger->f) {
+#ifdef ANDROID
+            __android_log_print(ANDROID_LOG_ERROR, logtag,
+                                "pd_init_logger %s failed[%d]: %s", logger->path, errno, strerror(errno));
+#endif
+            rv = -errno;
+            logger->errored = true;
+            goto unlock;
+        }
+    }
+
+    if(!logger->f || ferror(logger->f)) {
         rv = -EINVAL;
         goto unlock;
     }

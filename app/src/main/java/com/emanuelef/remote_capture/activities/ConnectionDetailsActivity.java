@@ -73,7 +73,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         super.onCreate(savedInstanceState);
         setTitle(R.string.connection_details);
         displayBackAction();
-        setContentView(R.layout.activity_connection_details);
+        setContentView(R.layout.tabs_activity_fixed);
 
         int incr_id = getIntent().getIntExtra(CONN_ID_KEY, -1);
         if(incr_id != -1) {
