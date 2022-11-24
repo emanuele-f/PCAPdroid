@@ -131,6 +131,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
+        private EditTextPreference mMitmproxyOpts;
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private Preference mVpnExceptions;
@@ -302,12 +303,15 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 fullPayloadHideShow((boolean) newValue);
                 mBlockQuic.setVisible(((boolean) newValue) && !rootCaptureEnabled());
                 mMitmWizard.setVisible((boolean) newValue);
+                mMitmproxyOpts.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
                 return true;
             });
 
             mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
             mBlockQuic = requirePreference(Prefs.PREF_BLOCK_QUIC);
+            mMitmproxyOpts = requirePreference(Prefs.PREF_MITMPROXY_OPTS);
+            mMitmproxyOpts.setVisible(mTlsDecryption.isChecked());
             mMitmWizard = requirePreference("mitm_setup_wizard");
             mMitmWizard.setVisible(mTlsDecryption.isChecked());
             mMitmWizard.setOnPreferenceClickListener(preference -> {

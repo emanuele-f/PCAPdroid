@@ -72,6 +72,13 @@
             app:summary="@string/mitm_wizard_description"
             app:iconSpaceReserved="false" />
 
+        <EditTextPreference
+            app:key="mitmproxy_opts"
+            app:title="@string/mitmproxy_opts"
+            app:summary="@string/mitmproxy_opts_description"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
         <SwitchPreference
             app:key="block_quic"
             app:title="@string/block_quick"

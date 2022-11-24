@@ -82,6 +82,7 @@ public class Prefs {
     public static final String PREF_BLOCK_NEW_APPS = "block_new_apps";
     public static final String PREF_PAYLOAD_NOTICE_ACK = "payload_notice";
     public static final String PREF_REMOTE_COLLECTOR_ACK = "remote_collector_notice";
+    public static final String PREF_MITMPROXY_OPTS = "mitmproxy_opts";
 
     public enum DumpMode {
         NONE,
@@ -171,6 +172,7 @@ public class Prefs {
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
     public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
     public static boolean blockNewApps(SharedPreferences p)       { return(p.getBoolean(PREF_BLOCK_NEW_APPS, false)); }
+    public static String getMitmproxyOpts(SharedPreferences p)    { return(p.getString(PREF_MITMPROXY_OPTS, "")); }
 
 
     public static String asString(Context ctx) {

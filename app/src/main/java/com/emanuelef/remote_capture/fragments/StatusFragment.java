@@ -170,7 +170,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         });
 
         // Register for updates
-        MitmReceiver.observeRunning(this, running -> refreshDecryptionStatus());
+        MitmReceiver.observeStatus(this, status -> refreshDecryptionStatus());
         CaptureService.observeStats(this, this::onStatsUpdate);
 
         // Make URLs clickable
@@ -203,7 +203,13 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     }
 
     private void refreshDecryptionStatus() {
-        mInterfaceInfo.setText(CaptureService.isMitmProxyRunning() ? R.string.tls_decryption_running : R.string.tls_decryption_starting);
+        MitmReceiver.Status proxy_status = CaptureService.getMitmProxyStatus();
+        Context ctx = getContext();
+
+        if((proxy_status == MitmReceiver.Status.START_ERROR) && (ctx != null))
+            Utils.showToastLong(ctx, R.string.mitm_addon_error);
+
+        mInterfaceInfo.setText((proxy_status == MitmReceiver.Status.RUNNING) ? R.string.tls_decryption_running : R.string.tls_decryption_starting);
     }
 
     private void refreshFilterInfo() {

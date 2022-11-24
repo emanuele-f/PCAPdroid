@@ -70,7 +70,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final Context mContext;
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
-    private static final MutableLiveData<Boolean> proxyRunning = new MutableLiveData<>();
+    private static final MutableLiveData<Status> proxyStatus = new MutableLiveData<>(Status.NOT_STARTED);
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
 
@@ -110,7 +110,14 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    public MitmReceiver(Context ctx, boolean rootCapture, String proxyAuth) {
+    public enum Status {
+        NOT_STARTED,
+        STARTING,
+        START_ERROR,
+        RUNNING
+    }
+
+    public MitmReceiver(Context ctx, boolean rootCapture, String proxyAuth, String additionalOpts) {
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
@@ -119,6 +126,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
         mConfig.proxyAuth = proxyAuth;
         mConfig.dumpMasterSecrets = (CaptureService.getDumpMode() != Prefs.DumpMode.NONE);
+        mConfig.additionalOptions = additionalOpts;
 
         /* upstream certificate verification is disabled because the app does not provide a way to let the user
            accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
@@ -138,7 +146,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     public boolean start() throws IOException {
         Log.d(TAG, "starting");
-        proxyRunning.postValue(false);
+        proxyStatus.postValue(Status.STARTING);
 
         if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);
@@ -180,7 +188,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     public void run() {
         if(mSocketFd == null) {
             Log.e(TAG, "Null socket, abort");
-            proxyRunning.postValue(false);
+            proxyStatus.postValue(Status.NOT_STARTED);
             return;
         }
 
@@ -239,7 +247,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                     handleLog(msg);
                 } else if(type == MsgType.RUNNING) {
                     Log.i(TAG, "MITM proxy is running");
-                    proxyRunning.postValue(true);
+                    proxyStatus.postValue(Status.RUNNING);
                 } else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
                     //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port + ", match=" + (conn != null));
@@ -259,7 +267,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             mKeylog = null;
         }
 
-        proxyRunning.postValue(false);
+        if(proxyStatus.getValue() == Status.STARTING)
+            proxyStatus.postValue(Status.START_ERROR);
+        else
+            proxyStatus.postValue(Status.NOT_STARTED);
+
         Log.i(TAG, "End receiving data");
     }
 
@@ -380,12 +392,12 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         } catch (NumberFormatException ignored) {}
     }
 
-    public boolean isProxyRunning() {
-        return Boolean.TRUE.equals(proxyRunning.getValue());
+    public Status getProxyStatus() {
+        return proxyStatus.getValue();
     }
 
-    public static void observeRunning(LifecycleOwner lifecycleOwner, Observer<Boolean> observer) {
-        proxyRunning.observe(lifecycleOwner, observer);
+    public static void observeStatus(LifecycleOwner lifecycleOwner, Observer<Status> observer) {
+        proxyStatus.observe(lifecycleOwner, observer);
     }
 
     @Override

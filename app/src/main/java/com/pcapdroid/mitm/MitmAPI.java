@@ -41,5 +41,6 @@ public class MitmAPI {
         public boolean sslInsecure;        // true to disable upstream certificate check
         public boolean dumpMasterSecrets;  // true to enable the TLS master secrets dump messages (similar to SSLKEYLOG)
         public String proxyAuth;           // SOCKS5 proxy authentication, "user:pass"
+        public String additionalOptions;   // provide additional options to mitmproxy
     }
 }

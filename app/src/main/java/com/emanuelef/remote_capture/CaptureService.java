@@ -347,7 +347,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
                 mSocks5Auth = Utils.genRandomString(8) + ":" + Utils.genRandomString(8);
 
-                mMitmReceiver = new MitmReceiver(this, mSettings.root_capture, mSocks5Auth);
+                mMitmReceiver = new MitmReceiver(this, mSettings.root_capture, mSocks5Auth, mSettings.mitmproxy_opts);
                 try {
                     if(!mMitmReceiver.start())
                         return abortStart();
@@ -841,8 +841,11 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.mCaptureThread != null));
     }
 
-    public static boolean isMitmProxyRunning() {
-        return((INSTANCE != null) && (INSTANCE.mMitmReceiver != null) && INSTANCE.mMitmReceiver.isProxyRunning());
+    public static MitmReceiver.Status getMitmProxyStatus() {
+        if((INSTANCE == null) || (INSTANCE.mMitmReceiver == null))
+            return MitmReceiver.Status.NOT_STARTED;
+
+        return INSTANCE.mMitmReceiver.getProxyStatus();
     }
 
     public static boolean isLowMemory() {
