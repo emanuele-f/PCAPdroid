@@ -247,8 +247,10 @@ public class MatchList {
                     }
                 }
 
-                addRule(new Rule(type, val));
+                addRule(new Rule(type, val), false);
             }
+
+            notifyListeners();
         } catch (IllegalArgumentException | ClassCastException e) {
             e.printStackTrace();
             return false;
@@ -292,7 +294,7 @@ public class MatchList {
         return tp + "@" + val;
     }
 
-    private boolean addRule(Rule rule) {
+    private boolean addRule(Rule rule, boolean notify) {
         String value = rule.getValue().toString();
         String key = matchKey(rule.getType(), value);
 
@@ -310,8 +312,13 @@ public class MatchList {
 
         mRules.add(rule);
         mMatches.put(key, rule);
-        notifyListeners();
+        if(notify)
+            notifyListeners();
         return true;
+    }
+
+    private boolean addRule(Rule rule) {
+        return addRule(rule, true);
     }
 
     public int addRules(MatchList to_add) {
@@ -320,7 +327,7 @@ public class MatchList {
         for(Iterator<Rule> it = to_add.iterRules(); it.hasNext(); ) {
             Rule rule = it.next();
 
-            if(addRule(rule))
+            if(addRule(rule, false))
                 num_added++;
         }
 
