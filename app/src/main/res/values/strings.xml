@@ -418,4 +418,9 @@
     <string name="mitmproxy_opts">Additional mitmproxy options</string>
     <string name="mitmproxy_opts_description">Provide additional options for mitmproxy</string>
     <string name="mitm_addon_error">Error while starting the mitm addon. Check the log for details</string>
+    <string name="whitelist_mode">Whitelist mode</string>
+    <string name="firewall_whitelist_notice">In this mode all the connections will be blocked, unless manually whitelisted. You may miss push notifications without a proper whitelist</string>
+    <string name="firewall_whitelist_help">These rules specify which connections to allow. Blocklist rules have priority over whitelist rules</string>
+    <string name="add_to_whitelist">Add to whitelist</string>
+    <string name="remove_from_whitelist">Remove from whitelist</string>
 </resources>

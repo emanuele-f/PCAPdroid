@@ -46,6 +46,9 @@ public class Prefs {
     public static final String PAYLOAD_MODE_FULL = "full";
     public static final String DEFAULT_PAYLOAD_MODE = PAYLOAD_MODE_MINIMAL;
 
+    // used to initialize the whitelist with some safe defaults
+    public static final int FIREWALL_WHITELIST_INIT_VER = 1;
+
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
@@ -66,6 +69,9 @@ public class Prefs {
     public static final String PREF_MALWARE_WHITELIST = "malware_whitelist";
     public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
     public static final String PREF_BLOCKLIST = "bl";
+    public static final String PREF_FIREWALL_WHITELIST_MODE = "firewall_wl_mode";
+    public static final String PREF_FIREWALL_WHITELIST_INIT_VER = "firewall_wl_init";
+    public static final String PREF_FIREWALL_WHITELIST = "firewall_whitelist";
     public static final String PREF_START_AT_BOOT = "start_at_boot";
     public static final String PREF_SNAPLEN = "snaplen";
     public static final String PREF_MAX_PKTS_PER_FLOW = "max_pkts_per_flow";
@@ -140,6 +146,10 @@ public class Prefs {
         p.edit().putBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, true).apply();
     }
 
+    public static void setFirewallWhitelistInitialized(SharedPreferences p) {
+        p.edit().putInt(PREF_FIREWALL_WHITELIST_INIT_VER, FIREWALL_WHITELIST_INIT_VER).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -172,8 +182,9 @@ public class Prefs {
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }
     public static boolean lockdownVpnNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCKDOWN_VPN_NOTICE_SHOWN, false)); }
     public static boolean blockNewApps(SharedPreferences p)       { return(p.getBoolean(PREF_BLOCK_NEW_APPS, false)); }
+    public static boolean isFirewallWhitelistMode(SharedPreferences p)     { return(p.getBoolean(PREF_FIREWALL_WHITELIST_MODE, false)); }
+    public static boolean isFirewallWhitelistInitialized(SharedPreferences p) { return(p.getInt(PREF_FIREWALL_WHITELIST_INIT_VER, 0) == FIREWALL_WHITELIST_INIT_VER); }
     public static String getMitmproxyOpts(SharedPreferences p)    { return(p.getString(PREF_MITMPROXY_OPTS, "")); }
-
 
     public static String asString(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);

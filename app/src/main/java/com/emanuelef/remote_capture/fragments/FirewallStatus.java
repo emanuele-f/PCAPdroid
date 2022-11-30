@@ -37,6 +37,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
@@ -51,16 +52,20 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionsActivity;
+import com.emanuelef.remote_capture.activities.FirewallActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
 public class FirewallStatus extends Fragment implements MenuProvider {
     private static final String TAG = "FirewallStatus";
+    private static boolean whitelistWarningAck = false;
     private Handler mHandler;
     private SharedPreferences mPrefs;
+    private Menu mMenu;
     private SwitchCompat mToggle;
     private ImageView mStatusIcon;
     private TextView mStatus;
@@ -69,6 +74,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
     private TextView mNumRules;
     private TextView mLastBlock;
     private Blocklist mBlocklist;
+    private MatchList mWhitelist;
     private int mOkColor, mWarnColor, mGrayColor;
 
     @Override
@@ -84,6 +90,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
+        mWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
         mStatus = view.findViewById(R.id.status);
         mHandler = new Handler(Looper.getMainLooper());
         mStatusIcon = view.findViewById(R.id.status_icon);
@@ -121,6 +128,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
     @Override
     public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.firewall_menu, menu);
+        mMenu = menu;
 
         mToggle = (SwitchCompat) menu.findItem(R.id.toggle_btn).getActionView();
         mToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -135,9 +143,9 @@ public class FirewallStatus extends Fragment implements MenuProvider {
             updateStatus();
         });
 
+        menu.findItem(R.id.whitelist_mode).setChecked(Prefs.isFirewallWhitelistMode(mPrefs));
         menu.findItem(R.id.block_new_apps).setChecked(Prefs.blockNewApps(mPrefs));
-
-        updateStatus();
+        reloadMode();
     }
 
     @Override
@@ -153,9 +161,44 @@ public class FirewallStatus extends Fragment implements MenuProvider {
             item.setChecked(checked);
             mPrefs.edit().putBoolean(Prefs.PREF_BLOCK_NEW_APPS, checked).apply();
             return true;
+        } else if(id == R.id.whitelist_mode) {
+            boolean checked = !item.isChecked();
+            if(checked && !whitelistWarningAck) {
+                AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.whitelist_mode)
+                        .setMessage(R.string.firewall_whitelist_notice)
+                        .setPositiveButton(R.string.ok, (d, whichButton) -> {
+                            whitelistWarningAck = true;
+                            item.setChecked(true);
+                            mPrefs.edit().putBoolean(Prefs.PREF_FIREWALL_WHITELIST_MODE, true).apply();
+                            reloadMode();
+                        })
+                        .setNegativeButton(R.string.cancel_action, (d, whichButton) -> {})
+                        .show();
+
+                dialog.setCanceledOnTouchOutside(false);
+            } else {
+                item.setChecked(checked);
+                mPrefs.edit().putBoolean(Prefs.PREF_FIREWALL_WHITELIST_MODE, checked).apply();
+                reloadMode();
+            }
+            return true;
         }
 
         return false;
+    }
+
+    private void reloadMode() {
+        boolean whitelist_mode = Prefs.isFirewallWhitelistMode(mPrefs);
+
+        if(mMenu != null)
+            mMenu.findItem(R.id.block_new_apps).setVisible(!whitelist_mode);
+
+        if(CaptureService.isServiceActive())
+            CaptureService.requireInstance().reloadFirewallWhitelist();
+
+        ((FirewallActivity)requireActivity()).recheckTabs();
+        updateStatus();
     }
 
     private void updateStatus() {
@@ -163,6 +206,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
         boolean is_running = CaptureService.isServiceActive();
         boolean is_enabled = Prefs.isFirewallEnabled(ctx, mPrefs);
+        boolean whitelist_mode = Prefs.isFirewallWhitelistMode(mPrefs);
 
         if(!is_running) {
             mStatusIcon.setImageResource(R.drawable.ic_shield);
@@ -190,7 +234,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
         mNumBlocked.setText(Utils.formatIntShort(((reg != null) ? reg.getNumBlockedConnections() : 0)));
         mNumChecked.setText(Utils.formatIntShort(CaptureService.getNumCheckedFirewallConnections()));
         mLastBlock.setText(Utils.formatEpochMin(ctx, ((reg != null) ? reg.getLastFirewallBlock() / 1000 : 0)));
-        mNumRules.setText(Utils.formatIntShort(mBlocklist.getSize()));
+        mNumRules.setText(Utils.formatIntShort(mBlocklist.getSize() + (whitelist_mode ? mWhitelist.getSize() : 0)));
 
         // Periodic update
         mHandler.postDelayed(this::updateStatus, 1000);

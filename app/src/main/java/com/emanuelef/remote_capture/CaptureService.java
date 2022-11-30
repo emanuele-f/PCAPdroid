@@ -142,7 +142,8 @@ public class CaptureService extends VpnService implements Runnable {
     private boolean mStopping;
     private Blacklists mBlacklists;
     private Blocklist mBlocklist;
-    private MatchList mWhitelist;
+    private MatchList mMalwareWhitelist;
+    private MatchList mFirewallWhitelist;
     private SparseArray<String> mIfIndexToName;
     private boolean mSocks5Enabled;
     private String mSocks5Address;
@@ -451,13 +452,14 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        mWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        mMalwareWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
         if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
             reloadBlacklists();
         checkBlacklistsUpdates();
 
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
+        mFirewallWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
@@ -1302,6 +1304,7 @@ public class CaptureService extends VpnService implements Runnable {
             if(mMalwareDetectionEnabled)
                 reloadMalwareWhitelist();
             reloadBlocklist();
+            reloadFirewallWhitelist();
         }
     }
 
@@ -1377,12 +1380,20 @@ public class CaptureService extends VpnService implements Runnable {
         reloadBlocklist(mBlocklist.toListDescriptor());
     }
 
+    public void reloadFirewallWhitelist() {
+        if(!mBilling.isFirewallVisible())
+            return;
+
+        Log.i(TAG, "reloading firewall whitelist");
+        reloadFirewallWhitelist(Prefs.isFirewallWhitelistMode(mPrefs) ? mFirewallWhitelist.toListDescriptor() : null);
+    }
+
     public static void reloadMalwareWhitelist() {
         if((INSTANCE == null) || !INSTANCE.mMalwareDetectionEnabled)
             return;
 
         Log.i(TAG, "reloading malware whitelist");
-        reloadMalwareWhitelist(INSTANCE.mWhitelist.toListDescriptor());
+        reloadMalwareWhitelist(INSTANCE.mMalwareWhitelist.toListDescriptor());
     }
 
     public static void setFirewallEnabled(boolean enabled) {
@@ -1433,6 +1444,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native void setDnsServer(String server);
     private static native void reloadBlacklists();
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
+    private static native boolean reloadFirewallWhitelist(MatchList.ListDescriptor whitelist);
     private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();

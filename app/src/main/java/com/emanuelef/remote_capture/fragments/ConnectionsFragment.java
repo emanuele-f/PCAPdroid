@@ -24,6 +24,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,6 +48,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,6 +69,7 @@ import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
@@ -295,12 +298,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         MenuItem item;
 
         Billing billing = Billing.newInstance(ctx);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
         boolean firewallVisible = billing.isFirewallVisible();
+        boolean whitelistMode = Prefs.isFirewallWhitelistMode(prefs);
         boolean showPurchaseFirewall = (!billing.isPurchased(Billing.FIREWALL_SKU) && billing.isAvailable(Billing.FIREWALL_SKU)) && !CaptureService.isCapturingAsRoot();
         boolean blockVisible = false;
         boolean unblockVisible = false;
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
         if(app != null) {
             boolean appBlocked = blocklist.matchesApp(app.getUid());
@@ -332,6 +338,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 item = menu.findItem(R.id.whitelist_app);
                 item.setTitle(label);
                 item.setVisible(true);
+            }
+
+            if(firewallVisible && whitelistMode) {
+                boolean whitelisted = fwWhitelist.matchesApp(app.getUid());
+                menu.findItem(R.id.add_to_whitelist).setVisible(!whitelisted);
+                menu.findItem(R.id.remove_from_whitelist).setVisible(whitelisted);
             }
         }
 
@@ -442,11 +454,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
+        boolean firewall_wl_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -531,6 +545,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.unblock_domain) {
             blocklist.removeHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
+        } else if(id == R.id.add_to_whitelist) {
+            fwWhitelist.addApp(conn.uid);
+            firewall_wl_changed = true;
+        } else if(id == R.id.remove_from_whitelist) {
+            fwWhitelist.removeApp(conn.uid);
+            firewall_wl_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
@@ -555,6 +575,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(whitelist_changed) {
             whitelist.save();
             CaptureService.reloadMalwareWhitelist();
+        } else if(firewall_wl_changed) {
+            fwWhitelist.save();
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
         } else if(blocklist_changed)
             blocklist.saveAndReload();
 

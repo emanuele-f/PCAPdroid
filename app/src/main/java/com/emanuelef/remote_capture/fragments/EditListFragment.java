@@ -254,6 +254,9 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadBlocklist();
+        } else if(mListInfo.getType() == ListInfo.Type.FIREWALL_WHITELIST) {
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
         }
     }
 

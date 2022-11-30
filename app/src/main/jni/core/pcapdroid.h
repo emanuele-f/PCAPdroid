@@ -263,8 +263,11 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        blacklist_t *bl;
+        blacklist_t *bl;     // blocklist
         blacklist_t *new_bl;
+        bool wl_enabled;
+        blacklist_t *wl;     // whitelist
+        blacklist_t *new_wl;
     } firewall;
 } pcapdroid_t;
 

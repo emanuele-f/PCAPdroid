@@ -33,6 +33,7 @@ public class ListInfo {
         VISUALIZATION_MASK,
         MALWARE_WHITELIST,
         BLOCKLIST,
+        FIREWALL_WHITELIST,
     }
 
     public ListInfo(Type tp) {
@@ -51,6 +52,8 @@ public class ListInfo {
                 return PCAPdroid.getInstance().getMalwareWhitelist();
             case BLOCKLIST:
                 return PCAPdroid.getInstance().getBlocklist();
+            case FIREWALL_WHITELIST:
+                return PCAPdroid.getInstance().getFirewallWhitelist();
         }
 
         assert false;
@@ -65,6 +68,8 @@ public class ListInfo {
                 return R.string.malware_whitelist_rules;
             case BLOCKLIST:
                 return R.string.firewall_rules;
+            case FIREWALL_WHITELIST:
+                return R.string.whitelist;
         }
 
         assert false;
@@ -79,6 +84,8 @@ public class ListInfo {
                 return R.string.malware_whitelist_help;
             case BLOCKLIST:
                 return 0;
+            case FIREWALL_WHITELIST:
+                return R.string.firewall_whitelist_help;
         }
 
         assert false;

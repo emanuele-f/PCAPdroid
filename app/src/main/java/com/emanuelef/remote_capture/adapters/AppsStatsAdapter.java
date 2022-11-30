@@ -39,6 +39,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.model.Blocklist;
+import com.emanuelef.remote_capture.model.MatchList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +51,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private final Blocklist mBlocklist;
+    private final MatchList mWhitelist;
     private final boolean mFirewallAvailable;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
@@ -59,6 +61,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         ImageView blockedFlag;
+        ImageView whitelistedFlag;
         ImageView tempUnblocked;
         TextView info;
         TextView traffic;
@@ -68,6 +71,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             icon = itemView.findViewById(R.id.icon);
             blockedFlag = itemView.findViewById(R.id.blocked);
+            whitelistedFlag = itemView.findViewById(R.id.whitelisted);
             tempUnblocked = itemView.findViewById(R.id.temp_unblocked);
             info = itemView.findViewById(R.id.app_info);
             traffic = itemView.findViewById(R.id.traffic);
@@ -91,9 +95,11 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             boolean isGracedApp = mBlocklist.isExemptedApp(stats.getUid());
             boolean isBlockedApp = mBlocklist.matchesApp(stats.getUid());
+            boolean isWhitelistedApp = mWhitelist.matchesApp(stats.getUid());
 
             traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
             blockedFlag.setVisibility(isBlockedApp ? View.VISIBLE : View.GONE);
+            whitelistedFlag.setVisibility(isWhitelistedApp ? View.VISIBLE : View.GONE);
             tempUnblocked.setVisibility(isGracedApp ? View.VISIBLE : View.GONE);
         }
     }
@@ -104,6 +110,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
+        mWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
         mListener = null;
         mStats = new ArrayList<>();
         mFirewallAvailable = Billing.newInstance(context).isFirewallVisible();

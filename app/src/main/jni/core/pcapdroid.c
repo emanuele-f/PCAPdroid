@@ -374,8 +374,9 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
                     conn->data->uid = data->uid;
 
-                    if(!conn->data->to_block && pd->firewall.enabled
-                            && blacklist_match_uid(pd->firewall.bl, conn->data->uid))
+                    if(!conn->data->to_block && pd->firewall.enabled && (
+                            blacklist_match_uid(pd->firewall.bl, conn->data->uid) ||
+                            (pd->firewall.wl_enabled && pd->firewall.wl && !blacklist_match_uid(pd->firewall.wl, conn->data->uid))))
                         conn->data->netd_block_missed = true;
 
                     zdtun_5tuple2str(&conn->tuple, buf, sizeof(buf));
@@ -437,6 +438,12 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         }
 
         fw_num_checked_connections++;
+    }
+
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD) {
+        // whitelist mode: block any app unless it's explicitly whitelisted.
+        // The blocklist still has priority to determine if a connection should be blocked.
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
     }
 
     return(data);
@@ -887,6 +894,8 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
                          blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
     }
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD)
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
 
     if(old_block != data->to_block) {
         data->update_type |= CONN_UPDATE_STATS;
@@ -1029,6 +1038,13 @@ void pd_housekeeping(pcapdroid_t *pd) {
             blacklist_destroy(pd->firewall.bl);
         pd->firewall.bl = pd->firewall.new_bl;
         pd->firewall.new_bl = NULL;
+        iter_active_connections(pd, check_blocked_conn_cb);
+    } else if(pd->firewall.new_wl) {
+        // Load new whitelist
+        if(pd->firewall.wl)
+            blacklist_destroy(pd->firewall.wl);
+        pd->firewall.wl = pd->firewall.new_wl;
+        pd->firewall.new_wl = NULL;
         iter_active_connections(pd, check_blocked_conn_cb);
     }
 }
@@ -1213,6 +1229,10 @@ int pd_run(pcapdroid_t *pd) {
         blacklist_destroy(pd->firewall.bl);
     if(pd->firewall.new_bl)
         blacklist_destroy(pd->firewall.new_bl);
+    if(pd->firewall.wl)
+        blacklist_destroy(pd->firewall.wl);
+    if(pd->firewall.new_wl)
+        blacklist_destroy(pd->firewall.new_wl);
 
     if(pd->malware_detection.enabled) {
         if(pd->malware_detection.reload_in_progress) {

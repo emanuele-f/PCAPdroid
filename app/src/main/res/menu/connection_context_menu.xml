@@ -112,6 +112,15 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/add_to_whitelist"
+        android:title="@string/add_to_whitelist"
+        android:visible="false" />
+    <item
+        android:id="@+id/remove_from_whitelist"
+        android:title="@string/remove_from_whitelist"
+        android:visible="false" />
+
     <item android:title="@string/search">
         <menu>
             <item

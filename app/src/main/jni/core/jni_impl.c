@@ -780,6 +780,53 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
 /* ******************************************************* */
 
 JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv *env, jclass clazz,
+                                                                         jobject whitelist) {
+    pcapdroid_t *pd = global_pd;
+    if(!pd) {
+        log_e("NULL pd instance");
+        return false;
+    }
+
+    if(pd->root_capture) {
+        log_e("firewall in root mode not implemented");
+        return false;
+    }
+
+    if(pd->firewall.new_wl != NULL) {
+        log_e("previous whitelist not loaded yet");
+        return false;
+    }
+
+    if(whitelist == NULL) {
+        pd->firewall.wl_enabled = false;
+        log_d("firewall whitelist is disabled");
+        return true;
+    }
+
+    blacklist_t *wl = blacklist_init();
+    if(!wl) {
+        log_e("blacklist_init failed");
+        return false;
+    }
+
+    if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        blacklist_destroy(wl);
+        return false;
+    }
+
+    blacklists_stats_t stats;
+    blacklist_get_stats(wl, &stats);
+    log_d("reloadFirewallWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
+
+    pd->firewall.new_wl = wl;
+    pd->firewall.wl_enabled = true;
+    return true;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv *env, jclass clazz,
                                                                          jobject whitelist) {
     pcapdroid_t *pd = global_pd;

@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -34,6 +35,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -46,6 +48,8 @@ import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
 public class AppsFragment extends Fragment implements ConnectionsListener {
@@ -126,8 +130,15 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         if(stats == null)
             return;
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean isBlocked = PCAPdroid.getInstance().getBlocklist().matchesApp(stats.getUid());
         menu.findItem(R.id.block_app).setVisible(!isBlocked);
+
+        if(Prefs.isFirewallWhitelistMode(prefs)) {
+            boolean isWhitelisted = PCAPdroid.getInstance().getFirewallWhitelist().matchesApp(stats.getUid());
+            menu.findItem(R.id.add_to_whitelist).setVisible(!isWhitelisted);
+            menu.findItem(R.id.remove_from_whitelist).setVisible(isWhitelisted);
+        }
 
         menu.findItem(R.id.unblock_app_permanently).setVisible(isBlocked);
         menu.findItem(R.id.unblock_app_10m).setVisible(isBlocked)
@@ -142,6 +153,8 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        MatchList whitelist = PCAPdroid.getInstance().getFirewallWhitelist();
+        boolean whitelistChanged = false;
         AppStats app = mAdapter.getSelectedItem();
 
         if(id == R.id.block_app)
@@ -154,10 +167,21 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
             blocklist.unblockAppForMinutes(app.getUid(), 60);
         else if(id == R.id.unblock_app_8h)
             blocklist.unblockAppForMinutes(app.getUid(), 480);
-        else
+        else if(id == R.id.add_to_whitelist) {
+            whitelist.addApp(app.getUid());
+            whitelistChanged = true;
+        } else if(id == R.id.remove_from_whitelist) {
+            whitelist.removeApp(app.getUid());
+            whitelistChanged = true;
+        } else
             return super.onContextItemSelected(item);
 
-        blocklist.saveAndReload();
+        if(whitelistChanged) {
+            whitelist.save();
+            if (CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
+        } else
+            blocklist.saveAndReload();
 
         // refresh the item
         mAdapter.notifyItemChanged(app);
