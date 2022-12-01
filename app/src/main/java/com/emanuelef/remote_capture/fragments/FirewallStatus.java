@@ -189,11 +189,6 @@ public class FirewallStatus extends Fragment implements MenuProvider {
     }
 
     private void reloadMode() {
-        boolean whitelist_mode = Prefs.isFirewallWhitelistMode(mPrefs);
-
-        if(mMenu != null)
-            mMenu.findItem(R.id.block_new_apps).setVisible(!whitelist_mode);
-
         if(CaptureService.isServiceActive())
             CaptureService.requireInstance().reloadFirewallWhitelist();
 
