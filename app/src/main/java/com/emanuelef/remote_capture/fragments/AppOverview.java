@@ -224,7 +224,7 @@ public class AppOverview extends Fragment implements MenuProvider {
 
         AppStats stats = reg.getAppStats(mUid);
         if(stats == null)
-            return;
+            stats = new AppStats(mUid);
 
         mBytes.setText(getString(R.string.rcvd_and_sent, Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
         mConnections.setText(Utils.formatInteger(ctx, stats.numConnections));

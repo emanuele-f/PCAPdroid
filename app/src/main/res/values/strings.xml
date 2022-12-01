@@ -423,4 +423,5 @@
     <string name="firewall_whitelist_help">These rules specify which connections to allow. Blocklist rules have priority over whitelist rules</string>
     <string name="add_to_whitelist">Add to whitelist</string>
     <string name="remove_from_whitelist">Remove from whitelist</string>
+    <string name="reset_stats_confirm">Do you really want to reset these stats?</string>
 </resources>

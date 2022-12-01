@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/reset_changes"
+        android:id="@+id/reset"
         android:title="@string/reset"
         android:icon="@drawable/ic_reset"
         app:showAsAction="ifRoom" />

@@ -141,20 +141,10 @@ public class ConnectionsRegister {
             int pos = firstPos();
             removedItems = new ConnectionDescriptor[out_items];
 
-            // update the apps stats
             for(int i=0; i<out_items; i++) {
                 ConnectionDescriptor conn = mItemsRing[pos];
 
                 if(conn != null) {
-                    int uid = conn.uid;
-                    AppStats stats = mAppsStats.get(uid);
-                    assert stats != null;
-                    stats.sentBytes -= conn.sent_bytes;
-                    stats.rcvdBytes -= conn.rcvd_bytes;
-
-                    if(--stats.numConnections <= 0)
-                        mAppsStats.remove(uid);
-
                     if(conn.ifidx > 0) {
                         int num_conn = mConnsByIface.get(conn.ifidx);
                         if(--num_conn <= 0)
@@ -162,7 +152,6 @@ public class ConnectionsRegister {
                         else
                             mConnsByIface.put(conn.ifidx, num_conn);
                     }
-
                     if(conn.isBlacklisted())
                         mNumMalicious--;
                 }
@@ -180,11 +169,7 @@ public class ConnectionsRegister {
 
             // update the apps stats
             int uid = conn.uid;
-            AppStats stats = mAppsStats.get(uid);
-            if(stats == null) {
-                stats = new AppStats(uid);
-                mAppsStats.put(uid, stats);
-            }
+            AppStats stats = getAppsStatsOrCreate(uid);
 
             if(conn.ifidx > 0) {
                 int num_conn = mConnsByIface.get(conn.ifidx);
@@ -243,7 +228,7 @@ public class ConnectionsRegister {
                 assert(conn.incr_id == id);
 
                 // update the app stats
-                AppStats stats = mAppsStats.get(conn.uid);
+                AppStats stats = getAppsStatsOrCreate(conn.uid);
                 stats.sentBytes += update.sent_bytes - conn.sent_bytes;
                 stats.rcvdBytes += update.rcvd_bytes - conn.rcvd_bytes;
 
@@ -348,6 +333,20 @@ public class ConnectionsRegister {
         }
 
         return rv;
+    }
+
+    private synchronized AppStats getAppsStatsOrCreate(int uid) {
+        AppStats stats = mAppsStats.get(uid);
+        if(stats == null) {
+            stats = new AppStats(uid);
+            mAppsStats.put(uid, stats);
+        }
+
+        return stats;
+    }
+
+    public synchronized void resetAppsStats() {
+        mAppsStats.clear();
     }
 
     public synchronized Set<Integer> getSeenUids() {

@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,7 +35,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -52,7 +56,7 @@ import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class AppsFragment extends Fragment implements ConnectionsListener {
+public class AppsFragment extends Fragment implements ConnectionsListener, MenuProvider {
     private EmptyRecyclerView mRecyclerView;
     private AppsStatsAdapter mAdapter;
     private static final String TAG = "AppsFragment";
@@ -77,6 +81,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
@@ -115,6 +120,31 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
                 }
             }
         });
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.apps_menu, menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        if(menuItem.getItemId() == R.id.reset) {
+            new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.reset_stats_confirm)
+                .setPositiveButton(R.string.yes, (dialog, whichButton) -> {
+                    ConnectionsRegister reg = CaptureService.getConnsRegister();
+                    if(reg != null) {
+                        reg.resetAppsStats();
+                        doRefreshApps();
+                    }
+                })
+                .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                .show();
+
+            return true;
+        }
+        return false;
     }
 
     @Override
