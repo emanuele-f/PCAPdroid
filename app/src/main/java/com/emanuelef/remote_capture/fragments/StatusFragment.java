@@ -375,7 +375,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                     mInterfaceInfo.setText(String.format(getResources().getString(R.string.socks5_info),
                             service.getSocks5ProxyAddress(), service.getSocks5ProxyPort()));
                     mInterfaceInfo.setVisibility(View.VISIBLE);
-                }
+                } else
+                    mInterfaceInfo.setVisibility(View.GONE);
 
                 mAppFilter = CaptureService.getAppFilter();
                 refreshPcapDumpInfo();
