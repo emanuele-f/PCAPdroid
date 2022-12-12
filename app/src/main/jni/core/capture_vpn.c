@@ -19,6 +19,7 @@
 
 #include "pcapdroid.h"
 #include "common/utils.h"
+#include "port_map.h"
 
 /* ******************************************************* */
 
@@ -146,15 +147,9 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
     const zdtun_5tuple_t *tuple = pctx->tuple;
 
     if(new_dns_server != 0) {
-        // Reload DNS server
+        log_i("Using new DNS server");
         pd->vpn.ipv4.dns_server = new_dns_server;
         new_dns_server = 0;
-
-        zdtun_ip_t ip = {0};
-        ip.ip4 = pd->vpn.ipv4.dns_server;
-        zdtun_set_dnat_info(pd->zdt, &ip, htons(53), 4);
-
-        log_i("Using new DNS server");
     }
 
     if(pctx->tuple->ipproto == IPPROTO_ICMP)
@@ -201,7 +196,9 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will pd the connection.
                  */
-                zdtun_conn_dnat(conn);
+                zdtun_ip_t ip = {0};
+                ip.ip4 = pd->vpn.ipv4.dns_server;
+                zdtun_conn_dnat(conn, &ip, htons(53), 4);
             }
 
             return(true);
@@ -465,12 +462,6 @@ int run_vpn(pcapdroid_t *pd) {
             zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);
     }
 
-    if(pd->vpn.ipv4.enabled) {
-        zdtun_ip_t ip = {0};
-        ip.ip4 = pd->vpn.ipv4.dns_server;
-        zdtun_set_dnat_info(zdt, &ip, ntohs(53), 4);
-    }
-
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
@@ -551,9 +542,13 @@ int run_vpn(pcapdroid_t *pd) {
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
 
                 // To be run before pd_process_packet/process_payload
-                if((data->sent_pkts == 0) && should_proxy(pd, tuple)) {
-                    zdtun_conn_proxy(conn);
-                    data->proxied = true;
+                if(data->sent_pkts == 0) {
+                    if(pd_check_port_map(conn))
+                        /* port mapping applied */;
+                    else if(should_proxy(pd, tuple)) {
+                        zdtun_conn_proxy(conn);
+                        data->proxied = true;
+                    }
                 }
 
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
@@ -640,6 +635,7 @@ int run_vpn(pcapdroid_t *pd) {
         }
     }
 
+    pd_reset_port_map();
     zdtun_finalize(zdt);
 
 #if ANDROID

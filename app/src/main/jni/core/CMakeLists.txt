@@ -10,6 +10,7 @@ add_library(capture SHARED
         blacklist.c
         pcap_utils.c
         log_writer.c
+        port_map.c
         jni_impl.c)
 
 # nDPI

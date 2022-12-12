@@ -47,6 +47,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.InetAddresses;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -65,6 +66,7 @@ import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
+import android.util.Patterns;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,6 +129,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -1427,5 +1430,24 @@ public class Utils {
             return pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(flags));
         else
             return pm.getInstalledPackages(flags);
+    }
+
+    public static boolean validatePort(String value) {
+        try {
+            int val = Integer.parseInt(value);
+            return((val > 0) && (val < 65535));
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean validateIpAddress(String value) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return (InetAddresses.isNumericAddress(value));
+        else {
+            Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
+            return(matcher.matches());
+        }
     }
 }

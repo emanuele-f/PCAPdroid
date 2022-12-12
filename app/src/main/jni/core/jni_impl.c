@@ -24,6 +24,7 @@
 #include "pcap_utils.h"
 #include "common/utils.h"
 #include "log_writer.h"
+#include "port_map.h"
 
 // This files contains functions to make the capture core communicate
 // with the Android system.
@@ -735,6 +736,28 @@ Java_com_emanuelef_remote_1capture_CaptureService_getNumCheckedFirewallConnectio
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_setPrivateDnsBlocked(JNIEnv *env, jclass clazz, jboolean to_block) {
     block_private_dns = to_block;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_addPortMapping(JNIEnv *env, jclass clazz, jint ipproto,
+                                                                 jint orig_port, jint redirect_port, jstring redirect_ip) {
+    zdtun_ip_t ip;
+
+    const char *ip_s = (*env)->GetStringUTFChars(env, redirect_ip, 0);
+    int ipver = zdtun_parse_ip(ip_s, &ip);
+    (*env)->ReleaseStringUTFChars(env, redirect_ip, ip_s);
+
+    if(ipver < 0) {
+        log_e("addPortMapping invalid IP");
+        return;
+    }
+
+    if(!pd_add_port_map(ipver, ipproto, orig_port, redirect_port, &ip)) {
+        log_e("addPortMapping failed");
+        return;
+    }
 }
 
 /* ******************************************************* */

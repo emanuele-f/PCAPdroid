@@ -22,11 +22,8 @@ package com.emanuelef.remote_capture.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.InetAddresses;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Patterns;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -55,7 +52,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, FragmentManager.OnBackStackChangedListener {
     private static final String TAG = "SettingsActivity";
@@ -135,6 +131,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private Preference mVpnExceptions;
+        private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
         private Billing mIab;
@@ -188,41 +185,22 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             return pref;
         }
 
-        private boolean validatePort(String value) {
-            try {
-                int val = Integer.parseInt(value);
-                return((val > 0) && (val < 65535));
-            } catch(NumberFormatException e) {
-                return false;
-            }
-        }
-
-        @SuppressWarnings("deprecation")
-        private boolean validateIp(String value) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                return (InetAddresses.isNumericAddress(value));
-            else {
-                Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
-                return(matcher.matches());
-            }
-        }
-
         @SuppressWarnings("deprecation")
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
-            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> validateIp(newValue.toString()));
+            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
 
             /* Collector port validation */
             EditTextPreference mRemoteCollectorPort = requirePreference(Prefs.PREF_COLLECTOR_PORT_KEY);
             mRemoteCollectorPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
-            mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private void setupHttpServerPrefs() {
             /* HTTP Server port validation */
             EditTextPreference mHttpServerPort = requirePreference(Prefs.PREF_HTTP_SERVER_PORT);
-            mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private boolean rootCaptureEnabled() {
@@ -261,10 +239,17 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private void setupCapturePrefs() {
             mCapInterface = requirePreference(Prefs.PREF_CAPTURE_INTERFACE);
             mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
+            mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
             refreshInterfaces();
 
             mVpnExceptions.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireContext(), VpnExemptionsActivity.class);
+                startActivity(intent);
+                return true;
+            });
+
+            mPortMapping.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), PortMapActivity.class);
                 startActivity(intent);
                 return true;
             });
@@ -329,19 +314,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             /* TLS Proxy IP validation */
             mSocks5ProxyIp = requirePreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
-            mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    return (InetAddresses.isNumericAddress(newValue.toString()));
-                else {
-                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                    return(matcher.matches());
-                }
-            });
+            mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
 
             /* TLS Proxy port validation */
             mSocks5ProxyPort = requirePreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
             mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
-            mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private void fullPayloadHideShow(boolean tlsDecryption) {
@@ -428,6 +406,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
             mVpnExceptions.setVisible(!enabled);
+            mPortMapping.setVisible(!enabled);
         }
 
         private boolean checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {

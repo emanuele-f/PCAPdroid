@@ -113,6 +113,12 @@
             app:iconSpaceReserved="false"
             app:defaultValue="8050"
             app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="port_mapping"
+            app:title="@string/port_mapping"
+            app:summary="@string/port_mapping_summary"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false" >
@@ -134,8 +140,7 @@
             android:key="vpn_exceptions"
             app:title="@string/vpn_exemptions"
             app:summary="@string/vpn_exemptions_summary"
-            app:iconSpaceReserved="false"
-            app:fragment="com.emanuelef.remote_capture.fragments.VpnExceptions" />
+            app:iconSpaceReserved="false" />
 
         <SwitchPreference
             app:key="start_at_boot"

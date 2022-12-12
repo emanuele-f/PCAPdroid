@@ -85,6 +85,8 @@ public class Prefs {
     public static final String PREF_APP_VERSION = "appver";
     public static final String PREF_LOCKDOWN_VPN_NOTICE_SHOWN = "vpn_lockdown_notice";
     public static final String PREF_VPN_EXCEPTIONS = "vpn_exceptions";
+    public static final String PREF_PORT_MAPPING = "port_mapping";
+    public static final String PREF_PORT_MAPPING_ENABLED = "port_mapping_enabled";
     public static final String PREF_BLOCK_NEW_APPS = "block_new_apps";
     public static final String PREF_PAYLOAD_NOTICE_ACK = "payload_notice";
     public static final String PREF_REMOTE_COLLECTOR_ACK = "remote_collector_notice";
@@ -150,6 +152,10 @@ public class Prefs {
         p.edit().putInt(PREF_FIREWALL_WHITELIST_INIT_VER, FIREWALL_WHITELIST_INIT_VER).apply();
     }
 
+    public static void setPortMappingEnabled(SharedPreferences p, boolean enabled) {
+        p.edit().putBoolean(PREF_PORT_MAPPING_ENABLED, enabled).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -185,6 +191,7 @@ public class Prefs {
     public static boolean isFirewallWhitelistMode(SharedPreferences p)     { return(p.getBoolean(PREF_FIREWALL_WHITELIST_MODE, false)); }
     public static boolean isFirewallWhitelistInitialized(SharedPreferences p) { return(p.getInt(PREF_FIREWALL_WHITELIST_INIT_VER, 0) == FIREWALL_WHITELIST_INIT_VER); }
     public static String getMitmproxyOpts(SharedPreferences p)    { return(p.getString(PREF_MITMPROXY_OPTS, "")); }
+    public static boolean isPortMappingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PORT_MAPPING_ENABLED, true)); }
 
     public static String asString(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);

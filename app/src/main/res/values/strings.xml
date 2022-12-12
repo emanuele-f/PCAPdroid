@@ -424,4 +424,14 @@
     <string name="add_to_whitelist">Add to whitelist</string>
     <string name="remove_from_whitelist">Remove from whitelist</string>
     <string name="reset_stats_confirm">Do you really want to reset these stats?</string>
+    <string name="port_mapping">Port mapping</string>
+    <string name="port_mapping_summary">Configure port mapping rules to redirect connections to a different host or port</string>
+    <string name="add_action">Add</string>
+    <string name="redirect_to">Redirect to:</string>
+    <string name="original_port">Original port</string>
+    <string name="required">required</string>
+    <string name="destination_ip">Destination IP address</string>
+    <string name="destination_port">Destination port</string>
+    <string name="port_mapping_exists">This port mapping already exists</string>
+    <string name="items_delete_confirm">Delete the selected items?</string>
 </resources>

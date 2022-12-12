@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.PortMappings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
@@ -441,6 +442,15 @@ public class CaptureService extends VpnService implements Runnable {
                     } catch (PackageManager.NameNotFoundException e) {
                         e.printStackTrace();
                     }
+                }
+            }
+
+            if(Prefs.isPortMappingEnabled(mPrefs)) {
+                PortMappings mappings = new PortMappings(this);
+                Iterator<PortMappings.PortMap> it = mappings.iter();
+                while (it.hasNext()) {
+                    PortMappings.PortMap mapping = it.next();
+                    addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, mapping.redirect_ip);
                 }
             }
 
@@ -1442,6 +1452,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native int getFdSetSize();
     private static native void setPrivateDnsBlocked(boolean to_block);
     private static native void setDnsServer(String server);
+    private static native void addPortMapping(int ipproto, int orig_port, int redirect_port, String redirect_ip);
     private static native void reloadBlacklists();
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
     private static native boolean reloadFirewallWhitelist(MatchList.ListDescriptor whitelist);

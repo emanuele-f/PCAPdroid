@@ -184,7 +184,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
             } else {
                 for(MatchList.Rule item : mSelected)
                     mAdapter.remove(item);
-                updateList();
+                updateListFromAdapter();
             }
 
             mode.finish();
@@ -260,7 +260,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         }
     }
 
-    private void updateList() {
+    private void updateListFromAdapter() {
         ArrayList<MatchList.Rule> toRemove = new ArrayList<>();
         Iterator<MatchList.Rule> iter = mList.iterRules();
 
