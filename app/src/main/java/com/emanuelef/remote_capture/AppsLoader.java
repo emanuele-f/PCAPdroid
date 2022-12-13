@@ -146,4 +146,8 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         runLoader(OPERATION_LOAD_APPS_INFO, null);
         return this;
     }
+
+    public void abort() {
+        finishLoader();
+    }
 }

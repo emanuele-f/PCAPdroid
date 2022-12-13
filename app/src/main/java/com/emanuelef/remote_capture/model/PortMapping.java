@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class PortMappings {
+public class PortMapping {
     private static final String TAG = "PortMappings";
     private final SharedPreferences mPrefs;
-    private ArrayList<PortMap> mMappings = new ArrayList<>();
+    private ArrayList<PortMap> mMapping = new ArrayList<>();
 
     public static class PortMap {
         public final int ipproto;
@@ -48,13 +48,13 @@ public class PortMappings {
         }
     }
 
-    public PortMappings(Context ctx) {
+    public PortMapping(Context ctx) {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         reload();
     }
 
     public void clear() {
-        mMappings.clear();
+        mMapping.clear();
     }
 
     public void save() {
@@ -75,7 +75,7 @@ public class PortMappings {
         try {
             Type listOfMyClassObject = new TypeToken<ArrayList<PortMap>>() {}.getType();
             Gson gson = new Gson();
-            mMappings = gson.fromJson(json_str, listOfMyClassObject);
+            mMapping = gson.fromJson(json_str, listOfMyClassObject);
             return true;
         } catch (JsonParseException e) {
             e.printStackTrace();
@@ -89,7 +89,7 @@ public class PortMappings {
             builder.setPrettyPrinting();
         Gson gson = builder.create();
 
-        String serialized = gson.toJson(mMappings);
+        String serialized = gson.toJson(mMapping);
         //Log.d(TAG, "toJson: " + serialized);
 
         return serialized;
@@ -97,18 +97,18 @@ public class PortMappings {
 
     // returns false if the mapping already exists
     public boolean add(PortMap mapping) {
-        if(mMappings.contains(mapping))
+        if(mMapping.contains(mapping))
             return false;
 
-        mMappings.add(mapping);
+        mMapping.add(mapping);
         return true;
     }
 
     public boolean remove(PortMap mapping) {
-        return mMappings.remove(mapping);
+        return mMapping.remove(mapping);
     }
 
     public Iterator<PortMap> iter() {
-        return mMappings.iterator();
+        return mMapping.iterator();
     }
 }

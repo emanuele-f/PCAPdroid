@@ -20,7 +20,6 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -46,11 +45,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
-import com.emanuelef.remote_capture.AppsLoader;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
-import com.emanuelef.remote_capture.interfaces.AppsLoadListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
@@ -60,14 +57,10 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
-import com.emanuelef.remote_capture.views.AppsListView;
+import com.emanuelef.remote_capture.views.AppSelectDialog;
 import com.emanuelef.remote_capture.views.PrefSpinner;
-import com.pcapdroid.mitm.MitmAPI;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class StatusFragment extends Fragment implements AppStateListener, MenuProvider, AppsLoadListener {
+public class StatusFragment extends Fragment implements AppStateListener, MenuProvider {
     private static final String TAG = "StatusFragment";
     private Handler mHandler;
     private Menu mMenu;
@@ -83,9 +76,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
-    private TextView mEmptyAppsView;
     private TextView mFilterWarning;
-    AppsListView mOpenAppsList;
+    private AppSelectDialog mAppSelDialog;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -96,6 +88,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @Override
     public void onDetach() {
         super.onDetach();
+        abortAppSelection();
         mActivity.setAppStateListener(null);
         mActivity = null;
     }
@@ -393,48 +386,26 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     }
 
     private void openAppFilterSelector() {
-        Dialog dialog = Utils.getAppSelectionDialog(mActivity, new ArrayList<>(), this::setAppFilter);
-        dialog.setOnCancelListener(dialog1 -> setAppFilter(null));
-        dialog.setOnDismissListener(dialog1 -> {
-            mOpenAppsList = null;
-            mEmptyAppsView = null;
-        });
-
-        dialog.show();
-
-        // NOTE: run this after dialog.show
-        mOpenAppsList = dialog.findViewById(R.id.apps_list);
-        mEmptyAppsView = dialog.findViewById(R.id.no_apps);
-        mEmptyAppsView.setText(R.string.loading_apps);
-
-        (new AppsLoader((AppCompatActivity) requireActivity()))
-                .setAppsLoadListener(this)
-                .loadAllApps();
-    }
-
-    @Override
-    public void onAppsInfoLoaded(List<AppDescriptor> installedApps) {
-        if(mOpenAppsList == null)
-            return;
-
-        mEmptyAppsView.setText(R.string.no_apps);
-
-        if(Prefs.isTLSDecryptionSetupDone(mPrefs)) {
-            // Remove the mitm addon from the list
-            AppDescriptor mitmAddon = null;
-
-            for(AppDescriptor cur: installedApps) {
-                if(cur.getPackageName().equals(MitmAPI.PACKAGE_NAME)) {
-                    mitmAddon = cur;
-                    break;
-                }
+        mAppSelDialog = new AppSelectDialog((AppCompatActivity) requireActivity(), R.string.app_filter,
+                new AppSelectDialog.AppSelectListener() {
+            @Override
+            public void onSelectedApp(AppDescriptor app) {
+                abortAppSelection();
+                setAppFilter(app);
             }
 
-            if(mitmAddon != null)
-                installedApps.remove(mitmAddon);
-        }
+            @Override
+            public void onAppSelectionAborted() {
+                abortAppSelection();
+                setAppFilter(null);
+            }
+        });
+    }
 
-        Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
-        mOpenAppsList.setApps(installedApps);
+    private void abortAppSelection() {
+        if(mAppSelDialog != null) {
+            mAppSelDialog.abort();
+            mAppSelDialog = null;
+        }
     }
 }

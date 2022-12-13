@@ -41,6 +41,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
@@ -50,8 +51,12 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.MatchList.RuleType;
+import com.emanuelef.remote_capture.views.AppSelectDialog;
+import com.emanuelef.remote_capture.views.RuleAddDialog;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +64,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Scanner;
+import java.util.Set;
 
 public class EditListFragment extends Fragment implements MatchList.ListChangeListener, MenuProvider {
     private ListEditAdapter mAdapter;
@@ -70,6 +77,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     private ListView mListView;
     private boolean mIsOwnUpdate;
     private ActionMode mActionMode;
+    private AppSelectDialog mAppSelDialog;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 
@@ -167,6 +175,12 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        abortAppSelection();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mList.removeListChangeListener(this);
@@ -207,6 +221,18 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
             menu.findItem(R.id.action_export).setVisible(false);
         }
 
+        Set<RuleType> supportedRules = mListInfo.getSupportedRules();
+        if(supportedRules.contains(RuleType.APP))
+            menu.findItem(R.id.add_app).setVisible(true);
+        if(supportedRules.contains(RuleType.HOST))
+            menu.findItem(R.id.add_host).setVisible(true);
+        if(supportedRules.contains(RuleType.IP))
+            menu.findItem(R.id.add_ip).setVisible(true);
+        if(supportedRules.contains(RuleType.PROTOCOL))
+            menu.findItem(R.id.add_proto).setVisible(true);
+        if(supportedRules.contains(RuleType.COUNTRY))
+            menu.findItem(R.id.add_country).setVisible(true);
+
         if(mListInfo.getHelpString() <= 0)
             menu.findItem(R.id.show_hint).setVisible(false);
     }
@@ -239,9 +265,122 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         } else if(id == R.id.show_hint) {
             Utils.showHelpDialog(requireContext(), mListInfo.getHelpString());
             return true;
+        } else if(id == R.id.add_ip) {
+            showAddIpRule();
+            return true;
+        } else if(id == R.id.add_proto) {
+            showAddProtoRule();
+            return true;
+        } else if(id == R.id.add_host) {
+            showAddHostRule();
+            return true;
+        } else if(id == R.id.add_app) {
+            showAddAppRule();
+            return true;
+        } else if(id == R.id.add_country) {
+            showAddCountryRule();
+            return true;
         }
 
         return false;
+    }
+
+    private void showAddIpRule() {
+        RuleAddDialog.showText(requireContext(), mList, R.string.ip_address, (value, field) -> {
+            if(!Utils.validateIpAddress(value)) {
+                field.setError(getString(R.string.invalid));
+                return false;
+            }
+
+            if(!mList.addIp(value))
+                Utils.showToastLong(requireContext(), R.string.rule_exists);
+            else
+                saveAndReload();
+            return true;
+        });
+    }
+
+    private void showAddProtoRule() {
+        RuleAddDialog.showCombo(requireContext(), mList, R.string.protocol, Utils.getL7Protocols(), (value, field) -> {
+            if(!mList.addProto(value))
+                Utils.showToastLong(requireContext(), R.string.rule_exists);
+            else
+                saveAndReload();
+            return true;
+        });
+    }
+
+    private void showAddCountryRule() {
+        String[] countryCodes = Locale.getISOCountries();
+        String[] countryNames = new String[countryCodes.length];
+        Context ctx = requireContext();
+
+        for(int i=0; i<countryCodes.length; i++)
+            countryNames[i] = Utils.getCountryName(ctx, countryCodes[i]);
+
+        RuleAddDialog.showCombo(requireContext(), mList, R.string.country, countryNames, (value, field) -> {
+            String code = null;
+
+            for(int i=0; i<countryNames.length; i++) {
+                if(countryNames[i].equals(value)) {
+                    code = countryCodes[i];
+                    break;
+                }
+            }
+
+            if(code == null) {
+                field.setError(getString(R.string.invalid));
+                return false;
+            }
+
+            if(!mList.addCountry(code))
+                Utils.showToastLong(ctx, R.string.rule_exists);
+            else
+                saveAndReload();
+            return true;
+        });
+    }
+
+    private void showAddHostRule() {
+        RuleAddDialog.showText(requireContext(), mList, R.string.host, (value, field) -> {
+            if(!Utils.validateHost(value)) {
+                field.setError(getString(R.string.invalid));
+                return false;
+            }
+
+            if(!mList.addHost(value))
+                Utils.showToastLong(requireContext(), R.string.rule_exists);
+            else
+                saveAndReload();
+            return true;
+        });
+    }
+
+    private void showAddAppRule() {
+        mAppSelDialog = new AppSelectDialog((AppCompatActivity) requireActivity(), R.string.app,
+                new AppSelectDialog.AppSelectListener() {
+            @Override
+            public void onSelectedApp(AppDescriptor app) {
+                abortAppSelection();
+
+                if(!mList.addApp(app.getPackageName()))
+                    Utils.showToastLong(requireContext(), R.string.rule_exists);
+                else
+                    saveAndReload();
+            }
+
+            @Override
+            public void onAppSelectionAborted() {
+                abortAppSelection();
+            }
+        });
+    }
+
+    private void abortAppSelection() {
+        if(mAppSelDialog != null) {
+            mAppSelDialog.abort();
+            mAppSelDialog = null;
+        }
     }
 
     private void recheckListSize() {
@@ -258,6 +397,12 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadFirewallWhitelist();
         }
+    }
+
+    private void saveAndReload() {
+        Log.d(TAG, "saveAndReload");
+        mList.save();
+        reloadListRules();
     }
 
     private void updateListFromAdapter() {
@@ -367,8 +512,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         Context context = requireContext();
         int num_imported = mList.addRules(to_add);
 
-        mList.save();
-        reloadListRules();
+        saveAndReload();
 
         String msg = String.format(context.getResources().getString(R.string.rules_import_success), num_imported);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();

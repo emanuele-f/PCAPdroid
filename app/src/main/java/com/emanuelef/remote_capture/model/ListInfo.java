@@ -20,10 +20,16 @@
 package com.emanuelef.remote_capture.model;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.EditListFragment;
+import com.emanuelef.remote_capture.model.MatchList.RuleType;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 
 public class ListInfo {
@@ -90,6 +96,21 @@ public class ListInfo {
 
         assert false;
         return 0;
+    }
+
+    public Set<RuleType> getSupportedRules() {
+        switch(mType) {
+            case VISUALIZATION_MASK:
+                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST, RuleType.COUNTRY, RuleType.PROTOCOL));
+            case MALWARE_WHITELIST:
+            case BLOCKLIST:
+                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST));
+            case FIREWALL_WHITELIST:
+                return new ArraySet<>(Collections.singletonList(RuleType.APP));
+        }
+
+        assert false;
+        return null;
     }
 
     public EditListFragment newFragment() {

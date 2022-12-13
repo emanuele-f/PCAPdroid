@@ -21,9 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -90,7 +88,6 @@ import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -145,6 +142,7 @@ public class Utils {
     public static final int LOW_HEAP_THRESHOLD = 10485760 /* 10 MB */;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
+    private static String[] l7Protocols = null;
 
     public enum BuildType {
         UNKNOWN,
@@ -306,6 +304,16 @@ public class Utils {
             case 1:     return "ICMP";
             default:    return(Integer.toString(proto));
         }
+    }
+
+    public static String[] getL7Protocols() {
+        if(l7Protocols == null) {
+            List<String> protos = CaptureService.getL7Protocols();
+            Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
+            l7Protocols = protos.toArray(new String[0]);
+        }
+
+        return l7Protocols;
     }
 
     public static String getDnsServer(ConnectivityManager cm, Network net) {
@@ -593,33 +601,6 @@ public class Utils {
 
         AlertDialog alert = builder.create();
         alert.show();
-    }
-
-    public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
-        View dialogLayout = activity.getLayoutInflater().inflate(R.layout.apps_selector, null);
-        SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
-        AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
-        TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
-
-        apps.setApps(appsData);
-        apps.setEmptyView(emptyText);
-        searchView.setOnQueryTextListener(apps);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(R.string.app_filter);
-        builder.setView(dialogLayout);
-
-        final AlertDialog alert = builder.create();
-        alert.setCanceledOnTouchOutside(true);
-
-        apps.setSelectedAppListener(app -> {
-            listener.onSelectedApp(app);
-
-            // dismiss the dialog
-            alert.dismiss();
-        });
-
-        return alert;
     }
 
     public static String getUniqueFileName(Context context, String ext) {
@@ -1449,5 +1430,17 @@ public class Utils {
             Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
             return(matcher.matches());
         }
+    }
+
+    // rough validation
+    public static boolean validateHost(String host) {
+        int len = host.length();
+        if((len < 2) || (len > 67))
+            return false;
+        if((host.charAt(0) == '-') || (host.charAt(len-1) == '-'))
+            return false;
+        if(host.matches(".*[A-Z\\s?!=`@].*"))
+            return false;
+        return true;
     }
 }

@@ -70,7 +70,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
-import com.emanuelef.remote_capture.model.PortMappings;
+import com.emanuelef.remote_capture.model.PortMapping;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
@@ -88,6 +88,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Condition;
@@ -446,10 +447,10 @@ public class CaptureService extends VpnService implements Runnable {
             }
 
             if(Prefs.isPortMappingEnabled(mPrefs)) {
-                PortMappings mappings = new PortMappings(this);
-                Iterator<PortMappings.PortMap> it = mappings.iter();
+                PortMapping portMap = new PortMapping(this);
+                Iterator<PortMapping.PortMap> it = portMap.iter();
                 while (it.hasNext()) {
-                    PortMappings.PortMap mapping = it.next();
+                    PortMapping.PortMap mapping = it.next();
                     addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, mapping.redirect_ip);
                 }
             }
@@ -1464,4 +1465,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native int getNumCheckedFirewallConnections();
     public static native int rootCmd(String prog, String args);
     public static native void setPayloadMode(int mode);
+    public static native List<String> getL7Protocols();
 }

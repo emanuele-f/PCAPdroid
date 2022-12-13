@@ -432,6 +432,8 @@
     <string name="required">required</string>
     <string name="destination_ip">Destination IP address</string>
     <string name="destination_port">Destination port</string>
-    <string name="port_mapping_exists">This port mapping already exists</string>
+    <string name="port_mapping_exists">Port mapping already defined</string>
     <string name="items_delete_confirm">Delete the selected items?</string>
+    <string name="ip_address">IP address</string>
+    <string name="rule_exists">Rule already defined</string>
 </resources>

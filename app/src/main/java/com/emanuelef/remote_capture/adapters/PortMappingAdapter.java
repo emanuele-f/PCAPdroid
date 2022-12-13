@@ -32,16 +32,16 @@ import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.model.PortMappings;
-import com.emanuelef.remote_capture.model.PortMappings.PortMap;
+import com.emanuelef.remote_capture.model.PortMapping;
+import com.emanuelef.remote_capture.model.PortMapping.PortMap;
 
 import java.util.Iterator;
 
 public class PortMappingAdapter extends ArrayAdapter<PortMap> {
     private final LayoutInflater mLayoutInflater;
-    private final PortMappings mMappings;
+    private final PortMapping mMappings;
 
-    public PortMappingAdapter(Context context, PortMappings mappings) {
+    public PortMappingAdapter(Context context, PortMapping mappings) {
         super(context, R.layout.port_mapping_item);
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mMappings = mappings;

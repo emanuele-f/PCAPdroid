@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="8dp"
     android:paddingTop="12dp"
     android:layout_width="match_parent"
@@ -34,6 +33,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/orig_port"
                 android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -47,6 +47,8 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/redirect_ip"
+                android:inputType="text"
+                android:imeOptions="actionNext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -59,6 +61,8 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/redirect_port"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>

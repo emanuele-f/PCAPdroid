@@ -259,20 +259,20 @@ public class MatchList {
         return true;
     }
 
-    public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
-    public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
-    public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
-    public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
-    public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
-    public void addApp(int uid) {
+    public boolean addIp(String ip)       { return addRule(new Rule(RuleType.IP, ip)); }
+    public boolean addHost(String info)   { return addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
+    public boolean addProto(String proto) { return addRule(new Rule(RuleType.PROTOCOL, proto)); }
+    public boolean addCountry(String country_code) { return addRule(new Rule(RuleType.COUNTRY, country_code)); }
+    public boolean addApp(String pkg)     { return addRule(new Rule(RuleType.APP, pkg)); }
+    public boolean addApp(int uid) {
         AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
-            return;
+            return false;
         }
 
         // apps must be identified by their package name to work across installations
-        addApp(app.getPackageName());
+        return addApp(app.getPackageName());
     }
 
     public void removeIp(String ip)       { removeRule(new Rule(RuleType.IP, ip)); }

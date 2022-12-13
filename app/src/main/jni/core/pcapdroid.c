@@ -43,6 +43,7 @@ int bl_num_checked_connections = 0;
 int fw_num_checked_connections = 0;
 
 static ndpi_protocol_bitmask_struct_t masterProtos;
+static bool masterProtosInit = false;
 
 /* ******************************************************* */
 
@@ -62,7 +63,7 @@ static void conn_free_ndpi(pd_conn_t *data) {
 
 /* ******************************************************* */
 
-static uint16_t ndpi2proto(ndpi_protocol proto) {
+uint16_t pd_ndpi2proto(ndpi_protocol proto) {
     // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
     // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
     // in the app protocols, so just take the one that's not unknown.
@@ -70,6 +71,11 @@ static uint16_t ndpi2proto(ndpi_protocol proto) {
 
     if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
         l7proto = NDPI_PROTOCOL_HTTP;
+
+    if(!masterProtosInit) {
+        init_ndpi_protocols_bitmask(&masterProtos);
+        masterProtosInit = true;
+    }
 
     // nDPI will still return a disabled protocol (via the bitmask) if it matches some
     // metadata for it (e.g. the SNI)
@@ -219,7 +225,10 @@ struct ndpi_detection_module_struct* init_ndpi() {
         return(NULL);
 
     // needed by pd_get_proto_name
-    init_ndpi_protocols_bitmask(&masterProtos);
+    if(!masterProtosInit) {
+        init_ndpi_protocols_bitmask(&masterProtos);
+        masterProtosInit = true;
+    }
 
 #ifndef FUZZING
     // enable all the protocols
@@ -533,7 +542,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
         uint8_t proto_guessed;
         struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
                               &proto_guessed);
-        data->l7proto = ndpi2proto(n_proto);
+        data->l7proto = pd_ndpi2proto(n_proto);
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
 
@@ -667,7 +676,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     uint16_t old_proto = data->l7proto;
     struct ndpi_proto n_proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
                                   pkt->len, data->last_seen);
-    data->l7proto = ndpi2proto(n_proto);
+    data->l7proto = pd_ndpi2proto(n_proto);
 
     if(old_proto != data->l7proto) {
         data->update_type |= CONN_UPDATE_INFO;

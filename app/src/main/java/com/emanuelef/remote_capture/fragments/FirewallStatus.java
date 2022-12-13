@@ -145,7 +145,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
 
         menu.findItem(R.id.whitelist_mode).setChecked(Prefs.isFirewallWhitelistMode(mPrefs));
         menu.findItem(R.id.block_new_apps).setChecked(Prefs.blockNewApps(mPrefs));
-        reloadMode();
+        reloadMode(false);
     }
 
     @Override
@@ -171,7 +171,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
                             whitelistWarningAck = true;
                             item.setChecked(true);
                             mPrefs.edit().putBoolean(Prefs.PREF_FIREWALL_WHITELIST_MODE, true).apply();
-                            reloadMode();
+                            reloadMode(true);
                         })
                         .setNegativeButton(R.string.cancel_action, (d, whichButton) -> {})
                         .show();
@@ -180,7 +180,7 @@ public class FirewallStatus extends Fragment implements MenuProvider {
             } else {
                 item.setChecked(checked);
                 mPrefs.edit().putBoolean(Prefs.PREF_FIREWALL_WHITELIST_MODE, checked).apply();
-                reloadMode();
+                reloadMode(true);
             }
             return true;
         }
@@ -188,8 +188,8 @@ public class FirewallStatus extends Fragment implements MenuProvider {
         return false;
     }
 
-    private void reloadMode() {
-        if(CaptureService.isServiceActive())
+    private void reloadMode(boolean changed) {
+        if(changed && CaptureService.isServiceActive())
             CaptureService.requireInstance().reloadFirewallWhitelist();
 
         ((FirewallActivity)requireActivity()).recheckTabs();

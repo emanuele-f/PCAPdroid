@@ -500,21 +500,11 @@ static void getSocks5ProxyAuth(pcapdroid_t *pd) {
     //log_d("SOCKS5: user=%s pass=%s", pd->socks5.proxy_user, pd->socks5.proxy_pass);
 }
 
-/* ******************************************************* */
-
-JNIEXPORT void JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
-                                                              jobject vpn, jint sdk) {
-
-    jclass vpn_class = (*env)->GetObjectClass(env, vpn);
-
-#ifdef PCAPDROID_TRACK_ALLOCS
-    set_ndpi_malloc(pd_ndpi_malloc);
-    set_ndpi_free(pd_ndpi_free);
-#endif
+static void init_jni(JNIEnv *env) {
+    // NOTE: these are bound to this specific env
 
     /* Classes */
-    cls.vpn_service = vpn_class;
+    cls.vpn_service = jniFindClass(env, "com/emanuelef/remote_capture/CaptureService");
     cls.conn = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionDescriptor");
     cls.conn_update = jniFindClass(env, "com/emanuelef/remote_capture/model/ConnectionUpdate");
     cls.stats = jniFindClass(env, "com/emanuelef/remote_capture/model/CaptureStats");
@@ -526,17 +516,17 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     cls.payload_chunk = jniFindClass(env, "com/emanuelef/remote_capture/model/PayloadChunk");
 
     /* Methods */
-    mids.reportError = jniGetMethodID(env, vpn_class, "reportError", "(Ljava/lang/String;)V");
-    mids.getApplicationByUid = jniGetMethodID(env, vpn_class, "getApplicationByUid", "(I)Ljava/lang/String;"),
-            mids.protect = jniGetMethodID(env, vpn_class, "protect", "(I)Z");
-    mids.dumpPcapData = jniGetMethodID(env, vpn_class, "dumpPcapData", "([B)V");
-    mids.stopPcapDump = jniGetMethodID(env, vpn_class, "stopPcapDump", "()V");
-    mids.updateConnections = jniGetMethodID(env, vpn_class, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
-    mids.sendStatsDump = jniGetMethodID(env, vpn_class, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/CaptureStats;)V");
-    mids.sendServiceStatus = jniGetMethodID(env, vpn_class, "sendServiceStatus", "(Ljava/lang/String;)V");
-    mids.getLibprogPath = jniGetMethodID(env, vpn_class, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
-    mids.notifyBlacklistsLoaded = jniGetMethodID(env, vpn_class, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus;)V");
-    mids.getBlacklistsInfo = jniGetMethodID(env, vpn_class, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
+    mids.reportError = jniGetMethodID(env, cls.vpn_service, "reportError", "(Ljava/lang/String;)V");
+    mids.getApplicationByUid = jniGetMethodID(env, cls.vpn_service, "getApplicationByUid", "(I)Ljava/lang/String;"),
+            mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
+    mids.dumpPcapData = jniGetMethodID(env, cls.vpn_service, "dumpPcapData", "([B)V");
+    mids.stopPcapDump = jniGetMethodID(env, cls.vpn_service, "stopPcapDump", "()V");
+    mids.updateConnections = jniGetMethodID(env, cls.vpn_service, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
+    mids.sendStatsDump = jniGetMethodID(env, cls.vpn_service, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/CaptureStats;)V");
+    mids.sendServiceStatus = jniGetMethodID(env, cls.vpn_service, "sendServiceStatus", "(Ljava/lang/String;)V");
+    mids.getLibprogPath = jniGetMethodID(env, cls.vpn_service, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
+    mids.notifyBlacklistsLoaded = jniGetMethodID(env, cls.vpn_service, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus;)V");
+    mids.getBlacklistsInfo = jniGetMethodID(env, cls.vpn_service, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIIIZJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
@@ -563,6 +553,20 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     enums.bltype_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");
     enums.chunktype_raw = jniEnumVal(env, "com/emanuelef/remote_capture/model/PayloadChunk$ChunkType", "RAW");
     enums.chunktype_http = jniEnumVal(env, "com/emanuelef/remote_capture/model/PayloadChunk$ChunkType", "HTTP");
+}
+
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
+                                                              jobject vpn, jint sdk) {
+
+#ifdef PCAPDROID_TRACK_ALLOCS
+    set_ndpi_malloc(pd_ndpi_malloc);
+    set_ndpi_free(pd_ndpi_free);
+#endif
+
+    init_jni(env);
 
     pcapdroid_t pd = {
             .sdk_ver = sdk,
@@ -948,6 +952,72 @@ Java_com_emanuelef_remote_1capture_CaptureService_writeLog(JNIEnv *env, jclass c
     int rv = pd_log_write(logger, lvl, message_s);
     (*env)->ReleaseStringUTFChars(env, message, message_s);
     return rv;
+}
+
+/* ******************************************************* */
+
+static bool arraylist_add_string(JNIEnv *env, jmethodID arrayListAdd, jobject arr, const char *s) {
+    jobject s_obj = (*env)->NewStringUTF(env, s);
+    if(!s_obj || jniCheckException(env))
+        return false;
+
+    bool rv = (*env)->CallBooleanMethod(env, arr, arrayListAdd, s_obj);
+    (*env)->DeleteLocalRef(env, s_obj);
+    return rv;
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jclass clazz) {
+    jclass arrayListClass = jniFindClass(env, "java/util/ArrayList");
+    jmethodID arrayListNew = jniGetMethodID(env, arrayListClass, "<init>", "()V");
+    jmethodID arrayListAdd = jniGetMethodID(env, arrayListClass, "add", "(Ljava/lang/Object;)Z");
+
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
+    if(!ndpi)
+        return(NULL);
+
+    jobject plist = (*env)->NewObject(env, arrayListClass, arrayListNew);
+    if((plist == NULL) || jniCheckException(env))
+        return false;
+
+    bool success = true;
+    int num_protos = (int)ndpi_get_ndpi_num_supported_protocols(ndpi);
+    ndpi_proto_defaults_t* proto_defaults = ndpi_get_proto_defaults(ndpi);
+
+    ndpi_protocol_bitmask_struct_t unique_protos;
+    NDPI_BITMASK_RESET(unique_protos);
+
+    // NOTE: this does not currently exist as a protocol (see pd_get_proto_name)
+    if(!arraylist_add_string(env, arrayListAdd, plist, "HTTPS")) {
+        success = false;
+        goto out;
+    }
+
+    for(int i=0; i<num_protos; i++) {
+        ndpi_protocol n_proto = {proto_defaults[i].protoId, NDPI_PROTOCOL_UNKNOWN, NDPI_PROTOCOL_CATEGORY_UNSPECIFIED};
+        uint16_t proto = pd_ndpi2proto(n_proto);
+        //log_d("protos: %d -> %d -> %d", i, proto_defaults[i].protoId, proto);
+
+        if(!NDPI_ISSET(&unique_protos, proto)) {
+            NDPI_SET(&unique_protos, proto);
+            const char *name = ndpi_get_proto_name(ndpi, proto);
+            //log_d("proto: %d %s", proto, name);
+
+            if(!arraylist_add_string(env, arrayListAdd, plist, name)) {
+                success = false;
+                goto out;
+            }
+        }
+    }
+
+out:
+    if(!success) {
+        (*env)->DeleteLocalRef(env, plist);
+        plist = NULL;
+    }
+    ndpi_exit_detection_module(ndpi);
+
+    return(plist);
 }
 
 /* ******************************************************* */

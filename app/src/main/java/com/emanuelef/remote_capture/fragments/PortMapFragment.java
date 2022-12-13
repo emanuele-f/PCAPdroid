@@ -48,8 +48,8 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.PortMappingAdapter;
-import com.emanuelef.remote_capture.model.PortMappings;
-import com.emanuelef.remote_capture.model.PortMappings.PortMap;
+import com.emanuelef.remote_capture.model.PortMapping;
+import com.emanuelef.remote_capture.model.PortMapping.PortMap;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -63,7 +63,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
     private PortMappingAdapter mAdapter;
     private TextView mEmptyText;
     private ListView mListView;
-    private PortMappings mMappings;
+    private PortMapping mPortMap;
     private ArrayList<PortMap> mSelected = new ArrayList<>();
 
     @Override
@@ -77,9 +77,9 @@ public class PortMapFragment extends Fragment implements MenuProvider {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListView = view.findViewById(R.id.listview);
         mEmptyText = view.findViewById(R.id.list_empty);
-        mMappings = new PortMappings(requireContext());
+        mPortMap = new PortMapping(requireContext());
 
-        mAdapter = new PortMappingAdapter(requireContext(), mMappings);
+        mAdapter = new PortMappingAdapter(requireContext(), mPortMap);
         mListView.setAdapter(mAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
@@ -198,11 +198,11 @@ public class PortMapFragment extends Fragment implements MenuProvider {
                 if(mapping == null)
                     return;
 
-                boolean exists = !mMappings.add(mapping);
+                boolean exists = !mPortMap.add(mapping);
                 if(exists)
                     Utils.showToastLong(requireContext(), R.string.port_mapping_exists);
                 else {
-                    mMappings.save();
+                    mPortMap.save();
                     mAdapter.add(mapping);
                     recheckListSize();
                 }
@@ -260,8 +260,8 @@ public class PortMapFragment extends Fragment implements MenuProvider {
         builder.setPositiveButton(R.string.yes, (dialog, which) -> {
             if(mSelected.size() >= mAdapter.getCount()) {
                 mAdapter.clear();
-                mMappings.clear();
-                mMappings.save();
+                mPortMap.clear();
+                mPortMap.save();
             } else {
                 for(PortMap item : mSelected)
                     mAdapter.remove(item);
@@ -280,7 +280,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
     private void updateMappingsFromAdapter() {
         ArrayList<PortMap> toRemove = new ArrayList<>();
-        Iterator<PortMap> iter = mMappings.iter();
+        Iterator<PortMap> iter = mPortMap.iter();
 
         // Remove the mList rules which are not in the adapter dataset
         while(iter.hasNext()) {
@@ -292,8 +292,8 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
         if(toRemove.size() > 0) {
             for(PortMap mapping: toRemove)
-                mMappings.remove(mapping);
-            mMappings.save();
+                mPortMap.remove(mapping);
+            mPortMap.save();
         }
     }
 }

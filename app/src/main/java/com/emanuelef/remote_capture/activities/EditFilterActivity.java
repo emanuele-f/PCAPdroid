@@ -151,14 +151,6 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         model2view();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        MatchList mask = PCAPdroid.getInstance().getVisualizationMask();
-        findViewById(R.id.connections_mask).setVisibility(mask.isEmpty() ? View.GONE : View.VISIBLE);
-    }
-
     private <T> void setCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T curValue) {
         for(Pair<T, Chip> mapping: chipMap) {
             Chip chip = mapping.second;

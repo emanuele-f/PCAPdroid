@@ -67,9 +67,9 @@ public class Blocklist extends MatchList {
     }
 
     @Override
-    public synchronized void addApp(int uid) {
+    public synchronized boolean addApp(int uid) {
         mUidToGrace.remove(uid);
-        super.addApp(uid);
+        return super.addApp(uid);
     }
 
     public void saveAndReload() {

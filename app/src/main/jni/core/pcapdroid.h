@@ -382,6 +382,7 @@ const char* get_file_path(pcapdroid_t *pd, const char *subpath);
 static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path(pd, ""); }
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
+uint16_t pd_ndpi2proto(ndpi_protocol proto);
 
 #ifdef ANDROID
 
