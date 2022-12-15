@@ -156,7 +156,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), rootCaptureEnabled());
-            mBlockQuic.setVisible(mTlsDecryption.isChecked() && !rootCaptureEnabled());
+            mBlockQuic.setVisible(!rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
@@ -286,7 +286,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 }
 
                 fullPayloadHideShow((boolean) newValue);
-                mBlockQuic.setVisible(((boolean) newValue) && !rootCaptureEnabled());
                 mMitmWizard.setVisible((boolean) newValue);
                 mMitmproxyOpts.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
@@ -399,7 +398,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
                 fullPayloadHideShow(mTlsDecryption.isChecked());
-                mBlockQuic.setVisible(mTlsDecryption.isChecked());
+                mBlockQuic.setVisible(true);
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), false);
             }
 

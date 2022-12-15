@@ -43,7 +43,6 @@ public class RuleAddDialog implements View.OnClickListener {
     private final TextInputLayout mComboLayout;
     private final ViewMode mViewMode;
     private final RuleAddListener mAdapter;
-    private final MatchList mList;
     private ArrayAdapter<String> mComboAdapter;
 
     private enum ViewMode {
@@ -55,19 +54,18 @@ public class RuleAddDialog implements View.OnClickListener {
         boolean addRule(String value, TextView field);
     }
 
-    private RuleAddDialog(ViewMode viewMode, Context ctx, MatchList matchList, int title_res, RuleAddListener adapter) {
+    private RuleAddDialog(ViewMode viewMode, Context ctx, int title_res, RuleAddListener adapter) {
         mContext = ctx;
         mViewMode = viewMode;
         mAdapter = adapter;
-        mList = matchList;
 
         LayoutInflater inflater = LayoutInflater.from(ctx);
         View view = inflater.inflate(R.layout.add_rule_dialog, null);
 
-        mComboLayout = (TextInputLayout) view.findViewById(R.id.combo_field);
-        mEditTextLayout = (TextInputLayout) view.findViewById(R.id.text_field);
-        mComboText = (AutoCompleteTextView) view.findViewById(R.id.combo_text);
-        mEditText = (TextInputEditText) view.findViewById(R.id.text_value);
+        mComboLayout = view.findViewById(R.id.combo_field);
+        mEditTextLayout = view.findViewById(R.id.text_field);
+        mComboText = view.findViewById(R.id.combo_text);
+        mEditText = view.findViewById(R.id.text_value);
 
         mDialog = new AlertDialog.Builder(ctx)
                 .setView(view)
@@ -80,14 +78,14 @@ public class RuleAddDialog implements View.OnClickListener {
                 .setOnClickListener(this);
     }
 
-    public static RuleAddDialog showText(Context ctx, MatchList matchList, int title_res, RuleAddListener adapter) {
-        RuleAddDialog dialog = new RuleAddDialog(ViewMode.RULE_DIALOG_SIMPLE_TEXT, ctx, matchList, title_res, adapter);
+    public static RuleAddDialog showText(Context ctx, int title_res, RuleAddListener adapter) {
+        RuleAddDialog dialog = new RuleAddDialog(ViewMode.RULE_DIALOG_SIMPLE_TEXT, ctx, title_res, adapter);
         dialog.mEditTextLayout.setVisibility(View.VISIBLE);
         return dialog;
     }
 
-    public static RuleAddDialog showCombo(Context ctx, MatchList matchList, int title_res, String[] values, RuleAddListener adapter) {
-        RuleAddDialog dialog = new RuleAddDialog(ViewMode.RULE_DIALOG_COMBO, ctx, matchList, title_res, adapter);
+    public static RuleAddDialog showCombo(Context ctx, int title_res, String[] values, RuleAddListener adapter) {
+        RuleAddDialog dialog = new RuleAddDialog(ViewMode.RULE_DIALOG_COMBO, ctx, title_res, adapter);
         dialog.mComboLayout.setVisibility(View.VISIBLE);
 
         dialog.mComboAdapter = new ArrayAdapter<>(ctx, R.layout.dropdown_item, values);

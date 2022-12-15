@@ -286,7 +286,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     private void showAddIpRule() {
-        RuleAddDialog.showText(requireContext(), mList, R.string.ip_address, (value, field) -> {
+        RuleAddDialog.showText(requireContext(), R.string.ip_address, (value, field) -> {
             if(!Utils.validateIpAddress(value)) {
                 field.setError(getString(R.string.invalid));
                 return false;
@@ -301,7 +301,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     private void showAddProtoRule() {
-        RuleAddDialog.showCombo(requireContext(), mList, R.string.protocol, Utils.getL7Protocols(), (value, field) -> {
+        RuleAddDialog.showCombo(requireContext(), R.string.protocol, Utils.getL7Protocols(), (value, field) -> {
             if(!mList.addProto(value))
                 Utils.showToastLong(requireContext(), R.string.rule_exists);
             else
@@ -318,7 +318,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         for(int i=0; i<countryCodes.length; i++)
             countryNames[i] = Utils.getCountryName(ctx, countryCodes[i]);
 
-        RuleAddDialog.showCombo(requireContext(), mList, R.string.country, countryNames, (value, field) -> {
+        RuleAddDialog.showCombo(requireContext(), R.string.country, countryNames, (value, field) -> {
             String code = null;
 
             for(int i=0; i<countryNames.length; i++) {
@@ -342,7 +342,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     private void showAddHostRule() {
-        RuleAddDialog.showText(requireContext(), mList, R.string.host, (value, field) -> {
+        RuleAddDialog.showText(requireContext(), R.string.host, (value, field) -> {
             if(!Utils.validateHost(value)) {
                 field.setError(getString(R.string.invalid));
                 return false;
