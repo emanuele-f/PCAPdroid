@@ -289,6 +289,12 @@ public class ConnectionDescriptor {
         return isBlacklistedIp() || isBlacklistedHost();
     }
 
+    public void setPayloadTruncatedByAddon() {
+        // only for the mitm addon
+        assert(!isNotDecryptable());
+        payload_truncated = true;
+    }
+
     public boolean isPayloadTruncated() {
         return payload_truncated;
     }

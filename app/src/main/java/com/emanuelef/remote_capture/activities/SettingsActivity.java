@@ -154,7 +154,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupSecurityPrefs();
             setupOtherPrefs();
 
-            fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), rootCaptureEnabled());
             mBlockQuic.setVisible(!rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
@@ -174,6 +173,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             if(mHasStartedMitmWizard && !MitmAddon.needsSetup(requireContext())) {
                 Log.d(TAG, "mitm setup complete, enabling");
                 mTlsDecryption.setChecked(true);
+                mFullPayloadEnabled.setChecked(true);
             }
             mHasStartedMitmWizard = false;
         }
@@ -285,7 +285,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return false;
                 }
 
-                fullPayloadHideShow((boolean) newValue);
                 mMitmWizard.setVisible((boolean) newValue);
                 mMitmproxyOpts.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
@@ -319,10 +318,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mSocks5ProxyPort = requirePreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
             mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
             mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
-        }
-
-        private void fullPayloadHideShow(boolean tlsDecryption) {
-            mFullPayloadEnabled.setVisible(!tlsDecryption);
         }
 
         private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled, boolean rootEnabled) {
@@ -393,11 +388,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
                 mSocks5ProxyPort.setVisible(false);
-                fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(false);
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
-                fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(true);
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), false);
             }

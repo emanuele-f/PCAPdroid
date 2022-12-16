@@ -32,6 +32,7 @@ import androidx.lifecycle.Observer;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
+import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
@@ -90,6 +91,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         TCP_ERROR,
         WEBSOCKET_CLIENT_MSG,
         WEBSOCKET_SERVER_MSG,
+        DATA_TRUNCATED,
         MASTER_SECRET,
         LOG,
     }
@@ -117,7 +119,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         RUNNING
     }
 
-    public MitmReceiver(Context ctx, boolean rootCapture, String proxyAuth, String additionalOpts) {
+    public MitmReceiver(Context ctx, CaptureSettings settings, String proxyAuth) {
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
@@ -126,7 +128,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
         mConfig.proxyAuth = proxyAuth;
         mConfig.dumpMasterSecrets = (CaptureService.getDumpMode() != Prefs.DumpMode.NONE);
-        mConfig.additionalOptions = additionalOpts;
+        mConfig.additionalOptions = settings.mitmproxy_opts;
+        mConfig.shortPayload = !settings.full_payload;
 
         /* upstream certificate verification is disabled because the app does not provide a way to let the user
            accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
@@ -134,7 +137,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.sslInsecure = true;
 
         // root capture uses transparent mode (redirection via iptables)
-        mConfig.transparentMode = rootCapture;
+        mConfig.transparentMode = settings.root_capture;
 
         //noinspection ResultOfMethodCallIgnored
         getKeylogFilePath(mContext).delete();
@@ -307,7 +310,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
-        } else
+        } else if(type == MsgType.DATA_TRUNCATED)
+            conn.setPayloadTruncatedByAddon();
+        else
             conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
@@ -360,6 +365,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return MsgType.WEBSOCKET_CLIENT_MSG;
             case "ws_srvmsg":
                 return MsgType.WEBSOCKET_SERVER_MSG;
+            case "trunc":
+                return MsgType.DATA_TRUNCATED;
             case "secret":
                 return MsgType.MASTER_SECRET;
             case "log":

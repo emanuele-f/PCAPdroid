@@ -350,7 +350,7 @@ public class CaptureService extends VpnService implements Runnable {
                 mSocks5Port = MitmReceiver.TLS_DECRYPTION_PROXY_PORT;
                 mSocks5Auth = Utils.genRandomString(8) + ":" + Utils.genRandomString(8);
 
-                mMitmReceiver = new MitmReceiver(this, mSettings.root_capture, mSocks5Auth, mSettings.mitmproxy_opts);
+                mMitmReceiver = new MitmReceiver(this, mSettings, mSocks5Auth);
                 try {
                     if(!mMitmReceiver.start())
                         return abortStart();
@@ -978,10 +978,6 @@ public class CaptureService extends VpnService implements Runnable {
     public static Prefs.PayloadMode getCurPayloadMode() {
         if(INSTANCE == null)
             return Prefs.PayloadMode.MINIMAL;
-
-        // With TLS decryption, payload mode is always "full"
-        if(INSTANCE.mSettings.tls_decryption)
-            return Prefs.PayloadMode.FULL;
 
         return INSTANCE.mSettings.full_payload ? Prefs.PayloadMode.FULL : Prefs.PayloadMode.MINIMAL;
     }
