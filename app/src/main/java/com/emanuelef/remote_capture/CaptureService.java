@@ -466,9 +466,9 @@ public class CaptureService extends VpnService implements Runnable {
 
         mMalwareWhitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         mBlacklists = PCAPdroid.getInstance().getBlacklists();
-        if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate())
+        if(mMalwareDetectionEnabled && !mBlacklists.needsUpdate(true))
             reloadBlacklists();
-        checkBlacklistsUpdates();
+        checkBlacklistsUpdates(true);
 
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mFirewallWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
@@ -876,11 +876,11 @@ public class CaptureService extends VpnService implements Runnable {
         return ((INSTANCE != null) && INSTANCE.isLockdownEnabled());
     }
 
-    private void checkBlacklistsUpdates() {
+    private void checkBlacklistsUpdates(boolean firstUpdate) {
         if(!mMalwareDetectionEnabled || (mBlacklistsUpdateThread != null))
             return;
 
-        if(mBlacklistsUpdateRequested || mBlacklists.needsUpdate()) {
+        if(mBlacklistsUpdateRequested || mBlacklists.needsUpdate(firstUpdate)) {
             mBlacklistsUpdateThread = new Thread(this::updateBlacklistsWork, "Blacklists Update");
             mBlacklistsUpdateThread.start();
         }
@@ -1074,7 +1074,7 @@ public class CaptureService extends VpnService implements Runnable {
             ConnectionDescriptor[] new_conns = item.first;
             ConnectionUpdate[] conns_updates = item.second;
 
-            checkBlacklistsUpdates();
+            checkBlacklistsUpdates(false);
             if(mBlocklist.checkGracePeriods())
                 mHandler.post(this::reloadBlocklist);
 
@@ -1197,7 +1197,7 @@ public class CaptureService extends VpnService implements Runnable {
         return(dns_server);
     }
 
-    public String getIpv6DnsServer() { return(Prefs.getDnsServerV4(mPrefs)); }
+    public String getIpv6DnsServer() { return(Prefs.getDnsServerV6(mPrefs)); }
 
     public int getSocks5Enabled() { return mSocks5Enabled ? 1 : 0; }
 

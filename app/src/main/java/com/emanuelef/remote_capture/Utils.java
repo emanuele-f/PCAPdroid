@@ -105,6 +105,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -950,6 +951,8 @@ public class Utils {
                 try {
                     // Necessary otherwise the connection will stay open
                     con.setRequestProperty("Connection", "Close");
+                    con.setConnectTimeout(5000);
+                    con.setReadTimeout(5000);
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
@@ -958,6 +961,8 @@ public class Utils {
                             bos.write(bytesIn, 0, read);
                             has_contents |= (read > 0);
                         }
+                    } catch (SocketTimeoutException _ignored) {
+                        Log.w(TAG, "Timeout while fetching " + _url);
                     }
                 } finally {
                     con.disconnect();
@@ -971,7 +976,7 @@ public class Utils {
             try {
                 //noinspection ResultOfMethodCallIgnored
                 (new File(path + ".tmp")).delete(); // if exists
-            } catch (Exception e) {
+            } catch (Exception ignored) {
                 // ignore
             }
             return false;

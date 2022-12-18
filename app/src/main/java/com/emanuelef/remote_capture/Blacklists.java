@@ -63,7 +63,6 @@ public class Blacklists {
     private final ArrayList<BlacklistsStateListener> mListeners = new ArrayList<>();
     private final SharedPreferences mPrefs;
     private final Context mContext;
-    private boolean mFirstUpdate;
     private boolean mUpdateInProgress;
     private long mLastUpdate;
     private int mNumDomainRules;
@@ -74,7 +73,6 @@ public class Blacklists {
         mNumDomainRules = 0;
         mNumIPRules = 0;
         mContext = ctx;
-        mFirstUpdate = true;
         mUpdateInProgress = false;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
@@ -200,10 +198,10 @@ public class Blacklists {
         }
     }
 
-    public boolean needsUpdate() {
+    public boolean needsUpdate(boolean firstUpdate) {
         long now = System.currentTimeMillis();
         return((now - mLastUpdate) >= BLACKLISTS_UPDATE_SECONDS * 1000)
-                || (mFirstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
+                || (firstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
     }
 
     // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
@@ -214,15 +212,21 @@ public class Blacklists {
         notifyListeners();
 
         Log.i(TAG, "Updating " + mLists.size() + " blacklists...");
-        mFirstUpdate = false;
 
         for(BlacklistDescriptor bl: mLists) {
+            if(!CaptureService.isServiceActive()) {
+                Log.i(TAG, "Capture stopped, abort");
+                break;
+            }
+
             Log.i(TAG, "\tupdating " + bl.fname + "...");
 
             if(Utils.downloadFile(bl.url, getListPath(bl)))
                 bl.setUpdated(System.currentTimeMillis());
             else
                 bl.setOutdated();
+
+            notifyListeners();
         }
 
         mLastUpdate = System.currentTimeMillis();
