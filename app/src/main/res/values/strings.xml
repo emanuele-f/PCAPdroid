@@ -436,4 +436,10 @@
     <string name="items_delete_confirm">Delete the selected items?</string>
     <string name="ip_address">IP address</string>
     <string name="rule_exists">Rule already defined</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="dns_servers_summary">Configure the DNS servers to use during the capture</string>
+    <string name="ipv4_dns_server">IPv4 DNS server</string>
+    <string name="ipv6_dns_server">IPv6 DNS server</string>
+    <string name="use_system_dns">Use system DNS</string>
+    <string name="use_system_dns_summary">Use the system DNS servers if possible</string>
 </resources>

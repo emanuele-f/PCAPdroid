@@ -386,6 +386,8 @@ static void load_dns_servers(pcapdroid_t *pd) {
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8844");
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::64");
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::6400");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1111");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1001");
 
     // Domains (only private DNS)
     // https://help.firewalla.com/hc/en-us/articles/360060661873-Dealing-DNS-over-HTTPS-and-DNS-over-TLS-on-your-network

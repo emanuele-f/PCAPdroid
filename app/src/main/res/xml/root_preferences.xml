@@ -113,12 +113,6 @@
             app:iconSpaceReserved="false"
             app:defaultValue="8050"
             app:useSimpleSummaryProvider="true" />
-
-        <Preference
-            app:key="port_mapping"
-            app:title="@string/port_mapping"
-            app:summary="@string/port_mapping_summary"
-            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false" >
@@ -141,6 +135,13 @@
             app:title="@string/vpn_exemptions"
             app:summary="@string/vpn_exemptions_summary"
             app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="dns_settings"
+            app:title="@string/dns_servers"
+            app:summary="@string/dns_servers_summary"
+            app:iconSpaceReserved="false"
+            app:fragment="com.emanuelef.remote_capture.fragments.DnsSettings" />
 
         <SwitchPreference
             app:key="start_at_boot"
@@ -201,6 +202,12 @@
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
 
+        <Preference
+            app:key="port_mapping"
+            app:title="@string/port_mapping"
+            app:summary="@string/port_mapping_summary"
+            app:iconSpaceReserved="false" />
+
         <DropDownPreference
             app:key="ip_mode"
             app:title="@string/ip_mode"
@@ -214,7 +221,6 @@
             app:key="control_permissions"
             app:title="@string/control_permissions"
             app:iconSpaceReserved="false"
-            android:summary="@string/control_permissions_summary">
-        </Preference>
+            android:summary="@string/control_permissions_summary" />
     </PreferenceCategory>
 </PreferenceScreen>

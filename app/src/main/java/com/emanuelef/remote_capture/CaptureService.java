@@ -160,9 +160,6 @@ public class CaptureService extends VpnService implements Runnable {
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
     public static final int CONNECTIONS_LOG_SIZE = 8192;
 
-    public static final String FALLBACK_DNS_SERVER = "8.8.8.8";
-    public static final String IPV6_DNS_SERVER = "2001:4860:4860::8888";
-
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
     public static final String VPN_IP6_ADDRESS = "fd00:2:fd00:1:fd00:1:fd00:1";
@@ -259,7 +256,8 @@ public class CaptureService extends VpnService implements Runnable {
             mSettings.root_capture = false;
 
         // Retrieve DNS server
-        dns_server = FALLBACK_DNS_SERVER;
+        String fallbackDnsV4 = Prefs.getDnsServerV4(mPrefs);
+        dns_server = fallbackDnsV4;
         mBlockPrivateDns = false;
         mStrictDnsNoticeShown = false;
         mDnsEncrypted = false;
@@ -284,13 +282,16 @@ public class CaptureService extends VpnService implements Runnable {
             if(net != null) {
                 handleLinkProperties(cm.getLinkProperties(net));
 
-                dns_server = Utils.getDnsServer(cm, net);
-                if(dns_server == null)
-                    dns_server = FALLBACK_DNS_SERVER;
-                else {
-                    mMonitoredNetwork = net.getNetworkHandle();
-                    registerNetworkCallbacks();
-                }
+                if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
+                    dns_server = Utils.getDnsServer(cm, net);
+                    if (dns_server == null)
+                        dns_server = fallbackDnsV4;
+                    else {
+                        mMonitoredNetwork = net.getNetworkHandle();
+                        registerNetworkCallbacks();
+                    }
+                } else
+                    dns_server = fallbackDnsV4;
             }
         }
 
@@ -405,7 +406,7 @@ public class CaptureService extends VpnService implements Runnable {
                 builder.addRoute("2000::", 3);
 
                 try {
-                    builder.addDnsServer(InetAddress.getByName(IPV6_DNS_SERVER));
+                    builder.addDnsServer(InetAddress.getByName(Prefs.getDnsServerV6(mPrefs)));
                 } catch (UnknownHostException e) {
                     Log.w(TAG, "Could not set IPv6 DNS server");
                 }
@@ -688,6 +689,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mNetworkCallback != null)
             return;
 
+        String fallbackDns = Prefs.getDnsServerV4(mPrefs);
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
         mNetworkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
@@ -697,8 +699,8 @@ public class CaptureService extends VpnService implements Runnable {
                 // If the network goes offline we roll back to the fallback DNS server to
                 // avoid possibly using a private IP DNS server not reachable anymore
                 if(network.getNetworkHandle() == mMonitoredNetwork) {
-                    Log.i(TAG, "Main network " + network + " lost, using fallback DNS " + FALLBACK_DNS_SERVER);
-                    dns_server = FALLBACK_DNS_SERVER;
+                    Log.i(TAG, "Main network " + network + " lost, using fallback DNS " + fallbackDns);
+                    dns_server = fallbackDns;
                     mMonitoredNetwork = 0;
                     unregisterNetworkCallbacks();
 
@@ -728,7 +730,7 @@ public class CaptureService extends VpnService implements Runnable {
             e.printStackTrace();
 
             Log.w(TAG, "registerNetworkCallback failed, DNS server detection disabled");
-            dns_server = FALLBACK_DNS_SERVER;
+            dns_server = fallbackDns;
             mNetworkCallback = null;
         }
     }
@@ -1195,7 +1197,7 @@ public class CaptureService extends VpnService implements Runnable {
         return(dns_server);
     }
 
-    public String getIpv6DnsServer() { return(IPV6_DNS_SERVER); }
+    public String getIpv6DnsServer() { return(Prefs.getDnsServerV4(mPrefs)); }
 
     public int getSocks5Enabled() { return mSocks5Enabled ? 1 : 0; }
 

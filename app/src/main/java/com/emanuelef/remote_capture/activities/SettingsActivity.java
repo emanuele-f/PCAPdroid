@@ -44,6 +44,7 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.fragments.DnsSettings;
 import com.emanuelef.remote_capture.fragments.GeoipSettings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -83,6 +84,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         if(prefKey.equals("geolocation")) {
             targetFragment = new GeoipSettings();
             setTitle(R.string.geolocation);
+        } else if(prefKey.equals("dns_settings")) {
+            targetFragment = new DnsSettings();
+            setTitle(R.string.dns_servers);
         }
 
         if(targetFragment != null) {
@@ -131,6 +135,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private Preference mVpnExceptions;
+        private Preference mDnsSettings;
         private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
@@ -238,18 +243,22 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private void setupCapturePrefs() {
             mCapInterface = requirePreference(Prefs.PREF_CAPTURE_INTERFACE);
-            mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
-            mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
             refreshInterfaces();
 
+            mRootCaptureEnabled = requirePreference(Prefs.PREF_ROOT_CAPTURE);
+            if(Utils.isRootAvailable()) {
+                mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                    rootCaptureHideShow((Boolean) newValue);
+                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
+                    return true;
+                });
+            } else
+                mRootCaptureEnabled.setVisible(false);
+
+            mDnsSettings = requirePreference("dns_settings");;
+            mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
             mVpnExceptions.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireContext(), VpnExemptionsActivity.class);
-                startActivity(intent);
-                return true;
-            });
-
-            mPortMapping.setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(requireContext(), PortMapActivity.class);
                 startActivity(intent);
                 return true;
             });
@@ -351,23 +360,18 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             });
 
             DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
-
             appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
                 Utils.setAppTheme(newValue.toString());
 
                 return true;
             });
 
-            mRootCaptureEnabled = requirePreference(Prefs.PREF_ROOT_CAPTURE);
-
-            if(Utils.isRootAvailable()) {
-                mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                    rootCaptureHideShow((Boolean) newValue);
-                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
-                    return true;
-                });
-            } else
-                mRootCaptureEnabled.setVisible(false);
+            mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
+            mPortMapping.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), PortMapActivity.class);
+                startActivity(intent);
+                return true;
+            });
 
             mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
@@ -398,6 +402,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
             mVpnExceptions.setVisible(!enabled);
+            mDnsSettings.setVisible(!enabled);
             mPortMapping.setVisible(!enabled);
         }
 
