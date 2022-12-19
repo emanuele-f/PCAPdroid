@@ -64,6 +64,7 @@ public class Blacklists {
     private final SharedPreferences mPrefs;
     private final Context mContext;
     private boolean mUpdateInProgress;
+    private boolean mStopRequest;
     private long mLastUpdate;
     private int mNumDomainRules;
     private int mNumIPRules;
@@ -207,6 +208,7 @@ public class Blacklists {
     // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
     public void update() {
         mUpdateInProgress = true;
+        mStopRequest = false;
         for(BlacklistDescriptor bl: mLists)
             bl.setUpdating();
         notifyListeners();
@@ -214,8 +216,8 @@ public class Blacklists {
         Log.i(TAG, "Updating " + mLists.size() + " blacklists...");
 
         for(BlacklistDescriptor bl: mLists) {
-            if(!CaptureService.isServiceActive()) {
-                Log.i(TAG, "Capture stopped, abort");
+            if(mStopRequest) {
+                Log.i(TAG, "Stop request received, abort");
                 break;
             }
 
@@ -331,6 +333,10 @@ public class Blacklists {
 
     public boolean isUpdateInProgress() {
         return mUpdateInProgress;
+    }
+
+    public void abortUpdate() {
+        mStopRequest = true;
     }
 }
 

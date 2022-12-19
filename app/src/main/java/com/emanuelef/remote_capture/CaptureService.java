@@ -560,6 +560,7 @@ public class CaptureService extends VpnService implements Runnable {
         //INSTANCE = null;
 
         unregisterNetworkCallbacks();
+        mBlacklists.abortUpdate();
 
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
