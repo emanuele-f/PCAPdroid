@@ -30,13 +30,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.ReversedLinesFileReader;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LogviewFragment extends Fragment {
     private static final String TAG = "LogviewFragment";
+    public static final int MAX_LINES = 512;
     private String mLogPath;
     private String mLogText;
     private TextView mLogView;
@@ -68,14 +70,15 @@ public class LogviewFragment extends Fragment {
 
     public void reloadLog() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(mLogPath));
-
+            ReversedLinesFileReader reader = new ReversedLinesFileReader(new File(mLogPath), StandardCharsets.US_ASCII);
             StringBuilder builder = new StringBuilder();
             String line;
+            int count = 0;
 
-            while((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append("\n");
+            while(((line = reader.readLine()) != null) && (count < MAX_LINES)) {
+                builder.insert(0, "\n");
+                builder.insert(0, line);
+                count += 1;
             }
 
             mLogText = builder.toString();
