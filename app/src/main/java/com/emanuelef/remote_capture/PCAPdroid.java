@@ -131,6 +131,8 @@ public class PCAPdroid extends Application {
         mFirewallWhitelist.addApp(0 /* root */);
         mFirewallWhitelist.addApp(1000 /* android */);
         mFirewallWhitelist.addApp(getPackageName() /* PCAPdroid */);
+
+        // see also https://github.com/microg/GmsCore/issues/1508#issuecomment-876269198
         mFirewallWhitelist.addApp("com.google.android.gms" /* Google Play Services */);
         mFirewallWhitelist.addApp("com.google.android.gsf" /* Google Services Framework (push notifications) */);
         mFirewallWhitelist.addApp("com.google.android.ims" /* Carrier Services */);

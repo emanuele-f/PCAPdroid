@@ -93,17 +93,22 @@ public class AppsResolver {
     // Get the AppDescriptor corresponding to the given package name
     // No caching occurs. Virtual apps cannot be used.
     // This is public to provide a fast resolution alternative to getAppByPackage
-    public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags) {
+    public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags, boolean warn_not_found) {
         PackageInfo pinfo;
 
         try {
             pinfo = Utils.getPackageInfo(pm, packageName, pm_flags);
         } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "could not retrieve package: " + packageName);
+            if(warn_not_found)
+                Log.w(TAG, "could not retrieve package: " + packageName);
             return null;
         }
 
         return new AppDescriptor(pm, pinfo);
+    }
+
+    public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags) {
+        return resolveInstalledApp(pm, packageName, pm_flags, true);
     }
 
     @SuppressLint("DiscouragedPrivateApi")

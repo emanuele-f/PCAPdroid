@@ -159,7 +159,7 @@ public class MatchList {
 
         if(tp == RuleType.APP) {
             // TODO handle cross-users/profiles?
-            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0, false);
             if(app != null)
                 value = app.getName();
         } else if(tp == RuleType.HOST)
