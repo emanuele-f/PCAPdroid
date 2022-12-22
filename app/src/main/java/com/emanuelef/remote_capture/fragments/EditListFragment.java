@@ -46,7 +46,6 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
-import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -202,7 +201,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
             }
 
             mode.finish();
-            reloadListRules();
+            mListInfo.reloadRules();
             recheckListSize();
         });
         builder.setNegativeButton(R.string.no, (dialog, whichButton) -> {});
@@ -387,22 +386,10 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
     }
 
-    private void reloadListRules() {
-        if(mListInfo.getType() == ListInfo.Type.MALWARE_WHITELIST)
-            CaptureService.reloadMalwareWhitelist();
-        else if(mListInfo.getType() == ListInfo.Type.BLOCKLIST) {
-            if(CaptureService.isServiceActive())
-                CaptureService.requireInstance().reloadBlocklist();
-        } else if(mListInfo.getType() == ListInfo.Type.FIREWALL_WHITELIST) {
-            if(CaptureService.isServiceActive())
-                CaptureService.requireInstance().reloadFirewallWhitelist();
-        }
-    }
-
     private void saveAndReload() {
         Log.d(TAG, "saveAndReload");
         mList.save();
-        reloadListRules();
+        mListInfo.reloadRules();
     }
 
     private void updateListFromAdapter() {

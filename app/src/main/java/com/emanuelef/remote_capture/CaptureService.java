@@ -146,6 +146,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Blocklist mBlocklist;
     private MatchList mMalwareWhitelist;
     private MatchList mFirewallWhitelist;
+    private MatchList mDecryptionWhitelist;
     private SparseArray<String> mIfIndexToName;
     private boolean mSocks5Enabled;
     private String mSocks5Address;
@@ -366,6 +367,11 @@ public class CaptureService extends VpnService implements Runnable {
                 mSocks5Auth = null;
             }
         }
+
+        if(mSettings.tls_decryption && !mSettings.root_capture)
+            mDecryptionWhitelist = PCAPdroid.getInstance().getDecryptionWhitelist();
+        else
+            mDecryptionWhitelist = null;
 
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
             try {
@@ -978,6 +984,10 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isTlsDecryptionEnabled() == 1));
     }
 
+    public static boolean isDecryptionWhitelistEnabled() {
+        return(INSTANCE != null && (INSTANCE.mDecryptionWhitelist != null));
+    }
+
     public static Prefs.PayloadMode getCurPayloadMode() {
         if(INSTANCE == null)
             return Prefs.PayloadMode.MINIMAL;
@@ -1313,6 +1323,8 @@ public class CaptureService extends VpnService implements Runnable {
         if(cur_status == ServiceStatus.STARTED) {
             if(mMalwareDetectionEnabled)
                 reloadMalwareWhitelist();
+            if(mDecryptionWhitelist != null)
+                reloadDecryptionWhitelist();
             reloadBlocklist();
             reloadFirewallWhitelist();
         }
@@ -1406,6 +1418,14 @@ public class CaptureService extends VpnService implements Runnable {
         reloadMalwareWhitelist(INSTANCE.mMalwareWhitelist.toListDescriptor());
     }
 
+    public static void reloadDecryptionWhitelist() {
+        if((INSTANCE == null) || (INSTANCE.mDecryptionWhitelist == null))
+            return;
+
+        Log.i(TAG, "reloading TLS decryption whitelist");
+        reloadDecryptionWhitelist(INSTANCE.mDecryptionWhitelist.toListDescriptor());
+    }
+
     public static void setFirewallEnabled(boolean enabled) {
         if(INSTANCE == null)
             return;
@@ -1457,6 +1477,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
     private static native boolean reloadFirewallWhitelist(MatchList.ListDescriptor whitelist);
     private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
+    private static native boolean reloadDecryptionWhitelist(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native void nativeSetFirewallEnabled(boolean enabled);

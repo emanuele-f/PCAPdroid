@@ -113,6 +113,7 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         mDecChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
                 new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
+                new Pair<>(DecryptionStatus.WHITELISTED, findViewById(R.id.dec_status_whitelisted)),
                 new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));
 

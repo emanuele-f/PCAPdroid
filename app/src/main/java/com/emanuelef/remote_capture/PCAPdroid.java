@@ -49,6 +49,7 @@ public class PCAPdroid extends Application {
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
     private MatchList mFirewallWhitelist;
+    private MatchList mDecryptionWhitelist;
     private Blocklist mBlocklist;
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
@@ -151,6 +152,13 @@ public class PCAPdroid extends Application {
             }
         }
         return mFirewallWhitelist;
+    }
+
+    public MatchList getDecryptionWhitelist() {
+        if(mDecryptionWhitelist == null)
+            mDecryptionWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_DECRYPTION_WHITELIST);
+
+        return mDecryptionWhitelist;
     }
 
     public CtrlPermissions getCtrlPermissions() {

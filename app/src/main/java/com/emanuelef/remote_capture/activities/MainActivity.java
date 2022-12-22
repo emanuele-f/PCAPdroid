@@ -72,6 +72,7 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -210,6 +211,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onResume() {
         super.onResume();
+
+        if(mNavView != null) {
+            Menu navMenu = mNavView.getMenu();
+            navMenu.findItem(R.id.dec_whitelist).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
+        }
 
         checkPaidDrawerEntries();
     }
@@ -477,6 +483,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToast(this, R.string.start_capture_first);
         } else if(id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
+            startActivity(intent);
+        } else if(id == R.id.dec_whitelist) {
+            Intent intent = new Intent(MainActivity.this, EditListActivity.class);
+            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_WHITELIST);
             startActivity(intent);
         } else if(id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, FirewallActivity.class);

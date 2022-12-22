@@ -335,15 +335,21 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             menu.findItem(R.id.unblock_app_8h).setTitle(getString(R.string.unblock_for_n_hours, 8));
 
             if(conn.isBlacklisted()) {
-                item = menu.findItem(R.id.whitelist_app);
+                item = menu.findItem(R.id.mw_whitelist_app);
+                item.setTitle(label);
+                item.setVisible(true);
+            }
+
+            if(!conn.decryption_whitelisted) {
+                item = menu.findItem(R.id.dec_whitelist_app);
                 item.setTitle(label);
                 item.setVisible(true);
             }
 
             if(firewallVisible && whitelistMode) {
                 boolean whitelisted = fwWhitelist.matchesApp(app.getUid());
-                menu.findItem(R.id.add_to_whitelist).setVisible(!whitelisted);
-                menu.findItem(R.id.remove_from_whitelist).setVisible(whitelisted);
+                menu.findItem(R.id.add_to_fw_whitelist).setVisible(!whitelisted);
+                menu.findItem(R.id.remove_from_fw_whitelist).setVisible(whitelisted);
             }
         }
 
@@ -396,7 +402,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
 
             if(conn.isBlacklistedHost()) {
-                item = menu.findItem(R.id.whitelist_host);
+                item = menu.findItem(R.id.mw_whitelist_host);
+                item.setTitle(label);
+                item.setVisible(true);
+            }
+
+            if(!conn.decryption_whitelisted) {
+                item = menu.findItem(R.id.dec_whitelist_host);
                 item.setTitle(label);
                 item.setVisible(true);
             }
@@ -431,7 +443,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setVisible(ipBlocked);
 
         if(conn.isBlacklistedIp())
-            menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
+            menu.findItem(R.id.mw_whitelist_ip).setTitle(label).setVisible(true);
+
+        if(!conn.decryption_whitelisted)
+            menu.findItem(R.id.dec_whitelist_ip).setTitle(label).setVisible(true);
 
         if(conn.hasHttpRequest())
             menu.findItem(R.id.copy_http_request).setVisible(true);
@@ -446,7 +461,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.unblock_menu).setVisible(firewallVisible && unblockVisible);
 
         if(!conn.isBlacklisted())
-            menu.findItem(R.id.whitelist_menu).setVisible(false);
+            menu.findItem(R.id.mw_whitelist_menu).setVisible(false);
+
+        if(!CaptureService.isDecryptionWhitelistEnabled() || conn.decryption_whitelisted)
+            menu.findItem(R.id.dec_whitelist_menu).setVisible(false);
     }
 
     @Override
@@ -455,12 +473,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
+        MatchList decWhitelist = PCAPdroid.getInstance().getDecryptionWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
         boolean firewall_wl_changed = false;
+        boolean dec_whitelist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -494,15 +514,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             setQuery(conn.dst_ip);
         else if(id == R.id.search_proto)
             setQuery(conn.l7proto);
-        else if(id == R.id.whitelist_app)  {
+        else if(id == R.id.mw_whitelist_app)  {
             whitelist.addApp(conn.uid);
             whitelist_changed = true;
-        } else if(id == R.id.whitelist_ip)  {
+        } else if(id == R.id.mw_whitelist_ip)  {
             whitelist.addIp(conn.dst_ip);
             whitelist_changed = true;
-        } else if(id == R.id.whitelist_host)  {
+        } else if(id == R.id.mw_whitelist_host) {
             whitelist.addHost(conn.info);
             whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_app)  {
+            decWhitelist.addApp(conn.uid);
+            dec_whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_ip)  {
+            decWhitelist.addIp(conn.dst_ip);
+            dec_whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_host)  {
+            decWhitelist.addHost(conn.info);
+            dec_whitelist_changed = true;
         } else if(id == R.id.block_app) {
             if(firewallPurchased) {
                 blocklist.addApp(conn.uid);
@@ -545,10 +574,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.unblock_domain) {
             blocklist.removeHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
-        } else if(id == R.id.add_to_whitelist) {
+        } else if(id == R.id.add_to_fw_whitelist) {
             fwWhitelist.addApp(conn.uid);
             firewall_wl_changed = true;
-        } else if(id == R.id.remove_from_whitelist) {
+        } else if(id == R.id.remove_from_fw_whitelist) {
             fwWhitelist.removeApp(conn.uid);
             firewall_wl_changed = true;
         } else if(id == R.id.open_app_details) {
@@ -579,6 +608,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             fwWhitelist.save();
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadFirewallWhitelist();
+        } else if(dec_whitelist_changed) {
+            decWhitelist.save();
+            CaptureService.reloadDecryptionWhitelist();
         } else if(blocklist_changed)
             blocklist.saveAndReload();
 

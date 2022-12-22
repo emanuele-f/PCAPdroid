@@ -114,6 +114,7 @@ typedef struct {
     bool to_block;
     bool netd_block_missed;
     bool proxied;
+    bool decryption_whitelisted;
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx
@@ -190,7 +191,6 @@ typedef struct pcapdroid {
     jint app_filter;
     jint mitm_addon_uid;
     bool root_capture;
-    bool tls_decryption_enabled;
     payload_mode_t payload_mode;
 
     // stats
@@ -269,6 +269,12 @@ typedef struct pcapdroid {
         blacklist_t *wl;     // whitelist
         blacklist_t *new_wl;
     } firewall;
+
+    struct {
+        bool enabled;
+        blacklist_t *wl;
+        blacklist_t *new_wl;
+    } tls_decryption;
 } pcapdroid_t;
 
 // return 0 to continue, anything else to break

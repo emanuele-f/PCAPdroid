@@ -166,8 +166,8 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
 
         if(Prefs.isFirewallWhitelistMode(prefs)) {
             boolean isWhitelisted = PCAPdroid.getInstance().getFirewallWhitelist().matchesApp(stats.getUid());
-            menu.findItem(R.id.add_to_whitelist).setVisible(!isWhitelisted);
-            menu.findItem(R.id.remove_from_whitelist).setVisible(isWhitelisted);
+            menu.findItem(R.id.add_to_fw_whitelist).setVisible(!isWhitelisted);
+            menu.findItem(R.id.remove_from_fw_whitelist).setVisible(isWhitelisted);
         }
 
         menu.findItem(R.id.unblock_app_permanently).setVisible(isBlocked);
@@ -197,10 +197,10 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
             blocklist.unblockAppForMinutes(app.getUid(), 60);
         else if(id == R.id.unblock_app_8h)
             blocklist.unblockAppForMinutes(app.getUid(), 480);
-        else if(id == R.id.add_to_whitelist) {
+        else if(id == R.id.add_to_fw_whitelist) {
             whitelist.addApp(app.getUid());
             whitelistChanged = true;
-        } else if(id == R.id.remove_from_whitelist) {
+        } else if(id == R.id.remove_from_fw_whitelist) {
             whitelist.removeApp(app.getUid());
             whitelistChanged = true;
         } else

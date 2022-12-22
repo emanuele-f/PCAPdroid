@@ -349,11 +349,26 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
+static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     // NOTE: connections must be proxied as soon as the first packet arrives.
-    // Since we cannot reliably determine TLS connections with 1 packet, we must proxy all the TCP
-    // connections.
-    return pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP);
+    // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
+    // we must proxy all the TCP connections.
+    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP))
+        return false;
+
+    if(pd->tls_decryption.wl) {
+        zdtun_ip_t dst_ip = tuple->dst_ip;
+
+        // NOTE: domain matching only works if a prior DNS reply is seen (see ip_lru_find in pd_new_connection)
+        if(blacklist_match_ip(pd->tls_decryption.wl, &dst_ip, tuple->ipver) ||
+                blacklist_match_uid(pd->tls_decryption.wl, data->uid) ||
+                (data->info && blacklist_match_domain(pd->tls_decryption.wl, data->info))) {
+            data->decryption_whitelisted = true;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /* ******************************************************* */
@@ -547,7 +562,7 @@ int run_vpn(pcapdroid_t *pd) {
                 if(data->sent_pkts == 0) {
                     if(pd_check_port_map(conn))
                         /* port mapping applied */;
-                    else if(should_proxy(pd, tuple)) {
+                    else if(should_proxy(pd, tuple, data)) {
                         zdtun_conn_proxy(conn);
                         data->proxied = true;
                     }

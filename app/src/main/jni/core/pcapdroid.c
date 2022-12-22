@@ -565,7 +565,7 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
     if((pd->payload_mode == PAYLOAD_MODE_NONE) ||
        (pd->cb.dump_payload_chunk == NULL) ||
        (pkt->l7_len <= 0) ||
-       (pd->tls_decryption_enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
+       (pd->tls_decryption.enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
         return;
 
     if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
@@ -1056,6 +1056,14 @@ void pd_housekeeping(pcapdroid_t *pd) {
         pd->firewall.new_wl = NULL;
         iter_active_connections(pd, check_blocked_conn_cb);
     }
+
+    if(pd->tls_decryption.new_wl) {
+        // Load new whitelist
+        if(pd->tls_decryption.wl)
+            blacklist_destroy(pd->tls_decryption.wl);
+        pd->tls_decryption.wl = pd->tls_decryption.new_wl;
+        pd->tls_decryption.new_wl = NULL;
+    }
 }
 
 /* ******************************************************* */
@@ -1242,6 +1250,10 @@ int pd_run(pcapdroid_t *pd) {
         blacklist_destroy(pd->firewall.wl);
     if(pd->firewall.new_wl)
         blacklist_destroy(pd->firewall.new_wl);
+    if(pd->tls_decryption.wl)
+        blacklist_destroy(pd->tls_decryption.wl);
+    if(pd->tls_decryption.new_wl)
+        blacklist_destroy(pd->tls_decryption.new_wl);
 
     if(pd->malware_detection.enabled) {
         if(pd->malware_detection.reload_in_progress) {

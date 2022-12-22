@@ -167,7 +167,8 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->netd_block_missed << 11) |
+                               (data->decryption_whitelisted << 12) |
+                                    (data->netd_block_missed << 11) |
                                     (blocked << 10) |
                                     (data->blacklisted_domain << 9) |
                                     (data->blacklisted_ip << 8) |
@@ -233,7 +234,7 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
     u_int ifidx = (pd->root_capture ? data->root.ifidx : 0);
     u_int local_port = (!pd->root_capture ? data->vpn.local_port : conn_info->src_port);
-    bool mitm_decrypt = (pd->tls_decryption_enabled && data->proxied);
+    bool mitm_decrypt = (pd->tls_decryption.enabled && data->proxied);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
                                                 conn_info->ipver, conn_info->ipproto,
                                                 src_string, dst_string,
@@ -586,7 +587,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
-            .tls_decryption_enabled = (bool) getIntPref(env, vpn, "isTlsDecryptionEnabled"),
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
@@ -604,6 +604,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .firewall = {
                     .enabled = (bool) getIntPref(env, vpn, "firewallEnabled"),
+            },
+            .tls_decryption = {
+                    .enabled = (bool) getIntPref(env, vpn, "isTlsDecryptionEnabled"),
             }
     };
 
@@ -808,7 +811,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
 
 JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv *env, jclass clazz,
-                                                                         jobject whitelist) {
+         jobject whitelist) {
     pcapdroid_t *pd = global_pd;
     if(!pd) {
         log_e("NULL pd instance");
@@ -821,7 +824,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv
     }
 
     if(pd->firewall.new_wl != NULL) {
-        log_e("previous whitelist not loaded yet");
+        log_e("previous firewall whitelist not loaded yet");
         return false;
     }
 
@@ -855,7 +858,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv
 
 JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv *env, jclass clazz,
-                                                                         jobject whitelist) {
+        jobject whitelist) {
     pcapdroid_t *pd = global_pd;
     if(!pd) {
         log_e("NULL pd instance");
@@ -868,7 +871,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv 
     }
 
     if(pd->malware_detection.new_wl != NULL) {
-        log_e("previous whitelist not loaded yet");
+        log_e("previous malware whitelist not loaded yet");
         return false;
     }
 
@@ -888,6 +891,46 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv 
     log_d("reloadMalwareWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
 
     pd->malware_detection.new_wl = wl;
+    return true;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_reloadDecryptionWhitelist(JNIEnv *env,
+        jclass clazz, jobject whitelist) {
+    pcapdroid_t *pd = global_pd;
+    if(!pd) {
+        log_e("NULL pd instance");
+        return false;
+    }
+
+    if(!pd->tls_decryption.enabled) {
+        log_e("TLS decryption not enabled");
+        return false;
+    }
+
+    if(pd->tls_decryption.new_wl != NULL) {
+        log_e("previous decryption whitelist not loaded yet");
+        return false;
+    }
+
+    blacklist_t *wl = blacklist_init();
+    if(!wl) {
+        log_e("blacklist_init failed");
+        return false;
+    }
+
+    if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        blacklist_destroy(wl);
+        return false;
+    }
+
+    blacklists_stats_t stats;
+    blacklist_get_stats(wl, &stats);
+    log_d("reloadDecryptionWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
+
+    pd->tls_decryption.new_wl = wl;
     return true;
 }
 
