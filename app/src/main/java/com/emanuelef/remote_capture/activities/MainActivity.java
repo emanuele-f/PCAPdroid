@@ -93,6 +93,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private NavigationView mNavView;
     private CaptureHelper mCapHelper;
 
+    // helps detecting duplicate state reporting of STOPPED in MutableLiveData
+    private boolean mWasStarted = false;
+
     private static final String TAG = "Main";
 
     private static final int POS_STATUS = 0;
@@ -158,9 +161,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         CaptureService.observeStatus(this, serviceStatus -> {
             Log.d(TAG, "Service status: " + serviceStatus.name());
 
-            if (serviceStatus == CaptureService.ServiceStatus.STARTED)
+            if (serviceStatus == CaptureService.ServiceStatus.STARTED) {
                 appStateRunning();
-            else /* STOPPED */ {
+                mWasStarted = true;
+            } else if(mWasStarted) { /* STARTED -> STOPPED */
                 // The service may still be active (on premature native termination)
                 if (CaptureService.isServiceActive())
                     CaptureService.stopService();
@@ -179,7 +183,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     startExportSslkeylogfile();
 
                 appStateReady();
-            }
+                mWasStarted = false;
+            } else /* STOPPED -> STOPPED */
+                appStateReady();
         });
     }
 

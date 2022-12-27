@@ -1330,6 +1330,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     private void updateServiceStatus(ServiceStatus cur_status) {
         // notify the observers
+        // NOTE: new subscribers will receive the STOPPED status right after their registration
         serviceStatus.postValue(cur_status);
 
         if(cur_status == ServiceStatus.STARTED) {
