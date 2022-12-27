@@ -5,7 +5,6 @@ import android.net.Uri;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
-import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
 import java.io.IOException;

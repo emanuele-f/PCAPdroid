@@ -801,10 +801,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     stream.close();
                 }
 
-                String fname = Utils.getUriFname(requireContext(), mCsvFname);
+                Utils.UriStat stat = Utils.getUriStat(requireContext(), mCsvFname);
 
-                if(fname != null) {
-                    String msg = String.format(getString(R.string.file_saved_with_name), fname);
+                if(stat != null) {
+                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
                 } else
                     Utils.showToast(requireContext(), R.string.save_ok);
@@ -842,7 +842,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Log.w(TAG, "No app found to handle file selection");
 
             // Pick default path
-            Uri uri = Utils.getInternalStorageFile(requireContext(), fname);
+            Uri uri = Utils.getDownloadsUri(requireContext(), fname);
 
             if(uri != null) {
                 mCsvFname = uri;

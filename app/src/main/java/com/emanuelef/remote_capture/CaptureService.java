@@ -302,7 +302,6 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
-        mPcapUri = null;
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
@@ -311,10 +310,17 @@ public class CaptureService extends VpnService implements Runnable {
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
             mDumper = new HTTPServer(this, mSettings.http_server_port);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
-            if(mSettings.pcap_uri != null) {
+            if(!mSettings.pcap_uri.isEmpty())
                 mPcapUri = Uri.parse(mSettings.pcap_uri);
-                mDumper = new FileDumper(this, mPcapUri);
+            else {
+                String fname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this);
+                mPcapUri = Utils.getDownloadsUri(this, fname);
             }
+
+            if(mPcapUri == null)
+                return abortStart();
+
+            mDumper = new FileDumper(this, mPcapUri);
         } else if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
             InetAddress addr;
 
@@ -566,7 +572,9 @@ public class CaptureService extends VpnService implements Runnable {
         //INSTANCE = null;
 
         unregisterNetworkCallbacks();
-        mBlacklists.abortUpdate();
+
+        if(mBlacklists != null)
+            mBlacklists.abortUpdate();
 
         if(mCaptureThread != null)
             mCaptureThread.interrupt();
@@ -926,6 +934,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static Uri getPcapUri() {
         return ((INSTANCE != null) ? INSTANCE.mPcapUri : null);
+    }
+
+    public static boolean isUserDefinedPcapUri() {
+        return (INSTANCE == null || !INSTANCE.mSettings.pcap_uri.isEmpty());
     }
 
     public static long getBytes() {

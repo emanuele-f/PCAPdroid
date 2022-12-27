@@ -60,7 +60,6 @@ public class Prefs {
     public static final String PREF_APP_FILTER = "app_filter";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
-    public static final String PREF_PCAP_URI = "pcap_uri";
     public static final String PREF_IP_MODE = "ip_mode";
     public static final String PREF_APP_LANGUAGE = "app_language";
     public static final String PREF_APP_THEME = "app_theme";
@@ -185,7 +184,6 @@ public class Prefs {
                 && p.getBoolean(PREF_FIREWALL, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
-    public static String getPCAPUri(SharedPreferences p)          { return(p.getString(PREF_PCAP_URI, "")); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p)     { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
     public static boolean blockQuic(SharedPreferences p)          { return(p.getBoolean(PREF_BLOCK_QUIC, false)); }

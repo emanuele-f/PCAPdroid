@@ -30,6 +30,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -731,58 +732,53 @@ public class Utils {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
-    public static Uri getInternalStorageFile(Context context, String fname) {
+    // Get a URI to write a file into the downloads folder, into a folder named "PCAPdroid"
+    // If the file exists, it's overwritten
+    public static Uri getDownloadsUri(Context context, String fname) {
         ContentValues values = new ContentValues();
 
         //values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
+        String selectQuery = "";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // On Android Q+ cannot directly access the external dir. Must use RELATIVE_PATH instead.
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+            // Important: trailing "/" required for the selectQuery
+            String relPath = Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid/";
+            selectQuery = MediaStore.MediaColumns.RELATIVE_PATH + "='" + relPath + "' AND " +
+                MediaStore.MediaColumns.DISPLAY_NAME + "='" + fname + "'";
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    Log.w("getInternalStorageFile", "external storage permission was denied");
+                    Utils.showToastLong(context, R.string.external_storage_perm_required);
                     return(null);
                 }
             }
 
             // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
-            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fname;
-            Log.d("getInternalStorageFile", path);
+            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/PCAPdroid/" + fname;
+            Log.d(TAG, "getDownloadsUri: path=" + path);
+            selectQuery = MediaStore.MediaColumns.DATA + "='" + path + "'";
             values.put(MediaStore.MediaColumns.DATA, path);
         }
 
-        return context.getContentResolver().insert(
-                MediaStore.Files.getContentUri("external"), values);
-    }
+        Uri externalUri = MediaStore.Files.getContentUri("external");
 
-    public static String getUriFname(Context context, Uri uri) {
-        Cursor cursor;
-        String fname;
+        // if the file with given name already exists, overwrite it
+        try (Cursor cursor = context.getContentResolver().query(externalUri, new String[]{MediaStore.MediaColumns._ID}, selectQuery, null, null)) {
+            if ((cursor != null) && cursor.moveToFirst()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+                Uri existingUri = ContentUris.withAppendedId(externalUri, id);
 
-        try {
-            String []projection = {OpenableColumns.DISPLAY_NAME};
-            cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        } catch (Exception e) {
-            return null;
-        }
+                Log.d(TAG, "getDownloadsUri: overwriting file " + existingUri);
+                return existingUri;
+            }
+        } catch (Exception ignored) {}
 
-        if((cursor == null) || !cursor.moveToFirst())
-            return null;
-
-        try {
-            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            if(idx < 0)
-                return null;
-            fname = cursor.getString(idx);
-        } finally {
-            cursor.close();
-        }
-
-        return fname;
+        Uri newUri = context.getContentResolver().insert(externalUri, values);
+        Log.d(TAG, "getDownloadsUri: new file " + newUri);
+        return newUri;
     }
 
     public static boolean isRootAvailable() {
@@ -1461,5 +1457,61 @@ public class Utils {
         if(host.matches(".*[A-Z\\s?!=`@].*"))
             return false;
         return true;
+    }
+
+    public static String uriToFilePath(Context ctx, Uri uri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        try(Cursor cursor = ctx.getContentResolver().query(uri, proj, null, null, null)) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            if(cursor.moveToFirst())
+                return cursor.getString(column_index);
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    public static class UriStat {
+        public String name;
+        public long size;
+    }
+
+    public static UriStat getUriStat(Context ctx, Uri uri) {
+        String uri_str = uri.toString();
+        File uriFile = null;
+
+        // in some devices, cursor.isNull(sizeIndex) is true, which causes size to be 0
+        // try to resolve the original path and access it as a file
+        String fpath = uriToFilePath(ctx, uri);
+        if(fpath != null) {
+            Log.d(TAG, "getUriStat: resolved to file " + fpath);
+            uriFile = new File(fpath);
+        } else if(uri_str.startsWith("file://"))
+            uriFile = new File(uri_str.substring(7));
+
+        if((uriFile != null) && (uriFile.exists())) {
+            // retrieve via file
+            UriStat info = new UriStat();
+            info.name = uriFile.getName();
+            info.size = uriFile.length();
+            return info;
+        }
+
+        // retrieve via content uri
+        // https://developer.android.com/training/secure-file-sharing/retrieve-info.html#RetrieveFileInfo
+        try(Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null)) {
+            if((cursor == null) || !cursor.moveToFirst())
+                return null;
+
+            UriStat info = new UriStat();
+
+            int sizeIndex = cursor.getColumnIndexOrThrow(OpenableColumns.SIZE);
+            int idx = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+            info.name = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
+            info.size = !cursor.isNull(sizeIndex) ? cursor.getLong(sizeIndex) : -1;
+
+            return info;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

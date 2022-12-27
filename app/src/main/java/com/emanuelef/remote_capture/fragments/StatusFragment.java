@@ -23,6 +23,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -273,10 +274,12 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             info = getString(R.string.pcap_file_info);
 
             if(mActivity != null) {
-                String fname = mActivity.getPcapFname();
-
-                if(fname != null)
-                    info = fname;
+                Uri pcap_uri = CaptureService.getPcapUri();
+                if(pcap_uri != null) {
+                    Utils.UriStat uri_stat = Utils.getUriStat(mActivity, pcap_uri);
+                    if(uri_stat != null)
+                        info = uri_stat.name;
+                }
             }
             break;
         case UDP_EXPORTER:

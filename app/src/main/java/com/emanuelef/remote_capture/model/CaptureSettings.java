@@ -23,7 +23,8 @@ public class CaptureSettings implements Serializable {
     public boolean block_quic;
     public boolean auto_block_private_dns;
     public String capture_interface;
-    public String pcap_uri;
+    public String pcap_uri = "";
+    public String pcap_name = "";
     public int snaplen = 0;
     public int max_pkts_per_flow = 0;
     public int max_dump_size = 0;
@@ -42,7 +43,6 @@ public class CaptureSettings implements Serializable {
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         capture_interface = Prefs.getCaptureInterface(prefs);
-        pcap_uri = Prefs.getPCAPUri(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
         block_quic = Prefs.blockQuic(prefs);
@@ -63,7 +63,8 @@ public class CaptureSettings implements Serializable {
         root_capture = getBool(intent, Prefs.PREF_ROOT_CAPTURE, false);
         pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
-        pcap_uri = getString(intent, Prefs.PREF_PCAP_URI, "");
+        pcap_uri = getString(intent, "pcap_uri", "");
+        pcap_name = getString(intent, "pcap_name", "");
         snaplen = getInt(intent, Prefs.PREF_SNAPLEN, 0);
         max_pkts_per_flow = getInt(intent, Prefs.PREF_MAX_PKTS_PER_FLOW, 0);
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);

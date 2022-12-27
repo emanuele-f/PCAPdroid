@@ -447,4 +447,5 @@
     <string name="decryption_whitelist_rules">Decryption whitelist rules</string>
     <string name="decryption_whitelist_help">List of rules to exclude specific connections from the TLS decryption. Useful to avoid breaking apps/SDKs employing certificate pinning. Host matching only works if a prior DNS reply is seen</string>
     <string name="decryption_whitelist">Decryption whitelist</string>
+    <string name="external_storage_perm_required">The external storage permission is required</string>
 </resources>

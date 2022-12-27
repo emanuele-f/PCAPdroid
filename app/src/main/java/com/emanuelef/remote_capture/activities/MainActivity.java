@@ -21,12 +21,11 @@ package com.emanuelef.remote_capture.activities;
 
 import android.Manifest;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.UriPermission;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 
 import androidx.activity.result.ActivityResult;
@@ -50,8 +49,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.provider.OpenableColumns;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -81,7 +78,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
@@ -91,14 +87,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private ViewPager2 mPager;
     private AppState mState;
     private AppStateListener mListener;
-    private Uri mPcapUri;
     private File mKeylogFile;
-    private String mPcapFname;
     private DrawerLayout mDrawer;
     private SharedPreferences mPrefs;
     private NavigationView mNavView;
     private CaptureHelper mCapHelper;
-    private boolean usingMediaStore;
 
     private static final String TAG = "Main";
 
@@ -116,8 +109,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String FIREWALL_DOCS_URL = PAID_FEATURES_URL + "#51-firewall";
     public static final String MALWARE_DETECTION_DOCS_URL = PAID_FEATURES_URL + "#52-malware-detection";
 
-    private final ActivityResultLauncher<Intent> pcapFileLauncher =
-            registerForActivityResult(new StartActivityForResult(), this::pcapFileResult);
     private final ActivityResultLauncher<Intent> sslkeyfileExportLauncher =
             registerForActivityResult(new StartActivityForResult(), this::sslkeyfileExportResult);
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -152,7 +143,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mPcapUri = CaptureService.isServiceActive() ? CaptureService.getPcapUri() : null;
         mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {
             if(!success) {
@@ -181,10 +171,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
-                if((mPcapUri != null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-                    showPcapActionDialog(mPcapUri);
-                    mPcapUri = null;
-                    mPcapFname = null;
+                if((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                    showPcapActionDialog();
 
                     // will export the keylogfile after saving/sharing pcap
                 } else if(mKeylogFile != null)
@@ -274,22 +262,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void checkPermissions() {
-        String fname = "test.pcap";
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_TITLE, fname);
-
-        if(!Utils.supportsFileDialog(this, intent)) {
-            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    // Needed to write file on devices which do not support ACTION_CREATE_DOCUMENT
-                    if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        try {
-                            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                        } catch (ActivityNotFoundException e) {
-                            Utils.showToastLong(this, R.string.no_intent_handler_found);
-                        }
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Needed to write PCAP files
+                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    try {
+                        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    } catch (ActivityNotFoundException e) {
+                        Utils.showToastLong(this, R.string.no_intent_handler_found);
                     }
                 }
             }
@@ -617,54 +597,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return super.onOptionsItemSelected(item);
     }
 
-    private void pcapFileResult(final ActivityResult result) {
-        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-            startWithPcapFile(result.getData().getData(),
-                    (result.getData().getFlags() & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0);
-        } else {
-            mPcapUri = null;
-        }
-    }
-
-    private void startWithPcapFile(Uri uri, boolean persistable) {
-        mPcapUri = uri;
-        mPcapFname = null;
-        boolean hasPermission = false;
-
-        /* FLAG_GRANT_READ_URI_PERMISSION required for showPcapActionDialog (e.g. when auto-started at boot) */
-        int peristMode = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-
-        // Revoke the previous permissions
-        for(UriPermission permission : getContentResolver().getPersistedUriPermissions()) {
-            if(!permission.getUri().equals(uri)) {
-                Log.d(TAG, "Releasing URI permission: " + permission.getUri().toString());
-                getContentResolver().releasePersistableUriPermission(permission.getUri(), peristMode);
-            } else
-                hasPermission = true;
-        }
-
-        /* Request a persistent permission to write this URI without invoking the system picker.
-         * This is needed to write to the URI when invoking PCAPdroid from other apps via Intents
-         * or when starting the capture at boot. */
-        if(persistable && !hasPermission) {
-            try {
-                getContentResolver().takePersistableUriPermission(uri, peristMode);
-            } catch (SecurityException e) {
-                // This should never occur
-                Log.e(TAG, "Could not get PersistableUriPermission");
-                e.printStackTrace();
-                persistable = false;
-            }
-        }
-
-        // Save the URI as a preference
-        mPrefs.edit().putString(Prefs.PREF_PCAP_URI, mPcapUri.toString()).apply();
-
-        // NOTE: part of app_api.md
-        Log.d(TAG, "PCAP URI to write [persistable=" + persistable + "]: " + mPcapUri.toString());
-        startCapture();
-    }
-
     private void initAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
@@ -686,11 +618,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
             Intent intent = new Intent(this, MitmSetupWizard.class);
             startActivity(intent);
-            return;
-        }
-
-        if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-            openFileSelector();
             return;
         }
 
@@ -730,77 +657,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return false;
     }
 
-    private void openFileSelector() {
-        boolean noFileDialog = false;
-        String fname = Utils.getUniquePcapFileName(this);
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_TITLE, fname);
+    public void showPcapActionDialog() {
+        Log.d(TAG, "showPcapActionDialog called");
 
-        if(Utils.supportsFileDialog(this, intent)) {
-            try {
-                pcapFileLauncher.launch(intent);
-            } catch (ActivityNotFoundException e) {
-                noFileDialog = true;
-            }
-        } else
-            noFileDialog = true;
+        if(CaptureService.isUserDefinedPcapUri())
+            return;
 
-        if(noFileDialog) {
-            Log.w(TAG, "No app found to handle file selection");
+        Uri pcapUri = CaptureService.getPcapUri();
+        if(pcapUri == null)
+            return;
 
-            // Pick default path
-            Uri uri = Utils.getInternalStorageFile(this, fname);
-
-            if(uri != null) {
-                usingMediaStore = true;
-
-                // NOTE: cannot be persisted as it was not invoked via Intent
-                startWithPcapFile(uri, false);
-            } else
-                Utils.showToastLong(this, R.string.no_activity_file_selection);
-        }
-    }
-
-    public void showPcapActionDialog(Uri pcapUri) {
-        Cursor cursor;
-
-        Log.d(TAG, "showPcapActionDialog: " + pcapUri.toString());
-
-        try {
-            cursor = getContentResolver().query(pcapUri, null, null, null, null);
-        } catch (Exception e) {
+        Utils.UriStat pcapStat = Utils.getUriStat(this, pcapUri);
+        if((pcapStat == null) || (pcapStat.size == 0)) {
+            if(pcapStat != null)
+                deletePcapFile(pcapUri); // empty file, delete
             return;
         }
 
-        if((cursor == null) || !cursor.moveToFirst())
-            return;
-
-        int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-        long file_size = !cursor.isNull(sizeIndex) ? cursor.getLong(sizeIndex) : -1;
-        int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-        String fname = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
-        cursor.close();
-
-        // If file is empty, delete it
-        // NOTE: the user may want to get a PersistableUriPermission, so don't auto delete the file
-        /*if(file_size == 0) {
-            Log.d(TAG, "PCAP file is empty, deleting");
-
-            try {
-                if(usingMediaStore)
-                    getContentResolver().delete(pcapUri, null, null);
-                else
-                    DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
-            } catch (FileNotFoundException | UnsupportedOperationException e) {
-                e.printStackTrace();
-            }
-
-            return;
-        }*/
-
-        String message = String.format(getResources().getString(R.string.pcap_file_action), fname, Utils.formatBytes(file_size));
+        String message = String.format(getResources().getString(R.string.pcap_file_action), pcapStat.name, Utils.formatBytes(pcapStat.size));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage(message);
@@ -809,28 +683,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent sendIntent = new Intent(Intent.ACTION_SEND);
             sendIntent.setType("application/cap");
             sendIntent.putExtra(Intent.EXTRA_STREAM, pcapUri);
+            sendIntent.setClipData(ClipData.newRawUri("", pcapUri));
+            sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
             Utils.startActivity(this, Intent.createChooser(sendIntent, getResources().getString(R.string.share)));
         });
-        builder.setNegativeButton(R.string.delete, (dialog, which) -> {
-            Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());
-            boolean deleted = false;
-
-            try {
-                if(usingMediaStore)
-                    deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
-                else
-                    deleted = DocumentsContract.deleteDocument(getContentResolver(), pcapUri);
-            } catch (FileNotFoundException | UnsupportedOperationException | SecurityException e) {
-                e.printStackTrace();
-            }
-
-            if(!deleted)
-                Utils.showToast(MainActivity.this, R.string.delete_error);
-
-            dialog.cancel();
-        });
-        builder.setNeutralButton(R.string.ok, (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton(R.string.delete, (dialog, which) -> deletePcapFile(pcapUri));
+        builder.setNeutralButton(R.string.ok, (dialog, which) -> {});
         builder.setOnDismissListener(dialogInterface -> {
+            // also export the keylog
             if(mKeylogFile != null)
                 startExportSslkeylogfile();
         });
@@ -838,35 +699,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         builder.create().show();
     }
 
-    public AppState getState() {
-        return(mState);
-    }
+    private void deletePcapFile(Uri pcapUri) {
+        Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());
+        boolean deleted = false;
 
-    public String getPcapFname() {
-        if((mState == AppState.running) && (mPcapUri != null)) {
-            if(mPcapFname != null)
-                return mPcapFname;
-
-            Cursor cursor;
-
-            try {
-                cursor = getContentResolver().query(mPcapUri, null, null, null, null);
-            } catch (Exception e) {
-                return null;
-            }
-
-            if((cursor == null) || !cursor.moveToFirst())
-                return null;
-
-            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            String fname = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
-            cursor.close();
-
-            mPcapFname = fname;
-            return fname;
+        try {
+            deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
+        } catch (UnsupportedOperationException | SecurityException e) {
+            e.printStackTrace();
         }
 
-        return null;
+        if(!deleted)
+            Utils.showToast(MainActivity.this, R.string.delete_error);
+    }
+
+    public AppState getState() {
+        return(mState);
     }
 
     private void startExportSslkeylogfile() {
@@ -889,7 +737,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToastLong(this, R.string.export_failed);
             }
         }
-
         mKeylogFile = null;
     }
 }
