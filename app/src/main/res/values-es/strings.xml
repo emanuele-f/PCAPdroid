@@ -23,7 +23,7 @@
     <string name="duration">Duración</string>
     <string name="http_server">Servidor HTTP</string>
     <string name="udp_exporter">Exportador UDP</string>
-    <string name="no_dump">Sin volcado (dump)</string>
+    <string name="no_dump">Sin descarga</string>
     <string name="no_dump_info">El trafico no será guardado</string>
     <string name="http_server_info">Inicia el servidor HTTP para la descarga de PCAP</string>
     <string name="udp_exporter_info">Envia el PCAP al colector remoto UDP</string>
@@ -216,7 +216,7 @@
     <string name="close_nav_drawer">Cerrar cajón de navegación</string>
     <string name="no_intent_handler_found">No se encontró ninguna aplicación para realizar esta acción</string>
     <string name="billing_failure">No se pudo conectar con Google Play. Por favor reintenta más tarde</string>
-    <string name="show_only_cleartext">Conexiones al descubierto</string>
+    <string name="show_only_cleartext">Conexiones de texto sin formato</string>
     <string name="allowed_connection_filter">Permitido</string>
     <string name="firewall_filter">Cortafuegos: %1$s</string>
     <string name="phone_app">Teléfono</string>
@@ -293,7 +293,7 @@
     <string name="warn_no_app_data">No se han intercambiado datos</string>
     <string name="waiting_application_data">Esperando datos</string>
     <string name="printable_text">Texto mostrable</string>
-    <string name="hexdump">Hexdump</string>
+    <string name="hexdump">formato hexadecimal</string>
     <string name="geolocation">Geolocalización</string>
     <string name="downloading">Descargando…</string>
     <string name="built_on">Montada en: %1$s</string>
@@ -311,7 +311,7 @@
     <string name="keep_action">Mantener</string>
     <string name="discard_action">Descartar</string>
     <string name="rules_delete_confirm">¿Borrar las reglas seleccionadas\?</string>
-    <string name="blocklist">Blocklist</string>
+    <string name="blocklist">Lista de bloqueos</string>
     <string name="num_configured_rules">Reglas configuradas</string>
     <string name="connections_blocked">Conexiones bloqueadas</string>
     <string name="last_firewall_block">Último bloqueo</string>
@@ -343,7 +343,7 @@
     <string name="paid_feature">Característica de pago</string>
     <string name="firewall_purchase_msg">Compra la característica <i>%1$s</i> para comenzar a bloquear conexiones</string>
     <string name="string_http_response">Respuesta HTTP</string>
-    <string name="payload">Payload</string>
+    <string name="payload">Contenido</string>
     <string name="tx_direction">TX</string>
     <string name="full_payload">Payload completo</string>
     <string name="geolocation_summary">Muestra el país y el ASN por medio de una búsqueda offline</string>
@@ -379,4 +379,31 @@
     <string name="requesting_unlock_token">Solicitando un unlock token, por favor, espera</string>
     <string name="show_action">Mostrar</string>
     <string name="unlock_token_msg1">Este es tu token de desbloqueo. Guárdalo, lo necesitarás para generar tus códigos de licencia <a href="%1$s"/></string>
+    <string name="heap_usage">Uso del montón</string>
+    <string name="vpn_lockdown_notice">Para evitar que las aplicaciones accedan a Internet cuando PCAPdroid no se está ejecutando (por ejemplo, después de reiniciar), puede configurar PCAPdroid como una VPN siempre activa en modo de bloqueo.
+\n
+\n¿Quieres abrir la configuración de VPN ahora\?</string>
+    <string name="app_intro_traffic_inspection">La inspección de solicitudes HTTP, respuestas y datos sin procesar es muy sencilla gracias a los decodificadores integrados
+\n
+\n¿Tienes una conexión encriptada\? Puede habilitar el <a href="%1$s">descifrado de TLS</a> para ver los datos descifrados</string>
+    <string name="app_intro_traffic_dump">PCAPdroid tiene <a href="%1$s">varios métodos</a> para guardar el tráfico en formato PCAP y realizar análisis posteriores
+\n
+\nCon la <a href="%2$s">opción de tráiler</a>, puede agregar nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
+    <string name="access_paid_features_msg">Consulta la <a href="%1$s">guía del usuario</a> para saber cómo acceder a las funciones de pago</string>
+    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una característica experimental. Aquí hay una lista de errores conocidos:
+\n
+\n - En PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original
+\n - Después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones
+\n - Si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux)
+\n - Es posible que esta función no funcione en Android 12 y superior
+\n - Si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
+    <string name="app_intro_privacy_msg">La aplicación no implementa ninguna funcionalidad de seguimiento, análisis o conexión a servicios externos.
+\n
+\n¿Como puedo estar seguro\? Consulta la <a href="%1$s">política de privacidad</a> y el <a href="%2$s">código fuente</a></string>
+    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puede bloquear fácilmente el acceso a Internet para aplicaciones y dominios específicos.
+\n
+\nCombine esto con la vista de tráfico incorporada y tendrá la herramienta perfecta para proteger su privacidad</string>
+    <string name="app_intro_malware_detection">Aumente la seguridad de su dispositivo con la característica de <a href="%1$s">Detección de malware</a>
+\n
+\nUsando la última lista negra, puede detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>
 </resources>
