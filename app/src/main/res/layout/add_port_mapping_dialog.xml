@@ -14,7 +14,8 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlinedDropdown">
 
             <AutoCompleteTextView
                 android:id="@+id/proto"
@@ -28,7 +29,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/original_port"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/orig_port"
@@ -43,7 +45,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:hint="@string/destination_ip"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/redirect_ip"
@@ -57,7 +60,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/destination_port"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/redirect_port"

@@ -18,7 +18,8 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             tools:visibility="visible"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlinedDropdown">
 
             <androidx.appcompat.widget.AppCompatAutoCompleteTextView
                 android:id="@+id/combo_text"
@@ -36,7 +37,8 @@
             android:visibility="gone"
             tools:visibility="visible"
             tools:hint="Text"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox" >
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/text_value"

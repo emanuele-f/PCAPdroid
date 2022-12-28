@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture.views;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +26,9 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.model.MatchList;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -74,7 +74,7 @@ public class RuleAddDialog implements View.OnClickListener {
                 .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
                 .show();
         mDialog.setCanceledOnTouchOutside(false);
-        mDialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+        mDialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 .setOnClickListener(this);
     }
 
