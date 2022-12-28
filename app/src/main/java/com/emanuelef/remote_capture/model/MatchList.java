@@ -190,11 +190,13 @@ public class MatchList {
         }
     }
 
-    private boolean deserialize(JsonObject object) {
+    private int deserialize(JsonObject object, int max_rules) {
+        int num_rules = 0;
+
         try {
             JsonArray ruleArray = object.getAsJsonArray("rules");
             if(ruleArray == null)
-                return false;
+                return -1;
 
             clear(false);
 
@@ -247,16 +249,21 @@ public class MatchList {
                     }
                 }
 
-                addRule(new Rule(type, val), false);
+                if(addRule(new Rule(type, val), false)) {
+                    num_rules += 1;
+
+                    if((max_rules > 0) && (num_rules >= max_rules))
+                        break;
+                }
             }
 
             notifyListeners();
         } catch (IllegalArgumentException | ClassCastException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
 
-        return true;
+        return num_rules;
     }
 
     public boolean addIp(String ip)       { return addRule(new Rule(RuleType.IP, ip)); }
@@ -440,17 +447,21 @@ public class MatchList {
         return serialized;
     }
 
-    public boolean fromJson(String json_str) {
+    public int fromJson(String json_str, int max_rules) {
         try {
             JsonElement el = JsonParser.parseString(json_str);
             if(!el.isJsonObject())
-              return false;
+              return -1;
 
-            return deserialize(el.getAsJsonObject());
+            return deserialize(el.getAsJsonObject(), max_rules);
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
+    }
+
+    public int fromJson(String json_str) {
+        return fromJson(json_str, -1);
     }
 
     // can be used by a subclass to exempt specific app (e.g. Blocklist grace apps)

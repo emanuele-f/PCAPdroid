@@ -77,6 +77,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     private boolean mIsOwnUpdate;
     private ActionMode mActionMode;
     private AppSelectDialog mAppSelDialog;
+    private int MAX_RULES_BEFORE_WARNING = 5000;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 
@@ -460,15 +461,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
             try(InputStream in = context.getContentResolver().openInputStream(result.getData().getData())) {
                 try(Scanner s = new Scanner(in).useDelimiter("\\A")) {
                     String data = s.hasNext() ? s.next() : "";
-                    MatchList rules = new MatchList(context, "");
-
-                    if(rules.fromJson(data) && !rules.isEmpty()) {
-                        if(!mList.isEmpty())
-                            confirmImport(rules);
-                        else
-                            importRules(rules);
-                    } else
-                        Utils.showToastLong(context, R.string.invalid_backup);
+                    importRulesData(data, true);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -477,9 +470,46 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         }
     }
 
+    private void importRulesData(String data, boolean limit_check) {
+        Context context = requireContext();
+        MatchList rules = new MatchList(context, "");
+
+        int num_rules = rules.fromJson(data, limit_check ? MAX_RULES_BEFORE_WARNING : -1);
+        if((num_rules <= 0) || rules.isEmpty()) {
+            Utils.showToastLong(context, R.string.invalid_backup);
+            return;
+        }
+
+        if(limit_check && (num_rules >= MAX_RULES_BEFORE_WARNING)) {
+            confirmLoadManyRules(data);
+            return;
+        }
+
+        // go on and import
+        if(!mList.isEmpty())
+            confirmImport(rules);
+        else
+            importRules(rules);
+    }
+
+    private void confirmLoadManyRules(String data) {
+        Context context = requireContext();
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.warning);
+        builder.setMessage(R.string.many_rules_warning);
+        builder.setCancelable(true);
+        builder.setPositiveButton(R.string.import_action, (dialog, which) -> {
+            importRulesData(data, false);
+        });
+        builder.setNegativeButton(R.string.cancel_action, (dialog, which) -> {});
+
+        final AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(false);
+        alert.show();
+    }
+
     private void confirmImport(MatchList rules) {
         Context context = requireContext();
-
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.import_action);
         builder.setMessage(R.string.rules_merge_msg);

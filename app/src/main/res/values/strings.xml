@@ -448,4 +448,5 @@
     <string name="decryption_whitelist_help">List of rules to exclude specific connections from the TLS decryption. Useful to avoid breaking apps/SDKs employing certificate pinning. Host matching only works if a prior DNS reply is seen</string>
     <string name="decryption_whitelist">Decryption whitelist</string>
     <string name="external_storage_perm_required">The external storage permission is required</string>
+    <string name="many_rules_warning">You are trying to import many rules, which could make the app unresponsive during some interactions. Do you really want to continue?</string>
 </resources>
