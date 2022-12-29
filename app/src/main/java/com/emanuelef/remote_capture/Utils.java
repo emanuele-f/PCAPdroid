@@ -757,7 +757,15 @@ public class Utils {
             }
 
             // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
-            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/PCAPdroid/" + fname;
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File folder = new File(downloadsDir + "/PCAPdroid");
+            try {
+                folder.mkdirs();
+            } catch (Exception ignored) {}
+            if(!folder.exists())
+                folder = downloadsDir;
+
+            String path = folder + "/" + fname;
             Log.d(TAG, "getDownloadsUri: path=" + path);
             selectQuery = MediaStore.MediaColumns.DATA + "='" + path + "'";
             values.put(MediaStore.MediaColumns.DATA, path);
