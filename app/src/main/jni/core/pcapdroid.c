@@ -21,7 +21,7 @@
 #include <assert.h> // NOTE: look for "assertion" in logcat
 #include <pthread.h>
 #include "pcapdroid.h"
-#include "pcap_utils.h"
+#include "pcap_dump.h"
 #include "common/utils.h"
 #include "pcapd/pcapd.h"
 #include "ndpi_protocol_ids.h"
@@ -953,23 +953,9 @@ static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tupl
 
 /* ******************************************************* */
 
-static void sendPcapDump(pcapdroid_t *pd) {
-    if(pd->pcap_dump.buffer_idx == 0)
-        return;
-
-    if(pd->cb.send_pcap_dump)
-        pd->cb.send_pcap_dump(pd);
-
-    pd->pcap_dump.buffer_idx = 0;
-    pd->pcap_dump.last_dump_ms = pd->now_ms;
-}
-
-/* ******************************************************* */
-
-static void stop_pcap_dump(pcapdroid_t *pd){
-    sendPcapDump(pd);
-    pd_free(pd->pcap_dump.buffer);
-    pd->pcap_dump.buffer = NULL;
+static void stop_pcap_dump(pcapdroid_t *pd) {
+    pcap_destroy_dumper(pd->pcap_dump.dumper);
+    pd->pcap_dump.dumper = NULL;
 
     if(pd->cb.stop_pcap_dump)
         pd->cb.stop_pcap_dump(pd);
@@ -998,8 +984,8 @@ void pd_housekeeping(pcapdroid_t *pd) {
               pd->now_ms - last_connections_dump,
               pd->new_conns.cur_items, pd->conns_updates.cur_items);*/
 
-        if((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
-            if(pd->cb.send_connections_dump)
+        if ((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
+            if (pd->cb.send_connections_dump)
                 pd->cb.send_connections_dump(pd);
             conns_clear(pd, &pd->new_conns, false);
             conns_clear(pd, &pd->conns_updates, false);
@@ -1008,10 +994,9 @@ void pd_housekeeping(pcapdroid_t *pd) {
         last_connections_dump = pd->now_ms;
         next_connections_dump = pd->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
         netd_resolve_waiting = 0;
-    } else if ((pd->pcap_dump.buffer_idx > 0)
-               && (pd->now_ms - pd->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
-        sendPcapDump(pd);
-    } else if(pd->malware_detection.enabled) {
+    } else if(pd->pcap_dump.dumper && pcap_check_export(pd->pcap_dump.dumper))
+        ;
+    else if(pd->malware_detection.enabled) {
         // Malware detection
         if(pd->malware_detection.reload_in_progress) {
             if(pd->malware_detection.reload_done) {
@@ -1082,16 +1067,6 @@ void pd_refresh_time(pcapdroid_t *pd) {
 
 /* ******************************************************* */
 
-void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, int uid) {
-    memset(cdata, 0, sizeof(*cdata));
-
-    cdata->magic = htonl(PCAPDROID_TRAILER_MAGIC);
-    cdata->uid = htonl(uid);
-    get_appname_by_uid(pd, uid, cdata->appname, sizeof(cdata->appname));
-}
-
-/* ******************************************************* */
-
 /* Process the packet (e.g. perform DPI) and fill the packet context. */
 void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
                        pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx) {
@@ -1119,29 +1094,11 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
 /* ******************************************************* */
 
 void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid) {
-    if(!pd->pcap_dump.buffer)
+    if(!pd->pcap_dump.dumper)
         return;
 
-    int rec_size = pcap_rec_size(pd->pcap_dump.snaplen, pktlen);
-    if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size) {
-        // Flush the buffer
-        sendPcapDump(pd);
-    }
-
-    if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size)
-        log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
-              JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
-    else if((pd->pcap_dump.max_dump_size > 0) &&
-            ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
-        log_i("Max dump size reached, stop the dump");
+    if(!pcap_dump_packet(pd->pcap_dump.dumper, pktbuf, pktlen, tv, uid))
         stop_pcap_dump(pd);
-    } else {
-        pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
-                      pktbuf, pktlen, tv, uid);
-
-        pd->pcap_dump.buffer_idx += rec_size;
-        pd->pcap_dump.tot_size += rec_size;
-    }
 }
 
 /* ******************************************************* */
@@ -1170,7 +1127,7 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
     data->update_type |= CONN_UPDATE_STATS;
     pd_notify_connection_update(pd, pctx->tuple, pctx->data);
 
-    if((pd->pcap_dump.buffer) &&
+    if((pd->pcap_dump.dumper) &&
             ((pd->pcap_dump.max_pkts_per_flow <= 0) ||
                 ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow)))
         pd_dump_packet(pd, pkt->buf, pkt->len, &pctx->tv, pctx->data->uid);
@@ -1203,16 +1160,18 @@ int pd_run(pcapdroid_t *pd) {
     }
 
     if(pd->pcap_dump.enabled) {
-        pd->pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
-        pd->pcap_dump.buffer_idx = 0;
         int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
+        // use the snaplen provided by the API
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
             pd->pcap_dump.snaplen = max_snaplen;
 
-        if(!pd->pcap_dump.buffer) {
-            log_f("malloc(pcap_dump.buffer) failed with code %d/%s",
-                        errno, strerror(errno));
+        // TODO pcapng
+        pd->pcap_dump.dumper = pcap_new_dumper(pd->pcap_dump.trailer_enabled ? PCAP_DUMP_WITH_TRAILER : PCAP_DUMP,
+                                               pd->pcap_dump.snaplen, pd->pcap_dump.max_dump_size, pd->cb.send_pcap_dump,
+                                               pd);
+        if(!pd->pcap_dump.dumper) {
+            log_f("Could not initialize the PCAP dumper");
             running = false;
         }
     }
@@ -1277,7 +1236,7 @@ int pd_run(pcapdroid_t *pd) {
     ndpi_exit_detection_module(pd->ndpi);
 #endif
 
-    if(pd->pcap_dump.buffer)
+    if(pd->pcap_dump.dumper)
         stop_pcap_dump(pd);
 
     uid_to_app_t *e, *tmp;

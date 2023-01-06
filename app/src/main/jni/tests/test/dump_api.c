@@ -28,8 +28,8 @@
 /* Tests that packets are correctly truncated to honor the "snaplen"
  * dump parameter. */
 static void test_snaplen() {
-  pcap_hdr_s hdr;
-  pcaprec_hdr_s rec;
+  pcap_hdr_t hdr;
+  pcap_rec_t rec;
   pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
   bool at_least_one_pkt_truncated = false;
 
@@ -61,8 +61,8 @@ static void test_snaplen() {
 /* Tests that at most "max_pkts_per_flow" packets are dumped for each
  * flow. */
 static void max_pkts_per_flow() {
-  pcap_hdr_s hdr;
-  pcaprec_hdr_s rec;
+  pcap_hdr_t hdr;
+  pcap_rec_t rec;
   u_char *buf;
   int num_pkts = 0;
   pcapdroid_t *pd = pd_init_test(PCAP_PATH "/two_flows.pcap");
@@ -117,8 +117,8 @@ static void max_pkts_per_flow() {
 
 /* Tests that at most "max_dump_size" bytes are dumped. */
 static void max_dump_size() {
-  pcap_hdr_s hdr;
-  pcaprec_hdr_s rec;
+  pcap_hdr_t hdr;
+  pcap_rec_t rec;
   pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
   u_int dump_size;
 

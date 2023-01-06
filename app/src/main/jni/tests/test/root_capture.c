@@ -25,8 +25,8 @@
 
 /* Tests that invalid/unsupported IP packets are still dumped by PCAPdroid */
 static void invalid_pkts() {
-  pcap_hdr_s hdr;
-  pcaprec_hdr_s rec;
+  pcap_hdr_t hdr;
+  pcap_rec_t rec;
   pcapdroid_t *pd = pd_init_test(PCAP_PATH "/invalid_or_unsupported.pcap");
   int num_pkts = 0;
 

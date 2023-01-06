@@ -8,7 +8,7 @@ add_library(capture SHARED
         ndpi_config.c
         crc32.c
         blacklist.c
-        pcap_utils.c
+        pcap_dump.c
         log_writer.c
         port_map.c
         jni_impl.c)

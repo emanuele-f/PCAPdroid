@@ -21,7 +21,6 @@
 
 #include <pthread.h>
 #include "pcapdroid.h"
-#include "pcap_utils.h"
 #include "common/utils.h"
 #include "log_writer.h"
 #include "port_map.h"
@@ -92,7 +91,8 @@ static void sendStatsDump(pcapdroid_t *pd) {
 
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
                            allocs_summary,
-                           capstats->sent_bytes, capstats->rcvd_bytes, pd->pcap_dump.tot_size,
+                           capstats->sent_bytes, capstats->rcvd_bytes,
+                           pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0,
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
                            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
@@ -109,16 +109,16 @@ static void sendStatsDump(pcapdroid_t *pd) {
 
 /* ******************************************************* */
 
-static void sendPcapDump(pcapdroid_t *pd) {
+static void sendPcapDump(struct pcapdroid *pd, int8_t *buf, int dump_size) {
     JNIEnv *env = pd->env;
 
     //log_d("Exporting a %d B PCAP buffer", pd->pcap_dump.buffer_idx);
 
-    jbyteArray barray = (*env)->NewByteArray(env, pd->pcap_dump.buffer_idx);
+    jbyteArray barray = (*env)->NewByteArray(env, dump_size);
     if(jniCheckException(env))
         return;
 
-    (*env)->SetByteArrayRegion(env, barray, 0, pd->pcap_dump.buffer_idx, pd->pcap_dump.buffer);
+    (*env)->SetByteArrayRegion(env, barray, 0, dump_size, buf);
     (*env)->CallVoidMethod(env, pd->capture_service, mids.dumpPcapData, barray);
     jniCheckException(env);
 
@@ -590,6 +590,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
+                    .trailer_enabled = (bool)getIntPref(env, vpn, "addPcapdroidTrailer"),
                     .snaplen = getIntPref(env, vpn, "getSnaplen"),
                     .max_pkts_per_flow = getIntPref(env, vpn, "getMaxPktsPerFlow"),
                     .max_dump_size = getIntPref(env, vpn, "getMaxDumpSize"),
@@ -612,9 +613,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
 
     if(pd.socks5.enabled)
         getSocks5ProxyAuth(&pd);
-
-    // Enable or disable the PCAPdroid trailer
-    pcap_set_pcapdroid_trailer((bool)getIntPref(env, vpn, "addPcapdroidTrailer"));
 
     if(!pd.root_capture)
         pd.vpn.tunfd = tunfd;
@@ -698,16 +696,25 @@ Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jcla
 
 JNIEXPORT jbyteArray JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jclass clazz) {
-    struct pcap_hdr_s pcap_hdr;
+    pcapdroid_t *pd = global_pd;
+    if(!pd || !pd->pcap_dump.dumper) {
+        log_e("NULL pd/dumper instance");
+        return false;
+    }
 
-    int snaplen = global_pd ? global_pd->pcap_dump.snaplen : 65535;
-    pcap_build_hdr(snaplen, &pcap_hdr);
-
-    jbyteArray barray = (*env)->NewByteArray(env, sizeof(struct pcap_hdr_s));
-    if((barray == NULL) || jniCheckException(env))
+    char *pcap_hdr = NULL;
+    int hdr_size = pcap_get_header(pd->pcap_dump.dumper, &pcap_hdr);
+    if((hdr_size < 0) || !pcap_hdr)
         return NULL;
 
-    (*env)->SetByteArrayRegion(env, barray, 0, sizeof(struct pcap_hdr_s), (jbyte*)&pcap_hdr);
+    jbyteArray barray = (*env)->NewByteArray(env, hdr_size);
+    if((barray == NULL) || jniCheckException(env)) {
+        free(pcap_hdr);
+        return NULL;
+    }
+
+    (*env)->SetByteArrayRegion(env, barray, 0, hdr_size, (jbyte*)pcap_hdr);
+    pd_free(pcap_hdr);
 
     if(jniCheckException(env)) {
         (*env)->DeleteLocalRef(env, barray);

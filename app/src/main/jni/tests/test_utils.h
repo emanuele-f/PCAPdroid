@@ -21,8 +21,10 @@
 #define __TEST_UTILS_H__
 
 #include "core/pcapdroid.h"
-#include "core/pcap_utils.h"
+#include "core/pcap_dump.h"
+#include "common/memtrack.h"
 #include <assert.h>
+#include <pcap/pcap.h>
 
 #define assert0(x) assert((x) == 0)
 #define assert1(x) assert((x) == 1)
@@ -47,8 +49,8 @@ void pd_free_test(pcapdroid_t *pd);
 // PCAP dump
 void pd_dump_to_file(pcapdroid_t *pd);
 void pd_done_dump();
-void assert_pcap_header(pcap_hdr_s *hdr);
-u_char* next_pcap_record(pcaprec_hdr_s *rec);
+void assert_pcap_header(pcap_hdr_t *hdr);
+u_char* next_pcap_record(pcap_rec_t *rec);
 
 // Callbacks
 bool dump_cb_payload_chunk(pcapdroid_t *pd, const pkt_context_t *pctx, int dump_size);

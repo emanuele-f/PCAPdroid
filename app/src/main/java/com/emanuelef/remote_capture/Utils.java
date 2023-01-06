@@ -543,7 +543,7 @@ public class Utils {
         return new Iterator<Integer>() {
             @Override
             public boolean hasNext() {
-                // 16: sizeof(pcaprec_hdr_s)
+                // 16: sizeof(pcap_rec)
                 return(buf.remaining() > 16);
             }
 
