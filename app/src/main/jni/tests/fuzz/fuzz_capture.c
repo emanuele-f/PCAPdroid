@@ -19,6 +19,7 @@
 
 #include <pcap.h>
 #include "core/pcapdroid.h"
+#include "common/utils.h"
 #include "pcapd/pcapd.h"
 #include "test_utils.h"
 

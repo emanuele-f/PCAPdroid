@@ -24,7 +24,6 @@
 #include "core/pcap_dump.h"
 #include "common/memtrack.h"
 #include <assert.h>
-#include <pcap/pcap.h>
 
 #define assert0(x) assert((x) == 0)
 #define assert1(x) assert((x) == 1)
