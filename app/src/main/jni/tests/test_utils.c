@@ -155,7 +155,7 @@ static void dump_to_file_cb(struct pcapdroid *pd, const int8_t *buf, int len) {
 
     // write the PCAP header
     pcap_hdr_t *hdr;
-    assert(pcap_get_header(pd->pcap_dump.dumper, (char **)&hdr) == sizeof(*hdr));
+    assert(pcap_get_preamble(pd->pcap_dump.dumper, (char **)&hdr) == sizeof(*hdr));
     assert(fwrite(hdr, sizeof(*hdr), 1, out_fp) == 1);
     pd_free(hdr);
   }
