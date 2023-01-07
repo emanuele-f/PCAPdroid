@@ -55,8 +55,9 @@ public class Billing {
     public static final String UNLOCK_TOKEN_SKU = "unlock_code";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
     public static final String FIREWALL_SKU = "no_root_firewall";
+    public static final String PCAPNG_SKU = "pcapng";
     public static final List<String> ALL_SKUS = Arrays.asList(
-            SUPPORTER_SKU, UNLOCK_TOKEN_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
+            SUPPORTER_SKU, UNLOCK_TOKEN_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU, PCAPNG_SKU
     );
 
     // Resources used in the play build, referenced here to avoid being marked as unused resources
@@ -96,6 +97,9 @@ public class Billing {
     }
 
     public boolean isPurchased(String sku) {
+        if(PCAPNG_SKU.equals(sku))
+            return true;
+
         if(mPeerSkus.contains(sku))
             return true;
 

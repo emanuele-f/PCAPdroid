@@ -534,26 +534,45 @@ public class Utils {
         return hexdump(array, 0, array.length);
     }
 
-    // Splits the provided data into individual PCAP records. Intended to be used with data received
+    // Splits the provided data into individual PCAP/PCAPNG records. Intended to be used with data received
     // via CaptureService::dumpPcapData
-    public static Iterator<Integer> iterPcapRecords(byte[] data) {
+    public static Iterator<Integer> iterPcapRecords(byte[] data, boolean pcapng_format) {
         final ByteBuffer buf = ByteBuffer.wrap(data);
         buf.order(ByteOrder.nativeOrder());
 
-        return new Iterator<Integer>() {
-            @Override
-            public boolean hasNext() {
-                // 16: sizeof(pcap_rec)
-                return(buf.remaining() > 16);
-            }
+        if(pcapng_format) {
+            // PCAPNG
+            return new Iterator<Integer>() {
+                @Override
+                public boolean hasNext() {
+                    // 12: min block size
+                    return(buf.remaining() >= 12);
+                }
 
-            @Override
-            public Integer next() {
-                int rec_len = buf.getInt(buf.position() + 8) + 16;
-                buf.position(buf.position() + rec_len);
-                return rec_len;
-            }
-        };
+                @Override
+                public Integer next() {
+                    int total_len = buf.getInt(buf.position() + 4);
+                    buf.position(buf.position() + total_len);
+                    return total_len;
+                }
+            };
+        } else {
+            // PCAP
+            return new Iterator<Integer>() {
+                @Override
+                public boolean hasNext() {
+                    // 16: sizeof(pcap_rec)
+                    return(buf.remaining() > 16);
+                }
+
+                @Override
+                public Integer next() {
+                    int rec_len = buf.getInt(buf.position() + 8) + 16;
+                    buf.position(buf.position() + rec_len);
+                    return rec_len;
+                }
+            };
+        }
     }
 
     // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
@@ -612,8 +631,8 @@ public class Utils {
         return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
     }
 
-    public static String getUniquePcapFileName(Context context) {
-        return(Utils.getUniqueFileName(context, "pcap"));
+    public static String getUniquePcapFileName(Context context, boolean pcapng_format) {
+        return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
     }
 
     public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
@@ -1348,25 +1367,30 @@ public class Utils {
         return false;
     }
 
+    public static String getDeviceModel() {
+        if(Build.MODEL.startsWith(Build.MANUFACTURER))
+            return Build.MANUFACTURER;
+        else
+            return Build.MANUFACTURER + " " + Build.MODEL;
+    }
+
+    public static String getOsVersion() {
+        return "Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")";
+    }
+
     public static String getBuildInfo(Context ctx) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-        String deviceModel;
         boolean rooted = Utils.isRootAvailable();
-
-        if(Build.MODEL.startsWith(Build.MANUFACTURER))
-            deviceModel = Build.MANUFACTURER;
-        else
-            deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
 
         return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
                 "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
-                "Device: " + deviceModel + (rooted ? " (rooted)" : "") + "\n" +
-                "OS version: Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")\n";
+                "Device: " + getDeviceModel() + (rooted ? " (rooted)" : "") + "\n" +
+                "OS version: " + getOsVersion() + "\n";
     }
 
-    public static String getUserAgent() {
+    public static String getAppVersionString() {
         return "PCAPdroid v" + BuildConfig.VERSION_NAME;
     }
 

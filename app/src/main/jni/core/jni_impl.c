@@ -591,6 +591,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
                     .trailer_enabled = (bool)getIntPref(env, vpn, "addPcapdroidTrailer"),
+                    .pcapng_format = (bool)getIntPref(env, vpn, "isPcapngEnabled"),
                     .snaplen = getIntPref(env, vpn, "getSnaplen"),
                     .max_pkts_per_flow = getIntPref(env, vpn, "getMaxPktsPerFlow"),
                     .max_dump_size = getIntPref(env, vpn, "getMaxDumpSize"),
@@ -668,6 +669,23 @@ Java_com_emanuelef_remote_1capture_CaptureService_stopPacketLoop(JNIEnv *env, jc
 /* ******************************************************* */
 
 JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_initPlatformInfo(JNIEnv *env, jclass clazz,
+                                                                   jstring appver, jstring device,
+                                                                   jstring os) {
+    const char *appver_s = (*env)->GetStringUTFChars(env, appver, 0);
+    const char *device_s = (*env)->GetStringUTFChars(env, device, 0);
+    const char *os_s = (*env)->GetStringUTFChars(env, os, 0);
+    pd_appver = strdup(appver_s);
+    pd_device = strdup(device_s);
+    pd_os = strdup(os_s);
+    (*env)->ReleaseStringUTFChars(env, appver, appver_s);
+    (*env)->ReleaseStringUTFChars(env, device, device_s);
+    (*env)->ReleaseStringUTFChars(env, os, os_s);
+}
+
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_askStatsDump(JNIEnv *env, jclass clazz) {
     if(running)
         dump_capture_stats_now = true;
@@ -690,6 +708,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_setDnsServer(JNIEnv *env, jcla
 
     if(inet_aton(value, &addr) != 0)
         new_dns_server = addr.s_addr;
+
+    (*env)->ReleaseStringUTFChars(env, server, value);
 }
 
 /* ******************************************************* */
@@ -703,7 +723,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getPcapHeader(JNIEnv *env, jcl
     }
 
     char *pcap_hdr = NULL;
-    int hdr_size = pcap_get_header(pd->pcap_dump.dumper, &pcap_hdr);
+    int hdr_size = pcap_get_preamble(pd->pcap_dump.dumper, &pcap_hdr);
     if((hdr_size < 0) || !pcap_hdr)
         return NULL;
 

@@ -77,7 +77,7 @@ public class PersistableUriPermission {
         mPrefs.edit().putString(PREF_KEY, serialized).apply();
     }
 
-    public void checkPermission(String perm_key, PupListener listener) {
+    public void checkPermission(String perm_key, boolean pcapng_format, PupListener listener) {
         boolean hasPermission = false;
         boolean keyChanged = !perm_key.equals(key);
         mNewKey = perm_key;
@@ -93,14 +93,14 @@ public class PersistableUriPermission {
         }
 
         if(!hasPermission)
-            openFileSelector();
+            openFileSelector(pcapng_format);
         else
             mListener.onUriChecked(persistableUri);
     }
 
-    private void openFileSelector() {
+    private void openFileSelector(boolean pcapng_format) {
         boolean noFileDialog = false;
-        String fname = Utils.getUniquePcapFileName(mCtx);
+        String fname = Utils.getUniquePcapFileName(mCtx, pcapng_format);
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");

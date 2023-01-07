@@ -51,19 +51,24 @@ import java.util.concurrent.TimeUnit;
 public class HTTPServer implements PcapDumper, Runnable {
     private static final String TAG = "HTTPServer";
     private static final String PCAP_MIME = "application/vnd.tcpdump.pcap";
+    private static final String PCAPNG_MIME = "application/x-pcapng";
     public static final int MAX_CLIENTS = 8;
     private ServerSocket mSocket;
     private boolean mRunning;
     private Thread mThread;
     private final int mPort;
+    private final boolean mPcapngFormat;
+    private final String mMimeType;
     private final Context mContext;
 
     // Shared state, must be synchronized
     private final ArrayList<ClientHandler> mClients = new ArrayList<>();
 
-    public HTTPServer(Context context, int port) {
+    public HTTPServer(Context context, int port, boolean pcapng_format) {
         mPort = port;
         mContext = context;
+        mPcapngFormat = pcapng_format;
+        mMimeType = pcapng_format ? PCAPNG_MIME : PCAP_MIME;
     }
 
     private static class ChunkedOutputStream extends FilterOutputStream {
@@ -100,17 +105,19 @@ public class HTTPServer implements PcapDumper, Runnable {
         final InputStream mInputStream;
         final OutputStream mOutputStream;
         final String mFname;
+        final String mMimeType;
         ChunkedOutputStream mChunkedOutputStream;
         boolean mHasError;
         boolean mReadyForData;
         boolean mHeaderSent;
         boolean mIsClosed;
 
-        public ClientHandler(Socket socket, String fname) throws IOException {
+        public ClientHandler(Socket socket, String mimeType, String fname) throws IOException {
             mSocket = socket;
             mFname = fname;
             mInputStream = mSocket.getInputStream();
             mOutputStream = mSocket.getOutputStream();
+            mMimeType = mimeType;
         }
 
         private void close(String error) {
@@ -179,7 +186,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                         // NOTE: compressing with gzip is almost useless as most HTTP data is already
                         // gzip-compressed
                         mOutputStream.write(("HTTP/1.1 200 OK\r\n" +
-                                "Content-Type: " + PCAP_MIME + "\r\n" +
+                                "Content-Type: " + mMimeType + "\r\n" +
                                 "Connection: close\r\n" +
                                 "Transfer-Encoding: chunked\r\n" +
                                 "\r\n"
@@ -261,7 +268,7 @@ public class HTTPServer implements PcapDumper, Runnable {
                 }
 
                 Log.i(TAG, "New client: " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
-                ClientHandler handler = new ClientHandler(client, Utils.getUniquePcapFileName(mContext));
+                ClientHandler handler = new ClientHandler(client, mMimeType, Utils.getUniquePcapFileName(mContext, mPcapngFormat));
 
                 try {
                     // will fail if pool is full

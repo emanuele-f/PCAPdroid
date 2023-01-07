@@ -236,7 +236,7 @@ public class CaptureCtrl extends AppCompatActivity {
             mReceiverClass = req_intent.getStringExtra("broadcast_receiver");
             Log.d(TAG, "Starting capture, caller=" + mStarterApp);
 
-            CaptureSettings settings = new CaptureSettings(req_intent);
+            CaptureSettings settings = new CaptureSettings(this, req_intent);
             String disallowedServer = checkRemoteServerNotAllowed(settings);
             if(disallowedServer != null) {
                 Utils.showToastLong(this, R.string.remote_server_warning, disallowedServer);
@@ -245,7 +245,7 @@ public class CaptureCtrl extends AppCompatActivity {
             }
 
             if(!settings.pcap_uri.isEmpty()) {
-                persistableUriPermission.checkPermission(settings.pcap_uri, granted_uri -> {
+                persistableUriPermission.checkPermission(settings.pcap_uri, settings.pcapng_format, granted_uri -> {
                     Log.d(TAG, "persistable uri granted? " + granted_uri);
 
                     if(granted_uri != null) {

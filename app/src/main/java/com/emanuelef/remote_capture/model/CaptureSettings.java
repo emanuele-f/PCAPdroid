@@ -1,8 +1,11 @@
 package com.emanuelef.remote_capture.model;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import com.emanuelef.remote_capture.Billing;
 
 import java.io.Serializable;
 
@@ -22,6 +25,7 @@ public class CaptureSettings implements Serializable {
     public boolean full_payload;
     public boolean block_quic;
     public boolean auto_block_private_dns;
+    public boolean pcapng_format;
     public String capture_interface;
     public String pcap_uri = "";
     public String pcap_name = "";
@@ -30,7 +34,7 @@ public class CaptureSettings implements Serializable {
     public int max_dump_size = 0;
     public String mitmproxy_opts;
 
-    public CaptureSettings(SharedPreferences prefs) {
+    public CaptureSettings(Context ctx, SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
         app_filter = Prefs.getAppFilter(prefs);
         collector_address = Prefs.getCollectorIp(prefs);
@@ -48,9 +52,10 @@ public class CaptureSettings implements Serializable {
         block_quic = Prefs.blockQuic(prefs);
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
+        pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
     }
 
-    public CaptureSettings(Intent intent) {
+    public CaptureSettings(Context ctx, Intent intent) {
         dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
         app_filter = getString(intent, Prefs.PREF_APP_FILTER, "");
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
@@ -73,6 +78,7 @@ public class CaptureSettings implements Serializable {
         block_quic = getBool(intent, Prefs.PREF_BLOCK_QUIC, false);
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
+        pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
     }
 
     private static String getString(Intent intent, String key, String def_value) {

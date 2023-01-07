@@ -151,6 +151,13 @@
             android:defaultValue="false" />
 
         <SwitchPreference
+            app:key="pcapng_format"
+            app:title="@string/pcapng_format"
+            app:iconSpaceReserved="false"
+            app:summary="@string/pcapng_format_summary"
+            app:defaultValue="true" />
+
+        <SwitchPreference
             app:key="pcapdroid_trailer"
             app:title="@string/pcapdroid_trailer"
             app:iconSpaceReserved="false"
@@ -172,7 +179,7 @@
             app:title="@string/malware_detection"
             app:iconSpaceReserved="false"
             app:summary="@string/malware_detection_summary"
-            app:defaultValue="false" />
+            app:defaultValue="true" />
 
         <Preference
             app:key="malware_detection_docs"

@@ -27,10 +27,12 @@
  * Packets are first buffered and then exported periodically to the callback. pcap_check_export must
  * be called periodically to ensure that buffered packets are exported on time.
  *
- * The PCAP/PCAPNG headers are *not* dumped, use pcap_get_header to get the header to be dumped. This
+ * The PCAP/PCAPNG preambles are *not* dumped, use pcap_get_preamble to get the preamble to be dumped. This
  * allows, for example, multiple HTTP clients to connect at different times, each one getting a valid
  * PCAP header. */
 typedef struct pcap_dumper pcap_dumper_t;
+
+/* ******************************************************* */
 
 typedef struct pcap_hdr {
     uint32_t magic_number;
@@ -48,6 +50,53 @@ typedef struct pcap_rec {
     uint32_t incl_len;
     uint32_t orig_len;
 } __attribute__((packed)) pcap_rec_t;
+
+/* ******************************************************* */
+
+// NOTE: all the PCAPNG block addresses are aligned to 32-bits
+typedef struct pcapng_section_hdr_block {
+    uint32_t type;
+    uint32_t total_length;
+    uint32_t magic;
+    uint16_t version_major;
+    uint16_t version_minor;
+    uint64_t section_length;
+
+    /* ..options.. */
+} __attribute__((packed)) pcapng_section_hdr_block_t;
+
+typedef struct pcapng_intf_descr_block {
+    uint32_t type;
+    uint32_t total_length;
+    uint16_t linktype;
+    uint16_t reserved;
+    uint32_t snaplen;
+    /* ..options.. */
+} __attribute__((packed)) pcapng_intf_descr_block_t;
+
+typedef struct pcapng_decr_secrets_block {
+    uint32_t type;
+    uint32_t total_length;
+    uint32_t secrets_type;
+    uint32_t secrets_length;
+    /* ..secrets data.. */
+    /* ..options.. */
+} __attribute__((packed)) pcapng_decr_secrets_block_t;
+
+typedef struct pcapng_enh_packet_block {
+    uint32_t type;
+    uint32_t total_length;
+    uint32_t interface_id;
+    uint32_t timestamp_high;
+    uint32_t timestamp_low;
+    uint32_t captured_len;
+    uint32_t original_len;
+    /* ..packet data.. */
+    /* ..padding.. */
+    /* ..options.. */
+} __attribute__((packed)) pcapng_enh_packet_block_t;
+
+/* ******************************************************* */
 
 typedef enum {
     PCAP_DUMP,                // PCAP file
@@ -77,7 +126,7 @@ pcap_dumper_t* pcap_new_dumper(pcap_dump_mode_t mode, int snaplen, uint64_t max_
                                pcap_dump_callback dumpcb, struct pcapdroid *pd);
 void pcap_destroy_dumper(pcap_dumper_t *dumper);
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen, const struct timeval *tv, int uid);
-int pcap_get_header(pcap_dumper_t *dumper, char **out);
+int pcap_get_preamble(pcap_dumper_t *dumper, char **out);
 int pcap_get_dump_size(pcap_dumper_t *dumper);
 bool pcap_check_export(pcap_dumper_t *dumper);
 

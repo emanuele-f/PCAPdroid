@@ -139,6 +139,8 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
+        private SwitchPreference mTrailerEnabled;
+        private SwitchPreference mPcapngEnabled;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
@@ -212,6 +214,10 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             return Utils.isRootAvailable() && mRootCaptureEnabled.isChecked();
         }
 
+        private boolean isPcapngEnabled() {
+            return mIab.isPurchased(Billing.PCAPNG_SKU) && mPcapngEnabled.isChecked();
+        }
+
         private void refreshInterfaces() {
             ArrayList<String> labels = new ArrayList<>();
             ArrayList<String> values = new ArrayList<>();
@@ -262,6 +268,17 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 startActivity(intent);
                 return true;
             });
+
+            mPcapngEnabled = requirePreference("pcapng_format");
+            mPcapngEnabled.setOnPreferenceChangeListener(((preference, newValue) -> {
+                mTrailerEnabled.setVisible(!(boolean)newValue);
+                return true;
+            }));
+            if(!mIab.isPurchased(Billing.PCAPNG_SKU))
+                mPcapngEnabled.setVisible(false);
+
+            mTrailerEnabled = requirePreference("pcapdroid_trailer");
+            mTrailerEnabled.setVisible(!isPcapngEnabled()); // TODO support
         }
 
         private void setupSecurityPrefs() {

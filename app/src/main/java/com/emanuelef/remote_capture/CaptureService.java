@@ -179,6 +179,7 @@ public class CaptureService extends VpnService implements Runnable {
         /* Load native library */
         try {
             System.loadLibrary("capture");
+            CaptureService.initPlatformInfo(Utils.getAppVersionString(), Utils.getDeviceModel(), Utils.getOsVersion());
         } catch (UnsatisfiedLinkError e) {
             // This should only happen while running tests
             //e.printStackTrace();
@@ -195,7 +196,7 @@ public class CaptureService extends VpnService implements Runnable {
         Log.d(CaptureService.TAG, "onCreate");
         nativeAppsResolver = new AppsResolver(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mSettings = new CaptureSettings(mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
+        mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
         INSTANCE = this;
         super.onCreate();
@@ -308,12 +309,12 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Possibly allocate the dumper
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
-            mDumper = new HTTPServer(this, mSettings.http_server_port);
+            mDumper = new HTTPServer(this, mSettings.http_server_port, mSettings.pcapng_format);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
             if(!mSettings.pcap_uri.isEmpty())
                 mPcapUri = Uri.parse(mSettings.pcap_uri);
             else {
-                String fname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this);
+                String fname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this, mSettings.pcapng_format);
                 mPcapUri = Utils.getDownloadsUri(this, fname);
             }
 
@@ -332,7 +333,7 @@ public class CaptureService extends VpnService implements Runnable {
                 return abortStart();
             }
 
-            mDumper = new UDPDumper(new InetSocketAddress(addr, mSettings.collector_port));
+            mDumper = new UDPDumper(new InetSocketAddress(addr, mSettings.collector_port), mSettings.pcapng_format);
         }
 
         if(mDumper != null) {
@@ -1244,6 +1245,8 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
 
+    public int isPcapngEnabled() { return(mSettings.pcapng_format ? 1 : 0); }
+
     public int getAppFilterUid() { return(app_filter_uid); }
 
     public int getMitmAddonUid() {
@@ -1480,6 +1483,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static native int initLogger(String path, int level);
     public static native int writeLog(int logger, int lvl, String message);
+    private static native void initPlatformInfo(String appver, String device, String os);
     private static native void runPacketLoop(int fd, CaptureService vpn, int sdk);
     private static native void stopPacketLoop();
     private static native int getFdSetSize();

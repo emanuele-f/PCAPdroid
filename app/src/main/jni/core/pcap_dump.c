@@ -97,9 +97,42 @@ void pcap_destroy_dumper(pcap_dumper_t *dumper) {
 
 /* ******************************************************* */
 
-/* Get a buffer (out) representing a PCAP header.
- * Returns the buffer size on success, -1 on error. The out buffer must be free by the called with pd_free. */
-int pcap_get_header(pcap_dumper_t *dumper, char **out) {
+typedef struct {
+    uint16_t type;
+    uint16_t length;
+    uint16_t padding;
+    uint16_t tot_length;
+    void *data;
+} pcapng_opt_t;
+
+static inline pcapng_opt_t pcapng_option(uint16_t type, void *data, uint16_t length) {
+    pcapng_opt_t opt;
+
+    opt.type = type;
+    opt.length = length;
+    opt.data = data;
+    opt.padding = (~length + 1) & 0x3;
+    opt.tot_length = 4 /* type, length */ + opt.length + opt.padding;
+    return opt;
+}
+
+static int write_pcapng_opt(char *buf, pcapng_opt_t *opt) {
+    *(uint16_t*) (buf+0) = opt->type;
+    *(uint16_t*) (buf+2) = opt->length;
+    buf += 4;
+
+    memcpy(buf, opt->data, opt->length);
+    buf += opt->length;
+
+    for(uint8_t i=0; i < opt->padding; i++)
+        *(buf++) = 0x00;
+
+    return opt->tot_length;
+}
+
+/* ******************************************************* */
+
+static int get_pcap_file_header(pcap_dumper_t *dumper, char **out) {
     struct pcap_hdr *pcap_hdr = pd_malloc(sizeof(struct pcap_hdr));
     if(!pcap_hdr)
         return -1;
@@ -116,18 +149,78 @@ int pcap_get_header(pcap_dumper_t *dumper, char **out) {
     return sizeof(struct pcap_hdr);
 }
 
+static int get_pcapng_preamble(pcap_dumper_t *dumper, char **out) {
+    pcapng_opt_t shb_hw = pcapng_option(0x2, pd_device, strlen(pd_device));
+    pcapng_opt_t shb_os = pcapng_option(0x3, pd_os, strlen(pd_os));
+    pcapng_opt_t shb_app = pcapng_option(0x4, pd_appver, strlen(pd_appver));
+
+    int shb_length = sizeof(pcapng_section_hdr_block_t) + shb_hw.tot_length +
+            shb_os.tot_length + shb_app.tot_length + 4 /* total_length */;
+    int idb_length = sizeof(pcapng_intf_descr_block_t) + 4 /* total_length */;
+    int preamble_sz = shb_length + idb_length;
+    char *preamble = (char*) pd_malloc(preamble_sz);
+    if(!preamble)
+        return -1;
+
+    // Section Header Block
+    pcapng_section_hdr_block_t *shb = (pcapng_section_hdr_block_t*) preamble;
+    shb->type = 0x0A0D0D0A;
+    shb->total_length = shb_length;
+    shb->magic = 0x1a2b3c4d;
+    shb->version_major = 1;
+    shb->version_minor = 0;
+    shb->section_length = -1;
+
+    char *ptr = preamble + sizeof(pcapng_section_hdr_block_t);
+    ptr += write_pcapng_opt(ptr, &shb_hw);
+    ptr += write_pcapng_opt(ptr, &shb_os);
+    ptr += write_pcapng_opt(ptr, &shb_app);
+    *(uint32_t*)ptr = shb->total_length;
+    ptr += 4;
+
+    // Interface Description Block
+    pcapng_intf_descr_block_t *idb = (pcapng_intf_descr_block_t*) ptr;
+    idb->type = 0x00000001;
+    idb->total_length = sizeof(pcapng_intf_descr_block_t) + 4;
+    idb->reserved = 0;
+    idb->linktype = LINKTYPE_RAW;
+    idb->snaplen = dumper->snaplen;
+    *(uint32_t*)(idb+1) = idb->total_length;
+
+    *out = preamble;
+    return preamble_sz;
+}
+
+/* Get a buffer (out) containing the PCAP header or the PCAPNG preamble (Section Header Block and
+ * Interface Description Block).
+ * Returns the buffer size on success, -1 on error. The out buffer must be free by the called with pd_free. */
+int pcap_get_preamble(pcap_dumper_t *dumper, char **out) {
+    if(dumper->mode == PCAPNG_DUMP)
+        return get_pcapng_preamble(dumper, out);
+    else
+        return get_pcap_file_header(dumper, out);
+}
+
 /* ******************************************************* */
 
-/* Returns the size of a PCAP record */
-int pcap_rec_size(pcap_dumper_t *dumper, int pkt_len) {
-    if(dumper->mode == PCAP_DUMP_WITH_TRAILER) {
-        pkt_len += (int)(sizeof(pcapdroid_trailer_t) + sizeof(struct ethhdr));
+/* Returns the size of a PCAP record / PCAPNG enhanced packed block */
+static int pcap_rec_size(pcap_dumper_t *dumper, int pkt_len) {
+    pkt_len = min(pkt_len, dumper->snaplen);
 
-        // Pad the frame so that the buffer keeps its 4-bytes alignment
-        pkt_len += (~pkt_len + 1) & 0x3;
+    if(dumper->mode == PCAPNG_DUMP) {
+        int epb_size = sizeof(pcapng_enh_packet_block_t) + 4 /* total length */;
+        uint8_t padding = (~pkt_len + 1) & 0x3; // packet data must be padded to 32 bits
+        return epb_size + pkt_len + padding;
+    } else {
+        if(dumper->mode == PCAP_DUMP_WITH_TRAILER) {
+            pkt_len += (int)(sizeof(pcapdroid_trailer_t) + sizeof(struct ethhdr));
+
+            // Pad the frame so that the buffer keeps its 4-bytes alignment
+            pkt_len += (~pkt_len + 1) & 0x3;
+        }
+
+        return(pkt_len + (int)sizeof(struct pcap_rec));
     }
-
-    return(min(pkt_len, dumper->snaplen) + (int)sizeof(struct pcap_rec));
 }
 
 /* ******************************************************* */
@@ -148,26 +241,9 @@ int pcap_get_dump_size(pcap_dumper_t *dumper) {
 
 /* ******************************************************* */
 
-/* Dump a single packet into the buffer. Returns false if PCAP dump must be stopped (e.g. if max
- * dump size reached or an error occurred). */
-bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
-                      const struct timeval *tv, int uid) {
-    int tot_rec_size = pcap_rec_size(dumper, pktlen);
-
-    if((PCAP_BUFFER_SIZE - dumper->buffer_idx) <= tot_rec_size)
-        export_buffer(dumper);
-
-    if ((PCAP_BUFFER_SIZE - dumper->buffer_idx) <= tot_rec_size) {
-        log_e("Invalid buffer size [size=%d, idx=%d, dump_size=%d]",
-              PCAP_BUFFER_SIZE, dumper->buffer_idx, tot_rec_size);
-        return false;
-    } else if((dumper->max_dump_size > 0) &&
-            ((dumper->dump_size + tot_rec_size) >= dumper->max_dump_size)) {
-        log_i("Max dump size reached, stop the dump");
-        return false;
-    }
-
-    // NOTE: buffer_idx may be reset by export_buffer above
+static inline void dump_packet_pcap(pcap_dumper_t *dumper, const char *pkt, int pktlen,
+                                    const struct timeval *tv, int uid,
+                                    int tot_rec_size) {
     int8_t *buffer = dumper->buffer + dumper->buffer_idx;
     pcap_rec_t *pcap_rec = (pcap_rec_t*) buffer;
     int offset = 0;
@@ -179,7 +255,7 @@ bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
     buffer += sizeof(struct pcap_rec);
 
     if(dumper->mode == PCAP_DUMP_WITH_TRAILER) {
-        if((((uint64_t)buffer) & 0x03) != 0)
+        if((((uint64_t)buffer) & 0x3) != 0)
             log_w("Unaligned buffer!");
 
         // Insert the bogus header: both the MAC addresses are 0
@@ -200,7 +276,7 @@ bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
         // Pad the frame so that the buffer keeps its 4-bytes alignment
         // The padding is inserted before the PCAPdroid trailer so that accesses to pcapdroid_trailer_t
         // are also aligned.
-        uint8_t padding = (~offset + 1) & 0x03;
+        uint8_t padding = (~offset + 1) & 0x3;
 
         for(uint8_t i=0; i<padding; i++)
             buffer[offset++] = 0x00;
@@ -220,6 +296,56 @@ bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
 
         pcap_rec->orig_len += padding + sizeof(*trailer);
     }
+}
+
+static inline void dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktlen,
+                                      const struct timeval *tv, int tot_rec_size) {
+    int8_t *buffer = dumper->buffer + dumper->buffer_idx;
+    uint64_t now_usec = (uint64_t)tv->tv_sec * 1000000 + tv->tv_usec;
+
+    pcapng_enh_packet_block_t *epb = (pcapng_enh_packet_block_t*) buffer;
+    epb->type = 0x00000006;
+    epb->total_length = tot_rec_size;
+    epb->interface_id = 0;
+    epb->timestamp_high = now_usec >> 32;
+    epb->timestamp_low = now_usec;
+    epb->captured_len = min(pktlen, dumper->snaplen);
+    epb->original_len = pktlen;
+
+    memcpy(buffer + sizeof(pcapng_enh_packet_block_t), pkt, epb->captured_len);
+    buffer += sizeof(pcapng_enh_packet_block_t) + epb->captured_len;
+
+    // packet data must be padded to 32 bits
+    uint8_t padding = (~epb->captured_len + 1) & 0x3;
+    for(uint8_t i=0; i<padding; i++)
+        *(buffer++) = 0x00;
+
+    *(uint32_t*)buffer = epb->total_length;
+}
+
+/* Dump a single packet into the buffer. Returns false if PCAP dump must be stopped (e.g. if max
+ * dump size reached or an error occurred). */
+bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
+                      const struct timeval *tv, int uid) {
+    int tot_rec_size = pcap_rec_size(dumper, pktlen);
+
+    if((PCAP_BUFFER_SIZE - dumper->buffer_idx) <= tot_rec_size)
+        export_buffer(dumper);
+
+    if ((PCAP_BUFFER_SIZE - dumper->buffer_idx) <= tot_rec_size) {
+        log_e("Invalid buffer size [size=%d, idx=%d, dump_size=%d]",
+              PCAP_BUFFER_SIZE, dumper->buffer_idx, tot_rec_size);
+        return false;
+    } else if((dumper->max_dump_size > 0) &&
+            ((dumper->dump_size + tot_rec_size) >= dumper->max_dump_size)) {
+        log_i("Max dump size reached, stop the dump");
+        return false;
+    }
+
+    if(dumper->mode == PCAPNG_DUMP)
+        dump_packet_pcapng(dumper, pkt, pktlen, tv, tot_rec_size);
+    else
+        dump_packet_pcap(dumper, pkt, pktlen, tv, uid, tot_rec_size);
 
     dumper->buffer_idx += tot_rec_size;
     dumper->dump_size += tot_rec_size;

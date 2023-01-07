@@ -94,6 +94,7 @@ public class Prefs {
     public static final String PREF_DNS_SERVER_V4 = "dns_v4";
     public static final String PREF_DNS_SERVER_V6 = "dns_v6";
     public static final String PREF_USE_SYSTEM_DNS = "system_dns";
+    public static final String PREF_PCAPNG_ENABLED = "pcapng_format";
 
     public enum DumpMode {
         NONE,
@@ -183,6 +184,10 @@ public class Prefs {
         return(Billing.newInstance(ctx).isFirewallVisible()
                 && p.getBoolean(PREF_FIREWALL, true));
     }
+    public static boolean isPcapngEnabled(Context ctx, SharedPreferences p)  {
+        return(Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU)
+                && p.getBoolean(PREF_PCAPNG_ENABLED, true));
+    }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p)     { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
@@ -214,6 +219,7 @@ public class Prefs {
                 "\nCaptureInterface: " + getCaptureInterface(p) +
                 "\nMalwareDetection: " + isMalwareDetectionEnabled(ctx, p) +
                 "\nFirewall: " + isFirewallEnabled(ctx, p) +
+                "\nPCAPNG: " + isPcapngEnabled(ctx, p) +
                 "\nBlockNewApps: " + blockNewApps(p) +
                 "\nAppFilter: " + getAppFilter(p) +
                 "\nIpMode: " + getIPMode(p) +

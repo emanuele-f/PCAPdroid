@@ -614,7 +614,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void doStartCaptureService() {
         appStateStarting();
-        mCapHelper.startCapture(new CaptureSettings(mPrefs));
+        mCapHelper.startCapture(new CaptureSettings(this, mPrefs));
     }
 
     public void startCapture() {

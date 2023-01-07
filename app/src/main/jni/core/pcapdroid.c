@@ -42,6 +42,10 @@ bool reload_blacklists_now = false;
 int bl_num_checked_connections = 0;
 int fw_num_checked_connections = 0;
 
+char *pd_appver = (char*) "";
+char *pd_device = (char*) "";
+char *pd_os = (char*) "";
+
 static ndpi_protocol_bitmask_struct_t masterProtos;
 static bool masterProtosInit = false;
 
@@ -1166,10 +1170,18 @@ int pd_run(pcapdroid_t *pd) {
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
             pd->pcap_dump.snaplen = max_snaplen;
 
-        // TODO pcapng
-        pd->pcap_dump.dumper = pcap_new_dumper(pd->pcap_dump.trailer_enabled ? PCAP_DUMP_WITH_TRAILER : PCAP_DUMP,
-                                               pd->pcap_dump.snaplen, pd->pcap_dump.max_dump_size, pd->cb.send_pcap_dump,
-                                               pd);
+        pcap_dump_mode_t dump_mode;
+        if(pd->pcap_dump.pcapng_format)
+            dump_mode = PCAPNG_DUMP;
+        else if(pd->pcap_dump.trailer_enabled)
+            dump_mode = PCAP_DUMP_WITH_TRAILER;
+        else
+            dump_mode = PCAP_DUMP;
+
+        log_d("dump_mode: %d", dump_mode);
+        pd->pcap_dump.dumper = pcap_new_dumper(dump_mode,pd->pcap_dump.snaplen,
+                                               pd->pcap_dump.max_dump_size,
+                                               pd->cb.send_pcap_dump, pd);
         if(!pd->pcap_dump.dumper) {
             log_f("Could not initialize the PCAP dumper");
             running = false;

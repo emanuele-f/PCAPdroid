@@ -15,7 +15,7 @@
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License or later</a> for
         more details</string>
     <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br />\n\n
-        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
+        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>LGPL-3.0</a>\n\n
         - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
@@ -449,4 +449,6 @@
     <string name="decryption_whitelist">Decryption whitelist</string>
     <string name="external_storage_perm_required">The external storage permission is required</string>
     <string name="many_rules_warning">You are trying to import many rules, which could make the app unresponsive during some interactions. Do you really want to continue?</string>
+    <string name="pcapng_format">PCAPNG format</string>
+    <string name="pcapng_format_summary">Dump packets in the PCAPNG dump format, which allows embedding TLS decryption secrets</string>
 </resources>
