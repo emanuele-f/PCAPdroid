@@ -18,6 +18,7 @@
  */
 
 #include <linux/if_ether.h>
+#include <pthread.h>
 #include "common/utils.h"
 #include "pcapdroid.h"
 #include "pcap_dump.h"
@@ -27,7 +28,10 @@
 
 #define PCAPDROID_TRAILER_MAGIC 0x01072021
 #define MAX_PCAP_DUMP_DELAY_MS 1000
-#define PCAP_BUFFER_SIZE (512*1024) // 512K
+#define PCAP_BUFFER_SIZE             (512*1024)         // 512K
+#define PCAP_BUFFER_ALMOST_FULL_SIZE (450*1024)         // 450K
+#define KEYLOG_BUFFER_HEADROOM       (sizeof(pcapng_decr_secrets_block_t))
+#define KEYLOG_BUFFER_TAILROOM       8 /* block "total_size" field + max 3 bytes of padding + 1 */
 
 struct pcap_dumper {
     pcap_dump_mode_t mode;
@@ -41,8 +45,11 @@ struct pcap_dumper {
     // the crc32 implementation requires 4-bytes aligned accesses.
     // frames are padded to honor the 4-bytes alignment.
     int8_t *buffer  __attribute__((aligned (4)));
-    int bufsize;
     int buffer_idx;
+
+    int8_t *keylog_buf;
+    pthread_mutex_t keylog_mutex;
+    int keylog_idx;
 };
 
 /* ******************************************************* */
@@ -64,6 +71,13 @@ pcap_dumper_t* pcap_new_dumper(pcap_dump_mode_t mode, int snaplen, uint64_t max_
         return NULL;
     }
 
+    if(pthread_mutex_init(&dumper->keylog_mutex, NULL) != 0) {
+        log_e("pthread_mutex_init failed");
+        pd_free(dumper->buffer);
+        pd_free(dumper);
+        return NULL;
+    }
+
     dumper->snaplen = snaplen;
     dumper->mode = mode;
     dumper->max_dump_size = max_dump_size;
@@ -75,7 +89,51 @@ pcap_dumper_t* pcap_new_dumper(pcap_dump_mode_t mode, int snaplen, uint64_t max_
 
 /* ******************************************************* */
 
+static void export_keylog_buffer(pcap_dumper_t *dumper) {
+    if(dumper->keylog_idx == 0)
+        return;
+
+    // the keylog buffer is written by another thread, so it must be synchronized
+    pthread_mutex_lock(&dumper->keylog_mutex);
+
+    int sec_len = dumper->keylog_idx;
+    uint8_t padding = (~sec_len + 1) & 0x3;
+    int block_size = sizeof(pcapng_decr_secrets_block_t) + sec_len + padding + 4 /* total_length */;
+
+    // refuse to dump if we would exceed the max_dump_size. NOTE: this could be improved to only
+    // export what does not exceed the dump size
+    if((dumper->max_dump_size > 0) && (dumper->dump_size + block_size >= dumper->max_dump_size)) {
+        log_w("max dump size would be exceeded by the keylog dump, discarding keylog");
+        dumper->keylog_idx = 0;
+        goto unlock;
+    }
+
+    // prepare the block header
+    pcapng_decr_secrets_block_t *dsb = (pcapng_decr_secrets_block_t*) dumper->keylog_buf;
+    dsb->type = 0x0000000A;
+    dsb->total_length = block_size;
+    dsb->secrets_type = 0x544c534b /* TLS_KEYLOG */;
+    dsb->secrets_length = sec_len;
+
+    // padding
+    char *ptr = (char*)dumper->keylog_buf + KEYLOG_BUFFER_HEADROOM + sec_len;
+    for(uint8_t i=0; i<padding; i++)
+        *(ptr++) = 0x00;
+    *(uint32_t*)ptr = dsb->total_length;
+
+    if(dumper->dump_cb)
+        dumper->dump_cb(dumper->pd, dumper->keylog_buf, block_size);
+
+    dumper->dump_size += block_size;
+    dumper->keylog_idx = 0;
+
+unlock:
+    pthread_mutex_unlock(&dumper->keylog_mutex);
+}
+
 static void export_buffer(pcap_dumper_t *dumper) {
+    export_keylog_buffer(dumper);
+
     if(dumper->buffer_idx == 0)
         return;
 
@@ -91,6 +149,9 @@ static void export_buffer(pcap_dumper_t *dumper) {
 void pcap_destroy_dumper(pcap_dumper_t *dumper) {
     export_buffer(dumper);
 
+    pthread_mutex_destroy(&dumper->keylog_mutex);
+    if(dumper->keylog_buf)
+        pd_free(dumper->keylog_buf);
     pd_free(dumper->buffer);
     pd_free(dumper);
 }
@@ -226,7 +287,8 @@ static int pcap_rec_size(pcap_dumper_t *dumper, int pkt_len) {
 /* ******************************************************* */
 
 bool pcap_check_export(pcap_dumper_t *dumper) {
-    if((dumper->buffer_idx > 0) && (dumper->pd->now_ms - dumper->last_dump_ms) >= MAX_PCAP_DUMP_DELAY_MS) {
+    if(((dumper->buffer_idx > 0) && (dumper->pd->now_ms - dumper->last_dump_ms) >= MAX_PCAP_DUMP_DELAY_MS) ||
+            (dumper->keylog_idx > PCAP_BUFFER_ALMOST_FULL_SIZE)) {
         export_buffer(dumper);
         return true;
     }
@@ -350,5 +412,39 @@ bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
     dumper->buffer_idx += tot_rec_size;
     dumper->dump_size += tot_rec_size;
     pcap_check_export(dumper);
+    return true;
+}
+
+/* ******************************************************* */
+
+// Master secrets are received by the MitmReceiver thread and stored into the keylog_buf, which is
+// later exporter in export_buffer by the capture thread.
+// This allows to dump the secrets before the packets, and also to avoid locks in the data path.
+//
+// NOTE: there is still a small chance to dump the packets before the corresponding master secrets,
+// which would result in the inability to decrypt such packets in some tools (e.g. Wireshark)
+bool pcap_dump_secret(pcap_dumper_t *dumper, int8_t *sec_data, int sec_len) {
+    if(!dumper->keylog_buf) {
+        // [ DSB | KEYLOG[PCAP_BUFFER_SIZE] | PADDING[0-3] | total_length ]
+        dumper->keylog_buf = pd_malloc(KEYLOG_BUFFER_HEADROOM + PCAP_BUFFER_SIZE + KEYLOG_BUFFER_TAILROOM);
+        if(!dumper->keylog_buf) {
+            log_e("malloc(keylog_buf) failed with code %d/%s",
+                  errno, strerror(errno));
+            return false;
+        }
+    }
+
+    if((dumper->keylog_idx + (sec_len + 1 /* will add a \n */)) >= PCAP_BUFFER_SIZE) {
+        log_w("the keylog is not being exported, discarding secret");
+        return false;
+    }
+
+    pthread_mutex_lock(&dumper->keylog_mutex);
+
+    memcpy(dumper->keylog_buf + KEYLOG_BUFFER_HEADROOM + dumper->keylog_idx, sec_data, sec_len);
+    dumper->keylog_idx += sec_len;
+    dumper->keylog_buf[KEYLOG_BUFFER_HEADROOM + dumper->keylog_idx++] = '\n';
+
+    pthread_mutex_unlock(&dumper->keylog_mutex);
     return true;
 }

@@ -1203,4 +1203,18 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
     if(obj) (*env)->DeleteLocalRef(env, obj);
 }
 
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, jclass clazz,
+                                                                   jbyteArray secret) {
+    jsize sec_len = (*env)->GetArrayLength(env, secret);
+    jbyte* sec_data = (*env)->GetByteArrayElements(env, secret, 0);
+
+    if(global_pd && global_pd->pcap_dump.dumper)
+        pcap_dump_secret(global_pd->pcap_dump.dumper, sec_data, sec_len);
+
+    (*env)->ReleaseByteArrayElements(env, secret, sec_data, 0);
+}
+
 #endif // ANDROID

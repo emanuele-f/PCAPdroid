@@ -71,6 +71,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final Context mContext;
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
+    private final boolean mPcapngFormat;
     private static final MutableLiveData<Status> proxyStatus = new MutableLiveData<>(Status.NOT_STARTED);
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
@@ -123,6 +124,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
+        mPcapngFormat = settings.pcapng_format;
 
         mConfig = new MitmAPI.MitmConfig();
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
@@ -377,13 +379,17 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     }
 
     private void logMasterSecret(byte[] master_secret) throws IOException {
-        if(mKeylog == null)
-            mKeylog = new BufferedOutputStream(
-                    mContext.getContentResolver().openOutputStream(
-                            Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
+        if(mPcapngFormat)
+            CaptureService.dumpMasterSecret(master_secret);
+        else {
+            if(mKeylog == null)
+                mKeylog = new BufferedOutputStream(
+                        mContext.getContentResolver().openOutputStream(
+                                Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
 
-        mKeylog.write(master_secret);
-        mKeylog.write(0xa);
+            mKeylog.write(master_secret);
+            mKeylog.write(0xa);
+        }
     }
 
     private void handleLog(byte[] message) {
