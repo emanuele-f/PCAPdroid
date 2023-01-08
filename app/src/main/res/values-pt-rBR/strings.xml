@@ -87,13 +87,11 @@
     <string name="proxy_port">Porta do proxy</string>
     <string name="root_capture">Capturar como root</string>
     <string name="donate">Doar</string>
-    <string name="root_log">Registro root</string>
     <string name="search">Buscar…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Endereço IP: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocolo: %1$s</string>
-    <string name="whitelist_action">Autorizar…</string>
     <string name="n_selected">%1$d selecionado</string>
     <string name="select_all">Selecionar tudo</string>
     <string name="app_details">Detalhes do app</string>

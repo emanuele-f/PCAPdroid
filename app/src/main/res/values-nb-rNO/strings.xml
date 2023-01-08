@@ -65,12 +65,10 @@
     <string name="conn_status_unreachable">Kan ikke nåes</string>
     <string name="theme_light">Lys</string>
     <string name="donate">Doner</string>
-    <string name="root_log">Rot-logg</string>
     <string name="search">Søk …</string>
     <string name="ip_address_val">IP-adresse: %1$s</string>
     <string name="host_val">Vert: %1$s</string>
     <string name="protocol_val">Protokoll: %1$s</string>
-    <string name="whitelist_action">Hvitliste …</string>
     <string name="hide">Skjul …</string>
     <string name="n_selected">%1$d valgt</string>
     <string name="select_all">Velg alle</string>

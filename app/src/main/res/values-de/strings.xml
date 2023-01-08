@@ -108,7 +108,6 @@
     <string name="proxy_port">Proxy-Port</string>
     <string name="root_capture_summary">Erlaubt PCAPdroid die Ausführung mit anderen VPN-Apps</string>
     <string name="donate">Spenden</string>
-    <string name="root_log">Root-Protokoll</string>
     <string name="search">Suche…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">IP-Adresse: %1$s</string>
@@ -129,7 +128,6 @@
     <string name="unknown_app_info">„Unbekannt“ markiert Verbindungen, deren App nicht ermittelt werden konnte</string>
     <string name="packets_dropped">Entfallene Pakete</string>
     <string name="root_capture">Als Root aufnehmen</string>
-    <string name="whitelist_action">Positivliste…</string>
     <string name="pcapdroid_trailer">PCAPdroid-Fußzeile</string>
     <string name="trailer_how_to">So zeigst du die Fußzeilendaten in Wireshark an</string>
     <string name="pending_transaction">Bitte schließe deine Transaktion ab, um diese Funktion einzulösen</string>

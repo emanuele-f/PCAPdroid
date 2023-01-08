@@ -92,12 +92,10 @@
     <string name="packets_dropped">버려진 패킷</string>
     <string name="proxy_port">프록시 포트</string>
     <string name="donate">후원</string>
-    <string name="root_log">루트 로그</string>
     <string name="root_capture_summary">PCAPdroid가 다른 VPN 앱과 같이 동작하도록 허용하기</string>
     <string name="host_val">호스트: %1$s</string>
     <string name="app_val">앱: %1$s</string>
     <string name="ip_address_val">IP 주소: %1$s</string>
-    <string name="whitelist_action">화이트리스트…</string>
     <string name="protocol_val">프로토콜: %1$s</string>
     <string name="pcapdroid_trailer">PCAPdroid 트레일러</string>
     <string name="root_app_info">최대 권한으로 동작 중인 시스템 데몬</string>

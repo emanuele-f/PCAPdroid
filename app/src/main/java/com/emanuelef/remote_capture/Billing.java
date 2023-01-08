@@ -69,7 +69,8 @@ public class Billing {
             R.string.learn_more, R.string.buy_action,
             R.string.can_use_purchased_feature, R.drawable.ic_shopping_cart,
             R.string.firewall_summary, R.string.no_root_firewall,
-            R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error
+            R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error,
+            R.string.license_service_unavailable, R.string.requesting_unlock_token, R.string.show_action, R.string.unlock_token_msg1
     };
 
     protected final Context mContext;

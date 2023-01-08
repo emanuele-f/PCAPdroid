@@ -109,7 +109,6 @@
     <string name="ip_address_val">Alamat IP: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protokol: %1$s</string>
-    <string name="whitelist_action">Daftar putih…</string>
     <string name="app_val">Apl: %1$s</string>
     <string name="select_all">Pilih semua</string>
     <string name="uid">UID</string>
@@ -209,7 +208,6 @@
     <string name="copy_to_clipboard">Salin ke papan klip</string>
     <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
-    <string name="root_log">Log root</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
     <string name="proxy_ip_address">Alamat IP proxy</string>
