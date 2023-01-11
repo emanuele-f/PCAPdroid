@@ -451,4 +451,6 @@
     <string name="many_rules_warning">You are trying to import many rules, which could make the app unresponsive during some interactions. Do you really want to continue?</string>
     <string name="pcapng_format">PCAPNG format</string>
     <string name="pcapng_format_summary">Dump packets in the PCAPNG dump format, which allows embedding TLS decryption secrets</string>
+    <string name="sort_by">Sort by</string>
+    <string name="total_bytes">Total bytes</string>
 </resources>

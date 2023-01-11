@@ -702,7 +702,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 startExportSslkeylogfile();
         });
 
-        builder.create().show();
+        AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
     }
 
     private void deletePcapFile(Uri pcapUri) {

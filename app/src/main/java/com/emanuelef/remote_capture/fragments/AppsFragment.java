@@ -48,6 +48,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
+import com.emanuelef.remote_capture.adapters.AppsStatsAdapter.SortField;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.Blocklist;
@@ -63,6 +64,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
+    private Menu mMenu;
 
     @Override
     public void onPause() {
@@ -122,14 +124,46 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
         });
     }
 
+    private void refreshSortField() {
+        if((mMenu == null) || (mAdapter == null))
+            return;
+
+        SortField sortField = mAdapter.getSortField();
+        Log.d(TAG, "Sort field:" + sortField);
+
+        MenuItem byName = mMenu.findItem(R.id.sort_by_name);
+        MenuItem byTotalBytes = mMenu.findItem(R.id.sort_by_total_bytes);
+        MenuItem byBytesSent = mMenu.findItem(R.id.sort_by_bytes_sent);
+        MenuItem byBytesRcvd = mMenu.findItem(R.id.sort_by_bytes_rcvd);
+
+        // important: the checked item must first be unchecked
+        byName.setChecked(false);
+        byTotalBytes.setChecked(false);
+        byBytesSent.setChecked(false);
+        byBytesRcvd.setChecked(false);
+
+        if(sortField.equals(SortField.NAME))
+            byName.setChecked(true);
+        else if(sortField.equals(SortField.TOTAL_BYTES))
+            byTotalBytes.setChecked(true);
+        else if(sortField.equals(SortField.BYTES_SENT))
+            byBytesSent.setChecked(true);
+        else if(sortField.equals(SortField.BYTES_RCVD))
+            byBytesRcvd.setChecked(true);
+    }
+
     @Override
     public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.apps_menu, menu);
+        mMenu = menu;
+        refreshSortField();
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-        if(menuItem.getItemId() == R.id.reset) {
+        int id = menuItem.getItemId();
+
+        if(id == R.id.reset) {
             new AlertDialog.Builder(requireContext())
                 .setMessage(R.string.reset_stats_confirm)
                 .setPositiveButton(R.string.yes, (dialog, whichButton) -> {
@@ -143,7 +177,24 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
                 .show();
 
             return true;
+        } else if(id == R.id.sort_by_name) {
+            mAdapter.setSortField(SortField.NAME);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_total_bytes) {
+            mAdapter.setSortField(SortField.TOTAL_BYTES);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_bytes_sent) {
+            mAdapter.setSortField(SortField.BYTES_SENT);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_bytes_rcvd) {
+            mAdapter.setSortField(SortField.BYTES_RCVD);
+            refreshSortField();
+            return true;
         }
+
         return false;
     }
 

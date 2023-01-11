@@ -12,19 +12,37 @@
 
     <ImageView
         android:id="@+id/icon"
+        tools:src="@drawable/ic_apps"
+        tools:tint="?attr/colorAccent"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_margin="4dp" />
 
-    <TextView
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_marginStart="4dp"
         android:layout_width="0dp"
-        android:layout_height="fill_parent"
         android:layout_weight="0.5"
-        android:layout_marginStart="5dp"
-        tools:text="Example app"
-        android:maxLines="2"
-        android:gravity="center_vertical"
-        android:id="@+id/app_info"/>
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/app_info"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Example app" />
+
+        <TextView
+            android:id="@+id/sent_rcvd"
+            tools:text="@string/rcvd_and_sent"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/blocked"
