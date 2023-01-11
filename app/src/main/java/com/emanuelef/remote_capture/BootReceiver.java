@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.VpnService;
-import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -56,7 +55,7 @@ public class BootReceiver extends BroadcastReceiver {
             return;
         }
 
-        CaptureSettings settings = new CaptureSettings(prefs);
+        CaptureSettings settings = new CaptureSettings(context, prefs);
 
         if(!settings.root_capture) {
             Intent vpnPrepareIntent = VpnService.prepare(context);

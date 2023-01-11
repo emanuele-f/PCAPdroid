@@ -29,10 +29,10 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.ConnectionOverview;
 import com.emanuelef.remote_capture.fragments.ConnectionPayload;
@@ -73,7 +73,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         super.onCreate(savedInstanceState);
         setTitle(R.string.connection_details);
         displayBackAction();
-        setContentView(R.layout.activity_connection_details);
+        setContentView(R.layout.tabs_activity_fixed);
 
         int incr_id = getIntent().getIntExtra(CONN_ID_KEY, -1);
         if(incr_id != -1) {

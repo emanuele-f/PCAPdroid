@@ -22,12 +22,8 @@ package com.emanuelef.remote_capture.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.InetAddresses;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
-import android.util.Patterns;
 
 import androidx.annotation.Nullable;
 import androidx.activity.result.ActivityResultLauncher;
@@ -45,10 +41,12 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.fragments.DnsSettings;
 import com.emanuelef.remote_capture.fragments.GeoipSettings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -57,7 +55,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.regex.Matcher;
 
 public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, FragmentManager.OnBackStackChangedListener {
     private static final String TAG = "SettingsActivity";
@@ -89,6 +86,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         if(prefKey.equals("geolocation")) {
             targetFragment = new GeoipSettings();
             setTitle(R.string.geolocation);
+        } else if(prefKey.equals("dns_settings")) {
+            targetFragment = new DnsSettings();
+            setTitle(R.string.dns_servers);
         }
 
         if(targetFragment != null) {
@@ -133,11 +133,16 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mSocks5ProxyIp;
         private EditTextPreference mSocks5ProxyPort;
+        private EditTextPreference mMitmproxyOpts;
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private Preference mVpnExceptions;
+        private Preference mDnsSettings;
+        private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
+        private SwitchPreference mTrailerEnabled;
+        private SwitchPreference mPcapngEnabled;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
@@ -172,9 +177,8 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupSecurityPrefs();
             setupOtherPrefs();
 
-            fullPayloadHideShow(mTlsDecryption.isChecked());
             socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), rootCaptureEnabled());
-            mBlockQuic.setVisible(mTlsDecryption.isChecked() && !rootCaptureEnabled());
+            mBlockQuic.setVisible(!rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
@@ -192,6 +196,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             if(mHasStartedMitmWizard && !MitmAddon.needsSetup(requireContext())) {
                 Log.d(TAG, "mitm setup complete, enabling");
                 mTlsDecryption.setChecked(true);
+                mFullPayloadEnabled.setChecked(true);
             }
             mHasStartedMitmWizard = false;
         }
@@ -203,45 +208,30 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             return pref;
         }
 
-        private boolean validatePort(String value) {
-            try {
-                int val = Integer.parseInt(value);
-                return((val > 0) && (val < 65535));
-            } catch(NumberFormatException e) {
-                return false;
-            }
-        }
-
-        @SuppressWarnings("deprecation")
-        private boolean validateIp(String value) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                return (InetAddresses.isNumericAddress(value));
-            else {
-                Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
-                return(matcher.matches());
-            }
-        }
-
         @SuppressWarnings("deprecation")
         private void setupUdpExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
-            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> validateIp(newValue.toString()));
+            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
 
             /* Collector port validation */
             EditTextPreference mRemoteCollectorPort = requirePreference(Prefs.PREF_COLLECTOR_PORT_KEY);
             mRemoteCollectorPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
-            mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mRemoteCollectorPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private void setupHttpServerPrefs() {
             /* HTTP Server port validation */
             EditTextPreference mHttpServerPort = requirePreference(Prefs.PREF_HTTP_SERVER_PORT);
-            mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
+            mHttpServerPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private boolean rootCaptureEnabled() {
             return Utils.isRootAvailable() && mRootCaptureEnabled.isChecked();
+        }
+
+        private boolean isPcapngEnabled() {
+            return mIab.isPurchased(Billing.PCAPNG_SKU) && mPcapngEnabled.isChecked();
         }
 
         private void refreshInterfaces() {
@@ -275,14 +265,36 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private void setupCapturePrefs() {
             mCapInterface = requirePreference(Prefs.PREF_CAPTURE_INTERFACE);
-            mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
             refreshInterfaces();
 
+            mRootCaptureEnabled = requirePreference(Prefs.PREF_ROOT_CAPTURE);
+            if(Utils.isRootAvailable()) {
+                mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
+                    rootCaptureHideShow((Boolean) newValue);
+                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
+                    return true;
+                });
+            } else
+                mRootCaptureEnabled.setVisible(false);
+
+            mDnsSettings = requirePreference("dns_settings");;
+            mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
             mVpnExceptions.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireContext(), VpnExemptionsActivity.class);
                 startActivity(intent);
                 return true;
             });
+
+            mPcapngEnabled = requirePreference("pcapng_format");
+            mPcapngEnabled.setOnPreferenceChangeListener(((preference, newValue) -> {
+                mTrailerEnabled.setVisible(!(boolean)newValue);
+                return true;
+            }));
+            if(!mIab.isPurchased(Billing.PCAPNG_SKU))
+                mPcapngEnabled.setVisible(false);
+
+            mTrailerEnabled = requirePreference("pcapdroid_trailer");
+            mTrailerEnabled.setVisible(!isPcapngEnabled()); // TODO support
         }
 
         private void setupSecurityPrefs() {
@@ -327,15 +339,16 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return false;
                 }
 
-                fullPayloadHideShow((boolean) newValue);
-                mBlockQuic.setVisible(((boolean) newValue) && !rootCaptureEnabled());
                 mMitmWizard.setVisible((boolean) newValue);
+                mMitmproxyOpts.setVisible((boolean) newValue);
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
                 return true;
             });
 
             mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
             mBlockQuic = requirePreference(Prefs.PREF_BLOCK_QUIC);
+            mMitmproxyOpts = requirePreference(Prefs.PREF_MITMPROXY_OPTS);
+            mMitmproxyOpts.setVisible(mTlsDecryption.isChecked());
             mMitmWizard = requirePreference("mitm_setup_wizard");
             mMitmWizard.setVisible(mTlsDecryption.isChecked());
             mMitmWizard.setOnPreferenceClickListener(preference -> {
@@ -353,23 +366,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
             /* TLS Proxy IP validation */
             mSocks5ProxyIp = requirePreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY);
-            mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    return (InetAddresses.isNumericAddress(newValue.toString()));
-                else {
-                    Matcher matcher = Patterns.IP_ADDRESS.matcher(newValue.toString());
-                    return(matcher.matches());
-                }
-            });
+            mSocks5ProxyIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
 
             /* TLS Proxy port validation */
             mSocks5ProxyPort = requirePreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY);
             mSocks5ProxyPort.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED));
-            mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> validatePort(newValue.toString()));
-        }
-
-        private void fullPayloadHideShow(boolean tlsDecryption) {
-            mFullPayloadEnabled.setVisible(!tlsDecryption);
+            mSocks5ProxyPort.setOnPreferenceChangeListener((preference, newValue) -> Utils.validatePort(newValue.toString()));
         }
 
         private void socks5ProxyHideShow(boolean tlsDecryption, boolean socks5Enabled, boolean rootEnabled) {
@@ -403,23 +405,18 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             });
 
             DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
-
             appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
                 Utils.setAppTheme(newValue.toString());
 
                 return true;
             });
 
-            mRootCaptureEnabled = requirePreference(Prefs.PREF_ROOT_CAPTURE);
-
-            if(Utils.isRootAvailable()) {
-                mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
-                    rootCaptureHideShow((Boolean) newValue);
-                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
-                    return true;
-                });
-            } else
-                mRootCaptureEnabled.setVisible(false);
+            mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
+            mPortMapping.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), PortMapActivity.class);
+                startActivity(intent);
+                return true;
+            });
 
             mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
@@ -440,18 +437,18 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mSocks5Enabled.setVisible(false);
                 mSocks5ProxyIp.setVisible(false);
                 mSocks5ProxyPort.setVisible(false);
-                fullPayloadHideShow(mTlsDecryption.isChecked());
                 mBlockQuic.setVisible(false);
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
-                fullPayloadHideShow(mTlsDecryption.isChecked());
-                mBlockQuic.setVisible(mTlsDecryption.isChecked());
+                mBlockQuic.setVisible(true);
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), mSocks5Enabled.isChecked(), false);
             }
 
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
             mVpnExceptions.setVisible(!enabled);
+            mDnsSettings.setVisible(!enabled);
+            mPortMapping.setVisible(!enabled);
         }
 
         private boolean checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {

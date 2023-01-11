@@ -19,6 +19,7 @@
 
 #include "pcapdroid.h"
 #include "common/utils.h"
+#include "port_map.h"
 
 /* ******************************************************* */
 
@@ -33,7 +34,7 @@ static int resolve_uid(pcapdroid_t *pd, const zdtun_5tuple_t *conn_info) {
         char appbuf[64];
 
         get_appname_by_uid(pd, uid, appbuf, sizeof(appbuf));
-        log_i( "%s [%d/%s]", buf, uid, appbuf);
+        log_d( "%s [%d/%s]", buf, uid, appbuf);
     } else {
         uid = UID_UNKNOWN;
         log_w("%s => UID not found!", buf);
@@ -146,15 +147,9 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
     const zdtun_5tuple_t *tuple = pctx->tuple;
 
     if(new_dns_server != 0) {
-        // Reload DNS server
+        log_i("Using new DNS server");
         pd->vpn.ipv4.dns_server = new_dns_server;
         new_dns_server = 0;
-
-        zdtun_ip_t ip = {0};
-        ip.ip4 = pd->vpn.ipv4.dns_server;
-        zdtun_set_dnat_info(pd->zdt, &ip, htons(53), 4);
-
-        log_d("Using new DNS server");
     }
 
     if(pctx->tuple->ipproto == IPPROTO_ICMP)
@@ -201,7 +196,9 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
                  * Direct the packet to the public DNS server. Checksum recalculation is not strictly necessary
                  * here as zdtun will pd the connection.
                  */
-                zdtun_conn_dnat(conn);
+                zdtun_ip_t ip = {0};
+                ip.ip4 = pd->vpn.ipv4.dns_server;
+                zdtun_conn_dnat(conn, &ip, htons(53), 4);
             }
 
             return(true);
@@ -209,7 +206,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
     }
 
     if(block_private_dns) {
-        log_i("blocking packet directed to the DNS server");
+        log_d("blocking packet directed to the DNS server");
         return(false);
     }
 
@@ -352,11 +349,26 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple) {
+static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     // NOTE: connections must be proxied as soon as the first packet arrives.
-    // Since we cannot reliably determine TLS connections with 1 packet, we must proxy all the TCP
-    // connections.
-    return pd->socks5.enabled && (tuple->ipproto == IPPROTO_TCP);
+    // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
+    // we must proxy all the TCP connections.
+    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP))
+        return false;
+
+    if(pd->tls_decryption.wl) {
+        zdtun_ip_t dst_ip = tuple->dst_ip;
+
+        // NOTE: domain matching only works if a prior DNS reply is seen (see ip_lru_find in pd_new_connection)
+        if(blacklist_match_ip(pd->tls_decryption.wl, &dst_ip, tuple->ipver) ||
+                blacklist_match_uid(pd->tls_decryption.wl, data->uid) ||
+                (data->info && blacklist_match_domain(pd->tls_decryption.wl, data->info))) {
+            data->decryption_whitelisted = true;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /* ******************************************************* */
@@ -370,7 +382,7 @@ void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *d
     if(block_private_dns && !data->to_block &&
             (data->l7proto == NDPI_PROTOCOL_TLS) &&
             data->info && blacklist_match_domain(pd->vpn.known_dns_servers, data->info)) {
-        log_i("blocking connection to private DNS server");
+        log_d("blocking connection to private DNS server");
         data->blacklisted_internal = true;
         data->to_block = true;
     }
@@ -389,6 +401,8 @@ static void load_dns_servers(pcapdroid_t *pd) {
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8844");
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::64");
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::6400");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1111");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1001");
 
     // Domains (only private DNS)
     // https://help.firewalla.com/hc/en-us/articles/360060661873-Dealing-DNS-over-HTTPS-and-DNS-over-TLS-on-your-network
@@ -465,16 +479,10 @@ int run_vpn(pcapdroid_t *pd) {
             zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);
     }
 
-    if(pd->vpn.ipv4.enabled) {
-        zdtun_ip_t ip = {0};
-        ip.ip4 = pd->vpn.ipv4.dns_server;
-        zdtun_set_dnat_info(zdt, &ip, ntohs(53), 4);
-    }
-
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
-    log_d("Starting packet loop [tunfd=%d]", pd->vpn.tunfd);
+    log_i("Starting packet loop");
 
     while(running) {
         int max_fd;
@@ -551,9 +559,13 @@ int run_vpn(pcapdroid_t *pd) {
                 pd_conn_t *data = zdtun_conn_get_userdata(conn);
 
                 // To be run before pd_process_packet/process_payload
-                if((data->sent_pkts == 0) && should_proxy(pd, tuple)) {
-                    zdtun_conn_proxy(conn);
-                    data->proxied = true;
+                if(data->sent_pkts == 0) {
+                    if(pd_check_port_map(conn))
+                        /* port mapping applied */;
+                    else if(should_proxy(pd, tuple, data)) {
+                        zdtun_conn_proxy(conn);
+                        data->proxied = true;
+                    }
                 }
 
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
@@ -583,11 +595,16 @@ int run_vpn(pcapdroid_t *pd) {
                 data->vpn.fw_pctx = &pctx;
                 if(zdtun_forward(zdt, &pkt, conn) != 0) {
                     char buf[512];
+                    zdtun_conn_status_t status = zdtun_conn_get_status(conn);
 
-                    log_e("zdtun_forward failed: %s",
-                                zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+                    if(status != CONN_STATUS_UNREACHABLE) {
+                        log_e("zdtun_forward failed[%d]: %s", status,
+                              zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
 
-                    pd->num_dropped_connections++;
+                        pd->num_dropped_connections++;
+                    } else
+                        log_w("%s: net/host unreachable", zdtun_5tuple2str(&pkt.tuple, buf, sizeof(buf)));
+
                     zdtun_conn_close(zdt, conn, CONN_STATUS_ERROR);
                     goto housekeeping;
                 } else {
@@ -635,6 +652,7 @@ int run_vpn(pcapdroid_t *pd) {
         }
     }
 
+    pd_reset_port_map();
     zdtun_finalize(zdt);
 
 #if ANDROID

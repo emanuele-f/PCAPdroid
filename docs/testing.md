@@ -2,16 +2,16 @@
 
 Tests in PCAPdroid can be split in the following categories:
 
-- [Java tests](https://github.com/emanuele-f/PCAPdroid/tree/dev/app/src/test/java):
+- [Java tests](https://github.com/emanuele-f/PCAPdroid/tree/master/app/src/test/java):
   they can be run via `./gradlew test`. They use the
   [robolectric framework](https://github.com/robolectric/robolectric)
   to mock the Android API, allowing them to be run locally (without an Android device).
 
-- [Native tests](https://github.com/emanuele-f/PCAPdroid/tree/dev/app/src/main/jni/tests):
+- [Native tests](https://github.com/emanuele-f/PCAPdroid/tree/master/app/src/main/jni/tests):
   tests and fuzzing targets for native code. Check out their readme for more details.
 
 The tests are executed on every push via the
-[Github workflows](https://github.com/emanuele-f/PCAPdroid/tree/dev/.github/workflows).
+[Github workflows](https://github.com/emanuele-f/PCAPdroid/tree/master/.github/workflows).
 
 Apart from automatic tests, the following manual tests should be performed
 before every release:

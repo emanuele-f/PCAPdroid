@@ -21,9 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -32,6 +30,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -47,6 +46,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.InetAddresses;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -65,7 +65,7 @@ import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.util.Log;
+import android.util.Patterns;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,7 +89,6 @@ import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
-import com.emanuelef.remote_capture.views.AppsListView;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -107,6 +106,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -128,6 +128,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -143,6 +145,7 @@ public class Utils {
     public static final int LOW_HEAP_THRESHOLD = 10485760 /* 10 MB */;
     private static Boolean rootAvailable = null;
     private static Locale primaryLocale = null;
+    private static String[] l7Protocols = null;
 
     public enum BuildType {
         UNKNOWN,
@@ -304,6 +307,16 @@ public class Utils {
             case 1:     return "ICMP";
             default:    return(Integer.toString(proto));
         }
+    }
+
+    public static String[] getL7Protocols() {
+        if(l7Protocols == null) {
+            List<String> protos = CaptureService.getL7Protocols();
+            Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
+            l7Protocols = protos.toArray(new String[0]);
+        }
+
+        return l7Protocols;
     }
 
     public static String getDnsServer(ConnectivityManager cm, Network net) {
@@ -521,26 +534,45 @@ public class Utils {
         return hexdump(array, 0, array.length);
     }
 
-    // Splits the provided data into individual PCAP records. Intended to be used with data received
+    // Splits the provided data into individual PCAP/PCAPNG records. Intended to be used with data received
     // via CaptureService::dumpPcapData
-    public static Iterator<Integer> iterPcapRecords(byte[] data) {
+    public static Iterator<Integer> iterPcapRecords(byte[] data, boolean pcapng_format) {
         final ByteBuffer buf = ByteBuffer.wrap(data);
         buf.order(ByteOrder.nativeOrder());
 
-        return new Iterator<Integer>() {
-            @Override
-            public boolean hasNext() {
-                // 16: sizeof(pcaprec_hdr_s)
-                return(buf.remaining() > 16);
-            }
+        if(pcapng_format) {
+            // PCAPNG
+            return new Iterator<Integer>() {
+                @Override
+                public boolean hasNext() {
+                    // 12: min block size
+                    return(buf.remaining() >= 12);
+                }
 
-            @Override
-            public Integer next() {
-                int rec_len = buf.getInt(buf.position() + 8) + 16;
-                buf.position(buf.position() + rec_len);
-                return rec_len;
-            }
-        };
+                @Override
+                public Integer next() {
+                    int total_len = buf.getInt(buf.position() + 4);
+                    buf.position(buf.position() + total_len);
+                    return total_len;
+                }
+            };
+        } else {
+            // PCAP
+            return new Iterator<Integer>() {
+                @Override
+                public boolean hasNext() {
+                    // 16: sizeof(pcap_rec)
+                    return(buf.remaining() > 16);
+                }
+
+                @Override
+                public Integer next() {
+                    int rec_len = buf.getInt(buf.position() + 8) + 16;
+                    buf.position(buf.position() + rec_len);
+                    return rec_len;
+                }
+            };
+        }
     }
 
     // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
@@ -593,41 +625,14 @@ public class Utils {
         alert.show();
     }
 
-    public static Dialog getAppSelectionDialog(Activity activity, List<AppDescriptor> appsData, AppsListView.OnSelectedAppListener listener) {
-        View dialogLayout = activity.getLayoutInflater().inflate(R.layout.apps_selector, null);
-        SearchView searchView = dialogLayout.findViewById(R.id.apps_search);
-        AppsListView apps = dialogLayout.findViewById(R.id.apps_list);
-        TextView emptyText = dialogLayout.findViewById(R.id.no_apps);
-
-        apps.setApps(appsData);
-        apps.setEmptyView(emptyText);
-        searchView.setOnQueryTextListener(apps);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(R.string.app_filter);
-        builder.setView(dialogLayout);
-
-        final AlertDialog alert = builder.create();
-        alert.setCanceledOnTouchOutside(true);
-
-        apps.setSelectedAppListener(app -> {
-            listener.onSelectedApp(app);
-
-            // dismiss the dialog
-            alert.dismiss();
-        });
-
-        return alert;
-    }
-
     public static String getUniqueFileName(Context context, String ext) {
         Locale locale = getPrimaryLocale(context);
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
         return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
     }
 
-    public static String getUniquePcapFileName(Context context) {
-        return(Utils.getUniqueFileName(context, "pcap"));
+    public static String getUniquePcapFileName(Context context, boolean pcapng_format) {
+        return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
     }
 
     public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
@@ -746,58 +751,61 @@ public class Utils {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
-    public static Uri getInternalStorageFile(Context context, String fname) {
+    // Get a URI to write a file into the downloads folder, into a folder named "PCAPdroid"
+    // If the file exists, it's overwritten
+    public static Uri getDownloadsUri(Context context, String fname) {
         ContentValues values = new ContentValues();
 
         //values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
+        String selectQuery = "";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // On Android Q+ cannot directly access the external dir. Must use RELATIVE_PATH instead.
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+            // Important: trailing "/" required for the selectQuery
+            String relPath = Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid/";
+            selectQuery = MediaStore.MediaColumns.RELATIVE_PATH + "='" + relPath + "' AND " +
+                MediaStore.MediaColumns.DISPLAY_NAME + "='" + fname + "'";
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    Log.w("getInternalStorageFile", "external storage permission was denied");
+                    Utils.showToastLong(context, R.string.external_storage_perm_required);
                     return(null);
                 }
             }
 
             // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
-            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fname;
-            Log.d("getInternalStorageFile", path);
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File folder = new File(downloadsDir + "/PCAPdroid");
+            try {
+                folder.mkdirs();
+            } catch (Exception ignored) {}
+            if(!folder.exists())
+                folder = downloadsDir;
+
+            String path = folder + "/" + fname;
+            Log.d(TAG, "getDownloadsUri: path=" + path);
+            selectQuery = MediaStore.MediaColumns.DATA + "='" + path + "'";
             values.put(MediaStore.MediaColumns.DATA, path);
         }
 
-        return context.getContentResolver().insert(
-                MediaStore.Files.getContentUri("external"), values);
-    }
+        Uri externalUri = MediaStore.Files.getContentUri("external");
 
-    public static String getUriFname(Context context, Uri uri) {
-        Cursor cursor;
-        String fname;
+        // if the file with given name already exists, overwrite it
+        try (Cursor cursor = context.getContentResolver().query(externalUri, new String[]{MediaStore.MediaColumns._ID}, selectQuery, null, null)) {
+            if ((cursor != null) && cursor.moveToFirst()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+                Uri existingUri = ContentUris.withAppendedId(externalUri, id);
 
-        try {
-            String []projection = {OpenableColumns.DISPLAY_NAME};
-            cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        } catch (Exception e) {
-            return null;
-        }
+                Log.d(TAG, "getDownloadsUri: overwriting file " + existingUri);
+                return existingUri;
+            }
+        } catch (Exception ignored) {}
 
-        if((cursor == null) || !cursor.moveToFirst())
-            return null;
-
-        try {
-            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            if(idx < 0)
-                return null;
-            fname = cursor.getString(idx);
-        } finally {
-            cursor.close();
-        }
-
-        return fname;
+        Uri newUri = context.getContentResolver().insert(externalUri, values);
+        Log.d(TAG, "getDownloadsUri: new file " + newUri);
+        return newUri;
     }
 
     public static boolean isRootAvailable() {
@@ -966,6 +974,8 @@ public class Utils {
                 try {
                     // Necessary otherwise the connection will stay open
                     con.setRequestProperty("Connection", "Close");
+                    con.setConnectTimeout(5000);
+                    con.setReadTimeout(5000);
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
@@ -974,6 +984,8 @@ public class Utils {
                             bos.write(bytesIn, 0, read);
                             has_contents |= (read > 0);
                         }
+                    } catch (SocketTimeoutException _ignored) {
+                        Log.w(TAG, "Timeout while fetching " + _url);
                     }
                 } finally {
                     con.disconnect();
@@ -987,7 +999,7 @@ public class Utils {
             try {
                 //noinspection ResultOfMethodCallIgnored
                 (new File(path + ".tmp")).delete(); // if exists
-            } catch (Exception e) {
+            } catch (Exception ignored) {
                 // ignore
             }
             return false;
@@ -1355,25 +1367,30 @@ public class Utils {
         return false;
     }
 
+    public static String getDeviceModel() {
+        if(Build.MODEL.startsWith(Build.MANUFACTURER))
+            return Build.MANUFACTURER;
+        else
+            return Build.MANUFACTURER + " " + Build.MODEL;
+    }
+
+    public static String getOsVersion() {
+        return "Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")";
+    }
+
     public static String getBuildInfo(Context ctx) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-        String deviceModel;
         boolean rooted = Utils.isRootAvailable();
-
-        if(Build.MODEL.startsWith(Build.MANUFACTURER))
-            deviceModel = Build.MANUFACTURER;
-        else
-            deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
 
         return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
                 "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
-                "Device: " + deviceModel + (rooted ? " (rooted)" : "") + "\n" +
-                "OS version: Android " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")\n";
+                "Device: " + getDeviceModel() + (rooted ? " (rooted)" : "") + "\n" +
+                "OS version: " + getOsVersion() + "\n";
     }
 
-    public static String getUserAgent() {
+    public static String getAppVersionString() {
         return "PCAPdroid v" + BuildConfig.VERSION_NAME;
     }
 
@@ -1428,5 +1445,105 @@ public class Utils {
             return pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(flags));
         else
             return pm.getInstalledPackages(flags);
+    }
+
+    public static boolean validatePort(String value) {
+        try {
+            int val = Integer.parseInt(value);
+            return((val > 0) && (val < 65535));
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean validateIpAddress(String value) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return (InetAddresses.isNumericAddress(value));
+        else {
+            Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
+            return(matcher.matches());
+        }
+    }
+
+    // https://mkyong.com/regular-expressions/how-to-validate-ip-address-with-regular-expression/
+    private static final Pattern IPV4_PATTERN = Pattern.compile(
+            "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$");
+
+    public static boolean validateIpv4Address(String s) {
+        Matcher matcher = IPV4_PATTERN.matcher(s);
+        return matcher.matches();
+    }
+
+    public static boolean validateIpv6Address(String s) {
+        return validateIpAddress(s) && !validateIpv4Address(s);
+    }
+
+    // rough validation
+    public static boolean validateHost(String host) {
+        int len = host.length();
+        if((len < 2) || (len > 67))
+            return false;
+        if((host.charAt(0) == '-') || (host.charAt(len-1) == '-'))
+            return false;
+        if(host.matches(".*[A-Z\\s?!=`@].*"))
+            return false;
+        return true;
+    }
+
+    public static String uriToFilePath(Context ctx, Uri uri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        try(Cursor cursor = ctx.getContentResolver().query(uri, proj, null, null, null)) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            if(cursor.moveToFirst())
+                return cursor.getString(column_index);
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    public static class UriStat {
+        public String name;
+        public long size;
+    }
+
+    public static UriStat getUriStat(Context ctx, Uri uri) {
+        String uri_str = uri.toString();
+        File uriFile = null;
+
+        // in some devices, cursor.isNull(sizeIndex) is true, which causes size to be 0
+        // try to resolve the original path and access it as a file
+        String fpath = uriToFilePath(ctx, uri);
+        if(fpath != null) {
+            Log.d(TAG, "getUriStat: resolved to file " + fpath);
+            uriFile = new File(fpath);
+        } else if(uri_str.startsWith("file://"))
+            uriFile = new File(uri_str.substring(7));
+
+        if((uriFile != null) && (uriFile.exists())) {
+            // retrieve via file
+            UriStat info = new UriStat();
+            info.name = uriFile.getName();
+            info.size = uriFile.length();
+            return info;
+        }
+
+        // retrieve via content uri
+        // https://developer.android.com/training/secure-file-sharing/retrieve-info.html#RetrieveFileInfo
+        try(Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null)) {
+            if((cursor == null) || !cursor.moveToFirst())
+                return null;
+
+            UriStat info = new UriStat();
+
+            int sizeIndex = cursor.getColumnIndexOrThrow(OpenableColumns.SIZE);
+            int idx = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+            info.name = (idx >= 0) ? cursor.getString(idx) : "*unknown*";
+            info.size = !cursor.isNull(sizeIndex) ? cursor.getLong(sizeIndex) : -1;
+
+            return info;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

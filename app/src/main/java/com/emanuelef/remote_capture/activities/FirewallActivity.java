@@ -19,28 +19,36 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.preference.PreferenceManager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.EditListFragment;
 import com.emanuelef.remote_capture.fragments.FirewallStatus;
 import com.emanuelef.remote_capture.model.ListInfo;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class FirewallActivity extends BaseActivity {
     private static final String TAG = "Firewall";
     private ViewPager2 mPager;
+    private StateAdapter mPagerAdapter;
+    private boolean mHasWhitelist = false;
+    private SharedPreferences mPrefs;
 
     private static final int POS_STATUS = 0;
     private static final int POS_BLOCKLIST = 1;
-    private static final int TOTAL_COUNT = 2;
+    private static final int POS_WHITELIST = 2;
+    private static final int TOTAL_COUNT = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +56,12 @@ public class FirewallActivity extends BaseActivity {
         setTitle(R.string.firewall);
         setContentView(R.layout.tabs_activity);
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPager = findViewById(R.id.pager);
         setupTabs();
     }
 
-    private static class StateAdapter extends FragmentStateAdapter {
+    private class StateAdapter extends FragmentStateAdapter {
         StateAdapter(final FragmentActivity fa) { super(fa); }
 
         @NonNull
@@ -66,11 +75,13 @@ public class FirewallActivity extends BaseActivity {
                     return new FirewallStatus();
                 case POS_BLOCKLIST:
                     return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST);
+                case POS_WHITELIST:
+                    return EditListFragment.newInstance(ListInfo.Type.FIREWALL_WHITELIST);
             }
         }
 
         @Override
-        public int getItemCount() {  return TOTAL_COUNT;  }
+        public int getItemCount() {  return mHasWhitelist ? TOTAL_COUNT : (TOTAL_COUNT - 1);  }
 
         public int getPageTitle(final int position) {
             switch (position) {
@@ -79,17 +90,31 @@ public class FirewallActivity extends BaseActivity {
                     return R.string.status;
                 case POS_BLOCKLIST:
                     return R.string.blocklist;
+                case POS_WHITELIST:
+                    return R.string.whitelist;
             }
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    public void recheckTabs() {
+        boolean whitelist_mode = Prefs.isFirewallWhitelistMode(mPrefs);
+        if(mHasWhitelist == whitelist_mode)
+            return;
+
+        mHasWhitelist = whitelist_mode;
+        mPagerAdapter.notifyDataSetChanged();
+    }
+
     private void setupTabs() {
-        final StateAdapter stateAdapter = new StateAdapter(this);
-        mPager.setAdapter(stateAdapter);
+        mPagerAdapter = new StateAdapter(this);
+        mPager.setAdapter(mPagerAdapter);
 
         new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
-                tab.setText(getString(stateAdapter.getPageTitle(position)))
+                tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
+
+        recheckTabs();
 
         // TODO fix DPAD navigation on Android TV, see MainActivity.onKeyDown
     }

@@ -62,7 +62,6 @@
     <string name="lang_english">İngilizce</string>
     <string name="root_capture_summary">PCAPdroid\'in diğer VPN uygulamalarıyla çalışmasına izin verir</string>
     <string name="donate">Bağış yap</string>
-    <string name="root_log">Root günlüğü</string>
     <string name="search">Ara…</string>
     <string name="app_val">Uygulama: %1$s</string>
     <string name="hide">Gizle…</string>
@@ -199,7 +198,6 @@
     <string name="proxy_port">Vekil bağlantı noktası</string>
     <string name="root_capture">Root olarak yakala</string>
     <string name="host_val">Ana makine: %1$s</string>
-    <string name="whitelist_action">Beyaz listeye al…</string>
     <string name="app_details">Uygulama ayrıntıları</string>
     <string name="theme_light">Açık</string>
     <string name="netd_app_info">DNS çözümlemelerini gerçekleştiren sistem arka plan programı</string>

@@ -27,7 +27,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -48,7 +47,9 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
+import com.emanuelef.remote_capture.PersistableUriPermission;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -71,6 +72,8 @@ public class CaptureCtrl extends AppCompatActivity {
     private CaptureHelper mCapHelper;
     private CtrlPermissions mPermissions;
 
+    private PersistableUriPermission persistableUriPermission;
+
     @Override
     @SuppressWarnings("deprecation")
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,6 +81,9 @@ public class CaptureCtrl extends AppCompatActivity {
         //  requestWindowFeature -> setContentView -> getInsetsController()
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.ctrl_consent);
+
+        // define here since it calls registerForActivityResult
+        persistableUriPermission = new PersistableUriPermission(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             final WindowInsetsController insetsController = getWindow().getInsetsController();
@@ -230,7 +236,7 @@ public class CaptureCtrl extends AppCompatActivity {
             mReceiverClass = req_intent.getStringExtra("broadcast_receiver");
             Log.d(TAG, "Starting capture, caller=" + mStarterApp);
 
-            CaptureSettings settings = new CaptureSettings(req_intent);
+            CaptureSettings settings = new CaptureSettings(this, req_intent);
             String disallowedServer = checkRemoteServerNotAllowed(settings);
             if(disallowedServer != null) {
                 Utils.showToastLong(this, R.string.remote_server_warning, disallowedServer);
@@ -238,8 +244,19 @@ public class CaptureCtrl extends AppCompatActivity {
                 return;
             }
 
-            // will call the mCapHelper listener
-            mCapHelper.startCapture(settings);
+            if(!settings.pcap_uri.isEmpty()) {
+                persistableUriPermission.checkPermission(settings.pcap_uri, settings.pcapng_format, granted_uri -> {
+                    Log.d(TAG, "persistable uri granted? " + granted_uri);
+
+                    if(granted_uri != null) {
+                        settings.pcap_uri = granted_uri.toString();
+                        mCapHelper.startCapture(settings);
+                    } else
+                        abort();
+                });
+            } else
+                // will call the mCapHelper listener
+                mCapHelper.startCapture(settings);
             return;
         } else if(action.equals(ACTION_STOP)) {
             Log.d(TAG, "Stopping capture");

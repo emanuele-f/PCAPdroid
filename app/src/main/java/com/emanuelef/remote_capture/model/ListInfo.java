@@ -20,10 +20,17 @@
 package com.emanuelef.remote_capture.model;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.EditListFragment;
+import com.emanuelef.remote_capture.model.MatchList.RuleType;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 
 public class ListInfo {
@@ -33,6 +40,8 @@ public class ListInfo {
         VISUALIZATION_MASK,
         MALWARE_WHITELIST,
         BLOCKLIST,
+        FIREWALL_WHITELIST,
+        DECRYPTION_WHITELIST,
     }
 
     public ListInfo(Type tp) {
@@ -51,6 +60,10 @@ public class ListInfo {
                 return PCAPdroid.getInstance().getMalwareWhitelist();
             case BLOCKLIST:
                 return PCAPdroid.getInstance().getBlocklist();
+            case FIREWALL_WHITELIST:
+                return PCAPdroid.getInstance().getFirewallWhitelist();
+            case DECRYPTION_WHITELIST:
+                return PCAPdroid.getInstance().getDecryptionWhitelist();
         }
 
         assert false;
@@ -65,6 +78,10 @@ public class ListInfo {
                 return R.string.malware_whitelist_rules;
             case BLOCKLIST:
                 return R.string.firewall_rules;
+            case FIREWALL_WHITELIST:
+                return R.string.whitelist;
+            case DECRYPTION_WHITELIST:
+                return R.string.decryption_whitelist_rules;
         }
 
         assert false;
@@ -79,10 +96,49 @@ public class ListInfo {
                 return R.string.malware_whitelist_help;
             case BLOCKLIST:
                 return 0;
+            case FIREWALL_WHITELIST:
+                return R.string.firewall_whitelist_help;
+            case DECRYPTION_WHITELIST:
+                return R.string.decryption_whitelist_help;
         }
 
         assert false;
         return 0;
+    }
+
+    public Set<RuleType> getSupportedRules() {
+        switch(mType) {
+            case VISUALIZATION_MASK:
+                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST, RuleType.COUNTRY, RuleType.PROTOCOL));
+            case MALWARE_WHITELIST:
+            case DECRYPTION_WHITELIST:
+            case BLOCKLIST:
+                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST));
+            case FIREWALL_WHITELIST:
+                return new ArraySet<>(Collections.singletonList(RuleType.APP));
+        }
+
+        assert false;
+        return null;
+    }
+
+    public void reloadRules() {
+        switch(mType) {
+            case MALWARE_WHITELIST:
+                CaptureService.reloadMalwareWhitelist();
+                break;
+            case BLOCKLIST:
+                if(CaptureService.isServiceActive())
+                    CaptureService.requireInstance().reloadBlocklist();
+                break;
+            case FIREWALL_WHITELIST:
+                if(CaptureService.isServiceActive())
+                    CaptureService.requireInstance().reloadFirewallWhitelist();
+                break;
+            case DECRYPTION_WHITELIST:
+                CaptureService.reloadDecryptionWhitelist();
+                break;
+        }
     }
 
     public EditListFragment newFragment() {

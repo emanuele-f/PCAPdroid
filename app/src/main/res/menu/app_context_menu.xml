@@ -6,6 +6,15 @@
     <item
         android:id="@+id/block_app"
         android:title="@string/action_block" />
+    <item
+        android:id="@+id/add_to_fw_whitelist"
+        android:title="@string/add_to_fw_whitelist"
+        tools:visible="true"
+        android:visible="false" />
+    <item
+        android:id="@+id/remove_from_fw_whitelist"
+        android:title="@string/remove_from_fw_whitelist"
+        android:visible="false" />
 
     <item
         android:id="@+id/unblock_app_permanently"

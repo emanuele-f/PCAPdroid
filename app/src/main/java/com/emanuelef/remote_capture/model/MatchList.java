@@ -24,13 +24,13 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.text.style.StyleSpan;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;
@@ -159,7 +159,7 @@ public class MatchList {
 
         if(tp == RuleType.APP) {
             // TODO handle cross-users/profiles?
-            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0);
+            AppDescriptor app = AppsResolver.resolveInstalledApp(ctx.getPackageManager(), value, 0, false);
             if(app != null)
                 value = app.getName();
         } else if(tp == RuleType.HOST)
@@ -190,11 +190,13 @@ public class MatchList {
         }
     }
 
-    private boolean deserialize(JsonObject object) {
+    private int deserialize(JsonObject object, int max_rules) {
+        int num_rules = 0;
+
         try {
             JsonArray ruleArray = object.getAsJsonArray("rules");
             if(ruleArray == null)
-                return false;
+                return -1;
 
             clear(false);
 
@@ -247,30 +249,37 @@ public class MatchList {
                     }
                 }
 
-                addRule(new Rule(type, val));
+                if(addRule(new Rule(type, val), false)) {
+                    num_rules += 1;
+
+                    if((max_rules > 0) && (num_rules >= max_rules))
+                        break;
+                }
             }
+
+            notifyListeners();
         } catch (IllegalArgumentException | ClassCastException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
 
-        return true;
+        return num_rules;
     }
 
-    public void addIp(String ip)       { addRule(new Rule(RuleType.IP, ip)); }
-    public void addHost(String info)   { addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
-    public void addProto(String proto) { addRule(new Rule(RuleType.PROTOCOL, proto)); }
-    public void addCountry(String country_code) { addRule(new Rule(RuleType.COUNTRY, country_code)); }
-    public void addApp(String pkg)     { addRule(new Rule(RuleType.APP, pkg)); }
-    public void addApp(int uid) {
+    public boolean addIp(String ip)       { return addRule(new Rule(RuleType.IP, ip)); }
+    public boolean addHost(String info)   { return addRule(new Rule(RuleType.HOST, Utils.cleanDomain(info))); }
+    public boolean addProto(String proto) { return addRule(new Rule(RuleType.PROTOCOL, proto)); }
+    public boolean addCountry(String country_code) { return addRule(new Rule(RuleType.COUNTRY, country_code)); }
+    public boolean addApp(String pkg)     { return addRule(new Rule(RuleType.APP, pkg)); }
+    public boolean addApp(int uid) {
         AppDescriptor app = mResolver.getAppByUid(uid, 0);
         if(app == null) {
             Log.e(TAG, "could not resolve UID " + uid);
-            return;
+            return false;
         }
 
         // apps must be identified by their package name to work across installations
-        addApp(app.getPackageName());
+        return addApp(app.getPackageName());
     }
 
     public void removeIp(String ip)       { removeRule(new Rule(RuleType.IP, ip)); }
@@ -292,7 +301,7 @@ public class MatchList {
         return tp + "@" + val;
     }
 
-    private boolean addRule(Rule rule) {
+    private boolean addRule(Rule rule, boolean notify) {
         String value = rule.getValue().toString();
         String key = matchKey(rule.getType(), value);
 
@@ -310,8 +319,13 @@ public class MatchList {
 
         mRules.add(rule);
         mMatches.put(key, rule);
-        notifyListeners();
+        if(notify)
+            notifyListeners();
         return true;
+    }
+
+    private boolean addRule(Rule rule) {
+        return addRule(rule, true);
     }
 
     public int addRules(MatchList to_add) {
@@ -320,7 +334,7 @@ public class MatchList {
         for(Iterator<Rule> it = to_add.iterRules(); it.hasNext(); ) {
             Rule rule = it.next();
 
-            if(addRule(rule))
+            if(addRule(rule, false))
                 num_added++;
         }
 
@@ -433,14 +447,21 @@ public class MatchList {
         return serialized;
     }
 
-    public boolean fromJson(String json_str) {
+    public int fromJson(String json_str, int max_rules) {
         try {
-            JsonObject obj = JsonParser.parseString(json_str).getAsJsonObject();
-            return deserialize(obj);
+            JsonElement el = JsonParser.parseString(json_str);
+            if(!el.isJsonObject())
+              return -1;
+
+            return deserialize(el.getAsJsonObject(), max_rules);
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
+    }
+
+    public int fromJson(String json_str) {
+        return fromJson(json_str, -1);
     }
 
     // can be used by a subclass to exempt specific app (e.g. Blocklist grace apps)

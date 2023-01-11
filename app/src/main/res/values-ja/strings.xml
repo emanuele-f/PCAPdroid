@@ -89,13 +89,11 @@
     <string name="root_capture">ルートとしてキャプチャ</string>
     <string name="root_capture_summary">PCAPdroid とほかの VPN アプリとの併用を許可します</string>
     <string name="donate">寄付</string>
-    <string name="root_log">ルート ログ</string>
     <string name="search">検索…</string>
     <string name="app_val">アプリ: %1$s</string>
     <string name="ip_address_val">IP アドレス: %1$s</string>
     <string name="host_val">ホスト: %1$s</string>
     <string name="protocol_val">プロトコル: %1$s</string>
-    <string name="whitelist_action">ホワイトリスト…</string>
     <string name="hide">隠す…</string>
     <string name="n_selected">%1$d 選択済み</string>
     <string name="select_all">すべて選択</string>

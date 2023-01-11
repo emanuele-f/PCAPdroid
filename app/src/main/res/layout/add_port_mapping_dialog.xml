@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="8dp"
+    android:paddingTop="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlinedDropdown">
+
+            <AutoCompleteTextView
+                android:id="@+id/proto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:text="@string/protocol" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/original_port"
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orig_port"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:hint="@string/destination_ip"
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/redirect_ip"
+                android:inputType="text"
+                android:imeOptions="actionNext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/destination_port"
+            android:theme="@style/Theme.TextInputLayoutOutlined"
+            style="@style/TextInputLayoutOutlined" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/redirect_port"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+</ScrollView>

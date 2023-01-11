@@ -108,7 +108,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
         return true;
     }
 
-    public interface OnSelectedAppListener {
+    interface OnSelectedAppListener {
         void onSelectedApp(AppDescriptor app);
     }
 

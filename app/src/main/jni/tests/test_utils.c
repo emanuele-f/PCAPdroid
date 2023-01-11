@@ -144,10 +144,7 @@ conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip,
 
 /* ******************************************************* */
 
-static void dump_to_file_cb(struct pcapdroid *pd) {
-  uint8_t *buf = (uint8_t*) pd->pcap_dump.buffer;
-  int len = pd->pcap_dump.buffer_idx;
-
+static void dump_to_file_cb(struct pcapdroid *pd, const int8_t *buf, int len) {
   if(out_fp == NULL) {
     out_fp = fopen(PCAP_OUT_PATH, "wb+");
 
@@ -157,9 +154,10 @@ static void dump_to_file_cb(struct pcapdroid *pd) {
     }
 
     // write the PCAP header
-    struct pcap_hdr_s hdr;
-    pcap_build_hdr(pd->pcap_dump.snaplen, &hdr);
-    assert(fwrite(&hdr, sizeof(hdr), 1, out_fp) == 1);
+    pcap_hdr_t *hdr;
+    assert(pcap_get_preamble(pd->pcap_dump.dumper, (char **)&hdr) == sizeof(*hdr));
+    assert(fwrite(hdr, sizeof(*hdr), 1, out_fp) == 1);
+    pd_free(hdr);
   }
 
   assert(fwrite(buf, len, 1, out_fp) == 1);
@@ -185,10 +183,10 @@ void pd_done_dump() {
 /* ******************************************************* */
 
 /* Reads the PCAP header from the dump file and verify that is valid. */
-void assert_pcap_header(pcap_hdr_s *hdr) {
+void assert_pcap_header(pcap_hdr_t *hdr) {
   assert(out_fp != NULL);
 
-  assert(fread(hdr, sizeof(pcap_hdr_s), 1, out_fp) == 1);
+  assert(fread(hdr, sizeof(pcap_hdr_t), 1, out_fp) == 1);
 
   assert(hdr->magic_number == 0xa1b2c3d4);
   assert(hdr->version_major == 2);
@@ -200,8 +198,8 @@ void assert_pcap_header(pcap_hdr_s *hdr) {
 /* Reads a PCAP record and returns a buffer pointing to its data.
  * The data length available in the buffer is rec->incl_len.
  * Returns NULL on EOF. */
-u_char* next_pcap_record(pcaprec_hdr_s *rec) {
-  int rv = fread(rec, sizeof(pcaprec_hdr_s), 1, out_fp);
+u_char* next_pcap_record(pcap_rec_t *rec) {
+  int rv = fread(rec, sizeof(pcap_rec_t), 1, out_fp);
 
   if((rv != 1) && feof(out_fp))
     return NULL;

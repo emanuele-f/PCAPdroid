@@ -23,7 +23,6 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -146,5 +145,9 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         // IMPORTANT: loading all the icons is not a good idea, as they consume much memory
         runLoader(OPERATION_LOAD_APPS_INFO, null);
         return this;
+    }
+
+    public void abort() {
+        finishLoader();
     }
 }

@@ -20,12 +20,13 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,27 +35,36 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.activities.AppDetailsActivity;
 import com.emanuelef.remote_capture.adapters.AppsStatsAdapter;
+import com.emanuelef.remote_capture.adapters.AppsStatsAdapter.SortField;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class AppsFragment extends Fragment implements ConnectionsListener {
+public class AppsFragment extends Fragment implements ConnectionsListener, MenuProvider {
     private EmptyRecyclerView mRecyclerView;
     private AppsStatsAdapter mAdapter;
     private static final String TAG = "AppsFragment";
     private Handler mHandler;
     private boolean mRefreshApps;
     private boolean listenerSet;
+    private Menu mMenu;
 
     @Override
     public void onPause() {
@@ -73,6 +83,7 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.apps_stats, container, false);
     }
 
@@ -113,6 +124,80 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         });
     }
 
+    private void refreshSortField() {
+        if((mMenu == null) || (mAdapter == null))
+            return;
+
+        SortField sortField = mAdapter.getSortField();
+        Log.d(TAG, "Sort field:" + sortField);
+
+        MenuItem byName = mMenu.findItem(R.id.sort_by_name);
+        MenuItem byTotalBytes = mMenu.findItem(R.id.sort_by_total_bytes);
+        MenuItem byBytesSent = mMenu.findItem(R.id.sort_by_bytes_sent);
+        MenuItem byBytesRcvd = mMenu.findItem(R.id.sort_by_bytes_rcvd);
+
+        // important: the checked item must first be unchecked
+        byName.setChecked(false);
+        byTotalBytes.setChecked(false);
+        byBytesSent.setChecked(false);
+        byBytesRcvd.setChecked(false);
+
+        if(sortField.equals(SortField.NAME))
+            byName.setChecked(true);
+        else if(sortField.equals(SortField.TOTAL_BYTES))
+            byTotalBytes.setChecked(true);
+        else if(sortField.equals(SortField.BYTES_SENT))
+            byBytesSent.setChecked(true);
+        else if(sortField.equals(SortField.BYTES_RCVD))
+            byBytesRcvd.setChecked(true);
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.apps_menu, menu);
+        mMenu = menu;
+        refreshSortField();
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+
+        if(id == R.id.reset) {
+            new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.reset_stats_confirm)
+                .setPositiveButton(R.string.yes, (dialog, whichButton) -> {
+                    ConnectionsRegister reg = CaptureService.getConnsRegister();
+                    if(reg != null) {
+                        reg.resetAppsStats();
+                        doRefreshApps();
+                    }
+                })
+                .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                .show();
+
+            return true;
+        } else if(id == R.id.sort_by_name) {
+            mAdapter.setSortField(SortField.NAME);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_total_bytes) {
+            mAdapter.setSortField(SortField.TOTAL_BYTES);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_bytes_sent) {
+            mAdapter.setSortField(SortField.BYTES_SENT);
+            refreshSortField();
+            return true;
+        } else if(id == R.id.sort_by_bytes_rcvd) {
+            mAdapter.setSortField(SortField.BYTES_RCVD);
+            refreshSortField();
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
                                     @Nullable ContextMenu.ContextMenuInfo menuInfo) {
@@ -126,8 +211,15 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
         if(stats == null)
             return;
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         boolean isBlocked = PCAPdroid.getInstance().getBlocklist().matchesApp(stats.getUid());
         menu.findItem(R.id.block_app).setVisible(!isBlocked);
+
+        if(Prefs.isFirewallWhitelistMode(prefs)) {
+            boolean isWhitelisted = PCAPdroid.getInstance().getFirewallWhitelist().matchesApp(stats.getUid());
+            menu.findItem(R.id.add_to_fw_whitelist).setVisible(!isWhitelisted);
+            menu.findItem(R.id.remove_from_fw_whitelist).setVisible(isWhitelisted);
+        }
 
         menu.findItem(R.id.unblock_app_permanently).setVisible(isBlocked);
         menu.findItem(R.id.unblock_app_10m).setVisible(isBlocked)
@@ -142,6 +234,8 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        MatchList whitelist = PCAPdroid.getInstance().getFirewallWhitelist();
+        boolean whitelistChanged = false;
         AppStats app = mAdapter.getSelectedItem();
 
         if(id == R.id.block_app)
@@ -154,10 +248,21 @@ public class AppsFragment extends Fragment implements ConnectionsListener {
             blocklist.unblockAppForMinutes(app.getUid(), 60);
         else if(id == R.id.unblock_app_8h)
             blocklist.unblockAppForMinutes(app.getUid(), 480);
-        else
+        else if(id == R.id.add_to_fw_whitelist) {
+            whitelist.addApp(app.getUid());
+            whitelistChanged = true;
+        } else if(id == R.id.remove_from_fw_whitelist) {
+            whitelist.removeApp(app.getUid());
+            whitelistChanged = true;
+        } else
             return super.onContextItemSelected(item);
 
-        blocklist.saveAndReload();
+        if(whitelistChanged) {
+            whitelist.save();
+            if (CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
+        } else
+            blocklist.saveAndReload();
 
         // refresh the item
         mAdapter.notifyItemChanged(app);

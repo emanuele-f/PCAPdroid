@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.5.6] - 2022-09-24
+- Extend STUN compatibility
+- Fix Whatsapp calls being dropped (no-root)
+- Add ability to skip TLS certificate installation
+- Fix paid features docs URLs and appearance on first app start
+- Fix capture stopped with always-on and start-on-boot
+
 ## [1.5.5] - 2022-08-25
 - You can now buy unlock tokens to access paid features in non-Play builds
 - Fix minor crashes and ANR

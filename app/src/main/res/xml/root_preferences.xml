@@ -72,6 +72,13 @@
             app:summary="@string/mitm_wizard_description"
             app:iconSpaceReserved="false" />
 
+        <EditTextPreference
+            app:key="mitmproxy_opts"
+            app:title="@string/mitmproxy_opts"
+            app:summary="@string/mitmproxy_opts_description"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
         <SwitchPreference
             app:key="block_quic"
             app:title="@string/block_quick"
@@ -127,8 +134,14 @@
             android:key="vpn_exceptions"
             app:title="@string/vpn_exemptions"
             app:summary="@string/vpn_exemptions_summary"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="dns_settings"
+            app:title="@string/dns_servers"
+            app:summary="@string/dns_servers_summary"
             app:iconSpaceReserved="false"
-            app:fragment="com.emanuelef.remote_capture.fragments.VpnExceptions" />
+            app:fragment="com.emanuelef.remote_capture.fragments.DnsSettings" />
 
         <SwitchPreference
             app:key="start_at_boot"
@@ -136,6 +149,13 @@
             app:iconSpaceReserved="false"
             app:summary="@string/start_at_boot_summary"
             android:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="pcapng_format"
+            app:title="@string/pcapng_format"
+            app:iconSpaceReserved="false"
+            app:summary="@string/pcapng_format_summary"
+            app:defaultValue="true" />
 
         <SwitchPreference
             app:key="pcapdroid_trailer"
@@ -159,7 +179,7 @@
             app:title="@string/malware_detection"
             app:iconSpaceReserved="false"
             app:summary="@string/malware_detection_summary"
-            app:defaultValue="false" />
+            app:defaultValue="true" />
 
         <Preference
             app:key="malware_detection_docs"
@@ -189,6 +209,12 @@
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>
 
+        <Preference
+            app:key="port_mapping"
+            app:title="@string/port_mapping"
+            app:summary="@string/port_mapping_summary"
+            app:iconSpaceReserved="false" />
+
         <DropDownPreference
             app:key="ip_mode"
             app:title="@string/ip_mode"
@@ -202,7 +228,6 @@
             app:key="control_permissions"
             app:title="@string/control_permissions"
             app:iconSpaceReserved="false"
-            android:summary="@string/control_permissions_summary">
-        </Preference>
+            android:summary="@string/control_permissions_summary" />
     </PreferenceCategory>
 </PreferenceScreen>

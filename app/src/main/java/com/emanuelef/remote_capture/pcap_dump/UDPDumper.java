@@ -11,14 +11,16 @@ import java.net.InetSocketAddress;
 import java.util.Iterator;
 
 public class UDPDumper implements PcapDumper {
-    public static final String TAG = "UDPDumper";
+    private static final String TAG = "UDPDumper";
     private final InetSocketAddress mServer;
+    private final boolean mPcapngFormat;
     private boolean mSendHeader;
     private DatagramSocket mSocket;
 
-    public UDPDumper(InetSocketAddress server) {
+    public UDPDumper(InetSocketAddress server, boolean pcapngFormat) {
         mServer = server;
         mSendHeader = true;
+        mPcapngFormat = pcapngFormat;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class UDPDumper implements PcapDumper {
             sendDatagram(hdr, 0, hdr.length);
         }
 
-        Iterator<Integer> it = Utils.iterPcapRecords(data);
+        Iterator<Integer> it = Utils.iterPcapRecords(data, mPcapngFormat);
         int pos = 0;
 
         while(it.hasNext()) {

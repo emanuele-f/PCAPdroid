@@ -60,13 +60,11 @@
     <string name="file_saved_with_name">Fichier enregistré sous le nom de « %1$s »</string>
     <string name="theme_light">Clair</string>
     <string name="donate">Faire un don</string>
-    <string name="root_log">Journal racine</string>
     <string name="search">Recherche…</string>
     <string name="app_val">Appli : %1$s</string>
     <string name="ip_address_val">Adresse IP : %1$s</string>
     <string name="host_val">Hôte : %1$s</string>
     <string name="protocol_val">Protocole : %1$s</string>
-    <string name="whitelist_action">Exclure…</string>
     <string name="hide">Masquer…</string>
     <string name="n_selected">%1$d sélectionnés</string>
     <string name="select_all">Tout sélectionner</string>

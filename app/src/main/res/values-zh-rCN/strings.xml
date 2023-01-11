@@ -111,13 +111,11 @@
     <string name="proxy_port">代理端口</string>
     <string name="root_capture">以 root 用户身份捕获流量</string>
     <string name="donate">捐赠</string>
-    <string name="root_log">Root 日志</string>
     <string name="search">搜索…</string>
     <string name="app_val">应用: %1$s</string>
     <string name="ip_address_val">IP 地址: %1$s</string>
     <string name="host_val">主机: %1$s</string>
     <string name="protocol_val">协议: %1$s</string>
-    <string name="whitelist_action">加入白名单…</string>
     <string name="hide">隐藏…</string>
     <string name="n_selected">选中了 %1$d </string>
     <string name="select_all">选择全部</string>

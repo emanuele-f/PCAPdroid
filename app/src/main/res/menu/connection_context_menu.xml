@@ -112,6 +112,16 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/add_to_fw_whitelist"
+        android:title="@string/add_to_fw_whitelist"
+        tools:visible="true"
+        android:visible="false" />
+    <item
+        android:id="@+id/remove_from_fw_whitelist"
+        android:title="@string/remove_from_fw_whitelist"
+        android:visible="false" />
+
     <item android:title="@string/search">
         <menu>
             <item
@@ -167,22 +177,44 @@
         </menu>
     </item>
 
-    <item android:id="@+id/whitelist_menu" android:title="@string/whitelist_action">
+    <item android:id="@+id/dec_whitelist_menu" android:title="@string/decryption_whitelist_action">
         <menu>
             <item
-                android:id="@+id/whitelist_app"
+                android:id="@+id/dec_whitelist_app"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/app_val" />
 
             <item
-                android:id="@+id/whitelist_ip"
+                android:id="@+id/dec_whitelist_ip"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/ip_address_val" />
 
             <item
-                android:id="@+id/whitelist_host"
+                android:id="@+id/dec_whitelist_host"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/host_val" />
+        </menu>
+    </item>
+
+    <item android:id="@+id/mw_whitelist_menu" android:title="@string/malware_whitelist_action">
+        <menu>
+            <item
+                android:id="@+id/mw_whitelist_app"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/app_val" />
+
+            <item
+                android:id="@+id/mw_whitelist_ip"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/mw_whitelist_host"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/host_val" />

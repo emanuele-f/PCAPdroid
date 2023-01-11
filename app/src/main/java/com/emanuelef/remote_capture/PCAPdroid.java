@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -49,18 +48,24 @@ public class PCAPdroid extends Application {
     private static final String TAG = "PCAPdroid";
     private MatchList mVisMask;
     private MatchList mMalwareWhitelist;
+    private MatchList mFirewallWhitelist;
+    private MatchList mDecryptionWhitelist;
     private Blocklist mBlocklist;
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private static WeakReference<PCAPdroid> mInstance;
+    protected static boolean isUnderTest = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        if(!isUnderTest())
+            Log.init(getCacheDir().getAbsolutePath());
+
         Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
-        Log.d(TAG, "Build type: " + buildtp);
+        Log.i(TAG, "Build type: " + buildtp);
 
         CaocConfig.Builder builder = CaocConfig.Builder.create();
         if((buildtp == Utils.BuildType.PLAYSTORE) || (buildtp == Utils.BuildType.UNKNOWN)) {
@@ -93,6 +98,10 @@ public class PCAPdroid extends Application {
         return mInstance.get();
     }
 
+    public static boolean isUnderTest() {
+        return isUnderTest;
+    }
+
     public MatchList getVisualizationMask() {
         if(mVisMask == null)
             mVisMask = new MatchList(mLocalizedContext, Prefs.PREF_VISUALIZATION_MASK);
@@ -116,6 +125,40 @@ public class PCAPdroid extends Application {
         if(mBlocklist == null)
             mBlocklist = new Blocklist(mLocalizedContext);
         return mBlocklist;
+    }
+
+    // use some safe defaults to guarantee basic services
+    private void initFirewallWhitelist() {
+        mFirewallWhitelist.addApp(0 /* root */);
+        mFirewallWhitelist.addApp(1000 /* android */);
+        mFirewallWhitelist.addApp(getPackageName() /* PCAPdroid */);
+
+        // see also https://github.com/microg/GmsCore/issues/1508#issuecomment-876269198
+        mFirewallWhitelist.addApp("com.google.android.gms" /* Google Play Services */);
+        mFirewallWhitelist.addApp("com.google.android.gsf" /* Google Services Framework (push notifications) */);
+        mFirewallWhitelist.addApp("com.google.android.ims" /* Carrier Services */);
+        mFirewallWhitelist.addApp("com.sec.spp.push" /* Samsung Push Service */);
+        mFirewallWhitelist.save();
+    }
+
+    public MatchList getFirewallWhitelist() {
+        if(mFirewallWhitelist == null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            mFirewallWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_FIREWALL_WHITELIST);
+
+            if(!Prefs.isFirewallWhitelistInitialized(prefs)) {
+                initFirewallWhitelist();
+                Prefs.setFirewallWhitelistInitialized(prefs);
+            }
+        }
+        return mFirewallWhitelist;
+    }
+
+    public MatchList getDecryptionWhitelist() {
+        if(mDecryptionWhitelist == null)
+            mDecryptionWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_DECRYPTION_WHITELIST);
+
+        return mDecryptionWhitelist;
     }
 
     public CtrlPermissions getCtrlPermissions() {

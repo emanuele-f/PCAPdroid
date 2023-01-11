@@ -3,9 +3,9 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.os.SystemClock;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Log;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -67,9 +67,9 @@ public class Blocklist extends MatchList {
     }
 
     @Override
-    public synchronized void addApp(int uid) {
+    public synchronized boolean addApp(int uid) {
         mUidToGrace.remove(uid);
-        super.addApp(uid);
+        return super.addApp(uid);
     }
 
     public void saveAndReload() {

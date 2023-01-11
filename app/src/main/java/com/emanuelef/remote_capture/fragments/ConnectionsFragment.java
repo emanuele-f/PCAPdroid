@@ -20,15 +20,14 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,10 +43,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,6 +56,7 @@ import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -68,6 +70,7 @@ import com.emanuelef.remote_capture.adapters.ConnectionsAdapter;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
@@ -296,12 +299,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         MenuItem item;
 
         Billing billing = Billing.newInstance(ctx);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
         boolean firewallVisible = billing.isFirewallVisible();
+        boolean whitelistMode = Prefs.isFirewallWhitelistMode(prefs);
         boolean showPurchaseFirewall = (!billing.isPurchased(Billing.FIREWALL_SKU) && billing.isAvailable(Billing.FIREWALL_SKU)) && !CaptureService.isCapturingAsRoot();
         boolean blockVisible = false;
         boolean unblockVisible = false;
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+        MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
         if(app != null) {
             boolean appBlocked = blocklist.matchesApp(app.getUid());
@@ -330,9 +336,21 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             menu.findItem(R.id.unblock_app_8h).setTitle(getString(R.string.unblock_for_n_hours, 8));
 
             if(conn.isBlacklisted()) {
-                item = menu.findItem(R.id.whitelist_app);
+                item = menu.findItem(R.id.mw_whitelist_app);
                 item.setTitle(label);
                 item.setVisible(true);
+            }
+
+            if(!conn.decryption_whitelisted) {
+                item = menu.findItem(R.id.dec_whitelist_app);
+                item.setTitle(label);
+                item.setVisible(true);
+            }
+
+            if(firewallVisible && whitelistMode) {
+                boolean whitelisted = fwWhitelist.matchesApp(app.getUid());
+                menu.findItem(R.id.add_to_fw_whitelist).setVisible(!whitelisted);
+                menu.findItem(R.id.remove_from_fw_whitelist).setVisible(whitelisted);
             }
         }
 
@@ -385,7 +403,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             }
 
             if(conn.isBlacklistedHost()) {
-                item = menu.findItem(R.id.whitelist_host);
+                item = menu.findItem(R.id.mw_whitelist_host);
+                item.setTitle(label);
+                item.setVisible(true);
+            }
+
+            if(!conn.decryption_whitelisted) {
+                item = menu.findItem(R.id.dec_whitelist_host);
                 item.setTitle(label);
                 item.setVisible(true);
             }
@@ -420,7 +444,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setVisible(ipBlocked);
 
         if(conn.isBlacklistedIp())
-            menu.findItem(R.id.whitelist_ip).setTitle(label).setVisible(true);
+            menu.findItem(R.id.mw_whitelist_ip).setTitle(label).setVisible(true);
+
+        if(!conn.decryption_whitelisted)
+            menu.findItem(R.id.dec_whitelist_ip).setTitle(label).setVisible(true);
 
         if(conn.hasHttpRequest())
             menu.findItem(R.id.copy_http_request).setVisible(true);
@@ -435,7 +462,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.unblock_menu).setVisible(firewallVisible && unblockVisible);
 
         if(!conn.isBlacklisted())
-            menu.findItem(R.id.whitelist_menu).setVisible(false);
+            menu.findItem(R.id.mw_whitelist_menu).setVisible(false);
+
+        if(!CaptureService.isDecryptionWhitelistEnabled() || conn.decryption_whitelisted)
+            menu.findItem(R.id.dec_whitelist_menu).setVisible(false);
     }
 
     @Override
@@ -443,11 +473,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         Context ctx = requireContext();
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
+        MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
+        MatchList decWhitelist = PCAPdroid.getInstance().getDecryptionWhitelist();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
+        boolean firewall_wl_changed = false;
+        boolean dec_whitelist_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -481,15 +515,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             setQuery(conn.dst_ip);
         else if(id == R.id.search_proto)
             setQuery(conn.l7proto);
-        else if(id == R.id.whitelist_app)  {
+        else if(id == R.id.mw_whitelist_app)  {
             whitelist.addApp(conn.uid);
             whitelist_changed = true;
-        } else if(id == R.id.whitelist_ip)  {
+        } else if(id == R.id.mw_whitelist_ip)  {
             whitelist.addIp(conn.dst_ip);
             whitelist_changed = true;
-        } else if(id == R.id.whitelist_host)  {
+        } else if(id == R.id.mw_whitelist_host) {
             whitelist.addHost(conn.info);
             whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_app)  {
+            decWhitelist.addApp(conn.uid);
+            dec_whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_ip)  {
+            decWhitelist.addIp(conn.dst_ip);
+            dec_whitelist_changed = true;
+        } else if(id == R.id.dec_whitelist_host)  {
+            decWhitelist.addHost(conn.info);
+            dec_whitelist_changed = true;
         } else if(id == R.id.block_app) {
             if(firewallPurchased) {
                 blocklist.addApp(conn.uid);
@@ -532,6 +575,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.unblock_domain) {
             blocklist.removeHost(Utils.getSecondLevelDomain(conn.info));
             blocklist_changed = true;
+        } else if(id == R.id.add_to_fw_whitelist) {
+            fwWhitelist.addApp(conn.uid);
+            firewall_wl_changed = true;
+        } else if(id == R.id.remove_from_fw_whitelist) {
+            fwWhitelist.removeApp(conn.uid);
+            firewall_wl_changed = true;
         } else if(id == R.id.open_app_details) {
             Intent intent = new Intent(requireContext(), AppDetailsActivity.class);
             intent.putExtra(AppDetailsActivity.APP_UID_EXTRA, conn.uid);
@@ -556,6 +605,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(whitelist_changed) {
             whitelist.save();
             CaptureService.reloadMalwareWhitelist();
+        } else if(firewall_wl_changed) {
+            fwWhitelist.save();
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
+        } else if(dec_whitelist_changed) {
+            decWhitelist.save();
+            CaptureService.reloadDecryptionWhitelist();
         } else if(blocklist_changed)
             blocklist.saveAndReload();
 
@@ -748,10 +804,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                     stream.close();
                 }
 
-                String fname = Utils.getUriFname(requireContext(), mCsvFname);
+                Utils.UriStat stat = Utils.getUriStat(requireContext(), mCsvFname);
 
-                if(fname != null) {
-                    String msg = String.format(getString(R.string.file_saved_with_name), fname);
+                if(stat != null) {
+                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
                 } else
                     Utils.showToast(requireContext(), R.string.save_ok);
@@ -789,7 +845,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             Log.w(TAG, "No app found to handle file selection");
 
             // Pick default path
-            Uri uri = Utils.getInternalStorageFile(requireContext(), fname);
+            Uri uri = Utils.getDownloadsUri(requireContext(), fname);
 
             if(uri != null) {
                 mCsvFname = uri;

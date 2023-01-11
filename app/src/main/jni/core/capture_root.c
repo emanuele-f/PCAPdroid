@@ -57,7 +57,7 @@ static void kill_pcapd(pcapdroid_t *nc) {
     pid = atoi(pid_s);
 
     if(pid != 0) {
-        log_d("Killing old pcapd with pid %d", pid);
+        log_i("Killing old pcapd with pid %d", pid);
         run_shell_cmd("kill", pid_s, true, false);
     }
 
@@ -163,7 +163,7 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->tls_decryption_enabled ? -1 : pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
     if(run_shell_cmd(pcapd, args, pd->root.as_root, true) != 0)
         goto cleanup;
 
@@ -185,7 +185,7 @@ static int connectPcapd(pcapdroid_t *pd) {
         goto cleanup;
     }
 
-    log_d("Connected to pcapd");
+    log_i("Connected to pcapd");
 
 cleanup:
     unlink(PCAPD_SOCKET_PATH);
@@ -394,7 +394,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
             }
 
             // assume connection proxy via iptables
-            data->proxied = pd->tls_decryption_enabled && (conn->tuple.ipproto == IPPROTO_TCP);
+            data->proxied = pd->tls_decryption.enabled && (conn->tuple.ipproto == IPPROTO_TCP);
         }
     }
 
@@ -506,7 +506,7 @@ int run_root(pcapdroid_t *pd) {
     }
 #endif
 
-    if(pd->tls_decryption_enabled) {
+    if(pd->tls_decryption.enabled) {
         char args[128];
 
         if(run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, true), true, true) != 0)
@@ -518,7 +518,7 @@ int run_root(pcapdroid_t *pd) {
     pd_refresh_time(pd);
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
-    log_d("Starting packet loop");
+    log_i("Starting packet loop");
 
     while(running) {
         pcapd_hdr_t hdr;

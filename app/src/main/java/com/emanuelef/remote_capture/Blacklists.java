@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
@@ -64,8 +63,8 @@ public class Blacklists {
     private final ArrayList<BlacklistsStateListener> mListeners = new ArrayList<>();
     private final SharedPreferences mPrefs;
     private final Context mContext;
-    private boolean mFirstUpdate;
     private boolean mUpdateInProgress;
+    private boolean mStopRequest;
     private long mLastUpdate;
     private int mNumDomainRules;
     private int mNumIPRules;
@@ -75,7 +74,6 @@ public class Blacklists {
         mNumDomainRules = 0;
         mNumIPRules = 0;
         mContext = ctx;
-        mFirstUpdate = true;
         mUpdateInProgress = false;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
@@ -192,7 +190,7 @@ public class Blacklists {
         if(files != null) {
             for(File f: files) {
                 if(!validLists.contains(f)) {
-                    Log.d(TAG, "Removing unknown list: " + f.getPath());
+                    Log.i(TAG, "Removing unknown list: " + f.getPath());
 
                     //noinspection ResultOfMethodCallIgnored
                     f.delete();
@@ -201,29 +199,36 @@ public class Blacklists {
         }
     }
 
-    public boolean needsUpdate() {
+    public boolean needsUpdate(boolean firstUpdate) {
         long now = System.currentTimeMillis();
         return((now - mLastUpdate) >= BLACKLISTS_UPDATE_SECONDS * 1000)
-                || (mFirstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
+                || (firstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
     }
 
     // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
     public void update() {
         mUpdateInProgress = true;
+        mStopRequest = false;
         for(BlacklistDescriptor bl: mLists)
             bl.setUpdating();
         notifyListeners();
 
-        Log.d(TAG, "Updating " + mLists.size() + " blacklists...");
-        mFirstUpdate = false;
+        Log.i(TAG, "Updating " + mLists.size() + " blacklists...");
 
         for(BlacklistDescriptor bl: mLists) {
-            Log.d(TAG, "\tupdating " + bl.fname + "...");
+            if(mStopRequest) {
+                Log.i(TAG, "Stop request received, abort");
+                break;
+            }
+
+            Log.i(TAG, "\tupdating " + bl.fname + "...");
 
             if(Utils.downloadFile(bl.url, getListPath(bl)))
                 bl.setUpdated(System.currentTimeMillis());
             else
                 bl.setOutdated();
+
+            notifyListeners();
         }
 
         mLastUpdate = System.currentTimeMillis();
@@ -275,7 +280,7 @@ public class Blacklists {
             }
         }
 
-        Log.d(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
+        Log.i(TAG, "Blacklists loaded: " + num_loaded + " lists, " + num_domains + " domains, " + num_ips + " IPs");
         mNumDomainRules = num_domains;
         mNumIPRules = num_ips;
         mUpdateInProgress = false;
@@ -328,6 +333,10 @@ public class Blacklists {
 
     public boolean isUpdateInProgress() {
         return mUpdateInProgress;
+    }
+
+    public void abortUpdate() {
+        mStopRequest = true;
     }
 }
 

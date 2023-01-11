@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/sort_by"
+        android:icon="@drawable/ic_sort"
+        app:showAsAction="ifRoom">
+        <menu>
+            <group android:id="@+id/sort_by" android:checkableBehavior="single">
+                <item android:id="@+id/sort_by_name"
+                    android:title="@string/app_name"/>
+                <item android:id="@+id/sort_by_total_bytes"
+                    android:title="@string/total_bytes"/>
+                <item android:id="@+id/sort_by_bytes_sent"
+                    android:title="@string/bytes_sent"/>
+                <item android:id="@+id/sort_by_bytes_rcvd"
+                    android:title="@string/bytes_rcvd"/>
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/reset"
+        android:title="@string/reset"
+        android:icon="@drawable/ic_reset"
+        app:showAsAction="ifRoom"/>
+</menu>

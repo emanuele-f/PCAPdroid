@@ -18,6 +18,13 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/whitelist_mode"
+        android:title="@string/whitelist_mode"
+        android:orderInCategory="25"
+        android:checkable="true"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/block_new_apps"
         android:title="@string/block_new_apps"
         android:orderInCategory="30"

@@ -9,12 +9,13 @@
     <string name="whois_lookup" translatable="false">WHOIS</string>
     <string name="installation_id" translatable="false">Installation ID</string>
     <string name="license_code" translatable="false">License code</string>
+    <string name="root" translatable="false">root</string>
     <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
         ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         See the <a href='https://www.gnu.org/licenses/gpl-3.0-standalone.html'>GNU General Public License or later</a> for
         more details</string>
     <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br />\n\n
-        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>GPL-3.0</a>\n\n
+        - zdtun: <a href='https://github.com/emanuele-f/zdtun/blob/master/COPYING'>LGPL-3.0</a>\n\n
         - nDPI: <a href='https://github.com/ntop/nDPI/blob/dev/COPYING'>LGPL-3.0</a>\n\n
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
@@ -126,13 +127,15 @@
     <string name="root_capture">Capture as root</string>
     <string name="root_capture_summary">Allows PCAPdroid to run with other VPN apps</string>
     <string name="donate">Donate</string>
-    <string name="root_log">Root log</string>
+    <string name="app_log">Log</string>
+    <string name="no_data">No data</string>
     <string name="search">Search…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">IP address: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocol: %1$s</string>
-    <string name="whitelist_action">Whitelist…</string>
+    <string name="malware_whitelist_action">Whitelist (malware)…</string>
+    <string name="decryption_whitelist_action">Whitelist (decryption)…</string>
     <string name="hide">Hide…</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
@@ -224,7 +227,7 @@
     <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can turn it off from the Android network settings</string>
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
-    <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
+    <string name="decryption_no_filter_warn">Select a target app or use the decryption whitelist when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="unblock">Unblock…</string>
     <string name="firewall">Firewall</string>
@@ -278,6 +281,7 @@
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Uninstall it and retry</string>
     <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be upgraded</string>
+    <string name="mitm_addon">mitm addon</string>
     <string name="upgrade_action">Upgrade</string>
     <string name="export_failed">Export failed</string>
     <string name="not_encrypted">Not encrypted</string>
@@ -296,6 +300,7 @@
     <string name="full_payload_summary">Show the full connections payload (e.g. the full HTTP request and response). This requires a lot of memory, don\'t use in the long run</string>
     <string name="not_decryptable">Not decryptable</string>
     <string name="decrypted">Decrypted</string>
+    <string name="whitelisted">Whitelisted</string>
     <string name="decryption">Decryption</string>
     <string name="decryption_filter">Decryption: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid has not seen the start of this connection. Some information may be missing</string>
@@ -412,4 +417,40 @@
     <string name="firewall_purchase_msg">Buy the <i>%1$s</i> feature to start blocking connections</string>
     <string name="mitm_skip_notice">The mitm certificate does not seem to be installed. If you proceed, decryption may fail</string>
     <string name="mitm_wizard_description">Configure the device for the TLS decryption</string>
+    <string name="mitmproxy_opts">Additional mitmproxy options</string>
+    <string name="mitmproxy_opts_description">Provide additional options for mitmproxy</string>
+    <string name="mitm_addon_error">Error while starting the mitm addon. Check the log for details</string>
+    <string name="whitelist_mode">Whitelist mode</string>
+    <string name="firewall_whitelist_notice">In this mode all the connections will be blocked, unless manually whitelisted. You may miss push notifications without a proper whitelist</string>
+    <string name="firewall_whitelist_help">These rules specify which connections to allow. Blocklist rules have priority over whitelist rules</string>
+    <string name="add_to_fw_whitelist">Add to firewall whitelist</string>
+    <string name="remove_from_fw_whitelist">Remove from firewall whitelist</string>
+    <string name="reset_stats_confirm">Do you really want to reset these stats?</string>
+    <string name="port_mapping">Port mapping</string>
+    <string name="port_mapping_summary">Configure port mapping rules to redirect connections to a different host or port</string>
+    <string name="add_action">Add</string>
+    <string name="redirect_to">Redirect to:</string>
+    <string name="original_port">Original port</string>
+    <string name="required">required</string>
+    <string name="destination_ip">Destination IP address</string>
+    <string name="destination_port">Destination port</string>
+    <string name="port_mapping_exists">Port mapping already defined</string>
+    <string name="items_delete_confirm">Delete the selected items?</string>
+    <string name="ip_address">IP address</string>
+    <string name="rule_exists">Rule already defined</string>
+    <string name="dns_servers">DNS servers</string>
+    <string name="dns_servers_summary">Configure the DNS servers to use during the capture</string>
+    <string name="ipv4_dns_server">IPv4 DNS server</string>
+    <string name="ipv6_dns_server">IPv6 DNS server</string>
+    <string name="use_system_dns">Use system DNS</string>
+    <string name="use_system_dns_summary">Use the system DNS servers if possible</string>
+    <string name="decryption_whitelist_rules">Decryption whitelist rules</string>
+    <string name="decryption_whitelist_help">List of rules to exclude specific connections from the TLS decryption. Useful to avoid breaking apps/SDKs employing certificate pinning. Host matching only works if a prior DNS reply is seen</string>
+    <string name="decryption_whitelist">Decryption whitelist</string>
+    <string name="external_storage_perm_required">The external storage permission is required</string>
+    <string name="many_rules_warning">You are trying to import many rules, which could make the app unresponsive during some interactions. Do you really want to continue?</string>
+    <string name="pcapng_format">PCAPNG format</string>
+    <string name="pcapng_format_summary">Dump packets in the PCAPNG dump format, which allows embedding TLS decryption secrets</string>
+    <string name="sort_by">Sort by</string>
+    <string name="total_bytes">Total bytes</string>
 </resources>

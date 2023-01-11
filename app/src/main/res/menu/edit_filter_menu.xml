@@ -6,5 +6,6 @@
     <item
         android:id="@+id/reset_changes"
         android:title="@string/reset"
+        android:icon="@drawable/ic_reset"
         app:showAsAction="ifRoom" />
 </menu>

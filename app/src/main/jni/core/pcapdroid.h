@@ -24,6 +24,7 @@
 #include "zdtun.h"
 #include "ip_lru.h"
 #include "blacklist.h"
+#include "pcap_dump.h"
 #include "ndpi_api.h"
 #include "common/jni_utils.h"
 #include "common/uid_resolver.h"
@@ -31,13 +32,11 @@
 
 #define CAPTURE_STATS_UPDATE_FREQUENCY_MS 300
 #define CONNECTION_DUMP_UPDATE_FREQUENCY_MS 1000
-#define MAX_JAVA_DUMP_DELAY_MS 1000
 #define NETD_RESOLVE_DELAY_MS 1000
 #define SELECT_TIMEOUT_MS 250
 #define MAX_DPI_PACKETS 12
 #define VPN_BUFFER_SIZE 32768
 #define MAX_HOST_LRU_SIZE 256
-#define JAVA_PCAP_BUFFER_SIZE (512*1024) // 512K
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 #define MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE 512
 
@@ -114,6 +113,7 @@ typedef struct {
     bool to_block;
     bool netd_block_missed;
     bool proxied;
+    bool decryption_whitelisted;
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx
@@ -157,7 +157,7 @@ typedef struct {
      int (*load_blacklists_info)(struct pcapdroid *pd);
     void (*send_stats_dump)(struct pcapdroid *pd);
     void (*send_connections_dump)(struct pcapdroid *pd);
-    void (*send_pcap_dump)(struct pcapdroid *pd);
+    void (*send_pcap_dump)(struct pcapdroid *pd, const int8_t *buf, int dump_size);
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
@@ -190,7 +190,6 @@ typedef struct pcapdroid {
     jint app_filter;
     jint mitm_addon_uid;
     bool root_capture;
-    bool tls_decryption_enabled;
     payload_mode_t payload_mode;
 
     // stats
@@ -228,15 +227,12 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
+        bool trailer_enabled;
+        bool pcapng_format;
         int snaplen;
         int max_pkts_per_flow;
         int max_dump_size;
-        // the crc32 implementation requires 4-bytes aligned accesses.
-        // frames are padded to honor the 4-bytes alignment.
-        jbyte *buffer  __attribute__((aligned (4)));
-        int buffer_idx;
-        uint64_t last_dump_ms;
-        uint64_t tot_size;
+        pcap_dumper_t *dumper;
     } pcap_dump;
 
     struct {
@@ -263,9 +259,18 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        blacklist_t *bl;
+        blacklist_t *bl;     // blocklist
         blacklist_t *new_bl;
+        bool wl_enabled;
+        blacklist_t *wl;     // whitelist
+        blacklist_t *new_wl;
     } firewall;
+
+    struct {
+        bool enabled;
+        blacklist_t *wl;
+        blacklist_t *new_wl;
+    } tls_decryption;
 } pcapdroid_t;
 
 // return 0 to continue, anything else to break
@@ -358,6 +363,9 @@ extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
 extern int bl_num_checked_connections;
 extern int fw_num_checked_connections;
+extern char *pd_appver;
+extern char *pd_device;
+extern char *pd_os;
 
 // capture API
 int pd_run(pcapdroid_t *pd);
@@ -379,6 +387,7 @@ const char* get_file_path(pcapdroid_t *pd, const char *subpath);
 static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path(pd, ""); }
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
+uint16_t pd_ndpi2proto(ndpi_protocol proto);
 
 #ifdef ANDROID
 
@@ -391,8 +400,6 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 #endif // ANDROID
 
 // Internals
-struct pcapdroid_trailer;
-void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, int uid);
 void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);

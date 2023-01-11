@@ -113,6 +113,7 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         mDecChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
                 new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
+                new Pair<>(DecryptionStatus.WHITELISTED, findViewById(R.id.dec_status_whitelisted)),
                 new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));
 
@@ -149,14 +150,6 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         }
 
         model2view();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        MatchList mask = PCAPdroid.getInstance().getVisualizationMask();
-        findViewById(R.id.connections_mask).setVisibility(mask.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private <T> void setCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T curValue) {

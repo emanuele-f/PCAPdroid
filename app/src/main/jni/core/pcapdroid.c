@@ -21,7 +21,7 @@
 #include <assert.h> // NOTE: look for "assertion" in logcat
 #include <pthread.h>
 #include "pcapdroid.h"
-#include "pcap_utils.h"
+#include "pcap_dump.h"
 #include "common/utils.h"
 #include "pcapd/pcapd.h"
 #include "ndpi_protocol_ids.h"
@@ -42,7 +42,12 @@ bool reload_blacklists_now = false;
 int bl_num_checked_connections = 0;
 int fw_num_checked_connections = 0;
 
+char *pd_appver = (char*) "";
+char *pd_device = (char*) "";
+char *pd_os = (char*) "";
+
 static ndpi_protocol_bitmask_struct_t masterProtos;
+static bool masterProtosInit = false;
 
 /* ******************************************************* */
 
@@ -62,7 +67,7 @@ static void conn_free_ndpi(pd_conn_t *data) {
 
 /* ******************************************************* */
 
-static uint16_t ndpi2proto(ndpi_protocol proto) {
+uint16_t pd_ndpi2proto(ndpi_protocol proto) {
     // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
     // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
     // in the app protocols, so just take the one that's not unknown.
@@ -70,6 +75,11 @@ static uint16_t ndpi2proto(ndpi_protocol proto) {
 
     if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
         l7proto = NDPI_PROTOCOL_HTTP;
+
+    if(!masterProtosInit) {
+        init_ndpi_protocols_bitmask(&masterProtos);
+        masterProtosInit = true;
+    }
 
     // nDPI will still return a disabled protocol (via the bitmask) if it matches some
     // metadata for it (e.g. the SNI)
@@ -219,7 +229,10 @@ struct ndpi_detection_module_struct* init_ndpi() {
         return(NULL);
 
     // needed by pd_get_proto_name
-    init_ndpi_protocols_bitmask(&masterProtos);
+    if(!masterProtosInit) {
+        init_ndpi_protocols_bitmask(&masterProtos);
+        masterProtosInit = true;
+    }
 
 #ifndef FUZZING
     // enable all the protocols
@@ -302,7 +315,7 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
                 char buf[512];
 
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_w("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                log_d("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
     }
@@ -374,8 +387,9 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
                     conn->data->uid = data->uid;
 
-                    if(!conn->data->to_block && pd->firewall.enabled
-                            && blacklist_match_uid(pd->firewall.bl, conn->data->uid))
+                    if(!conn->data->to_block && pd->firewall.enabled && (
+                            blacklist_match_uid(pd->firewall.bl, conn->data->uid) ||
+                            (pd->firewall.wl_enabled && pd->firewall.wl && !blacklist_match_uid(pd->firewall.wl, conn->data->uid))))
                         conn->data->netd_block_missed = true;
 
                     zdtun_5tuple2str(&conn->tuple, buf, sizeof(buf));
@@ -424,7 +438,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             char buf[256];
 
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-            log_w("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            log_d("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         } else {
             data->to_block |= blacklist_match_uid(pd->firewall.bl, data->uid);
             if(data->to_block) {
@@ -432,11 +446,17 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
                 char buf[256];
 
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_w("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                log_d("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
 
         fw_num_checked_connections++;
+    }
+
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD) {
+        // whitelist mode: block any app unless it's explicitly whitelisted.
+        // The blocklist still has priority to determine if a connection should be blocked.
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
     }
 
     return(data);
@@ -526,7 +546,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
         uint8_t proto_guessed;
         struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
                               &proto_guessed);
-        data->l7proto = ndpi2proto(n_proto);
+        data->l7proto = pd_ndpi2proto(n_proto);
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
 
@@ -549,7 +569,7 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
     if((pd->payload_mode == PAYLOAD_MODE_NONE) ||
        (pd->cb.dump_payload_chunk == NULL) ||
        (pkt->l7_len <= 0) ||
-       (pd->tls_decryption_enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
+       (pd->tls_decryption.enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
         return;
 
     if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
@@ -660,7 +680,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     uint16_t old_proto = data->l7proto;
     struct ndpi_proto n_proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
                                   pkt->len, data->last_seen);
-    data->l7proto = ndpi2proto(n_proto);
+    data->l7proto = pd_ndpi2proto(n_proto);
 
     if(old_proto != data->l7proto) {
         data->update_type |= CONN_UPDATE_INFO;
@@ -887,6 +907,8 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
                          blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
     }
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD)
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
 
     if(old_block != data->to_block) {
         data->update_type |= CONN_UPDATE_STATS;
@@ -935,23 +957,9 @@ static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tupl
 
 /* ******************************************************* */
 
-static void sendPcapDump(pcapdroid_t *pd) {
-    if(pd->pcap_dump.buffer_idx == 0)
-        return;
-
-    if(pd->cb.send_pcap_dump)
-        pd->cb.send_pcap_dump(pd);
-
-    pd->pcap_dump.buffer_idx = 0;
-    pd->pcap_dump.last_dump_ms = pd->now_ms;
-}
-
-/* ******************************************************* */
-
-static void stop_pcap_dump(pcapdroid_t *pd){
-    sendPcapDump(pd);
-    pd_free(pd->pcap_dump.buffer);
-    pd->pcap_dump.buffer = NULL;
+static void stop_pcap_dump(pcapdroid_t *pd) {
+    pcap_destroy_dumper(pd->pcap_dump.dumper);
+    pd->pcap_dump.dumper = NULL;
 
     if(pd->cb.stop_pcap_dump)
         pd->cb.stop_pcap_dump(pd);
@@ -980,8 +988,8 @@ void pd_housekeeping(pcapdroid_t *pd) {
               pd->now_ms - last_connections_dump,
               pd->new_conns.cur_items, pd->conns_updates.cur_items);*/
 
-        if((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
-            if(pd->cb.send_connections_dump)
+        if ((pd->new_conns.cur_items != 0) || (pd->conns_updates.cur_items != 0)) {
+            if (pd->cb.send_connections_dump)
                 pd->cb.send_connections_dump(pd);
             conns_clear(pd, &pd->new_conns, false);
             conns_clear(pd, &pd->conns_updates, false);
@@ -990,10 +998,9 @@ void pd_housekeeping(pcapdroid_t *pd) {
         last_connections_dump = pd->now_ms;
         next_connections_dump = pd->now_ms + CONNECTION_DUMP_UPDATE_FREQUENCY_MS;
         netd_resolve_waiting = 0;
-    } else if ((pd->pcap_dump.buffer_idx > 0)
-               && (pd->now_ms - pd->pcap_dump.last_dump_ms) >= MAX_JAVA_DUMP_DELAY_MS) {
-        sendPcapDump(pd);
-    } else if(pd->malware_detection.enabled) {
+    } else if(pd->pcap_dump.dumper && pcap_check_export(pd->pcap_dump.dumper))
+        ;
+    else if(pd->malware_detection.enabled) {
         // Malware detection
         if(pd->malware_detection.reload_in_progress) {
             if(pd->malware_detection.reload_done) {
@@ -1030,6 +1037,21 @@ void pd_housekeeping(pcapdroid_t *pd) {
         pd->firewall.bl = pd->firewall.new_bl;
         pd->firewall.new_bl = NULL;
         iter_active_connections(pd, check_blocked_conn_cb);
+    } else if(pd->firewall.new_wl) {
+        // Load new whitelist
+        if(pd->firewall.wl)
+            blacklist_destroy(pd->firewall.wl);
+        pd->firewall.wl = pd->firewall.new_wl;
+        pd->firewall.new_wl = NULL;
+        iter_active_connections(pd, check_blocked_conn_cb);
+    }
+
+    if(pd->tls_decryption.new_wl) {
+        // Load new whitelist
+        if(pd->tls_decryption.wl)
+            blacklist_destroy(pd->tls_decryption.wl);
+        pd->tls_decryption.wl = pd->tls_decryption.new_wl;
+        pd->tls_decryption.new_wl = NULL;
     }
 }
 
@@ -1045,16 +1067,6 @@ void pd_refresh_time(pcapdroid_t *pd) {
     }
 
     pd->now_ms = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-}
-
-/* ******************************************************* */
-
-void fill_custom_data(struct pcapdroid_trailer *cdata, pcapdroid_t *pd, int uid) {
-    memset(cdata, 0, sizeof(*cdata));
-
-    cdata->magic = htonl(PCAPDROID_TRAILER_MAGIC);
-    cdata->uid = htonl(uid);
-    get_appname_by_uid(pd, uid, cdata->appname, sizeof(cdata->appname));
 }
 
 /* ******************************************************* */
@@ -1086,29 +1098,11 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
 /* ******************************************************* */
 
 void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid) {
-    if(!pd->pcap_dump.buffer)
+    if(!pd->pcap_dump.dumper)
         return;
 
-    int rec_size = pcap_rec_size(pd->pcap_dump.snaplen, pktlen);
-    if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size) {
-        // Flush the buffer
-        sendPcapDump(pd);
-    }
-
-    if ((JAVA_PCAP_BUFFER_SIZE - pd->pcap_dump.buffer_idx) <= rec_size)
-        log_e("Invalid buffer size [size=%d, idx=%d, tot_size=%d]",
-              JAVA_PCAP_BUFFER_SIZE, pd->pcap_dump.buffer_idx, rec_size);
-    else if((pd->pcap_dump.max_dump_size > 0) &&
-            ((pd->pcap_dump.tot_size + rec_size) >= pd->pcap_dump.max_dump_size)) {
-        log_d("Max dump size reached, stop the dump");
+    if(!pcap_dump_packet(pd->pcap_dump.dumper, pktbuf, pktlen, tv, uid))
         stop_pcap_dump(pd);
-    } else {
-        pcap_dump_rec(pd, (u_char *) pd->pcap_dump.buffer + pd->pcap_dump.buffer_idx,
-                      pktbuf, pktlen, tv, uid);
-
-        pd->pcap_dump.buffer_idx += rec_size;
-        pd->pcap_dump.tot_size += rec_size;
-    }
 }
 
 /* ******************************************************* */
@@ -1137,7 +1131,7 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
     data->update_type |= CONN_UPDATE_STATS;
     pd_notify_connection_update(pd, pctx->tuple, pctx->data);
 
-    if((pd->pcap_dump.buffer) &&
+    if((pd->pcap_dump.dumper) &&
             ((pd->pcap_dump.max_pkts_per_flow <= 0) ||
                 ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow)))
         pd_dump_packet(pd, pkt->buf, pkt->len, &pctx->tv, pctx->data->uid);
@@ -1170,16 +1164,26 @@ int pd_run(pcapdroid_t *pd) {
     }
 
     if(pd->pcap_dump.enabled) {
-        pd->pcap_dump.buffer = pd_malloc(JAVA_PCAP_BUFFER_SIZE);
-        pd->pcap_dump.buffer_idx = 0;
         int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
+        // use the snaplen provided by the API
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
             pd->pcap_dump.snaplen = max_snaplen;
 
-        if(!pd->pcap_dump.buffer) {
-            log_f("malloc(pcap_dump.buffer) failed with code %d/%s",
-                        errno, strerror(errno));
+        pcap_dump_mode_t dump_mode;
+        if(pd->pcap_dump.pcapng_format)
+            dump_mode = PCAPNG_DUMP;
+        else if(pd->pcap_dump.trailer_enabled)
+            dump_mode = PCAP_DUMP_WITH_TRAILER;
+        else
+            dump_mode = PCAP_DUMP;
+
+        log_d("dump_mode: %d", dump_mode);
+        pd->pcap_dump.dumper = pcap_new_dumper(dump_mode,pd->pcap_dump.snaplen,
+                                               pd->pcap_dump.max_dump_size,
+                                               pd->cb.send_pcap_dump, pd);
+        if(!pd->pcap_dump.dumper) {
+            log_f("Could not initialize the PCAP dumper");
             running = false;
         }
     }
@@ -1198,7 +1202,7 @@ int pd_run(pcapdroid_t *pd) {
     // Run the capture
     int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
 
-    log_d("Stopped packet loop");
+    log_i("Stopped packet loop");
 
     // send last dump
     if(pd->cb.send_stats_dump)
@@ -1213,10 +1217,18 @@ int pd_run(pcapdroid_t *pd) {
         blacklist_destroy(pd->firewall.bl);
     if(pd->firewall.new_bl)
         blacklist_destroy(pd->firewall.new_bl);
+    if(pd->firewall.wl)
+        blacklist_destroy(pd->firewall.wl);
+    if(pd->firewall.new_wl)
+        blacklist_destroy(pd->firewall.new_wl);
+    if(pd->tls_decryption.wl)
+        blacklist_destroy(pd->tls_decryption.wl);
+    if(pd->tls_decryption.new_wl)
+        blacklist_destroy(pd->tls_decryption.new_wl);
 
     if(pd->malware_detection.enabled) {
         if(pd->malware_detection.reload_in_progress) {
-            log_d("Joining blacklists reload_worker");
+            log_i("Joining blacklists reload_worker");
             pthread_join(pd->malware_detection.reload_worker, NULL);
         }
         if(pd->malware_detection.bl)
@@ -1236,7 +1248,7 @@ int pd_run(pcapdroid_t *pd) {
     ndpi_exit_detection_module(pd->ndpi);
 #endif
 
-    if(pd->pcap_dump.buffer)
+    if(pd->pcap_dump.dumper)
         stop_pcap_dump(pd);
 
     uid_to_app_t *e, *tmp;
@@ -1245,8 +1257,8 @@ int pd_run(pcapdroid_t *pd) {
         pd_free(e);
     }
 
-    log_d("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
-    log_d("Discarded fragments: %ld", pd->num_discarded_fragments);
+    log_i("Host LRU cache size: %d", ip_lru_size(pd->ip_to_host));
+    log_i("Discarded fragments: %ld", pd->num_discarded_fragments);
     ip_lru_destroy(pd->ip_to_host);
 
     return(rv);

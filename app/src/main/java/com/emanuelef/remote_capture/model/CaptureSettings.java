@@ -1,8 +1,11 @@
 package com.emanuelef.remote_capture.model;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import com.emanuelef.remote_capture.Billing;
 
 import java.io.Serializable;
 
@@ -22,13 +25,16 @@ public class CaptureSettings implements Serializable {
     public boolean full_payload;
     public boolean block_quic;
     public boolean auto_block_private_dns;
+    public boolean pcapng_format;
     public String capture_interface;
-    public String pcap_uri;
+    public String pcap_uri = "";
+    public String pcap_name = "";
     public int snaplen = 0;
     public int max_pkts_per_flow = 0;
     public int max_dump_size = 0;
+    public String mitmproxy_opts;
 
-    public CaptureSettings(SharedPreferences prefs) {
+    public CaptureSettings(Context ctx, SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
         app_filter = Prefs.getAppFilter(prefs);
         collector_address = Prefs.getCollectorIp(prefs);
@@ -41,14 +47,15 @@ public class CaptureSettings implements Serializable {
         root_capture = Prefs.isRootCaptureEnabled(prefs);
         pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
         capture_interface = Prefs.getCaptureInterface(prefs);
-        pcap_uri = Prefs.getPCAPUri(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
         block_quic = Prefs.blockQuic(prefs);
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
+        mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
+        pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
     }
 
-    public CaptureSettings(Intent intent) {
+    public CaptureSettings(Context ctx, Intent intent) {
         dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
         app_filter = getString(intent, Prefs.PREF_APP_FILTER, "");
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
@@ -61,7 +68,8 @@ public class CaptureSettings implements Serializable {
         root_capture = getBool(intent, Prefs.PREF_ROOT_CAPTURE, false);
         pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
-        pcap_uri = getString(intent, Prefs.PREF_PCAP_URI, "");
+        pcap_uri = getString(intent, "pcap_uri", "");
+        pcap_name = getString(intent, "pcap_name", "");
         snaplen = getInt(intent, Prefs.PREF_SNAPLEN, 0);
         max_pkts_per_flow = getInt(intent, Prefs.PREF_MAX_PKTS_PER_FLOW, 0);
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
@@ -69,6 +77,8 @@ public class CaptureSettings implements Serializable {
         full_payload = false;
         block_quic = getBool(intent, Prefs.PREF_BLOCK_QUIC, false);
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
+        mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
+        pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
     }
 
     private static String getString(Intent intent, String key, String def_value) {

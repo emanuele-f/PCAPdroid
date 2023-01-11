@@ -23,7 +23,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
-import android.util.Log;
 import android.util.LruCache;
 import android.util.SparseArray;
 
@@ -33,6 +32,7 @@ import androidx.lifecycle.Observer;
 
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
+import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
@@ -71,7 +71,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final Context mContext;
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
-    private static final MutableLiveData<Boolean> proxyRunning = new MutableLiveData<>();
+    private final boolean mPcapngFormat;
+    private static final MutableLiveData<Status> proxyStatus = new MutableLiveData<>(Status.NOT_STARTED);
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
 
@@ -91,7 +92,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         TCP_ERROR,
         WEBSOCKET_CLIENT_MSG,
         WEBSOCKET_SERVER_MSG,
+        DATA_TRUNCATED,
         MASTER_SECRET,
+        LOG,
     }
 
     private static class PendingMessage {
@@ -110,15 +113,25 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         }
     }
 
-    public MitmReceiver(Context ctx, boolean rootCapture, String proxyAuth) {
+    public enum Status {
+        NOT_STARTED,
+        STARTING,
+        START_ERROR,
+        RUNNING
+    }
+
+    public MitmReceiver(Context ctx, CaptureSettings settings, String proxyAuth) {
         mContext = ctx;
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
+        mPcapngFormat = settings.pcapng_format;
 
         mConfig = new MitmAPI.MitmConfig();
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
         mConfig.proxyAuth = proxyAuth;
         mConfig.dumpMasterSecrets = (CaptureService.getDumpMode() != Prefs.DumpMode.NONE);
+        mConfig.additionalOptions = settings.mitmproxy_opts;
+        mConfig.shortPayload = !settings.full_payload;
 
         /* upstream certificate verification is disabled because the app does not provide a way to let the user
            accept a given cert. Moreover, it provides a workaround for a bug with HTTPS proxies described in
@@ -126,7 +139,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.sslInsecure = true;
 
         // root capture uses transparent mode (redirection via iptables)
-        mConfig.transparentMode = rootCapture;
+        mConfig.transparentMode = settings.root_capture;
 
         //noinspection ResultOfMethodCallIgnored
         getKeylogFilePath(mContext).delete();
@@ -138,7 +151,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
     public boolean start() throws IOException {
         Log.d(TAG, "starting");
-        proxyRunning.postValue(false);
+        proxyStatus.postValue(Status.STARTING);
 
         if(!mAddon.connect(Context.BIND_IMPORTANT)) {
             Utils.showToastLong(mContext, R.string.mitm_start_failed);
@@ -179,12 +192,12 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     @Override
     public void run() {
         if(mSocketFd == null) {
-            Log.d(TAG, "Null socket, abort");
-            proxyRunning.postValue(false);
+            Log.e(TAG, "Null socket, abort");
+            proxyStatus.postValue(Status.NOT_STARTED);
             return;
         }
 
-        Log.d(TAG, "Receiving data...");
+        Log.i(TAG, "Receiving data...");
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
                 String msg_type;
@@ -235,9 +248,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
 
                 if(type == MsgType.MASTER_SECRET)
                     logMasterSecret(msg);
-                else if(type == MsgType.RUNNING) {
-                    Log.d(TAG, "MITM proxy is running");
-                    proxyRunning.postValue(true);
+                else if(type == MsgType.LOG) {
+                    handleLog(msg);
+                } else if(type == MsgType.RUNNING) {
+                    Log.i(TAG, "MITM proxy is running");
+                    proxyStatus.postValue(Status.RUNNING);
                 } else {
                     ConnectionDescriptor conn = getConnByLocalPort(port);
                     //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port + ", match=" + (conn != null));
@@ -257,8 +272,12 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             mKeylog = null;
         }
 
-        proxyRunning.postValue(false);
-        Log.d(TAG, "End receiving data");
+        if(proxyStatus.getValue() == Status.STARTING)
+            proxyStatus.postValue(Status.START_ERROR);
+        else
+            proxyStatus.postValue(Status.NOT_STARTED);
+
+        Log.i(TAG, "End receiving data");
     }
 
     private boolean isSent(MsgType type) {
@@ -293,7 +312,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
-        } else
+        } else if(type == MsgType.DATA_TRUNCATED)
+            conn.setPayloadTruncatedByAddon();
+        else
             conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
@@ -346,29 +367,50 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return MsgType.WEBSOCKET_CLIENT_MSG;
             case "ws_srvmsg":
                 return MsgType.WEBSOCKET_SERVER_MSG;
+            case "trunc":
+                return MsgType.DATA_TRUNCATED;
             case "secret":
                 return MsgType.MASTER_SECRET;
+            case "log":
+                return MsgType.LOG;
             default:
                 return MsgType.UNKNOWN;
         }
     }
 
     private void logMasterSecret(byte[] master_secret) throws IOException {
-        if(mKeylog == null)
-            mKeylog = new BufferedOutputStream(
-                    mContext.getContentResolver().openOutputStream(
-                            Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
+        if(mPcapngFormat)
+            CaptureService.dumpMasterSecret(master_secret);
+        else {
+            if(mKeylog == null)
+                mKeylog = new BufferedOutputStream(
+                        mContext.getContentResolver().openOutputStream(
+                                Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
 
-        mKeylog.write(master_secret);
-        mKeylog.write(0xa);
+            mKeylog.write(master_secret);
+            mKeylog.write(0xa);
+        }
     }
 
-    public boolean isProxyRunning() {
-        return Boolean.TRUE.equals(proxyRunning.getValue());
+    private void handleLog(byte[] message) {
+        try {
+            String msg = new String(message, StandardCharsets.US_ASCII);
+
+            // format: 1:message
+            if (msg.length() < 3)
+                return;
+
+            int lvl = Integer.parseInt(msg.substring(0, 1));
+            Log.level(Log.MITMADDON_LOGGER, lvl, msg.substring(2));
+        } catch (NumberFormatException ignored) {}
     }
 
-    public static void observeRunning(LifecycleOwner lifecycleOwner, Observer<Boolean> observer) {
-        proxyRunning.observe(lifecycleOwner, observer);
+    public Status getProxyStatus() {
+        return proxyStatus.getValue();
+    }
+
+    public static void observeStatus(LifecycleOwner lifecycleOwner, Observer<Status> observer) {
+        proxyStatus.observe(lifecycleOwner, observer);
     }
 
     @Override

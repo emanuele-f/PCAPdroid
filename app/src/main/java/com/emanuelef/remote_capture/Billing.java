@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -56,8 +55,9 @@ public class Billing {
     public static final String UNLOCK_TOKEN_SKU = "unlock_code";
     public static final String MALWARE_DETECTION_SKU = "malware_detection";
     public static final String FIREWALL_SKU = "no_root_firewall";
+    public static final String PCAPNG_SKU = "pcapng";
     public static final List<String> ALL_SKUS = Arrays.asList(
-            SUPPORTER_SKU, UNLOCK_TOKEN_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU
+            SUPPORTER_SKU, UNLOCK_TOKEN_SKU, MALWARE_DETECTION_SKU, FIREWALL_SKU, PCAPNG_SKU
     );
 
     // Resources used in the play build, referenced here to avoid being marked as unused resources
@@ -69,7 +69,8 @@ public class Billing {
             R.string.learn_more, R.string.buy_action,
             R.string.can_use_purchased_feature, R.drawable.ic_shopping_cart,
             R.string.firewall_summary, R.string.no_root_firewall,
-            R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error
+            R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error,
+            R.string.license_service_unavailable, R.string.requesting_unlock_token, R.string.show_action, R.string.unlock_token_msg1
     };
 
     protected final Context mContext;
@@ -97,6 +98,9 @@ public class Billing {
     }
 
     public boolean isPurchased(String sku) {
+        if(PCAPNG_SKU.equals(sku))
+            return true;
+
         if(mPeerSkus.contains(sku))
             return true;
 

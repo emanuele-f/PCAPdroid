@@ -16,6 +16,13 @@ where ACTION is one of:
   - `get_status`: get the capture status
 
 The capture parameters are specified via Intent extras, which are discussed below.
+
+For example, you can use the following command to start the capture and write the traffic dump to the PCAP file `Download/PCAPdroid/traffic.pcap`:
+
+```bash
+adb shell am start -e action start -e pcap_dump_mode pcap_file -e pcap_name traffic.pcap -n com.emanuelef.remote_capture/.activities.CaptureCtrl
+```
+
 A common task is to capture the traffic of a specific app to analyze it into your app. This can be easily accomplished by running PCAPdroid in the
 [UDP Exporter mode](https://emanuele-f.github.io/PCAPdroid/dump_modes#24-udp-exporter):
 
@@ -76,7 +83,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | collector_ip_address    | string |     |      | the IP address of the collector in udp_exporter mode               |
 | collector_port          | int    |     |      | the UDP port of the collector in udp_exporter mode                 |
 | http_server_port        | int    |     |      | the HTTP server port in http_server mode                           |
-| pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode                        |
+| pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode (overrides pcap_name)  |
 | socks5_enabled          | bool   |     | vpn  | true to redirect the TCP connections to a SOCKS5 proxy             |
 | socks5_proxy_ip_address | string |     | vpn  | the IP address of the SOCKS5 proxy                                 |
 | socks5_proxy_port       | int    |     | vpn  | the TCP port of the SOCKS5 proxy                                   |
@@ -90,13 +97,18 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | block_quic              | bool   |  51 | vpn  | true to block QUIC traffic                                         |
 | auto_block_private_dns  | bool   |  51 | vpn  | true to detect and possibly block private DNS to inspect traffic   |
 | ip_mode                 | string |  56 | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both        |
+| mitmproxy_opts          | string |  62 |      | additional options to provide to mitmproxy in decryption mode      |
+| pcap_name               | string |  62 |      | write the PCAP to Download/PCAPdroid/*pcap_name* in pcap_file mode |
+| pcapng_format			  | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
+
+\*: paid feature
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 The `Mode` column indicates if the option applies to any mode or only to the VPN or root mode.
 
 *NOTE*: for security reasons, since version 1.5.3 you cannot specify a remote server IP address in `collector_ip_address` or in `socks5_proxy_ip_address`. If you really want to do this, you should first set such a remote IP address via the PCAPdroid gui and only then invoke the API.
 
-*NOTE*: due to [file storage restrictions](https://developer.android.com/about/versions/11/privacy/storage), the `pcap_uri` must point to an app internal directory, e.g. `file:///data/user/0/com.emanuelef.remote_capture/cache/dump.pcap`.
+*NOTE*: since version 1.6.0, the `pcap_uri` behavior is changed as described in the `Dumping PCAP to file` section below
 
 ## Query the Capture Status
 
@@ -146,17 +158,13 @@ In the result of the `stop` and `get_status` actions and in the broadcast of `Ca
 
 ## Dumping PCAP to file
 
-Due to the restrictions introduced via the [scoped storage](https://developer.android.com/about/versions/11/privacy/storage), PCAPdroid can only create files inside its private directory, which is not accessible to you as a user. To dump the PCAP file to a publicly available directory, you must first perform the following steps:
+[Scoped storage](https://developer.android.com/about/versions/11/privacy/storage) restrictions apply to PCAPdroid, which limits in which paths the PCAP file can be stored and how
+other apps can access it.
 
-1. Open PCAPdroid and select the "PCAP File" dump mode
-2. Start the capture and select the path of the file to write. In this example I assume you select the `/sdcard/test.pcap` file
-3. Stop the capture and choose to keep the generated PCAP file (don't delete it!)
-4. Retrieve the internal URL which Android uses to reference this file. You can find this in the logcat output of PCAPdroid:
+Since version 1.6.0, PCAPdroid dumps the PCAP file to the `Download/PCAPdroid` directory. By using the `pcap_name` parameter, you can get a predictable PCAP file path. The PCAP
+file is overwritten if another file with the same `pcap_name` exists.
 
-```
-D/Main: PCAP URI to write [persistable=true]: content://com.android.externalstorage.documents/document/primary%3Atest.pcap
-```
-
-You should now be able to write the `test.pcap` file by setting the `pcap_uri` to this URI. You must repeat the steps above if you delete the file.
-
-*NOTE*: if the messages shows `[persistable=false]` then it was not possible to get the permissions on the URI, so the `pcap_uri` paramter won't work. This occurs on devices without a file manager to select the PCAP destination path (e.g. on Android TV).
+You can use the `pcap_uri` parameter to write the PCAP file to an arbitrary path. The URI specified in `pcap_uri`, however, is only used as an identifier, it's not the actual file
+path. This choice has been made to cope with the scoped storage limitations. This means that, the first time the `pcap_uri` is set and every time it's changed, a file dialog is
+displayed to the user to pick the actual file path. On subsequent runs, the same `pcap_uri` identifier can be used to write the selected file without the file dialog to be
+presented to the user.

@@ -1,0 +1,20 @@
+<i>PCAPdroid</i> er et personvernsvennlig program som lar deg spore og analysere tilkoblinger godt av andre programmer på enheten din.
+Det lar deg også eksportere en PCAP-dump av trafikken, inspisere HTTP, dekryptere TLS-trafikk og mye mer.
+
+PCAPdroid simulerer en VPN-kanal for å fange nettverkstilgang uten rot-tilgang. Det bruker ikke en VPN-tjener annensteds hen. All data behandles lokalt på enheten.
+
+<b>Funksjoner:</b>
+
+* Loggfør og inspiser tilkoblinger gjort av brukeren og systemprogrammer
+* Utled SNI, DNS-spørringer, HTTP-nettadresser, og ekstern IP-adresse
+* Inspiser HTTP-forespørsler og svar takket være innebygde dekodere
+* Inspiser hele nyttelasten til tilkoblinger som heksadesimal dump/tekst
+* Dekrypter HTTPS/TLS-trafikk og eksporter SSLKEYLOGFILE
+* Dump trafikken til en PCAP-fil, last den ned fra en nettleser, eller strøm den til en fjernmottager for sanntidsanalyse (f.eks. Wireshark)
+* Opprett regler for å filtrere ut den legitime trafikken og fang opp unormaliteter
+* Indentifiser land og ASN tilhørende tjenere annensteds hen via frakoblede databaseoppslag
+* På enheter med rot-tilgang kan du fange trafikk mens andre VPN-programmer kjører
+
+Hvis du vil bruke PCAPdroid til pakkeanalyse kan du sjekke <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>denne delen</a> av manualen.
+
+Ta del i gemenskapen på <a href="https://t.me/PCAPdroid">Telegram</a> eller på <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.

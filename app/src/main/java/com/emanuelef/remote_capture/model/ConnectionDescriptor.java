@@ -68,6 +68,7 @@ public class ConnectionDescriptor {
         INVALID,
         CLEARTEXT,
         DECRYPTED,
+        WHITELISTED,
         NOT_DECRYPTABLE,
         WAITING_DATA,
         ERROR,
@@ -110,6 +111,7 @@ public class ConnectionDescriptor {
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
+    public boolean decryption_whitelisted;
     public boolean netd_block_missed;
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
@@ -152,6 +154,7 @@ public class ConnectionDescriptor {
             rcvd_pkts = update.rcvd_pkts;
             blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            decryption_whitelisted = (update.status & 0x1000) != 0;
             netd_block_missed = (update.status & 0x0800) != 0;
             is_blocked = (update.status & 0x0400) != 0;
             blacklisted_ip = (update.status & 0x0100) != 0;
@@ -249,6 +252,8 @@ public class ConnectionDescriptor {
             return DecryptionStatus.CLEARTEXT;
         else if(decryption_error != null)
             return DecryptionStatus.ERROR;
+        else if(decryption_whitelisted)
+            return DecryptionStatus.WHITELISTED;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
         else if(isDecrypted())
@@ -264,6 +269,7 @@ public class ConnectionDescriptor {
             case CLEARTEXT: resid = R.string.not_encrypted; break;
             case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
             case DECRYPTED: resid = R.string.decrypted; break;
+            case WHITELISTED: resid = R.string.whitelisted; break;
             case WAITING_DATA: resid = R.string.waiting_application_data; break;
             default: resid = R.string.error;
         }
@@ -287,6 +293,12 @@ public class ConnectionDescriptor {
     public boolean isBlacklistedHost() { return blacklisted_host; }
     public boolean isBlacklisted() {
         return isBlacklistedIp() || isBlacklistedHost();
+    }
+
+    public void setPayloadTruncatedByAddon() {
+        // only for the mitm addon
+        assert(!isNotDecryptable());
+        payload_truncated = true;
     }
 
     public boolean isPayloadTruncated() {

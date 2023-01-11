@@ -10,6 +10,10 @@
             android:title="@string/stats"
             android:icon="@drawable/ic_stacked_bar_chart" />
         <item
+            android:id="@+id/dec_whitelist"
+            android:title="@string/decryption_whitelist"
+            android:icon="@drawable/ic_checklist" />
+        <item
             android:id="@+id/firewall"
             android:title="@string/firewall"
             android:icon="@drawable/ic_shield" />
@@ -18,10 +22,9 @@
             android:title="@string/malware_detection"
             android:icon="@drawable/ic_bug" />
         <item
-            android:id="@+id/open_root_log"
-            android:title="@string/root_log"
-            android:icon="@drawable/ic_text_snippet"
-            android:visible="false" />
+            android:id="@+id/open_log"
+            android:title="@string/app_log"
+            android:icon="@drawable/ic_text_snippet" />
         <item
             android:id="@+id/paid_features"
             android:visible="false"

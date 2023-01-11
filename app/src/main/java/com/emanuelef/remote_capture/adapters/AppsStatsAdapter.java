@@ -19,7 +19,9 @@
 
 package com.emanuelef.remote_capture.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.Billing;
@@ -39,6 +42,8 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.model.Blocklist;
+import com.emanuelef.remote_capture.model.MatchList;
+import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,20 +52,32 @@ import java.util.List;
 public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.ViewHolder> {
     private static final String TAG = "AppsStatsAdapter";
     private final Context mContext;
+    private final SharedPreferences mPrefs;
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private final Blocklist mBlocklist;
+    private final MatchList mWhitelist;
     private final boolean mFirewallAvailable;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
     private AppStats mSelectedItem;
+    private SortField mSortField;
+
+    public enum SortField {
+        NAME,
+        TOTAL_BYTES,
+        BYTES_SENT,
+        BYTES_RCVD
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
         ImageView blockedFlag;
+        ImageView whitelistedFlag;
         ImageView tempUnblocked;
         TextView info;
+        TextView sent_rcvd;
         TextView traffic;
 
         ViewHolder(View itemView) {
@@ -68,8 +85,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             icon = itemView.findViewById(R.id.icon);
             blockedFlag = itemView.findViewById(R.id.blocked);
+            whitelistedFlag = itemView.findViewById(R.id.whitelisted);
             tempUnblocked = itemView.findViewById(R.id.temp_unblocked);
             info = itemView.findViewById(R.id.app_info);
+            sent_rcvd = itemView.findViewById(R.id.sent_rcvd);
             traffic = itemView.findViewById(R.id.traffic);
         }
 
@@ -91,9 +110,13 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
 
             boolean isGracedApp = mBlocklist.isExemptedApp(stats.getUid());
             boolean isBlockedApp = mBlocklist.matchesApp(stats.getUid());
+            boolean isWhitelistedApp = mWhitelist.matchesApp(stats.getUid());
+            boolean isWhitelistEnabled = Prefs.isFirewallEnabled(mContext, mPrefs) && Prefs.isFirewallWhitelistMode(mPrefs);
 
+            sent_rcvd.setText(mContext.getString(R.string.rcvd_and_sent, Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
             traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
             blockedFlag.setVisibility(isBlockedApp ? View.VISIBLE : View.GONE);
+            whitelistedFlag.setVisibility(isWhitelistEnabled && isWhitelistedApp ? View.VISIBLE : View.GONE);
             tempUnblocked.setVisibility(isGracedApp ? View.VISIBLE : View.GONE);
         }
     }
@@ -103,10 +126,13 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mApps = new AppsResolver(context);
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
+        mWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
         mListener = null;
         mStats = new ArrayList<>();
         mFirewallAvailable = Billing.newInstance(context).isFirewallVisible();
+        mSortField = SortField.NAME;
         setHasStableIds(true);
     }
 
@@ -185,6 +211,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mListener = listener;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setStats(List<AppStats> stats) {
         Collections.sort(stats, (o1, o2) -> {
             AppDescriptor a1 = mApps.getAppByUid(o1.getUid(), 0);
@@ -199,10 +226,31 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             if(a2 == null)
                 return 1;
 
-            return a1.compareTo(a2);
+            switch (mSortField) {
+                case TOTAL_BYTES:
+                    return -Long.compare(o1.rcvdBytes + o1.sentBytes,
+                            o2.rcvdBytes + o2.sentBytes);
+                case BYTES_SENT:
+                    return -Long.compare(o1.sentBytes, o2.sentBytes);
+                case BYTES_RCVD:
+                    return -Long.compare(o1.rcvdBytes, o2.rcvdBytes);
+                case NAME:
+                default:
+                    return a1.compareTo(a2);
+            }
         });
 
         mStats = stats;
         notifyDataSetChanged();
+    }
+
+    public SortField getSortField() {
+        return mSortField;
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setSortField(SortField field) {
+        mSortField = field;
+        setStats(mStats);
     }
 }
