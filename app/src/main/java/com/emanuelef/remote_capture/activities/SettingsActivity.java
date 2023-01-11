@@ -285,14 +285,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 return true;
             });
 
-            mPcapngEnabled = requirePreference("pcapng_format");
-            mPcapngEnabled.setOnPreferenceChangeListener(((preference, newValue) -> {
-                mTrailerEnabled.setVisible(!(boolean)newValue);
-                return true;
-            }));
-            if(!mIab.isPurchased(Billing.PCAPNG_SKU))
-                mPcapngEnabled.setVisible(false);
-
             mTrailerEnabled = requirePreference("pcapdroid_trailer");
             mTrailerEnabled.setVisible(!isPcapngEnabled()); // TODO support
         }
@@ -344,6 +336,20 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 socks5ProxyHideShow((boolean) newValue, mSocks5Enabled.isChecked(), rootCaptureEnabled());
                 return true;
             });
+
+            mPcapngEnabled = requirePreference("pcapng_format");
+
+            if(mIab.isAvailable(Billing.PCAPNG_SKU)) {
+                mPcapngEnabled.setOnPreferenceClickListener((preference -> {
+                    // Billing code here
+
+                    mTrailerEnabled.setVisible(!mPcapngEnabled.isChecked());
+                    return false;
+                }));
+                if(!mIab.isPurchased(Billing.PCAPNG_SKU))
+                    mPcapngEnabled.setEnabled(false);
+            } else
+                mPcapngEnabled.setVisible(false);
 
             mFullPayloadEnabled = requirePreference(Prefs.PREF_FULL_PAYLOAD);
             mBlockQuic = requirePreference(Prefs.PREF_BLOCK_QUIC);

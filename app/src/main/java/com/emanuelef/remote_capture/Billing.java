@@ -98,9 +98,6 @@ public class Billing {
     }
 
     public boolean isPurchased(String sku) {
-        if(PCAPNG_SKU.equals(sku))
-            return true;
-
         if(mPeerSkus.contains(sku))
             return true;
 

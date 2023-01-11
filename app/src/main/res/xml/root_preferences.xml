@@ -80,6 +80,13 @@
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreference
+            app:key="pcapng_format"
+            app:title="@string/pcapng_format"
+            app:iconSpaceReserved="false"
+            app:summary="@string/pcapng_format_summary"
+            app:defaultValue="true" />
+
+        <SwitchPreference
             app:key="block_quic"
             app:title="@string/block_quick"
             app:iconSpaceReserved="false"
@@ -149,13 +156,6 @@
             app:iconSpaceReserved="false"
             app:summary="@string/start_at_boot_summary"
             android:defaultValue="false" />
-
-        <SwitchPreference
-            app:key="pcapng_format"
-            app:title="@string/pcapng_format"
-            app:iconSpaceReserved="false"
-            app:summary="@string/pcapng_format_summary"
-            app:defaultValue="true" />
 
         <SwitchPreference
             app:key="pcapdroid_trailer"
