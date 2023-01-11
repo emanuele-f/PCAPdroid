@@ -148,6 +148,9 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         addIfAvailable(Billing.MALWARE_DETECTION_SKU, R.string.malware_detection,
                 R.string.malware_detection_summary, MainActivity.MALWARE_DETECTION_DOCS_URL);
 
+        addIfAvailable(Billing.PCAPNG_SKU, R.string.pcapng_format,
+                R.string.pcapng_format_summary, null);
+
         addIfAvailable(Billing.UNLOCK_TOKEN_SKU, R.string.unlock_token,
                 R.string.unlock_token_summary, MainActivity.PAID_FEATURES_URL);
 

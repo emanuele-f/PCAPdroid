@@ -404,7 +404,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
             try {
                 // Necessary otherwise the connection will stay open
                 con.setRequestProperty("Connection", "Close");
-                con.setRequestProperty("User-Agent", Utils.getUserAgent());
+                con.setRequestProperty("User-Agent", Utils.getAppVersionString());
                 con.setRequestMethod("POST");
 
                 StringBuilder builder = new StringBuilder();

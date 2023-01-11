@@ -268,9 +268,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Menu navMenu = mNavView.getMenu();
 
-        if(Prefs.isRootCaptureEnabled(mPrefs))
-            navMenu.findItem(R.id.open_root_log).setVisible(true);
-
         navMenu.findItem(R.id.action_donate).setVisible(false);
         checkPurchasesAvailable();
     }
