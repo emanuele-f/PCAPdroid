@@ -353,7 +353,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return false;
                 }));
                 if(!mIab.isPurchased(Billing.PCAPNG_SKU))
-                    mPcapngEnabled.setEnabled(false);
+                    mPcapngEnabled.setChecked(false);
             } else
                 mPcapngEnabled.setVisible(false);
 
