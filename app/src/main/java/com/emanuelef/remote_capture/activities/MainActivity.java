@@ -111,6 +111,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public static final String PAID_FEATURES_URL = DOCS_URL + "/paid_features";
     public static final String FIREWALL_DOCS_URL = PAID_FEATURES_URL + "#51-firewall";
     public static final String MALWARE_DETECTION_DOCS_URL = PAID_FEATURES_URL + "#52-malware-detection";
+    public static final String PCAPNG_DOCS_URL = PAID_FEATURES_URL + "#53-pcapng-format";
 
     private final ActivityResultLauncher<Intent> sslkeyfileExportLauncher =
             registerForActivityResult(new StartActivityForResult(), this::sslkeyfileExportResult);
