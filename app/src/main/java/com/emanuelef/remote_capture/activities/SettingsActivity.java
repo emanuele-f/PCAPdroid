@@ -342,6 +342,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             if(mIab.isAvailable(Billing.PCAPNG_SKU)) {
                 mPcapngEnabled.setOnPreferenceClickListener((preference -> {
                     // Billing code here
+                    if(!mIab.isPurchased(Billing.PCAPNG_SKU)) {
+                        mPcapngEnabled.setChecked(false);
+                        Intent intent = new Intent(requireActivity(), IABActivity.class);
+                        startActivity(intent);
+                        return true;
+                    }
 
                     mTrailerEnabled.setVisible(!mPcapngEnabled.isChecked());
                     return false;
