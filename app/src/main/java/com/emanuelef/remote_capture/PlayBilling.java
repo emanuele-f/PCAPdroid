@@ -73,6 +73,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     private Thread mRequestTokenThread = null;
     private static boolean mPendingNoticeShown = false; // static to make it work across the app
     private final SkusAvailability mAvailability;
+    private static Utils.BuildType mVerifiedBuildType = null;
 
     /** setPurchaseListener() -> connectBilling() -> PurchaseReadyListener.onPurchasesReady()
      *   -> the client can now call purchase
@@ -274,6 +275,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
      * */
     @Override
     public void connectBilling() {
+        if(!verifiedBuild())
+            return;
+
         mWaitingStart = true;
 
         if(mBillingClient != null)
@@ -321,8 +325,20 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         return "SKU:" + sku;
     }
 
+    private boolean verifiedBuild() {
+        if(mVerifiedBuildType == null)
+            mVerifiedBuildType = Utils.getVerifiedBuild(mContext);
+
+        // detect apk modding tools
+        return mVerifiedBuildType.equals(Utils.BuildType.PLAYSTORE);
+    }
+
+    /* NOTE: this is also used to determine if billing is available */
     @Override
     public boolean isAvailable(String sku) {
+        if(!verifiedBuild())
+            return false;
+
         // mAvailability acts as a persistent cache that can be used before the billing connection
         // is established
         return mAvailability.isAvailable(sku);
@@ -406,21 +422,35 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 con.setRequestProperty("Connection", "Close");
                 con.setRequestProperty("User-Agent", Utils.getAppVersionString());
                 con.setRequestMethod("POST");
+                int code = con.getResponseCode();
+                Log.d(TAG, "requestUnlockToken: " + code);
 
                 StringBuilder builder = new StringBuilder();
                 try(BufferedReader br = new BufferedReader(
-                        new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+                        new InputStreamReader((code >= 400) ? con.getErrorStream() : con.getInputStream(), StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = br.readLine()) != null)
                         builder.append(line);
                 }
 
-                int code = con.getResponseCode();
                 String token = builder.toString();
 
                 if((code != 200) || token.isEmpty()) {
                     Log.i(TAG, "requestUnlockToken error [" + code + "]: " + token);
-                    mHandler.post(() -> Utils.showToastLong(mContext, R.string.unlock_token_error, code, token));
+
+                    mHandler.post(() -> {
+                        String msg = mContext.getString(R.string.unlock_token_error, code, token) + "\n\nPurchase Token:" + purchaseToken;
+                        AlertDialog.Builder abuilder = new AlertDialog.Builder(mContext);
+                        abuilder.setTitle(R.string.error);
+                        abuilder.setMessage(msg);
+                        abuilder.setCancelable(true);
+                        abuilder.setNeutralButton(R.string.copy_to_clipboard, (dialog, which) -> Utils.copyToClipboard(mContext, msg));
+                        abuilder.setPositiveButton(R.string.ok, (dialog, id1) -> {});
+
+                        AlertDialog alert = abuilder.create();
+                        alert.setCanceledOnTouchOutside(false);
+                        alert.show();
+                    });
                     return;
                 }
 
