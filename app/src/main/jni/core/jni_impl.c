@@ -109,7 +109,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
 
 /* ******************************************************* */
 
-static void sendPcapDump(struct pcapdroid *pd, int8_t *buf, int dump_size) {
+static void sendPcapDump(struct pcapdroid *pd, const int8_t *buf, int dump_size) {
     JNIEnv *env = pd->env;
 
     //log_d("Exporting a %d B PCAP buffer", pd->pcap_dump.buffer_idx);
