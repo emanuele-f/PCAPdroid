@@ -128,7 +128,7 @@ void pcap_destroy_dumper(pcap_dumper_t *dumper);
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen, const struct timeval *tv, int uid);
 bool pcap_dump_secret(pcap_dumper_t *dumper, int8_t *sec_data, int seclen);
 int pcap_get_preamble(pcap_dumper_t *dumper, char **out);
-int pcap_get_dump_size(pcap_dumper_t *dumper);
+uint64_t pcap_get_dump_size(pcap_dumper_t *dumper);
 bool pcap_check_export(pcap_dumper_t *dumper);
 
 #endif // __MY_PCAP_H__

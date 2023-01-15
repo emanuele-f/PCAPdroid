@@ -74,7 +74,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
     const zdtun_statistics_t *stats = &pd->stats;
     jstring allocs_summary =
 #ifdef PCAPDROID_TRACK_ALLOCS
-            (*pd->env)->NewStringUTF(pd->env, get_allocs_summary());
+    (*pd->env)->NewStringUTF(pd->env, get_allocs_summary());
 #else
     NULL;
 #endif
@@ -92,7 +92,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
                            allocs_summary,
                            capstats->sent_bytes, capstats->rcvd_bytes,
-                           pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0,
+                           (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0),
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
                            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
