@@ -715,13 +715,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void deletePcapFile(Uri pcapUri) {
-        Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());
         boolean deleted = false;
 
-        try {
-            deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
-        } catch (UnsupportedOperationException | SecurityException e) {
-            e.printStackTrace();
+        // The getContentResolver().delete in some Android versions does not work, try to delete
+        // using file path first
+        String fpath = Utils.uriToFilePath(this, pcapUri);
+        if(fpath != null) {
+            Log.d(TAG, "deletePcapFile: path=" + fpath);
+
+            try {
+                deleted = new File(fpath).delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "deletePcapFile: uri=" + pcapUri);
+
+            try {
+                deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
+            } catch (UnsupportedOperationException | SecurityException e) {
+                e.printStackTrace();
+            }
         }
 
         if(!deleted)
