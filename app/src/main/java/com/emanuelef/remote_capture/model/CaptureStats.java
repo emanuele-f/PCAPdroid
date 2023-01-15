@@ -38,7 +38,7 @@ public class CaptureStats implements Serializable {
 
     /* Invoked by native code */
     public void setData(String _alloc_summary,
-                        long _bytes_sent,  long _bytes_rcvd, long _pcap_dump_size,
+                        long _bytes_sent, long _bytes_rcvd, long _pcap_dump_size,
                         int _pkts_sent, int _pkts_rcvd,
                         int _pkts_dropped, int _num_dropped_conns, int _num_open_sockets,
                         int _max_fd, int _active_conns, int _tot_conns, int _num_dns_queries) {

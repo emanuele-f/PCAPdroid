@@ -69,6 +69,7 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -674,14 +675,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(pcapUri == null)
             return;
 
-        Utils.UriStat pcapStat = Utils.getUriStat(this, pcapUri);
-        if((pcapStat == null) || (pcapStat.size == 0)) {
-            if(pcapStat != null)
-                deletePcapFile(pcapUri); // empty file, delete
+        CaptureStats stats = CaptureService.getStats();
+        Log.d(TAG, "Pcap dump size is " + stats.pcap_dump_size);
+
+        if(stats.pcap_dump_size <= 0) {
+            deletePcapFile(pcapUri); // empty file, delete
             return;
         }
 
-        String message = String.format(getResources().getString(R.string.pcap_file_action), pcapStat.name, Utils.formatBytes(pcapStat.size));
+        String pcapName = CaptureService.getPcapFname();
+        if(pcapName == null)
+            pcapName = "unknown";
+
+        String message = String.format(getResources().getString(R.string.pcap_file_action), pcapName, Utils.formatBytes(stats.pcap_dump_size));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage(message);
