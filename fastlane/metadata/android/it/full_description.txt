@@ -1,7 +1,7 @@
 <i>PCAPdroid</i> è un'app privacy-friendly che ti permette di tracciare e analizzare le connessioni di rete effetuate dalle app nel tuo dispositivo.
 Ti permette inoltre di salvare il traffico in formato PCAP, ispezionare l'HTTP, decritta il traffico TLS e molto altro.
 
-Per funzionare senza root, PCAPdroid simula una connessione VPN. Non viene usato alcun server di VPN remoto. Il traffico è processato localmente nel dispositivo.
+Per funzionare senza root, PCAPdroid simula una connessione VPN. Non viene usato alcun server di VPN remoto. Al contrario, il traffico è processato localmente al dispositivo.
 
 <b>Funzionalità:</b>
 
@@ -10,9 +10,9 @@ Per funzionare senza root, PCAPdroid simula una connessione VPN. Non viene usato
 * Ispeziona le richieste e le risposte HTTP grazie ai decodificatori integrati
 * Ispeziona l'intero contenuto delle connessioni di rete, in formato esadecimale/di testo
 * Decritta il traffico HTTPS/TLS ed esporta lo SSLKEYLOGFILE
-* Esporta il traffico in un file PCAP, scaricalo tramite un browser o effettuane lo streaming a un collettore remoto per l'analisi in tempo reale (e.s. wireshark)
+* Esporta il traffico in un file PCAP, scaricalo tramite un browser o effettuane lo streaming a un collettore remoto per l'analisi in tempo reale (es. Wireshark)
 * Crea regole per filtrare il traffico buono e rilevare in maniera semplice possibili anomalie
-* Identifica la nazione e l'ASN dei server remoti tramite ricerche in db locali
+* Identifica la nazione e l'ASN dei server remoti tramite ricerche in database locali
 * Su dispositivi con root, cattura il traffico mentre altre app di VPN sono in esecuzione
 
 Se utilizzi PCAPdroid per effettuare l'analisi dei pacchetti di rete, fai riferimento <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>alla sezione specifica</a> del manuale.

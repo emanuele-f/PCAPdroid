@@ -99,7 +99,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | ip_mode                 | string |  56 | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both        |
 | mitmproxy_opts          | string |  62 |      | additional options to provide to mitmproxy in decryption mode      |
 | pcap_name               | string |  62 |      | write the PCAP to Download/PCAPdroid/*pcap_name* in pcap_file mode |
-| pcapng_format			  | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
+| pcapng_format           | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
 
 \*: paid feature
 

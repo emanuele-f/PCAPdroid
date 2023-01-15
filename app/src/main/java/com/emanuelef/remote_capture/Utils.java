@@ -1507,6 +1507,7 @@ public class Utils {
         public long size;
     }
 
+    // NOTE: in Android 7, the file size of a newly written file can be 0/less than actual size
     public static UriStat getUriStat(Context ctx, Uri uri) {
         String uri_str = uri.toString();
         File uriFile = null;

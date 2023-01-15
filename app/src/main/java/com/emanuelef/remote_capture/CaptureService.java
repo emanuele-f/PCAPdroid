@@ -129,6 +129,7 @@ public class CaptureService extends VpnService implements Runnable {
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
+    private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
     private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
@@ -306,17 +307,18 @@ public class CaptureService extends VpnService implements Runnable {
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
+        mPcapFname = null;
 
         // Possibly allocate the dumper
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
             mDumper = new HTTPServer(this, mSettings.http_server_port, mSettings.pcapng_format);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
+            mPcapFname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this, mSettings.pcapng_format);
+
             if(!mSettings.pcap_uri.isEmpty())
                 mPcapUri = Uri.parse(mSettings.pcap_uri);
-            else {
-                String fname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this, mSettings.pcapng_format);
-                mPcapUri = Utils.getDownloadsUri(this, fname);
-            }
+            else
+                mPcapUri = Utils.getDownloadsUri(this, mPcapFname);
 
             if(mPcapUri == null)
                 return abortStart();
@@ -935,6 +937,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static Uri getPcapUri() {
         return ((INSTANCE != null) ? INSTANCE.mPcapUri : null);
+    }
+
+    public static String getPcapFname() {
+        return ((INSTANCE != null) ? INSTANCE.mPcapFname : null);
     }
 
     public static boolean isUserDefinedPcapUri() {

@@ -1,1 +1,1 @@
-Herramienta que monitorea y volca el tráfico red sin root para Android
+Supervise y capture el tráfico de dispositivos Android no rooteados

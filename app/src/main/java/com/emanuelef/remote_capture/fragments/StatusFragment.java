@@ -273,14 +273,9 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         case PCAP_FILE:
             info = getString(R.string.pcap_file_info);
 
-            if(mActivity != null) {
-                Uri pcap_uri = CaptureService.getPcapUri();
-                if(pcap_uri != null) {
-                    Utils.UriStat uri_stat = Utils.getUriStat(mActivity, pcap_uri);
-                    if(uri_stat != null)
-                        info = uri_stat.name;
-                }
-            }
+            String pcapFname = CaptureService.getPcapFname();
+            if(pcapFname != null)
+                info = pcapFname;
             break;
         case UDP_EXPORTER:
             info = String.format(getResources().getString(R.string.collector_info),

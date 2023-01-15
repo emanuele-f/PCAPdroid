@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
@@ -707,14 +708,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(pcapUri == null)
             return;
 
-        Utils.UriStat pcapStat = Utils.getUriStat(this, pcapUri);
-        if((pcapStat == null) || (pcapStat.size == 0)) {
-            if(pcapStat != null)
-                deletePcapFile(pcapUri); // empty file, delete
+        CaptureStats stats = CaptureService.getStats();
+        Log.d(TAG, "Pcap dump size is " + stats.pcap_dump_size);
+
+        if(stats.pcap_dump_size <= 0) {
+            deletePcapFile(pcapUri); // empty file, delete
             return;
         }
 
-        String message = String.format(getResources().getString(R.string.pcap_file_action), pcapStat.name, Utils.formatBytes(pcapStat.size));
+        String pcapName = CaptureService.getPcapFname();
+        if(pcapName == null)
+            pcapName = "unknown";
+
+        String message = String.format(getResources().getString(R.string.pcap_file_action), pcapName, Utils.formatBytes(stats.pcap_dump_size));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage(message);
@@ -742,13 +748,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void deletePcapFile(Uri pcapUri) {
-        Log.d(TAG, "Deleting PCAP file" + pcapUri.getPath());
         boolean deleted = false;
 
-        try {
-            deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
-        } catch (UnsupportedOperationException | SecurityException e) {
-            e.printStackTrace();
+        // The getContentResolver().delete in some Android versions does not work, try to delete
+        // using file path first
+        String fpath = Utils.uriToFilePath(this, pcapUri);
+        if(fpath != null) {
+            Log.d(TAG, "deletePcapFile: path=" + fpath);
+
+            try {
+                deleted = new File(fpath).delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "deletePcapFile: uri=" + pcapUri);
+
+            try {
+                deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
+            } catch (UnsupportedOperationException | SecurityException e) {
+                e.printStackTrace();
+            }
         }
 
         if(!deleted)

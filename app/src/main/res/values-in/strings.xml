@@ -49,7 +49,7 @@
     <string name="malware_detection_learn_more">Pelajari lebih lanjut tentang fitur deteksi malware</string>
     <string name="block">Blokir…</string>
     <string name="firewall">Firewall</string>
-    <string name="blocked_connection_filter">DiBlokir</string>
+    <string name="blocked_connection_filter">Diblokir</string>
     <string name="invalid">Tidak sah</string>
     <string name="no_intent_handler_found">Tidak ada aplikasi yang ditemukan untuk melakukan tindakan ini</string>
     <string name="start_capture_first">Mulai penangkapan terlebih dahulu</string>
@@ -357,7 +357,7 @@
     <string name="remote_collector_notice">Anda telah mengonfigurasi PCAPdroid untuk mengirim lalu lintas ke server jauh. Server akan dapat mengakses informasi sensitif Anda.
 \n
 \nJika seseorang meminta Anda untuk melakukan ini, itu mungkin upaya penipuan</string>
-    <string name="memory_usage">Memori telah digunakan</string>
+    <string name="memory_usage">Memori digunakan</string>
     <string name="ip_mode">Alamat IP VPN</string>
     <string name="mitm_skip_notice">Sertifikat mitm tampaknya tidak diinstal. Jika Anda melanjutkan, dekripsi mungkin gagal</string>
     <string name="mitm_wizard_description">Konfigurasikan perangkat untuk dekripsi TLS</string>
@@ -382,7 +382,7 @@
     <string name="unlock_token_msg1">Ini adalah token pembuka kunci Anda. Catat karena Anda akan memerlukannya <a href="%1$s">untuk membuat kode lisensi</a></string>
     <string name="show_only_cleartext">Koneksi teks yang jelas</string>
     <string name="allowed_connection_filter">Di Izinkan</string>
-    <string name="permission_granted">%1$s Izin diberikan</string>
+    <string name="permission_granted">%1$s izin diberikan</string>
     <string name="firewall_filter">Firewall : %1$s</string>
     <string name="connection_not_found">Tidak dapat menemukan koneksi yang diberikan</string>
     <string name="capture_stopped_low_memory">Penangkapan telah berhenti</string>

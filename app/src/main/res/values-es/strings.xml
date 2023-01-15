@@ -193,7 +193,7 @@
     <string name="can_use_purchased_feature">Ahora puedes utilizar la función comprada</string>
     <string name="save_ok">Guardado</string>
     <string name="loading_apps">Cargando apps…</string>
-    <string name="decryption_no_filter_warn">Selecciona una aplicación de destino al descifrar TLS para evitar perder la conexión a Internet</string>
+    <string name="decryption_no_filter_warn">Seleccione una aplicación de destino o utilice la lista blanca de descifrado al descifrar TLS para evitar perder la conexión a Internet</string>
     <string name="file_saved_with_name">Archivo guardado como \"%1$s\"</string>
     <string name="loading">Cargando…</string>
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
@@ -404,4 +404,46 @@
     <string name="app_intro_malware_detection">Aumente la seguridad de su dispositivo con la característica de <a href="%1$s">Detección de malware</a>
 \n
 \nUsando la última lista negra, puede detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>
+    <string name="malware_whitelist_action">Lista blanca (software malicioso)…</string>
+    <string name="decryption_whitelist_action">Lista blanca (desencriptado)…</string>
+    <string name="mitm_addon">complementos mitm</string>
+    <string name="whitelisted">Lista blanca</string>
+    <string name="mitmproxy_opts">Opciones adicionales para mitmproxy</string>
+    <string name="mitmproxy_opts_description">Opciones adicionales para mitmproxy</string>
+    <string name="mitm_addon_error">Error al iniciar el complemento mitm. Verifique el registro para más detalles</string>
+    <string name="whitelist_mode">Modo permisivo (lista blanca)</string>
+    <string name="firewall_whitelist_help">Estas reglas especifican qué conexiones permitir. Las reglas de la lista de bloqueo tienen prioridad sobre las de la lista blanca</string>
+    <string name="reset_stats_confirm">¿De verdad quieres restablecer estas estadísticas\?</string>
+    <string name="add_to_fw_whitelist">Añadir a lista blanca del cortafuegos</string>
+    <string name="remove_from_fw_whitelist">Quitar de la lista blanca del cortafuegos</string>
+    <string name="port_mapping">Asignación de puertos</string>
+    <string name="port_mapping_summary">Configurar las reglas para la asignación de puertos para redirigir las conexiones a un host o puerto diferente</string>
+    <string name="add_action">Añadir</string>
+    <string name="redirect_to">Redirigir a:</string>
+    <string name="original_port">Puerto de origen</string>
+    <string name="required">obligatorio</string>
+    <string name="destination_ip">Dirección IP de destino</string>
+    <string name="destination_port">Puerto de destino</string>
+    <string name="port_mapping_exists">Mapeo de puertos ya definido</string>
+    <string name="items_delete_confirm">¿Borrar los elementos seleccionados\?</string>
+    <string name="ip_address">Dirección IP</string>
+    <string name="rule_exists">Norma ya definida</string>
+    <string name="dns_servers">Servidores DNS</string>
+    <string name="dns_servers_summary">Configurar los servidores DNS a utilizar durante la captura</string>
+    <string name="ipv4_dns_server">Servidor DNS IPv4</string>
+    <string name="ipv6_dns_server">Servidor DNS IPv6</string>
+    <string name="use_system_dns">Utilizar la DNS del sistema</string>
+    <string name="use_system_dns_summary">Si es posible, utilice los servidores DNS del sistema</string>
+    <string name="decryption_whitelist_rules">Reglas de descifrado en la lista blanca</string>
+    <string name="decryption_whitelist">Lista blanca de descifrado</string>
+    <string name="decryption_whitelist_help">Lista de reglas para excluir conexiones específicas del descifrado TLS. Útil para evitar romper apps/SDKs que emplean certificate pinning. La coincidencia de host sólo funciona si se ha visto una respuesta DNS previa</string>
+    <string name="external_storage_perm_required">El permiso al almacenamiento externo es necesario</string>
+    <string name="many_rules_warning">Estás intentando importar muchas reglas, lo que podría hacer que la aplicación no respondiera durante algunas interacciones. ¿De verdad quieres continuar\?</string>
+    <string name="pcapng_format">Formato Pcapng</string>
+    <string name="pcapng_format_summary">Volcar paquetes en formato pcapng, lo que permite incrustar contraseñas de descifrado TLS</string>
+    <string name="no_data">Sin datos</string>
+    <string name="app_log">Registro</string>
+    <string name="firewall_whitelist_notice">En este modo se bloquearán todas las conexiones, a menos que se incluyan manualmente en una lista blanca. Puede perder notificaciones push sin una lista blanca adecuada</string>
+    <string name="sort_by">Ordenar por</string>
+    <string name="total_bytes">bytes totales</string>
 </resources>

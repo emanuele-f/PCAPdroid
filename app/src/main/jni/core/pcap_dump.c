@@ -297,7 +297,7 @@ bool pcap_check_export(pcap_dumper_t *dumper) {
 
 /* ******************************************************* */
 
-int pcap_get_dump_size(pcap_dumper_t *dumper) {
+uint64_t pcap_get_dump_size(pcap_dumper_t *dumper) {
     return dumper->dump_size;
 }
 

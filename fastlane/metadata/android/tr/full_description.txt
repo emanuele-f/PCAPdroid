@@ -1,7 +1,7 @@
 <i>PCAPdroid</i>, aygıtınızdaki diğer uygulamalar tarafından yapılan bağlantıları izlemenizi ve incelemenizi sağlayan gizlilik dostu bir uygulamadır.
 Ayrıca trafiğin PCAP dökümünü dışa aktarmanıza, HTTP'yi incelemenize, TLS trafiğinin şifresini çözmenize ve çok daha fazlasına olanak tanır.
 
-PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır. Uzak bir VPN sunucusu kullanmaz. Tüm veriler aygıt üzerinde yerel olarak işlenir.
+PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır. Uzak bir VPN sunucusu kullanmaz, bunun yerine tüm veriler aygıt üzerinde yerel olarak işlenir.
 
 <b>Özellikler:</b>
 
@@ -10,11 +10,11 @@ PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır. U
 * Yerleşik kod çözücüler sayesinde HTTP isteklerini ve yanıtlarını inceleyin
 * Tam bağlantı yükünü onaltılık dökümü/metin olarak inceleyin
 * HTTPS/TLS trafiğinin şifresini çözün ve SSLKEYLOGFILE dosyasını dışa aktarın
-* Trafiği bir PCAP dosyasına aktarın, bir tarayıcıdan indirin veya gerçek zamanlı inceleme için uzak bir alıcıya aktarın (örn. wireshark)
+* Trafiği bir PCAP dosyasına aktarın, bir tarayıcıdan indirin veya gerçek zamanlı inceleme için uzak bir alıcıya aktarın (örn. Wireshark)
 * İyi trafiği filtrelemek ve anormallikleri kolayca tespit etmek için kurallar oluşturun
 * Çevrim dışı veri tabanı aramaları aracılığıyla uzak sunucunun ülkesini ve ASN'sini belirleyin
 * Root yapılmış aygıtlarda, diğer VPN uygulamaları çalışırken trafiği yakalayın
 
 Paket incelemesi yapmak için PCAPdroid kullanmayı düşünüyorsanız, lütfen kılavuzun <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>ilgili bölümüne</a> göz atın.
 
-PCAPdroid uluslararası topluluğuna <a href="https://t.me/PCAPdroid">telegram</a> veya <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a> üzerinden katılın.
+PCAPdroid uluslararası topluluğuna <a href="https://t.me/PCAPdroid">Telegram</a> veya <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a> üzerinden katılın.

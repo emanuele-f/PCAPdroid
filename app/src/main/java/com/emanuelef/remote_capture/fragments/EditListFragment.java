@@ -406,12 +406,12 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
         }
 
         if(toRemove.size() > 0) {
+            mIsOwnUpdate = true;
+
             for(MatchList.Rule rule: toRemove)
                 mList.removeRule(rule);
             mList.save();
         }
-
-        mIsOwnUpdate = true;
     }
 
     private String getExportName() {
@@ -538,6 +538,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     @Override
     public void onListChanged() {
         if(mIsOwnUpdate) {
+            Log.d(TAG, "onListChanged: own update");
             mIsOwnUpdate = false;
             return;
         }
