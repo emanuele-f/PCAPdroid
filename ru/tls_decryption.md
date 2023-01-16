@@ -59,8 +59,8 @@
 Если вы откроете дешифрованное соединение, вкладки "Содержимое" и "HTTP" отобразят дешифрованное содержимое.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/decryption_1.jpg" width="250" />
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/decryption_2.jpg" width="250" />
+<img src="images/decryption-summary.png" width="250" />
+<img src="images/decryption-content.png" width="250" />
 </p>
 
 Если запись дампа в PCAP включена, то по завершению захвата вы увидите запрос на сохранение `SSLKEYLOGFILE`, который вы можете загрузить в Wireshark [для дешифрования](https://wiki.wireshark.org/TLS#tls-decryption) PCAP файла.
@@ -79,7 +79,7 @@ Google Chrome является относительно простым для д
 - У приложения включена [привязка к сертификату](https://developer.android.com/training/articles/security-ssl#Pinning)
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/tls_cert_not_trusted.jpg" width="250" />
+<img src="images/decryption-failed.png" width="250" />
 </p>
 
 Если у вас Android 7 или новее, и приложение, которое вы пытаетесь дешифровать имеет значение целевого SDK больше 23, то это наиболее частая причина, по которой mitm-сертификат будет отвергнут приложением (т.к. приложения больше не доверяют пользовательским сертификатам). Чтобы решить данную проблему, вам потребуется:
