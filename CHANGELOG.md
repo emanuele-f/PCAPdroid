@@ -2,6 +2,20 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.0] - 2023-01-16
+- Add firewall whitelist mode: block everything, unless whitelisted
+- Add pcapng format: removes the need for a separate SSLKEYLOG (paid feature)
+- Add port mapping: redirect traffic to given hosts/ports
+- Custom rules can now be added from the UI
+- DNS servers are now configurable
+- Add TLS decryption whitelist
+- Simplify PCAP dump to file
+- Sort apps by total/sent/received bytes
+- Full payload can now be disabled in TLS decryption mode
+- Support custom mitmproxy options
+- The application and the mitmproxy logs can now be viewed in-app
+- Apps stats can now be reset
+
 ## [1.5.6] - 2022-09-24
 - Extend STUN compatibility
 - Fix Whatsapp calls being dropped (no-root)
