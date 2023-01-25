@@ -27,6 +27,7 @@ Welcome to the PCAPdroid User Guide.
 - [5. Paid Features](paid_features)
     - [5.1 Firewall](paid_features#51-firewall)
     - [5.2 Malware Detection](paid_features#52-malware-detection)
+    - [5.3 Pcapng Format](paid_features#53-pcapng-format)
 - [6. FAQ](faq)
 - [7. Donate](donate)
 - [8. Privacy Policy](privacy)
