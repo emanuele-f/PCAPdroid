@@ -1,6 +1,6 @@
 ## 3.1 Introduction
 
-Since version 1.5.0, PCAPdroid has the ability to decrypt the TLS traffic and display the decrypted payload directly into the app. Moreover, it can generate a `SSLKEYLOGFILE` containing the decryption secrets, which can be used to decrypt the generated PCAP file in other tools.
+PCAPdroid can decrypt the TLS traffic and display the decrypted payload directly into the app. Moreover, it can [generate a pcapng file](paid_features#53-pcapng-format), which you can load in tools like Wireshark to analyze the decrypted traffic.
 
 Most apps today employ TLS to secure their data against inspection and tampering. Such connections are reported in PCAPdroid with either the TLS or the HTTPS protocol. Decryption can be useful in the following contexts:
 
@@ -59,7 +59,7 @@ If you tap on a decrypted connection, the payload and the HTTP tabs will show th
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/decryption_2.jpg" width="250" />
 </p>
 
-If the PCAP dump is enabled, after you stop the capture you will be prompted to save the `SSLKEYLOGFILE`, which you can load in Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the PCAP file.
+If the PCAP dump is enabled, after you stop the capture you will be prompted to save the `SSLKEYLOGFILE`, which you can load in Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the PCAP file. Alternatively, to simplify the process, you can embed the keylog [directly into the pcapng file](paid_features#53-pcapng-format).
 
 
 ## 3.4 Caveats and possible solutions
