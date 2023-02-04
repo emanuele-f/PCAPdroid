@@ -635,17 +635,23 @@ public class Utils {
         return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
     }
 
-    public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
-        if((new_x == 0) || (new_y == 0))
+    public static @Nullable BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+        if((new_x <= 0) || (new_y <= 0))
             return null;
 
-        Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
+        try {
+            Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
 
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
+            // may throw OutOfMemoryError
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
 
-        return new BitmapDrawable(res, bitmap);
+            return new BitmapDrawable(res, bitmap);
+        } catch (Exception e) {
+            Log.w(TAG, "scaleDrawable(" + new_x + ", " + new_y + ") failed: " + e.getMessage());
+            return null;
+        }
     }
 
     // Converts a TableLayout (two columns, label and value) to a string which can be copied
