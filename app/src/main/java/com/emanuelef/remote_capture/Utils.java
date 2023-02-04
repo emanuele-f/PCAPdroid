@@ -847,11 +847,16 @@ public class Utils {
     }
 
     public static void copyToClipboard(Context ctx, String contents) {
-        ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
-        clipboard.setPrimaryClip(clip);
+        try {
+            ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
+            clipboard.setPrimaryClip(clip);
 
-        Utils.showToast(ctx, R.string.copied);
+            Utils.showToast(ctx, R.string.copied);
+        } catch (Exception e) {
+            Log.e(TAG, "copyToClipboard failed: " + e.getMessage());
+            Utils.showToastLong(ctx, R.string.error);
+        }
     }
 
     public static void shareText(Context ctx, String subject, String contents) {
