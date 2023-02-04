@@ -387,7 +387,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
                     conn->data->uid = data->uid;
 
-                    if(!conn->data->to_block && pd->firewall.enabled && (
+                    if(!conn->data->to_block && pd->firewall.enabled && pd->firewall.bl && (
                             blacklist_match_uid(pd->firewall.bl, conn->data->uid) ||
                             (pd->firewall.wl_enabled && pd->firewall.wl && !blacklist_match_uid(pd->firewall.wl, conn->data->uid))))
                         conn->data->netd_block_missed = true;
