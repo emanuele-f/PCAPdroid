@@ -803,9 +803,16 @@ public class Utils {
             }
         } catch (Exception ignored) {}
 
-        Uri newUri = context.getContentResolver().insert(externalUri, values);
-        Log.d(TAG, "getDownloadsUri: new file " + newUri);
-        return newUri;
+        try {
+            Uri newUri = context.getContentResolver().insert(externalUri, values);
+            Log.d(TAG, "getDownloadsUri: new file " + newUri);
+            return newUri;
+        } catch (Exception e) {
+            // On some devices, it may trigger "IllegalArgumentException: Volume external_primary not found"
+            Log.e(TAG, "getDownloadsUri failed:" + e.getMessage());
+            Utils.showToastLong(context, R.string.write_ext_storage_failed);
+            return(null);
+        }
     }
 
     public static boolean isRootAvailable() {
