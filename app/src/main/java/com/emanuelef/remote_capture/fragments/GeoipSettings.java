@@ -42,6 +42,7 @@ public class GeoipSettings extends PreferenceFragmentCompat {
     private static final String TAG = "GeoipSettings";
     private Preference mStatus;
     private Preference mDelete;
+    private AlertDialog mAlertDialog;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
@@ -63,6 +64,15 @@ public class GeoipSettings extends PreferenceFragmentCompat {
             downloadDatabases();
             return true;
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        // See https://stackoverflow.com/questions/22924825/view-not-attached-to-window-manager-crash
+        if(mAlertDialog != null)
+            mAlertDialog.dismiss();
+
+        super.onDestroyView();
     }
 
     // NOTE: passing explicit context as this may be called when requireContext would return null
@@ -90,14 +100,15 @@ public class GeoipSettings extends PreferenceFragmentCompat {
         builder.setTitle(R.string.downloading);
         builder.setMessage(R.string.download_in_progress);
 
-        final AlertDialog alert = builder.create();
-        alert.setCanceledOnTouchOutside(false);
-        alert.show();
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
 
-        alert.setOnCancelListener(dialogInterface -> {
+        mAlertDialog.setOnCancelListener(dialogInterface -> {
             Log.i(TAG, "Abort download");
             executor.shutdownNow();
         });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
 
         // Hold reference to context to avoid garbage collection before the handler is called
         final Context context = requireContext();
@@ -108,7 +119,8 @@ public class GeoipSettings extends PreferenceFragmentCompat {
                 if(!result)
                     Utils.showToastLong(context, R.string.download_failed);
 
-                alert.dismiss();
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
                 refreshStatus(context);
             });
         });
