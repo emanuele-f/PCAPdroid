@@ -203,9 +203,11 @@ public class Utils {
     }
 
     public static boolean isRTL(Context ctx) {
-        Locale locale = getPrimaryLocale(ctx);
-        final int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
+        String locale_name = getPrimaryLocale(ctx).getDisplayName();
+        if(locale_name.isEmpty())
+            return false;
 
+        final int direction = Character.getDirectionality(locale_name.charAt(0));
         return direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
                 direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
     }
