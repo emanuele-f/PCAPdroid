@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ListInfo;
@@ -36,9 +37,19 @@ public class EditListActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        assert(getIntent() != null);
+        if(getIntent() == null) {
+            Log.e(TAG, "null intent");
+            finish();
+            return;
+        }
+
         ListInfo.Type ltype = Utils.getSerializableExtra(getIntent(), LIST_TYPE_EXTRA, ListInfo.Type.class);
-        assert(ltype != null);
+        if(ltype == null) {
+            Log.e(TAG, "null list info");
+            finish();
+            return;
+        }
+
         mListInfo = new ListInfo(ltype);
 
         setTitle(mListInfo.getTitle());

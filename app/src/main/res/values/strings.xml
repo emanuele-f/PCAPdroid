@@ -453,4 +453,5 @@
     <string name="pcapng_format_summary">Dump packets in the pcapng dump format, which allows embedding TLS decryption secrets</string>
     <string name="sort_by">Sort by</string>
     <string name="total_bytes">Total bytes</string>
+    <string name="write_ext_storage_failed">Write to external storage failed. Check the app log for details</string>
 </resources>

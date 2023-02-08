@@ -203,9 +203,11 @@ public class Utils {
     }
 
     public static boolean isRTL(Context ctx) {
-        Locale locale = getPrimaryLocale(ctx);
-        final int direction = Character.getDirectionality(locale.getDisplayName().charAt(0));
+        String locale_name = getPrimaryLocale(ctx).getDisplayName();
+        if(locale_name.isEmpty())
+            return false;
 
+        final int direction = Character.getDirectionality(locale_name.charAt(0));
         return direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
                 direction == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
     }
@@ -635,17 +637,23 @@ public class Utils {
         return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
     }
 
-    public static BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
-        if((new_x == 0) || (new_y == 0))
+    public static @Nullable BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {
+        if((new_x <= 0) || (new_y <= 0))
             return null;
 
-        Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
+        try {
+            Bitmap bitmap = Bitmap.createBitmap(new_x, new_y, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
 
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
+            // may throw OutOfMemoryError
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
 
-        return new BitmapDrawable(res, bitmap);
+            return new BitmapDrawable(res, bitmap);
+        } catch (Exception e) {
+            Log.w(TAG, "scaleDrawable(" + new_x + ", " + new_y + ") failed: " + e.getMessage());
+            return null;
+        }
     }
 
     // Converts a TableLayout (two columns, label and value) to a string which can be copied
@@ -803,9 +811,16 @@ public class Utils {
             }
         } catch (Exception ignored) {}
 
-        Uri newUri = context.getContentResolver().insert(externalUri, values);
-        Log.d(TAG, "getDownloadsUri: new file " + newUri);
-        return newUri;
+        try {
+            Uri newUri = context.getContentResolver().insert(externalUri, values);
+            Log.d(TAG, "getDownloadsUri: new file " + newUri);
+            return newUri;
+        } catch (Exception e) {
+            // On some devices, it may trigger "IllegalArgumentException: Volume external_primary not found"
+            Log.e(TAG, "getDownloadsUri failed:" + e.getMessage());
+            Utils.showToastLong(context, R.string.write_ext_storage_failed);
+            return(null);
+        }
     }
 
     public static boolean isRootAvailable() {
@@ -832,11 +847,16 @@ public class Utils {
     }
 
     public static void copyToClipboard(Context ctx, String contents) {
-        ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
-        clipboard.setPrimaryClip(clip);
+        try {
+            ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
+            clipboard.setPrimaryClip(clip);
 
-        Utils.showToast(ctx, R.string.copied);
+            Utils.showToast(ctx, R.string.copied);
+        } catch (Exception e) {
+            Log.e(TAG, "copyToClipboard failed: " + e.getMessage());
+            Utils.showToastLong(ctx, R.string.error);
+        }
     }
 
     public static void shareText(Context ctx, String subject, String contents) {

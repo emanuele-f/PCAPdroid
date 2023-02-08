@@ -243,7 +243,14 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 MsgType type = parseMsgType(msg_type);
                 //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port);
 
-                byte[] msg = new byte[msg_len];
+                byte[] msg;
+                try {
+                    msg = new byte[msg_len];
+                } catch (OutOfMemoryError ignored) {
+                    Log.w(TAG, "Ignoring message causing OOM (length: " + msg_len + ")");
+                    istream.skipBytes(msg_len);
+                    continue;
+                }
                 istream.readFully(msg);
 
                 if(type == MsgType.MASTER_SECRET)
