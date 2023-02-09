@@ -445,4 +445,5 @@
     <string name="sort_by">Ordina per</string>
     <string name="total_bytes">Bytes totali</string>
     <string name="decryption_whitelist_help">Lista di regole per escludere specifiche connessioni dalla decrittazione TLS. E\' utile per evitare che app/SDK con certificate pinning smettano di funzionare. Il matching basato sull\'host funziona solo quando è presente una risposta DNS precedente alla connessione TLS</string>
+    <string name="write_ext_storage_failed">Errore nella scrittura sull\'archivio esterno. Per maggiori dettagli controllare il log dell\'applicazione</string>
 </resources>

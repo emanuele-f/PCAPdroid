@@ -2,12 +2,14 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/app_overview"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:fillViewport="true"
     android:padding="8dp">
 
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 

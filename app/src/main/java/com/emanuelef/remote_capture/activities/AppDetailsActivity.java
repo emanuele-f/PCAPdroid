@@ -21,6 +21,8 @@ package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -28,11 +30,13 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.fragments.AppOverview;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class AppDetailsActivity extends BaseActivity {
@@ -111,5 +115,35 @@ public class AppDetailsActivity extends BaseActivity {
         new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
                 tab.setText(getString(pageAdapter.getPageTitle(position)))
         ).attach();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // This is required to properly handle the DPAD down press on Android TV, to properly
+        // focus the tab content
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            View view = getCurrentFocus();
+
+            Log.d(TAG, "onKeyDown focus " + view.getClass().getName());
+
+            if (view instanceof TabLayout.TabView) {
+                int pos = mPager.getCurrentItem();
+                View focusOverride = null;
+
+                Log.d(TAG, "TabLayout.TabView focus pos " + pos);
+
+                if (pos == POS_OVERVIEW)
+                    focusOverride = findViewById(R.id.app_overview);
+                else if (pos == POS_CONNECTIONS)
+                    focusOverride = findViewById(R.id.connections);
+
+                if (focusOverride != null) {
+                    focusOverride.requestFocus();
+                    return true;
+                }
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

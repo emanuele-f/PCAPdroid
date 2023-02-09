@@ -29,6 +29,8 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.KeyEvent;
+import android.view.View;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -39,6 +41,7 @@ import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
@@ -295,5 +298,35 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
         if(mConn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
             unregisterConnsListener();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // This is required to properly handle the DPAD down press on Android TV, to properly
+        // focus the tab content
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            View view = getCurrentFocus();
+
+            Log.d(TAG, "onKeyDown focus " + view.getClass().getName());
+
+            if (view instanceof TabLayout.TabView) {
+                int pos = mPager.getCurrentItem();
+                View focusOverride = null;
+
+                Log.d(TAG, "TabLayout.TabView focus pos " + pos);
+
+                if (pos == POS_OVERVIEW)
+                    focusOverride = findViewById(R.id.connection_overview);
+                else
+                    focusOverride = findViewById(R.id.payload);
+
+                if (focusOverride != null) {
+                    focusOverride.requestFocus();
+                    return true;
+                }
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

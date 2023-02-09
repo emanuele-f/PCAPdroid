@@ -19,6 +19,9 @@
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,9 +43,11 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.BlacklistsAdapter;
 import com.emanuelef.remote_capture.interfaces.BlacklistsStateListener;
 import com.emanuelef.remote_capture.Blacklists;
+import com.emanuelef.remote_capture.model.BlacklistDescriptor;
 
 public class BlacklistsFragment extends Fragment implements BlacklistsStateListener, MenuProvider {
     private static final String TAG = "BlacklistsFragment";
@@ -65,9 +70,20 @@ public class BlacklistsFragment extends Fragment implements BlacklistsStateListe
         ListView listView = view.findViewById(R.id.listview);
         listView.setAdapter(mAdapter);
 
+        listView.setOnItemClickListener((parent, view1, position, id) -> {
+            BlacklistDescriptor bl = mAdapter.getItem(position);
+            if (bl != null)
+                openUrl(view1.getContext(), bl.url);
+        });
+
         mHandler = new Handler(Looper.getMainLooper());
 
         CaptureService.observeStatus(this, serviceStatus -> refreshStatus());
+    }
+
+    private void openUrl(Context ctx, String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        Utils.startActivity(ctx, intent);
     }
 
     @Override

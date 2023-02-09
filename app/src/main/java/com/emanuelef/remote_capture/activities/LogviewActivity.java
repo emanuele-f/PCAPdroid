@@ -20,9 +20,11 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.MenuProvider;
@@ -35,6 +37,7 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.fragments.LogviewFragment;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class LogviewActivity extends BaseActivity implements MenuProvider {
@@ -105,6 +108,33 @@ public class LogviewActivity extends BaseActivity implements MenuProvider {
                     return R.string.mitm_addon;
             }
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // This is required to properly handle the DPAD down press on Android TV, to properly
+        // focus the tab content
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            View view = getCurrentFocus();
+
+            Log.d(TAG, "onKeyDown focus " + view.getClass().getName());
+
+            if (view instanceof TabLayout.TabView) {
+                int pos = mPager.getCurrentItem();
+                View focusOverride = null;
+
+                Log.d(TAG, "TabLayout.TabView focus pos " + pos);
+
+                focusOverride = findViewById(R.id.scrollView);
+
+                if (focusOverride != null) {
+                    focusOverride.requestFocus();
+                    return true;
+                }
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
