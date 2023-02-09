@@ -446,4 +446,5 @@
     <string name="pcapng_format_summary">Paketleri TLS şifre çözme parolalarının gömülmesine olanak tanıyan pcapng biçiminde dök</string>
     <string name="sort_by">Sıralama ölçütü</string>
     <string name="total_bytes">Toplam bayt</string>
+    <string name="write_ext_storage_failed">Harici depolama alanına yazma başarısız oldu. Ayrıntılar için uygulama günlüğüne bakın</string>
 </resources>
