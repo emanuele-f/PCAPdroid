@@ -62,7 +62,6 @@ public class BlacklistsAdapter extends ArrayAdapter<BlacklistDescriptor> {
 
         TextView label = convertView.findViewById(R.id.label);
         label.setText(bl.label);
-        label.setOnClickListener(v -> openUrl(ctx, bl.url));
 
         TextView status = convertView.findViewById(R.id.status);
         status.setText(bl.getStatusLabel(ctx));
@@ -74,10 +73,5 @@ public class BlacklistsAdapter extends ArrayAdapter<BlacklistDescriptor> {
         ((TextView)convertView.findViewById(R.id.last_update)).setText(String.format(ctx.getString(R.string.last_update_val), Utils.formatEpochMin(ctx, bl.getLastUpdate() / 1000)));
 
         return convertView;
-    }
-
-    private void openUrl(Context ctx, String url) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        Utils.startActivity(ctx, intent);
     }
 }
