@@ -291,7 +291,7 @@
     <string name="warn_no_app_data">No se han intercambiado datos</string>
     <string name="waiting_application_data">Esperando datos</string>
     <string name="printable_text">Texto mostrable</string>
-    <string name="hexdump">Hexdump</string>
+    <string name="hexdump">Hexadécimal</string>
     <string name="geolocation">Geolocalización</string>
     <string name="downloading">Descargando…</string>
     <string name="built_on">Montada en: %1$s</string>
@@ -446,4 +446,5 @@
     <string name="firewall_whitelist_notice">En este modo se bloquearán todas las conexiones, a menos que se incluyan manualmente en una lista blanca. Puedes perder notificaciones push sin una lista blanca adecuada</string>
     <string name="sort_by">Ordenar por</string>
     <string name="total_bytes">bytes totales</string>
+    <string name="write_ext_storage_failed">No se pudo escribir en el almacenamiento externo. Consulte el registro de la aplicación para obtener más información</string>
 </resources>
