@@ -31,6 +31,7 @@ import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.ReversedLinesFileReader;
+import com.emanuelef.remote_capture.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +64,13 @@ public class LogviewFragment extends Fragment {
         assert args != null;
         mLogPath = args.getString("path");
         assert(mLogPath != null);
+
+        if(Utils.isTv(view.getContext())) {
+            // necessary to make scroll work on TV
+            // but disables ability to select and copy the textview contents
+            ViewGroup layout = view.findViewById(R.id.scrollView);
+            layout.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        }
 
         mLogView = view.findViewById(R.id.log);
         reloadLog();
