@@ -103,6 +103,13 @@ public class AppOverview extends Fragment implements MenuProvider {
         mBlockedConnsRow = view.findViewById(R.id.conns_blocked_row);
         mPermissions = view.findViewById(R.id.permissions);
 
+        if(Utils.isTv(ctx)) {
+            // necessary to make scroll work on TV
+            // but disables ability to select and copy permissions textview
+            ViewGroup layout = view.findViewById(R.id.layout);
+            layout.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        }
+
         ((TextView)view.findViewById(R.id.uid)).setText(Utils.formatInteger(ctx, dsc.getUid()));
         ((TextView)view.findViewById(R.id.name)).setText(dsc.getName());
         ((ImageView)view.findViewById(R.id.app_icon)).setImageDrawable(dsc.getIcon());

@@ -9,7 +9,7 @@
     android:padding="8dp">
 
 <androidx.constraintlayout.widget.ConstraintLayout
-    android:descendantFocusability="blocksDescendants"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
