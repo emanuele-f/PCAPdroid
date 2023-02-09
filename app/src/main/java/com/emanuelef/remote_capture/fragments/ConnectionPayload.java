@@ -117,8 +117,12 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         if(mConn.isPayloadTruncated())
             mTruncatedWarning.setVisibility(View.VISIBLE);
 
-        mAdapter = new PayloadAdapter(requireContext(), mConn, mode);
         mCurChunks = mConn.getNumPayloadChunks();
+        if(mCurChunks > 0)
+            mShowAsPrintable = guessDisplayAsPrintable();
+        else
+            mShowAsPrintable = false;
+        mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
         mJustCreated = true;
 
         // only set adapter after acknowledged (see setMenuVisibility below)

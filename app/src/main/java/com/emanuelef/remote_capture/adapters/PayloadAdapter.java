@@ -66,11 +66,12 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final HTTPReassembly mHttpRes;
     private boolean mShowAsPrintable;
 
-    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode) {
+    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode, boolean showAsPrintable) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mConn = conn;
         mContext = context;
         mMode = mode;
+        mShowAsPrintable = showAsPrintable;
 
         // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
         boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
