@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.1] - 2023-02-10
+- Fix Android TV navigation
+- Fix minor crashes
+
 ## [1.6.0] - 2023-01-16
 - Add firewall whitelist mode: block everything, unless whitelisted
 - Add pcapng format: removes the need for a separate SSLKEYLOG (paid feature)
