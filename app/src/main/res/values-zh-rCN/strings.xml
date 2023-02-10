@@ -471,4 +471,5 @@
     <string name="external_storage_perm_required">外部存储权限是必需的</string>
     <string name="total_bytes">总字节数</string>
     <string name="sort_by">排序方式</string>
+    <string name="write_ext_storage_failed">未能写入外部存储。详情见应用日志</string>
 </resources>
