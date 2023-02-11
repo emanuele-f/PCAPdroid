@@ -445,4 +445,5 @@
     <string name="use_system_dns_summary">Использовать системные DNS сервера, если это возможно</string>
     <string name="total_bytes">Всего байт</string>
     <string name="sort_by">Сортировать по</string>
+    <string name="write_ext_storage_failed">Запись на внешнее устройство хранения не удалась. Подробности в журнале приложения</string>
 </resources>
