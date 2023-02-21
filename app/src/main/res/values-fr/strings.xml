@@ -61,7 +61,7 @@
     <string name="theme_light">Clair</string>
     <string name="donate">Faire un don</string>
     <string name="search">Recherche…</string>
-    <string name="app_val">Appli : %1$s</string>
+    <string name="app_val">Appli : %1$s</string>
     <string name="ip_address_val">Adresse IP : %1$s</string>
     <string name="host_val">Hôte : %1$s</string>
     <string name="protocol_val">Protocole : %1$s</string>
@@ -344,4 +344,8 @@
     <string name="payload_scams_notice">Cette vue peut contenir des informations sensibles, comme des mots de passe ou des jetons d\'accès.
 \n
 \nNe montrer jamais cette vue à qui que ce soit, cela peut être une tentative d\'arnaque</string>
+    <string name="app_log">Log</string>
+    <string name="no_data">Pas de données</string>
+    <string name="malware_whitelist_action">Liste blanche (malware) …</string>
+    <string name="decryption_whitelist_action">Liste blanche (déchiffrement) …</string>
 </resources>
