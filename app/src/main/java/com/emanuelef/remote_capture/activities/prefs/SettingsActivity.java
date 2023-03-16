@@ -17,7 +17,7 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+package com.emanuelef.remote_capture.activities.prefs;
 
 import android.content.Context;
 import android.content.Intent;
@@ -44,8 +44,11 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
-import com.emanuelef.remote_capture.fragments.DnsSettings;
-import com.emanuelef.remote_capture.fragments.GeoipSettings;
+import com.emanuelef.remote_capture.activities.BaseActivity;
+import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.activities.MitmSetupWizard;
+import com.emanuelef.remote_capture.fragments.prefs.DnsSettings;
+import com.emanuelef.remote_capture.fragments.prefs.GeoipSettings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 

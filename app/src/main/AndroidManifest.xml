@@ -52,8 +52,8 @@
             android:launchMode="singleTop"
             android:exported="true" />
         <activity
-            android:name=".activities.EditCtrlPermissions"
-            android:parentActivityName=".activities.SettingsActivity" />
+            android:name=".activities.prefs.EditCtrlPermissions"
+            android:parentActivityName=".activities.prefs.SettingsActivity" />
 
         <activity
             android:name=".activities.OnBoardingActivity" />
@@ -74,17 +74,17 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity"/>
         <activity
-            android:name=".activities.SettingsActivity"
+            android:name=".activities.prefs.SettingsActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
         <activity
-            android:name=".activities.VpnExemptionsActivity"
+            android:name=".activities.prefs.VpnExemptionsActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".activities.SettingsActivity" />
+            android:parentActivityName=".activities.prefs.SettingsActivity" />
         <activity
-            android:name=".activities.PortMapActivity"
+            android:name=".activities.prefs.PortMapActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".activities.SettingsActivity" />
+            android:parentActivityName=".activities.prefs.SettingsActivity" />
         <activity
             android:name=".activities.AboutActivity"
             android:launchMode="singleTop"

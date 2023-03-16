@@ -11,7 +11,7 @@ import com.emanuelef.remote_capture.Utils;
 
 import java.util.List;
 
-class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity {
     private boolean mBackAction = false;
 
     @Override

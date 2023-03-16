@@ -17,7 +17,7 @@
  * Copyright 2020-21 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+package com.emanuelef.remote_capture.activities.prefs;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.activities.BaseActivity;
 import com.emanuelef.remote_capture.adapters.CtrlPermissionsAdapter;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
 
