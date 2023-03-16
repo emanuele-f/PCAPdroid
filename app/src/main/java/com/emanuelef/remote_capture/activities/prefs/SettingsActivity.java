@@ -49,6 +49,7 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.MitmSetupWizard;
 import com.emanuelef.remote_capture.fragments.prefs.DnsSettings;
 import com.emanuelef.remote_capture.fragments.prefs.GeoipSettings;
+import com.emanuelef.remote_capture.fragments.prefs.Socks5Settings;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
@@ -90,6 +91,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         } else if(prefKey.equals("dns_settings")) {
             targetFragment = new DnsSettings();
             setTitle(R.string.dns_servers);
+        } else if(prefKey.equals("socks5_settings")) {
+            targetFragment = new Socks5Settings();
+            setTitle(R.string.socks5_proxy);
         }
 
         if(targetFragment != null) {

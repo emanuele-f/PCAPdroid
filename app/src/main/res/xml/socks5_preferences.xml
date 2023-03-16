@@ -22,4 +22,23 @@
         app:iconSpaceReserved="false"
         app:defaultValue="8050"
         app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreference
+        app:key="socks5_auth_enabled"
+        app:title="@string/socks5_auth"
+        app:iconSpaceReserved="false"
+        app:summary="@string/socks5_auth_summary"
+        app:defaultValue="false" />
+
+    <EditTextPreference
+        app:key="socks5_username"
+        app:title="@string/username"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="socks5_password"
+        app:title="@string/password"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
 </PreferenceScreen>

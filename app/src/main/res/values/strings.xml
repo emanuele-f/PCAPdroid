@@ -124,6 +124,8 @@
     <string name="socks5_summary">Configure the redirection to a SOCKS5 proxy</string>
     <string name="enable_socks5_proxy_summary">Redirect all the TCP connections to a SOCKS5 proxy</string>
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
+    <string name="socks5_auth">SOCKS5 authentication</string>
+    <string name="socks5_auth_summary">Authenticate to the proxy via username and password</string>
     <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
@@ -456,4 +458,6 @@
     <string name="sort_by">Sort by</string>
     <string name="total_bytes">Total bytes</string>
     <string name="write_ext_storage_failed">Write to external storage failed. Check the app log for details</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 </resources>
