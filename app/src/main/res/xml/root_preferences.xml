@@ -100,26 +100,12 @@
             app:summary="@string/full_payload_summary"
             app:defaultValue="false" />
 
-        <SwitchPreference
-            app:key="socks5_enabled"
+        <Preference
+            android:key="socks5_settings"
             app:title="@string/socks5_proxy"
+            app:summary="@string/socks5_summary"
             app:iconSpaceReserved="false"
-            app:summary="@string/enable_socks5_proxy_summary"
-            app:defaultValue="false" />
-
-        <EditTextPreference
-            app:key="socks5_proxy_ip_address"
-            app:title="@string/proxy_ip_address"
-            app:defaultValue="0.0.0.0"
-            app:iconSpaceReserved="false"
-            app:useSimpleSummaryProvider="true" />
-
-        <EditTextPreference
-            app:key="socks5_proxy_port"
-            app:title="@string/proxy_port"
-            app:iconSpaceReserved="false"
-            app:defaultValue="8050"
-            app:useSimpleSummaryProvider="true" />
+            app:fragment="com.emanuelef.remote_capture.fragments.prefs.Socks5Settings" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false" >
@@ -148,7 +134,7 @@
             app:title="@string/dns_servers"
             app:summary="@string/dns_servers_summary"
             app:iconSpaceReserved="false"
-            app:fragment="com.emanuelef.remote_capture.fragments.DnsSettings" />
+            app:fragment="com.emanuelef.remote_capture.fragments.prefs.DnsSettings" />
 
         <SwitchPreference
             app:key="start_at_boot"
