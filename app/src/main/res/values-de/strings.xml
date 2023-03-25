@@ -34,7 +34,7 @@
     <string name="udp_exporter">UDP-Exporter</string>
     <string name="udp_exporter_info">Sendet das PCAP zu einen entfernten UDP-Server</string>
     <string name="http_server_port">HTTP-Server-Port</string>
-    <string name="no_dump_info">PCAP wird nicht gedumpt</string>
+    <string name="no_dump_info">Verkehr wird nicht gedumpt</string>
     <string name="receiver_port">Empfänger-Port</string>
     <string name="dropped_connections">Abgebrochene Verbindungen</string>
     <string name="tot_connections">Verbindungen insgesamt</string>
@@ -184,7 +184,7 @@
     <string name="update_now">Jetzt aktualisieren</string>
     <string name="status_updating">Aktualisierung…</string>
     <string name="private_dns_hinders_detection">Privates DNS verhindert die Erkennung</string>
-    <string name="decryption_no_filter_warn">Wähle beim Entschlüsseln von TLS eine Ziel-App aus, um die Internetverbindung nicht zu verlieren</string>
+    <string name="decryption_no_filter_warn">Wählen Sie eine Ziel-App aus oder verwenden Sie beim Entschlüsseln von TLS die Entschlüsselungs-Whitelist, um zu vermeiden, dass Ihre Verbindung zum Internet unterbrochen wird</string>
     <string name="block">Sperren…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall-Regeln</string>
@@ -255,4 +255,196 @@
     <string name="export_action">Exportieren</string>
     <string name="configure_action">Konfigurieren</string>
     <string name="checking_the_certificate">Zertifikat wird überprüft…</string>
+    <string name="app_log">Protokoll</string>
+    <string name="no_data">Keine Daten</string>
+    <string name="malware_whitelist_action">Whitelist (Malware)…</string>
+    <string name="decryption_whitelist_action">Whitelist (Entschlüsselung)…</string>
+    <string name="grant_mitm_permission">Geben Sie PCAPdroid die Berechtigung, das mitm-Addon zu steuern</string>
+    <string name="ca_cert_export_failed">Beim Exportieren des CA-Zertifikats ist ein Fehler aufgetreten
+\n
+\nWenn Ihr Gerät Autostart oder ähnliche Software implementiert, um die Ausführung von Hintergrunddiensten einzuschränken, stellen Sie sicher, dass Sie <a href="%1$s">PCAPdroid</a> auf die weiße Liste setzen</string>
+    <string name="mitm_addon">mitm Addon</string>
+    <string name="export_failed">Export fehlgeschlagen</string>
+    <string name="not_encrypted">Nicht verschlüsselt</string>
+    <string name="upgrade_action">Aktualisierung</string>
+    <string name="request">Anfrage</string>
+    <string name="websocket">WebSocket</string>
+    <string name="http">HTTP</string>
+    <string name="not_decryptable">Nicht entschlüsselbar</string>
+    <string name="decrypted">Entschlüsselt</string>
+    <string name="whitelisted">Auf der Positivliste</string>
+    <string name="decryption">Entschlüsselung</string>
+    <string name="decryption_filter">Entschlüsselung: %1$s</string>
+    <string name="connection_start_not_seen">PCAPdroid hat den Beginn dieser Verbindung nicht gesehen. Einige Informationen fehlen möglicherweise</string>
+    <string name="warn_no_app_data">Es wurden keine Anwendungsdaten ausgetauscht</string>
+    <string name="waiting_application_data">Wartende Daten</string>
+    <string name="downloading">Wird heruntergeladen…</string>
+    <string name="download_in_progress">Download läuft, bitte warten</string>
+    <string name="download_failed">Download fehlgeschlagen</string>
+    <string name="geo_db_download">Tippen Sie hier, um die neueste Datenbank herunterzuladen. Neue Datenbanken sind monatlich verfügbar</string>
+    <string name="geo_db_delete">Tippen Sie, um die Datenbank zu löschen und Speicherplatz zu sparen</string>
+    <string name="size_x">Größe: %1$s</string>
+    <string name="download">Download</string>
+    <string name="import_action">Importieren</string>
+    <string name="import_failed">Import fehlgeschlagen</string>
+    <string name="invalid_backup">Ungültiges Sicherungsformat</string>
+    <string name="rules_import_success">Importierte Regeln %1$d</string>
+    <string name="rules_delete_confirm">Ausgewählte Regeln löschen\?</string>
+    <string name="num_configured_rules">Konfigurierte Regeln</string>
+    <string name="firewall_is_disabled">Firewall ist deaktiviert</string>
+    <string name="firewall_is_enabled">Firewall ist aktiviert</string>
+    <string name="no_root_firewall">No-Root-Firewall</string>
+    <string name="mitm_setup_wizard_intro">Dieser Assistent führt Sie durch die Installation des PCAPdroid mitm-Addons und des Zertifikates, die zur Durchführung der <a href="%1$s">TLS-Entschlüsselung benötigt werden</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid ist nun bereit, den TLS-Datenverkehr zu entschlüsseln
+\n
+\nSchauen Sie sich das Benutzerhandbuch <a href="%1$s"/> an, um mehr über die Sicherheitsmaßnahmen zu erfahren, die eine Entschlüsselung verhindern können und wie diese umgangen werden können</string>
+    <string name="welcome_to_pcapdroid">Willkommen bei PCAPdroid</string>
+    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen.
+\n
+\nWie können Sie sich sicher sein\? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den Quellcode <a href="%2$s">an.</a></string>
+    <string name="app_intro_geolocation_msg">PCAPdroid kann eine lokale Datenbank abfragen, um das Land eines entfernten Servers zu bestimmen
+\n
+\nSie müssen zuerst die Geolokalisierungsdatenbank aus den App-Einstellungen herunterladen</string>
+    <string name="app_intro_traffic_inspection">Die Überprüfung von HTTP-Anfragen, Antworten und Rohdaten ist dank der eingebauten Decoder einfach.
+\n
+\nHaben Sie eine verschlüsselte Verbindung\? Sie können die <a href="%1$s">TLS-Entschlüsselung</a> aktivieren, um die entschlüsselten Daten zu erhalten</string>
+    <string name="low_memory">Wenig Speicher</string>
+    <string name="low_memory_info">Der App geht der Arbeitsspeicher aus, Abstürze sind zu erwarten</string>
+    <string name="full_payload_disabled">Die Option \"Volle Nutzlast\" wurde deaktiviert</string>
+    <string name="capture_stopped_low_memory">Die Aufzeichnung wurde gestoppt</string>
+    <string name="memory_usage">Speichernutzung</string>
+    <string name="ip_mode">VPN IP-Adressen</string>
+    <string name="ipv4_only">Nur IPv4</string>
+    <string name="ipv6_only">Nur IPv6</string>
+    <string name="ip_both">IPv4 und IPv6</string>
+    <string name="no_matches_found">Kein Treffer</string>
+    <string name="notifications_notice">Die App verwendet Benachrichtigungen, um bei anormalen Ereignissen Alarme zu senden. Erteilen Sie ihr im nächsten Bildschirm die Erlaubnis, Benachrichtigungen zu senden</string>
+    <string name="cleartext_connection">Klartext</string>
+    <string name="payload_scams_notice">Diese Ansicht kann vertrauliche Informationen wie Ihre Kennwörter und Zugriffstoken enthalten.
+\n
+\nGeben Sie diese Informationen niemals an jemanden weiter, es könnte daraus eine Betrugsversuch entstehen</string>
+    <string name="vpn_exemptions">VPN-Ausnahmen</string>
+    <string name="vpn_exemptions_summary">Nehmen Sie einige Anwendungen von der VPN-Verbindung aus. Deren Datenverkehr wird nicht überwacht</string>
+    <string name="cancel_action">Abbrechen</string>
+    <string name="show_data_action">Daten anzeigen</string>
+    <string name="remote_server_warning">Aus Sicherheitsgründen ist das Senden von Daten an den Remote-Server \"%1$s\" nicht erlaubt</string>
+    <string name="paid_features_unlocked">Kostenpflichtige Funktionen freigeschaltet. Starten Sie die Aufzeichnung neu, wenn sie ausgeführt wird</string>
+    <string name="build_info">Build-Informationen</string>
+    <string name="mitmproxy_opts">Zusätzliche mitmproxy-Optionen</string>
+    <string name="mitmproxy_opts_description">Zusätzliche Optionen für mitmproxy bereitstellen</string>
+    <string name="mitm_addon_error">Fehler beim Starten des mitm-Addons. Prüfen Sie das Protokoll für Details</string>
+    <string name="whitelist_mode">Whitelist-Modus</string>
+    <string name="firewall_whitelist_notice">In diesem Modus werden alle Verbindungen blockiert, es sei denn, sie werden manuell auf die Whitelist gesetzt. Ohne eine geeignete Whitelist verpassen Sie möglicherweise Push-Benachrichtigungen</string>
+    <string name="firewall_whitelist_help">Diese Regeln legen fest, welche Verbindungen zugelassen werden sollen. Blocklist-Regeln haben Vorrang vor Whitelist-Regeln</string>
+    <string name="add_to_fw_whitelist">Zur Firewall-Whitelist hinzufügen</string>
+    <string name="remove_from_fw_whitelist">Von der Firewall-Whitelist entfernen</string>
+    <string name="reset_stats_confirm">Möchten Sie diese Statistiken wirklich zurücksetzen\?</string>
+    <string name="port_mapping">Port-Mapping</string>
+    <string name="port_mapping_summary">Konfigurieren Sie Port-Zuordnungsregeln, um Verbindungen an einen anderen Host oder Port umzuleiten</string>
+    <string name="add_action">Hinzufügen</string>
+    <string name="redirect_to">Weiterleiten zu:</string>
+    <string name="original_port">Ursprünglicher Port</string>
+    <string name="required">Erforderlich</string>
+    <string name="destination_ip">Ziel-IP-Adresse</string>
+    <string name="destination_port">Ziel-Port</string>
+    <string name="port_mapping_exists">Port-Zuordnung bereits definiert</string>
+    <string name="items_delete_confirm">Ausgewählte Elemente löschen\?</string>
+    <string name="ip_address">IP-Adresse</string>
+    <string name="rule_exists">Regel bereits definiert</string>
+    <string name="dns_servers">DNS-Server</string>
+    <string name="dns_servers_summary">Konfigurieren Sie die DNS-Server, die während der Erfassung verwendet werden sollen</string>
+    <string name="ipv4_dns_server">IPv4 DNS-Server</string>
+    <string name="ipv6_dns_server">IPv6 DNS-Server</string>
+    <string name="use_system_dns">System DNS verwenden</string>
+    <string name="use_system_dns_summary">Wenn möglich den System DNS-Server verwenden</string>
+    <string name="decryption_whitelist_rules">Regeln für die Entschlüsselungs-Whitelist</string>
+    <string name="decryption_whitelist_help">Liste von Regeln, um bestimmte Verbindungen von der TLS-Entschlüsselung auszuschließen. Nützlich, um zu vermeiden, dass Anwendungen/SDKs, die Zertifikats-Pinning verwenden, beschädigt werden. Der Hostabgleich funktioniert nur, wenn eine vorherige DNS-Antwort gesehen wurde</string>
+    <string name="decryption_whitelist">Entschlüsselungs-Whitelist</string>
+    <string name="external_storage_perm_required">Die Berechtigung für den externen Speicher ist erforderlich</string>
+    <string name="many_rules_warning">Sie versuchen, viele Regeln zu importieren, was dazu führen kann, dass die App bei einigen Interaktionen nicht mehr reagiert. Wollen Sie wirklich fortfahren\?</string>
+    <string name="pcapng_format">Pcapng Format</string>
+    <string name="pcapng_format_summary">Dump-Pakete im pcapng-Dump-Format, die das Einbetten von TLS-Entschlüsselungsgeheimnissen ermöglichen</string>
+    <string name="warning">Warnung</string>
+    <string name="remote_collector_notice">Sie haben PCAPdroid so konfiguriert, dass es Datenverkehr an einen entfernten Server sendet. Der Server kann auf Ihre sensiblen Daten zugreifen.
+\n
+\nWenn Sie jemand dazu aufgefordert hat, handelt es sich wahrscheinlich um einen Betrugsversuch</string>
+    <string name="connection_not_found">Konnte die angegebene Verbindung nicht finden</string>
+    <string name="heap_usage">Heap-Nutzung</string>
+    <string name="mitm_skip_notice">Das mitm-Zertifikat scheint nicht installiert zu sein. Wenn Sie fortfahren, schlägt die Entschlüsselung möglicherweise fehl</string>
+    <string name="mitm_wizard_description">Konfigurieren des Geräts für die TLS-Entschlüsselung</string>
+    <string name="traffic_dump">Traffic-Dump</string>
+    <string name="traffic_inspection">Datenverkehrskontrolle</string>
+    <string name="tls_decryption_summary">Entschlüssel den SSL/TLS-Datenverkehr, durch ausführen von mitm. Dies kann jetzt mit einigen Apps funktionieren, siehe im Benutzerhandbuch nach</string>
+    <string name="mitm_setup_wizard">Mitm-Einrichtungsassistent</string>
+    <string name="mitm_start_failed">Der mitm-Dienst konnte nicht gestartet werden. Installieren Sie das mitm-Addon neu und versuchen Sie es erneut</string>
+    <string name="install_ca_certificate">Installieren Sie das PCAPdroid-CA-Zertifikat und wählen Sie „VPN und Apps“. Android wird nach Ihrem Sperrbildschirm oder Passwort fragen</string>
+    <string name="cert_installed_correctly">Das CA-Zertifikat ist installiert</string>
+    <string name="cert_reinstall_required">Das CA-Zertifikat ist nicht installiert, führen Sie den mitm-Einrichtungsassistenten aus</string>
+    <string name="cert_exported_now_installed">Zertifikat exportiert, installieren Sie es nun über die Android-Einstellungen</string>
+    <string name="mitm_addon_bad_version">Schlechte PCAPdroid Mitm Addon-Version. Deinstallieren Sie es und versuchen Sie es erneut</string>
+    <string name="mitm_addon_new_version">Das PCAPdroid mitm Addon muss aktualisiert werden</string>
+    <string name="overview">Übersicht</string>
+    <string name="response">Antwort</string>
+    <string name="string_http_request">HTTP-Anfrage</string>
+    <string name="string_http_response">HTTP-Antwort</string>
+    <string name="payload_truncated">Die Nutzlast ist gekürzt. Aktivieren Sie \"%1$s\", um sie vollständig anzuzeigen</string>
+    <string name="full_payload_summary">Zeigen Sie die volle Verbindung Payload (z.B. die volle HTTP-Anfrage und Antwort). Dies erfordert viel Speicher, nicht auf lange Sicht verwenden</string>
+    <string name="payload">Nutzlast</string>
+    <string name="tx_direction">Senden</string>
+    <string name="rx_direction">Empfang</string>
+    <string name="full_payload">Volle Nutzlast</string>
+    <string name="geolocation">Standort</string>
+    <string name="geolocation_summary">Zeigen Sie Länder- und ASN-Informationen an, indem Sie Offline-Suchen durchführen</string>
+    <string name="display_as">Darstellen als…</string>
+    <string name="printable_text">Druckbarer Text</string>
+    <string name="hexdump">Hexdump</string>
+    <string name="geo_db_not_found">Datenbank nicht gefunden. Geolokalisierung ist deaktiviert</string>
+    <string name="database">Datenbank</string>
+    <string name="built_on">Aufgebaut am: %1$s</string>
+    <string name="discard_action">Verwerfen</string>
+    <string name="no_rules_to_export">Keine Regeln zum Exportieren</string>
+    <string name="rules_merge_msg">Bestehende Regeln beibehalten\?</string>
+    <string name="keep_action">Behalten</string>
+    <string name="app_info">App-Info</string>
+    <string name="app_intro_skip_button">Überspringen</string>
+    <string name="app_intro_next_button">Weiter</string>
+    <string name="app_intro_back_button">Zurück</string>
+    <string name="privacy_first">Datenschutz an erster Stelle</string>
+    <string name="country_and_asn">Land und ASN</string>
+    <string name="install_the_mitm_addon">Installieren Sie das PCAPdroid <a href="%1$s">mitm Addon</a></string>
+    <string name="export_ca_certificate">Exportieren Sie das PCAPdroid-CA-Zertifikat, öffnen Sie dann die Android-Einstellungen für \"Verschlüsselung und Anmeldeinformationen\" und wählen Sie \"CA-Zertifikat installieren\"</string>
+    <string name="app_intro_done_button">Fertig</string>
+    <string name="app_intro_welcome_msg">PCAPdroid ist eine datenschutzfreundliche App, mit der Sie die von den Apps auf Ihrem Gerät hergestellten Verbindungen verfolgen und analysieren können
+\n
+\nDarüber hinaus können Sie einen PCAP-Dump des Datenverkehrs exportieren, Metadaten extrahieren und vieles mehr!</string>
+    <string name="vpn_setup_msg">PCAPdroid simuliert ein VPN, um den Netzwerkverkehr ohne Root zu erfassen.
+\n
+\nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren</string>
+    <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, um den Datenverkehr im Standard-PCAP-Format zur weiteren Analyse auszugeben
+\n
+\nÜber die <a href="%2$s">Trailer-Option</a> können Sie den Paketen App-Namen hinzufügen und diese in Wireshark anzeigen</string>
+    <string name="tls_decryption_with_root_msg">Die Möglichkeit, die TLS-Entschlüsselung mit root auszuführen, ist eine experimentelle Funktion. Dies ist eine Liste von bekannten Fehlern:
+\n
+\n - in PCAPdroid wird der Datenverkehr so angezeigt, wie er von der mitm-addon-App anstelle der ursprünglichen App generiert wurde
+\n - wenn ein App-Filter gesetzt ist, wird nur die Ziel-App entschlüsselt, aber PCAPdroid zeigt weiterhin den Datenverkehr der anderen Apps an
+\n - wenn die Erfassung nicht startet, stellen Sie sicher, dass Sie den iptables-Befehl als root ausführen können (z. B. über termux).
+\n - dies funktioniert möglicherweise nicht unter Android 12 und später
+\n - wenn eine VPN-App läuft, sollten Sie entweder eine bestimmte App für die Entschlüsselung auswählen oder das PCAPdroid mitm Addon vom VPN ausschließen, da der Datenverkehr sonst in einer Schleife läuft</string>
+    <string name="vpn_lockdown_notice">Um zu verhindern, dass Apps auf das Internet zugreifen, wenn PCAPdroid nicht läuft (z.B. nach einem Neustart), können Sie PCAPdroid als Always-On-VPN im Lockdown-Modus einstellen.
+\n
+\nMöchten Sie jetzt die VPN-Einstellungen öffnen\?</string>
+    <string name="write_ext_storage_failed">Schreiben auf externen Speicher fehlgeschlagen. Prüfen Sie das App-Protokoll für Details</string>
+    <string name="paid_feature">Kostenpflichtige Funktion</string>
+    <string name="network_traffic">Verkehr</string>
+    <string name="permission_granted">%1$s Berechtigung wurde erteilt</string>
+    <string name="permission_grant_fail">%1$s Berechtigung konnte nicht erteilt werden</string>
+    <string name="sort_by">Sortieren nach</string>
+    <string name="total_bytes">Bytes insgesamt</string>
+    <string name="access_paid_features_msg">Unter <a href="%1$s">finden Sie das Benutzerhandbuch</a>, um zu erfahren, wie Sie auf die kostenpflichtigen Funktionen zugreifen können</string>
+    <string name="license_service_unavailable">Der PCAPdroid-Lizenzdienst ist derzeit nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut</string>
+    <string name="requesting_unlock_token">Anforderung eines Freigabetokens, bitte warten</string>
+    <string name="unlock_token_summary">Ein Token, das verwendet werden kann, um die kostenpflichtigen Funktionen in Nicht-Google-Play-Builds der App (z. B. F-Droid/Github) freizuschalten</string>
+    <string name="unlock_token_error">Konnte kein Entsperrungs-Token anfordern [%1$d]: %2$s</string>
+    <string name="show_action">Zeigen</string>
+    <string name="unlock_token_msg1">Dies ist Ihr Freischalt-Token. Notieren Sie ihn, da Sie ihn unter <a href="%1$s">benötigen, um Ihre Lizenzcodes zu generieren.</a></string>
 </resources>
