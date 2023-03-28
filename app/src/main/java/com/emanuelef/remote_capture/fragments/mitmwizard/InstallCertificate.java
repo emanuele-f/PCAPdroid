@@ -42,6 +42,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.MitmListener;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.pcapdroid.mitm.MitmAPI;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,12 +77,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                     gotoStep(R.id.navto_done);
                 })
                 .show());
-
         mAddon = new MitmAddon(requireContext(), this);
-        if(!mAddon.connect(0)) {
-            Toast.makeText(requireContext(), "addon connect failed", Toast.LENGTH_LONG).show();
-            certFail();
-        }
     }
 
     @Override
@@ -92,7 +88,29 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     @Override
     public void onResume() {
-        if(Utils.isCAInstalled(mCaCert))
+        if(!Utils.isCAInstalled(mCaCert)) {
+            if(!mAddon.isConnected()) {
+                if (!mAddon.connect(0)) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.error)
+                            .setMessage(R.string.mitm_addon_autostart_workaround)
+                            .setNegativeButton(R.string.no, (dialogInterface, i) -> {
+                                Toast.makeText(requireContext(), "addon connect failed", Toast.LENGTH_LONG).show();
+                                certFail();
+                            })
+                            .setPositiveButton(R.string.yes, (d, whichButton) -> {
+                                Context ctx = requireContext();
+                                Intent launchIntent = ctx.getPackageManager().getLaunchIntentForPackage(MitmAPI.PACKAGE_NAME);
+                                if (launchIntent != null)
+                                    Utils.startActivity(ctx, launchIntent);
+                                else {
+                                    Toast.makeText(requireContext(), "addon connect failed", Toast.LENGTH_LONG).show();
+                                    certFail();
+                                }
+                            }).show();
+                }
+            }
+        } else
             certOk();
 
         super.onResume();
