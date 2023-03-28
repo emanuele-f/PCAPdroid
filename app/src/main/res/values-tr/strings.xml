@@ -166,7 +166,7 @@
     <string name="copy_to_clipboard">Panoya kopyala</string>
     <string name="conn_status_unreachable">Ulaşılamıyor</string>
     <string name="file_saved_with_name">Dosya \"%1$s\" olarak kaydedildi</string>
-    <string name="enable_socks5_proxy_summary">Tüm TCP bağlantılarını belirtilen SOCKS5 vekiline yönlendir</string>
+    <string name="enable_socks5_proxy_summary">Tüm TCP bağlantılarını bir SOCKS5 vekiline yönlendir</string>
     <string name="proxy_ip_address">Vekil IP adresi</string>
     <string name="protocol_val">Protokol: %1$s</string>
     <string name="android_app_info">Android sistemi</string>
@@ -266,7 +266,7 @@
     <string name="traffic_inspection">Trafik denetimi</string>
     <string name="export_action">Dışa aktar</string>
     <string name="grant_mitm_permission">PCAPdroid\'e ortadaki adam eklentisini denetleme izni verin</string>
-    <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini yeniden kurun ve yeniden deneyin</string>
+    <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini elle açmaya çalışın ve yeniden deneyin</string>
     <string name="not_encrypted">Şifrelenmedi</string>
     <string name="cert_reinstall_required">CA sertifikası kurulmadı, ortadaki adam kurulum sihirbazını çalıştırın</string>
     <string name="export_failed">Dışa aktarılamadı</string>
@@ -447,4 +447,11 @@
     <string name="sort_by">Sıralama ölçütü</string>
     <string name="total_bytes">Toplam bayt</string>
     <string name="write_ext_storage_failed">Harici depolama alanına yazma başarısız oldu. Ayrıntılar için uygulama günlüğüne bakın</string>
+    <string name="socks5_summary">SOCKS5 vekiline yönlendirmeyi yapılandırın</string>
+    <string name="socks5_auth">SOCKS5 kimlik doğrulaması</string>
+    <string name="username">Kullanıcı adı</string>
+    <string name="mitm_addon_autostart_workaround">Ortadaki adam eklentisine bağlantı başarısız oldu. Geçici bir çözüm olarak, ortadaki adam eklenti uygulamasını açmayı ve ardından kapatmadan PCAPdroid\'e geri dönmeyi deneyebilirsiniz. Şimdi açmak istiyor musunuz\?</string>
+    <string name="socks5_auth_summary">Kullanıcı adı ve parola ile vekilde kimlik doğrulaması yapın</string>
+    <string name="socks5_redirection">SOCKS5 yönlendirmesi</string>
+    <string name="password">Parola</string>
 </resources>
