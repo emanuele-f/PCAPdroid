@@ -199,7 +199,7 @@
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
     <string name="capture_all_apps">Capturar tráfico de todas las aplicaciones</string>
     <string name="disconnect_vpn_confirm">¿Desconectar la aplicación VPN activa y continuar\?</string>
-    <string name="enable_socks5_proxy_summary">Redirige todas las conexiones TCP al proxy SOCKS5 especificado</string>
+    <string name="enable_socks5_proxy_summary">Redirigir todas las conexiones TCP a un proxy SOCKS5</string>
     <string name="root_capture_summary">Permite que PCAPdroid funcione con otras aplicaciones VPN</string>
     <string name="hidden_connections_help">Lista de reglas para ocultar las entradas de la lista de conexiones y así poder centrarse en las relevantes</string>
     <string name="blocked_pkts">Bloqueado</string>
@@ -225,7 +225,7 @@
     <string name="tls_decryption_starting">Descifrado TLS está comenzando…</string>
     <string name="tls_decryption_running">Descifrado TLS se está ejecutando</string>
     <string name="traffic_inspection">Inspección de trafico</string>
-    <string name="mitm_start_failed">No se pudo comenzar el servicio mitm. Reinstala el complemento mitm e intenta de nuevo</string>
+    <string name="mitm_start_failed">No se ha podido iniciar el servicio mitm. Intenta abrir la aplicación mitm manualmente y vuelve a intentarlo</string>
     <string name="mitm_setup_wizard">Asistente de configuración mitm</string>
     <string name="install_action">Instalar</string>
     <string name="export_action">Exportar</string>
@@ -447,4 +447,11 @@
     <string name="sort_by">Ordenar por</string>
     <string name="total_bytes">bytes totales</string>
     <string name="write_ext_storage_failed">No se pudo escribir en el almacenamiento externo. Consulte el registro de la aplicación para obtener más información</string>
+    <string name="socks5_redirection">Redireccionamiento SOCKS5</string>
+    <string name="socks5_summary">Configurar la redirección a un proxy SOCKS5</string>
+    <string name="socks5_auth">Autenticación SOCKS5</string>
+    <string name="socks5_auth_summary">Autenticarse en el proxy a través de nombre de usuario y contraseña</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="mitm_addon_autostart_workaround">Falló la conexión con el complemento mitm. Como solución alternativa, puede intentar abrir la aplicación del complemento mitm y luego volver a PCAPdroid sin cerrarla. ¿Quieres abrirlo ahora\?</string>
 </resources>
