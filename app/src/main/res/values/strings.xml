@@ -120,8 +120,12 @@
     <string name="theme_dark">Dark</string>
     <string name="app_theme">Theme</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="enable_socks5_proxy_summary">Redirect all the TCP connections to the specified SOCKS5 proxy</string>
+    <string name="socks5_redirection">SOCKS5 redirection</string>
+    <string name="socks5_summary">Configure the redirection to a SOCKS5 proxy</string>
+    <string name="enable_socks5_proxy_summary">Redirect all the TCP connections to a SOCKS5 proxy</string>
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
+    <string name="socks5_auth">SOCKS5 authentication</string>
+    <string name="socks5_auth_summary">Authenticate to the proxy via username and password</string>
     <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
@@ -265,7 +269,7 @@
     <string name="tls_decryption_starting">TLS decryption is starting…</string>
     <string name="tls_decryption_running">TLS decryption is running</string>
     <string name="traffic_inspection">Traffic inspection</string>
-    <string name="mitm_start_failed">Could not start the mitm service. Reinstall the mitm addon and retry</string>
+    <string name="mitm_start_failed">Could not start the mitm service. Try to open the mitm addon app manually and retry</string>
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
@@ -454,4 +458,7 @@
     <string name="sort_by">Sort by</string>
     <string name="total_bytes">Total bytes</string>
     <string name="write_ext_storage_failed">Write to external storage failed. Check the app log for details</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="mitm_addon_autostart_workaround">Connection to the mitm addon failed. As a workaround, you can try to open the mitm addon app and then go back to PCAPdroid without closing it. Do you want to open it now?</string>
 </resources>

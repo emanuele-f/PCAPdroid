@@ -17,7 +17,7 @@
  * Copyright 2020-22 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.fragments;
+package com.emanuelef.remote_capture.fragments.prefs;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;

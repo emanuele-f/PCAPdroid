@@ -100,6 +100,8 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | mitmproxy_opts          | string |  62 |      | additional options to provide to mitmproxy in decryption mode      |
 | pcap_name               | string |  62 |      | write the PCAP to Download/PCAPdroid/*pcap_name* in pcap_file mode |
 | pcapng_format           | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
+| socks5_username         | string |  64 | vpn  | username for the optional SOCKS5 proxy authentication              |
+| socks5_password         | string |  64 | vpn  | password for the optional SOCKS5 proxy authentication              |
 
 \*: paid feature
 

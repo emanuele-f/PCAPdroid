@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.Whitebox;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 
@@ -42,7 +43,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.util.reflection.Whitebox;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;

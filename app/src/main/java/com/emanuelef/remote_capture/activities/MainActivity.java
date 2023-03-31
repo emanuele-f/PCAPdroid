@@ -62,6 +62,7 @@ import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
+import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;

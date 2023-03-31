@@ -373,7 +373,11 @@ public class CaptureService extends VpnService implements Runnable {
                 // SOCKS5 proxy
                 mSocks5Address = mSettings.socks5_proxy_address;
                 mSocks5Port = mSettings.socks5_proxy_port;
-                mSocks5Auth = null;
+
+                if(!mSettings.socks5_username.isEmpty() && !mSettings.socks5_password.isEmpty())
+                    mSocks5Auth = mSettings.socks5_username + ":" + mSettings.socks5_password;
+                else
+                    mSocks5Auth = null;
             }
         }
 

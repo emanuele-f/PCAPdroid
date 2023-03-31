@@ -1,0 +1,44 @@
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        app:key="socks5_enabled"
+        app:title="@string/socks5_redirection"
+        app:iconSpaceReserved="false"
+        app:summary="@string/enable_socks5_proxy_summary"
+        app:defaultValue="false" />
+
+    <EditTextPreference
+        app:key="socks5_proxy_ip_address"
+        app:title="@string/proxy_ip_address"
+        app:defaultValue="0.0.0.0"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="socks5_proxy_port"
+        app:title="@string/proxy_port"
+        app:iconSpaceReserved="false"
+        app:defaultValue="8050"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreference
+        app:key="socks5_auth_enabled"
+        app:title="@string/socks5_auth"
+        app:iconSpaceReserved="false"
+        app:summary="@string/socks5_auth_summary"
+        app:defaultValue="false" />
+
+    <EditTextPreference
+        app:key="socks5_username"
+        app:title="@string/username"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="socks5_password"
+        app:title="@string/password"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
+</PreferenceScreen>

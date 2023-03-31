@@ -211,7 +211,7 @@
     <string name="file_saved_with_name">File salvato come \"%1$s\"</string>
     <string name="start_at_boot_summary">Avvia la cattura in automatico all\'avvio del dispositivo</string>
     <string name="malware_whitelist_help">Whitelist definita dall\'utente per inibire il rilevamento di malware. Tieni premuto su una connessione malevola per creare una regola</string>
-    <string name="enable_socks5_proxy_summary">Redirigi tutte le connessioni TCP verso il proxy SOCKS5</string>
+    <string name="enable_socks5_proxy_summary">Redirigi tutte le connessioni TCP verso un proxy SOCKS5</string>
     <string name="decryption_no_filter_warn">Quando la decrittazione TLS è abilitata, è necessario selezionare un filtro app o usare la whitelist di decrittazione per evitare di perdere la connessione a Internet</string>
     <string name="traffic_dump">Salvataggio del traffico</string>
     <string name="conn_status_active">Attiva</string>
@@ -259,7 +259,7 @@
     <string name="num_configured_rules">Regole configurate</string>
     <string name="unblock">Sblocca…</string>
     <string name="tls_decryption_running">Decrittazione TLS in esecuzione</string>
-    <string name="mitm_start_failed">Impossibile avviare il servizio di mitm. Reinstallare l\'addon di mitm e riprovare</string>
+    <string name="mitm_start_failed">Impossibile avviare il servizio di mitm. Prova ad aprire manualmente l\'app dell\'addon di mitm e riprova</string>
     <string name="mitm_setup_wizard">Configurazione mitm</string>
     <string name="overview">Panoramica</string>
     <string name="payload_truncated">Il contenuto visualizzato è limitato. Abilitare \"%1$s\" per mostrarlo per esteso</string>
@@ -446,4 +446,11 @@
     <string name="total_bytes">Bytes totali</string>
     <string name="decryption_whitelist_help">Lista di regole per escludere specifiche connessioni dalla decrittazione TLS. E\' utile per evitare che app/SDK con certificate pinning smettano di funzionare. Il matching basato sull\'host funziona solo quando è presente una risposta DNS precedente alla connessione TLS</string>
     <string name="write_ext_storage_failed">Errore nella scrittura sull\'archivio esterno. Per maggiori dettagli controllare il log dell\'applicazione</string>
+    <string name="socks5_auth">Autenticazione SOCKS5</string>
+    <string name="socks5_auth_summary">Autenticati al proxy tramite nome utente e password</string>
+    <string name="username">Nome utente</string>
+    <string name="password">Password</string>
+    <string name="socks5_redirection">Redirezione SOCKS5</string>
+    <string name="socks5_summary">Configura la redirezione ad un proxy SOCKS5</string>
+    <string name="mitm_addon_autostart_workaround">Connessione all\'addon di mitm fallita. Come soluzione, prova ad aprire l\'app dell\'addon e, lasciando quest\'app aperta, tornare a PCAPdroid. Vuoi aprirla adesso\?</string>
 </resources>

@@ -17,7 +17,7 @@
  * Copyright 2020-22 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.fragments;
+package com.emanuelef.remote_capture.fragments.prefs;
 
 import android.content.Context;
 import android.content.SharedPreferences;

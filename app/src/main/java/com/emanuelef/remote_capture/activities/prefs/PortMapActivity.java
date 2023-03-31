@@ -17,12 +17,13 @@
  * Copyright 2020-22 - Emanuele Faranda
  */
 
-package com.emanuelef.remote_capture.activities;
+package com.emanuelef.remote_capture.activities.prefs;
 
 import android.os.Bundle;
 
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.PortMapFragment;
+import com.emanuelef.remote_capture.activities.BaseActivity;
+import com.emanuelef.remote_capture.fragments.prefs.PortMapFragment;
 
 public class PortMapActivity extends BaseActivity {
     @Override

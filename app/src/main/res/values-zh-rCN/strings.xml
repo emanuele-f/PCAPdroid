@@ -234,7 +234,7 @@
     <string name="capture_all_apps">捕获所有应用的流量</string>
     <string name="save_ok">已保存</string>
     <string name="file_saved_with_name">已将文件另存为 \"%1$s\"</string>
-    <string name="enable_socks5_proxy_summary">将所有 TCP 连接重定向到指定的 SOCKS5 代理</string>
+    <string name="enable_socks5_proxy_summary">将所有 TCP 连接重定向到 SOCKS5 代理</string>
     <string name="root_capture_summary">允许 PCAPdroid 与其他 VPN 应用程序一起运行</string>
     <string name="malware_whitelist_help">用户自定义白名单，禁止恶意软件检测。长按“恶意连接”创建取消将它们标记为恶意软件的规则</string>
     <string name="hidden_connections_help">隐藏连接列表条目的规则列表，以便关注相关的规则</string>
@@ -248,7 +248,7 @@
     <string name="tls_decryption_starting">TLS 解密正在启动…</string>
     <string name="tls_decryption_running">TLS 解密运行中</string>
     <string name="traffic_inspection">流量检查</string>
-    <string name="mitm_start_failed">无法启动 mitm 服务。重新安装 mitm 附加组件并重试</string>
+    <string name="mitm_start_failed">无法启动 mitm 服务。尝试手动打开 mitm 附加组件应用并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
     <string name="configure_action">配置</string>
@@ -471,4 +471,12 @@
     <string name="external_storage_perm_required">外部存储权限是必需的</string>
     <string name="total_bytes">总字节数</string>
     <string name="sort_by">排序方式</string>
+    <string name="write_ext_storage_failed">未能写入外部存储。详情见应用日志</string>
+    <string name="socks5_redirection">SOCKS5 重定向</string>
+    <string name="socks5_summary">配置到 SOCKS5 代理的重定向</string>
+    <string name="socks5_auth">SOCKS5 身份验证</string>
+    <string name="socks5_auth_summary">通过用户名和密码进行代理身份验证</string>
+    <string name="username">用户名</string>
+    <string name="password">密码</string>
+    <string name="mitm_addon_autostart_workaround">未能连接到 mitm 附加组件。一个临时解决方法是你可以尝试打开 mitm 附加组件应用，然后在不关闭它的情况下回到 PCAPdroid。你想立即打开它吗？</string>
 </resources>

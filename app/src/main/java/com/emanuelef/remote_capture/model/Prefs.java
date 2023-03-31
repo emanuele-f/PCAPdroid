@@ -77,6 +77,9 @@ public class Prefs {
     public static final String PREF_MAX_PKTS_PER_FLOW = "max_pkts_per_flow";
     public static final String PREF_MAX_DUMP_SIZE = "max_dump_size";
     public static final String PREF_SOCKS5_ENABLED_KEY = "socks5_enabled";
+    public static final String PREF_SOCKS5_AUTH_ENABLED_KEY = "socks5_auth_enabled";
+    public static final String PREF_SOCKS5_USERNAME_KEY = "socks5_username";
+    public static final String PREF_SOCKS5_PASSWORD_KEY = "socks5_password";
     public static final String PREF_TLS_DECRYPTION_SETUP_DONE = "tls_decryption_setup_ok";
     public static final String PREF_CA_INSTALLATION_SKIPPED = "ca_install_skipped";
     public static final String PREF_FULL_PAYLOAD = "full_payload";
@@ -169,6 +172,9 @@ public class Prefs {
     public static boolean getSocks5Enabled(SharedPreferences p)     { return(p.getBoolean(PREF_SOCKS5_ENABLED_KEY, false)); }
     public static String getSocks5ProxyAddress(SharedPreferences p) { return(p.getString(PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0")); }
     public static int getSocks5ProxyPort(SharedPreferences p)       { return(Integer.parseInt(p.getString(Prefs.PREF_SOCKS5_PROXY_PORT_KEY, "8080"))); }
+    public static boolean isSocks5AuthEnabled(SharedPreferences p)  { return(p.getBoolean(PREF_SOCKS5_AUTH_ENABLED_KEY, false)); }
+    public static String getSocks5Username(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_USERNAME_KEY, "")); }
+    public static String getSocks5Password(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_PASSWORD_KEY, "")); }
     public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
     public static IpMode getIPMode(SharedPreferences p)          { return(getIPMode(p.getString(PREF_IP_MODE, IP_MODE_DEFAULT))); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
