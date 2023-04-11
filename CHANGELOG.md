@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.2] - 2023-03-31
+- Update mitm addon to mitmproxy 9.0.1
+- Add SOCKS5 authentication via username and password
+- Add workaround for mitm addon connection failure
+- Update German translation (credits: Mario Herrmann)
+
 ## [1.6.1] - 2023-02-10
 - Fix Android TV navigation
 - Fix minor crashes
