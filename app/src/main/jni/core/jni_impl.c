@@ -822,6 +822,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
     }
 
     if(blacklist_load_list_descriptor(bl, env, ld) < 0) {
+        log_f("Could not load firewall rules. Check the log for more details");
         blacklist_destroy(bl);
         return false;
     }
@@ -868,6 +869,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv
     }
 
     if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        log_f("Could not load firewall whitelist rules. Check the log for more details");
         blacklist_destroy(wl);
         return false;
     }
@@ -909,6 +911,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv 
     }
 
     if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        log_f("Could not load malware whitelist rules. Check the log for more details");
         blacklist_destroy(wl);
         return false;
     }
@@ -949,6 +952,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadDecryptionWhitelist(JNIE
     }
 
     if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
+        log_f("Could not load decryption whitelist. Check the log for more details");
         blacklist_destroy(wl);
         return false;
     }
