@@ -27,6 +27,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -140,6 +141,22 @@ public class AppDetailsActivity extends BaseActivity {
                 if (focusOverride != null) {
                     focusOverride.requestFocus();
                     return true;
+                }
+            }
+        } else if(keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            // Clicking "right" from the connections view goes to the fab down item
+            if (mPager.getCurrentItem() == POS_CONNECTIONS) {
+                RecyclerView rview = findViewById(R.id.connections_view);
+
+                if (rview.getFocusedChild() != null) {
+                    Log.d(TAG, "onKeyDown (right) focus " + rview.getFocusedChild());
+
+                    View fab = findViewById(R.id.fabDown);
+
+                    if (fab != null) {
+                        fab.requestFocus();
+                        return true;
+                    }
                 }
             }
         }
