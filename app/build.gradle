@@ -96,6 +96,7 @@ dependencies {
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
     implementation 'com.github.AppIntro:AppIntro:6.2.0'
+    //implementation 'com.github.androidmads:QRGenerator:1.0.1'
 
     implementation "com.android.billingclient:billing:5.1.0"
 }

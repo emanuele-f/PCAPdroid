@@ -51,6 +51,7 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,6 +60,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, SkuDetailsResponseListener {
     public static final String TAG = "PlayBilling";
@@ -74,6 +77,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     private static boolean mPendingNoticeShown = false; // static to make it work across the app
     private final SkusAvailability mAvailability;
     private static Utils.BuildType mVerifiedBuildType = null;
+    private ExecutorService mQrActivationExecutor;
+    private QrActivationRequest mPendingQrRequest;
 
     /** setPurchaseListener() -> connectBilling() -> PurchaseReadyListener.onPurchasesReady()
      *   -> the client can now call purchase
@@ -85,6 +90,16 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         default void onPurchasesReady() {}
         default void onPurchasesError() {}
         default void onSKUStateUpdate(String sku, int state) {}
+    }
+
+    public static class QrActivationRequest {
+        public String installation_id;
+        public String qr_request_id;
+        public String device_name;
+
+        boolean isValid() {
+            return (installation_id != null) && (qr_request_id != null) && (device_name != null);
+        }
     }
 
     public PlayBilling(Context ctx) {
@@ -300,6 +315,11 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 mBillingClient.endConnection();
                 mBillingClient = null;
             }
+
+            if(mQrActivationExecutor != null) {
+                mQrActivationExecutor.shutdownNow();
+                mQrActivationExecutor = null;
+            }
         });
     }
 
@@ -350,7 +370,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     @Override
-    public void setLicense(String license) {}
+    public boolean setLicense(String license) { return false; }
 
     public boolean isPurchased(String sku) {
         // one-use items
@@ -462,10 +482,15 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                         if(billingResult.getResponseCode() == BillingResponseCode.OK) {
                             mHandler.post(() -> {
                                 if (mListener != null)
+                                    // to purchase it again
                                     mListener.onSKUStateUpdate(Billing.UNLOCK_TOKEN_SKU, PurchaseState.UNSPECIFIED_STATE);
 
                                 mPrefs.edit().putString(PREF_LAST_UNLOCK_TOKEN, token).apply();
-                                showUnlockToken();
+
+                                if(mPendingQrRequest != null)
+                                    startQrActivation(mPendingQrRequest, token);
+                                else
+                                    showUnlockToken();
                             });
                         }
                 });
@@ -480,12 +505,132 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         }
     }
 
-    public String getLatestUnlockToken() {
+    private boolean requestQrLicenseCode(String unlockToken, String installationId, String qrRequestId) {
+        try {
+            URL url = new URL(LICENSE_GEN_URL + "/");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            try {
+                // Necessary otherwise the connection will stay open
+                con.setRequestProperty("Connection", "Close");
+                con.setRequestProperty("User-Agent", Utils.getAppVersionString());
+                con.setRequestMethod("POST");
+                con.setAllowUserInteraction(false);
+                con.setDoInput(true);
+                con.setDoOutput(true);
+                con.setConnectTimeout(3000);
+                con.setReadTimeout(5000);
+
+                // Send POST request
+                try (BufferedOutputStream os = new BufferedOutputStream(con.getOutputStream())) {
+                    String req = "unlock_token=" + unlockToken + "&installation_id=" + installationId + "&qr_request_id=" + qrRequestId;
+                    os.write(req.getBytes());
+                }
+
+                int code = con.getResponseCode();
+                Log.d(TAG, "requestQrLicenseCode: " + code);
+
+                if((code == 302) || (code == 200))
+                    return true;
+
+                StringBuilder builder = new StringBuilder();
+                try(BufferedReader br = new BufferedReader(
+                        new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        builder.append(line);
+                }
+
+                String err = builder.toString();
+                Log.i(TAG, "requestQrLicenseCode failure: " + err);
+
+                if(code == 402)
+                    err = mContext.getString(R.string.license_limit_reached);
+                else if (code == 410)
+                    err = mContext.getString(R.string.qr_code_expired);
+                else
+                    err = mContext.getString(R.string.license_error, code, err);
+
+                final String msg = err;
+                mHandler.post(() -> {
+                    AlertDialog.Builder abuilder = new AlertDialog.Builder(mContext);
+                    abuilder.setTitle(R.string.error);
+                    abuilder.setMessage(msg);
+                    abuilder.setCancelable(true);
+                    abuilder.setNeutralButton(R.string.copy_to_clipboard, (dialog, which) -> Utils.copyToClipboard(mContext, msg));
+                    abuilder.setPositiveButton(R.string.ok, (dialog, id1) -> {});
+
+                    AlertDialog alert = abuilder.create();
+                    alert.setCanceledOnTouchOutside(false);
+                    alert.show();
+                });
+            } finally {
+                con.disconnect();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            mHandler.post(() -> Utils.showToastLong(mContext, R.string.license_service_unavailable));
+        }
+        return false;
+    }
+
+    public String getLastUnlockToken() {
         return mPrefs.getString(PREF_LAST_UNLOCK_TOKEN, "");
     }
 
+    private void startQrActivation(QrActivationRequest qrActivation, String unlock_token) {
+        Utils.showToast(mContext, R.string.requesting_license);
+
+        if(mQrActivationExecutor != null)
+            mQrActivationExecutor.shutdownNow();
+
+        mQrActivationExecutor = Executors.newSingleThreadExecutor();
+
+        Log.d(TAG, "QR code activation: installation_id=" + qrActivation.installation_id +
+                ", req_id=" + qrActivation.qr_request_id + ", device=" + qrActivation.device_name);
+
+        mQrActivationExecutor.execute(() -> {
+            if(requestQrLicenseCode(unlock_token, qrActivation.installation_id, qrActivation.qr_request_id))
+                mHandler.post(() -> {
+                    Utils.showToast(mContext, R.string.license_activation_ok);
+
+                    // token just purchased, also show it
+                    if(mPendingQrRequest != null)
+                        showUnlockToken();
+                });
+        });
+    }
+
+    public void performQrActivation(Activity activity, QrActivationRequest qrRequest) {
+        if(!qrRequest.isValid()) {
+            Log.e(TAG, "Invalid QR activation request");
+            return;
+        }
+
+        String unlock_token = getLastUnlockToken();
+
+        if(!unlock_token.isEmpty()) {
+            new AlertDialog.Builder(mContext)
+                    .setTitle(R.string.license_code)
+                    .setMessage(mContext.getString(R.string.qr_license_confirm, qrRequest.device_name) + "\n\n" + unlock_token)
+                    .setPositiveButton(R.string.yes, (dialogInterface, i) -> startQrActivation(qrRequest, unlock_token))
+                    .setNegativeButton(R.string.no, (dialogInterface, i) -> {})
+                    .show();
+        } else {
+            new AlertDialog.Builder(mContext)
+                    .setTitle(R.string.unlock_token)
+                    .setMessage(mContext.getString(R.string.qr_purchase_required))
+                    .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                        mPendingQrRequest = qrRequest;
+                        purchase(activity, Billing.UNLOCK_TOKEN_SKU);
+                    })
+                    .setNegativeButton(R.string.cancel_action, (dialogInterface, i) -> {})
+                    .show();
+        }
+    }
+
     public void showUnlockToken() {
-        String token = getLatestUnlockToken();
+        String token = getLastUnlockToken();
         if(token.isEmpty())
             return;
 

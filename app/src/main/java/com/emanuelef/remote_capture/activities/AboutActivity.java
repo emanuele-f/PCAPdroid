@@ -68,8 +68,8 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import androidmads.library.qrgenearator.QRGContents;
-import androidmads.library.qrgenearator.QRGEncoder;
+//import androidmads.library.qrgenearator.QRGContents;
+//import androidmads.library.qrgenearator.QRGEncoder;
 
 public class AboutActivity extends BaseActivity implements MenuProvider {
     private static final String TAG = "AboutActivity";
@@ -322,8 +322,9 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         String qrData = "pcapdroid://get_license?installation_id="+ instId +"&qr_request_id=" + qrReqId + "&device=" + Uri.encode(Utils.getDeviceName(this));
         Log.d(TAG, "QR activation URI: " + qrData);
 
-        QRGEncoder qrgEncoder = new QRGEncoder(qrData, null, QRGContents.Type.TEXT, smallerDimension);
-        return qrgEncoder.getBitmap(0);
+        //QRGEncoder qrgEncoder = new QRGEncoder(qrData, null, QRGContents.Type.TEXT, smallerDimension);
+        //return qrgEncoder.getBitmap(0);
+        return null;
     }
 
     private void onQrRequestReady(View dialog, Bitmap qrcode, long deadline) {

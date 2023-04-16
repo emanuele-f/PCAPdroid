@@ -61,7 +61,17 @@
         <activity
             android:name=".activities.ErrorActivity" />
         <activity
-            android:name=".activities.IABActivity" />
+            android:exported="true"
+            android:name=".activities.IABActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="pcapdroid"
+                    android:host="get_license" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".activities.ConnectionDetailsActivity" />
         <activity

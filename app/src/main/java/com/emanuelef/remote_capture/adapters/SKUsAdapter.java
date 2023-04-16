@@ -96,7 +96,7 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         ((TextView)view.findViewById(R.id.price)).setText(text);
 
         MaterialButton showBtn = view.findViewById(R.id.show);
-        showBtn.setVisibility((item.sku.equals(Billing.UNLOCK_TOKEN_SKU) && !mIab.getLatestUnlockToken().isEmpty()) ? View.VISIBLE : View.GONE);
+        showBtn.setVisibility((item.sku.equals(Billing.UNLOCK_TOKEN_SKU) && !mIab.getLastUnlockToken().isEmpty()) ? View.VISIBLE : View.GONE);
         showBtn.setOnClickListener(v -> mListener.onShowClick(item));
 
         MaterialButton purchaseBtn = view.findViewById(R.id.purchase);

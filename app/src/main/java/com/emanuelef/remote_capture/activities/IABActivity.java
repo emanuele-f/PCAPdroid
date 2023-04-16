@@ -31,12 +31,11 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.adapters.SKUsAdapter;
+import com.emanuelef.remote_capture.adapters.SKUsAdapter;;
 
 public class IABActivity extends BaseActivity implements PlayBilling.PurchaseReadyListener, SKUsAdapter.SKUClickListener {
     private static final String TAG = "IABActivity";
     private PlayBilling mIab;
-    private ListView mListView;
     private TextView mListEmpty;
     private SKUsAdapter mAdapter;
 
@@ -48,11 +47,11 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
         setContentView(R.layout.simple_list);
 
         mIab = new PlayBilling(this);
-        mListView = findViewById(R.id.listview);
         mListEmpty = findViewById(R.id.list_empty);
         mListEmpty.setText(R.string.loading);
         mAdapter = new SKUsAdapter(this, mIab, this);
-        mListView.setAdapter(mAdapter);
+        ListView listView = findViewById(R.id.listview);
+        listView.setAdapter(mAdapter);
 
         mIab.setPurchaseReadyListener(this);
     }
@@ -75,6 +74,9 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
         mListEmpty.setText(R.string.no_items_for_purchase);
         reloadAvailableSkus();
 
+        Intent intent = getIntent();
+        if(intent != null)
+            checkQrActivationRequest(intent);
     }
 
     @Override
@@ -95,12 +97,32 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
             // IAB not available
             Log.i(TAG, "No SKUs available");
             mListEmpty.setVisibility(View.VISIBLE);
-            mListView.removeAllViews();
+            mAdapter.clear();
             return;
         }
 
         mListEmpty.setVisibility(View.GONE);
         mAdapter.loadSKUs();
+    }
+
+    private void checkQrActivationRequest(Intent intent) {
+        // adb shell 'am start -W -a android.intent.action.VIEW -d "pcapdroid://get_license?installation_id=1234&request_id=ABCDE&device=Google sdk_gphone_x86"'
+        Uri uri = intent.getData();
+        if((uri == null) || !uri.getHost().equals("get_license"))
+            return;
+
+        if(!mIab.isAvailable(Billing.UNLOCK_TOKEN_SKU)) {
+            Utils.showToast(this, R.string.feature_not_available);
+            return;
+        }
+
+        PlayBilling.QrActivationRequest qrRequest = new PlayBilling.QrActivationRequest();
+        qrRequest.installation_id = uri.getQueryParameter("installation_id");
+        qrRequest.qr_request_id = uri.getQueryParameter("qr_request_id");
+        qrRequest.device_name = uri.getQueryParameter("device");
+
+        intent.setData(null); // clear intent to avoid processing it again
+        mIab.performQrActivation(this, qrRequest);
     }
 
     @Override
