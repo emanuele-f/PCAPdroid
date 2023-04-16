@@ -115,13 +115,18 @@ public class Billing {
     public void connectBilling() {}
     public void disconnectBilling() {}
 
-    public void setLicense(String license) {
-        if(!isValidLicense(license))
+    public boolean setLicense(String license) {
+        boolean valid = true;
+        if(!isValidLicense(license)) {
             license = "";
+            valid = false;
+        }
 
         mPrefs.edit()
                 .putString("license", license)
                 .apply();
+
+        return valid;
     }
 
     public boolean isValidLicense(String license) {

@@ -1,70 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="10dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:textStyle="bold"
-        android:text="@string/installation_id" />
+    android:orientation="vertical">
 
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:padding="10dp">
 
         <TextView
-            android:id="@+id/installation_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textIsSelectable="true"
-            android:focusable="true"
-            tools:text="A127ADC1245" />
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:text="@string/installation_id" />
 
-        <ImageView
-            android:id="@+id/copy_id"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/installation_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textIsSelectable="true"
+                android:focusable="true"
+                tools:text="A127ADC1245" />
+
+            <ImageView
+                android:id="@+id/copy_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_content_copy" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/show_qr_code"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_content_copy" />
+            android:text="@string/activate_via_qr_code"
+            android:layout_gravity="center"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <TextView
+            android:id="@+id/qr_code_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="@string/loading" />
+
+        <TextView
+            android:id="@+id/qr_info_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginHorizontal="40dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/qr_info_text" />
+
+        <LinearLayout
+            android:id="@+id/qr_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/qr_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="20dp"
+                tools:layout_width="200dp"
+                tools:layout_height="200dp"/>
+
+            <ProgressBar
+                android:id="@+id/qr_remaining_time"
+                style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                tools:progress="25"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/paid_features_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="10dp"
+            android:text="@string/access_paid_features_msg" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/license_code" />
+
+        <EditText
+            android:id="@+id/license_code"
+            android:fontFamily="monospace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:lines="4" />
+
+        <TextView
+            android:id="@+id/validation_rc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ok"
+            android:textAllCaps="true"
+            android:textSize="13sp"
+            tools:text="@string/valid" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/paid_features_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/access_paid_features_msg" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:textStyle="bold"
-        android:text="@string/license_code" />
-
-    <EditText
-        android:id="@+id/license_code"
-        android:fontFamily="monospace"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:gravity="top"
-        android:lines="4" />
-
-    <TextView
-        android:id="@+id/validation_rc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/ok"
-        android:textAllCaps="true"
-        android:textSize="13sp"
-        tools:text="@string/valid" />
-
-</LinearLayout>
+</ScrollView>
