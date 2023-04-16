@@ -60,6 +60,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.SpannedString;
 import android.text.TextUtils;
@@ -139,6 +140,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class Utils {
     static final String TAG = "Utils";
     public static final String INTERACT_ACROSS_USERS = "android.permission.INTERACT_ACROSS_USERS";
+    public static final String PCAPDROID_WEBSITE = "https://pcapdroid.org";
     public static final int PER_USER_RANGE = 100000;
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
@@ -1408,6 +1410,10 @@ public class Utils {
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
                 "Device: " + getDeviceModel() + (rooted ? " (rooted)" : "") + "\n" +
                 "OS version: " + getOsVersion() + "\n";
+    }
+
+    public static String getDeviceName(Context ctx) {
+        return Settings.Secure.getString(ctx.getContentResolver(), "bluetooth_name");
     }
 
     public static String getAppVersionString() {

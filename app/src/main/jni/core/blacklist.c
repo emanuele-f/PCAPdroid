@@ -325,6 +325,7 @@ void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
 
 static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blacklist_type tp) {
     int num_items = (*env)->CallIntMethod(env, list, mids.listSize);
+    int num_loaded = 0;
 
     for(int i=0; i<num_items; i++) {
         jstring *obj = (*env)->CallObjectMethod(env, list, mids.listGet, i);
@@ -348,14 +349,16 @@ static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blac
             (*env)->ReleaseStringUTFChars(env, obj, val);
             (*env)->DeleteLocalRef(env, obj);
 
-            if(rv != 0) {
+            if(rv == 0) {
+                num_loaded++;
+            } else if(rv != -EADDRINUSE) {
                 log_e("bl add %s failed: %d", val, rv);
                 return -1;
             }
         }
     }
 
-    return num_items;
+    return num_loaded;
 }
 
 /* ******************************************************* */

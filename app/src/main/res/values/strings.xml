@@ -26,6 +26,7 @@
         - FlagKit: <a href='https://github.com/madebybowtie/FlagKit/blob/master/LICENSE'>MIT</a>\n\n
         - IP Geolocation by <a href='https://db-ip.com'>DB-IP</a>\n\n
         - AppIntro: <a href='https://github.com/AppIntro/AppIntro/blob/main/LICENSE'>Apache-2.0</a>\n\n
+        - QrGenerator: <a href='https://github.com/androidmads/QRGenerator/blob/master/LICENSE.md'>MIT</a>\n\n
         - Font Awesome: <a href='https://fontawesome.com/license/free'>Licenses</a>\n\n
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
@@ -461,4 +462,15 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="mitm_addon_autostart_workaround">Connection to the mitm addon failed. As a workaround, you can try to open the mitm addon app and then go back to PCAPdroid without closing it. Do you want to open it now?</string>
+    <string name="qr_license_confirm">Do you want to generate a license for the \"%1$s\" device using the following unlock token?</string>
+    <string name="invalid_license">Invalid license</string>
+    <string name="connection_error">Connection error: %1$s</string>
+    <string name="activate_via_qr_code">Activate via QR code</string>
+    <string name="qr_code_expired">QR code expired. Generate a new QR code and retry</string>
+    <string name="qr_info_text">Install PCAPdroid from Google Play and scan this QR code</string>
+    <string name="qr_purchase_required">Purchase an unlock token to proceed with the QR code activation</string>
+    <string name="license_limit_reached">You have reached the licenses limit for this unlock token. Buy a new token to generate more licenses</string>
+    <string name="license_error">License generation error [%1$d]: %2$s</string>
+    <string name="requesting_license">Requesting a license code, please wait</string>
+    <string name="license_activation_ok">License activation completed</string>
 </resources>
