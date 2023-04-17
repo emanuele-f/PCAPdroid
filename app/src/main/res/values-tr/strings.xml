@@ -454,4 +454,15 @@
     <string name="socks5_auth_summary">Kullanıcı adı ve parola ile vekilde kimlik doğrulaması yapın</string>
     <string name="socks5_redirection">SOCKS5 yönlendirmesi</string>
     <string name="password">Parola</string>
+    <string name="connection_error">Bağlantı hatası: %1$s</string>
+    <string name="activate_via_qr_code">QR kodu ile etkinleştir</string>
+    <string name="qr_code_expired">QR kodunun süresi doldu. Yeni bir QR kodu oluşturun ve yeniden deneyin</string>
+    <string name="qr_info_text">Google Play\'den PCAPdroid\'i kurun ve bu QR kodunu tarayın</string>
+    <string name="qr_purchase_required">QR kodu ile etkinleştirmeye devam etmek için bir kilit açma belirteci satın alın</string>
+    <string name="license_error">Lisans oluşturma hatası [%1$d]: %2$s</string>
+    <string name="requesting_license">Lisans kodu isteniyor, lütfen bekleyin</string>
+    <string name="license_activation_ok">Lisans etkinleştirme tamamlandı</string>
+    <string name="license_limit_reached">Bu kilit açma belirteci için lisans sınırına ulaştınız. Daha fazla lisans oluşturmak için yeni bir belirteç satın alın</string>
+    <string name="qr_license_confirm">Aşağıdaki kilit açma belirtecini kullanarak \"%1$s\" aygıtı için bir lisans oluşturmak istiyor musunuz\?</string>
+    <string name="invalid_license">Geçersiz lisans</string>
 </resources>
