@@ -201,7 +201,12 @@ public class MitmAddon {
         intent.setComponent(new ComponentName(MitmAPI.PACKAGE_NAME, MitmAPI.MITM_SERVICE));
 
         if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | extra_flags)) {
-            mContext.unbindService(mConnection);
+            try {
+                mContext.unbindService(mConnection);
+            } catch (IllegalArgumentException ignored) {
+                Log.w(TAG, "unbindService failed");
+            }
+            mService = null;
             return false;
         }
         return true;
@@ -211,7 +216,11 @@ public class MitmAddon {
     public void disconnect() {
         if(mService != null) {
             Log.i(TAG, "Unbinding service...");
-            mContext.unbindService(mConnection);
+            try {
+                mContext.unbindService(mConnection);
+            } catch (IllegalArgumentException ignored) {
+                Log.w(TAG, "unbindService failed");
+            }
             mService = null;
         }
     }
@@ -262,7 +271,7 @@ public class MitmAddon {
 
         try {
             mService.send(msg);
-        } catch (RemoteException e) {
+        } catch (RemoteException | NullPointerException e) {
             e.printStackTrace();
             Utils.safeClose(pair[0]);
             Utils.safeClose(pair[1]);
