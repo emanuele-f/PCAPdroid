@@ -522,6 +522,13 @@ int run_vpn(pcapdroid_t *pd) {
                     goto housekeeping;
                 }
 
+                bool is_internal_dns = pd->vpn.ipv4.enabled && (pkt.tuple.ipver == 4) && (pkt.tuple.dst_ip.ip4 == pd->vpn.ipv4.internal_dns);
+                if(is_internal_dns && ntohs(pkt.tuple.dst_port) == 853) {
+                    // accepting this packet could result in multiple TCP connections being spammed
+                    log_d("discarding private DNS packet directed to internal DNS");
+                    goto housekeeping;
+                }
+
                 if(((pkt.tuple.ipver == 6) && !pd->vpn.ipv6.enabled) ||
                         ((pkt.tuple.ipver == 4) && !pd->vpn.ipv4.enabled)) {
                     char buf[512];
