@@ -19,11 +19,16 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.app.Service;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -52,6 +57,7 @@ import androidx.core.text.HtmlCompat;
 import androidx.core.view.MenuProvider;
 
 import com.emanuelef.remote_capture.Billing;
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -142,18 +148,37 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
             startActivity(intent);
             return true;
         } else if(id == R.id.build_info) {
-            final String deviceInfo = Utils.getBuildInfo(this) + "\n\n" + Prefs.asString(this);
+            String deviceInfo = Utils.getBuildInfo(this) + "\n\n" +
+                    Prefs.asString(this);
+
+            Utils.PrivateDnsMode dns_mode = CaptureService.getPrivateDnsMode();
+            if(dns_mode == null) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+                    Network net = cm.getActiveNetwork();
+
+                    if(net != null) {
+                        LinkProperties lp = cm.getLinkProperties(net);
+                        if (lp != null)
+                            dns_mode = Utils.getPrivateDnsMode(lp);
+                    }
+                }
+            }
+
+            if(dns_mode != null)
+                deviceInfo += "\n" + "PrivateDnsMode: " + dns_mode;
 
             LayoutInflater inflater = LayoutInflater.from(this);
             View view = inflater.inflate(R.layout.scrollable_dialog, null);
             ((TextView)view.findViewById(R.id.text)).setText(deviceInfo);
 
+            final String deviceInfoStr = deviceInfo;
             new AlertDialog.Builder(this)
                     .setTitle(R.string.build_info)
                     .setView(view)
                     .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
                     .setNeutralButton(R.string.copy_to_clipboard, (dialogInterface, i) ->
-                            Utils.copyToClipboard(this, deviceInfo)).show();
+                            Utils.copyToClipboard(this, deviceInfoStr)).show();
             return true;
         }
 

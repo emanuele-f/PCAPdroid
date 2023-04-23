@@ -157,6 +157,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static final MutableLiveData<ServiceStatus> serviceStatus = new MutableLiveData<>();
     private boolean mLowMemory;
     private BroadcastReceiver mNewAppsInstallReceiver;
+    private Utils.PrivateDnsMode mPrivateDnsMode;
 
     /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
@@ -777,12 +778,12 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            boolean strict_mode = (linkProperties.getPrivateDnsServerName() != null);
-            boolean opportunistic_mode = !strict_mode && linkProperties.isPrivateDnsActive();
+            mPrivateDnsMode = Utils.getPrivateDnsMode(linkProperties);
+            Log.i(TAG, "Private DNS: " + mPrivateDnsMode);
 
-            Log.i(TAG, "Private DNS: " + (strict_mode ? "strict" : (opportunistic_mode ? "opportunistic" : "off")));
             if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
-                mDnsEncrypted = strict_mode;
+                mDnsEncrypted = mPrivateDnsMode.equals(Utils.PrivateDnsMode.STRICT);
+                boolean opportunistic_mode = mPrivateDnsMode.equals(Utils.PrivateDnsMode.OPPORTUNISTIC);
 
                 /* Private DNS can be in one of these modes:
                  *  1. Off
@@ -796,7 +797,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             } else {
                 // in root capture we don't block private DNS requests in opportunistic mode
-                mDnsEncrypted = strict_mode || opportunistic_mode;
+                mDnsEncrypted = !mPrivateDnsMode.equals(Utils.PrivateDnsMode.DISABLED);
                 setPrivateDnsBlocked(false);
             }
 
@@ -1489,6 +1490,10 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.mLock.unlock();
         }
         Log.d(TAG, "waitForCaptureStop done " + Thread.currentThread().getName());
+    }
+
+    public static @Nullable Utils.PrivateDnsMode getPrivateDnsMode() {
+        return isServiceActive() ? INSTANCE.mPrivateDnsMode : null;
     }
 
     public static native int initLogger(String path, int level);
