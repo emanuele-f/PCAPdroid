@@ -188,7 +188,6 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
             if((dns_data->flags & DNS_FLAGS_MASK) != DNS_TYPE_REQUEST)
                 return(true);
 
-            log_d("Detected DNS query[%u]", dns_length);
             pd->num_dns_requests++;
 
             if(is_internal_dns) {
@@ -382,7 +381,7 @@ void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *d
     if(block_private_dns && !data->to_block &&
             (data->l7proto == NDPI_PROTOCOL_TLS) &&
             data->info && blacklist_match_domain(pd->vpn.known_dns_servers, data->info)) {
-        log_d("blocking connection to private DNS server");
+        log_d("blocking connection to private DNS server %s", data->info);
         data->blacklisted_internal = true;
         data->to_block = true;
     }
@@ -519,6 +518,13 @@ int run_vpn(pcapdroid_t *pd) {
                 if(pkt.flags & ZDTUN_PKT_IS_FRAGMENT) {
                     log_d("discarding IP fragment");
                     pd->num_discarded_fragments++;
+                    goto housekeeping;
+                }
+
+                bool is_internal_dns = pd->vpn.ipv4.enabled && (pkt.tuple.ipver == 4) && (pkt.tuple.dst_ip.ip4 == pd->vpn.ipv4.internal_dns);
+                if(is_internal_dns && ntohs(pkt.tuple.dst_port) == 853) {
+                    // accepting this packet could result in multiple TCP connections being spammed
+                    log_d("discarding private DNS packet directed to internal DNS");
                     goto housekeeping;
                 }
 

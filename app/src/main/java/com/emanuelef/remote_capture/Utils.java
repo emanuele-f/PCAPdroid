@@ -77,7 +77,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
@@ -155,6 +157,18 @@ public class Utils {
         GITHUB,     // Github release
         FDROID,     // F-droid release
         PLAYSTORE,  // Google play release
+    }
+
+    public enum PrivateDnsMode {
+        DISABLED,
+        OPPORTUNISTIC,
+        STRICT;
+
+        @NonNull
+        @Override
+        public String toString() {
+            return super.toString().toLowerCase();
+        }
     }
 
     public static String[] list2array(List<String> l) {
@@ -1572,5 +1586,15 @@ public class Utils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    public static PrivateDnsMode getPrivateDnsMode(@NonNull LinkProperties linkProperties) {
+        if(linkProperties.getPrivateDnsServerName() != null)
+            return PrivateDnsMode.STRICT;
+        else if(linkProperties.isPrivateDnsActive())
+            return PrivateDnsMode.OPPORTUNISTIC;
+        else
+            return PrivateDnsMode.DISABLED;
     }
 }

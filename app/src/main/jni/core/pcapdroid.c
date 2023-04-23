@@ -902,7 +902,7 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
     bool old_block = data->to_block;
 
     data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain);
-    if(!data->to_block && pd->firewall.enabled) {
+    if(!data->to_block && pd->firewall.enabled && fw_bl) {
         data->to_block = blacklist_match_uid(fw_bl, data->uid) ||
                          blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));

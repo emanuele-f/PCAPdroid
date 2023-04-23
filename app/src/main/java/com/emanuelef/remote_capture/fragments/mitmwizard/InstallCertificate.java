@@ -124,7 +124,7 @@ public class InstallCertificate extends StepFragment implements MitmListener {
 
     private void certFail() {
         mStepLabel.setText(R.string.ca_cert_export_failed);
-        Utils.setTextUrls(mStepLabel, R.string.ca_cert_export_failed, "https://www.vivo.com/en/support/questionByTitle?title=How%20to%20turn%20on/off%20Autostart%20for%20my%20apps");
+        Utils.setTextUrls(mStepLabel, R.string.ca_cert_export_failed, "https://dontkillmyapp.com/xiaomi#app-battery-saver");
         mStepIcon.setColorFilter(mDangerColor);
         MitmAddon.setDecryptionSetupDone(requireContext(), false);
     }

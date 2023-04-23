@@ -506,10 +506,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.hide_country) {
             mAdapter.mMask.addCountry(conn.country);
             mask_changed = true;
-        } else if(id == R.id.search_app)
-            setQuery(Objects.requireNonNull(
-                    mApps.getAppByUid(conn.uid, 0)).getPackageName());
-        else if(id == R.id.search_host)
+        } else if(id == R.id.search_app) {
+            AppDescriptor app = mApps.getAppByUid(conn.uid, 0);
+            if(app != null)
+                setQuery(app.getPackageName());
+            else
+                return super.onContextItemSelected(item);
+        } else if(id == R.id.search_host)
             setQuery(conn.info);
         else if(id == R.id.search_ip)
             setQuery(conn.dst_ip);

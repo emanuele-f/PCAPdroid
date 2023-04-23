@@ -238,6 +238,9 @@ public class AppsFragment extends Fragment implements ConnectionsListener, MenuP
         boolean whitelistChanged = false;
         AppStats app = mAdapter.getSelectedItem();
 
+        if(app == null)
+            return super.onContextItemSelected(item);
+
         if(id == R.id.block_app)
             blocklist.addApp(app.getUid());
         else if(id == R.id.unblock_app_permanently)
