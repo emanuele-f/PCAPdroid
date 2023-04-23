@@ -463,7 +463,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
                     String data = s.hasNext() ? s.next() : "";
                     importRulesData(data, true);
                 }
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 e.printStackTrace();
                 Utils.showToastLong(context, R.string.import_failed);
             }
