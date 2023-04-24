@@ -384,7 +384,7 @@
     <string name="install_the_mitm_addon">Installa l\'<a href="%1$s">addon di mitm</a> di PCAPdroid</string>
     <string name="unblock_for_n_minutes">Sblocca per %1$dm</string>
     <string name="paid_features_unlocked">Le funzioni a pagamento sono state sbloccate. Riavvia la cattura</string>
-    <string name="build_info">Informazioni</string>
+    <string name="build_info">Informazioni build</string>
     <string name="tls_decryption_with_root_msg">La possibilità di eseguire la decrittazione TLS in modalità root è una funzione sperimentale. Ecco una lista di bug noti:
 \n
 \n- in PCAPdroid vedrai il traffico come se fosse generato dall\'addon di mitm invece che dall\'app originale
@@ -453,4 +453,15 @@
     <string name="socks5_redirection">Redirezione SOCKS5</string>
     <string name="socks5_summary">Configura la redirezione ad un proxy SOCKS5</string>
     <string name="mitm_addon_autostart_workaround">Connessione all\'addon di mitm fallita. Come soluzione, prova ad aprire l\'app dell\'addon e, lasciando quest\'app aperta, tornare a PCAPdroid. Vuoi aprirla adesso\?</string>
+    <string name="qr_license_confirm">Vuoi generare una licenza per il dispositivo \"%1$s\" utilizzando il seguente unlock token\?</string>
+    <string name="invalid_license">Licenza non valida</string>
+    <string name="connection_error">Errore di connessione: %1$s</string>
+    <string name="activate_via_qr_code">Attiva tramite QR code</string>
+    <string name="qr_code_expired">QR code scaduto. Genera un nuovo QR code e riprova</string>
+    <string name="qr_info_text">Installa PCAPdroid da Google Play e scansiona questo QR code</string>
+    <string name="license_limit_reached">Hai raggiunto il limite di licenze generabili per questo unlock token. Acquista un nuovo token per generarne di nuove</string>
+    <string name="license_error">Errore nella generazione della licenza [%1$d]: %2$s</string>
+    <string name="requesting_license">Richiedendo un codice di licenza, attendere</string>
+    <string name="license_activation_ok">Licenza attivata con successo</string>
+    <string name="qr_purchase_required">Acquista un unlock token per procedere con l\'attivazione tramite QR code</string>
 </resources>

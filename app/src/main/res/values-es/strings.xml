@@ -454,4 +454,15 @@
     <string name="username">Nombre de usuario</string>
     <string name="password">Contraseña</string>
     <string name="mitm_addon_autostart_workaround">Falló la conexión con el complemento mitm. Como solución alternativa, puede intentar abrir la aplicación del complemento mitm y luego volver a PCAPdroid sin cerrarla. ¿Quieres abrirlo ahora\?</string>
+    <string name="qr_license_confirm">¿Deseas generar una licencia para el dispositivo \"%1$s\" utilizando el siguiente token de desbloqueo\?</string>
+    <string name="invalid_license">Licencia no válida</string>
+    <string name="connection_error">Error en la conexión: %1$s</string>
+    <string name="activate_via_qr_code">Activar mediante un código QR</string>
+    <string name="qr_code_expired">Código QR caducado. Genera un nuevo código QR y vuelve a intentarlo</string>
+    <string name="qr_info_text">Instala PCAPdroid desde la Google Play y escanea este código QR</string>
+    <string name="qr_purchase_required">Compra un token de desbloqueo para proceder a la activación del código QR</string>
+    <string name="license_limit_reached">Has alcanzado el límite de licencias para este token de desbloqueo. Compra un nuevo token para generar más licencias</string>
+    <string name="license_error">Error en la generación de licencia [%1$d]: %2$s</string>
+    <string name="requesting_license">Solicitando un código de licencia, por favor espera</string>
+    <string name="license_activation_ok">Completada la activación de la licencia</string>
 </resources>

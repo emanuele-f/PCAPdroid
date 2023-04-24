@@ -479,4 +479,15 @@
     <string name="username">用户名</string>
     <string name="password">密码</string>
     <string name="mitm_addon_autostart_workaround">未能连接到 mitm 附加组件。一个临时解决方法是你可以尝试打开 mitm 附加组件应用，然后在不关闭它的情况下回到 PCAPdroid。你想立即打开它吗？</string>
+    <string name="qr_license_confirm">你想用下列解锁令牌为 “%1$s”设备生成许可证吗？</string>
+    <string name="invalid_license">无效许可证</string>
+    <string name="connection_error">连接错误：%1$s</string>
+    <string name="activate_via_qr_code">通过二维码激活</string>
+    <string name="qr_code_expired">二维码过期了。生成新的二维码并重试</string>
+    <string name="qr_info_text">从 Google Play 安装 PCAPdroid 并扫描这个二维码</string>
+    <string name="qr_purchase_required">要继续通过二维码激活请先购买解锁令牌</string>
+    <string name="license_limit_reached">你已经达到了这枚解锁令牌的许可证上限。请购买新令牌来生成更多许可证</string>
+    <string name="license_error">许可证生成错误 [%1$d]: %2$s</string>
+    <string name="requesting_license">正在请求许可代码，请稍等</string>
+    <string name="license_activation_ok">已完成许可证激活</string>
 </resources>

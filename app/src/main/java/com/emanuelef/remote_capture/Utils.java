@@ -1426,8 +1426,18 @@ public class Utils {
                 "OS version: " + getOsVersion() + "\n";
     }
 
-    public static String getDeviceName(Context ctx) {
-        return Settings.Secure.getString(ctx.getContentResolver(), "bluetooth_name");
+    // https://stackoverflow.com/questions/16704597/how-do-you-get-the-user-defined-device-name-in-android
+    public static @Nullable String getDeviceName(Context ctx) {
+        try {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S)
+                // NOTE: on Android 32+ this generates a security exception
+                return Settings.Secure.getString(ctx.getContentResolver(), "bluetooth_name");
+
+            return Settings.Global.getString(ctx.getContentResolver(), Settings.Global.DEVICE_NAME);
+        } catch (Exception e) {
+            Log.d(TAG, "getDeviceName failed: " + e);
+            return null;
+        }
     }
 
     public static String getAppVersionString() {

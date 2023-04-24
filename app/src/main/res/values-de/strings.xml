@@ -78,7 +78,7 @@
     <string name="private_dns_message_notice">Ein privates DNS verhindert, dass PCAPdroid den DNS-Datenverkehr untersucht. Diese Einstellung kann in den Android-Netzwerkeinstellungen deaktiviert werden</string>
     <string name="last_blacklists_update">Letzte Aktualisierung</string>
     <string name="select_all">Alles auswählen</string>
-    <string name="enable_socks5_proxy_summary">Alle TCP-Verbindungen an den angegebenen SOCKS5-Proxy umleiten</string>
+    <string name="enable_socks5_proxy_summary">Umleiten aller TCP-Verbindungen an einen SOCKS5 Proxy</string>
     <string name="theme_dark">Dunkel</string>
     <string name="receiver_ip_address">Empfänger-IP-Adresse</string>
     <string name="malware_detection_learn_more">Erfahre mehr über die Malware-Erkennungsfunktion</string>
@@ -376,7 +376,7 @@
     <string name="traffic_inspection">Datenverkehrskontrolle</string>
     <string name="tls_decryption_summary">Entschlüssel den SSL/TLS-Datenverkehr, durch ausführen von mitm. Dies kann jetzt mit einigen Apps funktionieren, siehe im Benutzerhandbuch nach</string>
     <string name="mitm_setup_wizard">Mitm-Einrichtungsassistent</string>
-    <string name="mitm_start_failed">Der mitm-Dienst konnte nicht gestartet werden. Installieren Sie das mitm-Addon neu und versuchen Sie es erneut</string>
+    <string name="mitm_start_failed">Der mitm-Dienst konnte nicht gestartet werden. Versuchen Sie, die mitm Addon-App manuell zu öffnen, und versuchen Sie es erneut</string>
     <string name="install_ca_certificate">Installieren Sie das PCAPdroid-CA-Zertifikat und wählen Sie „VPN und Apps“. Android wird nach Ihrem Sperrbildschirm oder Passwort fragen</string>
     <string name="cert_installed_correctly">Das CA-Zertifikat ist installiert</string>
     <string name="cert_reinstall_required">Das CA-Zertifikat ist nicht installiert, führen Sie den mitm-Einrichtungsassistenten aus</string>
@@ -447,4 +447,11 @@
     <string name="unlock_token_error">Konnte kein Entsperrungs-Token anfordern [%1$d]: %2$s</string>
     <string name="show_action">Zeigen</string>
     <string name="unlock_token_msg1">Dies ist Ihr Freischalt-Token. Notieren Sie ihn, da Sie ihn unter <a href="%1$s">benötigen, um Ihre Lizenzcodes zu generieren.</a></string>
+    <string name="socks5_redirection">SOCKS5 Umleitung</string>
+    <string name="socks5_summary">Konfigurieren Sie die Umleitung zu einem SOCKS5-Proxy</string>
+    <string name="socks5_auth">SOCKS5 Authentifizierung</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="socks5_auth_summary">Authentifizieren Sie sich beim Proxy über Benutzername und Passwort</string>
+    <string name="mitm_addon_autostart_workaround">Die Verbindung mit dem mitm-Addon ist fehlgeschlagen. Als Workaround können Sie versuchen, die mitm addon-App zu öffnen und dann zu PCAPdroid zurückzukehren, ohne sie zu schließen. Möchten Sie die App jetzt öffnen\?</string>
 </resources>

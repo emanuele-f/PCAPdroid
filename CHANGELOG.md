@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.3] - 2023-04-23
+- Add paid features activation via QR code for non-Play builds
+- Fix firewall not working when loading duplicate domain rules
+- Fix repeated local TCP connection attempts on some devices when private DNS is enabled
+- Minor bug fixes
+
 ## [1.6.2] - 2023-03-31
 - Update mitm addon to mitmproxy 9.0.1
 - Add SOCKS5 authentication via username and password

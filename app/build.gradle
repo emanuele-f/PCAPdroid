@@ -17,8 +17,8 @@ android {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 64
-        versionName "1.6.2"
+        versionCode 65
+        versionName "1.6.3"
 
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
