@@ -344,7 +344,11 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         display.getSize(point);
         int smallerDimension = Math.min(Math.min(point.x, point.y) / 2, maxPx);
 
-        String qrData = "pcapdroid://get_license?installation_id="+ instId +"&qr_request_id=" + qrReqId + "&device=" + Uri.encode(Utils.getDeviceName(this));
+        String device_name = Utils.getDeviceName(this);
+        if(device_name == null)
+            device_name = Utils.getDeviceModel();
+
+        String qrData = "pcapdroid://get_license?installation_id="+ instId +"&qr_request_id=" + qrReqId + "&device=" + Uri.encode(device_name);
         Log.d(TAG, "QR activation URI: " + qrData);
 
         QRGEncoder qrgEncoder = new QRGEncoder(qrData, null, QRGContents.Type.TEXT, smallerDimension);
