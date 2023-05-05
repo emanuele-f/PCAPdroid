@@ -81,7 +81,7 @@ This decryption error may occur for different reasons:
 If you are on Android 7 or newer and the app you are decrypting has target SDK > 23, which is usually the case, the mitm certificate will be rejected, as apps do not trust user certificates anymore. In order to overcome this issue, you either need to:
 
 - If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA. In the network security config xml, you can specify TLDs, for example `<domain includeSubdomains="true">com</domain>` to use the CA to mitm any `.com` domain. To specify the certificate, rename the PCAPdroid CA certificate you exported during the TLS decryption setup to `pcapdroid.crt` and place it under the `raw` resources folder. Please also note that some libraries may use a custom trust store, refer to their documentation on this subject
-- On a device rooted with magisk, you can install the [MagiskTrustUserCerts plugin](https://github.com/NVISOsecurity/MagiskTrustUserCerts), which adds the user certs to the system store via a filesystem overlay. This is the suggested solution if you have magisk
+- On a device rooted with magisk, you can install the [Custom Certificate Authorities module](https://github.com/whalehub/custom-certificate-authorities) (Android 11+) or the [MagiskTrustUserCerts module](https://github.com/NVISOsecurity/MagiskTrustUserCerts), and then install the [hashed certificate](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#instructions) (replace `mitmproxy-ca-cert.cer` with the PCAPdroid certificate name) as a system certificate. This is the suggested solution if you have magisk
 - On any rooted device, you can install the certificate [into the system store](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), by mounting the system partition as `rw`
 - You can use [apktool](https://ibotpeaches.github.io/Apktool) to decompile the app, lower its target SDK to 23, and rebuild it
 - You can use [VirtualXposed](https://github.com/android-hacker/VirtualXposed) to virtualize your app, making it run as it was SDK 23 (Android 11 and later  [currently not supported](https://github.com/android-hacker/VirtualXposed/issues/1073)). To do so, open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method). Then in PCAPdroid, select VirtualXposed as the target app for the decryption. Virtualization is quite unreliable, so expect crashes
@@ -100,7 +100,7 @@ When decrypting a browser traffic, the browser may refuse to connect to websites
 
 - in some browsers, you can disable certificate transparency, e.g. in bromite via `chrome://flags`
 - uninstall the PCAPdroid CA from the system store or simply temporary disable it from the Android security settings
-- if the PCAPdroid system CA is installed via the `MagiskTrustUserCerts` plugin, then you can use *magisk hide* on the browser to make it see the PCAPdroid CA as a non-system CA
+- if the PCAPdroid system CA is installed via a magisk module, then you can use *magisk hide* on the browser to make it see the PCAPdroid CA as a non-system CA
 
 ### 3.4.3 Traffic is still encrypted
 
