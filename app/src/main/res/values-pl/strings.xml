@@ -43,7 +43,7 @@
     <string name="rcvd_and_sent">%1$s otrzymane — %2$s wysłane</string>
     <string name="query">Zapytanie</string>
     <string name="host">Host</string>
-    <string name="app_filter">Skanuj aplikacje/string>
+    <string name="app_filter">Skanuj aplikacje</string>
     <string name="ready">Gotowe</string>
     <string name="about">Informacje</string>
     <string name="status">Status</string>
