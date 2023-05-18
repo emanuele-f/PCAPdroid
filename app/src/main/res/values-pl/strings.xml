@@ -369,7 +369,7 @@
     <string name="app_intro_traffic_inspection">Sprawdzanie żądań HTTP, odpowiedzi i nieprzetworzonych danych jest łatwe dzięki wbudowanym dekoderom\n\nMasz szyfrowane połączenie? Możesz włączyć <a href='%1$s'>odszyfrowywanie TLS</a>, aby uzyskać odszyfrowane dane</string>
     <string name="app_intro_firewall_msg">Dzięki zintegrowanej <a href='%1$s'>zaporze sieciowej</a> możesz łatwo blokować dostęp do Internetu poszczególnym aplikacjom i domenom\n\nPołącz to z wbudowaną widocznością ruchu, aby uzyskać najlepsze narzędzie do ochrony prywatności</string>
     <string name="app_intro_malware_detection">Zwiększ bezpieczeństwo swojego urządzenia dzięki funkcji <a href='%1$s'>wykrywania złośliwego oprogramowania</a>\n\nKorzystając z aktualnych czarnych list, może wykrywać, blokować i ostrzegać o złośliwych połączeniach w czasie rzeczywistym</string>
-    <string name="app_intro_traffic_dump">PCAPdroid zapewnia <a href='%1$s'>wiele sposobów</a> zrzucania ruchu w standardowym formacie PCAP do dalszej analizy\n\nDzięki <a href='%2$s'>opcji zwiastuna< /a>, możesz dodawać nazwy aplikacji do pakietów i wyświetlać je w Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid zapewnia <a href='%1$s'>wiele sposobów</a> zrzucania ruchu w standardowym formacie PCAP do dalszej analizy\n\nDzięki <a href='%2$s'>opcji zwiastuna</a>, możesz dodawać nazwy aplikacji do pakietów i wyświetlać je w Wireshark</string>
     <string name="permission_granted">Uprawnienie %1$s zostało przyznane</string>
     <string name="permission_grant_fail">Nie można przyznać uprawnienia %1$s</string>
     <string name="connection_not_found">Nie można znaleźć podanego połączenia</string>
