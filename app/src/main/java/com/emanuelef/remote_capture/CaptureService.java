@@ -424,6 +424,7 @@ public class CaptureService extends VpnService implements Runnable {
 
                 // Route unicast IPv6 addresses
                 builder.addRoute("2000::", 3);
+                builder.addRoute("fc00::", 7);
 
                 try {
                     builder.addDnsServer(InetAddress.getByName(Prefs.getDnsServerV6(mPrefs)));
