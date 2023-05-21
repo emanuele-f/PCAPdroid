@@ -1,0 +1,20 @@
+<i>PCAPdroid</i> to przyjazna dla prywatności aplikacja, która pozwala śledzić i analizować połączenia nawiązywane przez inne aplikacje na Twoim urządzeniu.
+Pozwala także eksportować zrzut ruchu PCAP, sprawdzać HTTP, odszyfrowywać ruch TLS i wiele więcej.
+
+PCAPdroid symuluje VPN w celu przechwytywania ruchu sieciowego bez rootowania. Nie korzysta ze zdalnego serwera VPN, zamiast tego dane są przetwarzane lokalnie na urządzeniu.
+
+<b>Funkcje:</b>
+
+* Rejestruj i sprawdzaj połączenia wykonane przez użytkownika i aplikacje systemowe
+* Wyodrębnij SNI, zapytanie DNS, adres URL HTTP i zdalny adres IP
+* Sprawdzaj żądania i odpowiedzi HTTP dzięki wbudowanym dekoderom
+* Sprawdź payload połączeń jako zrzut szesnastkowy/tekst
+* Odszyfruj ruch HTTPS/TLS i wyeksportuj SSLKEYLOGFILE
+* Zrzuć ruch do pliku PCAP, pobierz go z przeglądarki lub przesyłaj strumieniowo do zdalnego odbiornika w celu analizy w czasie rzeczywistym (np. Wireshark)
+* Twórz reguły, aby odfiltrować dobry ruch i łatwo wykryć anomalie
+* Zidentyfikuj kraj i ASN zdalnego serwera za pomocą wyszukiwania w bazie danych offline
+* Na zrootowanych urządzeniach przechwytuj ruch, gdy działają inne aplikacje VPN
+
+Jeśli planujesz używać PCAPdroid do przeprowadzania analizy pakietów, sprawdź <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>konkretną sekcję</a> instrukcja.
+
+Dołącz do międzynarodowej społeczności PCAPdroid na <a href="https://t.me/PCAPdroid">Telegram</a> lub na <a href="https://matrix.to/#/#pcapdroid:matrix.org ">Matrix</a>.
