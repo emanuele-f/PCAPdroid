@@ -193,7 +193,10 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
     private void recheckFilterWarning() {
         boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
-        mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) && !hasFilter) ? View.VISIBLE : View.GONE);
+
+        mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
+                Prefs.isRootCaptureEnabled(mPrefs)
+                && !hasFilter) ? View.VISIBLE : View.GONE);
     }
 
     private void refreshDecryptionStatus() {
@@ -203,7 +206,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         if((proxy_status == MitmReceiver.Status.START_ERROR) && (ctx != null))
             Utils.showToastLong(ctx, R.string.mitm_addon_error);
 
-        mInterfaceInfo.setText((proxy_status == MitmReceiver.Status.RUNNING) ? R.string.tls_decryption_running : R.string.tls_decryption_starting);
+        mInterfaceInfo.setText((proxy_status == MitmReceiver.Status.RUNNING) ? R.string.mitm_addon_running : R.string.mitm_addon_starting);
     }
 
     private void refreshFilterInfo() {

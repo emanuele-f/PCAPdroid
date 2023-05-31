@@ -113,7 +113,7 @@ typedef struct {
     bool to_block;
     bool netd_block_missed;
     bool proxied;
-    bool decryption_whitelisted;
+    bool decryption_ignored;
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx
@@ -268,8 +268,8 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        blacklist_t *wl;
-        blacklist_t *new_wl;
+        blacklist_t *list;
+        blacklist_t *new_list;
     } tls_decryption;
 } pcapdroid_t;
 

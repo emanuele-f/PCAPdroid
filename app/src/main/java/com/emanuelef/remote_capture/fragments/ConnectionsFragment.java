@@ -78,7 +78,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -305,13 +304,20 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         boolean showPurchaseFirewall = (!billing.isPurchased(Billing.FIREWALL_SKU) && billing.isAvailable(Billing.FIREWALL_SKU)) && !CaptureService.isCapturingAsRoot();
         boolean blockVisible = false;
         boolean unblockVisible = false;
+        boolean decryptVisible = false;
+        boolean dontDecryptVisible = false;
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
+        MatchList decryptionList = PCAPdroid.getInstance().getDecryptionList();
 
         if(app != null) {
             boolean appBlocked = blocklist.matchesApp(app.getUid());
             blockVisible = !appBlocked;
             unblockVisible = appBlocked;
+
+            boolean decryptApp = decryptionList.matchesApp(app.getUid());
+            decryptVisible = !decryptApp;
+            dontDecryptVisible = decryptApp;
 
             item = menu.findItem(R.id.hide_app);
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.APP, app.getPackageName()), max_length);
@@ -330,18 +336,20 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item.setTitle(label);
             item.setVisible(appBlocked);
 
+            item = menu.findItem(R.id.dec_add_app);
+            item.setTitle(label);
+            item.setVisible(!decryptApp);
+
+            item = menu.findItem(R.id.dec_rem_app);
+            item.setTitle(label);
+            item.setVisible(decryptApp);
+
             menu.findItem(R.id.unblock_app_10m).setTitle(getString(R.string.unblock_for_n_minutes, 10));
             menu.findItem(R.id.unblock_app_1h).setTitle(getString(R.string.unblock_for_n_hours, 1));
             menu.findItem(R.id.unblock_app_8h).setTitle(getString(R.string.unblock_for_n_hours, 8));
 
             if(conn.isBlacklisted()) {
                 item = menu.findItem(R.id.mw_whitelist_app);
-                item.setTitle(label);
-                item.setVisible(true);
-            }
-
-            if(!conn.decryption_whitelisted) {
-                item = menu.findItem(R.id.dec_whitelist_app);
                 item.setTitle(label);
                 item.setVisible(true);
             }
@@ -358,6 +366,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             String label = Utils.shorten(MatchList.getRuleLabel(ctx, RuleType.HOST, conn.info), max_length);
             blockVisible |= !hostBlocked;
             unblockVisible |= hostBlocked;
+
+            boolean decryptHost = decryptionList.matchesExactHost(conn.info);
+            decryptVisible |= !decryptHost;
+            dontDecryptVisible |= decryptHost;
 
             item = menu.findItem(R.id.hide_host);
             item.setTitle(label);
@@ -378,6 +390,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             item = menu.findItem(R.id.copy_host);
             item.setTitle(label);
             item.setVisible(true);
+
+            item = menu.findItem(R.id.dec_add_host);
+            item.setTitle(label);
+            item.setVisible(!decryptHost);
+
+            item = menu.findItem(R.id.dec_rem_host);
+            item.setTitle(label);
+            item.setVisible(decryptHost);
 
             String dm_clean = Utils.cleanDomain(conn.info);
             String domain = Utils.getSecondLevelDomain(dm_clean);
@@ -406,13 +426,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 item.setTitle(label);
                 item.setVisible(true);
             }
-
-            if(!conn.decryption_whitelisted) {
-                item = menu.findItem(R.id.dec_whitelist_host);
-                item.setTitle(label);
-                item.setVisible(true);
-            }
-        }
+        } // conn.info
 
         if((conn.url != null) && !(conn.url.isEmpty())) {
             item = menu.findItem(R.id.copy_url);
@@ -435,6 +449,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         blockVisible |= !ipBlocked;
         unblockVisible |= ipBlocked;
 
+        boolean decryptIp = decryptionList.matchesIP(conn.dst_ip);
+        decryptVisible |= !decryptIp;
+        dontDecryptVisible |= decryptIp;
+
         menu.findItem(R.id.block_ip)
                 .setTitle(label)
                 .setVisible(!ipBlocked);
@@ -442,11 +460,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setTitle(label)
                 .setVisible(ipBlocked);
 
+        menu.findItem(R.id.dec_add_ip)
+                .setTitle(label)
+                .setVisible(!decryptIp);
+        menu.findItem(R.id.dec_rem_ip)
+                .setTitle(label)
+                .setVisible(decryptIp);
+
         if(conn.isBlacklistedIp())
             menu.findItem(R.id.mw_whitelist_ip).setTitle(label).setVisible(true);
-
-        if(!conn.decryption_whitelisted)
-            menu.findItem(R.id.dec_whitelist_ip).setTitle(label).setVisible(true);
 
         if(conn.hasHttpRequest())
             menu.findItem(R.id.copy_http_request).setVisible(true);
@@ -463,8 +485,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if(!conn.isBlacklisted())
             menu.findItem(R.id.mw_whitelist_menu).setVisible(false);
 
-        if(!CaptureService.isDecryptionWhitelistEnabled() || conn.decryption_whitelisted)
-            menu.findItem(R.id.dec_whitelist_menu).setVisible(false);
+        boolean decryptionEnabled = CaptureService.isDecryptionListEnabled();
+        boolean canDecryptConnection = !conn.isNotDecryptable() && !conn.isCleartext();
+        menu.findItem(R.id.decrypt_menu).setVisible(decryptionEnabled && canDecryptConnection && decryptVisible);
+        menu.findItem(R.id.dont_decrypt_menu).setVisible(decryptionEnabled && canDecryptConnection && dontDecryptVisible);
     }
 
     @Override
@@ -473,14 +497,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionDescriptor conn = mAdapter.getSelectedItem();
         MatchList whitelist = PCAPdroid.getInstance().getMalwareWhitelist();
         MatchList fwWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
-        MatchList decWhitelist = PCAPdroid.getInstance().getDecryptionWhitelist();
+        MatchList decryptionList = PCAPdroid.getInstance().getDecryptionList();
         Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
         boolean firewallPurchased = Billing.newInstance(ctx).isPurchased(Billing.FIREWALL_SKU);
         boolean mask_changed = false;
         boolean whitelist_changed = false;
         boolean blocklist_changed = false;
         boolean firewall_wl_changed = false;
-        boolean dec_whitelist_changed = false;
+        boolean decryption_list_changed = false;
 
         if(conn == null)
             return super.onContextItemSelected(item);
@@ -526,15 +550,24 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.mw_whitelist_host) {
             whitelist.addHost(conn.info);
             whitelist_changed = true;
-        } else if(id == R.id.dec_whitelist_app)  {
-            decWhitelist.addApp(conn.uid);
-            dec_whitelist_changed = true;
-        } else if(id == R.id.dec_whitelist_ip)  {
-            decWhitelist.addIp(conn.dst_ip);
-            dec_whitelist_changed = true;
-        } else if(id == R.id.dec_whitelist_host)  {
-            decWhitelist.addHost(conn.info);
-            dec_whitelist_changed = true;
+        } else if(id == R.id.dec_add_app)  {
+            decryptionList.addApp(conn.uid);
+            decryption_list_changed = true;
+        } else if(id == R.id.dec_add_ip)  {
+            decryptionList.addIp(conn.dst_ip);
+            decryption_list_changed = true;
+        } else if(id == R.id.dec_add_host)  {
+            decryptionList.addHost(conn.info);
+            decryption_list_changed = true;
+        } else if(id == R.id.dec_rem_app)  {
+            decryptionList.removeApp(conn.uid);
+            decryption_list_changed = true;
+        } else if(id == R.id.dec_rem_ip)  {
+            decryptionList.removeIp(conn.dst_ip);
+            decryption_list_changed = true;
+        } else if(id == R.id.dec_rem_host)  {
+            decryptionList.removeHost(conn.info);
+            decryption_list_changed = true;
         } else if(id == R.id.block_app) {
             if(firewallPurchased) {
                 blocklist.addApp(conn.uid);
@@ -611,9 +644,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             fwWhitelist.save();
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadFirewallWhitelist();
-        } else if(dec_whitelist_changed) {
-            decWhitelist.save();
-            CaptureService.reloadDecryptionWhitelist();
+        } else if(decryption_list_changed) {
+            decryptionList.save();
+            CaptureService.reloadDecryptionList();
         } else if(blocklist_changed)
             blocklist.saveAndReload();
 

@@ -473,4 +473,11 @@
     <string name="license_error">License generation error [%1$d]: %2$s</string>
     <string name="requesting_license">Requesting a license code, please wait</string>
     <string name="license_activation_ok">License activation completed</string>
+    <string name="mitm_addon_starting">Mitm addon is starting…</string>
+    <string name="mitm_addon_running">Mitm addon is running</string>
+    <string name="decryption_rules">Decryption rules</string>
+    <string name="decryption_rules_help">These rules specify which connections to decrypt. Host-based rules only work if a prior DNS reply is seen</string>
+    <string name="decrypt_action">Decrypt…</string>
+    <string name="dont_decrypt_action">Don\'t decrypt…</string>
+    <string name="status_encrypted">Encrypted</string>
 </resources>

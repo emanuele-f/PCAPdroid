@@ -10,9 +10,9 @@
             android:title="@string/stats"
             android:icon="@drawable/ic_stacked_bar_chart" />
         <item
-            android:id="@+id/dec_whitelist"
-            android:title="@string/decryption_whitelist"
-            android:icon="@drawable/ic_checklist" />
+            android:id="@+id/tls_decryption"
+            android:title="@string/decryption_rules"
+            android:icon="@drawable/ic_lock_open_alt" />
         <item
             android:id="@+id/firewall"
             android:title="@string/firewall"

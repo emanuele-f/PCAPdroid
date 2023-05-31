@@ -128,13 +128,6 @@
                 android:text="@string/not_decryptable"/>
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/dec_status_whitelisted"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/whitelisted"/>
-
-            <com.google.android.material.chip.Chip
                 android:id="@+id/dec_status_error"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"

@@ -348,23 +348,26 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
-static bool should_proxy(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    // NOTE: connections must be proxied as soon as the first packet arrives.
+static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    // NOTE: connections must be proxified as soon as the first packet arrives.
     // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
     // we must proxy all the TCP connections.
-    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP))
+    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP)) {
+        data->decryption_ignored = true;
         return false;
+    }
 
-    if(pd->tls_decryption.wl) {
+    if(pd->tls_decryption.list) {
         zdtun_ip_t dst_ip = tuple->dst_ip;
 
         // NOTE: domain matching only works if a prior DNS reply is seen (see ip_lru_find in pd_new_connection)
-        if(blacklist_match_ip(pd->tls_decryption.wl, &dst_ip, tuple->ipver) ||
-                blacklist_match_uid(pd->tls_decryption.wl, data->uid) ||
-                (data->info && blacklist_match_domain(pd->tls_decryption.wl, data->info))) {
-            data->decryption_whitelisted = true;
-            return false;
-        }
+        if(blacklist_match_ip(pd->tls_decryption.list, &dst_ip, tuple->ipver) ||
+            blacklist_match_uid(pd->tls_decryption.list, data->uid) ||
+            (data->info && blacklist_match_domain(pd->tls_decryption.list, data->info)))
+            return true;
+
+        data->decryption_ignored = true;
+        return false;
     }
 
     return true;
@@ -568,7 +571,7 @@ int run_vpn(pcapdroid_t *pd) {
                 if(data->sent_pkts == 0) {
                     if(pd_check_port_map(conn))
                         /* port mapping applied */;
-                    else if(should_proxy(pd, tuple, data)) {
+                    else if(should_proxify(pd, tuple, data)) {
                         zdtun_conn_proxy(conn);
                         data->proxied = true;
                     }

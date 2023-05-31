@@ -1046,12 +1046,12 @@ void pd_housekeeping(pcapdroid_t *pd) {
         iter_active_connections(pd, check_blocked_conn_cb);
     }
 
-    if(pd->tls_decryption.new_wl) {
+    if(pd->tls_decryption.new_list) {
         // Load new whitelist
-        if(pd->tls_decryption.wl)
-            blacklist_destroy(pd->tls_decryption.wl);
-        pd->tls_decryption.wl = pd->tls_decryption.new_wl;
-        pd->tls_decryption.new_wl = NULL;
+        if(pd->tls_decryption.list)
+            blacklist_destroy(pd->tls_decryption.list);
+        pd->tls_decryption.list = pd->tls_decryption.new_list;
+        pd->tls_decryption.new_list = NULL;
     }
 }
 
@@ -1221,10 +1221,10 @@ int pd_run(pcapdroid_t *pd) {
         blacklist_destroy(pd->firewall.wl);
     if(pd->firewall.new_wl)
         blacklist_destroy(pd->firewall.new_wl);
-    if(pd->tls_decryption.wl)
-        blacklist_destroy(pd->tls_decryption.wl);
-    if(pd->tls_decryption.new_wl)
-        blacklist_destroy(pd->tls_decryption.new_wl);
+    if(pd->tls_decryption.list)
+        blacklist_destroy(pd->tls_decryption.list);
+    if(pd->tls_decryption.new_list)
+        blacklist_destroy(pd->tls_decryption.new_list);
 
     if(pd->malware_detection.enabled) {
         if(pd->malware_detection.reload_in_progress) {

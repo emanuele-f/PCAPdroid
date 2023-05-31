@@ -211,7 +211,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if(mNavView != null) {
             Menu navMenu = mNavView.getMenu();
-            navMenu.findItem(R.id.dec_whitelist).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
+            navMenu.findItem(R.id.tls_decryption).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
         }
 
         checkPaidDrawerEntries();
@@ -473,9 +473,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if(id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
-        } else if(id == R.id.dec_whitelist) {
+        } else if(id == R.id.tls_decryption) {
             Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_WHITELIST);
+            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_LIST);
             startActivity(intent);
         } else if(id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, FirewallActivity.class);

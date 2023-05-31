@@ -167,7 +167,7 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->decryption_whitelisted << 12) |
+                               (data->decryption_ignored << 12) |
                                     (data->netd_block_missed << 11) |
                                     (blocked << 10) |
                                     (data->blacklisted_domain << 9) |
@@ -927,8 +927,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadMalwareWhitelist(JNIEnv 
 /* ******************************************************* */
 
 JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_reloadDecryptionWhitelist(JNIEnv *env,
-        jclass clazz, jobject whitelist) {
+Java_com_emanuelef_remote_1capture_CaptureService_reloadDecryptionList(JNIEnv *env,
+                                                                       jclass clazz, jobject listobj) {
     pcapdroid_t *pd = global_pd;
     if(!pd) {
         log_e("NULL pd instance");
@@ -940,28 +940,28 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadDecryptionWhitelist(JNIE
         return false;
     }
 
-    if(pd->tls_decryption.new_wl != NULL) {
-        log_e("previous decryption whitelist not loaded yet");
+    if(pd->tls_decryption.new_list != NULL) {
+        log_e("previous decryption list not loaded yet");
         return false;
     }
 
-    blacklist_t *wl = blacklist_init();
-    if(!wl) {
+    blacklist_t *list = blacklist_init();
+    if(!list) {
         log_e("blacklist_init failed");
         return false;
     }
 
-    if(blacklist_load_list_descriptor(wl, env, whitelist) < 0) {
-        log_f("Could not load decryption whitelist. Check the log for more details");
-        blacklist_destroy(wl);
+    if(blacklist_load_list_descriptor(list, env, listobj) < 0) {
+        log_f("Could not load decryption list. Check the log for more details");
+        blacklist_destroy(list);
         return false;
     }
 
     blacklists_stats_t stats;
-    blacklist_get_stats(wl, &stats);
-    log_d("reloadDecryptionWhitelist: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
+    blacklist_get_stats(list, &stats);
+    log_d("reloadDecryptionList: %d apps, %d domains, %d IPs", stats.num_apps, stats.num_domains, stats.num_ips);
 
-    pd->tls_decryption.new_wl = wl;
+    pd->tls_decryption.new_list = list;
     return true;
 }
 

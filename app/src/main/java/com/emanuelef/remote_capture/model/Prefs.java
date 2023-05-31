@@ -71,7 +71,7 @@ public class Prefs {
     public static final String PREF_FIREWALL_WHITELIST_MODE = "firewall_wl_mode";
     public static final String PREF_FIREWALL_WHITELIST_INIT_VER = "firewall_wl_init";
     public static final String PREF_FIREWALL_WHITELIST = "firewall_whitelist";
-    public static final String PREF_DECRYPTION_WHITELIST = "decryption_whitelist";
+    public static final String PREF_DECRYPTION_LIST = "decryption_list";
     public static final String PREF_START_AT_BOOT = "start_at_boot";
     public static final String PREF_SNAPLEN = "snaplen";
     public static final String PREF_MAX_PKTS_PER_FLOW = "max_pkts_per_flow";
