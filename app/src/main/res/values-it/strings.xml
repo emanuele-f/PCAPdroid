@@ -457,4 +457,12 @@
     <string name="requesting_license">Richiedendo un codice di licenza, attendere</string>
     <string name="license_activation_ok">Licenza attivata con successo</string>
     <string name="qr_purchase_required">Acquista un unlock token per procedere con l\'attivazione tramite QR code</string>
+    <string name="decrypt_action">Decritta…</string>
+    <string name="status_encrypted">Crittata</string>
+    <string name="injected">Iniettati</string>
+    <string name="mitm_addon_starting">Avviando l\'addon di mitm…</string>
+    <string name="mitm_addon_running">Addon di mitm in esecuzione</string>
+    <string name="decryption_rules">Regole di decrittazione</string>
+    <string name="decryption_rules_help">Queste regole specificano quali connessioni decrittare. Regole basate su host funzionano solo in presenza di una risposta DNS vista in precedenza</string>
+    <string name="dont_decrypt_action">Non decrittare…</string>
 </resources>
