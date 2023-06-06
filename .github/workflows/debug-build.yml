@@ -12,6 +12,6 @@ jobs:
         submodules: 'recursive'
     - uses: actions/setup-java@v1
       with:
-        java-version: '11'
+        java-version: '17'
     - run: ./gradlew test
     - run: ./gradlew assembleDebug -PdoNotStrip
