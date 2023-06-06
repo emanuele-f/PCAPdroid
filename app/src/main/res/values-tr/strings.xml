@@ -458,4 +458,12 @@
     <string name="license_limit_reached">Bu kilit açma belirteci için lisans sınırına ulaştınız. Daha fazla lisans oluşturmak için yeni bir belirteç satın alın</string>
     <string name="qr_license_confirm">Aşağıdaki kilit açma belirtecini kullanarak \"%1$s\" aygıtı için bir lisans oluşturmak istiyor musunuz\?</string>
     <string name="invalid_license">Geçersiz lisans</string>
+    <string name="decryption_rules">Şifre çözme kuralları</string>
+    <string name="injected">Enjekte edildi</string>
+    <string name="mitm_addon_running">Ortadaki adam eklentisi çalışıyor</string>
+    <string name="mitm_addon_starting">Ortadaki adam eklentisi başlatılıyor…</string>
+    <string name="dont_decrypt_action">Şifresini çözme…</string>
+    <string name="decryption_rules_help">Bu kurallar hangi bağlantıların şifresinin çözüleceğini belirtir. Ana makine tabanlı kurallar yalnızca önceden bir DNS yanıtı görülürse çalışır</string>
+    <string name="decrypt_action">Şifresini çöz…</string>
+    <string name="status_encrypted">Şifreli</string>
 </resources>
