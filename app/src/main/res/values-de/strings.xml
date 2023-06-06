@@ -249,8 +249,6 @@
     <string name="app_blocked_info">Die %1$s App wurde von der Firewall gesperrt</string>
     <string name="app_unblocked">Die App %1$s wurde entsperrt</string>
     <string name="phone_app">Telefon</string>
-    <string name="tls_decryption_starting">TLS-Entschlüsselung wird gestartet…</string>
-    <string name="tls_decryption_running">TLS-Entschlüsselung wird ausgeführt</string>
     <string name="install_action">Installieren</string>
     <string name="export_action">Exportieren</string>
     <string name="configure_action">Konfigurieren</string>
@@ -258,7 +256,6 @@
     <string name="app_log">Protokoll</string>
     <string name="no_data">Keine Daten</string>
     <string name="malware_whitelist_action">Whitelist (Malware)…</string>
-    <string name="decryption_whitelist_action">Whitelist (Entschlüsselung)…</string>
     <string name="grant_mitm_permission">Geben Sie PCAPdroid die Berechtigung, das mitm-Addon zu steuern</string>
     <string name="ca_cert_export_failed">Beim Exportieren des CA-Zertifikats ist ein Fehler aufgetreten
 \n
@@ -272,7 +269,6 @@
     <string name="http">HTTP</string>
     <string name="not_decryptable">Nicht entschlüsselbar</string>
     <string name="decrypted">Entschlüsselt</string>
-    <string name="whitelisted">Auf der Positivliste</string>
     <string name="decryption">Entschlüsselung</string>
     <string name="decryption_filter">Entschlüsselung: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid hat den Beginn dieser Verbindung nicht gesehen. Einige Informationen fehlen möglicherweise</string>
@@ -357,9 +353,6 @@
     <string name="ipv6_dns_server">IPv6 DNS-Server</string>
     <string name="use_system_dns">System DNS verwenden</string>
     <string name="use_system_dns_summary">Wenn möglich den System DNS-Server verwenden</string>
-    <string name="decryption_whitelist_rules">Regeln für die Entschlüsselungs-Whitelist</string>
-    <string name="decryption_whitelist_help">Liste von Regeln, um bestimmte Verbindungen von der TLS-Entschlüsselung auszuschließen. Nützlich, um zu vermeiden, dass Anwendungen/SDKs, die Zertifikats-Pinning verwenden, beschädigt werden. Der Hostabgleich funktioniert nur, wenn eine vorherige DNS-Antwort gesehen wurde</string>
-    <string name="decryption_whitelist">Entschlüsselungs-Whitelist</string>
     <string name="external_storage_perm_required">Die Berechtigung für den externen Speicher ist erforderlich</string>
     <string name="many_rules_warning">Sie versuchen, viele Regeln zu importieren, was dazu führen kann, dass die App bei einigen Interaktionen nicht mehr reagiert. Wollen Sie wirklich fortfahren\?</string>
     <string name="pcapng_format">Pcapng Format</string>

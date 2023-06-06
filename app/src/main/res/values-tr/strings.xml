@@ -216,7 +216,6 @@
     <string name="socks5_info">SOCKS5 vekili: %1$s:%2$d</string>
     <string name="unblock">Engeli kaldır…</string>
     <string name="tls_decryption">TLS şifre çözme</string>
-    <string name="tls_decryption_starting">TLS şifre çözme başlıyor…</string>
     <string name="mitm_setup_wizard">Ortadaki adam kurulum sihirbazı</string>
     <string name="install_action">Kur</string>
     <string name="export_ca_certificate">PCAPdroid CA sertifikasını dışa aktarın, ardından Android \"Şifreleme ve Kimlik Bilgileri\" ayarlarını açın ve \"CA sertifikası\" olarak kurmayı seçin</string>
@@ -262,7 +261,6 @@
     <string name="configure_action">Yapılandır</string>
     <string name="install_ca_certificate">\"VPN ve uygulamalar\" seçeneğini seçerek PCAPdroid CA sertifikasını kurun. Android, kilit ekranınızı veya parolanızı soracak</string>
     <string name="tls_decryption_summary">Ortadaki adam gerçekleştirerek SSL/TLS trafiğinin şifresini çöz. Bu artık bazı uygulamalarla çalışabilir, kullanım kılavuzuna bakın</string>
-    <string name="tls_decryption_running">TLS şifre çözme çalışıyor</string>
     <string name="traffic_inspection">Trafik denetimi</string>
     <string name="export_action">Dışa aktar</string>
     <string name="grant_mitm_permission">PCAPdroid\'e ortadaki adam eklentisini denetleme izni verin</string>
@@ -407,9 +405,7 @@
     <string name="app_log">Günlük kaydı</string>
     <string name="no_data">Veri yok</string>
     <string name="malware_whitelist_action">Beyaz liste (kötü amaçlı yazılım)…</string>
-    <string name="decryption_whitelist_action">Beyaz liste (şifre çözme)…</string>
     <string name="mitm_addon">ortadaki adam eklentisi</string>
-    <string name="whitelisted">Beyaz listeye alındı</string>
     <string name="mitmproxy_opts">Ek mitmproxy seçenekleri</string>
     <string name="mitmproxy_opts_description">mitmproxy için ek seçenekler sağlayın</string>
     <string name="mitm_addon_error">Ortadaki adam eklentisi başlatılırken hata oluştu. Ayrıntılar için günlüğe bakın</string>
@@ -431,8 +427,6 @@
     <string name="ipv4_dns_server">IPv4 DNS sunucusu</string>
     <string name="ipv6_dns_server">IPv6 DNS sunucusu</string>
     <string name="use_system_dns_summary">Mümkünse sistem DNS sunucularını kullanın</string>
-    <string name="decryption_whitelist_rules">Şifre çözme beyaz listesi kuralları</string>
-    <string name="decryption_whitelist">Şifre çözme beyaz listesi</string>
     <string name="external_storage_perm_required">Harici depolama izni gerekli</string>
     <string name="many_rules_warning">Çok sayıda kuralı içe aktarmaya çalışıyorsunuz, bu da bazı etkileşimler sırasında uygulamanın yanıt vermemesine neden olabilir. Gerçekten devam etmek istiyor musunuz\?</string>
     <string name="pcapng_format">Pcapng biçimi</string>
@@ -442,7 +436,6 @@
     <string name="use_system_dns">Sistem DNS\'sini kullan</string>
     <string name="port_mapping_summary">Bağlantıları farklı bir ana makineye veya bağlantı noktasına yönlendirmek için bağlantı noktası eşleme kurallarını yapılandırın</string>
     <string name="redirect_to">Şuraya yönlendir:</string>
-    <string name="decryption_whitelist_help">Belirli bağlantıları TLS şifre çözme işleminden hariç tutmak için kurallar listesi. Sertifika sabitleme kullanan uygulamaları/SDK\'ları bozmaktan kaçınmak için faydalıdır. Ana makine eşleştirme yalnızca önceden bir DNS yanıtı görülürse çalışır</string>
     <string name="pcapng_format_summary">Paketleri TLS şifre çözme parolalarının gömülmesine olanak tanıyan pcapng biçiminde dök</string>
     <string name="sort_by">Sıralama ölçütü</string>
     <string name="total_bytes">Toplam bayt</string>

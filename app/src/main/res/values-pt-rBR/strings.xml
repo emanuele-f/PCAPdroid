@@ -259,7 +259,6 @@
     <string name="unblock">Desbloquear…</string>
     <string name="tls_decryption">Decriptação do TLS</string>
     <string name="tls_decryption_summary">Decripte o tráfego SSL/TLS via mitm. Isto agora pode funcionar com alguns apps, confira o guia de usuario</string>
-    <string name="tls_decryption_running">Decriptação do TLS está em execução</string>
     <string name="traffic_inspection">Inspeção de tráfego</string>
     <string name="mitm_start_failed">Não foi possível iniciar o serviço do mitm. Reinstale a extensão mitm e tente novamente</string>
     <string name="mitm_setup_wizard">Assistente de configuração do mitm</string>
@@ -278,7 +277,6 @@
 \nAlém disso, permite que você exporte PCAP dump do tráfego, extraia metadados e muito mais!</string>
     <string name="privacy_first">Privacidade em primeiro lugar</string>
     <string name="country_and_asn">País e ASN</string>
-    <string name="tls_decryption_starting">Decriptação do TLS está começando…</string>
     <string name="install_action">Instalar</string>
     <string name="export_action">Exportar</string>
     <string name="export_ca_certificate">Exporte o certificado PCAPdroid CA, logo abra em configurações do Android \"Criptografia e Credenciais\" e escolha instalar como um \"certificado CA\"</string>

@@ -140,7 +140,6 @@
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protokół: %1$s</string>
     <string name="malware_whitelist_action">Biała lista (złośliwe oprogramowanie)…</string>
-    <string name="decryption_whitelist_action">Biała lista (odszyfrowywanie)…</string>
     <string name="hide">Ukrywanie…</string>
     <string name="n_selected">Wybrano %1$d</string>
     <string name="select_all">Zaznacz wszystko</string>
@@ -267,8 +266,6 @@
     <string name="save_ok">Zapisane</string>
     <string name="tls_decryption">Deszyfrowanie TLS</string>
     <string name="tls_decryption_summary">Odszyfruj ruch SSL/TLS, wykonując mitm. Może to teraz działać z niektórymi aplikacjami, zapoznaj się z instrukcją obsługi</string>
-    <string name="tls_decryption_starting">Rozpoczyna się deszyfrowanie TLS…</string>
-    <string name="tls_decryption_running">Odszyfrowywanie TLS jest uruchomione</string>
     <string name="traffic_inspection">Inspekcja ruchu</string>
     <string name="mitm_start_failed">Nie można uruchomić usługi mitm. Spróbuj ręcznie otworzyć aplikację mitm addon i spróbuj ponownie</string>
     <string name="mitm_setup_wizard">Mitm kreator konfiguracji</string>
@@ -305,7 +302,6 @@
     <string name="full_payload_summary">Pokaż pełny payload połączeń (np. pełne żądanie i odpowiedź HTTP). To wymaga dużo pamięci, nie używaj na dłuższą metę</string>
     <string name="not_decryptable">Nie do odszyfrowania</string>
     <string name="decrypted">Odszyfrowane</string>
-    <string name="whitelisted">Na białej liście</string>
     <string name="decryption">Deszyfrowanie</string>
     <string name="decryption_filter">Deszyfrowanie: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid nie widział początku tego połączenia. Może brakować niektórych informacji</string>
@@ -449,9 +445,6 @@
     <string name="ipv6_dns_server">Serwer DNS IPv6</string>
     <string name="use_system_dns">Użyj systemowego DNS</string>
     <string name="use_system_dns_summary">Jeśli to możliwe, korzystaj z systemowych serwerów DNS</string>
-    <string name="decryption_whitelist_rules">Reguły białej listy deszyfrowania</string>
-    <string name="decryption_whitelist_help">Lista reguł wykluczających określone połączenia z deszyfrowania TLS. Przydatne, aby uniknąć zepsucia aplikacji/zestawów SDK wykorzystujących przypinanie certyfikatów. Dopasowywanie hostów działa tylko wtedy, gdy widoczna jest wcześniejsza odpowiedź DNS</string>
-    <string name="decryption_whitelist">Biała lista deszyfrowania</string>
     <string name="external_storage_perm_required">Dostęp do pamięci zewnętrznej jest wymagany</string>
     <string name="many_rules_warning">Próbujesz zaimportować wiele reguł, co może spowodować, że aplikacja przestanie odpowiadać podczas niektórych interakcji. Czy naprawdę chcesz kontynuować?</string>
     <string name="pcapng_format">Format Pcapng</string>
