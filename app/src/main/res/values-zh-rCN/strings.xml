@@ -483,4 +483,12 @@
     <string name="license_error">许可证生成错误 [%1$d]: %2$s</string>
     <string name="requesting_license">正在请求许可代码，请稍等</string>
     <string name="license_activation_ok">已完成许可证激活</string>
+    <string name="decrypt_action">解密…</string>
+    <string name="decryption_rules_help">这些规则指定解密哪些连接。存在先前的 DNS 响应是基于 Host 的规则生效的前提</string>
+    <string name="injected">已注入</string>
+    <string name="decryption_rules">解密规则</string>
+    <string name="mitm_addon_starting">Mitm 附加组件启动中…</string>
+    <string name="mitm_addon_running">Mitim 附加组件运行中</string>
+    <string name="dont_decrypt_action">不解密…</string>
+    <string name="status_encrypted">已加密</string>
 </resources>
