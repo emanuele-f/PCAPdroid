@@ -81,7 +81,7 @@ You can test the above script by adding it via the following URL: [https://pcapd
 Upon a successful injection, the connetion will be marked in PCAPdroid with a "JS" icon. Opening the connection details will show the name of the injected script.
 
 <p align="center">
-<img src="./images/js_injector_icon.png" width="250" />
+<img src="./images/js_injector_icon.jpg" width="250" />
 </p>
 
 In order to make script injection effective, ensure to:
