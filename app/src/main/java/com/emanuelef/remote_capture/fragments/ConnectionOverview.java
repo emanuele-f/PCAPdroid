@@ -183,7 +183,14 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             else
                 appLabel.setText(uid_str);
 
-            view.findViewById(R.id.decryption_status_row).setVisibility(CaptureService.isDecryptingTLS() ? View.VISIBLE : View.GONE);
+            view.findViewById(R.id.decryption_status_row)
+                    .setVisibility(CaptureService.isDecryptingTLS() ? View.VISIBLE : View.GONE);
+
+            boolean has_scripts = (mConn.js_injected_scripts != null) && !mConn.js_injected_scripts.isEmpty();
+            view.findViewById(R.id.injected_scripts_row)
+                    .setVisibility(has_scripts ? View.VISIBLE : View.GONE);
+            if(has_scripts)
+                ((TextView)view.findViewById(R.id.injected_scripts)).setText(mConn.js_injected_scripts);
 
             if(!mConn.url.isEmpty())
                 url.setText(mConn.url);

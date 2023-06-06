@@ -76,6 +76,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
+        ImageView jsInjectorInd;
         ImageView blacklistedInd;
         ImageView blockedInd;
         ImageView decryptionInd;
@@ -99,6 +100,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             decryptionInd = itemView.findViewById(R.id.decryption_status);
             appName = itemView.findViewById(R.id.app_name);
             lastSeen = itemView.findViewById(R.id.last_seen);
+            jsInjectorInd = itemView.findViewById(R.id.js_injector);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
             blockedInd = itemView.findViewById(R.id.blocked);
             //countryFlag = itemView.findViewById(R.id.country_flag);
@@ -155,6 +157,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 countryFlag.setCountryCode(conn.country);
             }*/
 
+            jsInjectorInd.setVisibility(((conn.js_injected_scripts != null) && !conn.js_injected_scripts.isEmpty()) ? View.VISIBLE : View.GONE);
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
 

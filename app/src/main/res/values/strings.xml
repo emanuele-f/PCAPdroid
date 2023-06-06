@@ -480,4 +480,5 @@
     <string name="decrypt_action">Decrypt…</string>
     <string name="dont_decrypt_action">Don\'t decrypt…</string>
     <string name="status_encrypted">Encrypted</string>
+    <string name="injected">Injected</string>
 </resources>

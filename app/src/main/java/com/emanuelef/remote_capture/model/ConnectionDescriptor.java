@@ -117,6 +117,7 @@ public class ConnectionDescriptor {
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
     public boolean encrypted_payload; // actual payload is encrypted (e.g. telegram - see Utils.hasEncryptedPayload)
     public String decryption_error;
+    public String js_injected_scripts;
     public String country;
     public Geomodel.ASN asn;
 
