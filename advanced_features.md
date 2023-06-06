@@ -60,3 +60,32 @@ When the trailer is enabled, a fake Ethernet header will be added to the packets
 |      8 |           20 | appname | string | App package name           |
 
 The `appname` field contains the app package name truncated to 19 characters, which is useful to quickly spot an app without having to manually resolve it from the uid. The total per-packet overhead when the trailer is enabled is `14 B (Ethernet) + padding + 28 B (trailer) + 4 B (Ethernet FCS) = 46 B + padding`. The padding varies from 0 to 3 bytes.
+
+## 4.6 Js Injector
+
+The Js Injector, which is part of the PCAPdroid mitm addon, allows you to inject Javascript code into web pages. Scripts can be added from the mitm addon UI, by specifying the URL of the script to load.
+Scripts contain an header, which specifies the script metadata. It's syntax is similar to [the one used by tampermonkey](https://www.tampermonkey.net/documentation.php?locale=en), but scripts are not compatible. Here is an example:
+
+```js
+// @name Alert test
+// @description Displays an alert dialog on google.it
+// @author Emanuele Faranda
+// @version 1.0
+// @match *://www.google.it/*
+
+alert("Js Injector works");
+```
+
+This script will be injected on web pages matching the `google.it` domain, diplaying an alert dialog. You can use the `*://*/*` match to inject a script to all the web pages.
+You can test the above script by adding it via the following URL: [https://pcapdroid.org/alert.js](https://pcapdroid.org/alert.js).
+Upon a successful injection, the connetion will be marked in PCAPdroid with a "JS" icon. Opening the connection details will show the name of the injected script.
+
+<p align="center">
+<img src="./images/js_injector_icon.png" width="250" />
+</p>
+
+In order to make script injection effective, ensure to:
+
+- Add the browser app or the specific URL to the Decryption list, to decrypt it
+- In PCAPdroid, block QUIC. This ensures that web pages are not upgraded to QUIC, whose decryption is not supported yet
+- Flush the browser cache, to ensure that the browser does not use a cached web page
