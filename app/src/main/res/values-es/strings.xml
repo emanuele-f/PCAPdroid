@@ -458,4 +458,12 @@
     <string name="license_error">Error en la generación de licencia [%1$d]: %2$s</string>
     <string name="requesting_license">Solicitando un código de licencia, por favor espera</string>
     <string name="license_activation_ok">Completada la activación de la licencia</string>
+    <string name="mitm_addon_starting">El complemento Mitm está iniciándose…</string>
+    <string name="mitm_addon_running">El complemento Mitm se está ejecutando</string>
+    <string name="decryption_rules">Reglas de descifrado</string>
+    <string name="decryption_rules_help">Estas reglas especifican qué conexiones descifrar. Las reglas basadas en el host solo funcionan si se ve una respuesta de una DNS anterior</string>
+    <string name="status_encrypted">Encriptado</string>
+    <string name="injected">Inyectado</string>
+    <string name="decrypt_action">Descifrar…</string>
+    <string name="dont_decrypt_action">No descifrar…</string>
 </resources>
