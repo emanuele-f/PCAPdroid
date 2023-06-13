@@ -609,9 +609,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void initAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
-        if (!is_active)
+        if (!is_active) {
             appStateReady();
-        else
+
+            // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
+            // the keylog file if exists
+            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+            if(mKeylogFile.exists())
+                startExportSslkeylogfile();
+        } else
             appStateRunning();
     }
 
@@ -767,6 +773,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToastLong(this, R.string.export_failed);
             }
         }
-        mKeylogFile = null;
+
+        if(mKeylogFile != null) {
+            // upon closing the dialog, delete the keylog
+
+            //noinspection ResultOfMethodCallIgnored
+            mKeylogFile.delete();
+            mKeylogFile = null;
+        }
     }
 }
