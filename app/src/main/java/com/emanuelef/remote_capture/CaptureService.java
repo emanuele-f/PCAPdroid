@@ -428,7 +428,7 @@ public class CaptureService extends VpnService implements Runnable {
 
                 try {
                     builder.addDnsServer(InetAddress.getByName(Prefs.getDnsServerV6(mPrefs)));
-                } catch (UnknownHostException e) {
+                } catch (UnknownHostException | IllegalArgumentException e) {
                     Log.w(TAG, "Could not set IPv6 DNS server");
                 }
             }
