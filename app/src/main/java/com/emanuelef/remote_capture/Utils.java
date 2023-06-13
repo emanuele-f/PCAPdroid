@@ -1506,6 +1506,80 @@ public class Utils {
         }
     }
 
+    // from bouncycastle
+    private static boolean isValidIPv6(String address) {
+        if (address.length() == 0)
+            return false;
+
+        char firstChar = address.charAt(0);
+        if (firstChar != ':' && Character.digit(firstChar, 16) < 0)
+            return false;
+
+        int segmentCount = 0;
+        String temp = address + ":";
+        boolean doubleColonFound = false;
+
+        int pos = 0, end;
+        while (pos < temp.length() && (end = temp.indexOf(':', pos)) >= pos)  {
+            if (segmentCount == 8)
+                return false;
+
+            if (pos != end)  {
+                String value = temp.substring(pos, end);
+
+                if (end == temp.length() - 1 && value.indexOf('.') > 0) {
+                    // add an extra one as address covers 2 words.
+                    if (++segmentCount == 8)
+                        return false;
+                    if (!validateIpv4Address(value))
+                        return false;
+                }
+                else if (!isParseableIPv6Segment(temp, pos, end))
+                    return false;
+            } else {
+                if (end != 1 && end != temp.length() - 1 && doubleColonFound)
+                    return false;
+                doubleColonFound = true;
+            }
+
+            pos = end + 1;
+            ++segmentCount;
+        }
+
+        return segmentCount == 8 || doubleColonFound;
+    }
+
+    private static boolean isParseableIPv6Segment(String s, int pos, int end) {
+        return isParseable(s, pos, end, 16, 4, true, 0x0000, 0xFFFF);
+    }
+
+    private static boolean isParseable(String s, int pos, int end, int radix,
+                                       int maxLength, boolean allowLeadingZero,
+                                       int minValue, int maxValue) {
+        int length = end - pos;
+        if (length < 1 | length > maxLength)
+            return false;
+
+        boolean checkLeadingZero = length > 1 & !allowLeadingZero;
+        if (checkLeadingZero && Character.digit(s.charAt(pos), radix) <= 0)
+            return false;
+
+        int value = 0;
+        while (pos < end) {
+            char c = s.charAt(pos++);
+            int d = Character.digit(c, radix);
+            if (d < 0)
+            {
+                return false;
+            }
+
+            value *= radix;
+            value += d;
+        }
+
+        return value >= minValue & value <= maxValue;
+    }
+
     @SuppressWarnings("deprecation")
     public static boolean validateIpAddress(String value) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -1526,7 +1600,7 @@ public class Utils {
     }
 
     public static boolean validateIpv6Address(String s) {
-        return validateIpAddress(s) && !validateIpv4Address(s);
+        return isValidIPv6(s) && !validateIpv4Address(s);
     }
 
     // rough validation
