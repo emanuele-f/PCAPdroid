@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.5] - 2023-06-15
+- Add ability to inject javascript into web pages (PCAPdroid-mitm)
+- TLS decryption is now rule-based, it only applies to specified connections
+- App icon on Android 13 can be themed now (credits: incycledream)
+- Allow exporting the SSLKEYLOG after anomalous app stop
+- IPv6 fixes: fix ICMPv6, fix crash on invalid DNS, capture of ULA traffic
+
 ## [1.6.4] - 2023-04-24
 - Fix QR code activation crash on Android 32+
 - Update translations
