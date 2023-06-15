@@ -14,7 +14,6 @@ Most apps today employ TLS to secure their data against inspection and tampering
 
 Current limitations:
 
-- TLS decryption is not available with the root capture
 - Decrypting QUIC traffic [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4170). In PCAPdroid, you can enable blocking of QUIC, which causes some apps [to fallback to TLS](https://www.ietf.org/archive/id/draft-ietf-quic-applicability-09.html#section-2), thus making them decryptable
 - Decrypting STARTTLS [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4215)
 - There are some protocol-specific limitations, check out [the mitmproxy docs](https://docs.mitmproxy.org/stable/concepts-protocols/#protocols) for more details
@@ -39,7 +38,7 @@ Before proceeding, check if your device has [Autostart](https://www.vivo.com/en/
 
 ## 3.3 Decrypting
 
-Before starting the decryption, you will need to select a target app. Decryption is an invasive operation which can break the connectivity of some apps due to certificate trust problems, so it's a good practice to only limit it to a single app.
+In order to decrypt connections, you first need to define some rules. You can do this either from the "Decryption rules" in the left drawer or by long pressing a connection and selecting a decryption criteria from the context menu. Please note that, due to Android security measures, decryption on common apps will not usually work, and will cause the apps to stop working. Read the section below to understand and possibly bypass these protections.
 
 The first test you should do to verify that decryption works is to choose an app which is easy to decrypt. It turns out Google Chrome is a good candidate. Enable decryption, select Google Chrome as the target app and then start the capture in PCAPdroid. In chrome, open a new tab and a new HTTPS website (or just clear the browser cache) and you should start seeing decrypted connections in PCAPdroid. These are marked with a green open lock.
 
@@ -49,7 +48,7 @@ The lock icon and color indicates the decryption status, which is also reported 
 - *red*: decryption failed. If you tap on the connection, you should get an error message explaining why it failed
 - *orange*: decryption is not supported for this protocol/app (e.g. for QUIC and some specific apps, see below)
 - *gray open lock*: the connection is not encrypted (e.g. plain DNS)
-- *gray closed lock*: decryption not available yet (e.g. waiting for application data)
+- *gray closed lock*: decryption not available yet (e.g. no decryption rule configured, or waiting for application data)
 
 You can easily show decrypted or decryption-failed connections via the "Edit Filter" dialog under the filter icon.
 If you tap on a decrypted connection, the payload and the HTTP tabs will show the decrypted payload data.
