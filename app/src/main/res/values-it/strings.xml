@@ -224,7 +224,7 @@
     <string name="cert_exported_now_installed">Il certificato è stato esportato, adesso è necessario installarlo dalle impostazioni di Android</string>
     <string name="cert_installed_correctly">Il certificato CA è stato installato</string>
     <string name="cert_reinstall_required">Il certificato CA non è installato, eseguire nuovamente la configurazione</string>
-    <string name="mitm_addon_bad_version">Versione dell\'addon mitm non supportata. Disinstallare l\'addon e riprovare</string>
+    <string name="mitm_addon_bad_version">Versione dell\'addon mitm non supportata. Installa la versione %1$s e riprovare</string>
     <string name="mitm_addon_new_version">L\'addon mitm deve essere aggiornato</string>
     <string name="upgrade_action">Aggiorna</string>
     <string name="export_failed">Esport fallito</string>

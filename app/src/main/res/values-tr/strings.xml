@@ -222,7 +222,7 @@
     <string name="checking_the_certificate">Sertifika denetleniyor…</string>
     <string name="cert_exported_now_installed">Sertifika dışa aktarıldı, şimdi Android ayarlarından onu kurun</string>
     <string name="cert_installed_correctly">CA sertifikası kuruldu</string>
-    <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Kaldırın ve tekrar deneyin</string>
+    <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Lütfen %1$s sürümünü yükleyin ve tekrar deneyin</string>
     <string name="mitm_addon_new_version">PCAPdroid ortadaki adam eklentisi yükseltilmelidir</string>
     <string name="upgrade_action">Yükselt</string>
     <string name="request">İstek</string>

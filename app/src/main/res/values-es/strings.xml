@@ -316,7 +316,7 @@
     <string name="action_unblock">Desbloquear</string>
     <string name="websocket">WebSocket</string>
     <string name="netd_block_missed">La conexión fue comenzada por netd, por tanto no se pudo bloquear</string>
-    <string name="mitm_addon_bad_version">Versión del complemento mitm incorrecta. Desinstálala y reinténtalo</string>
+    <string name="mitm_addon_bad_version">Versión del complemento mitm incorrecta. Instale la versión %1$s y reinténtalo</string>
     <string name="overview">Resumen</string>
     <string name="string_http_request">Petición HTTP</string>
     <string name="http">HTTP</string>

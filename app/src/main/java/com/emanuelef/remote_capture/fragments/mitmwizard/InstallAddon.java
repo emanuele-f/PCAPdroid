@@ -65,7 +65,7 @@ public class InstallAddon extends StepFragment {
             mStepLabel.setText(R.string.mitm_addon_new_version);
             mStepButton.setText(R.string.upgrade_action);
         } else {
-            mStepLabel.setText(R.string.mitm_addon_bad_version);
+            mStepLabel.setText(getString(R.string.mitm_addon_bad_version, MitmAddon.PACKAGE_VERSION_NAME));
             mStepIcon.setColorFilter(mDangerColor);
             mStepButton.setText(R.string.install_action);
             mStepButton.setEnabled(false);
