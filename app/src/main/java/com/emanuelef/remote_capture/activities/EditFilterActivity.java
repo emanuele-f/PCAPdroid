@@ -37,7 +37,6 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -45,7 +44,6 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor.DecryptionStatus;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.FilteringStatus;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
-import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -113,7 +111,6 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         mDecChips = new ArrayList<>(Arrays.asList(
                 new Pair<>(DecryptionStatus.DECRYPTED, findViewById(R.id.dec_status_decrypted)),
                 new Pair<>(DecryptionStatus.NOT_DECRYPTABLE, findViewById(R.id.dec_status_not_decryptable)),
-                new Pair<>(DecryptionStatus.WHITELISTED, findViewById(R.id.dec_status_whitelisted)),
                 new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));
 

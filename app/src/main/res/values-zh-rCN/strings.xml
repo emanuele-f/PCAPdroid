@@ -245,8 +245,6 @@
     <string name="socks5_info">SOCKS5 代理: %1$s:%2$d</string>
     <string name="phone_app_info">拨号服务</string>
     <string name="tls_decryption">TLS 解密</string>
-    <string name="tls_decryption_starting">TLS 解密正在启动…</string>
-    <string name="tls_decryption_running">TLS 解密运行中</string>
     <string name="traffic_inspection">流量检查</string>
     <string name="mitm_start_failed">无法启动 mitm 服务。尝试手动打开 mitm 附加组件应用并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
@@ -429,7 +427,6 @@
     <string name="firewall_purchase_msg">购买 <i>%1$s</i> 功能开始拦截连接</string>
     <string name="mitm_skip_notice">似乎未安装 mitm 证书。如果继续，解密会失败</string>
     <string name="mitm_wizard_description">配置设备以进行 TLS 解密</string>
-    <string name="whitelisted">已加入白名单</string>
     <string name="port_mapping">端口映射</string>
     <string name="required">必需的</string>
     <string name="items_delete_confirm">删除所选项目吗？</string>
@@ -439,13 +436,11 @@
     <string name="many_rules_warning">你正试图导入许多规则，可能使应用程序在某些交互期间无响应。你真想继续吗？</string>
     <string name="pcapng_format_summary">用 PCAPNG 格式转储数据包，该格式允许内嵌 TLS 解密 secrets</string>
     <string name="use_system_dns_summary">如果可能，使用系统 DNS 服务器</string>
-    <string name="decryption_whitelist">流量解密白名单</string>
     <string name="port_mapping_summary">配置将连接重定向到不同主机或端口的端口映射规则</string>
     <string name="app_log">日志</string>
     <string name="no_data">无数据</string>
     <string name="mitm_addon">mitm 附加组件</string>
     <string name="malware_whitelist_action">白名单（恶意软件）…</string>
-    <string name="decryption_whitelist_action">白名单（解密）…</string>
     <string name="mitmproxy_opts">附加 mitmproxy 选项</string>
     <string name="original_port">原始端口</string>
     <string name="mitmproxy_opts_description">提供附加的 mitmproxy 选项</string>
@@ -461,9 +456,7 @@
     <string name="reset_stats_confirm">你真想重置这些统计数据吗？</string>
     <string name="destination_ip">目标 IP</string>
     <string name="port_mapping_exists">已定义端口映射</string>
-    <string name="decryption_whitelist_help">将特定连接排除于 TLS 解密之外的规则列表。可避免破坏部署了证书固定特性的应用/SDK 的正常工作。主机匹配生效的前提是之前看到过相应主机的 DNS 应答</string>
     <string name="ipv6_dns_server">IPv6 DNS 服务器</string>
-    <string name="decryption_whitelist_rules">流量解密白名单规则</string>
     <string name="pcapng_format">PCAPNG 格式</string>
     <string name="dns_servers">DNS 服务器</string>
     <string name="ipv4_dns_server">IPv4 DNS 服务器</string>
@@ -490,4 +483,12 @@
     <string name="license_error">许可证生成错误 [%1$d]: %2$s</string>
     <string name="requesting_license">正在请求许可代码，请稍等</string>
     <string name="license_activation_ok">已完成许可证激活</string>
+    <string name="decrypt_action">解密…</string>
+    <string name="decryption_rules_help">这些规则指定解密哪些连接。存在先前的 DNS 响应是基于 Host 的规则生效的前提</string>
+    <string name="injected">已注入</string>
+    <string name="decryption_rules">解密规则</string>
+    <string name="mitm_addon_starting">Mitm 附加组件启动中…</string>
+    <string name="mitm_addon_running">Mitim 附加组件运行中</string>
+    <string name="dont_decrypt_action">不解密…</string>
+    <string name="status_encrypted">已加密</string>
 </resources>

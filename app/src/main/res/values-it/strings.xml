@@ -258,7 +258,6 @@
     <string name="blocklist">Lista di blocco</string>
     <string name="num_configured_rules">Regole configurate</string>
     <string name="unblock">Sblocca…</string>
-    <string name="tls_decryption_running">Decrittazione TLS in esecuzione</string>
     <string name="mitm_start_failed">Impossibile avviare il servizio di mitm. Prova ad aprire manualmente l\'app dell\'addon di mitm e riprova</string>
     <string name="mitm_setup_wizard">Configurazione mitm</string>
     <string name="overview">Panoramica</string>
@@ -279,7 +278,6 @@
 \n
 \nPer avviare la cattura, è necessario accettare la richiesta di VPN nella prossima schermata</string>
     <string name="tls_decryption_summary">Decritta il traffico SSL/TLS tramite mitm. Potrebbe non funzionare con alcune app, far riferimento alla guida utente</string>
-    <string name="tls_decryption_starting">Avvio decrittazione TLS…</string>
     <string name="traffic_inspection">Ispezione del traffico</string>
     <string name="install_action">Installa</string>
     <string name="export_action">Esporta</string>
@@ -406,9 +404,7 @@
     <string name="app_log">Log</string>
     <string name="no_data">Dati non disponibili</string>
     <string name="malware_whitelist_action">Aggiungi a whitelist (malware)…</string>
-    <string name="decryption_whitelist_action">Aggiungi a whitelist (decrittazione)…</string>
     <string name="mitm_addon">addon di mitm</string>
-    <string name="whitelisted">Whitelistato</string>
     <string name="mitmproxy_opts">Opzioni aggiuntive mitmproxy</string>
     <string name="mitmproxy_opts_description">Fornisci opzioni aggiuntive per mitmproxy</string>
     <string name="mitm_addon_error">Errore durante l\'avvio dell\'addon di mitm. Per maggiori dettagli controllare il log</string>
@@ -436,15 +432,12 @@
     <string name="ipv6_dns_server">Server DNS per IPv6</string>
     <string name="use_system_dns">Usa il DNS di sistema</string>
     <string name="use_system_dns_summary">Se possibile utilizza i server DNS di sistema</string>
-    <string name="decryption_whitelist_rules">Regole whitelist per decrittazione</string>
-    <string name="decryption_whitelist">Whitelist della decrittazione</string>
     <string name="external_storage_perm_required">Il permesso di accesso ai file esterni è richiesto</string>
     <string name="many_rules_warning">Si sta cercando d\'importare molte regole, che potrebbero causare il rallentamento dell\'app durante alcune interazioni con la stessa. Procedere\?</string>
     <string name="pcapng_format">Formato pcapng</string>
     <string name="pcapng_format_summary">Salva i pacchetti di rete nel formato pcapng, che permette di integrare al suo interno i segreti della decrittazione TLS</string>
     <string name="sort_by">Ordina per</string>
     <string name="total_bytes">Bytes totali</string>
-    <string name="decryption_whitelist_help">Lista di regole per escludere specifiche connessioni dalla decrittazione TLS. E\' utile per evitare che app/SDK con certificate pinning smettano di funzionare. Il matching basato sull\'host funziona solo quando è presente una risposta DNS precedente alla connessione TLS</string>
     <string name="write_ext_storage_failed">Errore nella scrittura sull\'archivio esterno. Per maggiori dettagli controllare il log dell\'applicazione</string>
     <string name="socks5_auth">Autenticazione SOCKS5</string>
     <string name="socks5_auth_summary">Autenticati al proxy tramite nome utente e password</string>
@@ -464,4 +457,12 @@
     <string name="requesting_license">Richiedendo un codice di licenza, attendere</string>
     <string name="license_activation_ok">Licenza attivata con successo</string>
     <string name="qr_purchase_required">Acquista un unlock token per procedere con l\'attivazione tramite QR code</string>
+    <string name="decrypt_action">Decritta…</string>
+    <string name="status_encrypted">Crittata</string>
+    <string name="injected">Iniettati</string>
+    <string name="mitm_addon_starting">Avviando l\'addon di mitm…</string>
+    <string name="mitm_addon_running">Addon di mitm in esecuzione</string>
+    <string name="decryption_rules">Regole di decrittazione</string>
+    <string name="decryption_rules_help">Queste regole specificano quali connessioni decrittare. Regole basate su host funzionano solo in presenza di una risposta DNS vista in precedenza</string>
+    <string name="dont_decrypt_action">Non decrittare…</string>
 </resources>

@@ -39,6 +39,9 @@ public class DnsSettings extends PreferenceFragmentCompat {
         p1.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpv4Address(newValue.toString()));
 
         EditTextPreference p2 = Objects.requireNonNull(findPreference(Prefs.PREF_DNS_SERVER_V6));
-        p2.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpv6Address(newValue.toString()));
+        p2.setOnPreferenceChangeListener((preference, newValue) -> {
+            String ip = newValue.toString();
+            return !ip.equals("::") && Utils.validateIpv6Address(ip);
+        });
     }
 }

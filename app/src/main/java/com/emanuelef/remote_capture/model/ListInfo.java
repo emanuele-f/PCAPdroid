@@ -41,7 +41,7 @@ public class ListInfo {
         MALWARE_WHITELIST,
         BLOCKLIST,
         FIREWALL_WHITELIST,
-        DECRYPTION_WHITELIST,
+        DECRYPTION_LIST,
     }
 
     public ListInfo(Type tp) {
@@ -62,8 +62,8 @@ public class ListInfo {
                 return PCAPdroid.getInstance().getBlocklist();
             case FIREWALL_WHITELIST:
                 return PCAPdroid.getInstance().getFirewallWhitelist();
-            case DECRYPTION_WHITELIST:
-                return PCAPdroid.getInstance().getDecryptionWhitelist();
+            case DECRYPTION_LIST:
+                return PCAPdroid.getInstance().getDecryptionList();
         }
 
         assert false;
@@ -80,8 +80,8 @@ public class ListInfo {
                 return R.string.firewall_rules;
             case FIREWALL_WHITELIST:
                 return R.string.whitelist;
-            case DECRYPTION_WHITELIST:
-                return R.string.decryption_whitelist_rules;
+            case DECRYPTION_LIST:
+                return R.string.decryption_rules;
         }
 
         assert false;
@@ -98,8 +98,8 @@ public class ListInfo {
                 return 0;
             case FIREWALL_WHITELIST:
                 return R.string.firewall_whitelist_help;
-            case DECRYPTION_WHITELIST:
-                return R.string.decryption_whitelist_help;
+            case DECRYPTION_LIST:
+                return R.string.decryption_rules_help;
         }
 
         assert false;
@@ -111,7 +111,7 @@ public class ListInfo {
             case VISUALIZATION_MASK:
                 return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST, RuleType.COUNTRY, RuleType.PROTOCOL));
             case MALWARE_WHITELIST:
-            case DECRYPTION_WHITELIST:
+            case DECRYPTION_LIST:
             case BLOCKLIST:
                 return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST));
             case FIREWALL_WHITELIST:
@@ -135,8 +135,8 @@ public class ListInfo {
                 if(CaptureService.isServiceActive())
                     CaptureService.requireInstance().reloadFirewallWhitelist();
                 break;
-            case DECRYPTION_WHITELIST:
-                CaptureService.reloadDecryptionWhitelist();
+            case DECRYPTION_LIST:
+                CaptureService.reloadDecryptionList();
                 break;
         }
     }

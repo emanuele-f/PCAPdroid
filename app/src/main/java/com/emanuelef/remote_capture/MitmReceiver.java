@@ -95,6 +95,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         DATA_TRUNCATED,
         MASTER_SECRET,
         LOG,
+        JS_INJECTED
     }
 
     private static class PendingMessage {
@@ -319,9 +320,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
-        } else if(type == MsgType.DATA_TRUNCATED)
+        } else if(type == MsgType.DATA_TRUNCATED) {
             conn.setPayloadTruncatedByAddon();
-        else
+        } else if(type == MsgType.JS_INJECTED) {
+            conn.js_injected_scripts = new String(message, StandardCharsets.US_ASCII);
+        } else
             conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
     }
 
@@ -380,6 +383,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 return MsgType.MASTER_SECRET;
             case "log":
                 return MsgType.LOG;
+            case "js_inject":
+                return MsgType.JS_INJECTED;
             default:
                 return MsgType.UNKNOWN;
         }

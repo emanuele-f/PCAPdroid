@@ -307,6 +307,25 @@
                     tools:text="Decrypted" />
             </LinearLayout>
         </TableRow>
+        <TableRow
+            android:id="@+id/injected_scripts_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/injected" />
+            <TextView
+                android:id="@+id/injected_scripts"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.75"
+                android:textIsSelectable="true"
+                tools:text="some script" />
+        </TableRow>
 
         <TableRow
             android:layout_width="match_parent"

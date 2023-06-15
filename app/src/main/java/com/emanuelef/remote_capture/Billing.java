@@ -71,8 +71,8 @@ public class Billing {
             R.string.firewall_summary, R.string.no_root_firewall,
             R.string.unlock_token, R.string.unlock_token_summary, R.string.unlock_token_error,
             R.string.license_service_unavailable, R.string.requesting_unlock_token, R.string.show_action, R.string.unlock_token_msg1,
-            R.string.license_limit_reached, R.string.license_error, R.string.requesting_license, R.string.license_activation_ok,
-            R.string.qr_license_confirm, R.string.qr_purchase_required
+            R.string.qr_license_confirm, R.string.qr_purchase_required, R.string.license_limit_reached,
+            R.string.license_error, R.string.requesting_license
     };
 
     protected final Context mContext;

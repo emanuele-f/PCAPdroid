@@ -66,9 +66,9 @@ public class ConnectionDescriptor {
 
     public enum DecryptionStatus {
         INVALID,
+        ENCRYPTED,
         CLEARTEXT,
         DECRYPTED,
-        WHITELISTED,
         NOT_DECRYPTABLE,
         WAITING_DATA,
         ERROR,
@@ -111,12 +111,13 @@ public class ConnectionDescriptor {
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
-    public boolean decryption_whitelisted;
+    public boolean decryption_ignored;
     public boolean netd_block_missed;
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
     public boolean encrypted_payload; // actual payload is encrypted (e.g. telegram - see Utils.hasEncryptedPayload)
     public String decryption_error;
+    public String js_injected_scripts;
     public String country;
     public Geomodel.ASN asn;
 
@@ -154,7 +155,7 @@ public class ConnectionDescriptor {
             rcvd_pkts = update.rcvd_pkts;
             blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
-            decryption_whitelisted = (update.status & 0x1000) != 0;
+            decryption_ignored = (update.status & 0x1000) != 0;
             netd_block_missed = (update.status & 0x0800) != 0;
             is_blocked = (update.status & 0x0400) != 0;
             blacklisted_ip = (update.status & 0x0100) != 0;
@@ -178,7 +179,7 @@ public class ConnectionDescriptor {
         }
         if((update.update_type & ConnectionUpdate.UPDATE_PAYLOAD) != 0) {
             // Payload for decryptable connections should be received via the MitmReceiver
-            assert(isNotDecryptable());
+            assert(decryption_ignored || isNotDecryptable());
 
             // Some pending updates with payload may still be received after low memory has been
             // triggered and payload disabled
@@ -252,8 +253,8 @@ public class ConnectionDescriptor {
             return DecryptionStatus.CLEARTEXT;
         else if(decryption_error != null)
             return DecryptionStatus.ERROR;
-        else if(decryption_whitelisted)
-            return DecryptionStatus.WHITELISTED;
+        else if(decryption_ignored)
+            return DecryptionStatus.ENCRYPTED;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
         else if(isDecrypted())
@@ -269,7 +270,7 @@ public class ConnectionDescriptor {
             case CLEARTEXT: resid = R.string.not_encrypted; break;
             case NOT_DECRYPTABLE: resid = R.string.not_decryptable; break;
             case DECRYPTED: resid = R.string.decrypted; break;
-            case WHITELISTED: resid = R.string.whitelisted; break;
+            case ENCRYPTED: resid = R.string.status_encrypted; break;
             case WAITING_DATA: resid = R.string.waiting_application_data; break;
             default: resid = R.string.error;
         }
@@ -305,8 +306,8 @@ public class ConnectionDescriptor {
         return payload_truncated;
     }
 
-    public boolean isNotDecryptable()   { return encrypted_payload || !mitm_decrypt; }
-    public boolean isDecrypted()        { return !isNotDecryptable() && (getNumPayloadChunks() > 0); }
+    public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt); }
+    public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (getNumPayloadChunks() > 0); }
     public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }
 
     public synchronized int getNumPayloadChunks() { return payload_chunks.size(); }

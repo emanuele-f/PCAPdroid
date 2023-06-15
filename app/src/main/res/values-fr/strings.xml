@@ -291,8 +291,6 @@
     <string name="memory_usage">Utilisation de la mémoire</string>
     <string name="ipv4_only">IPv4 uniquement</string>
     <string name="traffic_dump">Extraction du trafic</string>
-    <string name="tls_decryption_running">Le décryptage TLS est en cours</string>
-    <string name="tls_decryption_starting">Le décryptage TLS commence…</string>
     <string name="payload">Payload</string>
     <string name="block_private_dns">Bloquer les DNS privés</string>
     <string name="app_intro_next_button">Suivant</string>
@@ -347,5 +345,4 @@
     <string name="app_log">Log</string>
     <string name="no_data">Pas de données</string>
     <string name="malware_whitelist_action">Liste blanche (malware) …</string>
-    <string name="decryption_whitelist_action">Liste blanche (déchiffrement) …</string>
 </resources>

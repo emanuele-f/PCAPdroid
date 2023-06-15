@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="start_button">Начать</string>
+    <string name="start_button">Запустить</string>
     <string name="stop_button">Остановить</string>
     <string name="title_activity_settings">Настройки</string>
     <string name="collector_info">UDP сборщик: %1$s:%2$d</string>
@@ -218,8 +218,6 @@
     <string name="phone_app_info">Службы телефонии</string>
     <string name="unblock">Разблокировать…</string>
     <string name="tls_decryption">Дешифрование TLS</string>
-    <string name="tls_decryption_starting">Дешифрование TLS запускается…</string>
-    <string name="tls_decryption_running">Дешифрование TLS запущено</string>
     <string name="tls_decryption_summary">Дешифрование SSL/TLS траффика посредством mitm. Это может работать с некоторыми приложениями, ознакомьтесь с руководством пользователя</string>
     <string name="traffic_inspection">Просмотр траффика</string>
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
@@ -406,9 +404,7 @@
     <string name="app_log">Журнал</string>
     <string name="no_data">Нет данных</string>
     <string name="malware_whitelist_action">Белый список (вредонос)…</string>
-    <string name="decryption_whitelist_action">Белый список (дешифрование)…</string>
     <string name="mitm_addon">mitm дополнение</string>
-    <string name="whitelisted">Добавлено в белый список</string>
     <string name="mitmproxy_opts_description">Укажите дополнительные опции для mitmproxy</string>
     <string name="mitm_addon_error">Ошибка запуска mitm дополнения. Проверьте журнал для деталей</string>
     <string name="whitelist_mode">Режим белого списка</string>
@@ -435,13 +431,10 @@
     <string name="rule_exists">Правило уже определено</string>
     <string name="use_system_dns">Использовать системный DNS</string>
     <string name="pcapng_format">Формат Pcapng</string>
-    <string name="decryption_whitelist">Белый список дешифрования</string>
     <string name="external_storage_perm_required">Требуется разрешение на доступ к внешнему накопителю</string>
     <string name="mitmproxy_opts">Дополнительные опции mitmproxy</string>
     <string name="pcapng_format_summary">Делать дамп пакетов в формат pcapng, который позволяет встраивать секреты дешифрования TLS</string>
     <string name="many_rules_warning">Вы пытаетесь импортировать множество правил, что может сделать приложение неотзывчивым в течение некоторых действий. Вы действительно хотите продолжить\?</string>
-    <string name="decryption_whitelist_help">Список правил для исключения отдельных соединений из процесса дешифрования TLS. Полезно, чтобы избегать случаи, когда из-за привязки сертификата нарушается работа приложения или SDK. Сопоставление хостов работает только если раннее был получен соответствующий DNS ответ</string>
-    <string name="decryption_whitelist_rules">Белый список дешифрования</string>
     <string name="use_system_dns_summary">Использовать системные DNS сервера, если это возможно</string>
     <string name="total_bytes">Всего байт</string>
     <string name="sort_by">Сортировать по</string>
@@ -464,4 +457,12 @@
     <string name="license_limit_reached">Достигнут лимит лицензий для данного unlock token. Приобретите новый token, чтобы сгенерировать больше лицензий</string>
     <string name="qr_code_expired">Срок действия QR кода истек. Сгенерируйте новый QR код и повторите попытку</string>
     <string name="socks5_auth">Аутентификация SOCKS5</string>
+    <string name="mitm_addon_starting">MITM-аддон запускается…</string>
+    <string name="mitm_addon_running">MITM-аддон запущен</string>
+    <string name="decryption_rules">Правила расшифровки</string>
+    <string name="decrypt_action">Расшифровывать…</string>
+    <string name="decryption_rules_help">Эти правила указывают на те соединения, которые необходимо расшифровывать. Правила на основе хостов работают только если найден соответствующий отклик от DNS сервера</string>
+    <string name="dont_decrypt_action">Не расшифровывать…</string>
+    <string name="status_encrypted">Зашифровано</string>
+    <string name="injected">Инжектировано</string>
 </resources>

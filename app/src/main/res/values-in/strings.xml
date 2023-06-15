@@ -262,8 +262,6 @@
     <string name="unblock">Buka blokir…</string>
     <string name="tls_decryption">Dekripsi TLS</string>
     <string name="tls_decryption_summary">Dekripsi lalu lintas SSL/TLS dengan melakukan mitm. Saat ini dapat bekerja dengan beberapa aplikasi, lihat panduan pengguna</string>
-    <string name="tls_decryption_starting">Dekripsi TLS dimulai…</string>
-    <string name="tls_decryption_running">Dekripsi TLS sedang berjalan</string>
     <string name="traffic_inspection">Inspeksi lalu lintas</string>
     <string name="mitm_start_failed">Tidak dapat memulai layanan mitm. Instal ulang mitm addon dan coba lagi</string>
     <string name="mitm_setup_wizard">Petunjuk instalasi Mitm</string>

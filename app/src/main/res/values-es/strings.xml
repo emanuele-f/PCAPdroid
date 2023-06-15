@@ -222,8 +222,6 @@
     <string name="unblock">Desbloquear…</string>
     <string name="tls_decryption">Descifrado TLS</string>
     <string name="tls_decryption_summary">Descifra el tráfico SSL/TLS por medio de un ataque de intermediario (mitm). Esto podría funcionar con algunas aplicaciones, verifica la guía de usuario</string>
-    <string name="tls_decryption_starting">Descifrado TLS está comenzando…</string>
-    <string name="tls_decryption_running">Descifrado TLS se está ejecutando</string>
     <string name="traffic_inspection">Inspección de trafico</string>
     <string name="mitm_start_failed">No se ha podido iniciar el servicio mitm. Intenta abrir la aplicación mitm manualmente y vuelve a intentarlo</string>
     <string name="mitm_setup_wizard">Asistente de configuración mitm</string>
@@ -405,9 +403,7 @@
 \n
 \nUsando la última lista negra, puedes detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>
     <string name="malware_whitelist_action">Lista blanca (software malicioso)…</string>
-    <string name="decryption_whitelist_action">Lista blanca (descifrado)…</string>
     <string name="mitm_addon">complemento mitm</string>
-    <string name="whitelisted">Lista blanca</string>
     <string name="mitmproxy_opts">Opciones adicionales para mitmproxy</string>
     <string name="mitmproxy_opts_description">Opciones adicionales para mitmproxy</string>
     <string name="mitm_addon_error">Error al iniciar el complemento mitm. Comprueba el registro para más detalles</string>
@@ -434,9 +430,6 @@
     <string name="ipv6_dns_server">Servidor DNS IPv6</string>
     <string name="use_system_dns">Utilizar la DNS del sistema</string>
     <string name="use_system_dns_summary">Si es posible, utilice los servidores DNS del sistema</string>
-    <string name="decryption_whitelist_rules">Reglas de descifrado en lista blanca</string>
-    <string name="decryption_whitelist">Lista blanca de descifrado</string>
-    <string name="decryption_whitelist_help">Lista de reglas para excluir conexiones específicas del descifrado TLS. Útil para evitar romper apps/SDKs que emplean certificate pinning. La coincidencia de host sólo funciona si se ha visto una respuesta DNS previa</string>
     <string name="external_storage_perm_required">El permiso al almacenamiento externo es necesario</string>
     <string name="many_rules_warning">Estás intentando importar muchas reglas, lo que podría hacer que la aplicación no respondiera durante algunas interacciones. ¿De verdad quieres continuar\?</string>
     <string name="pcapng_format">Formato Pcapng</string>
@@ -465,4 +458,12 @@
     <string name="license_error">Error en la generación de licencia [%1$d]: %2$s</string>
     <string name="requesting_license">Solicitando un código de licencia, por favor espera</string>
     <string name="license_activation_ok">Completada la activación de la licencia</string>
+    <string name="mitm_addon_starting">El complemento Mitm está iniciándose…</string>
+    <string name="mitm_addon_running">El complemento Mitm se está ejecutando</string>
+    <string name="decryption_rules">Reglas de descifrado</string>
+    <string name="decryption_rules_help">Estas reglas especifican qué conexiones descifrar. Las reglas basadas en el host solo funcionan si se ve una respuesta de una DNS anterior</string>
+    <string name="status_encrypted">Encriptado</string>
+    <string name="injected">Inyectado</string>
+    <string name="decrypt_action">Descifrar…</string>
+    <string name="dont_decrypt_action">No descifrar…</string>
 </resources>

@@ -140,7 +140,6 @@
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocol: %1$s</string>
     <string name="malware_whitelist_action">Whitelist (malware)…</string>
-    <string name="decryption_whitelist_action">Whitelist (decryption)…</string>
     <string name="hide">Hide…</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
@@ -267,8 +266,6 @@
     <string name="save_ok">Saved</string>
     <string name="tls_decryption">TLS decryption</string>
     <string name="tls_decryption_summary">Decrypt the SSL/TLS traffic by performing mitm. This may now work with some apps, check out the user guide</string>
-    <string name="tls_decryption_starting">TLS decryption is starting…</string>
-    <string name="tls_decryption_running">TLS decryption is running</string>
     <string name="traffic_inspection">Traffic inspection</string>
     <string name="mitm_start_failed">Could not start the mitm service. Try to open the mitm addon app manually and retry</string>
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
@@ -305,7 +302,6 @@
     <string name="full_payload_summary">Show the full connections payload (e.g. the full HTTP request and response). This requires a lot of memory, don\'t use in the long run</string>
     <string name="not_decryptable">Not decryptable</string>
     <string name="decrypted">Decrypted</string>
-    <string name="whitelisted">Whitelisted</string>
     <string name="decryption">Decryption</string>
     <string name="decryption_filter">Decryption: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid has not seen the start of this connection. Some information may be missing</string>
@@ -449,9 +445,6 @@
     <string name="ipv6_dns_server">IPv6 DNS server</string>
     <string name="use_system_dns">Use system DNS</string>
     <string name="use_system_dns_summary">Use the system DNS servers if possible</string>
-    <string name="decryption_whitelist_rules">Decryption whitelist rules</string>
-    <string name="decryption_whitelist_help">List of rules to exclude specific connections from the TLS decryption. Useful to avoid breaking apps/SDKs employing certificate pinning. Host matching only works if a prior DNS reply is seen</string>
-    <string name="decryption_whitelist">Decryption whitelist</string>
     <string name="external_storage_perm_required">The external storage permission is required</string>
     <string name="many_rules_warning">You are trying to import many rules, which could make the app unresponsive during some interactions. Do you really want to continue?</string>
     <string name="pcapng_format">Pcapng format</string>
@@ -473,4 +466,12 @@
     <string name="license_error">License generation error [%1$d]: %2$s</string>
     <string name="requesting_license">Requesting a license code, please wait</string>
     <string name="license_activation_ok">License activation completed</string>
+    <string name="mitm_addon_starting">Mitm addon is starting…</string>
+    <string name="mitm_addon_running">Mitm addon is running</string>
+    <string name="decryption_rules">Decryption rules</string>
+    <string name="decryption_rules_help">These rules specify which connections to decrypt. Host-based rules only work if a prior DNS reply is seen</string>
+    <string name="decrypt_action">Decrypt…</string>
+    <string name="dont_decrypt_action">Don\'t decrypt…</string>
+    <string name="status_encrypted">Encrypted</string>
+    <string name="injected">Injected</string>
 </resources>

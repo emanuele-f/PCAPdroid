@@ -177,22 +177,44 @@
         </menu>
     </item>
 
-    <item android:id="@+id/dec_whitelist_menu" android:title="@string/decryption_whitelist_action">
+    <item android:id="@+id/decrypt_menu" android:title="@string/decrypt_action">
         <menu>
             <item
-                android:id="@+id/dec_whitelist_app"
+                android:id="@+id/dec_add_app"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/app_val" />
 
             <item
-                android:id="@+id/dec_whitelist_ip"
+                android:id="@+id/dec_add_ip"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/ip_address_val" />
 
             <item
-                android:id="@+id/dec_whitelist_host"
+                android:id="@+id/dec_add_host"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/host_val" />
+        </menu>
+    </item>
+
+    <item android:id="@+id/dont_decrypt_menu" android:title="@string/dont_decrypt_action">
+        <menu>
+            <item
+                android:id="@+id/dec_rem_app"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/app_val" />
+
+            <item
+                android:id="@+id/dec_rem_ip"
+                android:title=""
+                android:visible="false"
+                tools:title="@string/ip_address_val" />
+
+            <item
+                android:id="@+id/dec_rem_host"
                 android:title=""
                 android:visible="false"
                 tools:title="@string/host_val" />

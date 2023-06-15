@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.4] - 2023-04-24
+- Fix QR code activation crash on Android 32+
+- Update translations
+
 ## [1.6.3] - 2023-04-23
 - Add paid features activation via QR code for non-Play builds
 - Fix firewall not working when loading duplicate domain rules

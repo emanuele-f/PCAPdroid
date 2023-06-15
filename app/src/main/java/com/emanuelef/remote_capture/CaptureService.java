@@ -147,7 +147,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Blocklist mBlocklist;
     private MatchList mMalwareWhitelist;
     private MatchList mFirewallWhitelist;
-    private MatchList mDecryptionWhitelist;
+    private MatchList mDecryptionList;
     private SparseArray<String> mIfIndexToName;
     private boolean mSocks5Enabled;
     private String mSocks5Address;
@@ -383,9 +383,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         if(mSettings.tls_decryption && !mSettings.root_capture)
-            mDecryptionWhitelist = PCAPdroid.getInstance().getDecryptionWhitelist();
+            mDecryptionList = PCAPdroid.getInstance().getDecryptionList();
         else
-            mDecryptionWhitelist = null;
+            mDecryptionList = null;
 
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
             try {
@@ -424,10 +424,11 @@ public class CaptureService extends VpnService implements Runnable {
 
                 // Route unicast IPv6 addresses
                 builder.addRoute("2000::", 3);
+                builder.addRoute("fc00::", 7);
 
                 try {
                     builder.addDnsServer(InetAddress.getByName(Prefs.getDnsServerV6(mPrefs)));
-                } catch (UnknownHostException e) {
+                } catch (UnknownHostException | IllegalArgumentException e) {
                     Log.w(TAG, "Could not set IPv6 DNS server");
                 }
             }
@@ -1008,8 +1009,8 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isTlsDecryptionEnabled() == 1));
     }
 
-    public static boolean isDecryptionWhitelistEnabled() {
-        return(INSTANCE != null && (INSTANCE.mDecryptionWhitelist != null));
+    public static boolean isDecryptionListEnabled() {
+        return(INSTANCE != null && (INSTANCE.mDecryptionList != null));
     }
 
     public static Prefs.PayloadMode getCurPayloadMode() {
@@ -1350,8 +1351,8 @@ public class CaptureService extends VpnService implements Runnable {
         if(cur_status == ServiceStatus.STARTED) {
             if(mMalwareDetectionEnabled)
                 reloadMalwareWhitelist();
-            if(mDecryptionWhitelist != null)
-                reloadDecryptionWhitelist();
+            if(mDecryptionList != null)
+                reloadDecryptionList();
             reloadBlocklist();
             reloadFirewallWhitelist();
         }
@@ -1445,12 +1446,12 @@ public class CaptureService extends VpnService implements Runnable {
         reloadMalwareWhitelist(INSTANCE.mMalwareWhitelist.toListDescriptor());
     }
 
-    public static void reloadDecryptionWhitelist() {
-        if((INSTANCE == null) || (INSTANCE.mDecryptionWhitelist == null))
+    public static void reloadDecryptionList() {
+        if((INSTANCE == null) || (INSTANCE.mDecryptionList == null))
             return;
 
         Log.i(TAG, "reloading TLS decryption whitelist");
-        reloadDecryptionWhitelist(INSTANCE.mDecryptionWhitelist.toListDescriptor());
+        reloadDecryptionList(INSTANCE.mDecryptionList.toListDescriptor());
     }
 
     public static void setFirewallEnabled(boolean enabled) {
@@ -1509,7 +1510,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
     private static native boolean reloadFirewallWhitelist(MatchList.ListDescriptor whitelist);
     private static native boolean reloadMalwareWhitelist(MatchList.ListDescriptor whitelist);
-    private static native boolean reloadDecryptionWhitelist(MatchList.ListDescriptor whitelist);
+    private static native boolean reloadDecryptionList(MatchList.ListDescriptor whitelist);
     public static native void askStatsDump();
     public static native byte[] getPcapHeader();
     public static native void nativeSetFirewallEnabled(boolean enabled);

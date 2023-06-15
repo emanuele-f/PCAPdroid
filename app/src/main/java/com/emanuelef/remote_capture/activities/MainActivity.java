@@ -230,7 +230,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if(mNavView != null) {
             Menu navMenu = mNavView.getMenu();
-            navMenu.findItem(R.id.dec_whitelist).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
+            navMenu.findItem(R.id.tls_decryption).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
         }
 
         checkPaidDrawerEntries();
@@ -503,9 +503,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.malware_detection) {
             Intent intent = new Intent(MainActivity.this, MalwareDetection.class);
             startActivity(intent);
-        } else if(id == R.id.dec_whitelist) {
+        } else if(id == R.id.tls_decryption) {
             Intent intent = new Intent(MainActivity.this, EditListActivity.class);
-            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_WHITELIST);
+            intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_LIST);
             startActivity(intent);
         } else if(id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, FirewallActivity.class);
@@ -642,9 +642,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void initAppState() {
         boolean is_active = CaptureService.isServiceActive();
 
-        if (!is_active)
+        if (!is_active) {
             appStateReady();
-        else
+
+            // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
+            // the keylog file if exists
+            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+            if(mKeylogFile.exists())
+                startExportSslkeylogfile();
+        } else
             appStateRunning();
     }
 
@@ -800,6 +806,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Utils.showToastLong(this, R.string.export_failed);
             }
         }
-        mKeylogFile = null;
+
+        if(mKeylogFile != null) {
+            // upon closing the dialog, delete the keylog
+
+            //noinspection ResultOfMethodCallIgnored
+            mKeylogFile.delete();
+            mKeylogFile = null;
+        }
     }
 }
