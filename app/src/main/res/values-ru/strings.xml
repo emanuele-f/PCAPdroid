@@ -278,7 +278,7 @@
     <string name="install_ca_certificate">Установите корневой сертификат PCAPdroid, выбрав \"VPN и приложения\". Android запросит ваш код или пароль блокировки экрана</string>
     <string name="checking_the_certificate">Проверяем сертификат…</string>
     <string name="cert_installed_correctly">Корневой сертификат установлен</string>
-    <string name="mitm_addon_bad_version">Неподходящая версия PCAPdroid mitm дополнения. Удалите и попробуйте снова</string>
+    <string name="mitm_addon_bad_version">Неподходящая версия PCAPdroid mitm дополнения. Пожалуйста, установите версию %1$s и попробуйте снова</string>
     <string name="conn_status_active">Активно</string>
     <string name="export_failed">Экспорт не удался</string>
     <string name="not_encrypted">Не зашифровано</string>

@@ -281,7 +281,7 @@
     <string name="export_action">Exportar</string>
     <string name="export_ca_certificate">Exporte o certificado PCAPdroid CA, logo abra em configurações do Android \"Criptografia e Credenciais\" e escolha instalar como um \"certificado CA\"</string>
     <string name="install_ca_certificate">Instale o certificado PCAPdroid CA, escolhendo \"VPN e aplicativos\". O Android solicitará desbloqueio da tela ou a senha</string>
-    <string name="mitm_addon_bad_version">A versão da extensão de mitm do PCAPdroid é incorreta. Desinstale-a e tente novamente</string>
+    <string name="mitm_addon_bad_version">A versão da extensão de mitm do PCAPdroid é incorreta. Instale a versão %1$s e tente novamente</string>
     <string name="upgrade_action">Atualizar</string>
     <string name="not_encrypted">Não criptografado</string>
     <string name="request">Solicitação</string>
