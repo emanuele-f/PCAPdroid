@@ -466,4 +466,6 @@
     <string name="license_error">Błąd generowania licencji [%1$d]: %2$s</string>
     <string name="requesting_license">Żądanie kodu licencji, proszę czekać</string>
     <string name="license_activation_ok">Aktywacja licencji zakończona</string>
+    <string name="mitm_addon_running">Dodatek Mitm jest uruchomiony</string>
+    <string name="mitm_addon_starting">Dodatek Mitm jest uruchamiany…</string>
 </resources>
