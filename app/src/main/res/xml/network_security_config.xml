@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest ... >
-    <application android:networkSecurityConfig="@xml/network_security_config"
-                    ... >
-        <domain includeSubdomains="true">com</domain>
-        ...
-    </application>
-</manifest>
+<network-security-config>
+    <domain-config>
+        <domain includeSubdomains="true">example.com</domain>
+        <trust-anchors>
+            <certificates src="@raw/my_ca"/>
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
