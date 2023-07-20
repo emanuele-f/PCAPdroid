@@ -269,15 +269,14 @@ public class CaptureService extends VpnService implements Runnable {
 
         // Map network interfaces
         mIfIndexToName = new SparseArray<>();
-        try {
-            Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-            while(ifaces.hasMoreElements()) {
-                NetworkInterface iface = ifaces.nextElement();
 
-                Log.d(TAG, "ifidx " + iface.getIndex() + " -> " + iface.getName());
-                mIfIndexToName.put(iface.getIndex(), iface.getName());
-            }
-        } catch (SocketException ignored) {}
+        Enumeration<NetworkInterface> ifaces = Utils.getNetworkInterfaces();
+        while(ifaces.hasMoreElements()) {
+            NetworkInterface iface = ifaces.nextElement();
+
+            Log.d(TAG, "ifidx " + iface.getIndex() + " -> " + iface.getName());
+            mIfIndexToName.put(iface.getIndex(), iface.getName());
+        }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);

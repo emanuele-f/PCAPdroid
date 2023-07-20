@@ -109,6 +109,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -124,9 +125,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -1680,5 +1683,19 @@ public class Utils {
             return PrivateDnsMode.OPPORTUNISTIC;
         else
             return PrivateDnsMode.DISABLED;
+    }
+
+    public static @NonNull Enumeration<NetworkInterface> getNetworkInterfaces() {
+        try {
+            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
+            if(ifs != null)
+                return ifs;
+        } catch (SocketException | NullPointerException e) {
+            // NullPointerException can be thrown on Android < 31 with virtual interface without a
+            // parent interface
+            e.printStackTrace();
+        }
+
+        return Collections.enumeration(new ArrayList<>());
     }
 }
