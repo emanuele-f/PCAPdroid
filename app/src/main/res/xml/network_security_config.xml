@@ -2,6 +2,7 @@
 <manifest ... >
     <application android:networkSecurityConfig="@xml/network_security_config"
                     ... >
+        <domain includeSubdomains="true">com</domain>
         ...
     </application>
 </manifest>
