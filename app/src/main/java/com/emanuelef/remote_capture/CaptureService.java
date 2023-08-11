@@ -509,16 +509,18 @@ public class CaptureService extends VpnService implements Runnable {
                     if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
                         boolean newInstall = !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
                         String packageName = intent.getData().getSchemeSpecificPart();
-                        Log.i(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
 
                         if(newInstall && Prefs.blockNewApps(mPrefs)) {
-                            Log.i(TAG, "Blocking newly installed app: " + packageName);
-                            mBlocklist.addApp(packageName);
+                            if(!mBlocklist.addApp(packageName))
+                                return;
+
                             mBlocklist.save();
                             reloadBlocklist();
 
                             AppDescriptor app = AppsResolver.resolveInstalledApp(getPackageManager(), packageName, 0);
                             String label = (app != null) ? app.getName() : packageName;
+
+                            Log.i(TAG, "Blocking newly installed app: " + packageName + ((app != null) ? " - " + app.getUid() : ""));
 
                             PendingIntent pi = PendingIntent.getActivity(CaptureService.this, 0,
                                     new Intent(CaptureService.this, FirewallActivity.class), Utils.getIntentFlags(0));
