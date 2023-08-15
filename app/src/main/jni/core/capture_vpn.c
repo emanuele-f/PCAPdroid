@@ -48,7 +48,7 @@ static void protectSocketCallback(zdtun_t *zdt, socket_t sock) {
     pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
     JNIEnv *env = pd->env;
 
-    if(pd->root_capture)
+    if(!pd->vpn_capture)
         return;
 
     /* Call VpnService protect */

@@ -162,7 +162,7 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     }
 
     if(data->update_type & CONN_UPDATE_STATS) {
-        bool blocked = data->to_block && !pd->root_capture; // currently can only block connections in non-root mode
+        bool blocked = data->to_block && pd->vpn_capture; // currently can only block connections in non-root mode
 
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
@@ -232,8 +232,8 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
 
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
-    u_int ifidx = (pd->root_capture ? data->root.ifidx : 0);
-    u_int local_port = (!pd->root_capture ? data->vpn.local_port : conn_info->src_port);
+    u_int ifidx = (pd->vpn_capture ? 0 : data->pcap.ifidx);
+    u_int local_port = (pd->vpn_capture ? data->vpn.local_port : conn_info->src_port);
     bool mitm_decrypt = (pd->tls_decryption.enabled && data->proxied);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
                                                 conn_info->ipver, conn_info->ipproto,
@@ -586,7 +586,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
-            .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
+            .vpn_capture = (bool) !getIntPref(env, vpn, "isRootCapture"),
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
@@ -615,7 +615,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     if(pd.socks5.enabled)
         getSocks5ProxyAuth(&pd);
 
-    if(!pd.root_capture)
+    if(pd.vpn_capture)
         pd.vpn.tunfd = tunfd;
 
     getStringPref(&pd, "getWorkingDir", pd.cachedir, sizeof(pd.cachedir));
@@ -805,7 +805,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
         return false;
     }
 
-    if(pd->root_capture) {
+    if(!pd->vpn_capture) {
         log_e("firewall in root mode not implemented");
         return false;
     }
@@ -846,7 +846,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv
         return false;
     }
 
-    if(pd->root_capture) {
+    if(!pd->vpn_capture) {
         log_e("firewall in root mode not implemented");
         return false;
     }

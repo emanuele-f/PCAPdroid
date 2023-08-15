@@ -27,8 +27,8 @@
 #include "ndpi_protocol_ids.h"
 
 extern int run_vpn(pcapdroid_t *pd);
-extern int run_root(pcapdroid_t *pd);
-extern void root_iter_connections(pcapdroid_t *pd, conn_cb cb);
+extern int run_libpcap(pcapdroid_t *pd);
+extern void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb);
 extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 
 /* ******************************************************* */
@@ -531,7 +531,7 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
         data->update_type |= CONN_UPDATE_INFO;
     }
 
-    if(!pd->root_capture)
+    if(pd->vpn_capture)
         vpn_process_ndpi(pd, tuple, data);
 }
 
@@ -883,8 +883,8 @@ static int zdtun_iter_adapter(zdtun_t *zdt, const zdtun_conn_t *conn_info, void 
 }
 
 static void iter_active_connections(pcapdroid_t *pd, conn_cb cb) {
-    if(pd->root_capture)
-        root_iter_connections(pd, cb);
+    if(!pd->vpn_capture)
+        libpcap_iter_connections(pd, cb);
     else {
         struct iter_conn_data idata = {
                 .pd = pd,
@@ -975,7 +975,7 @@ void pd_housekeeping(pcapdroid_t *pd) {
         dump_capture_stats_now = false;
         //log_d("Send stats");
 
-        if(!pd->root_capture)
+        if(pd->vpn_capture)
             zdtun_get_stats(pd->zdt, &pd->stats);
 
         if(pd->cb.send_stats_dump)
@@ -1164,7 +1164,7 @@ int pd_run(pcapdroid_t *pd) {
     }
 
     if(pd->pcap_dump.enabled) {
-        int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
+        int max_snaplen = !pd->vpn_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
         // use the snaplen provided by the API
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
@@ -1200,7 +1200,7 @@ int pd_run(pcapdroid_t *pd) {
         pd->cb.notify_service_status(pd, "started");
 
     // Run the capture
-    int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
+    int rv = pd->vpn_capture ? run_vpn(pd) : run_libpcap(pd);
 
     log_i("Stopped packet loop");
 

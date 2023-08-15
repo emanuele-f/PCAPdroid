@@ -78,7 +78,7 @@ typedef struct {
         struct {
             uint64_t last_update_ms; // like last_seen but monotonic
             u_int ifidx;             // the 1-based interface index
-        } root;
+        } pcap;
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet
             uint16_t local_port;         // local port, from zdtun to the Internet
@@ -189,7 +189,7 @@ typedef struct pcapdroid {
     // config
     jint app_filter;
     jint mitm_addon_uid;
-    bool root_capture;
+    bool vpn_capture;
     payload_mode_t payload_mode;
 
     // stats
@@ -222,7 +222,7 @@ typedef struct pcapdroid {
             bool as_root;
             char *bpf;
             char *capture_interface;
-        } root; // TODO rename: it can run without root to read a PCAP file
+        } pcap;
     };
 
     struct {

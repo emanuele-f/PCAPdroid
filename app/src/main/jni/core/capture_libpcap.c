@@ -102,7 +102,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
     char pcapd[PATH_MAX];
-    char *bpf = pd->root.bpf ? pd->root.bpf : "";
+    char *bpf = pd->pcap.bpf ? pd->pcap.bpf : "";
 
     if(pd->cb.get_libprog_path)
         pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
@@ -155,7 +155,7 @@ static int connectPcapd(pcapdroid_t *pd) {
 #ifdef ANDROID
     // File paths are currently disallowed
     // NOTE: interface validation is currently skipped when running local tests (files are used)
-    if(!valid_ifname(pd->root.capture_interface)) {
+    if(!valid_ifname(pd->pcap.capture_interface)) {
         log_e("Invalid capture_interface");
         goto cleanup;
     }
@@ -163,8 +163,8 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
-    if(run_shell_cmd(pcapd, args, pd->root.as_root, true) != 0)
+    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
+    if(run_shell_cmd(pcapd, args, pd->pcap.as_root, true) != 0)
         goto cleanup;
 
     // Wait for pcapd to start
@@ -222,7 +222,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
             break;
     }
 
-    HASH_DEL(pd->root.connections, conn);
+    HASH_DEL(pd->pcap.connections, conn);
     pd_free(conn);
 }
 
@@ -339,13 +339,13 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
         tupleSwapPeers(&pkt.tuple);
     }
 
-    HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+    HASH_FIND(hh, pd->pcap.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
     if(!conn) {
         // is_tx may be wrong, search in the other direction
         is_tx = !is_tx;
         tupleSwapPeers(&pkt.tuple);
 
-        HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+        HASH_FIND(hh, pd->pcap.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
         if(!conn) {
             if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) && !(pkt.flags & ZDTUN_PKT_IS_FIRST_FRAGMENT)) {
@@ -372,11 +372,11 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
             }
 
             if(hdr->linktype == PCAPD_DLT_LINUX_SLL2)
-                data->root.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
+                data->pcap.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
 
             conn->tuple = pkt.tuple;
             conn->data = data;
-            HASH_ADD(hh, pd->root.connections, tuple, sizeof(zdtun_5tuple_t), conn);
+            HASH_ADD(hh, pd->pcap.connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
@@ -399,7 +399,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
     }
 
     // like last_seen but monotonic
-    conn->data->root.last_update_ms = pd->now_ms;
+    conn->data->pcap.last_update_ms = pd->now_ms;
 
     // make a copy before passing it to pd_process_packet since conn may
     // be freed in update_connection_status, while the pkt_context_t is still
@@ -422,7 +422,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, pd->root.connections, conn, tmp) {
+    HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
         uint64_t timeout = 0;
 
         switch(conn->tuple.ipproto) {
@@ -437,7 +437,7 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
                 break;
         }
 
-        if(purge_all || (pd->now_ms >= (conn->data->root.last_update_ms + timeout))) {
+        if(purge_all || (pd->now_ms >= (conn->data->pcap.last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             conn->data->to_purge = true;
@@ -461,10 +461,10 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
 
 /* ******************************************************* */
 
-void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
+void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, pd->root.connections, conn, tmp) {
+    HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
         if(cb(pd, &conn->tuple, conn->data) != 0)
             return;
     }
@@ -472,7 +472,7 @@ void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 
 /* ******************************************************* */
 
-int run_root(pcapdroid_t *pd) {
+int run_libpcap(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
     char buffer[PCAPD_SNAPLEN];
@@ -485,9 +485,9 @@ int run_root(pcapdroid_t *pd) {
     char bpf[256];
     bpf[0] = '\0';
 
-    pd->root.as_root = true; // TODO support read from PCAP file
-    pd->root.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
-    pd->root.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+    pd->pcap.as_root = true; // TODO support read from PCAP file
+    pd->pcap.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
+    pd->pcap.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
 #endif
 
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
