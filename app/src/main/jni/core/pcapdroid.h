@@ -223,6 +223,7 @@ typedef struct pcapdroid {
             bool as_root;
             char *bpf;
             char *capture_interface;
+            int pcapd_pid;
         } pcap;
     };
 

@@ -1416,7 +1416,35 @@ public class CaptureService extends VpnService implements Runnable {
 
     public void reportError(String msg) {
         HAS_ERROR = true;
-        mHandler.post(() -> Toast.makeText(this, msg, Toast.LENGTH_LONG).show());
+
+        mHandler.post(() -> {
+            String err = msg;
+
+            // Try to get a translated string (see errors.h)
+            switch (msg) {
+                case "Invalid PCAP file":
+                    err = getString(R.string.invalid_pcap_file);
+                    break;
+                case "Could not open the capture interface":
+                    err = getString(R.string.capture_interface_open_error);
+                    break;
+                case "Unsupported datalink":
+                    err = getString(R.string.unsupported_pcap_datalink);
+                    break;
+                case "The specified PCAP file does not exist":
+                    err = getString(R.string.pcap_file_not_exists);
+                    break;
+                case "pcapd daemon did not spawn":
+                    if(mSettings.root_capture)
+                        err = getString(R.string.root_capture_start_failed);
+                    break;
+                case "PCAP read error":
+                    err = getString(R.string.pcap_read_error);
+                    break;
+            }
+
+            Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+        });
     }
 
     public String getWorkingDir() {

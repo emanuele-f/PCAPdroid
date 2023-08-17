@@ -29,6 +29,7 @@
 #include "common/uid_lru.h"
 #include "common/uid_resolver.h"
 #include "common/utils.h"
+#include "pcapd.h"
 #include "zdtun.h"
 
 #define PCAPD_MAX_INTERFACES 16
@@ -83,6 +84,6 @@ typedef struct {
 } pcapd_runtime_t;
 
 void init_conf(pcapd_conf_t *conf);
-int run_pcap_dump(pcapd_conf_t *conf);
+pcapd_rv run_pcap_dump(pcapd_conf_t *conf);
 
 #endif

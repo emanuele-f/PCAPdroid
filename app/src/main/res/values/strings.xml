@@ -479,4 +479,10 @@
     <string name="injected">Injected</string>
     <string name="open_pcap_file">Open PCAP file…</string>
     <string name="pcap_load_success">PCAP file loaded</string>
+    <string name="invalid_pcap_file">Invalid PCAP file</string>
+    <string name="capture_interface_open_error">Could not open the capture interface</string>
+    <string name="unsupported_pcap_datalink">PCAP file has an unsupported datalink</string>
+    <string name="pcap_file_not_exists">The specified PCAP file does not exist</string>
+    <string name="root_capture_start_failed">Capture start failure. Ensure that the device is rooted with Magisk</string>
+    <string name="pcap_read_error">PCAP read error</string>
 </resources>

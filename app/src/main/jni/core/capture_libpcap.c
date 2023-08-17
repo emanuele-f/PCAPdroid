@@ -18,8 +18,10 @@
  */
 
 #include <sys/un.h>
+#include <sys/wait.h>
 #include <linux/limits.h>
 #include "pcapdroid.h"
+#include "errors.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
@@ -60,15 +62,11 @@ static int get_pcapd_pid() {
 
 /* ******************************************************* */
 
-static void kill_pcapd(pcapdroid_t *pd) {
-    int pid = get_pcapd_pid();
-    if(pid > 0) {
-        char pid_s[8];
-        snprintf(pid_s, sizeof(pid_s), "%d", pid);
+static void kill_process(int pid, bool as_root, int signum) {
+    char args[16];
 
-        log_i("Killing old pcapd with pid %d", pid);
-        run_shell_cmd("kill", pid_s, pd->pcap.as_root, false);
-    }
+    snprintf(args, sizeof(args), "-%d %d", signum, pid);
+    run_shell_cmd("kill", args, as_root, false);
 }
 
 /* ******************************************************* */
@@ -138,7 +136,13 @@ static int connectPcapd(pcapdroid_t *pd) {
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, PCAPD_SOCKET_PATH);
 
-    kill_pcapd(pd);
+    int pid = get_pcapd_pid();
+    if(pid > 0) {
+        log_i("Killing old pcapd with pid %d", pid);
+        kill_process(pid, pd->pcap.as_root, SIGTERM);
+        pid = -1;
+    }
+
     unlink(PCAPD_PID);
     unlink(PCAPD_SOCKET_PATH);
 
@@ -164,7 +168,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     if(pd->pcap_file_capture) {
         // must be a file path
         if(access(pd->pcap.capture_interface, F_OK)) {
-            log_f("The specified PCAP file does not exist: %s", pd->pcap.capture_interface);
+            log_f(PD_ERR_PCAP_DOES_NOT_EXIST);
             goto cleanup;
         }
     } else {
@@ -177,10 +181,14 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -d -u %d -t -b '%s'",
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'",
              getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
-    if(run_shell_cmd(pcapd, args, pd->pcap.as_root, true) != 0)
+
+    int pcapd_out;
+    pid = start_subprocess(pcapd, args, pd->pcap.as_root, &pcapd_out);
+    if(pid <= 0)
         goto cleanup;
+    close(pcapd_out);
 
     // Wait for pcapd to start
     struct timeval timeout = {.tv_sec = 3, .tv_usec = 0};
@@ -190,7 +198,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     select(sock + 1, &selfds, NULL, NULL, &timeout);
 
     if(!FD_ISSET(sock, &selfds)) {
-        log_f("pcapd daemon did not spawn");
+        log_f(PD_ERR_PCAPD_NOT_SPAWNED);
         goto cleanup;
     }
 
@@ -200,9 +208,15 @@ static int connectPcapd(pcapdroid_t *pd) {
         goto cleanup;
     }
 
-    log_i("Connected to pcapd");
+    log_i("Connected to pcapd (pid=%d)", pid);
+    pd->pcap.pcapd_pid = pid;
 
 cleanup:
+    if((client < 0) && (pid > 0)) {
+        int rv;
+        kill_process(pid, pd->pcap.as_root, SIGKILL);
+        waitpid(pid, &rv, 0);
+    }
     unlink(PCAPD_SOCKET_PATH);
     close(sock);
 
@@ -487,6 +501,32 @@ void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 
 /* ******************************************************* */
 
+static void process_pcapd_rv(pcapdroid_t *pd, int rv) {
+    pcapd_rv rrv = (pcapd_rv) rv;
+    log_i("pcapd exit code: %d", rv);
+
+    switch (rrv) {
+        case PCAPD_OK:
+            break;
+        case PCAPD_INTERFACE_OPEN_FAILED:
+            if(pd->pcap_file_capture)
+                log_f(PD_ERR_INVALID_PCAP_FILE);
+            else
+                log_f(PD_ERR_INTERFACE_OPEN_ERROR);
+            break;
+        case PCAPD_UNSUPPORTED_DATALINK:
+            log_f(PD_ERR_UNSUPPORTED_DATALINK);
+            break;
+        case PCAPD_PCAP_READ_ERROR:
+            log_f(PD_ERR_PCAP_READ);
+            break;
+        default:
+            log_f("pcapd daemon exited with code %d", rv);
+    }
+}
+
+/* ******************************************************* */
+
 int run_libpcap(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
@@ -617,6 +657,16 @@ cleanup:
     if(iptables_cleanup) {
         char args[128];
         run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
+    }
+
+    if(pd->pcap.pcapd_pid > 0) {
+        int status = PCAPD_ERROR;
+
+        if(waitpid(pd->pcap.pcapd_pid, &status, 0) <= 0)
+            log_e("waitpid %d failed[%d]: %s", pd->pcap.pcapd_pid, errno, strerror(errno));
+
+        if(WIFEXITED(status))
+            process_pcapd_rv(pd, WEXITSTATUS(status));
     }
 
     return rv;
