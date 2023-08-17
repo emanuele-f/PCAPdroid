@@ -91,7 +91,7 @@ static void max_pkts_per_flow() {
     src_ip = pkt.tuple.src_ip;
     dst_ip = pkt.tuple.dst_ip;
 
-    remote_ip = (zdtun_cmp_ip(4, &pkt.tuple.src_ip, &local_ip) == 0) ?
+    remote_ip = (zdtun_cmp_ip(4, &src_ip, &local_ip) == 0) ?
         &dst_ip : &src_ip;
 
 #if 0

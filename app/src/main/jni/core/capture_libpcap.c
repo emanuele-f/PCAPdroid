@@ -161,11 +161,10 @@ static int connectPcapd(pcapdroid_t *pd) {
         log_d("BPF filter is in use");
     }
 
-#ifdef ANDROID
     if(pd->pcap_file_capture) {
         // must be a file path
         if(access(pd->pcap.capture_interface, F_OK)) {
-            log_f("The specified PCAP file does not exist");
+            log_f("The specified PCAP file does not exist: %s", pd->pcap.capture_interface);
             goto cleanup;
         }
     } else {
@@ -175,7 +174,6 @@ static int connectPcapd(pcapdroid_t *pd) {
             goto cleanup;
         }
     }
-#endif
 
     // Start the daemon
     char args[256];

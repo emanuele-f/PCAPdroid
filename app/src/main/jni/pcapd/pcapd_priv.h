@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <net/if.h>
 #include <pcap.h>
+#include <linux/limits.h>
+
 #include "nl_utils.h"
 #include "common/uid_lru.h"
 #include "common/uid_resolver.h"

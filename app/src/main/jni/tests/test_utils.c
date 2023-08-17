@@ -86,6 +86,7 @@ pcapdroid_t* pd_init_test(const char *ifname) {
   assert(pd != NULL);
 
   pd->vpn_capture = false;
+  pd->pcap_file_capture = true;
   pd->pcap.capture_interface = (char*) ifname;
   pd->pcap.as_root = false;   // don't run as root
   pd->app_filter = -1;        // don't filter
