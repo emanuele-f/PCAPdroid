@@ -70,7 +70,7 @@ public class CaptureHelper {
 
         mSettings = settings;
 
-        if(settings.root_capture) {
+        if(settings.root_capture || settings.readFromPcap()) {
             startCaptureOk();
             return;
         }

@@ -96,6 +96,7 @@
     <string name="ok">OK</string>
     <string name="pcap_file_action">Traffic saved to the \"%1$s\" file (%2$s)</string>
     <string name="delete_error">Could not delete the file</string>
+    <string name="copy_error">Could not write the file</string>
     <string name="capture_running">Capture running</string>
     <string name="notification_msg">%1$s captured, %2$s connections</string>
     <string name="proto_and_port">%1$s, %2$d</string>
@@ -316,6 +317,7 @@
     <string name="geolocation_summary">Show country and ASN info by performing offline lookups</string>
     <string name="downloading">Downloading…</string>
     <string name="download_in_progress">Download in progress, please wait</string>
+    <string name="pcap_load_in_progress">PCAP file loading in progress, please wait</string>
     <string name="download_failed">Download failed</string>
     <string name="geo_db_not_found">Database not found. Geolocation is disabled</string>
     <string name="database">Database</string>
@@ -475,4 +477,6 @@
     <string name="dont_decrypt_action">Don\'t decrypt…</string>
     <string name="status_encrypted">Encrypted</string>
     <string name="injected">Injected</string>
+    <string name="open_pcap_file">Open PCAP file…</string>
+    <string name="pcap_load_success">PCAP file loaded</string>
 </resources>

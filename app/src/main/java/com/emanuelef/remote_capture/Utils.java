@@ -58,6 +58,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
@@ -1219,6 +1220,15 @@ public class Utils {
         }
     }
 
+    public static void copy(InputStream in, File dst) throws IOException {
+        try(FileOutputStream out = new FileOutputStream(dst)) {
+            byte[] bytesIn = new byte[4096];
+            int read;
+            while((read = in.read(bytesIn)) != -1)
+                out.write(bytesIn, 0, read);
+        }
+    }
+
     public static boolean hasEncryptedPayload(AppDescriptor app, ConnectionDescriptor conn) {
         return(
             // Telegram
@@ -1619,7 +1629,25 @@ public class Utils {
     }
 
     public static String uriToFilePath(Context ctx, Uri uri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
+        // https://gist.github.com/r0b0t3d/492f375ec6267a033c23b4ab8ab11e6a
+        if (isExternalStorageDocument(uri)) {
+            final String docId = DocumentsContract.getDocumentId(uri);
+            final String[] split = docId.split(":");
+            final String type = split[0];
+
+            if ("primary".equalsIgnoreCase(type))
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+        } else if(isDownloadsDocument(uri)) {
+            return downloadsUriToPath(ctx, uri);
+        } else if("content".equalsIgnoreCase(uri.getScheme()))
+            return mediastoreUriToPath(ctx, uri);
+        else if ("file".equalsIgnoreCase(uri.getScheme()))
+            return uri.getPath();
+        return null;
+    }
+
+    private static String mediastoreUriToPath(Context ctx, Uri uri) {
+        String[] proj = { MediaStore.Files.FileColumns.DATA };
         try(Cursor cursor = ctx.getContentResolver().query(uri, proj, null, null, null)) {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             if(cursor.moveToFirst())
@@ -1627,6 +1655,40 @@ public class Utils {
         } catch (Exception ignored) {}
 
         return null;
+    }
+
+    private static String downloadsUriToPath(Context ctx, Uri uri) {
+        final String id = DocumentsContract.getDocumentId(uri);
+        if(id == null)
+            return null;
+
+        // Starting with Android O, this "id" is not necessarily a long (row number),
+        // but might also be a "raw:/some/file/path" URL
+        if (id.startsWith("raw:/")) {
+            return Uri.parse(id).getPath();
+        } else {
+            String[] contentUriPrefixesToTry = new String[]{
+                    "content://downloads/public_downloads",
+                    "content://downloads/my_downloads"
+            };
+            for (String contentUriPrefix : contentUriPrefixesToTry) {
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse(contentUriPrefix), Long.parseLong(id));
+                String path = mediastoreUriToPath(ctx, contentUri);
+                if(path != null)
+                    return path;
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
     public static class UriStat {

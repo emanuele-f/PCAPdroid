@@ -105,6 +105,7 @@ public class CaptureService extends VpnService implements Runnable {
     public static final int NOTIFY_ID_LOW_MEMORY = 2;
     public static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
+    private static boolean HAS_ERROR = false;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -256,8 +257,21 @@ public class CaptureService extends VpnService implements Runnable {
             mIsAlwaysOnVPN |= isAlwaysOn();
 
         Log.d(TAG, "alwaysOn? " + mIsAlwaysOnVPN);
-        if(mIsAlwaysOnVPN)
+        if(mIsAlwaysOnVPN) {
             mSettings.root_capture = false;
+            mSettings.input_pcap_path = null;
+        }
+
+        if(mSettings.readFromPcap()) {
+            // Disable incompatible settings
+            mSettings.dump_mode = Prefs.DumpMode.NONE;
+            mSettings.app_filter = "";
+            mSettings.socks5_enabled = false;
+            mSettings.tls_decryption = false;
+            mSettings.root_capture = false;
+            mSettings.auto_block_private_dns = false;
+            mSettings.capture_interface = mSettings.input_pcap_path;
+        }
 
         // Retrieve DNS server
         String fallbackDnsV4 = Prefs.getDnsServerV4(mPrefs);
@@ -308,6 +322,7 @@ public class CaptureService extends VpnService implements Runnable {
         mDumpQueue = null;
         mPendingUpdates.clear();
         mPcapFname = null;
+        HAS_ERROR = false;
 
         // Possibly allocate the dumper
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
@@ -381,7 +396,7 @@ public class CaptureService extends VpnService implements Runnable {
             }
         }
 
-        if(mSettings.tls_decryption && !mSettings.root_capture)
+        if(mSettings.tls_decryption && !mSettings.root_capture && !mSettings.readFromPcap())
             mDecryptionList = PCAPdroid.getInstance().getDecryptionList();
         else
             mDecryptionList = null;
@@ -399,7 +414,7 @@ public class CaptureService extends VpnService implements Runnable {
         mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
         mFirewallEnabled = Prefs.isFirewallEnabled(this, mPrefs);
 
-        if(!mSettings.root_capture) {
+        if(!mSettings.root_capture && !mSettings.readFromPcap()) {
             Log.i(TAG, "Using DNS server " + dns_server);
 
             // VPN
@@ -1010,6 +1025,11 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isTlsDecryptionEnabled() == 1));
     }
 
+    public static boolean isReadingFromPcapFile() {
+        return((INSTANCE != null) &&
+                (INSTANCE.isPcapFileCapture() == 1));
+    }
+
     public static boolean isDecryptionListEnabled() {
         return(INSTANCE != null && (INSTANCE.mDecryptionList != null));
     }
@@ -1041,7 +1061,7 @@ public class CaptureService extends VpnService implements Runnable {
     // Inside the mCaptureThread
     @Override
     public void run() {
-        if(mSettings.root_capture) {
+        if(mSettings.root_capture || mSettings.readFromPcap()) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
             if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
                 boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
@@ -1248,7 +1268,11 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getIPv6Enabled() { return((mSettings.ip_mode != Prefs.IpMode.IPV4_ONLY) ? 1 : 0); }
 
+    public int isVpnCapture() { return (isRootCapture() | isPcapFileCapture()) == 1 ? 0 : 1; }
+
     public int isRootCapture() { return(mSettings.root_capture ? 1 : 0); }
+
+    public int isPcapFileCapture() { return(mSettings.readFromPcap() ? 1 : 0); }
 
     public int isTlsDecryptionEnabled() { return mSettings.tls_decryption ? 1 : 0; }
 
@@ -1391,9 +1415,8 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reportError(String msg) {
-        mHandler.post(() -> {
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-        });
+        HAS_ERROR = true;
+        mHandler.post(() -> Toast.makeText(this, msg, Toast.LENGTH_LONG).show());
     }
 
     public String getWorkingDir() {
@@ -1492,6 +1515,10 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.mLock.unlock();
         }
         Log.d(TAG, "waitForCaptureStop done " + Thread.currentThread().getName());
+    }
+
+    public static boolean hasError() {
+        return HAS_ERROR;
     }
 
     public static @Nullable Utils.PrivateDnsMode getPrivateDnsMode() {

@@ -45,23 +45,30 @@ typedef struct pcap_conn_t {
 
 /* ******************************************************* */
 
-static void kill_pcapd(pcapdroid_t *nc) {
-    int pid;
+static int get_pcapd_pid() {
     char pid_s[8];
     FILE *f = fopen(PCAPD_PID, "r");
 
     if(f == NULL)
-        return;
+        return -1;
 
     fgets(pid_s, sizeof(pid_s), f);
-    pid = atoi(pid_s);
-
-    if(pid != 0) {
-        log_i("Killing old pcapd with pid %d", pid);
-        run_shell_cmd("kill", pid_s, true, false);
-    }
-
     fclose(f);
+
+    return atoi(pid_s);
+}
+
+/* ******************************************************* */
+
+static void kill_pcapd(pcapdroid_t *pd) {
+    int pid = get_pcapd_pid();
+    if(pid > 0) {
+        char pid_s[8];
+        snprintf(pid_s, sizeof(pid_s), "%d", pid);
+
+        log_i("Killing old pcapd with pid %d", pid);
+        run_shell_cmd("kill", pid_s, pd->pcap.as_root, false);
+    }
 }
 
 /* ******************************************************* */
@@ -103,6 +110,8 @@ static int connectPcapd(pcapdroid_t *pd) {
     int client = -1;
     char pcapd[PATH_MAX];
     char *bpf = pd->pcap.bpf ? pd->pcap.bpf : "";
+
+    log_d("Starting pcapd...");
 
     if(pd->cb.get_libprog_path)
         pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
@@ -146,24 +155,32 @@ static int connectPcapd(pcapdroid_t *pd) {
     // Validate parameters to prevent command injection
     if(bpf[0]) {
         if(!valid_bpf(bpf)) {
-            log_e("BPF contains suspicious characters");
+            log_f("BPF contains suspicious characters");
             goto cleanup;
         }
         log_d("BPF filter is in use");
     }
 
 #ifdef ANDROID
-    // File paths are currently disallowed
-    // NOTE: interface validation is currently skipped when running local tests (files are used)
-    if(!valid_ifname(pd->pcap.capture_interface)) {
-        log_e("Invalid capture_interface");
-        goto cleanup;
+    if(pd->pcap_file_capture) {
+        // must be a file path
+        if(access(pd->pcap.capture_interface, F_OK)) {
+            log_f("The specified PCAP file does not exist");
+            goto cleanup;
+        }
+    } else {
+        // must be a valid interface name
+        if(!valid_ifname(pd->pcap.capture_interface)) {
+            log_f("Invalid capture_interface");
+            goto cleanup;
+        }
     }
 #endif
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -d -u %d -t -b '%s'",
+             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
     if(run_shell_cmd(pcapd, args, pd->pcap.as_root, true) != 0)
         goto cleanup;
 
@@ -229,7 +246,7 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
 /* ******************************************************* */
 
 // Determines when a connection gets closed
-static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
+static void update_connection_status(pcapdroid_t *pd, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
   // NOTE: pcap_conn_t needed below in remove_connection
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
@@ -283,7 +300,7 @@ static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_p
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
                   data->to_purge = true;
-                  remove_connection(nc, conn);
+                  remove_connection(pd, conn);
               }
           }
       }
@@ -360,7 +377,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
             conn = pd_malloc(sizeof(pcap_conn_t));
             if(!conn) {
-                log_e("malloc(pcap_conn_t) failed with code %d/%s",
+                log_f("malloc(pcap_conn_t) failed with code %d/%s",
                       errno, strerror(errno));
                 return false;
             }
@@ -481,11 +498,11 @@ int run_libpcap(pcapdroid_t *pd) {
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
 #if ANDROID
-    char capture_interface[16] = "@inet";
+    char capture_interface[PATH_MAX] = "@inet";
     char bpf[256];
     bpf[0] = '\0';
 
-    pd->pcap.as_root = true; // TODO support read from PCAP file
+    pd->pcap.as_root = !pd->pcap_file_capture;
     pd->pcap.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
     pd->pcap.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
 #endif
@@ -529,7 +546,7 @@ int run_libpcap(pcapdroid_t *pd) {
         struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
 
         if(select(sock + 1, &fdset, NULL, NULL, &timeout) < 0) {
-            log_e("select failed[%d]: %s", errno, strerror(errno));
+            log_f("select failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
 
@@ -545,15 +562,15 @@ int run_libpcap(pcapdroid_t *pd) {
         ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
         if(xrv != sizeof(hdr)) {
             if(xrv < 0)
-                log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
+                log_f("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
         if(hdr.len > sizeof(buffer)) {
-            log_e("packet too big (%d B)", hdr.len);
+            log_f("packet too big (%d B)", hdr.len);
             goto cleanup;
         }
         if(xread(sock, buffer, hdr.len) != hdr.len) {
-            log_e("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
+            log_f("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
             goto cleanup;
         }
 #else

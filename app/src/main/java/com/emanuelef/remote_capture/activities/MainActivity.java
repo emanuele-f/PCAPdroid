@@ -81,8 +81,11 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Billing mIab;
@@ -94,6 +97,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private SharedPreferences mPrefs;
     private NavigationView mNavView;
     private CaptureHelper mCapHelper;
+    private AlertDialog mPcapLoadDialog;
 
     // helps detecting duplicate state reporting of STOPPED in MutableLiveData
     private boolean mWasStarted = false;
@@ -123,6 +127,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             );
     private final ActivityResultLauncher<Intent> peerInfoLauncher =
             registerForActivityResult(new StartActivityForResult(), this::peerInfoResult);
+    private final ActivityResultLauncher<Intent> pcapFileOpenLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::pcapFileOpenResult);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,6 +201,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if(!CaptureService.isServiceActive()) {
+            boolean ignored = getTmpPcapPath().delete();
+        }
 
         mCapHelper = null;
     }
@@ -527,6 +537,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateReady() {
         mState = AppState.ready;
         notifyAppState();
+
+        if(mPcapLoadDialog != null) {
+            mPcapLoadDialog.dismiss();
+            mPcapLoadDialog = null;
+
+            if(!CaptureService.hasError()) {
+                // pcap file loaded successfully
+                Utils.showToastLong(this, R.string.pcap_load_success);
+                mPager.setCurrentItem(POS_CONNECTIONS);
+            }
+        }
     }
 
     public void appStateStarting() {
@@ -597,6 +618,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if(id == R.id.action_stop) {
             stopCapture();
             return true;
+        } else if(id == R.id.open_pcap) {
+            startOpenPcapFile();
+            return true;
         } else if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
@@ -621,9 +645,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             appStateRunning();
     }
 
-    private void doStartCaptureService() {
+    private void doStartCaptureService(String input_pcap_path) {
         appStateStarting();
-        mCapHelper.startCapture(new CaptureSettings(this, mPrefs));
+
+        CaptureSettings settings = new CaptureSettings(this, mPrefs);
+        settings.input_pcap_path = input_pcap_path;
+        mCapHelper.startCapture(settings);
     }
 
     public void startCapture() {
@@ -639,11 +666,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
             new AlertDialog.Builder(this)
                     .setMessage(R.string.disconnect_vpn_confirm)
-                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> doStartCaptureService())
+                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> doStartCaptureService(null))
                     .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
                     .show();
         } else
-            doStartCaptureService();
+            doStartCaptureService(null);
     }
 
     public void stopCapture() {
@@ -781,5 +808,75 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mKeylogFile.delete();
             mKeylogFile = null;
         }
+    }
+
+    private void startOpenPcapFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+
+        Log.d(TAG, "startOpenPcapFile: launching dialog");
+        Utils.launchFileDialog(this, intent, pcapFileOpenLauncher);
+    }
+
+    private void pcapFileOpenResult(final ActivityResult result) {
+        if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
+            Uri uri = result.getData().getData();
+            if(uri == null)
+                return;
+
+            Log.d(TAG, "pcapFileOpenResult: " + uri);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.loading);
+            builder.setMessage(R.string.pcap_load_in_progress);
+
+            mPcapLoadDialog = builder.create();
+            mPcapLoadDialog.setCanceledOnTouchOutside(false);
+            mPcapLoadDialog.show();
+
+            mPcapLoadDialog.setOnCancelListener(dialogInterface -> {
+                Log.i(TAG, "Abort download");
+                executor.shutdownNow();
+            });
+            mPcapLoadDialog.setOnDismissListener(dialog -> mPcapLoadDialog = null);
+
+            String path = Utils.uriToFilePath(this, uri);
+            if(path == null) {
+                // Unable to get a direct file path (e.g. for files in Downloads). Copy file to the
+                // cache directory
+                File out = getTmpPcapPath();
+                out.deleteOnExit();
+                String abs_path = out.getAbsolutePath();
+
+                // PCAP file can be big, copy in a different thread
+                executor.execute(() -> {
+                    try (InputStream in_stream = getContentResolver().openInputStream(uri)) {
+                        Utils.copy(in_stream, out);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                        runOnUiThread(() -> {
+                            Utils.showToastLong(this, R.string.copy_error);
+                            if(mPcapLoadDialog != null) {
+                                mPcapLoadDialog.dismiss();
+                                mPcapLoadDialog = null;
+                            }
+                        });
+                        return;
+                    }
+
+                    runOnUiThread(() -> doStartCaptureService(abs_path));
+                });
+            } else {
+                Log.d(TAG, "pcapFileOpenResult: path: " + path);
+                doStartCaptureService(path);
+            }
+        }
+    }
+
+    private File getTmpPcapPath() {
+        return new File(getCacheDir() + "/tmp.pcap");
     }
 }

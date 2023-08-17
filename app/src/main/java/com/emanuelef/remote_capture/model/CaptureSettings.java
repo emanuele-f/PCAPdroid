@@ -22,6 +22,7 @@ public class CaptureSettings implements Serializable {
     public String socks5_username;
     public String socks5_password;
     public Prefs.IpMode ip_mode;
+    public String input_pcap_path;
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
@@ -110,5 +111,9 @@ public class CaptureSettings implements Serializable {
         if(s != null)
             return Boolean.parseBoolean(s);
         return bundle.getBoolean(key, def_value);
+    }
+
+    public boolean readFromPcap() {
+        return input_pcap_path != null;
     }
 }

@@ -208,7 +208,7 @@ public class Billing {
             return false;
 
         if(CaptureService.isServiceActive())
-            return !CaptureService.isCapturingAsRoot();
+            return !CaptureService.isCapturingAsRoot() && !CaptureService.isReadingFromPcapFile();
         else
             return !Prefs.isRootCaptureEnabled(mPrefs);
     }

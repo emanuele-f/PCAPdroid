@@ -12,7 +12,7 @@
     <item
         android:id="@+id/action_stop"
         android:title="@string/stop_button"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         android:icon="@drawable/ic_media_stop"
         android:visible="false"
         app:showAsAction="always" />
@@ -20,7 +20,13 @@
     <item
         android:id="@+id/action_settings"
         android:title="@string/title_activity_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="30"
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/open_pcap"
+        android:title="@string/open_pcap_file"
+        android:orderInCategory="40"
+        app:showAsAction="never" />
 </menu>

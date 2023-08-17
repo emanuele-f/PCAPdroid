@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-22 - Emanuele Faranda
+ * Copyright 2021-23 - Emanuele Faranda
  */
 
 /*
@@ -293,12 +293,14 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
   }
 
-  if(nl_is_diag_working()) {
-    rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
-    if(rt->nldiag_sock < 0)
-      log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
-  } else
-    log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
+  if(getuid() == 0) {
+    if(nl_is_diag_working()) {
+      rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+      if(rt->nldiag_sock < 0)
+        log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
+    } else
+      log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
+  }
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -368,9 +370,10 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
     pd = pcap_open_offline(ifname, errbuf);
 
     if(!pd) {
-      log_i("pcap_open(%s) failed: %s", ifname, errbuf);
+      log_e("pcap_open(%s) failed: %s", ifname, errbuf);
       return -1;
     }
+
     is_file = 1;
   }
 
@@ -464,8 +467,15 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   iface->ipoffset = ipoffset;
   iface->pf = pcap_get_selectable_fd(pd);
   rt->maxfd = max(rt->maxfd, iface->pf);
-  strncpy(iface->name, ifname, IFNAMSIZ);
-  iface->name[IFNAMSIZ - 1] = '\0';
+
+  if(is_file) {
+    char *last_slash = strrchr(ifname, '/');
+    if(last_slash)
+      ifname = last_slash + 1;
+  }
+
+  strncpy(iface->name, ifname, sizeof(iface->name));
+  iface->name[sizeof(iface->name) - 1] = '\0';
 
   log_d("%s(%d): datalink=%s(%d)", iface->name, iface->ifidx, dlink_s, dlink);
 
@@ -936,7 +946,7 @@ cleanup:
 
 static void usage() {
   fprintf(stderr, "pcapd - root capture tool of PCAPdroid\n"
-    "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
+    "Copyright 2021-23 Emanuele Faranda <black.silver@hotmail.it>\n\n"
     "Usage: pcapd [OPTIONS]\n"
     " -i [ifname]    capture packets on the specified interface. Can be specified\n"
     "                multiple times. The '@inet' keyword can be used to capture from\n"
@@ -946,6 +956,7 @@ static void usage() {
     " -u [uid]       filter packets by uid\n"
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
+    " -L uid         specify the UID to use to create the log file\n"
     " -n             do not connect to the UNIX socket, log to stdout instead\n"
     " -q             suppress non-error output\n"
   );
@@ -969,7 +980,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
   init_conf(conf);
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "hdtni:u:b:l:")) != -1) {
+  while ((c = getopt (argc, argv, "hdtni:u:b:l:L:")) != -1) {
     switch(c) {
       case 'i':
         if(conf->num_interfaces >= PCAPD_MAX_INTERFACES) {
@@ -1009,6 +1020,9 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
         if(conf->log_file) free(conf->log_file);
         conf->log_file = strdup(optarg);
         break;
+      case 'L':
+        conf->log_uid = atol(optarg);
+        break;
       case 'q':
         conf->quiet = 1;
         break;
@@ -1022,9 +1036,17 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
     usage();
 
   if(conf->log_file) {
-    mode_t old_mask = umask(033);
+    uid_t saved_uid = geteuid();
+
+    if(conf->log_uid > 0) {
+      unlink(conf->log_file);
+      seteuid(conf->log_uid);
+    }
+
     logf = fopen(conf->log_file, "w");
-    umask(old_mask);
+
+    if(conf->log_uid > 0)
+      seteuid(saved_uid);
 
     if(logf == NULL)
       log_e("Could not open log file[%d]: %s", errno, strerror(errno));

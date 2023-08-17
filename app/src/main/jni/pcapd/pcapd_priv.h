@@ -42,10 +42,11 @@ typedef struct {
   uint8_t daemonize;
   uint8_t no_client;
   uint8_t quiet;
+  uid_t log_uid;
 } pcapd_conf_t;
 
 typedef struct {
-  char name[IFNAMSIZ];
+  char name[PATH_MAX];
   int ifidx;
   uint8_t ifid;       // positional interface index
   uint8_t is_file;
