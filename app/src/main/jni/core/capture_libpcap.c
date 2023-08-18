@@ -352,6 +352,19 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
         return false;
     }
 
+    if(pd->pcap_file_capture && (hdr->uid == UID_UNKNOWN)) {
+        // retrieve the UID from the PCAPdroid trailer, if available
+        int non_ip_overhead = (int)hdr->len - (int)pkt.len;
+
+        if(non_ip_overhead >= sizeof(pcapdroid_trailer_t)) {
+            const struct pcapdroid_trailer* trailer =
+                    (const struct pcapdroid_trailer*) (buffer + hdr->len - sizeof(pcapdroid_trailer_t));
+
+            if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC)
+                hdr->uid = ntohl(trailer->uid);
+        }
+    }
+
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
             (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
         // This fragment cannot be mapped to the original src/dst ports. This may happen if the first

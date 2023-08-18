@@ -104,6 +104,8 @@ typedef enum {
     PCAPNG_DUMP,              // PcapNg file
 } pcap_dump_mode_t;
 
+#define PCAPDROID_TRAILER_MAGIC 0x01072021
+
 /* A trailer to the packet which contains PCAPdroid-specific information.
  * When pcapdroid_trailer is set, the raw packet will be prepended with a bogus ethernet header,
  * whose size spans the raw packet data. The pcapdroid_trailer_t will be appended after the L3 data
