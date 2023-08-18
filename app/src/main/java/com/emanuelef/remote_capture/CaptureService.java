@@ -878,9 +878,7 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         captureService.mStopping = true;
-
         stopPacketLoop();
-        captureService.signalServicesTermination();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             captureService.stopForeground(STOP_FOREGROUND_REMOVE);

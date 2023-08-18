@@ -533,6 +533,9 @@ static void process_pcapd_rv(pcapdroid_t *pd, int rv) {
         case PCAPD_PCAP_READ_ERROR:
             log_f(PD_ERR_PCAP_READ);
             break;
+        case PCAPD_SOCKET_WRITE_ERROR:
+            // ignore, as it can be caused by PCAPdroid stopping the capture
+            break;
         default:
             log_f("pcapd daemon exited with code %d", rv);
     }
