@@ -839,6 +839,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mPcapLoadDialog.setOnCancelListener(dialogInterface -> {
                 Log.i(TAG, "Abort download");
                 executor.shutdownNow();
+
+                if (CaptureService.isServiceActive())
+                    CaptureService.stopService();
+
+                Utils.showToastLong(this, R.string.pcap_file_load_aborted);
             });
             mPcapLoadDialog.setOnDismissListener(dialog -> mPcapLoadDialog = null);
 
