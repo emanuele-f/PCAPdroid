@@ -25,6 +25,7 @@
 
 #define UID_UNKNOWN -1
 #define UID_ROOT 0
+#define UID_PHONE 1001
 #define UID_NETD 1051
 
 typedef struct uid_resolver uid_resolver_t;

@@ -323,6 +323,21 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
 
 /* ******************************************************* */
 
+static void check_whitelist_mode_block(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    // whitelist mode: block any app unless it's explicitly whitelisted.
+    // The blocklist still has priority to determine if a connection should be blocked.
+
+    // NOTE: data->l7proto is not computed yet
+    bool is_dns = (tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53);
+
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block &&
+            // always allow DNS traffic from unspecified apps
+            (!is_dns || ((data->uid != UID_NETD) && (data->uid != UID_PHONE) && (data->uid != UID_UNKNOWN))))
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+}
+
+/* ******************************************************* */
+
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid) {
     pd_conn_t *data = pd_calloc(1, sizeof(pd_conn_t));
     if(!data) {
@@ -453,11 +468,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         fw_num_checked_connections++;
     }
 
-    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD) {
-        // whitelist mode: block any app unless it's explicitly whitelisted.
-        // The blocklist still has priority to determine if a connection should be blocked.
-        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
-    }
+    check_whitelist_mode_block(pd, tuple, data);
 
     return(data);
 }
@@ -907,8 +918,8 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
                          blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
     }
-    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD)
-        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+
+    check_whitelist_mode_block(pd, tuple, data);
 
     if(old_block != data->to_block) {
         data->update_type |= CONN_UPDATE_STATS;
