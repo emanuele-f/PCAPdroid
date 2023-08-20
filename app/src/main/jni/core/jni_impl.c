@@ -599,7 +599,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .socks5 = {
                     .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
-                    .proxy_ip = getIPv4Pref(env, vpn, "getSocks5ProxyAddress"),
+                    .proxy_ip = getIPPref(env, vpn, "getSocks5ProxyAddress", &pd.socks5.proxy_ipver),
                     .proxy_port = htons(getIntPref(env, vpn, "getSocks5ProxyPort")),
             },
             .malware_detection = {
@@ -1145,6 +1145,32 @@ u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     (*env)->DeleteLocalRef(env, obj);
 
     return(addr.s_addr);
+}
+
+/* ******************************************************* */
+
+zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver) {
+    zdtun_ip_t rv = {};
+
+    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
+    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
+
+    if(!jniCheckException(env)) {
+        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+        log_d("getIPPref(%s) = %s", key, value);
+
+        if(*value) {
+            *ip_ver = zdtun_parse_ip(value, &rv);
+
+            if(*ip_ver < 0)
+                log_e("%s() returned invalid IP address: %s", key, value);
+        }
+
+        (*env)->ReleaseStringUTFChars(env, obj, value);
+    }
+
+    (*env)->DeleteLocalRef(env, obj);
+    return(rv);
 }
 
 /* ******************************************************* */

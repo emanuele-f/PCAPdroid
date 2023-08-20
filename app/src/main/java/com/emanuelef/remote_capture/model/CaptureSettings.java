@@ -44,7 +44,7 @@ public class CaptureSettings implements Serializable {
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
         socks5_enabled = Prefs.getSocks5Enabled(prefs);
-        socks5_proxy_address = Prefs.getSocks5ProxyAddress(prefs);
+        socks5_proxy_address = Prefs.getSocks5ProxyHost(prefs);
         socks5_proxy_port = Prefs.getSocks5ProxyPort(prefs);
         socks5_username = Prefs.isSocks5AuthEnabled(prefs) ? Prefs.getSocks5Username(prefs) : "";
         socks5_password = Prefs.isSocks5AuthEnabled(prefs) ? Prefs.getSocks5Password(prefs) : "";

@@ -239,8 +239,9 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        u_int32_t proxy_ip;
+        zdtun_ip_t proxy_ip;
         u_int32_t proxy_port;
+        int proxy_ipver;
         char proxy_user[32];
         char proxy_pass[32];
     } socks5;
@@ -395,6 +396,7 @@ uint16_t pd_ndpi2proto(ndpi_protocol proto);
 
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
+zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver);
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);

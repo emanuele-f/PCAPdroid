@@ -220,7 +220,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
         if(settings.socks5_enabled &&
                 !Utils.isLocalNetworkAddress(settings.socks5_proxy_address) &&
-                !Prefs.getSocks5ProxyAddress(prefs).equals(settings.socks5_proxy_address))
+                !Prefs.getSocks5ProxyHost(prefs).equals(settings.socks5_proxy_address))
             return settings.socks5_proxy_address;
 
         // ok

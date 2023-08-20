@@ -484,6 +484,10 @@ public class Utils {
     }
 
     public static boolean isLocalNetworkAddress(String checkAddress) {
+        // this check is necessary as otherwise host resolution would be triggered on the main thread
+        if(!validateIpAddress(checkAddress))
+            return false;
+
         try {
             return isLocalNetworkAddress(InetAddress.getByName(checkAddress));
         } catch (UnknownHostException ignored) {

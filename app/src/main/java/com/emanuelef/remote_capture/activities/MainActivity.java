@@ -158,7 +158,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {
             if(!success) {
-                Log.w(TAG, "VPN request failed");
+                Log.w(TAG, "Capture start failed");
                 appStateReady();
             }
         });
@@ -684,7 +684,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             return false; // already acknowledged
 
         if(((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
-                (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyAddress(mPrefs)))) {
+                (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyHost(mPrefs)))) {
             Log.i(TAG, "Showing possible scan notice");
 
             AlertDialog dialog = new AlertDialog.Builder(this)

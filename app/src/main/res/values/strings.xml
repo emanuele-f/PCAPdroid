@@ -130,6 +130,7 @@
     <string name="socks5_auth">SOCKS5 authentication</string>
     <string name="socks5_auth_summary">Authenticate to the proxy via username and password</string>
     <string name="proxy_ip_address">Proxy IP address</string>
+    <string name="proxy_host">Proxy host</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
     <string name="root_capture_summary">Allows PCAPdroid to run with other VPN apps</string>
@@ -486,4 +487,5 @@
     <string name="root_capture_start_failed">Capture start failure. Ensure that the device is rooted with Magisk</string>
     <string name="pcap_read_error">PCAP read error</string>
     <string name="pcap_file_load_aborted">PCAP file loading aborted</string>
+    <string name="host_resolution_failed">"Could not resolve host %1$s</string>
 </resources>

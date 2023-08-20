@@ -23,6 +23,8 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.VpnService;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.emanuelef.remote_capture.interfaces.CaptureStartListener;
 import com.emanuelef.remote_capture.model.CaptureSettings;
@@ -34,7 +36,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class CaptureHelper {
+    private static final String TAG = "CaptureHelper";
     private final ComponentActivity mActivity;
     private final ActivityResultLauncher<Intent> mLauncher;
     private CaptureSettings mSettings;
@@ -48,7 +54,7 @@ public class CaptureHelper {
 
     private void captureServiceResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK)
-            startCaptureOk();
+            resolveHosts();
         else if(mListener != null) {
             Utils.showToastLong(mActivity, R.string.vpn_setup_failed);
             mListener.onCaptureStartResult(false);
@@ -64,6 +70,47 @@ public class CaptureHelper {
             mListener.onCaptureStartResult(true);
     }
 
+    private String resolveHost(String host) {
+        Log.d(TAG, "Resolving host: " + host);
+
+        try {
+            return InetAddress.getByName(host).getHostAddress();
+        } catch (UnknownHostException ignored) {}
+
+        return null;
+    }
+
+    private String doResolveHosts() {
+        // NOTE: hosts must be resolved before starting the VPN and in a separate thread
+        String resolved;
+
+        if((resolved = resolveHost(mSettings.socks5_proxy_address)) == null)
+            return mSettings.socks5_proxy_address;
+        else if(!resolved.equals(mSettings.socks5_proxy_address)) {
+            Log.i(TAG, "Resolved SOCKS5 proxy address: " + resolved);
+            mSettings.socks5_proxy_address = resolved;
+        }
+
+        return null;
+    }
+
+    private void resolveHosts() {
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        (new Thread(() -> {
+            String failed_host = doResolveHosts();
+
+            handler.post(() -> {
+                if(failed_host == null)
+                    startCaptureOk();
+                else {
+                    Utils.showToastLong(mActivity, R.string.host_resolution_failed, failed_host);
+                    mListener.onCaptureStartResult(false);
+                }
+            });
+        })).start();
+    }
+
     public void startCapture(CaptureSettings settings) {
         if(CaptureService.isServiceActive())
             CaptureService.stopService();
@@ -71,7 +118,7 @@ public class CaptureHelper {
         mSettings = settings;
 
         if(settings.root_capture || settings.readFromPcap()) {
-            startCaptureOk();
+            resolveHosts();
             return;
         }
 
@@ -93,7 +140,7 @@ public class CaptureHelper {
                     })
                     .show();
         } else
-            startCaptureOk();
+            resolveHosts();
     }
 
     public void setListener(CaptureStartListener listener) {

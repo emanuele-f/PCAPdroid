@@ -33,7 +33,7 @@ import com.emanuelef.remote_capture.model.Prefs;
 import java.util.Objects;
 
 public class Socks5Settings extends PreferenceFragmentCompat {
-    private EditTextPreference mProxyIp;
+    private EditTextPreference mProxyHost;
     private EditTextPreference mProxyPort;
     private EditTextPreference mUsername;
     private EditTextPreference mPassword;
@@ -44,8 +44,8 @@ public class Socks5Settings extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.socks5_preferences, rootKey);
 
         /* SOCKS5 Proxy IP validation */
-        mProxyIp = Objects.requireNonNull(findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY));
-        mProxyIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
+        mProxyHost = Objects.requireNonNull(findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY));
+        mProxyHost.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateHost(newValue.toString()));
 
         /* SOCKS5 Proxy port validation */
         mProxyPort = Objects.requireNonNull(findPreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY));
@@ -70,7 +70,7 @@ public class Socks5Settings extends PreferenceFragmentCompat {
     }
 
     private void toggleVisisiblity(boolean socks5_enabled, boolean auth_enabled) {
-        mProxyIp.setVisible(socks5_enabled);
+        mProxyHost.setVisible(socks5_enabled);
         mProxyPort.setVisible(socks5_enabled);
         mSocks5AuthEnabled.setVisible(socks5_enabled);
 

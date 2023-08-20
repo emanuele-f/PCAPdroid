@@ -11,7 +11,7 @@
 
     <EditTextPreference
         app:key="socks5_proxy_ip_address"
-        app:title="@string/proxy_ip_address"
+        app:title="@string/proxy_host"
         app:defaultValue="0.0.0.0"
         app:iconSpaceReserved="false"
         app:useSimpleSummaryProvider="true" />
