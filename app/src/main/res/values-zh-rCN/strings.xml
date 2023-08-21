@@ -60,7 +60,7 @@
     <string name="source_code">源代码</string>
     <string name="yes">是</string>
     <string name="no">否</string>
-    <string name="vpn_setup_failed">无法设置 VPN</string>
+    <string name="vpn_setup_failed">无法设置 VPN。确保禁用了“始终开启 VPN”</string>
     <string name="app_not_found">找不到应用 %1$s</string>
     <string name="stats">统计数据</string>
     <string name="active_connections">活动连接</string>
@@ -227,7 +227,7 @@
     <string name="start_capture_first">先开始流量捕获</string>
     <string name="copied">已复制</string>
     <string name="can_use_purchased_feature">你现在可以使用购买的功能</string>
-    <string name="disconnect_vpn_confirm">断开活动的 VPN 应用程序并继续？</string>
+    <string name="disconnect_vpn_confirm">继续将断开与活动 VPN 的连接</string>
     <string name="loading_apps">正在加载应用…</string>
     <string name="open_nav_drawer">打开抽屉</string>
     <string name="close_nav_drawer">关闭抽屉</string>
@@ -267,7 +267,7 @@
     <string name="string_http_response">HTTP 响应</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
-    <string name="payload_truncated">载荷被截断。启用 \"%1$s\"显示完整内容</string>
+    <string name="payload_truncated">载荷被截断。要显示完整载荷，请停止流量捕获并从 PCAPdroid 设置开启 “%1$s”</string>
     <string name="rx_direction">接收</string>
     <string name="full_payload">完整载荷</string>
     <string name="not_decryptable">不可解密</string>
@@ -345,7 +345,9 @@
 \n你必须先从应用设置下载地理位置数据库</string>
     <string name="vpn_setup_msg">PCAPdroid 模拟 VPN，以便在没有获取根权限的情况下捕获网络流量。
 \n
-\n要开始捕获流量，你需要在下一个屏幕中接受 VPN 请求</string>
+\n要开始捕获流量，你需要在下一个屏幕中接受 VPN 请求。
+\n
+\n<b>注：</b>要继续下一步，请在 Android 设置中禁用“始终启用 VPN”</string>
     <string name="netd_block_missed">此连接由 netd 发起，因此无法被拦截</string>
     <string name="firewall_summary">阻断应用联网，配置特定域和 IP 地址规则。仅适用于非 root 捕获</string>
     <string name="block_private_dns_summary">检测并可能阻止私人 DNS 来检查 DNS 流量。禁用此选项会妨碍流量分析</string>
@@ -491,4 +493,22 @@
     <string name="mitm_addon_running">Mitim 附加组件运行中</string>
     <string name="dont_decrypt_action">不解密…</string>
     <string name="status_encrypted">已加密</string>
+    <string name="pcap_load_in_progress">正在加载 PCAP 文件，请等待</string>
+    <string name="capture_interface_open_error">无法打开流量捕获界面</string>
+    <string name="unsupported_pcap_datalink">PCAP 文件有一个不受支持的数据链</string>
+    <string name="pcap_file_not_exists">指定的 PCAP 文件不存在</string>
+    <string name="root_capture_start_failed">流量捕获启动失败。请确保设备已使用 Magisk 获取根权限</string>
+    <string name="pcap_read_error">PCAP 读取出错</string>
+    <string name="pcap_file_load_aborted">PCAP 文件加载中断</string>
+    <string name="live_capture">实时捕获</string>
+    <string name="copy_error">无法写入文件</string>
+    <string name="proxy_host">代理主机</string>
+    <string name="open_pcap_file">打开 PCAP 文件…</string>
+    <string name="pcap_load_success">已加载 PCAP 文件</string>
+    <string name="host_resolution_failed">无法解析主机 %1$s</string>
+    <string name="invalid_pcap_file">无效的 PCAP 文件</string>
+    <string name="pcapdroid_trailer_notice">要显示实际应用而非“%1$s”，请在导出 PCAP 文件前确保开启了“%2$s”选项</string>
+    <string name="tls_decryption_no_rules_notice">TLS 解密仅应用于匹配所配置规则的连接。你想立即创建解密规则吗？</string>
+    <string name="decryption_info_no_rule">此连接不会被解密。创建解密规则来解密它</string>
+    <string name="active_vpn_detected">检测到活动 VPN</string>
 </resources>
