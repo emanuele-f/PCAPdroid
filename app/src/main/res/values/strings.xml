@@ -72,7 +72,7 @@
     <string name="source_code">Source code</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="vpn_setup_failed">Could not set up the VPN</string>
+    <string name="vpn_setup_failed">Could not set up the VPN. Ensure that Always-on VPN is disabled</string>
     <string name="app_not_found">Could not find the "%1$s" app</string>
     <string name="stats">Stats</string>
     <string name="active_connections">Active connections</string>
@@ -261,7 +261,7 @@
     <string name="start_capture_first">Start the capture first</string>
     <string name="copied">Copied</string>
     <string name="can_use_purchased_feature">You can now use the purchased feature</string>
-    <string name="disconnect_vpn_confirm">Disconnect the active VPN app and continue?</string>
+    <string name="disconnect_vpn_confirm">Continuing will disconnect the active VPN</string>
     <string name="loading_apps">Loading apps…</string>
     <string name="open_nav_drawer">Open drawer</string>
     <string name="close_nav_drawer">Close drawer</string>
@@ -365,7 +365,7 @@
     <string name="app_intro_privacy_msg">The app does not employ any tracking, analytics or phoning-home anti-features\n\nHow can you be sure? Check out its <a href='%1$s'>privacy policy</a> and its <a href='%2$s'>source code</a></string>
     <string name="country_and_asn">Country and ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid can query a local database to determine the country of a remote server\n\nYou must first download the geolocation database from the app settings</string>
-    <string name="vpn_setup_msg">PCAPdroid simulates a VPN in order to capture the network traffic without root.\n\nTo start the capture, you need to accept the VPN request in the next screen</string>
+    <string name="vpn_setup_msg">PCAPdroid simulates a VPN in order to capture the network traffic without root.\n\nTo start the capture, you need to accept the VPN request in the next screen.\n\n<b>NOTE:</b> to proceed, disable any configured Always-on VPN from the Android settings</string>
     <string name="app_intro_traffic_inspection">Inspecting HTTP requests, responses and raw data is easy, thanks to the built-in decoders\n\nGot an encrypted connection? You can enable the <a href='%1$s'>TLS decryption</a> to get the decrypted data</string>
     <string name="app_intro_firewall_msg">With the integrated <a href='%1$s'>Firewall</a> you can easily block Internet access to individual apps and domains\n\nCombine this with the built-in traffic visibility to get the ultimate tool to protect your privacy</string>
     <string name="app_intro_malware_detection">Enhance the security of your device with the <a href='%1$s'>malware detection</a> feature\n\nBy using up-to-date blacklists, it can detect, block and alert malicious connections in real-time</string>
@@ -492,4 +492,5 @@
     <string name="live_capture">Live capture</string>
     <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
+    <string name="active_vpn_detected">Active VPN detected</string>
 </resources>

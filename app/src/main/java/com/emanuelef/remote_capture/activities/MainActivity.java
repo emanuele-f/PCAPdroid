@@ -709,9 +709,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
             new AlertDialog.Builder(this)
+                    .setTitle(R.string.active_vpn_detected)
                     .setMessage(R.string.disconnect_vpn_confirm)
-                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> doStartCaptureService(null))
-                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                    .setPositiveButton(R.string.ok, (dialog, whichButton) -> doStartCaptureService(null))
+                    .setNegativeButton(R.string.cancel_action, (dialog, whichButton) -> {})
                     .show();
         } else
             doStartCaptureService(null);
