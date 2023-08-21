@@ -1248,4 +1248,12 @@ Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, 
     (*env)->ReleaseByteArrayElements(env, secret, sec_data, 0);
 }
 
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env,
+                                                                          jclass clazz) {
+    return has_seen_pcapdroid_trailer;
+}
+
 #endif // ANDROID

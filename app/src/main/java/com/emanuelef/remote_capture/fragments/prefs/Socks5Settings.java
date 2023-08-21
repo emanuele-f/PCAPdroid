@@ -46,6 +46,7 @@ public class Socks5Settings extends PreferenceFragmentCompat {
         /* SOCKS5 Proxy IP validation */
         mProxyHost = Objects.requireNonNull(findPreference(Prefs.PREF_SOCKS5_PROXY_IP_KEY));
         mProxyHost.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateHost(newValue.toString()));
+        mProxyHost.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI));
 
         /* SOCKS5 Proxy port validation */
         mProxyPort = Objects.requireNonNull(findPreference(Prefs.PREF_SOCKS5_PROXY_PORT_KEY));

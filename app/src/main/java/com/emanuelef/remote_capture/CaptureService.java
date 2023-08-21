@@ -1574,4 +1574,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void setPayloadMode(int mode);
     public static native List<String> getL7Protocols();
     public static native void dumpMasterSecret(byte[] secret);
+    public static native boolean hasSeenPcapdroidTrailer();
 }

@@ -59,6 +59,7 @@ import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.CaptureHelper;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
@@ -538,16 +539,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mState = AppState.ready;
         notifyAppState();
 
-        if(mPcapLoadDialog != null) {
-            mPcapLoadDialog.dismiss();
-            mPcapLoadDialog = null;
-
-            if(!CaptureService.hasError()) {
-                // pcap file loaded successfully
-                Utils.showToastLong(this, R.string.pcap_load_success);
-                mPager.setCurrentItem(POS_CONNECTIONS);
-            }
-        }
+        if(mPcapLoadDialog != null)
+            checkLoadedPcap();
     }
 
     public void appStateStarting() {
@@ -566,6 +559,32 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
+    }
+
+    private void checkLoadedPcap() {
+        if(mPcapLoadDialog != null) {
+            mPcapLoadDialog.dismiss();
+            mPcapLoadDialog = null;
+        }
+
+        if(!CaptureService.hasError()) {
+            // pcap file loaded successfully
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if((reg != null) && (reg.getConnCount() > 0)
+                    && !CaptureService.hasSeenPcapdroidTrailer()
+                    && !Prefs.trailerNoticeShown(mPrefs)
+            ) {
+                new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.pcapdroid_trailer_notice,
+                                getString(R.string.unknown_app), getString(R.string.pcapdroid_trailer)))
+                        .setPositiveButton(R.string.ok, (d, whichButton) -> Prefs.setTrailerNoticeShown(mPrefs))
+                        .show();
+            } else
+                Utils.showToastLong(this, R.string.pcap_load_success);
+
+            mPager.setCurrentItem(POS_CONNECTIONS);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)

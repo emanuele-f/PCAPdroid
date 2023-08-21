@@ -360,8 +360,10 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
             const struct pcapdroid_trailer* trailer =
                     (const struct pcapdroid_trailer*) (buffer + hdr->len - sizeof(pcapdroid_trailer_t));
 
-            if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC)
+            if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC) {
                 hdr->uid = ntohl(trailer->uid);
+                has_seen_pcapdroid_trailer = true;
+            }
         }
     }
 
