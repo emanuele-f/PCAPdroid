@@ -489,4 +489,5 @@
     <string name="pcap_file_load_aborted">PCAP file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before exporting the PCAP file</string>
+    <string name="live_capture">Live capture</string>
 </resources>
