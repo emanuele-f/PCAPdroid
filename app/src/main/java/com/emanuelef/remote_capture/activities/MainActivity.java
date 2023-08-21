@@ -62,6 +62,7 @@ import com.emanuelef.remote_capture.CaptureHelper;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
@@ -102,6 +103,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     // helps detecting duplicate state reporting of STOPPED in MutableLiveData
     private boolean mWasStarted = false;
+    private boolean mStartPressed = false;
+    private boolean mDecEmptyRulesNoticeShown = false;
 
     private static final String TAG = "Main";
 
@@ -194,6 +197,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 appStateReady();
                 mWasStarted = false;
+                mStartPressed = false;
             } else /* STOPPED -> STOPPED */
                 appStateReady();
         });
@@ -554,11 +558,31 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             checkVpnLockdownNotice();
+        else if(mStartPressed) { // STOPPED -> STARTED
+            if(CaptureService.isDecryptingTLS() && !CaptureService.isCapturingAsRoot())
+                checkDecryptionRulesNotice();
+        }
     }
 
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
+    }
+
+    private void checkDecryptionRulesNotice() {
+        if(!mDecEmptyRulesNoticeShown && PCAPdroid.getInstance().getDecryptionList().isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.tls_decryption_no_rules_notice)
+                    .setPositiveButton(R.string.yes, (d, whichButton) -> {
+                        Intent intent = new Intent(MainActivity.this, EditListActivity.class);
+                        intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_LIST);
+                        startActivity(intent);
+                    })
+                    .setNegativeButton(R.string.no, (d, whichButton) -> {
+                    })
+                    .show();
+            mDecEmptyRulesNoticeShown = true;
+        }
     }
 
     private void checkLoadedPcap() {
@@ -632,6 +656,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if(id == R.id.start_live_capture) {
+            mStartPressed = true;
             startCapture();
             return true;
         } else if(id == R.id.action_stop) {

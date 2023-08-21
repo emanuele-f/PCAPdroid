@@ -300,6 +300,10 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.netd_block_missed));
             mError.setVisibility(View.VISIBLE);
+        } else if(mConn.getDecryptionStatus() == ConnectionDescriptor.DecryptionStatus.ENCRYPTED) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.colorTabText));
+            mError.setText(R.string.decryption_info_no_rule);
+            mError.setVisibility(View.VISIBLE);
         } else
             mError.setVisibility(View.GONE);
     }
