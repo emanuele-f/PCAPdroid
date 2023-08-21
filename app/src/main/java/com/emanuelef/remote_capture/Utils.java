@@ -43,6 +43,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -68,9 +69,12 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.Patterns;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -215,6 +219,21 @@ public class Utils {
         }
 
         return primaryLocale;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static int getSmallerDisplayDimension(Context ctx) {
+        WindowManager manager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = manager.getCurrentWindowMetrics();
+            return Math.min(windowMetrics.getBounds().width(), windowMetrics.getBounds().width());
+        } else {
+            Display display = manager.getDefaultDisplay();
+            Point point = new Point();
+            display.getSize(point);
+            return Math.min(point.x, point.y);
+        }
     }
 
     public static String getCountryName(Context context, String country_code) {

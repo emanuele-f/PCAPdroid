@@ -295,7 +295,7 @@
     <string name="overview">Overview</string>
     <string name="string_http_request">HTTP request</string>
     <string name="string_http_response">HTTP response</string>
-    <string name="payload_truncated">Payload is truncated. Enable \"%1$s\" to show it in full</string>
+    <string name="payload_truncated">Payload is truncated. To show it in full, stop the capture and enable \"%1$s\" from the PCAPdroid settings</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="payload">Payload</string>
