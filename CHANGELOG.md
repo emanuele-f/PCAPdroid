@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.6] - 2023-08-28
+- Add ability to open PCAP/PCAPNG files
+- Add Arabic translation (credits: Mustafa Hamed Kathem)
+- Fix app not blocked by firewall after reinstallation
+- Fix DNS from unknown app incorrectly blocked in firewall whitelist mode
+- Support IPv6 and host names in socks5 mode
+
 ## [1.6.5] - 2023-06-15
 - Add ability to inject javascript into web pages (PCAPdroid-mitm)
 - TLS decryption is now rule-based, it only applies to specified connections
