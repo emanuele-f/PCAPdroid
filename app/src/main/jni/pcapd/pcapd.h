@@ -39,4 +39,15 @@ typedef struct {
   uint8_t pad[2];           // padding for 64bit alignment of the payload
 } __attribute__((packed)) pcapd_hdr_t;
 
+typedef enum {
+    PCAPD_OK = 0,
+    PCAPD_ERROR,
+    PCAPD_INTERFACE_OPEN_FAILED,
+    PCAPD_NETLINK_ERROR,
+    PCAPD_PCAP_READ_ERROR,
+    PCAPD_SOCKET_WRITE_ERROR,
+    PCAPD_UNSUPPORTED_DATALINK,
+    PCAPD_EOF
+} pcapd_rv;
+
 #endif

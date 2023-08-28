@@ -199,9 +199,12 @@ void hexdump(const char *buf, size_t bufsize) {
 
 /* ******************************************************* */
 
-int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_error) {
+// Start a sub-process, running a command with some arguments, either as root or as the current user.
+// On success, the out_fd parameter will receive an open file descriptor to read the command output
+// Returns the pid of the child process, or -1 on failure
+// NOTE: the caller MUST call waitpid or equivalent to prevent process zombification and close the out_fd
+int start_subprocess(const char *prog, const char *args, bool as_root, int* out_fd) {
     int in_p[2], out_p[2];
-    int rv = -1;
     pid_t pid;
 
     if((pipe(in_p) != 0) || (pipe(out_p) != 0)) {
@@ -225,7 +228,7 @@ int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_e
         exit(1);
     } else if(pid > 0) {
         // parent
-        int out = out_p[0];
+        *out_fd = out_p[0];
         close(in_p[0]);
         close(out_p[1]);
 
@@ -236,30 +239,6 @@ int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_e
         write(in_p[1], args, strlen(args));
         write(in_p[1], "\n", 1);
         close(in_p[1]);
-
-        waitpid(pid, &rv, 0);
-
-        if(check_error && (rv != 0)) {
-            char buf[128];
-            struct timeval timeout = {0};
-            fd_set fds;
-
-            buf[0] = '\0';
-            FD_ZERO(&fds);
-            FD_SET(out, &fds);
-
-            select(out + 1, &fds, NULL, NULL, &timeout);
-            if (FD_ISSET(out, &fds)) {
-                int num = read(out, buf, sizeof(buf) - 1);
-                if (num > 0)
-                    buf[num] = '\0';
-            }
-
-            log_f("su \"%s\" invocation failed: %s", prog, buf);
-            rv = -1;
-        }
-
-        close(out_p[0]);
     } else {
         log_f("fork() failed[%d]: %s", errno, strerror(errno));
         close(in_p[0]);
@@ -269,5 +248,42 @@ int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_e
         return -1;
     }
 
+    return pid;
+}
+
+/* ******************************************************* */
+
+int run_shell_cmd(const char *prog, const char *args, bool as_root, bool check_error) {
+    int out_fd;
+    int pid = start_subprocess(prog, args, as_root, &out_fd);
+    if(pid <= 0)
+        return -1;
+
+    int rv;
+    if(waitpid(pid, &rv, 0) <= 0) {
+        log_f("waitpid %d failed[%d]: %s", pid, errno, strerror(errno));
+        return -1;
+    }
+
+    if(check_error && (rv != 0)) {
+        char buf[128];
+        struct timeval timeout = {0};
+        fd_set fds;
+
+        buf[0] = '\0';
+        FD_ZERO(&fds);
+        FD_SET(out_fd, &fds);
+
+        select(out_fd + 1, &fds, NULL, NULL, &timeout);
+        if (FD_ISSET(out_fd, &fds)) {
+            int num = read(out_fd, buf, sizeof(buf) - 1);
+            if (num > 0)
+                buf[num] = '\0';
+        }
+
+        log_f("\"%s\" invocation failed: %s", prog, buf);
+    }
+
+    close(out_fd);
     return rv;
 }

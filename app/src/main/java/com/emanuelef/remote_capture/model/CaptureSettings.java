@@ -22,6 +22,7 @@ public class CaptureSettings implements Serializable {
     public String socks5_username;
     public String socks5_password;
     public Prefs.IpMode ip_mode;
+    public String input_pcap_path;
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
@@ -43,7 +44,7 @@ public class CaptureSettings implements Serializable {
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
         socks5_enabled = Prefs.getSocks5Enabled(prefs);
-        socks5_proxy_address = Prefs.getSocks5ProxyAddress(prefs);
+        socks5_proxy_address = Prefs.getSocks5ProxyHost(prefs);
         socks5_proxy_port = Prefs.getSocks5ProxyPort(prefs);
         socks5_username = Prefs.isSocks5AuthEnabled(prefs) ? Prefs.getSocks5Username(prefs) : "";
         socks5_password = Prefs.isSocks5AuthEnabled(prefs) ? Prefs.getSocks5Password(prefs) : "";
@@ -110,5 +111,9 @@ public class CaptureSettings implements Serializable {
         if(s != null)
             return Boolean.parseBoolean(s);
         return bundle.getBoolean(key, def_value);
+    }
+
+    public boolean readFromPcap() {
+        return input_pcap_path != null;
     }
 }

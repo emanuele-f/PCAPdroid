@@ -35,7 +35,7 @@
     <string name="source_code">Código fuente</string>
     <string name="yes">Sí</string>
     <string name="no">No</string>
-    <string name="vpn_setup_failed">No se pudo configurar la VPN</string>
+    <string name="vpn_setup_failed">No se ha podido configurar la VPN. Asegúrate de que la VPN siempre activa está desactivada</string>
     <string name="app_not_found">No se pudo encontrar la aplicación %1$s</string>
     <string name="stats">Estadísticas</string>
     <string name="active_connections">Conexiones activas</string>
@@ -198,7 +198,7 @@
     <string name="loading">Cargando…</string>
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
     <string name="capture_all_apps">Capturar tráfico de todas las aplicaciones</string>
-    <string name="disconnect_vpn_confirm">¿Desconectar la aplicación VPN activa y continuar\?</string>
+    <string name="disconnect_vpn_confirm">Continuar desconectará la VPN activa</string>
     <string name="enable_socks5_proxy_summary">Redirigir todas las conexiones TCP a un proxy SOCKS5</string>
     <string name="root_capture_summary">Permite que PCAPdroid funcione con otras aplicaciones VPN</string>
     <string name="hidden_connections_help">Lista de reglas para ocultar las entradas de la lista de conexiones y así poder centrarse en las relevantes</string>
@@ -260,7 +260,7 @@
 \nSi alguien te ha pedido que hagas esto, probablemente sea un intento de estafa</string>
     <string name="warning">Advertencia</string>
     <string name="paid_features_unlocked">Funciones de pago desbloqueadas. Reinicia la captura si se está ejecutando</string>
-    <string name="payload_truncated">El payload está truncado. Habilitar \"%1$s\" para mostrarlo completo</string>
+    <string name="payload_truncated">La carga útil está truncada. Para mostrarla completa, detén la captura y activa \"%1$s\" desde los ajustes de PCAPdroid</string>
     <string name="display_as">Mostrar como…</string>
     <string name="privacy_first">La privacidad es lo primero</string>
     <string name="permission_granted">El permiso %1$s fue concedido</string>
@@ -316,7 +316,7 @@
     <string name="action_unblock">Desbloquear</string>
     <string name="websocket">WebSocket</string>
     <string name="netd_block_missed">La conexión fue comenzada por netd, por tanto no se pudo bloquear</string>
-    <string name="mitm_addon_bad_version">Versión del complemento mitm incorrecta. Desinstálala y reinténtalo</string>
+    <string name="mitm_addon_bad_version">Versión del complemento mitm incorrecta. Instale la versión %1$s y reinténtalo</string>
     <string name="overview">Resumen</string>
     <string name="string_http_request">Petición HTTP</string>
     <string name="http">HTTP</string>
@@ -354,9 +354,11 @@
     <string name="app_intro_geolocation_msg">PCAPdroid puede consultar una base de datos local para determinar el país de un servidor remoto
 \n
 \nPrimero deberás descargar la base de datos de geolocalización desde los ajustes de la aplicación</string>
-    <string name="vpn_setup_msg">PCAPdroid simula una VPN para capturar el tráfico de red sin root
+    <string name="vpn_setup_msg">PCAPdroid simula una VPN para capturar el tráfico de la red sin root.
 \n
-\nPara empezar a capturar, necesitas aceptar la solicitud VPN en la siguiente pantalla</string>
+\nPara iniciar la captura, debes aceptar la solicitud de la VPN en la pantalla siguiente.
+\n
+\n<b>NOTA:</b>para continuar, deshabilita cualquier VPN siempre activa configurada desde los ajustes de Android</string>
     <string name="permission_grant_fail">El permiso %1$s no pudo ser concedido</string>
     <string name="notifications_notice">La aplicación usa notificaciones para enviar alertas en caso de eventos anómalos. Concédele el permiso para enviarte notificaciones en la siguiente pantalla</string>
     <string name="vpn_exemptions">Excepciones VPN</string>
@@ -466,4 +468,22 @@
     <string name="injected">Inyectado</string>
     <string name="decrypt_action">Descifrar…</string>
     <string name="dont_decrypt_action">No descifrar…</string>
+    <string name="proxy_host">Host del proxy</string>
+    <string name="copy_error">No se ha podido escribir el archivo</string>
+    <string name="capture_interface_open_error">No se ha podido abrir la interfaz de captura</string>
+    <string name="pcap_file_not_exists">El archivo PCAP especificado no existe</string>
+    <string name="open_pcap_file">Abrir el archivo PCAP…</string>
+    <string name="pcap_load_success">Se ha cargado el archivo PCAP</string>
+    <string name="invalid_pcap_file">Fichero PCAP no válido</string>
+    <string name="root_capture_start_failed">Fallo del inicio de captura. Asegúrate de que el dispositivo está rooteado con Magisk</string>
+    <string name="pcap_read_error">Error de lectura del PCAP</string>
+    <string name="unsupported_pcap_datalink">El archivo PCAP tiene un enlace de datos no compatible</string>
+    <string name="pcap_file_load_aborted">Carga del fichero PCAP abortada</string>
+    <string name="host_resolution_failed">No se pudo resolver host %1$s</string>
+    <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones actuales en lugar de \"%1$s\", asegúrate de activar la opción \"%2$s\" antes de exportar el archivo PCAP</string>
+    <string name="decryption_info_no_rule">Esta conexión no se descifrará. Crea una regla de descifrado para descifrarla</string>
+    <string name="tls_decryption_no_rules_notice">El descifrado TLS sólo se aplica a las conexiones que coinciden con las reglas configuradas. ¿Deseas crear las reglas de descifrado ahora\?</string>
+    <string name="live_capture">Capturas en directo</string>
+    <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
+    <string name="pcap_load_in_progress">Carga del fichero PCAP en curso, por favor espera</string>
 </resources>

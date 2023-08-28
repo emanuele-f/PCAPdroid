@@ -48,7 +48,7 @@ static void protectSocketCallback(zdtun_t *zdt, socket_t sock) {
     pcapdroid_t *pd = ((pcapdroid_t*)zdtun_userdata(zdt));
     JNIEnv *env = pd->env;
 
-    if(pd->root_capture)
+    if(!pd->vpn_capture)
         return;
 
     /* Call VpnService protect */
@@ -473,9 +473,7 @@ int run_vpn(pcapdroid_t *pd) {
     new_dns_server = 0;
 
     if(pd->socks5.enabled) {
-        zdtun_ip_t dnatip = {0};
-        dnatip.ip4 = pd->socks5.proxy_ip;
-        zdtun_set_socks5_proxy(zdt, &dnatip, pd->socks5.proxy_port, 4);
+        zdtun_set_socks5_proxy(zdt, &pd->socks5.proxy_ip, pd->socks5.proxy_port, pd->socks5.proxy_ipver);
 
         if(pd->socks5.proxy_user[0] && pd->socks5.proxy_pass[0])
             zdtun_set_socks5_userpass(zdt, pd->socks5.proxy_user, pd->socks5.proxy_pass);

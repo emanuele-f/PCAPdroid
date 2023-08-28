@@ -163,8 +163,13 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
                 source.setText(mConn.src_ip);
                 destination.setText(mConn.dst_ip);
             } else {
-                source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
-                destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+                if (mConn.ipver == 6) {
+                    source.setText(String.format(getResources().getString(R.string.ipv6_and_port), mConn.src_ip, mConn.src_port));
+                    destination.setText(String.format(getResources().getString(R.string.ipv6_and_port), mConn.dst_ip, mConn.dst_port));
+                } else {
+                    source.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.src_ip, mConn.src_port));
+                    destination.setText(String.format(getResources().getString(R.string.ip_and_port), mConn.dst_ip, mConn.dst_port));
+                }
             }
 
             if((mConn.info != null) && (!mConn.info.isEmpty())) {
@@ -294,6 +299,10 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
         } else if(mConn.netd_block_missed) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.netd_block_missed));
+            mError.setVisibility(View.VISIBLE);
+        } else if(mConn.getDecryptionStatus() == ConnectionDescriptor.DecryptionStatus.ENCRYPTED) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.colorTabText));
+            mError.setText(R.string.decryption_info_no_rule);
             mError.setVisibility(View.VISIBLE);
         } else
             mError.setVisibility(View.GONE);

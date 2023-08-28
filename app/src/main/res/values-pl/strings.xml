@@ -281,7 +281,7 @@
     <string name="cert_exported_now_installed">Certyfikat wyeksportowany, teraz zainstaluj go z poziomu ustawień Androida</string>
     <string name="cert_installed_correctly">Certyfikat CA jest zainstalowany</string>
     <string name="cert_reinstall_required">Certyfikat CA nie jest zainstalowany, uruchom kreatora instalacji mitm</string>
-    <string name="mitm_addon_bad_version">Zła wersja dodatku PCAPdroid mitm. Odinstaluj go i spróbuj ponownie</string>
+    <string name="mitm_addon_bad_version">Zła wersja dodatku PCAPdroid mitm. Zainstaluj wersję %1$s i spróbuj ponownie</string>
     <string name="mitm_addon_new_version">Dodatek PCAPdroid mitm musi zostać zaktualizowany</string>
     <string name="mitm_addon">Dodatek mitm</string>
     <string name="upgrade_action">Aktualizacja</string>
@@ -466,4 +466,6 @@
     <string name="license_error">Błąd generowania licencji [%1$d]: %2$s</string>
     <string name="requesting_license">Żądanie kodu licencji, proszę czekać</string>
     <string name="license_activation_ok">Aktywacja licencji zakończona</string>
+    <string name="mitm_addon_running">Dodatek Mitm jest uruchomiony</string>
+    <string name="mitm_addon_starting">Dodatek Mitm jest uruchamiany…</string>
 </resources>

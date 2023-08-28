@@ -85,9 +85,10 @@ pcapdroid_t* pd_init_test(const char *ifname) {
   pcapdroid_t *pd = calloc(1, sizeof(pcapdroid_t));
   assert(pd != NULL);
 
-  pd->root_capture = true;
-  pd->root.capture_interface = (char*) ifname;
-  pd->root.as_root = false;   // don't run as root
+  pd->vpn_capture = false;
+  pd->pcap_file_capture = true;
+  pd->pcap.capture_interface = (char*) ifname;
+  pd->pcap.as_root = false;   // don't run as root
   pd->app_filter = -1;        // don't filter
   pd->cb.get_libprog_path = getPcapdPath;
   pd->payload_mode = PAYLOAD_MODE_FULL;

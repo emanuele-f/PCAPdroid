@@ -7,12 +7,22 @@
         android:title="@string/start_button"
         android:orderInCategory="10"
         android:icon="@drawable/ic_play_arrow"
-        app:showAsAction="always" />
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/start_live_capture"
+                android:title="@string/live_capture" />
+
+            <item
+                android:id="@+id/open_pcap"
+                android:title="@string/open_pcap_file" />
+        </menu>
+    </item>
 
     <item
         android:id="@+id/action_stop"
         android:title="@string/stop_button"
-        android:orderInCategory="10"
+        android:orderInCategory="20"
         android:icon="@drawable/ic_media_stop"
         android:visible="false"
         app:showAsAction="always" />
@@ -20,7 +30,7 @@
     <item
         android:id="@+id/action_settings"
         android:title="@string/title_activity_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="30"
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
 </menu>

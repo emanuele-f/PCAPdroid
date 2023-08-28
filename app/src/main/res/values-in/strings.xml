@@ -278,7 +278,7 @@
     <string name="string_http_request">Permintaan HTTP</string>
     <string name="string_http_response">Respon HTTP</string>
     <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
-    <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Hapus penginstalan dan coba lagi</string>
+    <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Instal versi %1$s dan coba lagi</string>
     <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
     <string name="upgrade_action">Tingkatkan</string>
     <string name="websocket">WebSocket</string>

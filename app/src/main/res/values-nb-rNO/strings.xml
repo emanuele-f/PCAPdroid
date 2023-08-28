@@ -305,7 +305,7 @@
     <string name="cert_exported_now_installed">Sertifikat eksporter. Installer det nå fra Android-innstillingene.</string>
     <string name="cert_installed_correctly">Sertifikatmyndighetssertifikatet er installert</string>
     <string name="cert_reinstall_required">Sertifikatmyndighetssertifikatet er ikke installert. Kjør MITM-oppsettsveilederen.</string>
-    <string name="mitm_addon_bad_version">Feilaktig versjon for MITM-tillegget i PCAPdroid. Avinstaller det og prøv igjen.</string>
+    <string name="mitm_addon_bad_version">Feilaktig versjon for MITM-tillegget i PCAPdroid. Installer versjon %1$s og prøv igjen.</string>
     <string name="upgrade_action">Oppgrader</string>
     <string name="export_failed">Eksport mislyktes</string>
     <string name="not_encrypted">Ikke kryptert</string>

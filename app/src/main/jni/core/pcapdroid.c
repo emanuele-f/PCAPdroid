@@ -27,8 +27,8 @@
 #include "ndpi_protocol_ids.h"
 
 extern int run_vpn(pcapdroid_t *pd);
-extern int run_root(pcapdroid_t *pd);
-extern void root_iter_connections(pcapdroid_t *pd, conn_cb cb);
+extern int run_libpcap(pcapdroid_t *pd);
+extern void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb);
 extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 
 /* ******************************************************* */
@@ -36,6 +36,7 @@ extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_co
 bool running = false;
 uint32_t new_dns_server = 0;
 bool block_private_dns = false;
+bool has_seen_pcapdroid_trailer = false;
 
 bool dump_capture_stats_now = false;
 bool reload_blacklists_now = false;
@@ -323,6 +324,21 @@ static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdt
 
 /* ******************************************************* */
 
+static void check_whitelist_mode_block(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    // whitelist mode: block any app unless it's explicitly whitelisted.
+    // The blocklist still has priority to determine if a connection should be blocked.
+
+    // NOTE: data->l7proto is not computed yet
+    bool is_dns = (tuple->ipproto == IPPROTO_UDP) && (ntohs(tuple->dst_port) == 53);
+
+    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block &&
+            // always allow DNS traffic from unspecified apps
+            (!is_dns || ((data->uid != UID_NETD) && (data->uid != UID_PHONE) && (data->uid != UID_UNKNOWN))))
+        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+}
+
+/* ******************************************************* */
+
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid) {
     pd_conn_t *data = pd_calloc(1, sizeof(pd_conn_t));
     if(!data) {
@@ -453,11 +469,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         fw_num_checked_connections++;
     }
 
-    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD) {
-        // whitelist mode: block any app unless it's explicitly whitelisted.
-        // The blocklist still has priority to determine if a connection should be blocked.
-        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
-    }
+    check_whitelist_mode_block(pd, tuple, data);
 
     return(data);
 }
@@ -531,7 +543,7 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
         data->update_type |= CONN_UPDATE_INFO;
     }
 
-    if(!pd->root_capture)
+    if(pd->vpn_capture)
         vpn_process_ndpi(pd, tuple, data);
 }
 
@@ -883,8 +895,8 @@ static int zdtun_iter_adapter(zdtun_t *zdt, const zdtun_conn_t *conn_info, void 
 }
 
 static void iter_active_connections(pcapdroid_t *pd, conn_cb cb) {
-    if(pd->root_capture)
-        root_iter_connections(pd, cb);
+    if(!pd->vpn_capture)
+        libpcap_iter_connections(pd, cb);
     else {
         struct iter_conn_data idata = {
                 .pd = pd,
@@ -907,8 +919,8 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
                          blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
     }
-    if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block && data->uid != UID_NETD)
-        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+
+    check_whitelist_mode_block(pd, tuple, data);
 
     if(old_block != data->to_block) {
         data->update_type |= CONN_UPDATE_STATS;
@@ -975,7 +987,7 @@ void pd_housekeeping(pcapdroid_t *pd) {
         dump_capture_stats_now = false;
         //log_d("Send stats");
 
-        if(!pd->root_capture)
+        if(pd->vpn_capture)
             zdtun_get_stats(pd->zdt, &pd->stats);
 
         if(pd->cb.send_stats_dump)
@@ -1142,6 +1154,7 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
 int pd_run(pcapdroid_t *pd) {
     /* Important: init global state every time. Android may reuse the service. */
     running = true;
+    has_seen_pcapdroid_trailer = false;
     netd_resolve_waiting = 0;
 
     /* nDPI */
@@ -1164,7 +1177,7 @@ int pd_run(pcapdroid_t *pd) {
     }
 
     if(pd->pcap_dump.enabled) {
-        int max_snaplen = pd->root_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
+        int max_snaplen = !pd->vpn_capture ? PCAPD_SNAPLEN : VPN_BUFFER_SIZE;
 
         // use the snaplen provided by the API
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
@@ -1200,7 +1213,7 @@ int pd_run(pcapdroid_t *pd) {
         pd->cb.notify_service_status(pd, "started");
 
     // Run the capture
-    int rv = pd->root_capture ? run_root(pd) : run_vpn(pd);
+    int rv = pd->vpn_capture ? run_vpn(pd) : run_libpcap(pd);
 
     log_i("Stopped packet loop");
 

@@ -18,8 +18,10 @@
  */
 
 #include <sys/un.h>
+#include <sys/wait.h>
 #include <linux/limits.h>
 #include "pcapdroid.h"
+#include "errors.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
@@ -45,23 +47,26 @@ typedef struct pcap_conn_t {
 
 /* ******************************************************* */
 
-static void kill_pcapd(pcapdroid_t *nc) {
-    int pid;
+static int get_pcapd_pid() {
     char pid_s[8];
     FILE *f = fopen(PCAPD_PID, "r");
 
     if(f == NULL)
-        return;
+        return -1;
 
     fgets(pid_s, sizeof(pid_s), f);
-    pid = atoi(pid_s);
-
-    if(pid != 0) {
-        log_i("Killing old pcapd with pid %d", pid);
-        run_shell_cmd("kill", pid_s, true, false);
-    }
-
     fclose(f);
+
+    return atoi(pid_s);
+}
+
+/* ******************************************************* */
+
+static void kill_process(int pid, bool as_root, int signum) {
+    char args[16];
+
+    snprintf(args, sizeof(args), "-%d %d", signum, pid);
+    run_shell_cmd("kill", args, as_root, false);
 }
 
 /* ******************************************************* */
@@ -102,7 +107,9 @@ static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
     char pcapd[PATH_MAX];
-    char *bpf = pd->root.bpf ? pd->root.bpf : "";
+    char *bpf = pd->pcap.bpf ? pd->pcap.bpf : "";
+
+    log_d("Starting pcapd...");
 
     if(pd->cb.get_libprog_path)
         pd->cb.get_libprog_path(pd, "pcapd", pcapd, sizeof(pcapd));
@@ -129,7 +136,13 @@ static int connectPcapd(pcapdroid_t *pd) {
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, PCAPD_SOCKET_PATH);
 
-    kill_pcapd(pd);
+    int pid = get_pcapd_pid();
+    if(pid > 0) {
+        log_i("Killing old pcapd with pid %d", pid);
+        kill_process(pid, pd->pcap.as_root, SIGTERM);
+        pid = -1;
+    }
+
     unlink(PCAPD_PID);
     unlink(PCAPD_SOCKET_PATH);
 
@@ -146,26 +159,36 @@ static int connectPcapd(pcapdroid_t *pd) {
     // Validate parameters to prevent command injection
     if(bpf[0]) {
         if(!valid_bpf(bpf)) {
-            log_e("BPF contains suspicious characters");
+            log_f("BPF contains suspicious characters");
             goto cleanup;
         }
         log_d("BPF filter is in use");
     }
 
-#ifdef ANDROID
-    // File paths are currently disallowed
-    // NOTE: interface validation is currently skipped when running local tests (files are used)
-    if(!valid_ifname(pd->root.capture_interface)) {
-        log_e("Invalid capture_interface");
-        goto cleanup;
+    if(pd->pcap_file_capture) {
+        // must be a file path
+        if(access(pd->pcap.capture_interface, F_OK)) {
+            log_f(PD_ERR_PCAP_DOES_NOT_EXIST);
+            goto cleanup;
+        }
+    } else {
+        // must be a valid interface name
+        if(!valid_ifname(pd->pcap.capture_interface)) {
+            log_f("Invalid capture_interface");
+            goto cleanup;
+        }
     }
-#endif
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -i '%s' -d -u %d -t -b '%s'", pd->root.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
-    if(run_shell_cmd(pcapd, args, pd->root.as_root, true) != 0)
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'",
+             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
+
+    int pcapd_out;
+    pid = start_subprocess(pcapd, args, pd->pcap.as_root, &pcapd_out);
+    if(pid <= 0)
         goto cleanup;
+    close(pcapd_out);
 
     // Wait for pcapd to start
     struct timeval timeout = {.tv_sec = 3, .tv_usec = 0};
@@ -175,7 +198,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     select(sock + 1, &selfds, NULL, NULL, &timeout);
 
     if(!FD_ISSET(sock, &selfds)) {
-        log_f("pcapd daemon did not spawn");
+        log_f(PD_ERR_PCAPD_NOT_SPAWNED);
         goto cleanup;
     }
 
@@ -185,9 +208,15 @@ static int connectPcapd(pcapdroid_t *pd) {
         goto cleanup;
     }
 
-    log_i("Connected to pcapd");
+    log_i("Connected to pcapd (pid=%d)", pid);
+    pd->pcap.pcapd_pid = pid;
 
 cleanup:
+    if((client < 0) && (pid > 0)) {
+        int rv;
+        kill_process(pid, pd->pcap.as_root, SIGKILL);
+        waitpid(pid, &rv, 0);
+    }
     unlink(PCAPD_SOCKET_PATH);
     close(sock);
 
@@ -222,14 +251,14 @@ static void remove_connection(pcapdroid_t *pd, pcap_conn_t *conn) {
             break;
     }
 
-    HASH_DEL(pd->root.connections, conn);
+    HASH_DEL(pd->pcap.connections, conn);
     pd_free(conn);
 }
 
 /* ******************************************************* */
 
 // Determines when a connection gets closed
-static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
+static void update_connection_status(pcapdroid_t *pd, pcap_conn_t *conn, zdtun_pkt_t *pkt, uint8_t dir) {
   // NOTE: pcap_conn_t needed below in remove_connection
   if((conn->data->status >= CONN_STATUS_CLOSED) || (pkt->flags & ZDTUN_PKT_IS_FRAGMENT))
       return;
@@ -283,7 +312,7 @@ static void update_connection_status(pcapdroid_t *nc, pcap_conn_t *conn, zdtun_p
                   // reused for a new query, it will generated a new connection, to properly
                   // extract and handle the new DNS query. This also happens for AAAA + A queries.
                   data->to_purge = true;
-                  remove_connection(nc, conn);
+                  remove_connection(pd, conn);
               }
           }
       }
@@ -323,6 +352,21 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
         return false;
     }
 
+    if(pd->pcap_file_capture && (hdr->uid == UID_UNKNOWN)) {
+        // retrieve the UID from the PCAPdroid trailer, if available
+        int non_ip_overhead = (int)hdr->len - (int)pkt.len;
+
+        if(non_ip_overhead >= sizeof(pcapdroid_trailer_t)) {
+            const struct pcapdroid_trailer* trailer =
+                    (const struct pcapdroid_trailer*) (buffer + hdr->len - sizeof(pcapdroid_trailer_t));
+
+            if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC) {
+                hdr->uid = ntohl(trailer->uid);
+                has_seen_pcapdroid_trailer = true;
+            }
+        }
+    }
+
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
             (pkt.tuple.src_port == 0) && (pkt.tuple.dst_port == 0)) {
         // This fragment cannot be mapped to the original src/dst ports. This may happen if the first
@@ -339,13 +383,13 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
         tupleSwapPeers(&pkt.tuple);
     }
 
-    HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+    HASH_FIND(hh, pd->pcap.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
     if(!conn) {
         // is_tx may be wrong, search in the other direction
         is_tx = !is_tx;
         tupleSwapPeers(&pkt.tuple);
 
-        HASH_FIND(hh, pd->root.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
+        HASH_FIND(hh, pd->pcap.connections, &pkt.tuple, sizeof(zdtun_5tuple_t), conn);
 
         if(!conn) {
             if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) && !(pkt.flags & ZDTUN_PKT_IS_FIRST_FRAGMENT)) {
@@ -360,7 +404,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
             conn = pd_malloc(sizeof(pcap_conn_t));
             if(!conn) {
-                log_e("malloc(pcap_conn_t) failed with code %d/%s",
+                log_f("malloc(pcap_conn_t) failed with code %d/%s",
                       errno, strerror(errno));
                 return false;
             }
@@ -372,11 +416,11 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
             }
 
             if(hdr->linktype == PCAPD_DLT_LINUX_SLL2)
-                data->root.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
+                data->pcap.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
 
             conn->tuple = pkt.tuple;
             conn->data = data;
-            HASH_ADD(hh, pd->root.connections, tuple, sizeof(zdtun_5tuple_t), conn);
+            HASH_ADD(hh, pd->pcap.connections, tuple, sizeof(zdtun_5tuple_t), conn);
 
             switch (conn->tuple.ipproto) {
                 case IPPROTO_TCP:
@@ -399,7 +443,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
     }
 
     // like last_seen but monotonic
-    conn->data->root.last_update_ms = pd->now_ms;
+    conn->data->pcap.last_update_ms = pd->now_ms;
 
     // make a copy before passing it to pd_process_packet since conn may
     // be freed in update_connection_status, while the pkt_context_t is still
@@ -422,7 +466,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, pd->root.connections, conn, tmp) {
+    HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
         uint64_t timeout = 0;
 
         switch(conn->tuple.ipproto) {
@@ -437,7 +481,7 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
                 break;
         }
 
-        if(purge_all || (pd->now_ms >= (conn->data->root.last_update_ms + timeout))) {
+        if(purge_all || (pd->now_ms >= (conn->data->pcap.last_update_ms + timeout))) {
             //log_d("IDLE (type=%d)", conn->tuple.ipproto);
 
             conn->data->to_purge = true;
@@ -461,10 +505,10 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
 
 /* ******************************************************* */
 
-void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
+void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
     pcap_conn_t *conn, *tmp;
 
-    HASH_ITER(hh, pd->root.connections, conn, tmp) {
+    HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
         if(cb(pd, &conn->tuple, conn->data) != 0)
             return;
     }
@@ -472,7 +516,36 @@ void root_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 
 /* ******************************************************* */
 
-int run_root(pcapdroid_t *pd) {
+static void process_pcapd_rv(pcapdroid_t *pd, int rv) {
+    pcapd_rv rrv = (pcapd_rv) rv;
+    log_i("pcapd exit code: %d", rv);
+
+    switch (rrv) {
+        case PCAPD_OK:
+            break;
+        case PCAPD_INTERFACE_OPEN_FAILED:
+            if(pd->pcap_file_capture)
+                log_f(PD_ERR_INVALID_PCAP_FILE);
+            else
+                log_f(PD_ERR_INTERFACE_OPEN_ERROR);
+            break;
+        case PCAPD_UNSUPPORTED_DATALINK:
+            log_f(PD_ERR_UNSUPPORTED_DATALINK);
+            break;
+        case PCAPD_PCAP_READ_ERROR:
+            log_f(PD_ERR_PCAP_READ);
+            break;
+        case PCAPD_SOCKET_WRITE_ERROR:
+            // ignore, as it can be caused by PCAPdroid stopping the capture
+            break;
+        default:
+            log_f("pcapd daemon exited with code %d", rv);
+    }
+}
+
+/* ******************************************************* */
+
+int run_libpcap(pcapdroid_t *pd) {
     int sock = -1;
     int rv = -1;
     char buffer[PCAPD_SNAPLEN];
@@ -481,13 +554,13 @@ int run_root(pcapdroid_t *pd) {
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
 
 #if ANDROID
-    char capture_interface[16] = "@inet";
+    char capture_interface[PATH_MAX] = "@inet";
     char bpf[256];
     bpf[0] = '\0';
 
-    pd->root.as_root = true; // TODO support read from PCAP file
-    pd->root.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
-    pd->root.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+    pd->pcap.as_root = !pd->pcap_file_capture;
+    pd->pcap.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
+    pd->pcap.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
 #endif
 
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
@@ -529,7 +602,7 @@ int run_root(pcapdroid_t *pd) {
         struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
 
         if(select(sock + 1, &fdset, NULL, NULL, &timeout) < 0) {
-            log_e("select failed[%d]: %s", errno, strerror(errno));
+            log_f("select failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
 
@@ -545,15 +618,15 @@ int run_root(pcapdroid_t *pd) {
         ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
         if(xrv != sizeof(hdr)) {
             if(xrv < 0)
-                log_e("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
+                log_f("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
             goto cleanup;
         }
         if(hdr.len > sizeof(buffer)) {
-            log_e("packet too big (%d B)", hdr.len);
+            log_f("packet too big (%d B)", hdr.len);
             goto cleanup;
         }
         if(xread(sock, buffer, hdr.len) != hdr.len) {
-            log_e("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
+            log_f("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
             goto cleanup;
         }
 #else
@@ -602,6 +675,16 @@ cleanup:
     if(iptables_cleanup) {
         char args[128];
         run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
+    }
+
+    if(pd->pcap.pcapd_pid > 0) {
+        int status = PCAPD_ERROR;
+
+        if(waitpid(pd->pcap.pcapd_pid, &status, 0) <= 0)
+            log_e("waitpid %d failed[%d]: %s", pd->pcap.pcapd_pid, errno, strerror(errno));
+
+        if(WIFEXITED(status))
+            process_pcapd_rv(pd, WEXITSTATUS(status));
     }
 
     return rv;

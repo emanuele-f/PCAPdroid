@@ -21,9 +21,7 @@ package com.emanuelef.remote_capture.activities;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -35,13 +33,11 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -337,12 +333,7 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
                 maxDp,
                 getResources().getDisplayMetrics()
         );
-
-        WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        Display display = manager.getDefaultDisplay();
-        Point point = new Point();
-        display.getSize(point);
-        int smallerDimension = Math.min(Math.min(point.x, point.y) / 2, maxPx);
+        int smallerDimension = Math.min(Utils.getSmallerDisplayDimension(this) / 2, maxPx);
 
         String device_name = Utils.getDeviceName(this);
         if(device_name == null)

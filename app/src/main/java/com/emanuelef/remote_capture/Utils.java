@@ -43,6 +43,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -58,6 +59,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
@@ -67,9 +69,12 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.Patterns;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -109,6 +114,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -124,9 +130,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -211,6 +219,21 @@ public class Utils {
         }
 
         return primaryLocale;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static int getSmallerDisplayDimension(Context ctx) {
+        WindowManager manager = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = manager.getCurrentWindowMetrics();
+            return Math.min(windowMetrics.getBounds().width(), windowMetrics.getBounds().width());
+        } else {
+            Display display = manager.getDefaultDisplay();
+            Point point = new Point();
+            display.getSize(point);
+            return Math.min(point.x, point.y);
+        }
     }
 
     public static String getCountryName(Context context, String country_code) {
@@ -480,6 +503,10 @@ public class Utils {
     }
 
     public static boolean isLocalNetworkAddress(String checkAddress) {
+        // this check is necessary as otherwise host resolution would be triggered on the main thread
+        if(!validateIpAddress(checkAddress))
+            return false;
+
         try {
             return isLocalNetworkAddress(InetAddress.getByName(checkAddress));
         } catch (UnknownHostException ignored) {
@@ -1216,6 +1243,15 @@ public class Utils {
         }
     }
 
+    public static void copy(InputStream in, File dst) throws IOException {
+        try(FileOutputStream out = new FileOutputStream(dst)) {
+            byte[] bytesIn = new byte[4096];
+            int read;
+            while((read = in.read(bytesIn)) != -1)
+                out.write(bytesIn, 0, read);
+        }
+    }
+
     public static boolean hasEncryptedPayload(AppDescriptor app, ConnectionDescriptor conn) {
         return(
             // Telegram
@@ -1616,7 +1652,25 @@ public class Utils {
     }
 
     public static String uriToFilePath(Context ctx, Uri uri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
+        // https://gist.github.com/r0b0t3d/492f375ec6267a033c23b4ab8ab11e6a
+        if (isExternalStorageDocument(uri)) {
+            final String docId = DocumentsContract.getDocumentId(uri);
+            final String[] split = docId.split(":");
+            final String type = split[0];
+
+            if ("primary".equalsIgnoreCase(type))
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+        } else if(isDownloadsDocument(uri)) {
+            return downloadsUriToPath(ctx, uri);
+        } else if("content".equalsIgnoreCase(uri.getScheme()))
+            return mediastoreUriToPath(ctx, uri);
+        else if ("file".equalsIgnoreCase(uri.getScheme()))
+            return uri.getPath();
+        return null;
+    }
+
+    private static String mediastoreUriToPath(Context ctx, Uri uri) {
+        String[] proj = { MediaStore.Files.FileColumns.DATA };
         try(Cursor cursor = ctx.getContentResolver().query(uri, proj, null, null, null)) {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             if(cursor.moveToFirst())
@@ -1624,6 +1678,40 @@ public class Utils {
         } catch (Exception ignored) {}
 
         return null;
+    }
+
+    private static String downloadsUriToPath(Context ctx, Uri uri) {
+        final String id = DocumentsContract.getDocumentId(uri);
+        if(id == null)
+            return null;
+
+        // Starting with Android O, this "id" is not necessarily a long (row number),
+        // but might also be a "raw:/some/file/path" URL
+        if (id.startsWith("raw:/")) {
+            return Uri.parse(id).getPath();
+        } else {
+            String[] contentUriPrefixesToTry = new String[]{
+                    "content://downloads/public_downloads",
+                    "content://downloads/my_downloads"
+            };
+            for (String contentUriPrefix : contentUriPrefixesToTry) {
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse(contentUriPrefix), Long.parseLong(id));
+                String path = mediastoreUriToPath(ctx, contentUri);
+                if(path != null)
+                    return path;
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
     public static class UriStat {
@@ -1680,5 +1768,19 @@ public class Utils {
             return PrivateDnsMode.OPPORTUNISTIC;
         else
             return PrivateDnsMode.DISABLED;
+    }
+
+    public static @NonNull Enumeration<NetworkInterface> getNetworkInterfaces() {
+        try {
+            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
+            if(ifs != null)
+                return ifs;
+        } catch (SocketException | NullPointerException e) {
+            // NullPointerException can be thrown on Android < 31 with virtual interface without a
+            // parent interface
+            e.printStackTrace();
+        }
+
+        return Collections.enumeration(new ArrayList<>());
     }
 }

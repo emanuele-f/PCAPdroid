@@ -374,7 +374,7 @@
     <string name="cert_installed_correctly">Das CA-Zertifikat ist installiert</string>
     <string name="cert_reinstall_required">Das CA-Zertifikat ist nicht installiert, führen Sie den mitm-Einrichtungsassistenten aus</string>
     <string name="cert_exported_now_installed">Zertifikat exportiert, installieren Sie es nun über die Android-Einstellungen</string>
-    <string name="mitm_addon_bad_version">Schlechte PCAPdroid Mitm Addon-Version. Deinstallieren Sie es und versuchen Sie es erneut</string>
+    <string name="mitm_addon_bad_version">Schlechte PCAPdroid Mitm Addon-Version. Bitte installieren Sie Version %1$s und versuchen Sie es erneut</string>
     <string name="mitm_addon_new_version">Das PCAPdroid mitm Addon muss aktualisiert werden</string>
     <string name="overview">Übersicht</string>
     <string name="response">Antwort</string>
@@ -447,4 +447,23 @@
     <string name="password">Passwort</string>
     <string name="socks5_auth_summary">Authentifizieren Sie sich beim Proxy über Benutzername und Passwort</string>
     <string name="mitm_addon_autostart_workaround">Die Verbindung mit dem mitm-Addon ist fehlgeschlagen. Als Workaround können Sie versuchen, die mitm addon-App zu öffnen und dann zu PCAPdroid zurückzukehren, ohne sie zu schließen. Möchten Sie die App jetzt öffnen\?</string>
+    <string name="qr_info_text">Installiere PCAPdroid aus dem Google Play Store und scanne diesen QR-Code</string>
+    <string name="qr_purchase_required">Kaufe einen Entsperr-Token, um mit QR-Code zu aktivieren</string>
+    <string name="license_limit_reached">Du hast die Lizenzgrenze für diesen Freischalt-Token erreicht. Kaufe ein neuen Token, um mehr Lizenzen zu generieren</string>
+    <string name="license_error">Fehler der Lizenzerzeugung [%1$d: %2$s</string>
+    <string name="requesting_license">Frage einen Lizenzcode an, bitte warten</string>
+    <string name="mitm_addon_starting">Mitm addon startet…</string>
+    <string name="decryption_rules">Entschlüsselung Regeln</string>
+    <string name="decrypt_action">Entschlüsseln…</string>
+    <string name="dont_decrypt_action">Nicht entschlüsseln…</string>
+    <string name="status_encrypted">Verschlüsselt</string>
+    <string name="injected">Injiziert</string>
+    <string name="qr_license_confirm">Möchten Sie eine Lizenz für das \"%1$s\"-Gerät mit dem folgenden Entsperr-Token generieren\?</string>
+    <string name="invalid_license">ungültige Lizenz</string>
+    <string name="connection_error">Verbindungsfehler: %1$s</string>
+    <string name="qr_code_expired">QR-Code verfallen. Generiere einen neuen QR-Code und versuche es erneut</string>
+    <string name="license_activation_ok">Lizenzierung abgeschlossen</string>
+    <string name="mitm_addon_running">Mitm addon läuft</string>
+    <string name="decryption_rules_help">Diese Regeln geben an, welche Verbindungen zu entschlüsseln sind. Host-basierte Regeln funktionieren nur, wenn eine vorherige DNS-Antwort angezeigt wird</string>
+    <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
 </resources>

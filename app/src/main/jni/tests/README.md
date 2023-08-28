@@ -15,7 +15,7 @@ apt install make clang libpcap-dev cmake
 make run_tests
 
 # Fuzz the pcapd daemon
-make fuzz_pcap
+make fuzz_pcapd
 
 # Fuzz the pcapdroid capture
 make fuzz_capture

@@ -26,9 +26,9 @@ add_test(NAME blacklist_match COMMAND ./blacklist match)
 add_test(NAME blacklist_detection COMMAND ./blacklist detection)
 
 test_source(dump_api)
-#~ add_test(NAME dump_api_snaplen COMMAND ./dump_api snaplen)
+add_test(NAME dump_api_snaplen COMMAND ./dump_api snaplen)
 add_test(NAME dump_api_max_pkts_flow COMMAND ./dump_api max_pkts_per_flow)
-#~ add_test(NAME dump_api_max_size COMMAND ./dump_api max_dump_size)
+add_test(NAME dump_api_max_size COMMAND ./dump_api max_dump_size)
 
-#~ test_source(root_capture)
-#~ add_test(NAME root_capture COMMAND ./root_capture invalid_pkts)
+test_source(root_capture)
+add_test(NAME root_capture COMMAND ./root_capture invalid_pkts)

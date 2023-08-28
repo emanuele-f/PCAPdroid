@@ -20,7 +20,10 @@
 package com.emanuelef.remote_capture;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
@@ -92,6 +95,32 @@ public class PCAPdroid extends Application {
                 theme = "system";
         }
         Utils.setAppTheme(theme);
+
+        // Listen to package events
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addDataScheme("package");
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
+                    boolean newInstall = !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
+                    String packageName = intent.getData().getSchemeSpecificPart();
+                    Log.d(TAG, "ACTION_PACKAGE_ADDED [new=" + newInstall + "]: " + packageName);
+
+                    if(newInstall)
+                        checkUidMapping(packageName);
+                } else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+                    boolean isUpdate = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
+                    String packageName = intent.getData().getSchemeSpecificPart();
+                    Log.d(TAG, "ACTION_PACKAGE_REMOVED [update=" + isUpdate + "]: " + packageName);
+
+                    if(!isUpdate)
+                        checkUidMapping(packageName);
+                }
+            }
+        }, filter);
     }
 
     public static @NonNull PCAPdroid getInstance() {
@@ -139,6 +168,31 @@ public class PCAPdroid extends Application {
         mFirewallWhitelist.addApp("com.google.android.ims" /* Carrier Services */);
         mFirewallWhitelist.addApp("com.sec.spp.push" /* Samsung Push Service */);
         mFirewallWhitelist.save();
+    }
+
+    private void checkUidMapping(String pkg) {
+        if(mVisMask != null)
+            mVisMask.uidMappingChanged(pkg);
+
+        // When an app is installed/uninstalled, recheck the UID mappings.
+        // In particular:
+        //  - On app uninstall, invalidate any package_name -> UID mapping
+        //  - On app install, add the new package_name -> UID mapping
+        if((mMalwareWhitelist != null) && mMalwareWhitelist.uidMappingChanged(pkg))
+            CaptureService.reloadMalwareWhitelist();
+
+        if((mFirewallWhitelist != null) && mFirewallWhitelist.uidMappingChanged(pkg)) {
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadFirewallWhitelist();
+        }
+
+        if((mDecryptionList != null) && mDecryptionList.uidMappingChanged(pkg))
+            CaptureService.reloadDecryptionList();
+
+        if((mBlocklist != null) && mBlocklist.uidMappingChanged(pkg)) {
+            if(CaptureService.isServiceActive())
+                CaptureService.requireInstance().reloadBlocklist();
+        }
     }
 
     public MatchList getFirewallWhitelist() {

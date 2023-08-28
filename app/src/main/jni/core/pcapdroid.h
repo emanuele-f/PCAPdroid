@@ -78,7 +78,7 @@ typedef struct {
         struct {
             uint64_t last_update_ms; // like last_seen but monotonic
             u_int ifidx;             // the 1-based interface index
-        } root;
+        } pcap;
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet
             uint16_t local_port;         // local port, from zdtun to the Internet
@@ -189,7 +189,8 @@ typedef struct pcapdroid {
     // config
     jint app_filter;
     jint mitm_addon_uid;
-    bool root_capture;
+    bool vpn_capture;
+    bool pcap_file_capture;
     payload_mode_t payload_mode;
 
     // stats
@@ -222,7 +223,8 @@ typedef struct pcapdroid {
             bool as_root;
             char *bpf;
             char *capture_interface;
-        } root; // TODO rename: it can run without root to read a PCAP file
+            int pcapd_pid;
+        } pcap;
     };
 
     struct {
@@ -237,8 +239,9 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        u_int32_t proxy_ip;
+        zdtun_ip_t proxy_ip;
         u_int32_t proxy_port;
+        int proxy_ipver;
         char proxy_user[32];
         char proxy_pass[32];
     } socks5;
@@ -361,6 +364,7 @@ extern uint32_t new_dns_server;
 extern bool block_private_dns;
 extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
+extern bool has_seen_pcapdroid_trailer;
 extern int bl_num_checked_connections;
 extern int fw_num_checked_connections;
 extern char *pd_appver;
@@ -393,6 +397,7 @@ uint16_t pd_ndpi2proto(ndpi_protocol proto);
 
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
+zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver);
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);

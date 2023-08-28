@@ -249,7 +249,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             values.add("any");
 
             try {
-                Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+                Enumeration<NetworkInterface> ifaces = Utils.getNetworkInterfaces();
 
                 while (ifaces.hasMoreElements()) {
                     NetworkInterface iface = ifaces.nextElement();

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-22 - Emanuele Faranda
+ * Copyright 2021-23 - Emanuele Faranda
  */
 
 /*
@@ -204,7 +204,7 @@ static void sighandler(__unused int signo) {
   } else {
     log_w("Exit now");
     unlink(PCAPD_PID);
-    exit(1);
+    exit(PCAPD_ERROR);
   }
 }
 
@@ -255,11 +255,11 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
       // parent
       exit(0);
     }
-
-    // SIGPIPE will be generated as in su_cmd PCAPdroid performs a dup2 stdout/stderr to a pipe
-    // which is then closed
-    signal(SIGPIPE, SIG_IGN);
   }
+
+  // SIGPIPE will be generated as in su_cmd PCAPdroid performs a dup2 stdout/stderr to a pipe
+  // which is then closed
+  signal(SIGPIPE, SIG_IGN);
 
   rt->nlroute_sock = -1;
   rt->nldiag_sock = -1;
@@ -293,12 +293,14 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
   }
 
-  if(nl_is_diag_working()) {
-    rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
-    if(rt->nldiag_sock < 0)
-      log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
-  } else
-    log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
+  if(getuid() == 0) {
+    if(nl_is_diag_working()) {
+      rt->nldiag_sock = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_INET_DIAG);
+      if(rt->nldiag_sock < 0)
+        log_w("could not open NETLINK_INET_DIAG[%d]: %s", errno, strerror(errno));
+    } else
+      log_w("NETLINK_INET_DIAG not working, using slow UID resolution method");
+  }
 
   signal(SIGINT, &sighandler);
   signal(SIGTERM, &sighandler);
@@ -344,7 +346,7 @@ static void init_interface(pcapd_iface_t *iface) {
 
 /* ******************************************************* */
 
-static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
+static pcapd_rv open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char *ifname, int ifid) {
 #ifndef READ_FROM_PCAP
   int is_file = 0;
   pcap_t *pd;
@@ -368,9 +370,10 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
     pd = pcap_open_offline(ifname, errbuf);
 
     if(!pd) {
-      log_i("pcap_open(%s) failed: %s", ifname, errbuf);
-      return -1;
+      log_e("pcap_open(%s) failed: %s", ifname, errbuf);
+      return PCAPD_INTERFACE_OPEN_FAILED;
     }
+
     is_file = 1;
   }
 
@@ -383,7 +386,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
 
   if(!pd) {
     log_i("pcap_open_offline(%s) failed: %s", READ_FROM_PCAP, errbuf);
-    return -1;
+    return PCAPD_INTERFACE_OPEN_FAILED;
   }
 
   strcpy(ifname, "pcap");
@@ -419,7 +422,7 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
     default:
       log_i("[%s] unsupported datalink: %d", ifname, dlink);
       pcap_close(pd);
-      return -1;
+      return PCAPD_UNSUPPORTED_DATALINK;
   }
 
   struct bpf_program fcode;
@@ -428,14 +431,14 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   if(pcap_compile(pd, &fcode, rt->bpf, 1, PCAP_NETMASK_UNKNOWN) < 0) {
     log_i("[%s] could not set capture filter: %s", ifname, pcap_geterr(pd));
     pcap_close(pd);
-    return -1;
+    return PCAPD_INTERFACE_OPEN_FAILED;
   }
 
   if(pcap_setfilter(pd, &fcode) < 0) {
     log_e("[%s] pcap_setfilter failed: %s", ifname, pcap_geterr(pd));
     pcap_freecode(&fcode);
     pcap_close(pd);
-    return -1;
+    return PCAPD_INTERFACE_OPEN_FAILED;
   }
   pcap_freecode(&fcode);
 
@@ -464,12 +467,19 @@ static int open_interface(pcapd_iface_t *iface, pcapd_runtime_t *rt, const char 
   iface->ipoffset = ipoffset;
   iface->pf = pcap_get_selectable_fd(pd);
   rt->maxfd = max(rt->maxfd, iface->pf);
-  strncpy(iface->name, ifname, IFNAMSIZ);
-  iface->name[IFNAMSIZ - 1] = '\0';
+
+  if(is_file) {
+    char *last_slash = strrchr(ifname, '/');
+    if(last_slash)
+      ifname = last_slash + 1;
+  }
+
+  strncpy(iface->name, ifname, sizeof(iface->name));
+  iface->name[sizeof(iface->name) - 1] = '\0';
 
   log_d("%s(%d): datalink=%s(%d)", iface->name, iface->ifidx, dlink_s, dlink);
 
-  return 0;
+  return PCAPD_OK;
 }
 
 /* ******************************************************* */
@@ -514,7 +524,7 @@ static void check_inet_interface(pcapd_runtime_t *rt) {
 
   pcap_t *old_pd = rt->inet_iface->pd;
 
-  if(open_interface(rt->inet_iface, rt, ifname, rt->conf->inet_ifid) < 0)
+  if(open_interface(rt->inet_iface, rt, ifname, rt->conf->inet_ifid) != PCAPD_OK)
     return;
 
   // Success
@@ -700,7 +710,7 @@ static void get_selectable_fds(pcapd_runtime_t *rt, fd_set *fds) {
 
 /* ******************************************************* */
 
-static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
+static pcapd_rv read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
   struct pcap_pkthdr *hdr;
   const u_char *pkt;
   int to_skip = iface->ipoffset;
@@ -713,20 +723,15 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
 
       if(iface == rt->inet_iface)
         // Do not abort, just wait for route/interface changes
-        return 0;
+        return PCAPD_OK;
 
       // abort, resuming other interfaces is not supported yet
-      return -1;
+      return PCAPD_PCAP_READ_ERROR;
     } else if(rv == PCAP_ERROR_BREAK)
-      // TODO handle EOF without error
-#ifndef READ_FROM_PCAP
-      return -1;
-#else
-      return 0;
-#endif
+      return PCAPD_EOF;
 
     // can be reached when the packet buffer timeout expires
-    return 0;
+    return PCAPD_OK;
   }
 
   if(hdr->caplen >= to_skip) {
@@ -796,7 +801,7 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
         if((xwrite(rt->client, &phdr, sizeof(phdr)) < 0) ||
            (xwrite(rt->client, pkt, phdr.len) < 0)) {
           log_e("write failed[%d]: %s", errno, strerror(errno));
-          return -1;
+          return PCAPD_SOCKET_WRITE_ERROR;
         }
       } else if(!rt->conf->quiet) {
         char buf[512];
@@ -821,13 +826,13 @@ static int read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) {
     iface->next_stats_update = now + 3;
   }
 
-  return 0;
+  return PCAPD_OK;
 }
 
 /* ******************************************************* */
 
-int run_pcap_dump(pcapd_conf_t *conf) {
-  int rv = -1;
+pcapd_rv run_pcap_dump(pcapd_conf_t *conf) {
+  pcapd_rv rv = PCAPD_ERROR;
   struct timespec ts = {0};
   pcapd_runtime_t rt = {0};
   time_t next_interface_recheck = 0;
@@ -853,11 +858,11 @@ int run_pcap_dump(pcapd_conf_t *conf) {
 
   for(int i=0; i<conf->num_interfaces; i++) {
     if((strcmp(conf->ifnames[i], "@inet") != 0)
-          && open_interface(&rt.ifaces[i], &rt, conf->ifnames[i], i) < 0)
+          && (rv = open_interface(&rt.ifaces[i], &rt, conf->ifnames[i], i)) != PCAPD_OK)
       goto cleanup;
   }
 
-  rv = 0;
+  rv = PCAPD_OK;
   running = 1;
   get_selectable_fds(&rt, &rt.sel_fds);
 
@@ -868,7 +873,7 @@ int run_pcap_dump(pcapd_conf_t *conf) {
     if(select(rt.maxfd + 1, &fds, NULL, NULL, &timeout) < 0) {
       if(errno != EINTR) {
         log_e("select failed[%d]: %s", errno, strerror(errno));
-        rv = -1;
+        rv = PCAPD_ERROR;
       }
       break;
     }
@@ -881,7 +886,7 @@ int run_pcap_dump(pcapd_conf_t *conf) {
       break;
     } else if((rt.nlroute_sock > 0) && FD_ISSET(rt.nlroute_sock, &fds)) {
       if(handle_nl_message(&rt) < 0) {
-        rv = -1;
+        rv = PCAPD_NETLINK_ERROR;
         break;
       }
 
@@ -890,8 +895,9 @@ int run_pcap_dump(pcapd_conf_t *conf) {
     } else {
       for(int i=0; i<rt.conf->num_interfaces; i++) {
         if((rt.ifaces[i].pf != -1) && FD_ISSET(rt.ifaces[i].pf, &fds)) {
-          if(read_pkt(&rt, &rt.ifaces[i], now) < 0) {
-            rv = -1;
+          if((rv = read_pkt(&rt, &rt.ifaces[i], now)) != PCAPD_OK) {
+            if(rv == PCAPD_EOF)
+              rv = PCAPD_OK;
             running = 0;
             break;
           }
@@ -936,7 +942,7 @@ cleanup:
 
 static void usage() {
   fprintf(stderr, "pcapd - root capture tool of PCAPdroid\n"
-    "Copyright 2021 Emanuele Faranda <black.silver@hotmail.it>\n\n"
+    "Copyright 2021-23 Emanuele Faranda <black.silver@hotmail.it>\n\n"
     "Usage: pcapd [OPTIONS]\n"
     " -i [ifname]    capture packets on the specified interface. Can be specified\n"
     "                multiple times. The '@inet' keyword can be used to capture from\n"
@@ -946,11 +952,12 @@ static void usage() {
     " -u [uid]       filter packets by uid\n"
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
+    " -L uid         specify the UID to use to create the log file\n"
     " -n             do not connect to the UNIX socket, log to stdout instead\n"
     " -q             suppress non-error output\n"
   );
 
-  exit(1);
+  exit(PCAPD_ERROR);
 }
 
 /* ******************************************************* */
@@ -969,17 +976,17 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
   init_conf(conf);
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "hdtni:u:b:l:")) != -1) {
+  while ((c = getopt (argc, argv, "hdtni:u:b:l:L:")) != -1) {
     switch(c) {
       case 'i':
         if(conf->num_interfaces >= PCAPD_MAX_INTERFACES) {
           fprintf(stderr, "Maximum number of interfaces reached (%d)\n", PCAPD_MAX_INTERFACES);
-          exit(1);
+          exit(PCAPD_ERROR);
         }
         if(strcmp(optarg, "@inet") == 0) {
           if(conf->inet_ifid != -1) {
             fprintf(stderr, "@inet interface already specified\n");
-            exit(1);
+            exit(PCAPD_ERROR);
           }
           conf->inet_ifid = conf->num_interfaces;
         }
@@ -998,7 +1005,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
         conf->uid_filter = atoi(optarg);
         if(conf->uid_filter < -1) {
           fprintf(stderr, "Invalid UID: %s\n", optarg);
-          exit(1);
+          exit(PCAPD_ERROR);
         }
         break;
       case 'b':
@@ -1008,6 +1015,9 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
       case 'l':
         if(conf->log_file) free(conf->log_file);
         conf->log_file = strdup(optarg);
+        break;
+      case 'L':
+        conf->log_uid = atol(optarg);
         break;
       case 'q':
         conf->quiet = 1;
@@ -1022,9 +1032,17 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
     usage();
 
   if(conf->log_file) {
-    mode_t old_mask = umask(033);
+    uid_t saved_uid = geteuid();
+
+    if(conf->log_uid > 0) {
+      unlink(conf->log_file);
+      seteuid(conf->log_uid);
+    }
+
     logf = fopen(conf->log_file, "w");
-    umask(old_mask);
+
+    if(conf->log_uid > 0)
+      seteuid(saved_uid);
 
     if(logf == NULL)
       log_e("Could not open log file[%d]: %s", errno, strerror(errno));
@@ -1042,15 +1060,12 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
 
 int main(int argc, char *argv[]) {
   pcapd_conf_t conf;
-  int rv;
 
   logtag = "pcapd";
   logcallback = logcb;
   parse_args(&conf, argc, argv);
 
-  rv = run_pcap_dump(&conf);
-
-  return rv;
+  return run_pcap_dump(&conf);
 }
 
 #endif

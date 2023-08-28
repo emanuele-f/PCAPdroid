@@ -162,7 +162,7 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     }
 
     if(data->update_type & CONN_UPDATE_STATS) {
-        bool blocked = data->to_block && !pd->root_capture; // currently can only block connections in non-root mode
+        bool blocked = data->to_block && pd->vpn_capture; // currently can only block connections in non-root mode
 
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
@@ -232,8 +232,8 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
 
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
-    u_int ifidx = (pd->root_capture ? data->root.ifidx : 0);
-    u_int local_port = (!pd->root_capture ? data->vpn.local_port : conn_info->src_port);
+    u_int ifidx = (pd->vpn_capture ? 0 : data->pcap.ifidx);
+    u_int local_port = (pd->vpn_capture ? data->vpn.local_port : conn_info->src_port);
     bool mitm_decrypt = (pd->tls_decryption.enabled && data->proxied);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
                                                 conn_info->ipver, conn_info->ipproto,
@@ -586,7 +586,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
-            .root_capture = (bool) getIntPref(env, vpn, "isRootCapture"),
+            .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
+            .pcap_file_capture = (bool) getIntPref(env, vpn, "isPcapFileCapture"),
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
@@ -598,7 +599,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             },
             .socks5 = {
                     .enabled = (bool) getIntPref(env, vpn, "getSocks5Enabled"),
-                    .proxy_ip = getIPv4Pref(env, vpn, "getSocks5ProxyAddress"),
+                    .proxy_ip = getIPPref(env, vpn, "getSocks5ProxyAddress", &pd.socks5.proxy_ipver),
                     .proxy_port = htons(getIntPref(env, vpn, "getSocks5ProxyPort")),
             },
             .malware_detection = {
@@ -615,7 +616,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
     if(pd.socks5.enabled)
         getSocks5ProxyAuth(&pd);
 
-    if(!pd.root_capture)
+    if(pd.vpn_capture)
         pd.vpn.tunfd = tunfd;
 
     getStringPref(&pd, "getWorkingDir", pd.cachedir, sizeof(pd.cachedir));
@@ -805,7 +806,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, j
         return false;
     }
 
-    if(pd->root_capture) {
+    if(!pd->vpn_capture) {
         log_e("firewall in root mode not implemented");
         return false;
     }
@@ -846,7 +847,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_reloadFirewallWhitelist(JNIEnv
         return false;
     }
 
-    if(pd->root_capture) {
+    if(!pd->vpn_capture) {
         log_e("firewall in root mode not implemented");
         return false;
     }
@@ -1148,6 +1149,32 @@ u_int32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
 
 /* ******************************************************* */
 
+zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver) {
+    zdtun_ip_t rv = {};
+
+    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()Ljava/lang/String;");
+    jstring obj = (*env)->CallObjectMethod(env, vpn_inst, midMethod);
+
+    if(!jniCheckException(env)) {
+        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+        log_d("getIPPref(%s) = %s", key, value);
+
+        if(*value) {
+            *ip_ver = zdtun_parse_ip(value, &rv);
+
+            if(*ip_ver < 0)
+                log_e("%s() returned invalid IP address: %s", key, value);
+        }
+
+        (*env)->ReleaseStringUTFChars(env, obj, value);
+    }
+
+    (*env)->DeleteLocalRef(env, obj);
+    return(rv);
+}
+
+/* ******************************************************* */
+
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key) {
     struct in6_addr addr = {0};
 
@@ -1219,6 +1246,14 @@ Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, 
         pcap_dump_secret(global_pd->pcap_dump.dumper, sec_data, sec_len);
 
     (*env)->ReleaseByteArrayElements(env, secret, sec_data, 0);
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env,
+                                                                          jclass clazz) {
+    return has_seen_pcapdroid_trailer;
 }
 
 #endif // ANDROID

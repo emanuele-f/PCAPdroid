@@ -1,5 +1,5 @@
-project(tests)
 cmake_minimum_required(VERSION 3.18.1)
+project(tests)
 
 option(FUZZING "Build for Fuzz Testing" OFF)
 

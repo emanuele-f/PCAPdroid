@@ -29,7 +29,7 @@ static char errbuf[PCAP_ERRBUF_SIZE];
 /* ******************************************************* */
 
 int openPcap(pcapdroid_t *pd) {
-  char *pcap_path = pd->root.capture_interface;
+  char *pcap_path = pd->pcap.capture_interface;
 
   if(!pcap_path) {
     log_e("NULL pcap path");

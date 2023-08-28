@@ -60,6 +60,7 @@ public class MatchList {
     private final ArrayList<Rule> mRules = new ArrayList<>();
     private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
     private final ArraySet<Integer> mUids = new ArraySet<>();
+    private final ArrayMap<String, Integer> mPackageToUid = new ArrayMap<>();
     private final AppsResolver mResolver;
     private boolean mMigration = false;
 
@@ -314,6 +315,7 @@ public class MatchList {
             if(uid == Utils.UID_NO_FILTER)
                 return false;
 
+            mPackageToUid.put(value, uid);
             mUids.add(uid);
         }
 
@@ -352,9 +354,10 @@ public class MatchList {
 
         if(rule.getType() == RuleType.APP) {
             int uid = mResolver.getUid(val);
-            if(uid != Utils.UID_NO_FILTER)
+            if(uid != Utils.UID_NO_FILTER) {
+                mPackageToUid.remove(val);
                 mUids.remove(uid);
-            else
+            } else
                 Log.w(TAG, "removeRule: no uid found for package " + val);
         }
 
@@ -417,6 +420,7 @@ public class MatchList {
         boolean hasRules = mRules.size() > 0;
         mRules.clear();
         mMatches.clear();
+        mPackageToUid.clear();
         mUids.clear();
 
         if(notify && hasRules)
@@ -509,5 +513,38 @@ public class MatchList {
     private void notifyListeners() {
         for(ListChangeListener listener: mListeners)
             listener.onListChanged();
+    }
+
+    /* Call this whenever a package name -> uid mapping may have changed.
+     * True is returned when the mapping has been updated. In such a case,
+     * the caller must reload any native rules based on this MatchList. */
+    public boolean uidMappingChanged(String pkg) {
+        if(!mMatches.containsKey(matchKey(RuleType.APP, pkg)))
+            return false;
+
+        boolean changed = false;
+        Integer old_uid = mPackageToUid.get(pkg);
+        AppDescriptor app = mResolver.getAppByPackage(pkg, 0);
+
+        if((old_uid != null) && ((app == null) || (app.getUid() != old_uid))) {
+            Log.i(TAG, "Remove old UID mapping of " + pkg + ": " + old_uid);
+
+            mPackageToUid.remove(pkg);
+            mUids.remove(old_uid);
+            changed = true;
+
+            old_uid = null; // possibly add the new UID mapping below
+        }
+
+        if((old_uid == null) && (app != null)) {
+            int new_uid = app.getUid();
+            Log.i(TAG, "Add UID mapping of " + pkg + ": " + new_uid);
+
+            mPackageToUid.put(pkg, new_uid);
+            mUids.add(new_uid);
+            changed = true;
+        }
+
+        return changed;
     }
 }
