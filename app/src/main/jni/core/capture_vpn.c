@@ -483,6 +483,8 @@ int run_vpn(pcapdroid_t *pd) {
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_i("Starting packet loop");
+    if(pd->cb.notify_service_status && running)
+        pd->cb.notify_service_status(pd, "started");
 
     while(running) {
         int max_fd;

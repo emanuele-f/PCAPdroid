@@ -217,6 +217,8 @@ static int connectPcapd(pcapdroid_t *pd) {
         int rv;
         if(waitpid(pid, &rv, WNOHANG) == pid) {
             log_w("pcapd exited with code %d", rv);
+            pid = -1;
+
             log_f(PD_ERR_PCAPD_START);
             goto cleanup;
         }
@@ -617,6 +619,8 @@ int run_libpcap(pcapdroid_t *pd) {
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_i("Starting packet loop");
+    if(pd->cb.notify_service_status && running)
+        pd->cb.notify_service_status(pd, "started");
 
     while(running) {
         pcapd_hdr_t hdr;
