@@ -1432,6 +1432,10 @@ public class CaptureService extends VpnService implements Runnable {
                 case "The specified PCAP file does not exist":
                     err = getString(R.string.pcap_file_not_exists);
                     break;
+                case "pcapd daemon start failure":
+                    if(mSettings.root_capture)
+                        err = getString(R.string.root_capture_pcapd_start_failure);
+                    break;
                 case "pcapd daemon did not spawn":
                     if(mSettings.root_capture)
                         err = getString(R.string.root_capture_start_failed);
