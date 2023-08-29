@@ -1690,13 +1690,20 @@ public class Utils {
         if (id.startsWith("raw:/")) {
             return Uri.parse(id).getPath();
         } else {
+            long id_long;
+            try {
+                id_long = Long.parseLong(id);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+
             String[] contentUriPrefixesToTry = new String[]{
                     "content://downloads/public_downloads",
                     "content://downloads/my_downloads"
             };
             for (String contentUriPrefix : contentUriPrefixesToTry) {
                 final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse(contentUriPrefix), Long.parseLong(id));
+                        Uri.parse(contentUriPrefix), id_long);
                 String path = mediastoreUriToPath(ctx, contentUri);
                 if(path != null)
                     return path;
