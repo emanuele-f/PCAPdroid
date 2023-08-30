@@ -9,7 +9,7 @@
     <string name="query">Query</string>
     <string name="host">Host</string>
     <string name="app_filter">App objetivo</string>
-    <string name="ready">Listo</string>
+    <string name="ready">Preparado</string>
     <string name="about">Acerca de</string>
     <string name="status">Estado</string>
     <string name="connections_view">Conexiones</string>
@@ -486,4 +486,5 @@
     <string name="live_capture">Capturas en directo</string>
     <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
     <string name="pcap_load_in_progress">Carga del fichero PCAP en curso, por favor espera</string>
+    <string name="root_capture_pcapd_start_failure">Fallo al realizar la captura. Asegúrate de conceder acceso root a PCAPdroid</string>
 </resources>
