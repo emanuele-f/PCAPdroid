@@ -486,4 +486,5 @@
     <string name="no_matches_found">لا توجد تطابقات</string>
     <string name="cleartext_connection">نص غير مشفر</string>
     <string name="rx_direction">RX</string>
+    <string name="root_capture_pcapd_start_failure">بدء لالتقاط فشل . تأكد من منح حق الوصول إلى الجذر (root) لPCAPdroid</string>
 </resources>
