@@ -276,8 +276,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             if(Utils.isRootAvailable()) {
                 mRootCaptureEnabled.setOnPreferenceChangeListener((preference, newValue) -> {
                     rootCaptureHideShow((Boolean) newValue);
-                    checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
-                    return true;
+                    return checkDecrpytionWithRoot((Boolean) newValue, mTlsDecryption.isChecked());
                 });
             } else
                 mRootCaptureEnabled.setVisible(false);
@@ -326,7 +325,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 boolean enabled = (boolean) newValue;
                 Context ctx = requireContext();
 
-                if(checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
+                if(!checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
                     return false;
 
                 if(enabled && MitmAddon.needsSetup(ctx)) {
@@ -452,15 +451,19 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private boolean checkDecrpytionWithRoot(boolean rootEnabled, boolean tlsDecryption) {
             if(mRootDecryptionNoticeShown || !rootEnabled || !tlsDecryption)
-                return false;
+                return true;
 
             new AlertDialog.Builder(requireContext())
                     .setMessage(R.string.tls_decryption_with_root_msg)
-                    .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
+                    .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+                        mRootCaptureEnabled.setChecked(true);
+                        mTlsDecryption.setChecked(true);
+
+                        mRootDecryptionNoticeShown = true;
+                    })
                     .show();
 
-            mRootDecryptionNoticeShown = true;
-            return true;
+            return false;
         }
     }
 }

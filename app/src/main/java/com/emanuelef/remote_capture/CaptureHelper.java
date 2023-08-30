@@ -84,11 +84,13 @@ public class CaptureHelper {
         // NOTE: hosts must be resolved before starting the VPN and in a separate thread
         String resolved;
 
-        if((resolved = resolveHost(mSettings.socks5_proxy_address)) == null)
-            return mSettings.socks5_proxy_address;
-        else if(!resolved.equals(mSettings.socks5_proxy_address)) {
-            Log.i(TAG, "Resolved SOCKS5 proxy address: " + resolved);
-            mSettings.socks5_proxy_address = resolved;
+        if(mSettings.socks5_enabled) {
+            if ((resolved = resolveHost(mSettings.socks5_proxy_address)) == null)
+                return mSettings.socks5_proxy_address;
+            else if (!resolved.equals(mSettings.socks5_proxy_address)) {
+                Log.i(TAG, "Resolved SOCKS5 proxy address: " + resolved);
+                mSettings.socks5_proxy_address = resolved;
+            }
         }
 
         return null;

@@ -1209,9 +1209,6 @@ int pd_run(pcapdroid_t *pd) {
     bl_num_checked_connections = 0;
     fw_num_checked_connections = 0;
 
-    if(pd->cb.notify_service_status)
-        pd->cb.notify_service_status(pd, "started");
-
     // Run the capture
     int rv = pd->vpn_capture ? run_vpn(pd) : run_libpcap(pd);
 

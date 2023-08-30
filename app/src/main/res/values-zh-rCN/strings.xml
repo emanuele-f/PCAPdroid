@@ -511,4 +511,5 @@
     <string name="tls_decryption_no_rules_notice">TLS 解密仅应用于匹配所配置规则的连接。你想立即创建解密规则吗？</string>
     <string name="decryption_info_no_rule">此连接不会被解密。创建解密规则来解密它</string>
     <string name="active_vpn_detected">检测到活动 VPN</string>
+    <string name="root_capture_pcapd_start_failure">流量捕获启动失败。请确保你授予了 PCAPdroid 根权限</string>
 </resources>

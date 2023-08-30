@@ -191,13 +191,40 @@ static int connectPcapd(pcapdroid_t *pd) {
     close(pcapd_out);
 
     // Wait for pcapd to start
-    struct timeval timeout = {.tv_sec = 3, .tv_usec = 0};
-    fd_set selfds = {0};
+    // NOTE: during this time, a dialog may be shown to the user, asking for root grant
+    const time_t start_timeout = time(NULL) + 10 /* 10 seconds */;
+    bool pcapd_connected = false;
 
-    FD_SET(sock, &selfds);
-    select(sock + 1, &selfds, NULL, NULL, &timeout);
+    while(time(NULL) < start_timeout) {
+        struct timeval timeout = {.tv_sec = 0, .tv_usec = 500000 /* 500 ms */};
+        fd_set selfds;
 
-    if(!FD_ISSET(sock, &selfds)) {
+        FD_ZERO(&selfds);
+        FD_SET(sock, &selfds);
+        select(sock + 1, &selfds, NULL, NULL, &timeout);
+
+        if(!running) {
+            log_w("Connect to pcapd aborted");
+            goto cleanup;
+        }
+
+        if(FD_ISSET(sock, &selfds)) {
+            pcapd_connected = true;
+            break;
+        }
+
+        // check if the child process terminated incorrectly
+        int rv;
+        if(waitpid(pid, &rv, WNOHANG) == pid) {
+            log_w("pcapd exited with code %d", rv);
+            pid = -1;
+
+            log_f(PD_ERR_PCAPD_START);
+            goto cleanup;
+        }
+    }
+
+    if(!pcapd_connected) {
         log_f(PD_ERR_PCAPD_NOT_SPAWNED);
         goto cleanup;
     }
@@ -592,6 +619,8 @@ int run_libpcap(pcapdroid_t *pd) {
     next_purge_ms = pd->now_ms + PERIODIC_PURGE_TIMEOUT_MS;
 
     log_i("Starting packet loop");
+    if(pd->cb.notify_service_status && running)
+        pd->cb.notify_service_status(pd, "started");
 
     while(running) {
         pcapd_hdr_t hdr;

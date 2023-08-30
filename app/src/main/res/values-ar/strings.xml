@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="start_button">بدأ</string>
-    <string name="title_activity_settings">إعدادات</string>
+    <string name="title_activity_settings">الإعدادات</string>
     <string name="source">مصدر</string>
     <string name="no_dump_info">لن يتم تفريغ حركة المرور</string>
-    <string name="dns_server">خاجم DNS</string>
+    <string name="dns_server">خادم DNS</string>
     <string name="traffic_dump">تفريغ حركة المرور</string>
     <string name="stats">احصائيات</string>
     <string name="open_telegram_group">مجموعة تيليغرام</string>
     <string name="active_connections">اتصالات النشطة</string>
-    <string name="dns_queries">استعلام DNS</string>
+    <string name="dns_queries">الاستعلامات DNS</string>
     <string name="stop_button">إقاف</string>
-    <string name="collector_info">جامع UDP:%1$s:%2$d</string>
+    <string name="collector_info">جامع UDP: %1$s:%2$d</string>
     <string name="http_server_status">خادم HTTP: http://%1$s:%2$d</string>
     <string name="query">استعلام</string>
     <string name="host">استضافة</string>
-    <string name="app_filter">التطبيق الهدف</string>
+    <string name="app_filter">استهداف تطبيق</string>
     <string name="ready">مستعد</string>
     <string name="status">حالة</string>
     <string name="about">حول</string>
@@ -36,7 +36,7 @@
     <string name="receiver_ip_address">عنوان IP للمجمع</string>
     <string name="receiver_port">منفذ جامع</string>
     <string name="user_guide">دليل المستخدم</string>
-    <string name="source_code">كود مصدر</string>
+    <string name="source_code">الشيفرة المصدرية</string>
     <string name="yes">نعم</string>
     <string name="no">لا</string>
     <string name="vpn_setup_failed">تعذر إعداد VPN. تأكد من تعطيل Always-on VPN</string>
@@ -45,31 +45,31 @@
     <string name="tot_connections">إجمالي الاتصالات</string>
     <string name="open_sockets">مآخذ مفتوحة</string>
     <string name="bytes_sent">البايت المرسلة</string>
-    <string name="bytes_rcvd">البايت المتلقاة</string>
+    <string name="bytes_rcvd">البايتات المستقبَلة</string>
     <string name="packets_sent">الحزم المرسلة</string>
-    <string name="packets_rcvd">الحزم المرسلة المتلقاة</string>
-    <string name="search_apps">أبحث التطبيقات</string>
-    <string name="no_apps">لبس هناك تطبيقات</string>
-    <string name="apps">تطبيقات</string>
+    <string name="packets_rcvd">الحزم المستقبَلة</string>
+    <string name="search_apps">ابحث في التطبيقات</string>
+    <string name="no_apps">ليس هناك تطبيقات</string>
+    <string name="apps">التطبيقات</string>
     <string name="pcap_file">ملف PCAP</string>
-    <string name="rcvd_and_sent">تم استلام %1$s - تم إرسال %2$s</string>
+    <string name="rcvd_and_sent">استقبلت %1$s - ارسلت %2$s</string>
     <string name="notification_msg">%1$s ملتقط و %2$s من الاتصالات</string>
-    <string name="get_app">أحصل عليه :</string>
+    <string name="get_app">أحصل عليه:</string>
     <string name="pcap_file_info">قم بإنشاء ملف PCAP في مساحة تخزين الجهاز</string>
     <string name="cannot_write_file">لا يمكن كتابة الملف</string>
     <string name="ok">حسناً</string>
     <string name="share">مشاركة</string>
-    <string name="pcap_file_action">حركة المرور المحفوظة\"%1$s\" file (%2$s)</string>
+    <string name="pcap_file_action">حُفظت حركة المرور في ملف %1$s (%2$s)</string>
     <string name="delete">حذف</string>
     <string name="copy_error">لا يمكن كتابة الملف</string>
     <string name="capture_running">الالتقاط يعمل</string>
     <string name="conn_status_active">مفعّل</string>
-    <string name="first_seen">مرئي أولاً</string>
+    <string name="first_seen">أول ظهور</string>
     <string name="conn_status_closed">مغلق</string>
-    <string name="last_seen">مرئي مؤخراً</string>
+    <string name="last_seen">آخر ظهور</string>
     <string name="copy_to_clipboard">نسخ</string>
-    <string name="save_to_file">حفظ الملف</string>
-    <string name="older_connections_notice">%1$d الاتصالات القديمة غير معروضة</string>
+    <string name="save_to_file">حفظ إلى الملف</string>
+    <string name="older_connections_notice">%1$d اتصالات قديمة غير معروضة</string>
     <string name="about_text">PCAPdroid هي أداة التقاط ومراقبة للشبكة مفتوحة المصدر تعمل بدون امتيازات الجذر</string>
     <string name="delete_error">لا يمكن حذف الملف</string>
     <string name="socks5_auth">مصادقة SOCKS5</string>
@@ -85,19 +85,19 @@
     <string name="capture_prefs">إلتقاط</string>
     <string name="capturing_from">التقاط الحزم من \"%1$s\"</string>
     <string name="malicious_connection_filter">ضارة</string>
-    <string name="status_outdated">عفا عليها الزمن</string>
+    <string name="status_outdated">غير مُحدّث</string>
     <string name="status_not_loaded">غير محمل</string>
     <string name="connections_checked">تم فحص الإتصالات</string>
     <string name="update_now">تحديث الان</string>
     <string name="valid">صالح</string>
     <string name="copied">تم نسخّه</string>
-    <string name="install_the_mitm_addon">قم بتثبيت PCAPdroid <a href="%1$s">mitm addon</a></string>
+    <string name="install_the_mitm_addon">قم بتثبيت PCAPdroid <a href="%1$s">mitm إضافة</a></string>
     <string name="size_x">الحجم: %1$s</string>
     <string name="block_quick">حظر QUIC</string>
     <string name="welcome_to_pcapdroid">مرحبًا بك في PCAPdroid</string>
     <string name="app_intro_skip_button">تخطي</string>
     <string name="capture_stopped_low_memory">تم إيقاف الالتقاط</string>
-    <string name="memory_usage">إستخدام الذاكرة</string>
+    <string name="memory_usage">إستهلاك الذاكرة</string>
     <string name="ip_mode">عناوين VPN IP</string>
     <string name="notifications_notice">يستخدم التطبيق الإشعارات لإرسال تنبيهات في حالة وقوع أحداث شاذة. امنحه الإذن بإرسال الإشعارات في الشاشة التالية</string>
     <string name="cancel_action">إلغاء</string>
@@ -118,9 +118,9 @@
     <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
     <string name="file_saved_with_name">تم حفظ الملف باسم \"%1$s\"</string>
-    <string name="theme_dark">مظلم</string>
+    <string name="theme_dark">داكن</string>
     <string name="theme_light">فاتح</string>
-    <string name="app_theme">مظهر التطبيق</string>
+    <string name="app_theme">السمة</string>
     <string name="socks5_redirection">إعادة توجيه SOCKS5</string>
     <string name="socks5_summary">قم بتكوين إعادة التوجيه إلى وكيل SOCKS5</string>
     <string name="enable_socks5_proxy_summary">إعادة توجيه كافة اتصالات TCP إلى وكيل SOCKS5</string>
@@ -137,14 +137,14 @@
     <string name="protocol_val">بروتوكول : %1$s</string>
     <string name="malware_whitelist_action">القائمة البيضاء (البرامج الضارة)…</string>
     <string name="hide">إخفاء…</string>
-    <string name="n_selected">%1$s المحدد</string>
+    <string name="n_selected">%1$d المحدد</string>
     <string name="app_details">تفاصيل التطبيق</string>
     <string name="package_name">اسم الحزمة</string>
     <string name="uid">المُعرف</string>
     <string name="app_name">اسم</string>
     <string name="version">الإصدار</string>
-    <string name="root_app_info">شياطين النظام تعمل بأقصى قدر من الامتيازات</string>
-    <string name="netd_app_info">يقوم البرنامج الخفي للنظام بتنفيذ قرارات DNS</string>
+    <string name="root_app_info">daemons النظام تعمل بأقصى قدر من الامتيازات</string>
+    <string name="netd_app_info">يقوم daemons النظام بتنفيذ قرارات DNS</string>
     <string name="phone_app_info">الخدمات الهاتفية</string>
     <string name="unknown_app_info">يشير \"غير معروف\" إلى الاتصالات التي لا يمكن تحديد تطبيقها</string>
     <string name="packets_dropped">إسقاط الحزم</string>
@@ -197,7 +197,7 @@
     <string name="malware_status_detected">تم اكتشاف اتصالات ضارة</string>
     <string name="blacklists">القائمة السوداء</string>
     <string name="whitelist">القائمة البيضاء</string>
-    <string name="status_uptodate">حتى الآن</string>
+    <string name="status_uptodate">مُحدث</string>
     <string name="blacklist_type">النوع: %1$s</string>
     <string name="blacklist_type_ip">القائمة السوداء لعنوان IP</string>
     <string name="last_update_val">التحديث الأخير: %1$s</string>
@@ -243,14 +243,14 @@
     <string name="loading_apps">جارٍ تحميل التطبيقات…</string>
     <string name="capture_all_apps">إلتقاط حركة المرور لجميع التطبيقات</string>
     <string name="tls_decryption">فك تشفير TLS</string>
-    <string name="open_nav_drawer">درج مفتوح</string>
-    <string name="save_ok">تمَ الحفظ</string>
-    <string name="mitm_start_failed">لا يمكن بدء خدمة mitm. حاول فتح تطبيق mitm addon يدويًا ثم أعد المحاولة</string>
+    <string name="open_nav_drawer">فتح الدرج</string>
+    <string name="save_ok">حٌفظت</string>
+    <string name="mitm_start_failed">لا يمكن بدء خدمة mitm. حاول فتح تطبيق إضافة mitm يدويًا ثم أعد المحاولة</string>
     <string name="mitm_setup_wizard">إعداد Mitm</string>
     <string name="install_action">ثَبَّتَ</string>
     <string name="export_action">تصدير</string>
     <string name="configure_action">تَهيئة</string>
-    <string name="grant_mitm_permission">امنح PCAPdroid الإذن للتحكم في الملحق mitm</string>
+    <string name="grant_mitm_permission">امنح PCAPdroid الإذن للتحكم في إضافة mitm</string>
     <string name="sort_by">الترتيب حسب</string>
     <string name="username">أسم المستخدم</string>
     <string name="write_ext_storage_failed">فشلت الكتابة إلى وحدة التخزين الخارجية. تحقق من سجل التطبيق للحصول على التفاصيل</string>
@@ -258,10 +258,10 @@
     <string name="qr_license_confirm">هل تريد إنشاء ترخيص لجهاز \"%1$s\" باستخدام رمز إلغاء القفل التالي؟</string>
     <string name="invalid_license">ترخيص غير صالح</string>
     <string name="connection_error">خطأ في الاتصال: %1$s</string>
-    <string name="activate_via_qr_code">التنشيط عبر رمز الاستجابة السريعة</string>
-    <string name="qr_code_expired">انتهت صلاحية رمز الاستجابة السريعة. قم بإنشاء رمز QR جديد ثم أعد المحاولة</string>
+    <string name="activate_via_qr_code">تنشيط عبر رمز QR</string>
+    <string name="qr_code_expired">انتهت صلاحية رمز QR. قم بإنشاء رمز QR جديد ثم أعِد المحاولة</string>
     <string name="qr_info_text">قم بتثبيت PCAPdroid من Google Play وقم بمسح رمز QR هذا ضوئيًا</string>
-    <string name="qr_purchase_required">قم بشراء رمز إلغاء القفل لمتابعة تنشيط رمز الاستجابة السريعة</string>
+    <string name="qr_purchase_required">قم بشراء رمز إلغاء القفل لمتابعة تنشيط رمز QR</string>
     <string name="decryption_rules_help">تحدد هذه القواعد الاتصالات التي سيتم فك تشفيرها. تعمل القواعد المستندة إلى المضيف فقط في حالة رؤية رد DNS سابق</string>
     <string name="pcap_read_error">خطأ في قِراءة PCAP</string>
     <string name="license_error">خطأ في إنشاء الترخيص [%1$d]: %2$s</string>
@@ -292,20 +292,20 @@
     <string name="control_permissions_item">%1$s: %2$s</string>
     <string name="asn">ASN</string>
     <string name="export_ca_certificate">قم بتصدير شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
-    <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة المرور الخاصة بك</string>
+    <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>
     <string name="upgrade_action">ترقية</string>
-    <string name="checking_the_certificate">التحقق من الشهادة…</string>
+    <string name="checking_the_certificate">جارِ التحقق من الشهادة…</string>
     <string name="ca_cert_export_failed">حدث خطأ أثناء تصدير شهادة CA
 \n
-\nإذا كان جهازك يستخدم برنامج التشغيل التلقائي أو برنامجًا مشابهًا للحد من تنفيذ خدمات الخلفية، فتأكد من <a href="%1$s">إضافة PCAPdroid إلى القائمة البيضاء</a>.</string>
+\nإذا كان جهازك يستخدم برنامج التشغيل التلقائي أو برنامجًا مشابهًا للحد من تنفيذ خدمات الخلفية، فتأكد من <a href="%1$s">إضافة PCAPdroid إلى القائمة البيضاء</a></string>
     <string name="cert_exported_now_installed">تم تصدير الشهادة، قم بتثبيتها الآن من إعدادات Android</string>
     <string name="cert_installed_correctly">تم تثبيت شهادة CA</string>
     <string name="cert_reinstall_required">لم يتم تثبيت شهادة CA، قم بتشغيل معالج إعداد mitm</string>
-    <string name="mitm_addon_bad_version">نسخة ملحقة PCAPdroid mitm سيئة. الرجاء تثبيت الإصدار %1$s وإعادة المحاولة</string>
+    <string name="mitm_addon_bad_version">نُسخة إضافة PCAPdroid mitm سيئة. الرجاء تثبيت إصدار %1$s وإعادة المحاولة</string>
     <string name="mitm_addon_new_version">يجب ترقية الملحق PCAPdroid mitm</string>
     <string name="mitm_addon">المُلحق mitm</string>
     <string name="export_failed">فشل التصدير</string>
-    <string name="overview">مُلخص</string>
+    <string name="overview">نظرة عامة</string>
     <string name="not_encrypted">غير مُشفر</string>
     <string name="request">طلب</string>
     <string name="not_decryptable">غير قابل لفك التشفير</string>
@@ -319,7 +319,7 @@
     <string name="full_payload">حمولة كاملة</string>
     <string name="full_payload_summary">إظهار حمولة الاتصالات الكاملة (على سبيل المثال، طلب HTTP الكامل والاستجابة له). وهذا يتطلب الكثير من الذاكرة، لا تستخدمها على المدى الطويل</string>
     <string name="decrypted">تم فك تشفيره</string>
-    <string name="network_traffic">مرور</string>
+    <string name="network_traffic">حركة المرور</string>
     <string name="display_as">عرض كـ…</string>
     <string name="decryption">فك التشفير</string>
     <string name="connection_start_not_seen">لم يشاهد PCAPdroid بداية هذا الاتصال. قد تكون بعض المعلومات مفقودة</string>
@@ -327,12 +327,12 @@
     <string name="decryption_filter">فك التشفير: %1$s</string>
     <string name="waiting_application_data">في انتظار البيانات</string>
     <string name="printable_text">نص قابل للطباعة</string>
-    <string name="hexdump">تفريغ سداسي</string>
+    <string name="hexdump">تفريغ سداسي (Hexdump)</string>
     <string name="geolocation">تحديد الموقع الجغرافي</string>
     <string name="geolocation_summary">قم بعرض معلومات البلد ورقم ASN من خلال إجراء عمليات بحث في وضع عدم الاتصال</string>
     <string name="downloading">جارى التحميل…</string>
     <string name="download_in_progress">التنزيل قيد التقدم، يُرجى الأنتظار</string>
-    <string name="download_failed">التحميل فشل</string>
+    <string name="download_failed">فشل التحميل</string>
     <string name="pcap_load_in_progress">جارٍ تحميل ملف PCAP، يُرجى الأنتظار</string>
     <string name="geo_db_not_found">لم يتم العثور على قاعدة البيانات. تم تعطيل تحديد الموقع الجغرافي</string>
     <string name="database">قاعدة البيانات</string>
@@ -346,11 +346,11 @@
     <string name="invalid_backup">تنسيق النسخة الاحتياطية غير صالح</string>
     <string name="no_rules_to_export">لا توجد قواعد للتصدير</string>
     <string name="rules_import_success">تم استيراد %1$d من القواعد</string>
-    <string name="rules_merge_msg">الحفاظ على القواعد الحالية؟</string>
-    <string name="keep_action">يحفظ</string>
-    <string name="rules_delete_confirm">هَل تُريد حذف القواعد المُحددة؟</string>
-    <string name="discard_action">ينبذ</string>
-    <string name="blocklist">القائمة السوداء</string>
+    <string name="rules_merge_msg">أبقِ القواعد الحالية؟</string>
+    <string name="keep_action">أبقِها</string>
+    <string name="rules_delete_confirm">حذف القواعد المُحددة؟</string>
+    <string name="discard_action">أهمِل</string>
+    <string name="blocklist">قائمة الحظر</string>
     <string name="num_configured_rules">القواعد التي تم تكوينها</string>
     <string name="connections_blocked">تم حظر الإتصالات</string>
     <string name="firewall_is_enabled">تم تمكين جدار الحماية</string>
@@ -374,7 +374,7 @@
     <string name="privacy_first">الخصوصية أولاً</string>
     <string name="app_intro_privacy_msg">لا يستخدم التطبيق أي ميزات تتبع أو تحليلات أو ميزات مضادة للاتصال بالمنزل
 \n
-\nكيف يمكنك ان تكون متأكدا. راجع <a href="%1$s">سياسة الخصوصية</a> و<a href="%2$s">شفرة المصدر</a> الخاصة بها.</string>
+\nكيف يمكنك ان تكون متأكدا؟ راجع <a href="%1$s">سياسة الخصوصية</a> و<a href="%2$s">الشيفرة المصدرية</a></string>
     <string name="app_intro_geolocation_msg">يمكن لـ PCAPdroid الاستعلام عن قاعدة بيانات محلية لتحديد بلد الخادم البعيد
 \n
 \nيجب عليك أولاً تنزيل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات التطبيق</string>
@@ -450,13 +450,13 @@
     <string name="dns_servers">خوادم DNS</string>
     <string name="dns_servers_summary">قم بتكوين خوادم DNS لاستخدامها أثناء الالتقاط</string>
     <string name="external_storage_perm_required">مطلوب إذن التخزين الخارجي</string>
-    <string name="last_firewall_block">الكتلة الأخيرة</string>
+    <string name="last_firewall_block">أخر حظر</string>
     <string name="firewall_is_disabled">تم تعطيل جِدار الحماية</string>
     <string name="netd_block_missed">تم بدء هذا الاتصال بواسطة netd لذلك لا يمكن حظره</string>
     <string name="block_quick_summary">قم بحظر اتصالات QUIC حتى تتمكن من العودة إلى TLS القابل لفك التشفير. قد تتوقف بعض التطبيقات عن العمل</string>
     <string name="block_private_dns">حظر DNS الخاص</string>
     <string name="low_memory">ذاكرة منخفضة</string>
-    <string name="remote_server_warning">لأسباب أمنية، غير مسموح بإرسال حركة المرور إلى الخادم البعيد \"%1$s\".</string>
+    <string name="remote_server_warning">لأسباب أمنية، غير مسموح بإرسال حركة المرور إلى الخادم البعيد \"%1$s\"</string>
     <string name="tls_decryption_with_root_msg">تعد القدرة على تشغيل فك تشفير TLS باستخدام الجذر ميزة تجريبية. هذه قائمة بالأخطاء المعروفة:
 \n
 \n- في PCAPdroid، ستشاهد حركة المرور كما تم إنشاؤها من تطبيق mitm-addon بدلاً من التطبيق الأصلي
@@ -474,8 +474,17 @@
     <string name="ipv4_dns_server">خادم DNS IPv4</string>
     <string name="ipv6_dns_server">خادم DNS IPv6</string>
     <string name="many_rules_warning">أنت تحاول استيراد العديد من القواعد، مما قد يجعل التطبيق لا يستجيب أثناء بعض التفاعلات. هل تريد حقا الاستمرار؟</string>
-    <string name="pcapng_format">تنسيق بيكابنج</string>
+    <string name="pcapng_format">تنسيق Pcapng</string>
     <string name="pcapng_format_summary">تفريغ الحزم بتنسيق تفريغ pcapng، والذي يسمح بتضمين أسرار فك تشفير TLS</string>
     <string name="tls_decryption_no_rules_notice">يتم تطبيق فك تشفير TLS فقط على الاتصالات التي تطابق القواعد التي تم تكوينها. هل تريد إنشاء قواعد فك التشفير الآن؟</string>
     <string name="active_vpn_detected">تم اكتشاف شبكة VPN نشطة</string>
+    <string name="proto_and_port">%1$s ،%2$d</string>
+    <string name="n_pkts">%1$s pkts</string>
+    <string name="traffic_inspection">تَفَقُّد حركة المرور</string>
+    <string name="tx_direction">TX</string>
+    <string name="heap_usage">استهلاك الكومة</string>
+    <string name="no_matches_found">لا توجد تطابقات</string>
+    <string name="cleartext_connection">نص غير مشفر</string>
+    <string name="rx_direction">RX</string>
+    <string name="root_capture_pcapd_start_failure">بدء لالتقاط فشل . تأكد من منح حق الوصول إلى الجذر (root) لPCAPdroid</string>
 </resources>

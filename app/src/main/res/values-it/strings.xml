@@ -485,4 +485,5 @@
     <string name="live_capture">Cattura live</string>
     <string name="decryption_info_no_rule">La connessione non sarà decrittata. Per decrittarla, crea una regola di decrittazione</string>
     <string name="tls_decryption_no_rules_notice">La decrittazione TLS è applicata soltanto alle connessioni che matchano le regole configurate. Vuoi creare ora delle regole di decrittazione\?</string>
+    <string name="root_capture_pcapd_start_failure">Avvio della cattura fallito. Assicurati di concedere l\'accesso root a PCAPdroid</string>
 </resources>
