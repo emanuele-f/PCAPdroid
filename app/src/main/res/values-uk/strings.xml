@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pcapdroid_app_name"></string>
-    <string name="default_collector_ip"></string>
-    <string name="default_collector_port"></string>
-    <string name="ip_and_port"></string>
-    <string name="ipv6_and_port"></string>
-    <string name="app_and_proto"></string>
-    <string name="sni"></string>
-    <string name="url"></string>
-    <string name="whois_lookup"></string>
-    <string name="installation_id"></string>
-    <string name="license_code"></string>
-    <string name="root"></string>
-    <string name="app_license"></string>
-    <string name="opensource_licenses"></string>
-    <string name="connections_csv_fields"></string>
-    <string name="unlock_token"></string>
     <string name="start_button">Пуск</string>
     <string name="stop_button">Зупинити</string>
     <string name="title_activity_settings">Налаштування</string>
@@ -146,8 +130,7 @@
     <string name="pcapdroid_trailer_summary">Вкладення, що містить додаткові метадані (наприклад, назва програми) буде додано до вивантажених пакетів</string>
     <string name="trailer_how_to">Як показувати вкладені дані в Wireshark</string>
     <string name="pending_transaction">Будь ласка, виконайте транзакцію, щоб активувати цю функцію</string>
-    <string name="ctrl_consent">Додаток хоче захопити трафік вашого пристрою.
-\nЗабороніть, якщо не впевнені</string>
+    <string name="ctrl_consent">Додаток хоче захопити трафік вашого пристрою.\nЗабороніть, якщо не впевнені</string>
     <string name="deny">Заборонити</string>
     <string name="allow">Дозволити</string>
     <string name="ctrl_consent_title">Запит контролю PCAPdroid</string>
@@ -261,9 +244,7 @@
     <string name="export_ca_certificate">Експортуйте сертифікат PCAPdroid CA. потім відкрийте налаштування Android \"Шифрування й облікові дані\" та виберіть встановити його як \"Сертифікат ЦС\"</string>
     <string name="install_ca_certificate">Встановіть сертифікат PCAPdroid CA, обираючи \"VPN та додатки\". Android запитає ваше блокування екрану або пароль</string>
     <string name="checking_the_certificate">Перевірка сертифікату…</string>
-    <string name="ca_cert_export_failed">Трапилася помилка при експортуванні сертифікату ЦС
-\n
-\nЯкщо ваш пристрій оснащено Autostart або подібною програмою для обмеження виконання фонових сервісів, впевніться що <a href="%1$s">PCAPdroid в білому списку</a></string>
+    <string name="ca_cert_export_failed">Трапилася помилка при експортуванні сертифікату ЦС\n\nЯкщо ваш пристрій оснащено Autostart або подібною програмою для обмеження виконання фонових сервісів, впевніться що <a href="%1$s">PCAPdroid в білому списку</a></string>
     <string name="cert_exported_now_installed">Сертифікат експортовано, тепер встановіть його з налаштувань Android</string>
     <string name="cert_installed_correctly">Сертифікат ЦС встановлено</string>
     <string name="cert_reinstall_required">Сертифікат ЦС не встановлено, запустіть майстер встановлення mitm</string>
@@ -337,42 +318,22 @@
     <string name="block_private_dns">Блокувати приватний DNS</string>
     <string name="block_private_dns_summary">Виявляти та по можливості блокувати приватний DNS для перевірки трафіку DNS. Вимкнення цього може перешкоджати аналізу трафіку</string>
     <string name="mitm_setup_wizard_intro">Цей майстер допоможе вам встановити доповнення PCAPdroid mitm і центр сертифікації, які потрібно щоб <a href="%1$s">дешифрувати TLS</a></string>
-    <string name="mitm_setup_wizard_done">PCAPdroid тепер готовий до дешифрування трафіку TLS
-\n
-\nОзнайомтесь з <a href="%1$s">посібником користувача</a>, щоб дізнатися більше про заходи безпеки, які можуть перешкоджати дешифруванню і як їх обійти</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid тепер готовий до дешифрування трафіку TLS\n\nОзнайомтесь з <a href="%1$s">посібником користувача</a>, щоб дізнатися більше про заходи безпеки, які можуть перешкоджати дешифруванню і як їх обійти</string>
     <string name="welcome_to_pcapdroid">Вітаємо в PCAPdroid</string>
     <string name="app_intro_next_button">Далі</string>
     <string name="app_intro_skip_button">Пропустити</string>
     <string name="app_intro_back_button">Назад</string>
     <string name="app_intro_done_button">Готово</string>
-    <string name="app_intro_welcome_msg">PCAPdroid - це безпечний для конфіденційності додаток, який дозволяє відстежувати та аналізувати з\'єднання, здійснені додатками на вашому пристрої
-\n
-\nКрім того, він дозволяє експортувати PCAP дамп трафіку, витягувати метадані та багато іншого!</string>
+    <string name="app_intro_welcome_msg">PCAPdroid - це безпечний для конфіденційності додаток, який дозволяє відстежувати та аналізувати з\'єднання, здійснені додатками на вашому пристрої\n\nКрім того, він дозволяє експортувати PCAP дамп трафіку, витягувати метадані та багато іншого!</string>
     <string name="privacy_first">Спершу конфіденційність</string>
-    <string name="app_intro_privacy_msg">Додаток не використовує функції відстеження, аналітики чи телефонії
-\n
-\nЯк ви можете впевнитися\? Ознайомтеся з його <a href="%1$s">політикою конфіденційності</a> та <a href="%2$s">початковим кодом</a></string>
+    <string name="app_intro_privacy_msg">Додаток не використовує функції відстеження, аналітики чи телефонії\n\nЯк ви можете впевнитися\? Ознайомтеся з його <a href="%1$s">політикою конфіденційності</a> та <a href="%2$s">початковим кодом</a></string>
     <string name="country_and_asn">Країна та ASN</string>
-    <string name="app_intro_geolocation_msg">PCAPdroid може запитувати локальні бази даних для визначення країни віддаленого сервера
-\n
-\nСпочатку потрібно завантажити геолокаційну базу даних з налаштувань додатку</string>
-    <string name="vpn_setup_msg">PCAPdroid імітує VPN, щоб перехоплювати мережевий трафік без рут.
-\n
-\nЩоб почати захоплення, потрібно погодити запит VPN у наступному екрані
-\n
-\n<b>ПРИМІТКА:</b> щоб продовжити, вимкніть будь-яку налаштовану Постійну мережу VPN у налаштуваннях Android</string>
-    <string name="app_intro_traffic_inspection">Перевіряти HTTP запити, відповіді та необроблені дані легко завдяки вбудованим декодерам
-\n
-\nЗ\'єднання зашифровано\? Ви можете ввімкнути <a href="%1$s">дешифрування TLS</a>, щоб отримати дешифровані дані</string>
-    <string name="app_intro_firewall_msg">З вбудованим <a href="%1$s">Фаєрволом</a> можна легко блокувати доступ до інтернету для окремих додатків і доменів
-\n
-\nПоєднайте це з вбудованим відстеженням трафіку, щоб отримати найкращий інструмент для захисту вашої конфіденційності</string>
-    <string name="app_intro_malware_detection">Покращить безпеку вашого пристрою з функцією <a href="%1$s">виявлення зловмисного ПЗ</a>
-\n
-\nВикористовуючи актуальні чорні списки, він може виявляти, блокувати та попереджати про зловмисні з\'єднання в реальному часі</string>
-    <string name="app_intro_traffic_dump">PCAPdroid надає <a href="%1$s">кілька способів</a> дампувати трафік у стандартний формат PCAP для подальшого аналізу
-\n
-\nЗа допомогою <a href="%2$s">опції вкладення</a>, ви можете додати назви додатків до пакетів і показувати їх у Wireshark</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid може запитувати локальні бази даних для визначення країни віддаленого сервера\n\nСпочатку потрібно завантажити геолокаційну базу даних з налаштувань додатку</string>
+    <string name="vpn_setup_msg">PCAPdroid імітує VPN, щоб перехоплювати мережевий трафік без рут.\n\nЩоб почати захоплення, потрібно погодити запит VPN у наступному екрані\n\n<b>ПРИМІТКА:</b> щоб продовжити, вимкніть будь-яку налаштовану Постійну мережу VPN у налаштуваннях Android</string>
+    <string name="app_intro_traffic_inspection">Перевіряти HTTP запити, відповіді та необроблені дані легко завдяки вбудованим декодерам\n\nЗ\'єднання зашифровано\? Ви можете ввімкнути <a href="%1$s">дешифрування TLS</a>, щоб отримати дешифровані дані</string>
+    <string name="app_intro_firewall_msg">З вбудованим <a href="%1$s">Фаєрволом</a> можна легко блокувати доступ до інтернету для окремих додатків і доменів\n\nПоєднайте це з вбудованим відстеженням трафіку, щоб отримати найкращий інструмент для захисту вашої конфіденційності</string>
+    <string name="app_intro_malware_detection">Покращить безпеку вашого пристрою з функцією <a href="%1$s">виявлення зловмисного ПЗ</a>\n\nВикористовуючи актуальні чорні списки, він може виявляти, блокувати та попереджати про зловмисні з\'єднання в реальному часі</string>
+    <string name="app_intro_traffic_dump">PCAPdroid надає <a href="%1$s">кілька способів</a> дампувати трафік у стандартний формат PCAP для подальшого аналізу\n\nЗа допомогою <a href="%2$s">опції вкладення</a>, ви можете додати назви додатків до пакетів і показувати їх у Wireshark</string>
     <string name="permission_granted">Дозвіл %1$s надано</string>
     <string name="permission_grant_fail">Не вдалося надати дозвіл %1$s</string>
     <string name="connection_not_found">Не вдалося знайти дане з\'єднання</string>
@@ -382,9 +343,7 @@
     <string name="capture_stopped_low_memory">Захоплення зупинено</string>
     <string name="heap_usage">Використання купи</string>
     <string name="memory_usage">Використання пам’яті</string>
-    <string name="vpn_lockdown_notice">Щоб запобігти отримання додаткам доступу до Інтернету, коли PCAPdroid не запущений (наприклад, після перезавантаження) ви можете встановити PCAPdroid як Постійна мережа VPN в режимі блокування.
-\n
-\nХочете відкрити налаштування VPN зараз\?</string>
+    <string name="vpn_lockdown_notice">Щоб запобігти отримання додаткам доступу до Інтернету, коли PCAPdroid не запущений (наприклад, після перезавантаження) ви можете встановити PCAPdroid як Постійна мережа VPN в режимі блокування.\n\nХочете відкрити налаштування VPN зараз\?</string>
     <string name="ip_mode">IP адреси VPN</string>
     <string name="ipv4_only">Лише IPv4</string>
     <string name="ipv6_only">Лише IPv6</string>
@@ -401,25 +360,15 @@
     <string name="app_blocked">Додаток заблоковано</string>
     <string name="app_blocked_info">Додаток %1$s заблоковано фаєрволом</string>
     <string name="app_unblocked">Додаток %1$s розблоковано</string>
-    <string name="payload_scams_notice">Це подання може містити конфіденційну інформацію, наприклад, ваші паролі та токени доступу.
-\n
-\nНіколи не передавайте цю інформацію комусь, це може бути спробою шахрайства</string>
+    <string name="payload_scams_notice">Це подання може містити конфіденційну інформацію, наприклад, ваші паролі та токени доступу.\n\nНіколи не передавайте цю інформацію комусь, це може бути спробою шахрайства</string>
     <string name="cancel_action">Скасувати</string>
     <string name="show_data_action">Показати дані</string>
-    <string name="remote_collector_notice">Ви налаштували PCAPdroid для надсилання трафіку віддаленому серверу. Сервер зможе отримати доступ до вашої конфіденційної інформації.
-\n
-\nЯкщо хтось попросив вас це зробити, це, ймовірно, спроба шахрайства</string>
+    <string name="remote_collector_notice">Ви налаштували PCAPdroid для надсилання трафіку віддаленому серверу. Сервер зможе отримати доступ до вашої конфіденційної інформації.\n\nЯкщо хтось попросив вас це зробити, це, ймовірно, спроба шахрайства</string>
     <string name="remote_server_warning">З міркувань безпеки, надсилання трафіку на віддалений сервер \"%1$s\" не дозволено\"</string>
     <string name="warning">Застереження</string>
     <string name="paid_features_unlocked">Платні функції розблоковано. Перезапустіть захоплення, якщо виконується</string>
     <string name="build_info">Інформація про збірку</string>
-    <string name="tls_decryption_with_root_msg">Можливість виконати дешифрування TLS з рут це експериментальна функція. Список відомих багів:
-\n
-\n - у PCAPdroid ви побачите трафік, згенерований додатком доповненням mitm замість оригінальним додатком
-\n - коли встановлено фільтр додатку, дешифрування відбуватиметься лише для цільового додатка, але PCAPdroid все одно показуватиме трафік інших додатків
-\n - якщо захоплення не вдається запустити, переконайтеся, що ви дійсно можете виконувати команду iptables як рут (наприклад, через termux)
-\n - може не працювати на Android 12 і вище
-\n - якщо додаток VPN виконується, ви повинні або вибрати конкретний додаток для дешифрування або виключити доповнення PCAPdroid mitm з VPN, інакше трафік буде зациклений</string>
+    <string name="tls_decryption_with_root_msg">Можливість виконати дешифрування TLS з рут це експериментальна функція. Список відомих багів:\n\n - у PCAPdroid ви побачите трафік, згенерований додатком доповненням mitm замість оригінальним додатком\n - коли встановлено фільтр додатку, дешифрування відбуватиметься лише для цільового додатка, але PCAPdroid все одно показуватиме трафік інших додатків\n - якщо захоплення не вдається запустити, переконайтеся, що ви дійсно можете виконувати команду iptables як рут (наприклад, через termux)\n - може не працювати на Android 12 і вище\n - якщо додаток VPN виконується, ви повинні або вибрати конкретний додаток для дешифрування або виключити доповнення PCAPdroid mitm з VPN, інакше трафік буде зациклений</string>
     <string name="unlock_token_summary">Токен який може використовуватися для розблокування платних функцій в збірках додатку без Google Play (наприклад, F-Droid/Github)</string>
     <string name="unlock_token_error">Не вдався запит токена розблокування [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">Ознайомтесь з <a href="%1$s">посібником користувача</a>, щоб дізнатися, як отримати доступ до платних функцій</string>
