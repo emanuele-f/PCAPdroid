@@ -177,12 +177,17 @@ static int connectPcapd(pcapdroid_t *pd) {
             log_f("Invalid capture_interface");
             goto cleanup;
         }
+
+        // this is needed to run with root under Magisk delta
+        // the drawback is that it's not possible to get the exit status
+        pd->pcap.daemonize = true;
     }
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'",
-             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'%s",
+             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter,
+             bpf, pd->pcap.daemonize ? " -d" : "");
 
     int pcapd_out;
     pid = start_subprocess(pcapd, args, pd->pcap.as_root, &pcapd_out);
@@ -237,6 +242,12 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     log_i("Connected to pcapd (pid=%d)", pid);
     pd->pcap.pcapd_pid = pid;
+
+    if(pd->pcap.daemonize) {
+        // when demonizing, child exits immediately
+        int rv;
+        waitpid(pid, &rv, 0);
+    }
 
 cleanup:
     if((client < 0) && (pid > 0)) {
@@ -706,7 +717,7 @@ cleanup:
         run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
     }
 
-    if(pd->pcap.pcapd_pid > 0) {
+    if((pd->pcap.pcapd_pid > 0) && !pd->pcap.daemonize) {
         int status = PCAPD_ERROR;
 
         if(waitpid(pd->pcap.pcapd_pid, &status, 0) <= 0)

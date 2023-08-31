@@ -221,6 +221,7 @@ typedef struct pcapdroid {
         struct {
             struct pcap_conn_t *connections;
             bool as_root;
+            bool daemonize;
             char *bpf;
             char *capture_interface;
             int pcapd_pid;
