@@ -177,12 +177,18 @@ static int connectPcapd(pcapdroid_t *pd) {
             log_f("Invalid capture_interface");
             goto cleanup;
         }
+
+        // this is needed to run with root under recent Magisk
+        // the drawback is that it's not possible to get the pcapd exit status,
+        // which is needed when reading a PCAP file
+        pd->pcap.daemonize = true;
     }
 
     // Start the daemon
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'",
-             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter, bpf);
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'%s",
+             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter,
+             bpf, pd->pcap.daemonize ? " -d" : "");
 
     int pcapd_out;
     pid = start_subprocess(pcapd, args, pd->pcap.as_root, &pcapd_out);
@@ -190,9 +196,21 @@ static int connectPcapd(pcapdroid_t *pd) {
         goto cleanup;
     close(pcapd_out);
 
-    // Wait for pcapd to start
-    // NOTE: during this time, a dialog may be shown to the user, asking for root grant
-    const time_t start_timeout = time(NULL) + 10 /* 10 seconds */;
+    if(pd->pcap.daemonize) {
+        // when running as a daemon, child exits early
+        // note: this will block until user grants/denies root permission
+        int rv;
+        if((waitpid(pid, &rv, 0) == pid) && (rv != 0)) {
+            if(WIFEXITED(rv))
+                log_w("pcapd exited with code %d", WEXITSTATUS(rv));
+
+            log_f(PD_ERR_PCAPD_START);
+            goto cleanup;
+        }
+    }
+
+    // Wait for pcapd to connect to the socket
+    const time_t start_timeout = time(NULL) + 3 /* 3 seconds */;
     bool pcapd_connected = false;
 
     while(time(NULL) < start_timeout) {
@@ -215,8 +233,9 @@ static int connectPcapd(pcapdroid_t *pd) {
 
         // check if the child process terminated incorrectly
         int rv;
-        if(waitpid(pid, &rv, WNOHANG) == pid) {
-            log_w("pcapd exited with code %d", rv);
+        if(!pd->pcap.daemonize && (waitpid(pid, &rv, WNOHANG) == pid)) {
+            if(WIFEXITED(rv))
+                log_w("pcapd exited with code %d", WEXITSTATUS(rv));
             pid = -1;
 
             log_f(PD_ERR_PCAPD_START);
@@ -242,7 +261,9 @@ cleanup:
     if((client < 0) && (pid > 0)) {
         int rv;
         kill_process(pid, pd->pcap.as_root, SIGKILL);
-        waitpid(pid, &rv, 0);
+
+        if(!pd->pcap.daemonize)
+            waitpid(pid, &rv, 0);
     }
     unlink(PCAPD_SOCKET_PATH);
     close(sock);
@@ -706,7 +727,7 @@ cleanup:
         run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
     }
 
-    if(pd->pcap.pcapd_pid > 0) {
+    if((pd->pcap.pcapd_pid > 0) && !pd->pcap.daemonize) {
         int status = PCAPD_ERROR;
 
         if(waitpid(pd->pcap.pcapd_pid, &status, 0) <= 0)

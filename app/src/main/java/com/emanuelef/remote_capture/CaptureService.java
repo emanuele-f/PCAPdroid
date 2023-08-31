@@ -798,7 +798,10 @@ public class CaptureService extends VpnService implements Runnable {
             mPrivateDnsMode = Utils.getPrivateDnsMode(linkProperties);
             Log.i(TAG, "Private DNS: " + mPrivateDnsMode);
 
-            if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
+            if(mSettings.readFromPcap()) {
+                mDnsEncrypted = false;
+                setPrivateDnsBlocked(false);
+            } else if(!mSettings.root_capture && mSettings.auto_block_private_dns) {
                 mDnsEncrypted = mPrivateDnsMode.equals(Utils.PrivateDnsMode.STRICT);
                 boolean opportunistic_mode = mPrivateDnsMode.equals(Utils.PrivateDnsMode.OPPORTUNISTIC);
 

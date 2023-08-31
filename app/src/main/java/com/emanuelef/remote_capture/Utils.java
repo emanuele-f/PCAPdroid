@@ -1790,4 +1790,12 @@ public class Utils {
 
         return Collections.enumeration(new ArrayList<>());
     }
+
+    public static boolean isReadable(String path) {
+        try(FileInputStream ignored = new FileInputStream(path)) {
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
 }
