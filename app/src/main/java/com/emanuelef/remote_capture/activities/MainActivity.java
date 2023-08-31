@@ -85,6 +85,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -893,7 +894,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mPcapLoadDialog.setOnDismissListener(dialog -> mPcapLoadDialog = null);
 
             String path = Utils.uriToFilePath(this, uri);
-            if(path == null) {
+            if((path == null) || !Utils.isReadable(path)) {
                 // Unable to get a direct file path (e.g. for files in Downloads). Copy file to the
                 // cache directory
                 File out = getTmpPcapPath();
