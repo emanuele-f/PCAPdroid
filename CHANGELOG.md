@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.7] - 2023-08-31
+- Fix root capture start failure due to short timeout
+- Fix NumberFormatException in PCAP open / CSV export
+- Add Ukrainian translation (credits: odkate)
+- Do not resolve socks5 server host if disabled
+
 ## [1.6.6] - 2023-08-28
 - Add ability to open PCAP/PCAPNG files
 - Add Arabic translation (credits: Mustafa Hamed Kathem)
