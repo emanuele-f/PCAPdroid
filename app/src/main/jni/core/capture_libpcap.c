@@ -210,7 +210,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     }
 
     // Wait for pcapd to connect to the socket
-    const time_t start_timeout = time(NULL) + 3 /* 3 seconds */;
+    const time_t start_timeout = time(NULL) + 5 /* 5 seconds */;
     bool pcapd_connected = false;
 
     while(time(NULL) < start_timeout) {
