@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.6.8] - 2023-09-01
+- Fix root capture/pcap loading in playstore build due to AAB packaging
+- Fix possible permission denied error on PCAP file open
+
 ## [1.6.7] - 2023-08-31
 - Fix root capture start failure due to short timeout
 - Fix NumberFormatException in PCAP open / CSV export
