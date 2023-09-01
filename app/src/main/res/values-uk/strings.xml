@@ -208,14 +208,14 @@
     <string name="dont_decrypt_action">Не дешифрується…</string>
     <string name="status_encrypted">Зашифровано</string>
     <string name="injected">Введено</string>
-    <string name="open_pcap_file">Відкривається файл PCAP…</string>
+    <string name="open_pcap_file">Відкрити файл PCAP…</string>
     <string name="pcap_load_success">Файл PCAP завантажено</string>
     <string name="invalid_pcap_file">Недійсний файл PCAP</string>
     <string name="capture_interface_open_error">Не вдалося відкрити інтерфейс захоплення</string>
     <string name="unsupported_pcap_datalink">Файл PCAP не підтримується каналом передачі даних</string>
     <string name="root_capture_start_failed">Запуск захоплення не вдався. Переконайтеся що пристрій рутовано з Magisk</string>
     <string name="pcap_file_load_aborted">Вантаження файлу PCAP перервано</string>
-    <string name="host_resolution_failed">\"Не вдається визначити хост %1$s</string>
+    <string name="host_resolution_failed">Не вдається визначити хост %1$s</string>
     <string name="live_capture">Захоплення наживо</string>
     <string name="decryption_info_no_rule">Це з\'єднання не дешифрується. Створіть правило дешифрування, щоб дешифрувати його</string>
     <string name="tls_decryption_no_rules_notice">Дешифрування TLS застосовується лише для з\'єднань, які відповідають налаштованим правилам. Ви хочете створити правила дешифрування зараз\?</string>
