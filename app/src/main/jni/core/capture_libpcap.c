@@ -190,19 +190,18 @@ static int connectPcapd(pcapdroid_t *pd) {
              getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter,
              bpf, pd->pcap.daemonize ? " -d" : "");
 
-    int pcapd_out;
-    pid = start_subprocess(pcapd, args, pd->pcap.as_root, &pcapd_out);
-    if(pid <= 0)
+    pid = start_subprocess(pcapd, args, pd->pcap.as_root, NULL);
+    if(pid <= 0) {
+        log_e("start_subprocess failed");
         goto cleanup;
-    close(pcapd_out);
+    }
 
     if(pd->pcap.daemonize) {
         // when running as a daemon, child exits early
         // note: this will block until user grants/denies root permission
         int rv;
         if((waitpid(pid, &rv, 0) == pid) && (rv != 0)) {
-            if(WIFEXITED(rv))
-                log_w("pcapd exited with code %d", WEXITSTATUS(rv));
+            log_w("pcapd exited with code %d", rv);
 
             log_f(PD_ERR_PCAPD_START);
             goto cleanup;
@@ -234,8 +233,7 @@ static int connectPcapd(pcapdroid_t *pd) {
         // check if the child process terminated incorrectly
         int rv;
         if(!pd->pcap.daemonize && (waitpid(pid, &rv, WNOHANG) == pid)) {
-            if(WIFEXITED(rv))
-                log_w("pcapd exited with code %d", WEXITSTATUS(rv));
+            log_w("pcapd exited with code %d", rv);
             pid = -1;
 
             log_f(PD_ERR_PCAPD_START);
