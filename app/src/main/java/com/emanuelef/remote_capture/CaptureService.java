@@ -1062,7 +1062,7 @@ public class CaptureService extends VpnService implements Runnable {
     // Inside the mCaptureThread
     @Override
     public void run() {
-        if(mSettings.root_capture || mSettings.readFromPcap()) {
+        if(mSettings.root_capture) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
             if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
                 boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
