@@ -200,10 +200,15 @@ public class CaptureCtrl extends AppCompatActivity {
         abort();
     }
 
-    private void abort() {
-        Utils.showToast(this, R.string.ctrl_consent_denied);
+    private void abort(boolean show_toast) {
+        if(show_toast)
+            Utils.showToast(this, R.string.ctrl_consent_denied);
         setResult(RESULT_CANCELED, null);
         finish();
+    }
+
+    private void abort() {
+        abort(true);
     }
 
     // Check if the capture is requesting to send traffic to a remote server.
@@ -325,7 +330,7 @@ public class CaptureCtrl extends AppCompatActivity {
         String package_name = getCallingPackage();
         if((package_name == null) || !package_name.equals(BuildConfig.APPLICATION_ID + ".debug")) {
             Log.w(TAG, "getPeerInfo: package name mismatch");
-            abort();
+            abort(false);
             return;
         }
 
