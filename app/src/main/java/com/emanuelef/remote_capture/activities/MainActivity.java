@@ -146,10 +146,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int appver = Prefs.getAppVersion(mPrefs);
         if(appver <= 0) {
             // First run, start on-boarding
+            // only refresh app version on on-boarding done
             Intent intent = new Intent(MainActivity.this, OnBoardingActivity.class);
             startActivity(intent);
             finish();
-            // only refresh app version on on-boarding done
+            return;
         } else
             Prefs.refreshAppVersion(mPrefs);
 
