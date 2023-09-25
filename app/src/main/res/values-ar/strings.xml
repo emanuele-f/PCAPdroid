@@ -61,7 +61,7 @@
     <string name="share">مشاركة</string>
     <string name="pcap_file_action">حُفظت حركة المرور في ملف %1$s (%2$s)</string>
     <string name="delete">حذف</string>
-    <string name="copy_error">لا يمكن كتابة الملف</string>
+    <string name="copy_error">تعذر كتابة الملف</string>
     <string name="capture_running">الالتقاط يعمل</string>
     <string name="conn_status_active">مفعّل</string>
     <string name="first_seen">أول ظهور</string>
