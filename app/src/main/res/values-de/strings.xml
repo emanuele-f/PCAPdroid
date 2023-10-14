@@ -466,4 +466,5 @@
     <string name="mitm_addon_running">Mitm addon läuft</string>
     <string name="decryption_rules_help">Diese Regeln geben an, welche Verbindungen zu entschlüsseln sind. Host-basierte Regeln funktionieren nur, wenn eine vorherige DNS-Antwort angezeigt wird</string>
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
+    <string name="copy_error">Datei kann nicht geschrieben werden</string>
 </resources>
