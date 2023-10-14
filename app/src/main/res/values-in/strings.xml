@@ -186,7 +186,7 @@
     <string name="packets">Paket</string>
     <string name="duration">Durasi</string>
     <string name="udp_exporter_info">Mengirim PCAP ke penerima UDP jarak jauh</string>
-    <string name="vpn_setup_failed">Tidak dapat mengatur VPN</string>
+    <string name="vpn_setup_failed">Tidak dapat mengatur VPN.</string>
     <string name="lang_english">Inggris</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
@@ -395,4 +395,7 @@
     <string name="paid_features_unlocked">Fitur berbayar tidak terkunci. Mulai ulang penangkapan jika berjalan</string>
     <string name="build_info">Info build</string>
     <string name="paid_feature">Fitur berbayar</string>
+    <string name="socks5_summary">Konfigurasikan pengarahan ulang ke proxy SOCKS5</string>
+    <string name="copy_error">Tidak dapat menulis berkas</string>
+    <string name="socks5_redirection">Pengarahan ulang SOCKS5</string>
 </resources>
