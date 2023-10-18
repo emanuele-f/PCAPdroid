@@ -13,7 +13,7 @@
     </style>
 
     <!-- Make the Widget.MaterialComponents.Button.TextButton of AlertDialog use the accent color -->
-    <style name="AppAlertDialogTheme" parent="Theme.Material3.DayNight">
+    <style name="AppAlertDialogTheme" parent="Theme.Material3.DayNight.Dialog">
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
         <item name="windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
