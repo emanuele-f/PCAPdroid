@@ -1,7 +1,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base application theme. -->
     <!-- https://material.io/blog/android-dark-theme-tutorial -->
-    <style name="Base.AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Base.AppTheme" parent="Theme.Material3.DayNight">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -13,7 +13,7 @@
     </style>
 
     <!-- Make the Widget.MaterialComponents.Button.TextButton of AlertDialog use the accent color -->
-    <style name="AppAlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+    <style name="AppAlertDialogTheme" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
         <item name="windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
