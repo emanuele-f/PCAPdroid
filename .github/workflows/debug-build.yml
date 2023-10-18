@@ -15,3 +15,9 @@ jobs:
         java-version: '17'
     - run: ./gradlew test
     - run: ./gradlew assembleDebug -PdoNotStrip
+    - name: Upload APK File
+      uses: actions/upload-artifact@v3.1.3
+      with:
+        name: app_debug
+        path: /home/runner/work/PCAPDroid/PCAPDroid/app/build/outputs/apk/debug/
+        
