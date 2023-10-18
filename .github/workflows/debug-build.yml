@@ -19,5 +19,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.3
       with:
         name: app_debug
-        path: /home/runner/work/PCAPDroid/PCAPDroid/app/build/outputs/apk/debug/
+        path: /home/runner/work/PCAPdroid/PCAPdroid/app/build/outputs/apk/debug/
         
