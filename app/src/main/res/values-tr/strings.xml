@@ -11,7 +11,7 @@
     <string name="no_intent_handler_found">Bu eylemi gerçekleştirecek uygulama bulunamadı</string>
     <string name="network_interface">Arayüz</string>
     <string name="can_use_purchased_feature">Artık satın alınan özelliği kullanabilirsiniz</string>
-    <string name="disconnect_vpn_confirm">Etkin VPN uygulamasının bağlantısını kesip devam edilsin mi\?</string>
+    <string name="disconnect_vpn_confirm">Devam edildiğinde etkin VPN bağlantısı kesilecektir</string>
     <string name="http_server">HTTP sunucusu</string>
     <string name="system_default">Sistem</string>
     <string name="ip_address_val">IP adresi: %1$s</string>
@@ -151,7 +151,7 @@
     <string name="packets">Paketler</string>
     <string name="receiver_ip_address">Toplayıcı IP adresi</string>
     <string name="yes">Evet</string>
-    <string name="vpn_setup_failed">VPN kurulamadı</string>
+    <string name="vpn_setup_failed">VPN kurulamadı. Her zaman açık VPN\'in devre dışı bırakıldığından emin olun</string>
     <string name="app_not_found">%1$s uygulaması bulunamadı</string>
     <string name="source">Kaynak</string>
     <string name="receiver_port">Toplayıcı bağlantı noktası</string>
@@ -227,7 +227,7 @@
     <string name="upgrade_action">Yükselt</string>
     <string name="request">İstek</string>
     <string name="overview">Genel bakış</string>
-    <string name="payload_truncated">Yükün bir kısmı gösteriliyor. Tamamını göstermek için \"%1$s\" etkinleştirin</string>
+    <string name="payload_truncated">Yükün bir kısmı gösteriliyor. Tam olarak göstermek için yakalamayı durdurun ve PCAPdroid ayarlarından \"%1$s\" seçeneğini etkinleştirin</string>
     <string name="http">HTTP</string>
     <string name="payload">Yük</string>
     <string name="tx_direction">Gönder (TX)</string>
@@ -308,7 +308,9 @@
     <string name="privacy_first">Önce gizlilik</string>
     <string name="vpn_setup_msg">PCAPdroid, ağ trafiğini root olmadan yakalamak için bir VPN gibi davranır.
 \n
-\nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir</string>
+\nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir.
+\n
+\n<b>NOT:</b> Devam etmek için, Android ayarlarından yapılandırılmış her zaman açık VPN\'lerin tümünü devre dışı bırakın</string>
     <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz
 \n
 \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
@@ -466,4 +468,23 @@
     <string name="decryption_rules_help">Bu kurallar hangi bağlantıların şifresinin çözüleceğini belirtir. Ana makine tabanlı kurallar yalnızca önceden bir DNS yanıtı görülürse çalışır</string>
     <string name="decrypt_action">Şifresini çöz…</string>
     <string name="status_encrypted">Şifreli</string>
+    <string name="host_resolution_failed">%1$s adresi çözümlenemedi</string>
+    <string name="pcap_file_load_aborted">PCAP dosyası yükleme işlemi iptal edildi</string>
+    <string name="tls_decryption_no_rules_notice">TLS şifre çözme yalnızca yapılandırılan kurallarla eşleşen bağlantılara uygulanır. Şimdi şifre çözme kuralları oluşturmak istiyor musunuz\?</string>
+    <string name="pcap_load_success">PCAP dosyası yüklendi</string>
+    <string name="unsupported_pcap_datalink">PCAP dosyası desteklenmeyen bir veri bağlantısına sahip</string>
+    <string name="pcap_file_not_exists">Belirtilen PCAP dosyası yok</string>
+    <string name="root_capture_start_failed">Yakalama başlatma hatası. Aygıtın Magisk ile root yapıldığından emin olun</string>
+    <string name="decryption_info_no_rule">Bu bağlantının şifresi çözülmeyecek. Şifresini çözmek için bir şifre çözme kuralı oluşturun</string>
+    <string name="pcap_read_error">PCAP okuma hatası</string>
+    <string name="active_vpn_detected">Etkin VPN algılandı</string>
+    <string name="pcap_load_in_progress">PCAP dosyası yükleniyor, lütfen bekleyin</string>
+    <string name="live_capture">Canlı yakala</string>
+    <string name="pcapdroid_trailer_notice">\"%1$s\" yerine gerçek uygulamaları göstermek için, PCAP dosyasını dışa aktarmadan önce \"%2$s\" seçeneğini etkinleştirdiğinizden emin olun</string>
+    <string name="copy_error">Dosya yazılamadı</string>
+    <string name="open_pcap_file">PCAP dosyasını aç…</string>
+    <string name="root_capture_pcapd_start_failure">Yakalama başlatma hatası. PCAPdroid\'e root erişimi verdiğinizden emin olun</string>
+    <string name="invalid_pcap_file">Geçersiz PCAP dosyası</string>
+    <string name="proxy_host">Vekil sunucu</string>
+    <string name="capture_interface_open_error">Yakalama arayüzü açılamadı</string>
 </resources>
