@@ -27,7 +27,7 @@
     <string name="source_code">Quellcode</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
-    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden</string>
+    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden. Stelle sicher, dass Always-on VPN deaktiviert ist.</string>
     <string name="app_not_found">App %1$s konnte nicht gefunden werden</string>
     <string name="stats">Statistiken</string>
     <string name="active_connections">Aktive Verbindungen</string>
@@ -467,4 +467,5 @@
     <string name="decryption_rules_help">Diese Regeln geben an, welche Verbindungen zu entschlüsseln sind. Host-basierte Regeln funktionieren nur, wenn eine vorherige DNS-Antwort angezeigt wird</string>
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
     <string name="copy_error">Datei kann nicht geschrieben werden</string>
+    <string name="proxy_host">Proxy Host</string>
 </resources>
