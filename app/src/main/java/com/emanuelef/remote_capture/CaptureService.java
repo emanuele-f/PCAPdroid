@@ -429,7 +429,11 @@ public class CaptureService extends VpnService implements Runnable {
             if (getIPv4Enabled() == 1) {
                 builder.addAddress(vpn_ipv4, 30)
                         .addRoute("0.0.0.0", 1)
-                        .addRoute("128.0.0.0", 1)
+
+                        // 128.0.0.0/1 - 224.0.0.0/4
+                        .addRoute("128.0.0.0", 2)
+                        .addRoute("192.0.0.0", 3)
+                        .addRoute("240.0.0.0", 4)
                         .addDnsServer(vpn_dns);
             }
 
