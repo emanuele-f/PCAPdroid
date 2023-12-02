@@ -906,7 +906,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 executor.execute(() -> {
                     try (InputStream in_stream = getContentResolver().openInputStream(uri)) {
                         Utils.copy(in_stream, out);
-                    } catch (IOException e) {
+                    } catch (IOException | SecurityException e) {
                         e.printStackTrace();
 
                         runOnUiThread(() -> {
