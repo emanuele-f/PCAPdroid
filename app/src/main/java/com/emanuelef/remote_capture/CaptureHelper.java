@@ -72,7 +72,7 @@ public class CaptureHelper {
             mListener.onCaptureStartResult(true);
     }
 
-    private String resolveHost(String host) {
+    private static String resolveHost(String host) {
         Log.d(TAG, "Resolving host: " + host);
 
         try {
@@ -82,16 +82,19 @@ public class CaptureHelper {
         return null;
     }
 
-    private String doResolveHosts() {
+    private static String doResolveHosts(CaptureSettings settings) {
         // NOTE: hosts must be resolved before starting the VPN and in a separate thread
         String resolved;
 
-        if(mSettings.socks5_enabled) {
-            if ((resolved = resolveHost(mSettings.socks5_proxy_address)) == null)
-                return mSettings.socks5_proxy_address;
-            else if (!resolved.equals(mSettings.socks5_proxy_address)) {
+        if(settings == null)
+            return null;
+
+        if(settings.socks5_enabled) {
+            if ((resolved = resolveHost(settings.socks5_proxy_address)) == null)
+                return settings.socks5_proxy_address;
+            else if (!resolved.equals(settings.socks5_proxy_address)) {
                 Log.i(TAG, "Resolved SOCKS5 proxy address: " + resolved);
-                mSettings.socks5_proxy_address = resolved;
+                settings.socks5_proxy_address = resolved;
             }
         }
 
@@ -107,9 +110,14 @@ public class CaptureHelper {
         final Handler handler = new Handler(Looper.getMainLooper());
 
         (new Thread(() -> {
-            String failed_host = doResolveHosts();
+            String failed_host = doResolveHosts(mSettings);
 
             handler.post(() -> {
+                if(mSettings == null) {
+                    mListener.onCaptureStartResult(false);
+                    return;
+                }
+
                 if(failed_host == null)
                     startCaptureOk();
                 else {
