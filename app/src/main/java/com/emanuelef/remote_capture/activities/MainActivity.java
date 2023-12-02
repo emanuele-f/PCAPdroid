@@ -272,6 +272,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         if(mDrawer.isDrawerOpen(GravityCompat.START))
             mDrawer.closeDrawer(GravityCompat.START, true);
@@ -654,7 +655,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }*/
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.start_live_capture) {

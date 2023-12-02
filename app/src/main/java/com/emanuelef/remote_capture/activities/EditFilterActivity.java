@@ -222,8 +222,10 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         finishOk();
+        super.onBackPressed();
     }
 
     @Override

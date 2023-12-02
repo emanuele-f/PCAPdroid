@@ -117,6 +117,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
         if(f instanceof SettingsFragment) {
