@@ -23,19 +23,6 @@
         android:name="com.emanuelef.remote_capture.fragments.mitmwizard.InstallAddon"
         tools:layout="@layout/fragment_mitm_wizard" >
         <action
-            android:id="@+id/navto_grant_permission"
-            app:enterAnim="@anim/slide_in_left"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:destination="@id/grantMitmPermission" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/grantMitmPermission"
-        android:name="com.emanuelef.remote_capture.fragments.mitmwizard.GrantPermission"
-        tools:layout="@layout/fragment_mitm_wizard" >
-        <action
             android:id="@+id/navto_install_cert"
             app:enterAnim="@anim/slide_in_left"
             app:exitAnim="@anim/slide_out_left"

@@ -276,7 +276,6 @@
     <string name="export_action">Export</string>
     <string name="install_the_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a></string>
     <string name="configure_action">Configure</string>
-    <string name="grant_mitm_permission">Give PCAPdroid the permission to control the mitm addon</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
     <string name="install_ca_certificate">Install the PCAPdroid CA certificate, choosing \"VPN and apps\". Android will ask for your lockscreen or password</string>
     <string name="checking_the_certificate">Checking the certificate…</string>

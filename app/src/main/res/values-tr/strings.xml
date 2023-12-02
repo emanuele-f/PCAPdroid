@@ -263,7 +263,6 @@
     <string name="tls_decryption_summary">Ortadaki adam gerçekleştirerek SSL/TLS trafiğinin şifresini çöz. Bu artık bazı uygulamalarla çalışabilir, kullanım kılavuzuna bakın</string>
     <string name="traffic_inspection">Trafik denetimi</string>
     <string name="export_action">Dışa aktar</string>
-    <string name="grant_mitm_permission">PCAPdroid\'e ortadaki adam eklentisini denetleme izni verin</string>
     <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini elle açmaya çalışın ve yeniden deneyin</string>
     <string name="not_encrypted">Şifrelenmedi</string>
     <string name="cert_reinstall_required">CA sertifikası kurulmadı, ortadaki adam kurulum sihirbazını çalıştırın</string>

@@ -299,7 +299,6 @@
     <string name="export_action">Eksporter</string>
     <string name="tls_decryption">TLS-dekryptering</string>
     <string name="tls_decryption_summary">Dekrypter SSL/TLS-trafikk ved å utføre MITM. Dette kan fungere med noen programmer nå. Sjekk brukerveiledningen.</string>
-    <string name="grant_mitm_permission">Gi PCAPdroid tilgang til å kontrollere MITM-tillegget</string>
     <string name="export_ca_certificate">Eksporter sertifikatmyndighetssertifikatet tilhørende PCAPdroid, åpne så «Kryptering og identitetsdetaljer» i Android og veld å installere det som et «CA-sertifikat».</string>
     <string name="checking_the_certificate">Sjekker sertifikatet …</string>
     <string name="cert_exported_now_installed">Sertifikat eksporter. Installer det nå fra Android-innstillingene.</string>

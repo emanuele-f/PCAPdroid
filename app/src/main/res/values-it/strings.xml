@@ -285,7 +285,6 @@
     <string name="export_action">Esporta</string>
     <string name="configure_action">Configura</string>
     <string name="export_ca_certificate">Esporta il certificato CA di PCAPdroid, poi importalo dalle impostazioni Android di \"Crittografia e Credenziali\", installandolo come \"Certificato CA\"</string>
-    <string name="grant_mitm_permission">Dai a PCAPdroid il permesso di controllare l\'addon di mitm</string>
     <string name="ca_cert_export_failed">Errore durante l\'esportazione del certificato CA
 \n
 \nSe il tuo dispositivo utilizza Autostart o software simile per limitare l\'esecuzione di processi in background, assicurati di <a href="%1$s">escludere PCAPdroid</a></string>

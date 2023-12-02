@@ -250,7 +250,6 @@
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
     <string name="configure_action">配置</string>
-    <string name="grant_mitm_permission">给予 PCAPdroid 控制 mitm 附加组件的权限</string>
     <string name="checking_the_certificate">检查证书…</string>
     <string name="cert_exported_now_installed">证书已导出，从 Android 系统设置安装它</string>
     <string name="cert_installed_correctly">CA 证书已安装</string>

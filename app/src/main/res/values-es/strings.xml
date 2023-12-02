@@ -228,7 +228,6 @@
     <string name="install_action">Instalar</string>
     <string name="export_action">Exportar</string>
     <string name="configure_action">Configurar</string>
-    <string name="grant_mitm_permission">Otorgar a PCAPdroid el permiso de controlar el complemento mitm</string>
     <string name="checking_the_certificate">Verificando el certificado…</string>
     <string name="cert_exported_now_installed">Certificado exportado, ahora instálalo en los ajustes de Android</string>
     <string name="ca_cert_export_failed">Un error ha ocurrido mientras se exportaba el certificado CA

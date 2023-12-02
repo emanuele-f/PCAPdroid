@@ -228,7 +228,6 @@
     <string name="heap_usage">Uso do heap</string>
     <string name="ipv6_only">Somente IPv6</string>
     <string name="firewall_filter">Firewall: %1$s</string>
-    <string name="grant_mitm_permission">Conceda ao PCAPdroid uma permissão para controlar a extensão de mitm</string>
     <string name="mitm_addon_new_version">A extensão de mitm do PCAPdroid precisa ser atualizada</string>
     <string name="app_intro_traffic_dump">PCAPdroid fornece <a href="%1$s">múltiplas formas</a> para fazer o dump do tráfego no formato PCAP padrão para análise posterior
 \n
