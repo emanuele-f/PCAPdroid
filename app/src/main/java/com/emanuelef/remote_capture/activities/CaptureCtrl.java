@@ -98,7 +98,7 @@ public class CaptureCtrl extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         super.onCreate(savedInstanceState);
 
-        mCapHelper = new CaptureHelper(this);
+        mCapHelper = new CaptureHelper(this, false);
         mCapHelper.setListener(success -> {
             setResult(success ? RESULT_OK : RESULT_CANCELED, null);
             finish();

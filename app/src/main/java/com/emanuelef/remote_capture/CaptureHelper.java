@@ -43,11 +43,13 @@ public class CaptureHelper {
     private static final String TAG = "CaptureHelper";
     private final ComponentActivity mActivity;
     private final ActivityResultLauncher<Intent> mLauncher;
+    private final boolean mResolveHosts;
     private CaptureSettings mSettings;
     private CaptureStartListener mListener;
 
-    public CaptureHelper(ComponentActivity activity) {
+    public CaptureHelper(ComponentActivity activity, boolean resolve_hosts) {
         mActivity = activity;
+        mResolveHosts = resolve_hosts;
         mLauncher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), this::captureServiceResult);
     }
@@ -97,6 +99,11 @@ public class CaptureHelper {
     }
 
     private void resolveHosts() {
+        if (!mResolveHosts) {
+            startCaptureOk();
+            return;
+        }
+
         final Handler handler = new Handler(Looper.getMainLooper());
 
         (new Thread(() -> {
