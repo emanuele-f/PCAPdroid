@@ -27,7 +27,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:banner="@drawable/banner"
         android:supportsRtl="true"
-        android:extractNativeLibs="true"
         android:theme="@style/AppTheme"
         android:allowBackup="true"
         tools:replace="android:label"
