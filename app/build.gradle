@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion "25.1.8937393"
+    ndkVersion "26.1.10909125"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
@@ -77,15 +77,15 @@ dependencies {
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.fragment:fragment:1.5.7'
+    implementation 'androidx.fragment:fragment:1.6.2'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
-    implementation 'androidx.preference:preference:1.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.3.0'
-    implementation "androidx.navigation:navigation-fragment:2.5.3"
-    implementation "androidx.navigation:navigation-ui:2.5.3"
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation "androidx.navigation:navigation-fragment:2.7.5"
+    implementation "androidx.navigation:navigation-ui:2.7.5"
 
 // Google
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.10.0'
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'org.brotli:dec:0.1.2'
 
