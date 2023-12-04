@@ -200,14 +200,15 @@ void hexdump(const char *buf, size_t bufsize) {
 /* ******************************************************* */
 
 // Start a sub-process, running a command with some arguments, either as root or as the current user.
-// On success, the out_fd parameter will receive an open file descriptor to read the command output
+// If out_fd is not NULL, on success the out_fd parameter will receive an open file descriptor
+// to read the command output.
 // Returns the pid of the child process, or -1 on failure
 // NOTE: the caller MUST call waitpid or equivalent to prevent process zombification and close the out_fd
 int start_subprocess(const char *prog, const char *args, bool as_root, int* out_fd) {
     int in_p[2], out_p[2];
     pid_t pid;
 
-    if((pipe(in_p) != 0) || (pipe(out_p) != 0)) {
+    if((pipe(in_p) != 0) || (out_fd && (pipe(out_p) != 0))) {
         log_f("pipe failed[%d]: %s", errno, strerror(errno));
         return -1;
     }
@@ -217,23 +218,29 @@ int start_subprocess(const char *prog, const char *args, bool as_root, int* out_
         char *argp[] = {"sh", "-c", as_root ? "su" : "sh", NULL};
 
         close(in_p[1]);
-        close(out_p[0]);
-
         dup2(in_p[0], STDIN_FILENO);
-        dup2(out_p[1], STDOUT_FILENO);
-        dup2(out_p[1], STDERR_FILENO);
+
+        if(out_fd) {
+            close(out_p[0]);
+
+            dup2(out_p[1], STDOUT_FILENO);
+            dup2(out_p[1], STDERR_FILENO);
+        }
 
         execve(_PATH_BSHELL, argp, environ);
         fprintf(stderr, "execve failed[%d]: %s", errno, strerror(errno));
         exit(1);
     } else if(pid > 0) {
         // parent
-        *out_fd = out_p[0];
+        if(out_fd) {
+            *out_fd = out_p[0];
+            close(out_p[1]);
+        }
+
         close(in_p[0]);
-        close(out_p[1]);
 
         // write "su" command input
-        log_d("run_shell_cmd[%d]: %s %s", pid, prog, args);
+        log_d("start_subprocess[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);
         write(in_p[1], args, strlen(args));
@@ -243,8 +250,11 @@ int start_subprocess(const char *prog, const char *args, bool as_root, int* out_
         log_f("fork() failed[%d]: %s", errno, strerror(errno));
         close(in_p[0]);
         close(in_p[1]);
-        close(out_p[0]);
-        close(out_p[1]);
+
+        if(out_fd) {
+            close(out_p[0]);
+            close(out_p[1]);
+        }
         return -1;
     }
 

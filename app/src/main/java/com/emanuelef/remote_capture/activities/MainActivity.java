@@ -147,10 +147,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int appver = Prefs.getAppVersion(mPrefs);
         if(appver <= 0) {
             // First run, start on-boarding
+            // only refresh app version on on-boarding done
             Intent intent = new Intent(MainActivity.this, OnBoardingActivity.class);
             startActivity(intent);
             finish();
-            // only refresh app version on on-boarding done
+            return;
         } else
             Prefs.refreshAppVersion(mPrefs);
 
@@ -167,7 +168,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mCapHelper = new CaptureHelper(this);
+        mCapHelper = new CaptureHelper(this, true);
         mCapHelper.setListener(success -> {
             if(!success) {
                 Log.w(TAG, "Capture start failed");
@@ -938,7 +939,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 executor.execute(() -> {
                     try (InputStream in_stream = getContentResolver().openInputStream(uri)) {
                         Utils.copy(in_stream, out);
-                    } catch (IOException e) {
+                    } catch (IOException | SecurityException e) {
                         e.printStackTrace();
 
                         runOnUiThread(() -> {

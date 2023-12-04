@@ -85,7 +85,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | http_server_port        | int    |     |      | the HTTP server port in http_server mode                           |
 | pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode (overrides pcap_name)  |
 | socks5_enabled          | bool   |     | vpn  | true to redirect the TCP connections to a SOCKS5 proxy             |
-| socks5_proxy_ip_address | string |     | vpn  | the SOCKS5 proxy host                                              |
+| socks5_proxy_ip_address | string |     | vpn  | the SOCKS5 proxy IP address                                        |
 | socks5_proxy_port       | int    |     | vpn  | the SOCKS5 proxy port                                              |
 | root_capture            | bool   |     |      | true to capture packets in root mode, false to use the VPNService  |
 | pcapdroid_trailer       | bool   |     |      | true to enable the PCAPdroid trailer                               |
