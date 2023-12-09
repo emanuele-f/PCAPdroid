@@ -486,4 +486,5 @@
     <string name="installed_on">Встановлено</string>
     <string name="control_permissions">Керування дозволами</string>
     <string name="blacklist_type_domain">Домен чорного списку</string>
+    <string name="root_capture_pcapd_start_failure">Збій запуску захоплення. Переконайтеся, що ви надали рут доступ PCAPdroid</string>
 </resources>
