@@ -133,8 +133,12 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void setMenuVisibility(boolean menuVisible) {
         super.setMenuVisibility(menuVisible);
+
+        Context context = getContext();
+        if(context == null)
+            return;
+
         Log.d(TAG, "setMenuVisibility : " + menuVisible);
-        Context context = requireContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if(menuVisible && !payloadNoticeAcknowledged(prefs)) {
