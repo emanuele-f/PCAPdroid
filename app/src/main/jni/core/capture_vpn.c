@@ -348,22 +348,31 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
 /* ******************************************************* */
 
+static bool matches_decryption_whitelist(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    zdtun_ip_t dst_ip = tuple->dst_ip;
+
+    if(!pd->tls_decryption.list)
+        return false;
+
+    // NOTE: domain matching only works if a prior DNS reply is seen (see ip_lru_find in pd_new_connection)
+    return blacklist_match_ip(pd->tls_decryption.list, &dst_ip, tuple->ipver) ||
+        blacklist_match_uid(pd->tls_decryption.list, data->uid) ||
+        (data->info && blacklist_match_domain(pd->tls_decryption.list, data->info));
+}
+
+/* ******************************************************* */
+
 static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     // NOTE: connections must be proxified as soon as the first packet arrives.
     // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
-    // we must proxy all the TCP connections.
+    // we must proxify all the TCP connections.
     if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP)) {
         data->decryption_ignored = true;
         return false;
     }
 
     if(pd->tls_decryption.list) {
-        zdtun_ip_t dst_ip = tuple->dst_ip;
-
-        // NOTE: domain matching only works if a prior DNS reply is seen (see ip_lru_find in pd_new_connection)
-        if(blacklist_match_ip(pd->tls_decryption.list, &dst_ip, tuple->ipver) ||
-            blacklist_match_uid(pd->tls_decryption.list, data->uid) ||
-            (data->info && blacklist_match_domain(pd->tls_decryption.list, data->info)))
+        if(matches_decryption_whitelist(pd, tuple, data))
             return true;
 
         data->decryption_ignored = true;
@@ -376,7 +385,8 @@ static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn
 /* ******************************************************* */
 
 void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    if(pd->vpn.block_quic && (data->l7proto == NDPI_PROTOCOL_QUIC)) {
+    if(pd->vpn.block_quic && (data->l7proto == NDPI_PROTOCOL_QUIC) &&
+            pd->tls_decryption.enabled && matches_decryption_whitelist(pd, tuple, data)) {
         data->blacklisted_internal = true;
         data->to_block = true;
     }
