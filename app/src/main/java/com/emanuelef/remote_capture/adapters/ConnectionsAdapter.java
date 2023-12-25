@@ -474,8 +474,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
                 builder.append(conn.rcvd_bytes);                            builder.append(",");
                 builder.append(conn.sent_pkts);                             builder.append(",");
                 builder.append(conn.rcvd_pkts);                             builder.append(",");
-                builder.append(conn.first_seen);                            builder.append(",");
-                builder.append(conn.last_seen);
+                builder.append(Utils.formatMillisIso8601(mContext, conn.first_seen));                            builder.append(",");
+                builder.append(Utils.formatMillisIso8601(mContext, conn.last_seen));
 
                 if(malwareDetection) {
                     builder.append(",");
