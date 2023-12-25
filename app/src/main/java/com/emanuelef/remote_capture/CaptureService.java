@@ -1130,8 +1130,10 @@ public class CaptureService extends VpnService implements Runnable {
                 continue;
             }
 
-            if(item.first == null) // termination request
+            if(item.first == null) { // termination request
+                Log.i(TAG, "Connection update thread exit requested");
                 break;
+            }
 
             ConnectionDescriptor[] new_conns = item.first;
             ConnectionUpdate[] conns_updates = item.second;
