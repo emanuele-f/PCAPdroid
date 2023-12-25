@@ -24,7 +24,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.CheckResult;
@@ -201,7 +200,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         View dumpBox;
         TextView header;
         TextView dump;
-        ImageView expandButton;
+        MaterialButton expandButton;
         MaterialButton copybutton;
 
         public PayloadViewHolder(View view) {
