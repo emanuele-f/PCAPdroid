@@ -104,5 +104,5 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.2.0'
     //implementation 'com.github.androidmads:QRGenerator:1.0.1'
 
-    implementation "com.android.billingclient:billing:5.1.0"
+    implementation "com.android.billingclient:billing:6.1.0"
 }
