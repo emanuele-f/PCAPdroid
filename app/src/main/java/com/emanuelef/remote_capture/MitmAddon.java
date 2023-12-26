@@ -48,8 +48,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 15;
-    public static final String PACKAGE_VERSION_NAME = "v0.15";
+    public static final long PACKAGE_VERSION_CODE = 16;
+    public static final String PACKAGE_VERSION_NAME = "v0.16";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -125,13 +125,6 @@ public class MitmAddon {
                 PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
     }
 
-    public static boolean hasMitmPermission(Context ctx) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            return ctx.checkSelfPermission(MitmAPI.MITM_PERMISSION) == PackageManager.PERMISSION_GRANTED;
-
-        return true;
-    }
-
     public static void setCAInstallationSkipped(Context ctx, boolean skipped) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         prefs.edit()
@@ -158,7 +151,7 @@ public class MitmAddon {
             return true;
 
         // Perform some other quick checks just in case the env has changed
-        if(!isInstalled(ctx) || !hasMitmPermission(ctx)) {
+        if(!isInstalled(ctx)) {
             setDecryptionSetupDone(ctx, false);
             return true;
         }

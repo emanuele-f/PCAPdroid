@@ -23,11 +23,11 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.ArrayMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.collection.ArraySet;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
@@ -44,6 +44,7 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
     private static final int OPERATION_LOAD_APPS_INFO = 23;
     private AppsLoadListener mListener;
     private final AppCompatActivity mContext;
+    private static final String TERMUX_PACKAGE = "com.termux";
 
     public AppsLoader(AppCompatActivity context) {
         mContext = context;
@@ -58,7 +59,7 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
     private ArrayList<AppDescriptor> asyncLoadAppsInfo() {
         final PackageManager pm = mContext.getPackageManager();
         ArrayList<AppDescriptor> apps = new ArrayList<>();
-        ArraySet<Integer> uids = new ArraySet<>();
+        ArrayMap<Integer, Integer> uid_to_pos = new ArrayMap<>();
 
         Log.d(TAG, "Loading APPs...");
         List<PackageInfo> packs = Utils.getInstalledPackages(pm, 0);
@@ -68,20 +69,36 @@ public class AppsLoader implements LoaderManager.LoaderCallbacks<ArrayList<AppDe
         Log.d(TAG, "num apps (system+user): " + packs.size());
         long tstart = Utils.now();
 
+        PackageInfo termuxPkgInfo = null;
+
         // NOTE: a single uid can correspond to multiple packages, only take the first package found.
         // The VPNService in android works with UID, so this choice is not restrictive.
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             String package_name = p.applicationInfo.packageName;
 
-            if(!uids.contains(p.applicationInfo.uid) && !package_name.equals(app_package)) {
+            if (package_name.equals(TERMUX_PACKAGE))
+                termuxPkgInfo = p;
+
+            if(!uid_to_pos.containsKey(p.applicationInfo.uid) && !package_name.equals(app_package)) {
                 int uid = p.applicationInfo.uid;
                 AppDescriptor app = new AppDescriptor(pm, p);
 
+                uid_to_pos.put(uid, apps.size());
                 apps.add(app);
-                uids.add(uid);
 
                 //Log.d(TAG, appName + " - " + package_name + " [" + uid + "]" + (is_system ? " - SYS" : " - USR"));
+            }
+        }
+
+        if (termuxPkgInfo != null) {
+            // termux packages share the same UID. Use the main package if available. See #253
+            int uid = termuxPkgInfo.applicationInfo.uid;
+            Integer pos = uid_to_pos.get(uid);
+
+            if (pos != null) {
+                apps.remove(pos.intValue());
+                apps.add(new AppDescriptor(pm, termuxPkgInfo));
             }
         }
 

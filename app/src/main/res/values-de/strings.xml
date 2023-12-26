@@ -256,7 +256,6 @@
     <string name="app_log">Protokoll</string>
     <string name="no_data">Keine Daten</string>
     <string name="malware_whitelist_action">Whitelist (Malware)…</string>
-    <string name="grant_mitm_permission">Geben Sie PCAPdroid die Berechtigung, das mitm-Addon zu steuern</string>
     <string name="ca_cert_export_failed">Beim Exportieren des CA-Zertifikats ist ein Fehler aufgetreten
 \n
 \nWenn Ihr Gerät Autostart oder ähnliche Software implementiert, um die Ausführung von Hintergrunddiensten einzuschränken, stellen Sie sicher, dass Sie <a href="%1$s">PCAPdroid</a> auf die weiße Liste setzen</string>

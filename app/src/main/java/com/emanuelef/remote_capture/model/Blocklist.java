@@ -23,7 +23,7 @@ public class Blocklist extends MatchList {
 
     public synchronized boolean unblockAppForMinutes(int uid, int minutes) {
         Long old_val = mUidToGrace.put(uid, SystemClock.uptimeMillis() + (minutes * 60_000L));
-        Log.d(TAG, "Grace app: " + uid + " for " + minutes + " minutes (old: " + old_val + ")");
+        Log.i(TAG, "Grace app: " + uid + " for " + minutes + " minutes (old: " + old_val + ")");
         return (old_val == null);
     }
 
@@ -36,7 +36,7 @@ public class Blocklist extends MatchList {
             Map.Entry<Integer, Long> entry = iter.next();
 
             if(now >= entry.getValue()) {
-                Log.d(TAG, "Grace period ended for app: " + entry.getKey());
+                Log.i(TAG, "Grace period ended for app: " + entry.getKey());
                 iter.remove();
                 changed = true;
             }

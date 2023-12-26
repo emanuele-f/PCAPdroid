@@ -26,20 +26,29 @@
             android:textStyle="bold"
             tools:text="#1 [TX] 11:02:03.154 — 120 B" />
 
-        <TextView
-            android:id="@+id/content_type"
+        <View
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:textAlignment="textEnd"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="2dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/copy_button"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingVertical="2dp"
+            android:paddingHorizontal="2dp"
+            android:layout_marginHorizontal="2dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:textSize="11sp"
-            android:textStyle="italic"
-            android:singleLine="true"
-            android:ellipsize="start"
-            tools:text="application/javascript" />
+            app:icon="@drawable/ic_content_copy_small"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/colorTabText"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
     </LinearLayout>
 
     <RelativeLayout
@@ -64,13 +73,23 @@
             tools:text="GET / HTTP/1.1\nHost: example.org\nAccept: */*"/>
     </RelativeLayout>
 
-    <ImageView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/expand_button"
-        android:layout_width="30dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingVertical="0dp"
+        android:paddingHorizontal="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
         android:layout_gravity="end"
-        android:layout_marginEnd="4dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/ic_expand_more"
-        app:tint="@color/colorTabText" />
+        app:icon="@drawable/ic_expand_more"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconTint="@color/colorTabText"
+        style="@style/Widget.MaterialComponents.Button.TextButton" />
 </LinearLayout>

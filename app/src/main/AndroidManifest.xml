@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="com.pcapdroid.permission.MITM" android:required="false"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
     <!-- Required with root to properly resolve UIDs cross-users/profiles. Granted via root -->
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" android:protectionLevel="signature"  tools:ignore="ProtectedPermissions" />
@@ -28,7 +28,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:banner="@drawable/banner"
         android:supportsRtl="true"
-        android:extractNativeLibs="true"
         android:theme="@style/AppTheme"
         android:allowBackup="true"
         tools:replace="android:label"
@@ -128,7 +127,12 @@
         <service
             android:name=".CaptureService"
             android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="specialUse"
             android:exported="false">
+
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="run the VpnService to monitor network traffic"/>
+
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>

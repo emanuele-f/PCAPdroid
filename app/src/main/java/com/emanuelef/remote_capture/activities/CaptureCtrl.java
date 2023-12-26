@@ -196,8 +196,10 @@ public class CaptureCtrl extends AppCompatActivity {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         abort();
+        super.onBackPressed();
     }
 
     private void abort(boolean show_toast) {

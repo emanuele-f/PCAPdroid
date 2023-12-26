@@ -25,6 +25,7 @@ Paid features:
 
 - [Firewall](https://emanuele-f.github.io/PCAPdroid/paid_features#51-firewall): create rules to block individual apps, domains and IP addresses
 - [Malware detection](https://emanuele-f.github.io/PCAPdroid/paid_features#52-malware-detection): detect malicious connections by using third-party blacklists
+- [PCAPng format](https://emanuele-f.github.io/PCAPdroid/paid_features#53-pcapng-format): makes it easier to export and analyze decrypted traffic
 
 If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
 
@@ -56,6 +57,7 @@ You can help the PCAPdroid project in many ways:
   <img src="https://hosted.weblate.org/widgets/pcapdroid/-/app/multi-auto.svg" alt="Translation status" />
 </a>
 
+- [Discuss](https://github.com/emanuele-f/PCAPdroid/discussions) new features
 - Improve the app theme and layout
 - Star the project on Github and on [Google Play](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture)
 - Of course provide code pull requests!

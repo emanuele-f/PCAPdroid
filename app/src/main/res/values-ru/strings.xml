@@ -223,7 +223,6 @@
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
     <string name="install_action">Установить</string>
     <string name="export_action">Экспорт</string>
-    <string name="grant_mitm_permission">Дать PCAPdroid разрешение контролировать mitm дополнение</string>
     <string name="configure_action">Настроить</string>
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Корневой сертификат не установлен, запустите мастер настройки mitm</string>

@@ -52,7 +52,7 @@ public class InstallAddon extends StepFragment {
     }
 
     private void addonOk() {
-        nextStep(R.id.navto_grant_permission);
+        nextStep(R.id.navto_install_cert);
     }
 
     private void installAddon() {

@@ -306,6 +306,28 @@ public class Utils {
         return fmt.format(new Date(epoch * 1000));
     }
 
+    public static String formatMillisIso8601(Context context, long millis) {
+        Locale locale = getPrimaryLocale(context);
+
+        String pattern;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
+            pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+        else
+            pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+        DateFormat fmt = new SimpleDateFormat(pattern, locale);
+        String rv = fmt.format(new Date(millis));
+
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
+            // convert RFC 822 (+0100) -> ISO 8601 timezone (+01:00)
+            int l = rv.length();
+            if ((l > 5) && (rv.charAt(l - 5) == '+'))
+                rv = rv.substring(0, l - 2) + ":" + rv.substring(l - 2);
+        }
+
+        return rv;
+    }
+
     public static String formatEpochMillis(Context context, long millis) {
         Locale locale = getPrimaryLocale(context);
         DateFormat fmt = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS", locale);

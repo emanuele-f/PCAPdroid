@@ -24,9 +24,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +40,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.google.android.material.button.MaterialButton;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -111,18 +112,24 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             return mChunk;
         }
 
-        private void makeText() {
-            int dump_len = mIsExpanded ? mChunk.payload.length : Math.min(mChunk.payload.length, COLLAPSE_CHUNK_SIZE);
+        @CheckResult
+        private String makeText(boolean expanded) {
+            int dump_len = expanded ? mChunk.payload.length : Math.min(mChunk.payload.length, COLLAPSE_CHUNK_SIZE);
 
             if(!mShowAsPrintable)
-                mTheText = Utils.hexdump(mChunk.payload, 0, dump_len);
+                return Utils.hexdump(mChunk.payload, 0, dump_len);
             else
-                mTheText = new String(mChunk.payload, 0, dump_len, StandardCharsets.UTF_8);
+                return new String(mChunk.payload, 0, dump_len, StandardCharsets.UTF_8);
+        }
+
+        @CheckResult
+        private String makeText() {
+            return makeText(mIsExpanded);
         }
 
         void expand() {
             mIsExpanded = true;
-            makeText();
+            mTheText = makeText();
 
             // round up div
             mNumPages = (mTheText.length() + VISUAL_PAGE_SIZE - 1) / VISUAL_PAGE_SIZE;
@@ -138,7 +145,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         String getText(int start, int end) {
             if(mTheText == null)
-                makeText();
+                mTheText = makeText();
 
             if((start == 0) && (end >= mTheText.length() - 1)) {
                 return mTheText;
@@ -147,11 +154,15 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             return mTheText.substring(start, end);
         }
 
+        String getExpandedText() {
+            return makeText(true);
+        }
+
         Page getPage(int pageIdx) {
             assert(pageIdx < mNumPages);
 
             if(mTheText == null)
-                makeText();
+                mTheText = makeText();
 
             if(!mIsExpanded)
                 return new Page(this, 0, mTheText.length() - 1, true);
@@ -189,8 +200,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         View dumpBox;
         TextView header;
         TextView dump;
-        TextView contentType;
-        ImageView expandButton;
+        MaterialButton expandButton;
+        MaterialButton copybutton;
 
         public PayloadViewHolder(View view) {
             super(view);
@@ -200,7 +211,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             dump = view.findViewById(R.id.dump);
             dumpBox = view.findViewById(R.id.dump_box);
             expandButton = view.findViewById(R.id.expand_button);
-            contentType = view.findViewById(R.id.content_type);
+            copybutton = view.findViewById(R.id.copy_button);
         }
     }
 
@@ -227,6 +238,13 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             }
         });
 
+        holder.copybutton.setOnClickListener(v -> {
+            int pos = holder.getAbsoluteAdapterPosition();
+            String payload = getItem(pos).adaptChunk.getExpandedText();
+
+            Utils.copyToClipboard(mContext, payload);
+        });
+
         return holder;
     }
 
@@ -251,8 +269,6 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
                     getHeaderTag(chunk),
                     (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
                     Utils.formatBytes(chunk.payload.length)));
-
-            holder.contentType.setText((chunk.contentType != null) ? chunk.contentType : "");
         } else
             holder.headerLine.setVisibility(View.GONE);
 

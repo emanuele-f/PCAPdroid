@@ -64,7 +64,7 @@ public class VpnExemptionsActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
@@ -73,6 +73,7 @@ public class VpnExemptionsActivity extends BaseActivity {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         if(mFragment.onBackPressed())
             return;

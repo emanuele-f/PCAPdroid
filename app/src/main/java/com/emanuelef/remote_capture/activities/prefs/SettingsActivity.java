@@ -119,6 +119,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
         if(f instanceof SettingsFragment) {
@@ -182,8 +183,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupSecurityPrefs();
             setupOtherPrefs();
 
-            socks5ProxyHideShow(mTlsDecryption.isChecked(), rootCaptureEnabled());
-            mBlockQuic.setVisible(!rootCaptureEnabled());
+            socks5ProxyAndQuicHideShow(mTlsDecryption.isChecked(), rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
@@ -337,7 +337,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
                 mMitmWizard.setVisible((boolean) newValue);
                 mMitmproxyOpts.setVisible((boolean) newValue);
-                socks5ProxyHideShow((boolean) newValue, rootCaptureEnabled());
+                socks5ProxyAndQuicHideShow((boolean) newValue, rootCaptureEnabled());
                 return true;
             });
 
@@ -377,8 +377,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mSocks5Settings = requirePreference("socks5_settings");
         }
 
-        private void socks5ProxyHideShow(boolean tlsDecryption, boolean rootEnabled) {
+        private void socks5ProxyAndQuicHideShow(boolean tlsDecryption, boolean rootEnabled) {
             mSocks5Settings.setVisible(!tlsDecryption && !rootEnabled);
+            mBlockQuic.setVisible(tlsDecryption && !rootEnabled);
         }
 
         private void setupOtherPrefs() {
@@ -439,7 +440,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
                 mBlockQuic.setVisible(true);
-                socks5ProxyHideShow(mTlsDecryption.isChecked(), false);
+                socks5ProxyAndQuicHideShow(mTlsDecryption.isChecked(), false);
             }
 
             mIpMode.setVisible(!enabled);

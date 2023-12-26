@@ -250,7 +250,6 @@
     <string name="install_action">ثَبَّتَ</string>
     <string name="export_action">تصدير</string>
     <string name="configure_action">تَهيئة</string>
-    <string name="grant_mitm_permission">امنح PCAPdroid الإذن للتحكم في إضافة mitm</string>
     <string name="sort_by">الترتيب حسب</string>
     <string name="username">أسم المستخدم</string>
     <string name="write_ext_storage_failed">فشلت الكتابة إلى وحدة التخزين الخارجية. تحقق من سجل التطبيق للحصول على التفاصيل</string>

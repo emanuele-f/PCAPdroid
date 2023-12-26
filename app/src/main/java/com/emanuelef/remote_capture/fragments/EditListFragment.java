@@ -77,7 +77,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     private boolean mIsOwnUpdate;
     private ActionMode mActionMode;
     private AppSelectDialog mAppSelDialog;
-    private int MAX_RULES_BEFORE_WARNING = 5000;
+    private static final int MAX_RULES_BEFORE_WARNING = 5000;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
 

@@ -405,7 +405,6 @@
     <string name="install_action">Встановити</string>
     <string name="export_action">Експортувати</string>
     <string name="install_the_mitm_addon">Встановити <a href="%1$s">доповнення mitm</a> PCAPdroid</string>
-    <string name="grant_mitm_permission">Надати дозвіл PCAPdroid для керування доповненням mitm</string>
     <string name="export_ca_certificate">Експортуйте сертифікат PCAPdroid CA. потім відкрийте налаштування Android \"Шифрування й облікові дані\" та виберіть встановити його як \"Сертифікат ЦС\"</string>
     <string name="install_ca_certificate">Встановіть сертифікат PCAPdroid CA, обираючи \"VPN та додатки\". Android запитає ваше блокування екрану або пароль</string>
     <string name="ca_cert_export_failed">Трапилася помилка при експортуванні сертифікату ЦС
