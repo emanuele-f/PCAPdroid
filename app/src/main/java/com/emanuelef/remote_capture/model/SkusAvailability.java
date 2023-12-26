@@ -24,7 +24,9 @@ import android.content.SharedPreferences;
 import androidx.collection.ArraySet;
 
 import com.android.billingclient.api.SkuDetails;
+import com.emanuelef.remote_capture.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -32,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SkusAvailability implements Serializable {
+    private final static String TAG = "SkusAvailability";
     private final static String PREF_KEY = "available_skus";
     private final ArraySet<String> mSkus;
 
@@ -42,7 +45,13 @@ public class SkusAvailability implements Serializable {
     public static SkusAvailability load(SharedPreferences prefs) {
         String serialized = prefs.getString(PREF_KEY, "");
         Gson gson = new Gson();
-        SkusAvailability obj = gson.fromJson(serialized, SkusAvailability.class);
+        SkusAvailability obj = null;
+
+        try {
+            obj = gson.fromJson(serialized, SkusAvailability.class);
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "SkusAvailability JSON load error: " + e);
+        }
 
         if(obj == null)
             obj = new SkusAvailability();
