@@ -91,10 +91,16 @@ public class Blacklists {
         addList("DigitalSide Threat-Intel", BlacklistDescriptor.Type.IP_BLACKLIST,  "digitalsideit_ips.txt",
                 "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestips.txt");
 
+        // Experimental blacklists
+        addList("Phishing Army", BlacklistDescriptor.Type.IP_BLACKLIST,  "phishing_army_blocklist.txt",
+                "https://phishing.army/download/phishing_army_blocklist.txt");
+        addList("SNORT", BlacklistDescriptor.Type.IP_BLACKLIST,  "ip-block-list",
+                "https://snort.org/downloads/ip-block-list");
+        
         // To review
         //https://github.com/StevenBlack/hosts
-        //https://phishing.army/download/phishing_army_blocklist.txt
-        //https://snort.org/downloads/ip-block-list
+        //
+        //
 
         deserialize();
         checkFiles();
