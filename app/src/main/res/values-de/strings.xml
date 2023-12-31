@@ -206,7 +206,7 @@
     <string name="malware_status_update_failed">Einige Sperrlisten sind veraltet</string>
     <string name="copied">Kopiert</string>
     <string name="can_use_purchased_feature">Gekaufte Funktion jetzt verwenden werden</string>
-    <string name="disconnect_vpn_confirm">Aktive VPN-App trennen und fortfahren\?</string>
+    <string name="disconnect_vpn_confirm">Das Fortfahren wird das aktive VPN trennen</string>
     <string name="loading_apps">Lade Apps…</string>
     <string name="open_nav_drawer">Menü öffnen</string>
     <string name="close_nav_drawer">Menü schließen</string>
@@ -380,7 +380,7 @@
     <string name="response">Antwort</string>
     <string name="string_http_request">HTTP-Anfrage</string>
     <string name="string_http_response">HTTP-Antwort</string>
-    <string name="payload_truncated">Die Nutzlast ist gekürzt. Aktivieren Sie \"%1$s\", um sie vollständig anzuzeigen</string>
+    <string name="payload_truncated">Die Nutzlast ist gekürzt. Zur vollständigen Anzeige die Aufnahme stoppen und \"%1$s\" in den PCAPdroid Einstellungen aktivieren</string>
     <string name="full_payload_summary">Zeigen Sie die volle Verbindung Payload (z.B. die volle HTTP-Anfrage und Antwort). Dies erfordert viel Speicher, nicht auf lange Sicht verwenden</string>
     <string name="payload">Nutzlast</string>
     <string name="tx_direction">Senden</string>
@@ -412,7 +412,9 @@
 \nDarüber hinaus können Sie einen PCAP-Dump des Datenverkehrs exportieren, Metadaten extrahieren und vieles mehr!</string>
     <string name="vpn_setup_msg">PCAPdroid simuliert ein VPN, um den Netzwerkverkehr ohne Root zu erfassen.
 \n
-\nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren</string>
+\nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren
+\n
+\n<b>HINWEIS:</b> um fortzufahren alle konfigurierten Always-on VPNs in den Android Einstellungen deaktivieren</string>
     <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, um den Datenverkehr im Standard-PCAP-Format zur weiteren Analyse auszugeben
 \n
 \nÜber die <a href="%2$s">Trailer-Option</a> können Sie den Paketen App-Namen hinzufügen und diese in Wireshark anzeigen</string>
@@ -468,4 +470,10 @@
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
     <string name="copy_error">Datei kann nicht geschrieben werden</string>
     <string name="proxy_host">Proxy Host</string>
+    <string name="pcap_load_success">PCAP Datei geladen</string>
+    <string name="decryption_info_no_rule">Diese Verbindung wird nicht entschlüsselt. Erstellen Sie eine Entschlüsselungsregel um sie zu entschlüsseln</string>
+    <string name="pcap_read_error">PCAP Lesefehler</string>
+    <string name="pcap_load_in_progress">Die PCAP Datei lädt gerade, bitte warten</string>
+    <string name="open_pcap_file">PCAP Datei öffnen…</string>
+    <string name="invalid_pcap_file">Ungültige PCAP Datei</string>
 </resources>
