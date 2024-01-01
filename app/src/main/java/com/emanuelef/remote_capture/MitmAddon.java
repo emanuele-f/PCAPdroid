@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -34,6 +34,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
+import android.os.PowerManager;
 import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
@@ -48,8 +49,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 16;
-    public static final String PACKAGE_VERSION_NAME = "v0.16";
+    public static final long PACKAGE_VERSION_CODE = 17;
+    public static final String PACKAGE_VERSION_NAME = "v1.0";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -294,5 +295,29 @@ public class MitmAddon {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // NOTE: doze could be disabled by PCAPdroid itself, however this is moved to the addon to avoid
+    // any issues with the REQUEST_IGNORE_BATTERY_OPTIMIZATIONS Google Play policies
+    public boolean disableDoze() {
+        if(mService == null)
+            return false;
+
+        Log.i(TAG, "Send disable doze");
+        Message msg = Message.obtain(null, MitmAPI.MSG_DISABLE_DOZE);
+        try {
+            mService.send(msg);
+            return true;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean isDozeEnabled(Context context) {
+        final PowerManager manager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && (manager != null)
+                && !manager.isIgnoringBatteryOptimizations(MitmAPI.PACKAGE_NAME);
     }
 }

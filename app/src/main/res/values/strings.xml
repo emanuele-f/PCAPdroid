@@ -493,4 +493,5 @@
     <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>
+    <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
 </resources>
