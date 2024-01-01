@@ -194,7 +194,8 @@ public class MitmAddon {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(MitmAPI.PACKAGE_NAME, MitmAPI.MITM_SERVICE));
 
-        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | extra_flags)) {
+        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE |
+                Context.BIND_ALLOW_ACTIVITY_STARTS | extra_flags)) {
             try {
                 mContext.unbindService(mConnection);
             } catch (IllegalArgumentException ignored) {
