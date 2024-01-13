@@ -476,4 +476,6 @@
     <string name="pcap_load_in_progress">Die PCAP Datei lädt gerade, bitte warten</string>
     <string name="open_pcap_file">PCAP Datei öffnen…</string>
     <string name="invalid_pcap_file">Ungültige PCAP Datei</string>
+    <string name="unsupported_pcap_datalink">PCAP-Datei hat einen nicht unterstützten Datenlink</string>
+    <string name="pcap_file_not_exists">Die angegebene PCAP-Datei existiert nicht</string>
 </resources>
