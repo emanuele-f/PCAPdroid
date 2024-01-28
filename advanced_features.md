@@ -9,8 +9,41 @@ DNS server in the `Stats` page.
 
 ## 4.2 DoH Support
 
-PCAPdroid detects and blocks DNS-over-HTTPS requests. This is necessary in order to extract and display the DNS query being sent. The DNS queries are then sent in
-cleartext.
+PCAPdroid normally detects and blocks DNS-over-HTTPS requests. This is necessary in order to extract and display the DNS query being sent.
+
+Since version 1.7.0, you can integrate PCAPdroid with [InviZible Pro](https://f-droid.org/it/packages/pan.alexander.tordnscrypt.stable) to encrypt your DNS traffic with DNSCrypt / DoH. In essence this allows you to get visibility on the DNS traffic in PCAPdroid while retaining the privacy benefits provided by DNSCrypt.
+
+To do this, you need to:
+
+1. In the Android network settings, disable the private DNS. This allows PCAPdroid to inspect plaintext DNS traffic
+2. Install InviZible Pro, configure it in "Proxy Mode", start it and wait until DNSCrypt is running
+
+<p align="center">
+<img src="./images/invizible_5.jpg" width="250" />
+</p>
+
+3. In the PCAPdroid settings, add InviZible to the VPN Exemptions. This is necessary to avoid traffic loops
+
+
+<p align="center">
+<img src="./images/invizible_1.jpg" width="250" />
+</p>
+
+5. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
+
+<p align="center">
+<img src="./images/invizible_2.jpg" width="250" />
+<img src="./images/invizible_3.jpg" width="250" />
+</p>
+
+5. Start the PCAPdroid capture. DNS requests should now be redirected to InviZible proxy and then encrypted. In the Connections view, these are marked with a back arrow icon.
+
+<p align="center">
+<img src="./images/invizible_4.jpg" width="250" />
+</p>
+
+Your DNS requests should be encrypted now. You can verify this by performing a DNS leak test, e.g. via https://www.dnsleaktest.com, which should show the DNSCrypt DNS servers in place of your ISP ones.
+From InviZible you can configure DNSCrypt settings, such as enable/disable DNS-over-HTTPS, enforce DNSSEC, etc.
 
 ## 4.3 IPv6 Support
 
@@ -90,43 +123,7 @@ In order to make script injection effective, ensure to:
 - In PCAPdroid, block QUIC. This ensures that web pages are not upgraded to QUIC, whose decryption is not supported yet
 - Flush the browser cache, to ensure that the browser does not use a cached web page
 
-## 4.7 DNSCrypt
-
-Since version 1.7.0, you can integrate PCAPdroid with [InviZible Pro](https://f-droid.org/it/packages/pan.alexander.tordnscrypt.stable) to encrypt your DNS traffic with DNSCrypt. In essence this allows you to get visibility on the DNS traffic in PCAPdroid while retaining the privacy benefits provided by DNSCrypt.
-
-To do this, you need to:
-
-1. In the Android network settings, disable the private DNS. This allows PCAPdroid to inspect plaintext DNS traffic
-2. Install InviZible Pro, configure it in "Proxy Mode", start it and wait until DNSCrypt is running
-
-<p align="center">
-<img src="./images/invizible_5.jpg" width="250" />
-</p>
-
-3. In the PCAPdroid settings, add InviZible to the VPN Exemptions. This is necessary to avoid traffic loops
-
-
-<p align="center">
-<img src="./images/invizible_1.jpg" width="250" />
-</p>
-
-5. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
-
-<p align="center">
-<img src="./images/invizible_2.jpg" width="250" />
-<img src="./images/invizible_3.jpg" width="250" />
-</p>
-
-5. Start the PCAPdroid capture. DNS requests should now be redirected to InviZible proxy and then encrypted. In the Connections view, these are marked with a back arrow icon.
-
-<p align="center">
-<img src="./images/invizible_4.jpg" width="250" />
-</p>
-
-Your DNS requests should be encrypted now. You can verify this by performing a DNS leak test, e.g. via https://www.dnsleaktest.com, which should show the DNSCrypt DNS servers in place of your ISP ones.
-From InviZible you can configure DNSCrypt settings, such as enable/disable DNS-over-HTTPS, enforce DNSSEC, etc.
-
-## 4.8 Tor
+## 4.7 Tor
 
 To use Tor at the same time as PCAPdroid, you can either use [InviZible Pro](https://f-droid.org/it/packages/pan.alexander.tordnscrypt.stable) or [Orbot](https://play.google.com/store/apps/details?id=org.torproject.android) as the Tor provider. If you use Orbot, ensure to disable the Orbot VPN mode.
 
@@ -137,4 +134,4 @@ Start the Tor provider and open the PCAPdroid SOCKS5 settings. Set the host to 1
 </p>
 
 Starting the PCAPdroid capture will now redirect your TCP connections to Tor (NOTE: **not UDP**, see [#212](https://github.com/emanuele-f/PCAPdroid/issues/212)). Your public IP should now be one of the Tor exit nodes.
-In this mode, to avoid DNS leaks, it's also adviced to [configure DNSCrypt](#47-dnscrypt) as explained above.
+In this mode, to avoid DNS leaks, it's also adviced to [configure DNSCrypt](#42-doh-support) as explained above.
