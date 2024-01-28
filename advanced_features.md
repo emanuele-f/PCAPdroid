@@ -90,7 +90,7 @@ In order to make script injection effective, ensure to:
 - In PCAPdroid, block QUIC. This ensures that web pages are not upgraded to QUIC, whose decryption is not supported yet
 - Flush the browser cache, to ensure that the browser does not use a cached web page
 
-## 4.8 DNSCrypt
+## 4.7 DNSCrypt
 
 Since version 1.7.0, you can integrate PCAPdroid with [InviZible Pro](https://f-droid.org/it/packages/pan.alexander.tordnscrypt.stable) to encrypt your DNS traffic with DNSCrypt. In essence this allows you to get visibility on the DNS traffic in PCAPdroid while retaining the privacy benefits provided by DNSCrypt.
 
@@ -126,7 +126,7 @@ To do this, you need to:
 Your DNS requests should be encrypted now. You can verify this by performing a DNS leak test, e.g. via https://www.dnsleaktest.com, which should show the DNSCrypt DNS servers in place of your ISP ones.
 From InviZible you can configure DNSCrypt settings, such as enable/disable DNS-over-HTTPS, enforce DNSSEC, etc.
 
-## 4.9 Tor
+## 4.8 Tor
 
 To use Tor at the same time as PCAPdroid, you can either use [InviZible Pro](https://f-droid.org/it/packages/pan.alexander.tordnscrypt.stable) or [Orbot](https://play.google.com/store/apps/details?id=org.torproject.android) as the Tor provider. If you use Orbot, ensure to disable the Orbot VPN mode.
 
@@ -137,4 +137,4 @@ Start the Tor provider and open the PCAPdroid SOCKS5 settings. Set the host to 1
 </p>
 
 Starting the PCAPdroid capture will now redirect your TCP connections to Tor (NOTE: **not UDP**, see [#212](https://github.com/emanuele-f/PCAPdroid/issues/212)). Your public IP should now be one of the Tor exit nodes.
-In this mode, to avoid DNS leaks, it's also adviced to [configure DNSCrypt](#49-dnscrypt) as explained above.
+In this mode, to avoid DNS leaks, it's also adviced to [configure DNSCrypt](#47-dnscrypt) as explained above.
