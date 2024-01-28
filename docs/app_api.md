@@ -101,7 +101,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | pcapng_format           | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
 | socks5_username         | string |  64 | vpn  | username for the optional SOCKS5 proxy authentication              |
 | socks5_password         | string |  64 | vpn  | password for the optional SOCKS5 proxy authentication              |
-| block_quic_mode         | string |  73 | vpn  | never | always | to_decrypt (matching the decryption whitelist)    |
+| block_quic              | string |  73 | vpn  | never | always | to_decrypt (matching the decryption whitelist)    |
 
 \*: paid feature
 
