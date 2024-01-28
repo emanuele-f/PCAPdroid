@@ -4,15 +4,15 @@ If you install beta builds of PCAPdroid from the [beta repository](https://pcapd
 
 If you installed the app from F-Droid or from the Github releases, it is still possible to access the paid features but it requires some extra steps. In order to access the paid features on **non-Google-Play** builds of the app, you will need to get an *unlock token*, which you can then use to generate a license code for your device. Here are the steps you need to follow. It's recommendend to watch this [video tutorial](https://youtu.be/b108fy2z_X4).
 
-1. Purchase an *unlock token* from [the Google Play app](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture) (available since PCAPdroid v1.5.5). Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
+1\. Purchase an *unlock token* from [the Google Play app](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture) (available since PCAPdroid v1.5.5). Be sure to note down this token, as you will need it to generate new licenses. The unlock token is not bound to the device, so you can purchase it from a friend phone
  <p align="center"><img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/unlock_token_sku.jpg" width="250" /></p>
 
-2. Install PCAPdroid from [F-Droid](https://f-droid.org/packages/com.emanuelef.remote_capture) or from the [Github releases](https://github.com/emanuele-f/PCAPdroid/releases) on your device (you will need to uninstall the Google Play app from previous step if you operate on the same device) and retrieve its *installation ID* (or *system ID*). You can find it in the "About" page in the left drawer
+2\. Install PCAPdroid from [F-Droid](https://f-droid.org/packages/com.emanuelef.remote_capture) or from the [Github releases](https://github.com/emanuele-f/PCAPdroid/releases) on your device (you will need to uninstall the Google Play app from previous step if you operate on the same device) and retrieve its *installation ID* (or *system ID*). You can find it in the "About" page in the left drawer
  <p align="center"><img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/paid_features_about.png" width="250" /></p>
 
-3. Generate a license code for your build on [pcapdroid.org/getlicense](https://pcapdroid.org/getlicense), by providing the unlock token and the installation ID
+3\. Generate a license code for your build on [pcapdroid.org/getlicense](https://pcapdroid.org/getlicense), by providing the unlock token and the installation ID
 
-4. Paste your license code in the About page of PCAPdroid, below your installation ID
+4\. Paste your license code in the About page of PCAPdroid, below your installation ID
  <p align="center"><img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/installation_id.jpg" width="250" /></p>
 
 Congratulations, you can now access the paid features of PCAPdroid! Please note that the installation ID will change as a result of the following events:
