@@ -114,6 +114,7 @@ typedef struct {
     bool netd_block_missed;
     bool proxied;
     bool decryption_ignored;
+    bool port_mapping_applied;
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx

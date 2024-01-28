@@ -580,7 +580,7 @@ int run_vpn(pcapdroid_t *pd) {
                 // To be run before pd_process_packet/process_payload
                 if(data->sent_pkts == 0) {
                     if(pd_check_port_map(conn))
-                        /* port mapping applied */;
+                        data->port_mapping_applied = true;
                     else if(should_proxify(pd, tuple, data)) {
                         zdtun_conn_proxy(conn);
                         data->proxied = true;
@@ -590,7 +590,8 @@ int run_vpn(pcapdroid_t *pd) {
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
-                    data->blacklisted_internal |= !check_dns_req_allowed(pd, conn, &pctx);
+                    if (!data->port_mapping_applied)
+                        data->blacklisted_internal |= !check_dns_req_allowed(pd, conn, &pctx);
                     data->to_block |= data->blacklisted_internal;
 
                     if(data->to_block) {
