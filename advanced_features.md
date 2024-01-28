@@ -17,25 +17,18 @@ To do this, you need to:
 
 1. In the Android network settings, disable the private DNS. This allows PCAPdroid to inspect plaintext DNS traffic
 2. Install InviZible Pro, configure it in "Proxy Mode", start it and wait until DNSCrypt is running
-
-<p align="center">
-<img src="./images/invizible_5.jpg" width="250" />
-</p>
-
+  <p align="center">
+  <img src="./images/invizible_5.jpg" width="250" />
+  </p>
 3. In the PCAPdroid settings, add InviZible to the VPN Exemptions. This is necessary to avoid traffic loops
-
-
-<p align="center">
-<img src="./images/invizible_1.jpg" width="250" />
-</p>
-
-5. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
-
-<p align="center">
-<img src="./images/invizible_2.jpg" width="250" />
-<img src="./images/invizible_3.jpg" width="250" />
-</p>
-
+  <p align="center">
+  <img src="./images/invizible_1.jpg" width="250" />
+  </p>
+4. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
+  <p align="center">
+  <img src="./images/invizible_2.jpg" width="250" />
+  <img src="./images/invizible_3.jpg" width="250" />
+  </p>
 5. Start the PCAPdroid capture. DNS requests should now be redirected to InviZible proxy and then encrypted. In the Connections view, these are marked with a back arrow icon.
 
 <p align="center">
