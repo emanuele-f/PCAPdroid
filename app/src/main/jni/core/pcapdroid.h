@@ -65,6 +65,13 @@ typedef enum {
     PAYLOAD_MODE_FULL
 } payload_mode_t;
 
+// NOTE: sync with Prefs.BlockQuicMode
+typedef enum {
+    BLOCK_QUIC_MODE_NEVER = 0,
+    BLOCK_QUIC_MODE_ALWAYS,
+    BLOCK_QUIC_MODE_TO_DECRYPT
+} block_quic_mode_t;
+
 typedef struct {
     jint incr_id; // an incremental number which identifies a specific connection
 
@@ -205,7 +212,7 @@ typedef struct pcapdroid {
     union {
         struct {
             int tunfd;
-            bool block_quic;
+            block_quic_mode_t block_quic_mode;
             blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
 

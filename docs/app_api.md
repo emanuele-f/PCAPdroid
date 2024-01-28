@@ -94,7 +94,6 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | max_pkts_per_flow       | int    |  43 |      | only dump the first max_pkts_per_flow packets per flow             |
 | max_dump_size           | int    |  43 |      | max size in bytes for the PCAP dump                                |
 | tls_decryption          | bool   |  49 | vpn  | true to enable the built-in TLS decryption                         |
-| block_quic              | bool   |  51 | vpn  | true to block QUIC traffic (73+: matching the decryption whitelist)|
 | auto_block_private_dns  | bool   |  51 | vpn  | true to detect and possibly block private DNS to inspect traffic   |
 | ip_mode                 | string |  56 | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both        |
 | mitmproxy_opts          | string |  62 |      | additional options to provide to mitmproxy in decryption mode      |
@@ -102,6 +101,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | pcapng_format           | bool   |  62 |      | true to use the PCAPNG dump format (overrides pcapdroid_trailer)*  |
 | socks5_username         | string |  64 | vpn  | username for the optional SOCKS5 proxy authentication              |
 | socks5_password         | string |  64 | vpn  | password for the optional SOCKS5 proxy authentication              |
+| block_quic_mode         | string |  73 | vpn  | never | always | to_decrypt (matching the decryption whitelist)    |
 
 \*: paid feature
 

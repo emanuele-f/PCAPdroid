@@ -385,10 +385,14 @@ static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn
 /* ******************************************************* */
 
 void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    if(pd->vpn.block_quic && (data->l7proto == NDPI_PROTOCOL_QUIC) &&
-            pd->tls_decryption.enabled && matches_decryption_whitelist(pd, tuple, data)) {
-        data->blacklisted_internal = true;
-        data->to_block = true;
+    if(data->l7proto == NDPI_PROTOCOL_QUIC) {
+        block_quic_mode_t block_mode = pd->vpn.block_quic_mode;
+
+        if ((block_mode == BLOCK_QUIC_MODE_ALWAYS) ||
+                ((block_mode == BLOCK_QUIC_MODE_TO_DECRYPT) && matches_decryption_whitelist(pd, tuple, data))) {
+            data->blacklisted_internal = true;
+            data->to_block = true;
+        }
     }
 
     if(block_private_dns && !data->to_block &&
@@ -449,7 +453,7 @@ int run_vpn(pcapdroid_t *pd) {
 #if ANDROID
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.known_dns_servers = blacklist_init();
-    pd->vpn.block_quic = getIntPref(pd->env, pd->capture_service, "blockQuick");
+    pd->vpn.block_quic_mode = getIntPref(pd->env, pd->capture_service, "getBlockQuickMode");
 
     pd->vpn.ipv4.enabled = (bool) getIntPref(pd->env, pd->capture_service, "getIPv4Enabled");
     pd->vpn.ipv4.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");

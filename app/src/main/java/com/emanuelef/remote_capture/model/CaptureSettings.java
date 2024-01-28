@@ -26,7 +26,7 @@ public class CaptureSettings implements Serializable {
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
-    public boolean block_quic;
+    public Prefs.BlockQuicMode block_quic_mode;
     public boolean auto_block_private_dns;
     public boolean pcapng_format;
     public String capture_interface;
@@ -54,7 +54,7 @@ public class CaptureSettings implements Serializable {
         capture_interface = Prefs.getCaptureInterface(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
-        block_quic = Prefs.blockQuic(prefs);
+        block_quic_mode = Prefs.getBlockQuicMode(prefs);
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
         pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
@@ -82,7 +82,7 @@ public class CaptureSettings implements Serializable {
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
         tls_decryption = getBool(intent, Prefs.PREF_TLS_DECRYPTION_KEY, false);
         full_payload = false;
-        block_quic = getBool(intent, Prefs.PREF_BLOCK_QUIC, false);
+        block_quic_mode = Prefs.getBlockQuicMode(getString(intent, Prefs.PREF_BLOCK_QUIC, Prefs.BLOCK_QUIC_MODE_DEFAULT));
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);

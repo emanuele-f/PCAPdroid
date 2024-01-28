@@ -1309,7 +1309,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getVpnMTU()      { return VPN_MTU; }
 
-    public int blockQuick()     { return(mSettings.block_quic ? 1 : 0); }
+    public int getBlockQuickMode() { return mSettings.block_quic_mode.ordinal(); }
 
     // returns 1 if dumpPcapData should be called
     public int pcapDumpEnabled() {
