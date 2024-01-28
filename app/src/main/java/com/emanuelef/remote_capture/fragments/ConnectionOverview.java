@@ -292,6 +292,10 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.connection_start_not_seen));
             mError.setVisibility(View.VISIBLE);
+        } else if(mConn.isPortMappingApplied()) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.colorTabText));
+            mError.setText(context.getString(R.string.connection_redirected_port_map));
+            mError.setVisibility(View.VISIBLE);
         } else if(mConn.payload_length == 0) {
             mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
             mError.setText(context.getString(R.string.warn_no_app_data));

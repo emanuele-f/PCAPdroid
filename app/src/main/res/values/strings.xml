@@ -494,4 +494,6 @@
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>
     <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
+    <string name="redirected">redirected</string>
+    <string name="connection_redirected_port_map">This connection has been redirected due to a port mapping rule</string>
 </resources>

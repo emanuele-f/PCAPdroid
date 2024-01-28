@@ -167,7 +167,8 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->decryption_ignored << 12) |
+                               (data->port_mapping_applied << 13) |
+                                    (data->decryption_ignored << 12) |
                                     (data->netd_block_missed << 11) |
                                     (blocked << 10) |
                                     (data->blacklisted_domain << 9) |
