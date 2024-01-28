@@ -500,4 +500,5 @@
     <string name="never">Never</string>
     <string name="always">Always</string>
     <string name="for_connections_to_decrypt">Only for connections to decrypt</string>
+    <string name="decrypt_quic_notice">Decrypting QUIC is currently not supported. As a workaround, stop the capture and select the option to block QUIC in the PCAPdroid settings</string>
 </resources>

@@ -308,6 +308,11 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mError.setTextColor(ContextCompat.getColor(context, R.color.colorTabText));
             mError.setText(R.string.decryption_info_no_rule);
             mError.setVisibility(View.VISIBLE);
+        } else if((mConn.getDecryptionStatus() == ConnectionDescriptor.DecryptionStatus.NOT_DECRYPTABLE)
+                && mConn.l7proto.equals("QUIC")) {
+            mError.setTextColor(ContextCompat.getColor(context, R.color.warning));
+            mError.setText(R.string.decrypt_quic_notice);
+            mError.setVisibility(View.VISIBLE);
         } else
             mError.setVisibility(View.GONE);
     }
