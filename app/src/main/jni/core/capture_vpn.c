@@ -362,24 +362,23 @@ static bool matches_decryption_whitelist(pcapdroid_t *pd, const zdtun_5tuple_t *
 
 /* ******************************************************* */
 
+// NOTE: this handles both user-specified SOCKS5 and TLS decryption
 static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    // NOTE: connections must be proxified as soon as the first packet arrives.
-    // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
-    // we must proxify all the TCP connections.
-    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP)) {
-        data->decryption_ignored = true;
+    if(!pd->socks5.enabled)
         return false;
+
+    if (pd->tls_decryption.list) {
+        // TLS decryption
+        if(!matches_decryption_whitelist(pd, tuple, data)) {
+            data->decryption_ignored = true;
+            return false;
+        }
+
+        // Since we cannot reliably determine TLS connections with 1 packet, and connections must be
+        // proxified on the 1st packet, we proxify all the TCP connections
     }
 
-    if(pd->tls_decryption.list) {
-        if(matches_decryption_whitelist(pd, tuple, data))
-            return true;
-
-        data->decryption_ignored = true;
-        return false;
-    }
-
-    return true;
+    return (tuple->ipproto == IPPROTO_TCP);
 }
 
 /* ******************************************************* */

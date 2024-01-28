@@ -112,7 +112,7 @@ public class ConnectionDescriptor {
     private boolean blacklisted_host;
     public boolean is_blocked;
     private boolean port_mapping_applied;
-    public boolean decryption_ignored;
+    private boolean decryption_ignored;
     public boolean netd_block_missed;
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
@@ -255,10 +255,10 @@ public class ConnectionDescriptor {
             return DecryptionStatus.CLEARTEXT;
         else if(decryption_error != null)
             return DecryptionStatus.ERROR;
-        else if(decryption_ignored)
-            return DecryptionStatus.ENCRYPTED;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
+        else if(decryption_ignored)
+            return DecryptionStatus.ENCRYPTED;
         else if(isDecrypted())
             return DecryptionStatus.DECRYPTED;
         else
