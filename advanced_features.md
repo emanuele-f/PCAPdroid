@@ -30,10 +30,9 @@ To do this, you need to:
   <img src="./images/invizible_3.jpg" width="250" />
   </p>
 5. Start the PCAPdroid capture. DNS requests should now be redirected to InviZible proxy and then encrypted. In the Connections view, these are marked with a back arrow icon.
-
-<p align="center">
-<img src="./images/invizible_4.jpg" width="250" />
-</p>
+  <p align="center">
+  <img src="./images/invizible_4.jpg" width="250" />
+  </p>
 
 Your DNS requests should be encrypted now. You can verify this by performing a DNS leak test, e.g. via https://www.dnsleaktest.com, which should show the DNSCrypt DNS servers in place of your ISP ones.
 From InviZible you can configure DNSCrypt settings, such as enable/disable DNS-over-HTTPS, enforce DNSSEC, etc.
