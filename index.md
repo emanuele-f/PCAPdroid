@@ -25,6 +25,8 @@ Welcome to the PCAPdroid User Guide.
     - [4.4 Root Capture](advanced_features#44-root-capture)
     - [4.5 PCAPdroid Trailer](advanced_features#45-pcapdroid-trailer)
     - [4.6 Js Injector](advanced_features#46-js-injector)
+    - [4.7 DNSCrypt](advanced_features#47-dnscrypt)
+    - [4.8 Tor](advanced_features#48-tor)
 - [5. Paid Features](paid_features)
     - [5.1 Firewall](paid_features#51-firewall)
     - [5.2 Malware Detection](paid_features#52-malware-detection)
