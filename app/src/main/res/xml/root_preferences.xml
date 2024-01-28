@@ -53,6 +53,14 @@
             app:defaultValue="true" />
 
         <Preference
+            app:key="dnscrypt_link"
+            app:title="@string/dnscrypt_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/advanced_features#42-doh-support" />
+        </Preference>
+
+        <Preference
             android:key="geolocation"
             app:title="@string/geolocation"
             app:summary="@string/geolocation_summary"

@@ -496,4 +496,5 @@
     <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
     <string name="redirected">redirected</string>
     <string name="connection_redirected_port_map">This connection has been redirected due to a port mapping rule</string>
+    <string name="dnscrypt_how_to">How to use DoH / DNSCrypt with PCAPdroid</string>
 </resources>
