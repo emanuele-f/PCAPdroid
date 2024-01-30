@@ -23,7 +23,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -77,7 +76,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private String mAppFilter;
-    private TextView mFilterWarning;
+    private TextView mFilterRootDecryptionWarning;
     private AppSelectDialog mAppSelDialog;
 
     @Override
@@ -115,7 +114,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mCollectorInfo = view.findViewById(R.id.collector_info);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mQuickSettings = view.findViewById(R.id.quick_settings);
-        mFilterWarning = view.findViewById(R.id.app_filter_warning);
+        mFilterRootDecryptionWarning = view.findViewById(R.id.app_filter_root_decryption_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
 
@@ -194,7 +193,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private void recheckFilterWarning() {
         boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
 
-        mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
+        mFilterRootDecryptionWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
                 Prefs.isRootCaptureEnabled(mPrefs)
                 && !hasFilter) ? View.VISIBLE : View.GONE);
     }

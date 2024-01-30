@@ -91,7 +91,7 @@
                     android:layout_centerInParent="true" />
 
                 <TextView
-                    android:id="@+id/app_filter_warning"
+                    android:id="@+id/app_filter_root_decryption_warning"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/app_filter_text"

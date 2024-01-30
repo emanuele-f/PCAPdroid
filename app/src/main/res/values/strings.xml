@@ -234,7 +234,7 @@
     <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can turn it off from the Android network settings</string>
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
-    <string name="decryption_no_filter_warn">Select a target app or use the decryption whitelist when decrypting TLS to avoid losing your connection to the Internet</string>
+    <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="unblock">Unblock…</string>
     <string name="firewall">Firewall</string>
