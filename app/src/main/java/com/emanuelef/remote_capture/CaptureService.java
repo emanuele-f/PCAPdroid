@@ -86,6 +86,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -127,7 +128,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String dns_server;
     private long last_bytes;
     private int last_connections;
-    private int app_filter_uid;
+    private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
@@ -269,7 +270,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mSettings.readFromPcap()) {
             // Disable incompatible settings
             mSettings.dump_mode = Prefs.DumpMode.NONE;
-            mSettings.app_filter = "";
+            mSettings.app_filter.clear();
             mSettings.socks5_enabled = false;
             mSettings.tls_decryption = false;
             mSettings.root_capture = false;
@@ -406,14 +407,29 @@ public class CaptureService extends VpnService implements Runnable {
             mDecryptionList = null;
 
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
-            try {
-                app_filter_uid = Utils.getPackageUid(getPackageManager(), mSettings.app_filter, 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-                app_filter_uid = -1;
+            ArrayList<Integer> uids = new ArrayList<>();
+
+            for (String package_name: mSettings.app_filter) {
+                int uid;
+
+                try {
+                    uid = Utils.getPackageUid(getPackageManager(), package_name, 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+
+                uids.add(uid);
             }
+
+            // populate the array only with resolved UIDs
+            mAppFilterUids = new int[uids.size()];
+
+            int i = 0;
+            for (Integer uid: uids)
+                mAppFilterUids[i++] = uid;
         } else
-            app_filter_uid = -1;
+            mAppFilterUids = new int[0];
 
         mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
         mFirewallEnabled = Prefs.isFirewallEnabled(this, mPrefs);
@@ -458,7 +474,8 @@ public class CaptureService extends VpnService implements Runnable {
                     // NOTE: the API requires a package name, however it is converted to a UID
                     // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
                     // not on a package-name basis!
-                    builder.addAllowedApplication(mSettings.app_filter);
+                    for (String package_name: mSettings.app_filter)
+                        builder.addAllowedApplication(package_name);
                 } catch (PackageManager.NameNotFoundException e) {
                     String msg = String.format(getResources().getString(R.string.app_not_found), mSettings.app_filter);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -958,7 +975,7 @@ public class CaptureService extends VpnService implements Runnable {
         return rv;
     }
 
-    public static String getAppFilter() {
+    public static Set<String> getAppFilter() {
         return((INSTANCE != null) ? INSTANCE.mSettings.app_filter : null);
     }
 
@@ -1291,7 +1308,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int isPcapngEnabled() { return(mSettings.pcapng_format ? 1 : 0); }
 
-    public int getAppFilterUid() { return(app_filter_uid); }
+    public int[] getAppFilterUids() { return(mAppFilterUids); }
 
     public int getMitmAddonUid() {
         return MitmAddon.getUid(this);

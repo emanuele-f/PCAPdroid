@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-24 - Emanuele Faranda
  */
 
 #if ANDROID
@@ -585,7 +585,6 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
             },
-            .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
             .pcap_file_capture = (bool) getIntPref(env, vpn, "isPcapFileCapture"),
@@ -1209,6 +1208,41 @@ int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
     log_d("getIntPref(%s) = %d", key, value);
 
     return(value);
+}
+
+/* ******************************************************* */
+
+// Retrieve a int[] pref.
+// If rv is >0, out points to the allocated array. It's up to the caller to free it with pd_free
+int getIntArrayPref(JNIEnv *env, jobject vpn_inst, const char *key, int **out) {
+    int rv = -1;
+    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()[I");
+    jintArray jarr = (jintArray) (*env)->CallObjectMethod(env, vpn_inst, midMethod);
+
+    if (!jniCheckException(env)) {
+        int size = (*env)->GetArrayLength(env, jarr);
+        log_d("getIntArrayPref(%s) = #%d", key, size);
+
+        if (size > 0) {
+            jint *array = (*env)->GetIntArrayElements(env, jarr, NULL);
+            if (array) {
+                size_t arr_size = size * sizeof(int);
+
+                *out = (int*) pd_malloc(arr_size);
+                if (*out) {
+                    // success
+                    memcpy(*out, array, arr_size);
+                    rv = size;
+                }
+
+                (*env)->ReleaseIntArrayElements(env, jarr, array, 0);
+            }
+        } else
+            rv = size;
+    }
+
+    (*env)->DeleteLocalRef(env, jarr);
+    return rv;
 }
 
 /* ******************************************************* */

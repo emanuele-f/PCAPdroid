@@ -19,15 +19,20 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.Utils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Prefs {
     public static final String DUMP_NONE = "none";
@@ -199,7 +204,7 @@ public class Prefs {
     public static boolean isSocks5AuthEnabled(SharedPreferences p)  { return(p.getBoolean(PREF_SOCKS5_AUTH_ENABLED_KEY, false)); }
     public static String getSocks5Username(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_USERNAME_KEY, "")); }
     public static String getSocks5Password(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_PASSWORD_KEY, "")); }
-    public static String getAppFilter(SharedPreferences p)       { return(p.getString(PREF_APP_FILTER, "")); }
+    public static Set<String> getAppFilter(SharedPreferences p)     { return(getStringSet(p, PREF_APP_FILTER)); }
     public static IpMode getIPMode(SharedPreferences p)          { return(getIPMode(p.getString(PREF_IP_MODE, IP_MODE_DEFAULT))); }
     public static BlockQuicMode getBlockQuicMode(SharedPreferences p) { return(getBlockQuicMode(p.getString(PREF_BLOCK_QUIC, BLOCK_QUIC_MODE_DEFAULT))); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
@@ -234,6 +239,31 @@ public class Prefs {
     public static String getDnsServerV4(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V4, "1.1.1.1")); }
     public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
 
+    // Gets a StringSet from the prefs
+    // The preference should either be a StringSet or a String
+    // An empty set is returned as the default value
+    @SuppressLint("MutatingSharedPrefs")
+    public static @NonNull Set<String> getStringSet(SharedPreferences p, String key) {
+        Set<String> rv = null;
+
+        try {
+            rv = p.getStringSet(key, null);
+        } catch (ClassCastException e) {
+            // retry with string
+            String s = p.getString(key, "");
+
+            if (!s.isEmpty()) {
+                rv = new HashSet<>();
+                rv.add(s);
+            }
+        }
+
+        if (rv == null)
+            rv = new HashSet<>();
+
+        return rv;
+    }
+
     public static String asString(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
 
@@ -252,7 +282,7 @@ public class Prefs {
                 "\nFirewall: " + isFirewallEnabled(ctx, p) +
                 "\nPCAPNG: " + isPcapngEnabled(ctx, p) +
                 "\nBlockNewApps: " + blockNewApps(p) +
-                "\nAppFilter: " + getAppFilter(p) +
+                "\nTargetApps: " + getAppFilter(p) +
                 "\nIpMode: " + getIPMode(p) +
                 "\nTrailer: " + isPcapdroidTrailerEnabled(p) +
                 "\nStartAtBoot: " + startAtBoot(p);
