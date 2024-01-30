@@ -60,6 +60,13 @@ If you tap on a decrypted connection, the payload and the HTTP tabs will show th
 
 If the PCAP dump is enabled, after you stop the capture you will be prompted to save the `SSLKEYLOGFILE`, which you can load in Wireshark [to decrypt](https://wiki.wireshark.org/TLS#tls-decryption) the PCAP file. Alternatively, to simplify the process, you can embed the keylog [directly into the pcapng file](paid_features#53-pcapng-format).
 
+### 3.3.1 Exclude specific hosts/ports
+
+Decryption rules already allow you to define what needs to be decrypted. However, in some cases it's easier to create a rule to decrypt a whole app and only exclude specific hosts or ports.
+For this you can use the mitmproxy [--ignore-hosts option](https://docs.mitmproxy.org/stable/howto-ignoredomains/#ignore_hosts), setting it in the "Additional mitmproxy options" in the PCAPdroid settings.
+
+For example, to avoid decrypting connections to port 1234, you can use `--ignore-hosts .*:1234`.
+
 
 ## 3.4 Caveats and possible solutions
 
