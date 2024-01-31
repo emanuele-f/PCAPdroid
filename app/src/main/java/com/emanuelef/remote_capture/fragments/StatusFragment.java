@@ -25,8 +25,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.method.LinkMovementMethod;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -35,7 +33,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -67,13 +65,15 @@ import java.util.Set;
 
 public class StatusFragment extends Fragment implements AppStateListener, MenuProvider {
     private static final String TAG = "StatusFragment";
-    private Handler mHandler;
     private Menu mMenu;
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
+    private ImageView mFilterIcon;
     private MenuItem mMenuSettings;
     private TextView mInterfaceInfo;
-    private TextView mCollectorInfo;
+    private View mCollectorInfoLayout;
+    private TextView mCollectorInfoText;
+    private ImageView mCollectorInfoIcon;
     private TextView mCaptureStatus;
     private View mQuickSettings;
     private MainActivity mActivity;
@@ -112,9 +112,10 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mHandler = new Handler(Looper.getMainLooper());
         mInterfaceInfo = view.findViewById(R.id.interface_info);
-        mCollectorInfo = view.findViewById(R.id.collector_info);
+        mCollectorInfoLayout = view.findViewById(R.id.collector_info_layout);
+        mCollectorInfoText = mCollectorInfoLayout.findViewById(R.id.collector_info_text);
+        mCollectorInfoIcon = mCollectorInfoLayout.findViewById(R.id.collector_info_icon);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mQuickSettings = view.findViewById(R.id.quick_settings);
         mFilterRootDecryptionWarning = view.findViewById(R.id.app_filter_root_decryption_warning);
@@ -129,24 +130,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         View filterRow = view.findViewById(R.id.app_filter_text);
         TextView filterTitle = filterRow.findViewById(R.id.title);
         mFilterDescription = filterRow.findViewById(R.id.description);
-
-        // Needed to update the filter icon after mFilterDescription is measured
-        final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
-        if(vto.isAlive()) {
-            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    refreshFilterInfo();
-
-                    final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
-
-                    if(vto.isAlive()) {
-                        vto.removeOnGlobalLayoutListener(this);
-                        Log.d(TAG, "removeOnGlobalLayoutListener called");
-                    }
-                }
-            });
-        }
+        mFilterIcon = filterRow.findViewById(R.id.icon);
 
         filterTitle.setText(R.string.target_apps);
 
@@ -167,7 +151,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         CaptureService.observeStats(this, this::onStatsUpdate);
 
         // Make URLs clickable
-        mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
+        mCollectorInfoText.setMovementMethod(LinkMovementMethod.getInstance());
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
@@ -215,7 +199,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.capture_all_apps);
-            mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+            mFilterIcon.setVisibility(View.GONE);
             mAppFilterSwitch.setChecked(false);
             return;
         }
@@ -227,14 +211,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mFilterDescription.setText(pair.first);
 
         if (pair.second != null) {
-            int height = mFilterDescription.getMeasuredHeight();
-
-            if(height > 0) {
-                Drawable drawable = Utils.scaleDrawable(context.getResources(), pair.second, height, height);
-
-                if(drawable != null)
-                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-            }
+            mFilterIcon.setImageDrawable(pair.second);
+            mFilterIcon.setVisibility(View.VISIBLE);
         }
     }
 
@@ -281,7 +259,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         return new Pair<>(text, icon);
     }
 
-    private void refreshPcapDumpInfo() {
+    private void refreshPcapDumpInfo(Context context) {
         String info = "";
 
         Prefs.DumpMode mode = CaptureService.getDumpMode();
@@ -307,36 +285,26 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             break;
         }
 
-        mCollectorInfo.setText(info);
+        mCollectorInfoText.setText(info);
 
-        // Rendering after mCollectorInfo.setText is deferred, so getMeasuredHeight must be postponed
-        mHandler.post(() -> {
-            Context context = getContext();
-            if(context == null)
-                return;
+        // Check if a filter is set
+        Drawable drawable = null;
+        if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
+            Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
+            drawable = pair.second;
+        }
 
-            // Check if a filter is set
-            if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
-                Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
-
-                if (pair.second != null) {
-                    // scale and set
-                    int height = mCollectorInfo.getMeasuredHeight();
-                    Drawable drawable = Utils.scaleDrawable(getResources(), pair.second, height, height);
-
-                    if (drawable != null)
-                        mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-                }
-            }
-        });
-
-        // will be overriden in the above handler if necessary
-        mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+        if (drawable != null) {
+            mCollectorInfoIcon.setImageDrawable(drawable);
+            mCollectorInfoIcon.setVisibility(View.VISIBLE);
+        } else
+            mCollectorInfoIcon.setVisibility(View.GONE);
     }
 
     @Override
     public void appStateChanged(AppState state) {
-        if(getContext() == null)
+        Context context = getContext();
+        if(context == null)
             return;
 
         if(mMenu != null) {
@@ -356,7 +324,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         switch(state) {
             case ready:
                 mCaptureStatus.setText(R.string.ready);
-                mCollectorInfo.setVisibility(View.GONE);
+                mCollectorInfoLayout.setVisibility(View.GONE);
                 mInterfaceInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
                 mAppFilter = Prefs.getAppFilter(mPrefs);
@@ -372,7 +340,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 break;
             case running:
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-                mCollectorInfo.setVisibility(View.VISIBLE);
+                mCollectorInfoLayout.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
                 CaptureService service = CaptureService.requireInstance();
 
@@ -397,7 +365,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                     mInterfaceInfo.setVisibility(View.GONE);
 
                 mAppFilter = CaptureService.getAppFilter();
-                refreshPcapDumpInfo();
+                refreshPcapDumpInfo(context);
                 break;
             default:
                 break;
