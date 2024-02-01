@@ -503,4 +503,7 @@
     <string name="decrypt_quic_notice">Decrypting QUIC is currently not supported. As a workaround, stop the capture and select the option to block QUIC in the PCAPdroid settings</string>
     <string name="target_apps">Target apps</string>
     <string name="target_apps_help">Select the applications to capture</string>
+    <string name="headers">Headers</string>
+    <string name="body">Body</string>
+    <string name="both">Both</string>
 </resources>

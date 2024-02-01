@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -113,10 +114,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         }
 
         @CheckResult
-        private String makeText(boolean expanded) {
+        private String makeText(boolean as_printable, boolean expanded) {
             int dump_len = expanded ? mChunk.payload.length : Math.min(mChunk.payload.length, COLLAPSE_CHUNK_SIZE);
 
-            if(!mShowAsPrintable)
+            if(!as_printable)
                 return Utils.hexdump(mChunk.payload, 0, dump_len);
             else
                 return new String(mChunk.payload, 0, dump_len, StandardCharsets.UTF_8);
@@ -124,7 +125,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         @CheckResult
         private String makeText() {
-            return makeText(mIsExpanded);
+            return makeText(mShowAsPrintable, mIsExpanded);
         }
 
         void expand() {
@@ -154,8 +155,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             return mTheText.substring(start, end);
         }
 
-        String getExpandedText() {
-            return makeText(true);
+        String getExpandedText(boolean as_printable) {
+            return makeText(as_printable, true);
         }
 
         Page getPage(int pageIdx) {
@@ -239,10 +240,61 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         });
 
         holder.copybutton.setOnClickListener(v -> {
-            int pos = holder.getAbsoluteAdapterPosition();
-            String payload = getItem(pos).adaptChunk.getExpandedText();
+            int payload_pos = holder.getAbsoluteAdapterPosition();
 
-            Utils.copyToClipboard(mContext, payload);
+            if(mMode == ChunkType.HTTP) {
+                String payload = getItem(payload_pos).adaptChunk.getExpandedText(true);
+                int crlf_pos = payload.indexOf("\r\n\r\n");
+
+                boolean has_body = (crlf_pos > 0) && (crlf_pos < (payload.length() - 4));
+                if (!has_body) {
+                    Utils.copyToClipboard(mContext, payload);
+                    return;
+                }
+
+                String[] choices = {
+                        mContext.getString(R.string.headers),
+                        mContext.getString(R.string.body),
+                        mContext.getString(R.string.both),
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle(R.string.copy_action);
+                builder.setSingleChoiceItems(choices, 2, (dialogInterface, i) -> {});
+                builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
+                builder.setPositiveButton(R.string.copy_to_clipboard, (dialogInterface, i) -> {
+                    int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
+                    String to_copy = payload;
+
+                    if (choice != 2) {
+                        if (choice == 0 /* Headers */)
+                            to_copy = to_copy.substring(0, crlf_pos);
+                        else /* body */
+                            to_copy = to_copy.substring(crlf_pos + 4);
+                    }
+
+                    Utils.copyToClipboard(mContext, to_copy);
+                });
+                builder.create().show();
+            } else {
+                String[] choices = {
+                        mContext.getString(R.string.printable_text),
+                        mContext.getString(R.string.hexdump)
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle(R.string.copy_action);
+                builder.setSingleChoiceItems(choices, mShowAsPrintable ? 0 : 1, (dialogInterface, i) -> {});
+
+                builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
+                builder.setPositiveButton(R.string.copy_to_clipboard, (dialogInterface, i) -> {
+                    int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
+                    String payload = getItem(payload_pos).adaptChunk.getExpandedText(choice == 0);
+
+                    Utils.copyToClipboard(mContext, payload);
+                });
+                builder.create().show();
+            }
         });
 
         return holder;
