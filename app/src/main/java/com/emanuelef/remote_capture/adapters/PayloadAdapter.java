@@ -66,7 +66,13 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
+    private final boolean mSupportsFileDialog;
     private boolean mShowAsPrintable;
+    private ExportPayloadHandler mExportHandler;
+
+    public interface ExportPayloadHandler {
+        void exportPayload(String payload);
+    }
 
     public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode, boolean showAsPrintable) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -74,6 +80,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mContext = context;
         mMode = mode;
         mShowAsPrintable = showAsPrintable;
+        mSupportsFileDialog = Utils.supportsFileDialog(context);
 
         // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
         boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
@@ -83,6 +90,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mHttpRes = new HTTPReassembly(reassemble, this);
 
         handleChunksAdded(mConn.getNumPayloadChunks());
+    }
+
+    public void setExportPayloadHandler(ExportPayloadHandler handler) {
+        mExportHandler = handler;
     }
 
     private class AdapterChunk {
@@ -203,6 +214,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         TextView dump;
         MaterialButton expandButton;
         MaterialButton copybutton;
+        MaterialButton exportbutton;
 
         public PayloadViewHolder(View view) {
             super(view);
@@ -213,6 +225,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             dumpBox = view.findViewById(R.id.dump_box);
             expandButton = view.findViewById(R.id.expand_button);
             copybutton = view.findViewById(R.id.copy_button);
+            exportbutton = view.findViewById(R.id.export_button);
         }
     }
 
@@ -239,65 +252,82 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             }
         });
 
-        holder.copybutton.setOnClickListener(v -> {
-            int payload_pos = holder.getAbsoluteAdapterPosition();
-
-            if(mMode == ChunkType.HTTP) {
-                String payload = getItem(payload_pos).adaptChunk.getExpandedText(true);
-                int crlf_pos = payload.indexOf("\r\n\r\n");
-
-                boolean has_body = (crlf_pos > 0) && (crlf_pos < (payload.length() - 4));
-                if (!has_body) {
-                    Utils.copyToClipboard(mContext, payload);
-                    return;
-                }
-
-                String[] choices = {
-                        mContext.getString(R.string.headers),
-                        mContext.getString(R.string.body),
-                        mContext.getString(R.string.both),
-                };
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle(R.string.copy_action);
-                builder.setSingleChoiceItems(choices, 2, (dialogInterface, i) -> {});
-                builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
-                builder.setPositiveButton(R.string.copy_to_clipboard, (dialogInterface, i) -> {
-                    int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
-                    String to_copy = payload;
-
-                    if (choice != 2) {
-                        if (choice == 0 /* Headers */)
-                            to_copy = to_copy.substring(0, crlf_pos);
-                        else /* body */
-                            to_copy = to_copy.substring(crlf_pos + 4);
-                    }
-
-                    Utils.copyToClipboard(mContext, to_copy);
-                });
-                builder.create().show();
-            } else {
-                String[] choices = {
-                        mContext.getString(R.string.printable_text),
-                        mContext.getString(R.string.hexdump)
-                };
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle(R.string.copy_action);
-                builder.setSingleChoiceItems(choices, mShowAsPrintable ? 0 : 1, (dialogInterface, i) -> {});
-
-                builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
-                builder.setPositiveButton(R.string.copy_to_clipboard, (dialogInterface, i) -> {
-                    int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
-                    String payload = getItem(payload_pos).adaptChunk.getExpandedText(choice == 0);
-
-                    Utils.copyToClipboard(mContext, payload);
-                });
-                builder.create().show();
-            }
-        });
+        holder.copybutton.setOnClickListener(v -> handleCopyExportButtons(holder, false));
+        holder.exportbutton.setOnClickListener(v -> handleCopyExportButtons(holder, true));
+        holder.exportbutton.setVisibility(mSupportsFileDialog ? View.VISIBLE : View.GONE);
 
         return holder;
+    }
+
+    private void handleCopyExportButtons(PayloadViewHolder holder, boolean is_export) {
+        if(is_export && (mExportHandler == null))
+            return;
+
+        int payload_pos = holder.getAbsoluteAdapterPosition();
+        int title = is_export ? R.string.export_ellipsis : R.string.copy_action;
+        int positive_action = is_export ? R.string.export_action : R.string.copy_to_clipboard;
+
+        if(mMode == ChunkType.HTTP) {
+            String payload = getItem(payload_pos).adaptChunk.getExpandedText(true);
+            int crlf_pos = payload.indexOf("\r\n\r\n");
+
+            boolean has_body = (crlf_pos > 0) && (crlf_pos < (payload.length() - 4));
+            if (!has_body) {
+                Utils.copyToClipboard(mContext, payload);
+                return;
+            }
+
+            String[] choices = {
+                    mContext.getString(R.string.headers),
+                    mContext.getString(R.string.body),
+                    mContext.getString(R.string.both),
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle(title);
+            builder.setSingleChoiceItems(choices, 2, (dialogInterface, i) -> {});
+            builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
+            builder.setPositiveButton(positive_action, (dialogInterface, i) -> {
+                int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
+                String to_copy = payload;
+
+                if (choice != 2) {
+                    if (choice == 0 /* Headers */)
+                        to_copy = to_copy.substring(0, crlf_pos);
+                    else /* body */
+                        to_copy = to_copy.substring(crlf_pos + 4);
+                }
+
+                if (is_export) {
+                    if (mExportHandler != null)
+                        mExportHandler.exportPayload(to_copy);
+                } else
+                    Utils.copyToClipboard(mContext, to_copy);
+            });
+            builder.create().show();
+        } else {
+            String[] choices = {
+                    mContext.getString(R.string.printable_text),
+                    mContext.getString(R.string.hexdump)
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle(title);
+            builder.setSingleChoiceItems(choices, mShowAsPrintable ? 0 : 1, (dialogInterface, i) -> {});
+
+            builder.setNeutralButton(R.string.cancel_action, (dialogInterface, i) -> {});
+            builder.setPositiveButton(positive_action, (dialogInterface, i) -> {
+                int choice = ((AlertDialog)dialogInterface).getListView().getCheckedItemPosition();
+                String payload = getItem(payload_pos).adaptChunk.getExpandedText(choice == 0);
+
+                if (is_export) {
+                    if (mExportHandler != null)
+                        mExportHandler.exportPayload(payload);
+                } else
+                    Utils.copyToClipboard(mContext, payload);
+            });
+            builder.create().show();
+        }
     }
 
     private String getHeaderTag(PayloadChunk chunk) {
