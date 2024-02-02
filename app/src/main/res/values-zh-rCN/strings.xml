@@ -33,7 +33,6 @@
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
     <string name="host">主机</string>
-    <string name="app_filter">目标应用</string>
     <string name="ready">就绪</string>
     <string name="about">关于</string>
     <string name="status">状态</string>
@@ -107,7 +106,6 @@
     <string name="theme_dark">深色</string>
     <string name="app_theme">主题</string>
     <string name="socks5_proxy">启用 SOCKS5 代理</string>
-    <string name="proxy_ip_address">代理 IP 地址</string>
     <string name="proxy_port">代理端口</string>
     <string name="root_capture">以 root 用户身份捕获流量</string>
     <string name="donate">捐赠</string>
@@ -249,8 +247,6 @@
     <string name="mitm_start_failed">无法启动 mitm 服务。尝试手动打开 mitm 附加组件应用并重试</string>
     <string name="mitm_setup_wizard">Mitm 设置向导</string>
     <string name="install_action">安装</string>
-    <string name="configure_action">配置</string>
-    <string name="grant_mitm_permission">给予 PCAPdroid 控制 mitm 附加组件的权限</string>
     <string name="checking_the_certificate">检查证书…</string>
     <string name="cert_exported_now_installed">证书已导出，从 Android 系统设置安装它</string>
     <string name="cert_installed_correctly">CA 证书已安装</string>
@@ -358,7 +354,6 @@
 \n如果你的设备部署了 Autostart 或类似软件来限制后台服务执行，请确保将 <a href="%1$s">PCAPdroid 加入白名单</a></string>
     <string name="block_quick">拦截 QUIC</string>
     <string name="block_private_dns">拦截私人 DNS</string>
-    <string name="block_quick_summary">拦截 QUIC 连接，使其有可能回退到可解密的 TLS。一些应用可能会停止工作</string>
     <string name="no_root_firewall">非 root 防火墙</string>
     <string name="mitm_setup_wizard_intro">该向导将指导你安装 PCAPdroid mitm 附加组件和证书颁发机构。需要这两样东西才能执行 <a href="%1$s">TLS 解密</a></string>
     <string name="welcome_to_pcapdroid">欢迎来到 PCAPdroid</string>

@@ -15,7 +15,6 @@
     <string name="http_server_status">خادم HTTP: http://%1$s:%2$d</string>
     <string name="query">استعلام</string>
     <string name="host">استضافة</string>
-    <string name="app_filter">استهداف تطبيق</string>
     <string name="ready">مستعد</string>
     <string name="status">حالة</string>
     <string name="about">حول</string>
@@ -74,7 +73,6 @@
     <string name="delete_error">لا يمكن حذف الملف</string>
     <string name="socks5_auth">مصادقة SOCKS5</string>
     <string name="socks5_auth_summary">قم بالمصادقة على الوكيل عبر اسم المستخدم وكلمة المرور</string>
-    <string name="proxy_ip_address">عنوان IP الوكيل</string>
     <string name="proxy_port">منفذ الوكيل</string>
     <string name="select_all">اختيار الكل</string>
     <string name="target_sdk">هدف SDK</string>
@@ -249,8 +247,6 @@
     <string name="mitm_setup_wizard">إعداد Mitm</string>
     <string name="install_action">ثَبَّتَ</string>
     <string name="export_action">تصدير</string>
-    <string name="configure_action">تَهيئة</string>
-    <string name="grant_mitm_permission">امنح PCAPdroid الإذن للتحكم في إضافة mitm</string>
     <string name="sort_by">الترتيب حسب</string>
     <string name="username">أسم المستخدم</string>
     <string name="write_ext_storage_failed">فشلت الكتابة إلى وحدة التخزين الخارجية. تحقق من سجل التطبيق للحصول على التفاصيل</string>
@@ -453,7 +449,6 @@
     <string name="last_firewall_block">أخر حظر</string>
     <string name="firewall_is_disabled">تم تعطيل جِدار الحماية</string>
     <string name="netd_block_missed">تم بدء هذا الاتصال بواسطة netd لذلك لا يمكن حظره</string>
-    <string name="block_quick_summary">قم بحظر اتصالات QUIC حتى تتمكن من العودة إلى TLS القابل لفك التشفير. قد تتوقف بعض التطبيقات عن العمل</string>
     <string name="block_private_dns">حظر DNS الخاص</string>
     <string name="low_memory">ذاكرة منخفضة</string>
     <string name="remote_server_warning">لأسباب أمنية، غير مسموح بإرسال حركة المرور إلى الخادم البعيد \"%1$s\"</string>

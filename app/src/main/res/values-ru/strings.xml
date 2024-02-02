@@ -8,7 +8,6 @@
     <string name="rcvd_and_sent">%1$s получено — %2$s отправлено</string>
     <string name="query">Запрос</string>
     <string name="host">Хост</string>
-    <string name="app_filter">Целевое приложение</string>
     <string name="ready">Готов</string>
     <string name="about">О приложении</string>
     <string name="status">Состояние</string>
@@ -82,7 +81,6 @@
     <string name="theme_dark">Тёмная</string>
     <string name="app_theme">Тема</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
-    <string name="proxy_ip_address">IP-адрес прокси</string>
     <string name="proxy_port">Порт прокси</string>
     <string name="root_capture">Захват в root режиме</string>
     <string name="donate">Пожертвовать</string>
@@ -223,8 +221,6 @@
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
     <string name="install_action">Установить</string>
     <string name="export_action">Экспорт</string>
-    <string name="grant_mitm_permission">Дать PCAPdroid разрешение контролировать mitm дополнение</string>
-    <string name="configure_action">Настроить</string>
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Корневой сертификат не установлен, запустите мастер настройки mitm</string>
     <string name="mitm_addon_new_version">PCAPdroid mitm дополнение требуется обновить</string>
@@ -311,7 +307,6 @@
 \nЕсли на вашем устройстве есть Autostart или похожие программы, ограничивающие активность фоновых процессов, убедитесь в том, что <a href="%1$s">разрешили все для PCAPdroid</a></string>
     <string name="netd_block_missed">Это соединение инициировано сервисом netd, поэтому оно не может быть заблокировано</string>
     <string name="firewall_summary">Блокируйте доступ в интернет для приложений, настраивайте правила для доменов и IP адресов. Работает только при захвате без root</string>
-    <string name="block_quick_summary">Блокировка QUIC соединений возможно вернет к TLS, который можно дешифровать. Некоторые приложения могут перестать работать</string>
     <string name="app_intro_back_button">Назад</string>
     <string name="app_intro_done_button">Готово</string>
     <string name="mitm_setup_wizard_intro">Этот мастер настройки проведет вас через установку дополнения PCAPdroid mitm и корневого сертификата, которые необходимы для проведения <a href="%1$s">дешифрования TLS</a></string>

@@ -49,7 +49,6 @@
     <string name="can_use_purchased_feature">Тепер ви можете користуватися придбаною функцією</string>
     <string name="save_ok">Збережено</string>
     <string name="tls_decryption">Дешифрування TLS</string>
-    <string name="configure_action">Налаштувати</string>
     <string name="checking_the_certificate">Перевірка сертифікату…</string>
     <string name="cert_installed_correctly">Сертифікат ЦС встановлено</string>
     <string name="websocket">WebSocket</string>
@@ -226,7 +225,6 @@
     <string name="rcvd_and_sent">%1$s отримано — %2$s відправлено</string>
     <string name="query">Запит</string>
     <string name="host">Хост</string>
-    <string name="app_filter">Цільовий додаток</string>
     <string name="about">Про додаток</string>
     <string name="status">Статус</string>
     <string name="connections_view">З\'єднання</string>
@@ -298,7 +296,6 @@
     <string name="socks5_info">Проксі SOCKS5: %1$s:%2$d</string>
     <string name="socks5_auth">Автентифікація SOCKS5</string>
     <string name="socks5_auth_summary">Автентифікувати до проксі за допомогою імені користувача і пароля</string>
-    <string name="proxy_ip_address">Адреса IP проксі</string>
     <string name="proxy_host">Хост проксі</string>
     <string name="proxy_port">Порт проксі</string>
     <string name="root_capture">Захопити як рут</string>
@@ -405,7 +402,6 @@
     <string name="install_action">Встановити</string>
     <string name="export_action">Експортувати</string>
     <string name="install_the_mitm_addon">Встановити <a href="%1$s">доповнення mitm</a> PCAPdroid</string>
-    <string name="grant_mitm_permission">Надати дозвіл PCAPdroid для керування доповненням mitm</string>
     <string name="export_ca_certificate">Експортуйте сертифікат PCAPdroid CA. потім відкрийте налаштування Android \"Шифрування й облікові дані\" та виберіть встановити його як \"Сертифікат ЦС\"</string>
     <string name="install_ca_certificate">Встановіть сертифікат PCAPdroid CA, обираючи \"VPN та додатки\". Android запитає ваше блокування екрану або пароль</string>
     <string name="ca_cert_export_failed">Трапилася помилка при експортуванні сертифікату ЦС
@@ -460,7 +456,6 @@
     <string name="firewall_is_disabled">Мережевий екран вимкнено</string>
     <string name="action_unblock">Розблокувати</string>
     <string name="netd_block_missed">Це з\'єднання ініційовано мережею, тому його не вдається заблокувати</string>
-    <string name="block_quick_summary">Блокувати з\'єднання QUIC, щоб унеможливити повернення до дешифровного TLS. Деякі програми можуть перестати працювати</string>
     <string name="mitm_setup_wizard_intro">Цей майстер допоможе вам встановити доповнення PCAPdroid mitm і центр сертифікації, які потрібно щоб <a href="%1$s">дешифрувати TLS</a></string>
     <string name="mitm_setup_wizard_done">PCAPdroid тепер готовий до дешифрування трафіку TLS
 \n

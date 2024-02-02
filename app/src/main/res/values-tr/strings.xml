@@ -27,7 +27,6 @@
     <string name="rcvd_and_sent">%1$s alındı — %2$s gönderildi</string>
     <string name="query">Sorgu</string>
     <string name="host">Ana makine</string>
-    <string name="app_filter">Hedef uygulama</string>
     <string name="ready">Hazır</string>
     <string name="connections_view">Bağlantılar</string>
     <string name="no_connections">Bağlantı yok</string>
@@ -167,7 +166,6 @@
     <string name="conn_status_unreachable">Ulaşılamıyor</string>
     <string name="file_saved_with_name">Dosya \"%1$s\" olarak kaydedildi</string>
     <string name="enable_socks5_proxy_summary">Tüm TCP bağlantılarını bir SOCKS5 vekiline yönlendir</string>
-    <string name="proxy_ip_address">Vekil IP adresi</string>
     <string name="protocol_val">Protokol: %1$s</string>
     <string name="android_app_info">Android sistemi</string>
     <string name="capture_prefs">Yakala</string>
@@ -258,12 +256,10 @@
     <string name="phone_app">Telefon</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="phone_app_info">Telefon hizmetleri</string>
-    <string name="configure_action">Yapılandır</string>
     <string name="install_ca_certificate">\"VPN ve uygulamalar\" seçeneğini seçerek PCAPdroid CA sertifikasını kurun. Android, kilit ekranınızı veya parolanızı soracak</string>
     <string name="tls_decryption_summary">Ortadaki adam gerçekleştirerek SSL/TLS trafiğinin şifresini çöz. Bu artık bazı uygulamalarla çalışabilir, kullanım kılavuzuna bakın</string>
     <string name="traffic_inspection">Trafik denetimi</string>
     <string name="export_action">Dışa aktar</string>
-    <string name="grant_mitm_permission">PCAPdroid\'e ortadaki adam eklentisini denetleme izni verin</string>
     <string name="mitm_start_failed">Ortadaki adam hizmeti başlatılamadı. Ortadaki adam eklentisini elle açmaya çalışın ve yeniden deneyin</string>
     <string name="not_encrypted">Şifrelenmedi</string>
     <string name="cert_reinstall_required">CA sertifikası kurulmadı, ortadaki adam kurulum sihirbazını çalıştırın</string>
@@ -297,7 +293,6 @@
     <string name="firewall_is_enabled">Güvenlik duvarı etkin</string>
     <string name="firewall_summary">Uygulamalara internet erişimini engelleyin, belirli etki alanları ve IP adresleri için kurallar yapılandırın. Yalnızca root olmayan yakalama ile çalışır</string>
     <string name="block_quick">QUIC\'i engelle</string>
-    <string name="block_quick_summary">Muhtemelen şifresi çözülebilir TLS\'ye geri dönmek için QUIC bağlantılarını engelleyin. Bazı uygulamalar çalışmayı durdurabilir</string>
     <string name="block_private_dns_summary">DNS trafiğini incelemek için özel DNS\'yi algılayın ve muhtemelen engelleyin. Bunu devre dışı bırakmak trafik incelemesini engelleyebilir</string>
     <string name="mitm_setup_wizard_done">PCAPdroid artık TLS trafiğinin şifresini çözmeye hazır
 \n

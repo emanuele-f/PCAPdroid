@@ -58,7 +58,6 @@
     <string name="capture_all_apps">Tangkap lalu lintas semua aplikasi</string>
     <string name="collector_info">Kolektor UDP: %1$s:%2$d</string>
     <string name="host">Host</string>
-    <string name="app_filter">Aplikasi target</string>
     <string name="ready">Siap</string>
     <string name="about">Tentang</string>
     <string name="connection_details">Detail koneksi</string>
@@ -210,7 +209,6 @@
     <string name="unknown_app">Tidak diketahui</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
-    <string name="proxy_ip_address">Alamat IP proxy</string>
     <string name="theme_light">Terang</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
@@ -267,8 +265,6 @@
     <string name="mitm_setup_wizard">Petunjuk instalasi Mitm</string>
     <string name="install_action">Instal</string>
     <string name="export_action">Ekspor</string>
-    <string name="configure_action">Konfigurasikan</string>
-    <string name="grant_mitm_permission">Berikan PCAPdroid izin untuk mengontrol mitm addon</string>
     <string name="export_ca_certificate">Ekspor sertifikat CA PCAPdroid, lalu buka pengaturan \"Enkripsi &amp; Kredensial\" Android dan pilih instal sebagai \"sertifikat CA\"</string>
     <string name="export_failed">Ekspor gagal</string>
     <string name="not_encrypted">Tidak dienkripsi</string>
@@ -306,7 +302,6 @@
     <string name="netd_block_missed">Koneksi ini dimulai oleh netd sehingga tidak dapat diblokir</string>
     <string name="app_intro_next_button">Lanjut</string>
     <string name="block_quick">Blokir QUIC</string>
-    <string name="block_quick_summary">Blokir koneksi QUIC untuk kemungkinan kembali ke TLS yang dapat didekripsi. Beberapa aplikasi mungkin berhenti bekerja</string>
     <string name="block_private_dns_summary">Mendeteksi dan mungkin memblokir DNS pribadi untuk memeriksa lalu lintas DNS. Menonaktifkan ini dapat menghambat analisis lalu lintas</string>
     <string name="app_intro_back_button">Kembali</string>
     <string name="mitm_setup_wizard_intro">Wizard ini akan memandu Anda melalui penginstalan PCAPdroid mitm addon dan otoritas sertifikasi, yang diperlukan untuk melakukan <a href="%1$s">dekripsi TLS</a></string>

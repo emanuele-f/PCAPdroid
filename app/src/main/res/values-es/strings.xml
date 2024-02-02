@@ -8,7 +8,6 @@
     <string name="rcvd_and_sent">%1$s recibidos — %2$s enviados</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
-    <string name="app_filter">App objetivo</string>
     <string name="ready">Preparado</string>
     <string name="about">Acerca de</string>
     <string name="status">Estado</string>
@@ -82,7 +81,6 @@
     <string name="theme_dark">Oscuro</string>
     <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="proxy_ip_address">Dirección IP proxy</string>
     <string name="proxy_port">Puerto proxy</string>
     <string name="root_capture">Capturar como root</string>
     <string name="donate">Donar</string>
@@ -227,8 +225,6 @@
     <string name="mitm_setup_wizard">Asistente de configuración mitm</string>
     <string name="install_action">Instalar</string>
     <string name="export_action">Exportar</string>
-    <string name="configure_action">Configurar</string>
-    <string name="grant_mitm_permission">Otorgar a PCAPdroid el permiso de controlar el complemento mitm</string>
     <string name="checking_the_certificate">Verificando el certificado…</string>
     <string name="cert_exported_now_installed">Certificado exportado, ahora instálalo en los ajustes de Android</string>
     <string name="ca_cert_export_failed">Un error ha ocurrido mientras se exportaba el certificado CA
@@ -333,7 +329,6 @@
     <string name="action_block">Bloquear</string>
     <string name="firewall_summary">Bloquea el acceso a internet de aplicaciones, configura reglas específicas para dominios y direcciones IP. Solo funciona con la captura sin root</string>
     <string name="block_quick">Bloquear QUIC</string>
-    <string name="block_quick_summary">Bloquear las conexiones QUIC para recaer en TLS descifrable. Algunas aplicaciones pueden dejar de funcionar</string>
     <string name="app_intro_next_button">Siguiente</string>
     <string name="install_the_mitm_addon">Instala la extensión <a href="%1$s">complemento mitm</a></string>
     <string name="paid_feature">Funciones de pago</string>

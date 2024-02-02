@@ -25,7 +25,6 @@
     <string name="connections_view">Tilkoblinger</string>
     <string name="connection_details">Tilkoblingsdetaljer</string>
     <string name="rcvd_and_sent">%1$s mottatt — %2$s sendt</string>
-    <string name="app_filter">Målprogram</string>
     <string name="app">Program</string>
     <string name="protocol">Protokoll</string>
     <string name="source">Kilde</string>
@@ -79,7 +78,6 @@
     <string name="version">Versjon</string>
     <string name="permissions">Tilganger</string>
     <string name="android_app_info">Android-systemet</string>
-    <string name="proxy_ip_address">IP-adresse for mellomtjener</string>
     <string name="proxy_port">Mellomtjenerport</string>
     <string name="app_val">Program: %1$s</string>
     <string name="target_sdk">Mål-SDK</string>
@@ -295,11 +293,9 @@
     <string name="rules_delete_confirm">Slett valgte regler\?</string>
     <string name="firewall_is_disabled">Brannmur av</string>
     <string name="action_unblock">Avblokker</string>
-    <string name="configure_action">Sett opp</string>
     <string name="export_action">Eksporter</string>
     <string name="tls_decryption">TLS-dekryptering</string>
     <string name="tls_decryption_summary">Dekrypter SSL/TLS-trafikk ved å utføre MITM. Dette kan fungere med noen programmer nå. Sjekk brukerveiledningen.</string>
-    <string name="grant_mitm_permission">Gi PCAPdroid tilgang til å kontrollere MITM-tillegget</string>
     <string name="export_ca_certificate">Eksporter sertifikatmyndighetssertifikatet tilhørende PCAPdroid, åpne så «Kryptering og identitetsdetaljer» i Android og veld å installere det som et «CA-sertifikat».</string>
     <string name="checking_the_certificate">Sjekker sertifikatet …</string>
     <string name="cert_exported_now_installed">Sertifikat eksporter. Installer det nå fra Android-innstillingene.</string>
@@ -341,7 +337,6 @@
     <string name="no_root_firewall">Brannmur uten rot-tilgang</string>
     <string name="block_quick">Blokker QUIC</string>
     <string name="block_private_dns">Blokker privat DNS</string>
-    <string name="block_quick_summary">Blokker QUIC-tilkoblinger for å potensielt falle tilbake til dekrypterbar TLS. Noen programmer kan slutte å fungere.</string>
     <string name="welcome_to_pcapdroid">Velkommen til PCAPdroid</string>
     <string name="app_intro_next_button">Neste</string>
     <string name="app_intro_skip_button">Hopp over</string>

@@ -8,7 +8,6 @@
     <string name="rcvd_and_sent">%1$s ricevuti — %2$s inviati</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
-    <string name="app_filter">Filtro app</string>
     <string name="ready">Pronto</string>
     <string name="about">Informazioni</string>
     <string name="status">Stato</string>
@@ -82,7 +81,6 @@
     <string name="theme_dark">Scuro</string>
     <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="proxy_ip_address">Indirizzo IP del proxy</string>
     <string name="proxy_port">Porta del proxy</string>
     <string name="root_capture">Cattura come root</string>
     <string name="root_capture_summary">Permette a PCAPdroid di funzionare assieme ad altre app VPN</string>
@@ -283,9 +281,7 @@
     <string name="traffic_inspection">Ispezione del traffico</string>
     <string name="install_action">Installa</string>
     <string name="export_action">Esporta</string>
-    <string name="configure_action">Configura</string>
     <string name="export_ca_certificate">Esporta il certificato CA di PCAPdroid, poi importalo dalle impostazioni Android di \"Crittografia e Credenziali\", installandolo come \"Certificato CA\"</string>
-    <string name="grant_mitm_permission">Dai a PCAPdroid il permesso di controllare l\'addon di mitm</string>
     <string name="ca_cert_export_failed">Errore durante l\'esportazione del certificato CA
 \n
 \nSe il tuo dispositivo utilizza Autostart o software simile per limitare l\'esecuzione di processi in background, assicurati di <a href="%1$s">escludere PCAPdroid</a></string>
@@ -312,7 +308,6 @@
     <string name="block_quick">Blocca QUIC</string>
     <string name="firewall_summary">Blocca l\'accesso Internet alle app, configura regole per domini e indirizzi IP specifici. Funziona solamente con la cattura non-root</string>
     <string name="no_root_firewall">Firewall senza root</string>
-    <string name="block_quick_summary">Blocca le connessioni QUIC per cercare di forzare l\'utilizzo di TLS decrittabile. Alcune app potrebbero smettere di funzionare</string>
     <string name="mitm_setup_wizard_done">PCAPdroid è pronto a decrittare il traffico TLS
 \n
 \nPer saperne di più sulle misure di sicurezza adottate dalle app, che potrebbero interferire con la decrittazione, e su come bypassarle, far riferimento alla <a href="%1$s">guida utente</a></string>

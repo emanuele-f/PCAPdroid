@@ -9,7 +9,6 @@
     <string name="rcvd_and_sent">%1$s recebidos — %2$s enviados</string>
     <string name="query">Consulta</string>
     <string name="host">Host</string>
-    <string name="app_filter">App desejado</string>
     <string name="ready">Pronto</string>
     <string name="about">Sobre</string>
     <string name="status">Status</string>
@@ -83,7 +82,6 @@
     <string name="theme_dark">Escuro</string>
     <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="proxy_ip_address">Endereço IP do proxy</string>
     <string name="proxy_port">Porta do proxy</string>
     <string name="root_capture">Capturar como root</string>
     <string name="donate">Doar</string>
@@ -228,7 +226,6 @@
     <string name="heap_usage">Uso do heap</string>
     <string name="ipv6_only">Somente IPv6</string>
     <string name="firewall_filter">Firewall: %1$s</string>
-    <string name="grant_mitm_permission">Conceda ao PCAPdroid uma permissão para controlar a extensão de mitm</string>
     <string name="mitm_addon_new_version">A extensão de mitm do PCAPdroid precisa ser atualizada</string>
     <string name="app_intro_traffic_dump">PCAPdroid fornece <a href="%1$s">múltiplas formas</a> para fazer o dump do tráfego no formato PCAP padrão para análise posterior
 \n
@@ -262,7 +259,6 @@
     <string name="traffic_inspection">Inspeção de tráfego</string>
     <string name="mitm_start_failed">Não foi possível iniciar o serviço do mitm. Reinstale a extensão mitm e tente novamente</string>
     <string name="mitm_setup_wizard">Assistente de configuração do mitm</string>
-    <string name="configure_action">Configurar</string>
     <string name="checking_the_certificate">Verificando o certificado…</string>
     <string name="cert_exported_now_installed">Certificado exportado, agora instale-o em configurações do Android</string>
     <string name="cert_installed_correctly">O certificado CA está instalado</string>
@@ -336,7 +332,6 @@
     <string name="netd_block_missed">Esta conexão foi iniciada pela netd por isso não pôde ser bloqueada</string>
     <string name="no_root_firewall">Firewall não-root</string>
     <string name="block_quick">Bloquear QUIC</string>
-    <string name="block_quick_summary">Bloquear conexões QUIC para possivelmente usar o TLS descriptografável. Alguns apps podem parar de funcionar</string>
     <string name="block_private_dns">Bloquear DNS privado</string>
     <string name="mitm_setup_wizard_intro">Este assistente mostrará você como instalar a extensão de mitm do PCAPdroid e autoridade de certificação, que são necessários para realizar a <a href="%1$s">Decriptação do TLS</a></string>
     <string name="app_intro_skip_button">Pular</string>

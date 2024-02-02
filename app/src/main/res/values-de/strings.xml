@@ -15,7 +15,6 @@
     <string name="http_server_status">HTTP-Server: http://%1$s:%2$d</string>
     <string name="query">Abfrage</string>
     <string name="host">Host</string>
-    <string name="app_filter">Ziel-App</string>
     <string name="about">Über</string>
     <string name="status">Status</string>
     <string name="app">App</string>
@@ -104,7 +103,6 @@
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
     <string name="app_theme">Thema</string>
-    <string name="proxy_ip_address">Proxy-IP-Adresse</string>
     <string name="proxy_port">Proxy-Port</string>
     <string name="root_capture_summary">Erlaubt PCAPdroid die Ausführung mit anderen VPN-Apps</string>
     <string name="donate">Spenden</string>
@@ -240,7 +238,6 @@
     <string name="firewall_purchase_msg">Kaufe die Funktion <i>%1$s</i>, um Verbindungen zu sperren</string>
     <string name="show_only_cleartext">Klartext-Verbindungen</string>
     <string name="block_quick">QUIC sperren</string>
-    <string name="block_quick_summary">QUIC-Verbindungen sperren, um möglicherweise auf entschlüsselbares TLS zurückzugreifen. Einige Apps funktionieren möglicherweise nicht mehr</string>
     <string name="block_private_dns_summary">Private DNS erkennen und möglicherweise sperren, um DNS-Verkehr zu untersuchen. Die Deaktivierung dieser Funktion kann die Analyse des Datenverkehrs behindern</string>
     <string name="firewall_filter">Firewall: %1$s</string>
     <string name="unblock_permanently">Dauerhaft entsperren</string>
@@ -251,12 +248,10 @@
     <string name="phone_app">Telefon</string>
     <string name="install_action">Installieren</string>
     <string name="export_action">Exportieren</string>
-    <string name="configure_action">Konfigurieren</string>
     <string name="checking_the_certificate">Zertifikat wird überprüft…</string>
     <string name="app_log">Protokoll</string>
     <string name="no_data">Keine Daten</string>
     <string name="malware_whitelist_action">Whitelist (Malware)…</string>
-    <string name="grant_mitm_permission">Geben Sie PCAPdroid die Berechtigung, das mitm-Addon zu steuern</string>
     <string name="ca_cert_export_failed">Beim Exportieren des CA-Zertifikats ist ein Fehler aufgetreten
 \n
 \nWenn Ihr Gerät Autostart oder ähnliche Software implementiert, um die Ausführung von Hintergrunddiensten einzuschränken, stellen Sie sicher, dass Sie <a href="%1$s">PCAPdroid</a> auf die weiße Liste setzen</string>
