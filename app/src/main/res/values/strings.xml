@@ -44,7 +44,6 @@
     <string name="rcvd_and_sent">%1$s received — %2$s sent</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
-    <string name="app_filter">Target app</string>
     <string name="ready">Ready</string>
     <string name="about">About</string>
     <string name="status">Status</string>
@@ -129,7 +128,6 @@
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
     <string name="socks5_auth">SOCKS5 authentication</string>
     <string name="socks5_auth_summary">Authenticate to the proxy via username and password</string>
-    <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_host">Proxy host</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
@@ -276,8 +274,6 @@
     <string name="export_action">Export</string>
     <string name="export_ellipsis">Export…</string>
     <string name="install_the_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a></string>
-    <string name="configure_action">Configure</string>
-    <string name="grant_mitm_permission">Give PCAPdroid the permission to control the mitm addon</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
     <string name="install_ca_certificate">Install the PCAPdroid CA certificate, choosing \"VPN and apps\". Android will ask for your lockscreen or password</string>
     <string name="checking_the_certificate">Checking the certificate…</string>
@@ -351,7 +347,6 @@
     <string name="firewall_summary">Block internet access to apps, configure rules for specific domains and IP addresses. Only works with the non-root capture</string>
     <string name="no_root_firewall">No-root firewall</string>
     <string name="block_quick">Block QUIC</string>
-    <string name="block_quick_summary">Block QUIC connections to possibly fall back to decryptable TLS. Some apps may stop working</string>
     <string name="block_private_dns">Block private DNS</string>
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder traffic analysis</string>
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
