@@ -151,8 +151,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             startActivity(intent);
             finish();
             return;
-        } else
+        } else {
+            if (appver < 73)
+                showWhatsNew();
+
             Prefs.refreshAppVersion(mPrefs);
+        }
 
         mIab = Billing.newInstance(this);
         mIab.setLicense(mIab.getLicense());
@@ -260,6 +264,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + ref));
             Utils.startActivity(this, browserIntent);
         });
+    }
+
+    private void showWhatsNew() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.whats_new)
+                .setMessage(
+                        "- Select multiple target apps\n" +
+                        "- Button to copy the connections payload\n" +
+                        "- Android 14 support\n" +
+                        "- Integrations to run with Tor and DNSCrypt\n" +
+                        "- mitmproxy 10.1.6 and Doze fix\n" +
+                        "- Use your own mitmproxy addons (experimental)\n"
+                )
+                .setNeutralButton(R.string.ok, (dialogInterface, i) -> {})
+                .show();
     }
 
     // keep this in a separate function, used by play billing code
