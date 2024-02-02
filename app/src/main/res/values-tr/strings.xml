@@ -175,7 +175,7 @@
     <string name="edit_list">Listeyi düzenle</string>
     <string name="status_uptodate">Güncel</string>
     <string name="private_dns_hinders_detection">Gizli DNS algılamayı engelliyor</string>
-    <string name="decryption_no_filter_warn">İnternet bağlantınızı kaybetmemek için TLS\'nin şifresini çözerken bir hedef uygulama seçin veya şifre çözme beyaz listesini kullanın</string>
+    <string name="decryption_no_filter_warn">İnternet bağlantınızı kaybetmemek için TLS\'nin şifresini çözerken bir hedef uygulama seçin</string>
     <string name="paid_features">Ücretli özellikler</string>
     <string name="interface_filter">Arayüz: %1$s</string>
     <string name="purchased">Satın alındı</string>
@@ -482,4 +482,20 @@
     <string name="invalid_pcap_file">Geçersiz PCAP dosyası</string>
     <string name="proxy_host">Vekil sunucu</string>
     <string name="capture_interface_open_error">Yakalama arayüzü açılamadı</string>
+    <string name="dnscrypt_how_to">PCAPdroid ile DoH / DNSCrypt nasıl kullanılır</string>
+    <string name="never">Hiçbir zaman</string>
+    <string name="always">Her zaman</string>
+    <string name="for_connections_to_decrypt">Yalnızca şifresi çözülecek bağlantılar için</string>
+    <string name="whats_new">Yenilikler</string>
+    <string name="export_ellipsis">Dışa aktar…</string>
+    <string name="mitm_doze_notice">Pil iyileştirmesi ortadaki adam eklentisinin çalışmasını engelleyebilir</string>
+    <string name="redirected">yönlendirildi</string>
+    <string name="connection_redirected_port_map">Bu bağlantı bir bağlantı noktası eşleme kuralı nedeniyle yönlendirildi</string>
+    <string name="both">Her ikisi de</string>
+    <string name="decrypt_quic_notice">QUIC şifresinin çözülmesi şu anda desteklenmiyor. Geçici bir çözüm olarak, yakalamayı durdurun ve PCAPdroid ayarlarında QUIC engelleme seçeneğini seçin</string>
+    <string name="target_apps">Hedef uygulamalar</string>
+    <string name="target_apps_help">Yakalanacak uygulamaları seçin</string>
+    <string name="headers">Başlıklar</string>
+    <string name="body">Gövde</string>
+    <string name="raw_bytes">Ham baytlar</string>
 </resources>
