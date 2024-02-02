@@ -236,7 +236,7 @@
     <string name="root_capture_summary">允许 PCAPdroid 与其他 VPN 应用程序一起运行</string>
     <string name="malware_whitelist_help">用户自定义白名单，禁止恶意软件检测。长按“恶意连接”创建取消将它们标记为恶意软件的规则</string>
     <string name="hidden_connections_help">隐藏连接列表条目的规则列表，以便关注相关的规则</string>
-    <string name="decryption_no_filter_warn">解密 TLS 时，请选择目标应用程序或使用解密白名单，以免失去 Internet 连接</string>
+    <string name="decryption_no_filter_warn">解密 TLS 时，请选择目标应用，以免失去 Internet 连接</string>
     <string name="built_on">构建于：%1$s</string>
     <string name="traffic_dump">流量转储</string>
     <string name="conn_status_active">活跃</string>
@@ -507,4 +507,20 @@
     <string name="decryption_info_no_rule">此连接不会被解密。创建解密规则来解密它</string>
     <string name="active_vpn_detected">检测到活动 VPN</string>
     <string name="root_capture_pcapd_start_failure">流量捕获启动失败。请确保你授予了 PCAPdroid 根权限</string>
+    <string name="whats_new">更新记录</string>
+    <string name="mitm_doze_notice">电池优化可能干扰 mitim 附加组件的运作</string>
+    <string name="redirected">已重定向</string>
+    <string name="connection_redirected_port_map">由于端口映射规则，此连接已被重定向</string>
+    <string name="dnscrypt_how_to">如何在 PCAPDroid 中使用 DoH / DNSCrypt</string>
+    <string name="never">从不</string>
+    <string name="always">始终</string>
+    <string name="for_connections_to_decrypt">只对要解密的连接使用</string>
+    <string name="target_apps_help">选择要捕获流量的应用</string>
+    <string name="decrypt_quic_notice">当前不支持解密 QUIC 连接。作为临时解决方案，停止流量捕获并在 PCAPdroid 设置中选择拦截 QUIC 连接的选项</string>
+    <string name="target_apps">目标应用</string>
+    <string name="headers">标头</string>
+    <string name="body">正文</string>
+    <string name="both">两者</string>
+    <string name="export_ellipsis">导出…</string>
+    <string name="raw_bytes">原始字节</string>
 </resources>
