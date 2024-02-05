@@ -210,7 +210,7 @@
     <string name="hidden_connections_help">Список правил для скрытия элементов из списка соединений, чтобы сфокусироваться только на нужном</string>
     <string name="enable_socks5_proxy_summary">Перенаправляет все TCP соединения на SOCKS5 прокси</string>
     <string name="malware_whitelist_help">Определенный пользователем белый список для подавления обнаружения вредоносов. Удерживайте вредоносное соединение, чтобы создать правило согласно которому данное соединение не будет считаться вредоносным</string>
-    <string name="decryption_no_filter_warn">При расшифровке TLS выберите целевое приложение или используйте белый список дешифрования, чтобы избежать потери соединения с интернетом</string>
+    <string name="decryption_no_filter_warn">При расшифровке TLS выберите целевое приложение, чтобы избежать потери соединения с интернетом</string>
     <string name="traffic_dump">Дамп траффика</string>
     <string name="phone_app">Телефон</string>
     <string name="phone_app_info">Службы телефонии</string>
@@ -479,4 +479,22 @@
     <string name="pcap_file_load_aborted">Загрузка PCAP файла прервана</string>
     <string name="root_capture_start_failed">Не удалось начать захват. Убедитесь, что устройство рутовано с помощью Magisk</string>
     <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед экспортом PCAP файла</string>
+    <string name="live_capture">Live-захват</string>
+    <string name="never">Никогда</string>
+    <string name="target_apps">Целевые приложения</string>
+    <string name="target_apps_help">Выберите приложения для захвата</string>
+    <string name="connection_redirected_port_map">Это соединение было перенаправлено по правилу сопоставления портов</string>
+    <string name="for_connections_to_decrypt">Только для дешифруемых соединений</string>
+    <string name="whats_new">Что нового</string>
+    <string name="both">Обе части</string>
+    <string name="redirected">перенаправлено</string>
+    <string name="dnscrypt_how_to">Как использовать DoH / DNSCrypt с PCAPdroid</string>
+    <string name="always">Всегда</string>
+    <string name="raw_bytes">Raw байты</string>
+    <string name="mitm_doze_notice">Оптимизации батареи могут помешать работе mitm дополнения</string>
+    <string name="decrypt_quic_notice">Дешифрование QUIC в данный момент не поддерживается. В качестве временной меры, остановите захват и в настройках PCAPdroid включите опцию блокировки QUIC</string>
+    <string name="headers">Заголовки</string>
+    <string name="body">Тело</string>
+    <string name="unsupported_pcap_datalink">PCAP файл содержит неподдерживаемый datalink</string>
+    <string name="export_ellipsis">Экспорт…</string>
 </resources>
