@@ -69,7 +69,8 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private boolean mHasPayload;
     private boolean mHasHttpTab;
     private boolean mHasWsTab;
-    private String mPayloadToExport;
+    private String mStringPayloadToExport;
+    private byte[] mRawPayloadToExport;
     private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
 
     private static final int POS_OVERVIEW = 0;
@@ -345,35 +346,72 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
 
     @Override
     public void exportPayload(String payload) {
-        mPayloadToExport = payload;
+        mStringPayloadToExport = payload;
+        mRawPayloadToExport = null;
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(this, "txt"));
 
-        Log.d(TAG, "exportPayload: launching dialog");
+        Utils.launchFileDialog(this, intent, payloadExportLauncher);
+    }
+
+    @Override
+    public void exportPayload(byte[] payload, String contentType, String fname) {
+        mStringPayloadToExport = null;
+        mRawPayloadToExport = payload;
+
+        if (fname.isEmpty()) {
+            String ext;
+
+            switch (contentType) {
+                case "text/html":
+                    ext = "html";
+                    break;
+                case "application/octet-stream":
+                    ext = "bin";
+                    break;
+                default:
+                    ext = "txt";
+            }
+
+            fname = Utils.getUniqueFileName(this, ext);
+        }
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(contentType);
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
+
         Utils.launchFileDialog(this, intent, payloadExportLauncher);
     }
 
     private void payloadExportResult(final ActivityResult result) {
         Log.d(TAG, "payloadExportResult");
 
-        if (mPayloadToExport == null)
+        if ((mRawPayloadToExport == null) && (mStringPayloadToExport == null))
             return;
 
         if((result.getResultCode() == RESULT_OK) && (result.getData() != null) && (result.getData().getData() != null)) {
             try(OutputStream out = getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
-                try(OutputStreamWriter writer = new OutputStreamWriter(out)) {
-                    writer.write(mPayloadToExport);
-                }
-                Utils.showToast(this, R.string.save_ok);
+                if (out != null) {
+                    if (mStringPayloadToExport != null) {
+                        try (OutputStreamWriter writer = new OutputStreamWriter(out)) {
+                            writer.write(mStringPayloadToExport);
+                        }
+                    } else
+                        out.write(mRawPayloadToExport);
+                    Utils.showToast(this, R.string.save_ok);
+                } else
+                    Utils.showToastLong(this, R.string.export_failed);
             } catch (IOException e) {
                 e.printStackTrace();
                 Utils.showToastLong(this, R.string.export_failed);
             }
         }
 
-        mPayloadToExport = null;
+        mRawPayloadToExport = null;
+        mStringPayloadToExport = null;
     }
 }

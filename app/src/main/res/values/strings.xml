@@ -504,4 +504,5 @@
     <string name="body">Body</string>
     <string name="both">Both</string>
     <string name="whats_new">What\'s new</string>
+    <string name="raw_bytes">Raw bytes</string>
 </resources>
