@@ -294,7 +294,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
             if (!fname.isEmpty()) {
                 int last_slash = fname.lastIndexOf('/');
-                if (last_slash > 0)
+                if (last_slash >= 0)
                     fname = fname.substring(last_slash + 1);
             }
 

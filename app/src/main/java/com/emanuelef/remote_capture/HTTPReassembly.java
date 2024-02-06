@@ -116,10 +116,14 @@ public class HTTPReassembly {
 
                         if ((first_space > 0) && (second_space > 0)) {
                             mPath = line.substring(first_space + 1, second_space);
+
+                            int query_start = mPath.indexOf('?');
+                            if (query_start >= 0)
+                                mPath = mPath.substring(0, query_start);
+
                             log_d("Path: " + mPath);
                         }
                     }
-                    is_first_line = false;
                 }
 
                 while((line != null) && (line.length() > 0)) {
