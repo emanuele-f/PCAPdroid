@@ -372,6 +372,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
                 case "application/octet-stream":
                     ext = "bin";
                     break;
+                case "application/json":
+                    ext = "json";
+                    break;
                 default:
                     ext = "txt";
             }
@@ -379,9 +382,14 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
             fname = Utils.getUniqueFileName(this, ext);
         }
 
+        /* This is an unmapped mime type, which allows the user to specify the file,
+         * extension instead of Android forcing it, see
+         * https://android.googlesource.com/platform/external/mime-support/+/fa3f892f28db393b1411f046877ee48179f6a4cf/mime.types */
+        final String generic_mime = "application/http";
+
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType(contentType);
+        intent.setType(generic_mime);
         intent.putExtra(Intent.EXTRA_TITLE, fname);
 
         Utils.launchFileDialog(this, intent, payloadExportLauncher);
