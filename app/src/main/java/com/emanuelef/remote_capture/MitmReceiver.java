@@ -109,7 +109,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             type = _type;
             msg = _msg;
             port = _port;
-            pendingSince = SystemClock.uptimeMillis();
+            pendingSince = SystemClock.elapsedRealtime();
             when = _now;
         }
     }
@@ -331,7 +331,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private synchronized void addPendingMessage(PendingMessage pending) {
         // Purge unresolved connections (should not happen, just in case)
         if(mPendingMessages.size() > 32) {
-            long now = SystemClock.uptimeMillis();
+            long now = SystemClock.elapsedRealtime();
 
             for(int i = mPendingMessages.size()-1; i>=0; i--) {
                 ArrayList<PendingMessage> pp = mPendingMessages.valueAt(i);

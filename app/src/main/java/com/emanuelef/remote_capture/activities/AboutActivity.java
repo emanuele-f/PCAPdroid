@@ -290,7 +290,7 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
                             return;
                         }
                         int timeout_ms = Integer.parseInt(timeout_s) * 1000;
-                        long deadline = SystemClock.uptimeMillis() + timeout_ms;
+                        long deadline = SystemClock.elapsedRealtime() + timeout_ms;
                         Log.d(TAG, "QR request_id=" + qr_req_id + ", timeout=" + timeout_ms + " ms");
 
                         // Step 2: generate QR code
@@ -357,7 +357,7 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         View qrLoading = dialog.findViewById(R.id.qr_code_loading);
         View qrInfo = dialog.findViewById(R.id.qr_info_text);
 
-        mQrStartTime = SystemClock.uptimeMillis();
+        mQrStartTime = SystemClock.elapsedRealtime();
         mQrDeadline = deadline;
         updateQrProgress(dialog);
 
@@ -373,7 +373,7 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
             return;
 
         long interval = mQrDeadline - mQrStartTime;
-        int progress = Math.min((int)((SystemClock.uptimeMillis() - mQrStartTime) * 100 / interval), 100);
+        int progress = Math.min((int)((SystemClock.elapsedRealtime() - mQrStartTime) * 100 / interval), 100);
         qrProgress.setProgress(100 - progress);
 
         mHandler.postDelayed(() -> updateQrProgress(dialog), 1000);
