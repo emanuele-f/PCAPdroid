@@ -191,7 +191,7 @@
     <string name="can_use_purchased_feature">Ahora puedes utilizar la función comprada</string>
     <string name="save_ok">Guardado</string>
     <string name="loading_apps">Cargando apps…</string>
-    <string name="decryption_no_filter_warn">Seleccione una aplicación de destino o utilice la lista blanca de descifrado al descifrar TLS para evitar perder la conexión a Internet</string>
+    <string name="decryption_no_filter_warn">Seleccione una aplicación de destino al descifrar TLS para evitar perder la conexión a Internet</string>
     <string name="file_saved_with_name">Archivo guardado como \"%1$s\"</string>
     <string name="loading">Cargando…</string>
     <string name="capture_not_running_status">La captura no se está ejecutando</string>
@@ -482,4 +482,20 @@
     <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
     <string name="pcap_load_in_progress">Carga del fichero PCAP en curso, por favor espera</string>
     <string name="root_capture_pcapd_start_failure">Fallo al realizar la captura. Asegúrate de conceder acceso root a PCAPdroid</string>
+    <string name="mitm_doze_notice">La optimización de la batería puede interferir con el addon mitm</string>
+    <string name="redirected">redirigido</string>
+    <string name="connection_redirected_port_map">Esta conexión ha sido redirigida debido a una regla de asignación de puertos</string>
+    <string name="dnscrypt_how_to">¿Cómo utilizar DoH / DNSCrypt con PCAPdroid?</string>
+    <string name="never">Nunca</string>
+    <string name="always">Siempre</string>
+    <string name="for_connections_to_decrypt">Solo para conexiones a descifrar</string>
+    <string name="target_apps">Aplicaciones de destino</string>
+    <string name="target_apps_help">Seleccione las aplicaciones que desea capturar</string>
+    <string name="headers">Encabezados</string>
+    <string name="body">Cuerpo</string>
+    <string name="both">Ambos</string>
+    <string name="whats_new">Novedades</string>
+    <string name="raw_bytes">Bytes sin formato</string>
+    <string name="decrypt_quic_notice">Actualmente no es posible descifrar QUIC. Como solución, detenga la captura y seleccione la opción de bloquear QUIC en los ajustes de PCAPdroid</string>
+    <string name="export_ellipsis">Exportar…</string>
 </resources>
