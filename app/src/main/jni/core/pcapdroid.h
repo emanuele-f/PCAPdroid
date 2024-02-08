@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 #ifndef __PCAPDROID_H__
@@ -65,6 +65,13 @@ typedef enum {
     PAYLOAD_MODE_FULL
 } payload_mode_t;
 
+// NOTE: sync with Prefs.BlockQuicMode
+typedef enum {
+    BLOCK_QUIC_MODE_NEVER = 0,
+    BLOCK_QUIC_MODE_ALWAYS,
+    BLOCK_QUIC_MODE_TO_DECRYPT
+} block_quic_mode_t;
+
 typedef struct {
     jint incr_id; // an incremental number which identifies a specific connection
 
@@ -114,6 +121,7 @@ typedef struct {
     bool netd_block_missed;
     bool proxied;
     bool decryption_ignored;
+    bool port_mapping_applied;
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx
@@ -187,7 +195,6 @@ typedef struct pcapdroid {
     int filesdir_len;
 
     // config
-    jint app_filter;
     jint mitm_addon_uid;
     bool vpn_capture;
     bool pcap_file_capture;
@@ -204,7 +211,7 @@ typedef struct pcapdroid {
     union {
         struct {
             int tunfd;
-            bool block_quic;
+            block_quic_mode_t block_quic_mode;
             blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
 
@@ -225,6 +232,9 @@ typedef struct pcapdroid {
             char *bpf;
             char *capture_interface;
             int pcapd_pid;
+
+            int *app_filter_uids;
+            int app_filter_uids_size;
         } pcap;
     };
 
@@ -398,6 +408,7 @@ uint16_t pd_ndpi2proto(ndpi_protocol proto);
 
 char* getStringPref(pcapdroid_t *pd, const char *key, char *buf, int bufsize);
 int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key);
+int getIntArrayPref(JNIEnv *env, jobject vpn_inst, const char *key, int **out);
 zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver);
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);

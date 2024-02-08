@@ -15,7 +15,6 @@
     <string name="asn">ASN</string>
     <string name="rcvd_and_sent">%1$s 받음 — %2$s 보냄</string>
     <string name="host">호스트</string>
-    <string name="app_filter">타겟 앱</string>
     <string name="ready">준비</string>
     <string name="status">상태</string>
     <string name="no_connections">커넥션 없음</string>
@@ -83,7 +82,6 @@
     <string name="socks5_proxy">SOCKS5</string>
     <string name="system_default">시스템</string>
     <string name="file_saved_with_name">파일이 \"%1$s\"로 저장되었습니다</string>
-    <string name="proxy_ip_address">프록시 IP 주소</string>
     <string name="theme_light">라이트</string>
     <string name="enable_socks5_proxy_summary">모든 TCP 커넥션을 지정된 SOCKS5 프록시로 리다이렉트합니다</string>
     <string name="root_capture">루트로 캡처하기</string>

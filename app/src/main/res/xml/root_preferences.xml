@@ -53,6 +53,14 @@
             app:defaultValue="true" />
 
         <Preference
+            app:key="dnscrypt_link"
+            app:title="@string/dnscrypt_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/advanced_features#42-doh-support" />
+        </Preference>
+
+        <Preference
             android:key="geolocation"
             app:title="@string/geolocation"
             app:summary="@string/geolocation_summary"
@@ -86,12 +94,14 @@
             app:summary="@string/pcapng_format_summary"
             app:defaultValue="true" />
 
-        <SwitchPreference
-            app:key="block_quic"
+        <DropDownPreference
+            app:key="block_quic_mode"
             app:title="@string/block_quick"
+            android:entries="@array/block_quic_labels"
+            android:entryValues="@array/block_quic"
             app:iconSpaceReserved="false"
-            app:summary="@string/block_quick_summary"
-            app:defaultValue="false" />
+            app:defaultValue="never"
+            app:useSimpleSummaryProvider="true" />
 
         <SwitchPreference
             app:key="full_payload"

@@ -123,6 +123,10 @@
         <activity
             android:name=".activities.MitmSetupWizard"
             android:launchMode="singleTop" />
+        <activity
+            android:name=".activities.AppFilterActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
 
         <service
             android:name=".CaptureService"

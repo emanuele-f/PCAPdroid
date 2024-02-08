@@ -89,7 +89,6 @@ pcapdroid_t* pd_init_test(const char *ifname) {
   pd->pcap_file_capture = true;
   pd->pcap.capture_interface = (char*) ifname;
   pd->pcap.as_root = false;   // don't run as root
-  pd->app_filter = -1;        // don't filter
   pd->cb.get_libprog_path = getPcapdPath;
   pd->payload_mode = PAYLOAD_MODE_FULL;
 

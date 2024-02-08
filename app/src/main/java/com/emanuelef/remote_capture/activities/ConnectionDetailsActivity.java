@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -26,6 +29,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,6 +40,8 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.fragments.ConnectionOverview;
 import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -44,9 +50,12 @@ import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener {
+public class ConnectionDetailsActivity extends BaseActivity implements ConnectionsListener, PayloadAdapter.ExportPayloadHandler {
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_ID_KEY = "conn_id";
     private static final int MAX_CHUNKS_TO_CHECK = 10;
@@ -60,12 +69,17 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     private boolean mHasPayload;
     private boolean mHasHttpTab;
     private boolean mHasWsTab;
+    private String mStringPayloadToExport;
+    private byte[] mRawPayloadToExport;
     private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
 
     private static final int POS_OVERVIEW = 0;
     private static final int POS_WEBSOCKET = 1;
     private static final int POS_HTTP = 2;
     private static final int POS_RAW_PAYLOAD = 3;
+
+    private final ActivityResultLauncher<Intent> payloadExportLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::payloadExportResult);
 
     public interface ConnUpdateListener {
         void connectionUpdated();
@@ -328,5 +342,84 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void exportPayload(String payload) {
+        mStringPayloadToExport = payload;
+        mRawPayloadToExport = null;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TITLE, Utils.getUniqueFileName(this, "txt"));
+
+        Utils.launchFileDialog(this, intent, payloadExportLauncher);
+    }
+
+    @Override
+    public void exportPayload(byte[] payload, String contentType, String fname) {
+        mStringPayloadToExport = null;
+        mRawPayloadToExport = payload;
+
+        if (fname.isEmpty()) {
+            String ext;
+
+            switch (contentType) {
+                case "text/html":
+                    ext = "html";
+                    break;
+                case "application/octet-stream":
+                    ext = "bin";
+                    break;
+                case "application/json":
+                    ext = "json";
+                    break;
+                default:
+                    ext = "txt";
+            }
+
+            fname = Utils.getUniqueFileName(this, ext);
+        }
+
+        /* This is an unmapped mime type, which allows the user to specify the file,
+         * extension instead of Android forcing it, see
+         * https://android.googlesource.com/platform/external/mime-support/+/fa3f892f28db393b1411f046877ee48179f6a4cf/mime.types */
+        final String generic_mime = "application/http";
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(generic_mime);
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
+
+        Utils.launchFileDialog(this, intent, payloadExportLauncher);
+    }
+
+    private void payloadExportResult(final ActivityResult result) {
+        Log.d(TAG, "payloadExportResult");
+
+        if ((mRawPayloadToExport == null) && (mStringPayloadToExport == null))
+            return;
+
+        if((result.getResultCode() == RESULT_OK) && (result.getData() != null) && (result.getData().getData() != null)) {
+            try(OutputStream out = getContentResolver().openOutputStream(result.getData().getData(), "rwt")) {
+                if (out != null) {
+                    if (mStringPayloadToExport != null) {
+                        try (OutputStreamWriter writer = new OutputStreamWriter(out)) {
+                            writer.write(mStringPayloadToExport);
+                        }
+                    } else
+                        out.write(mRawPayloadToExport);
+                    Utils.showToast(this, R.string.save_ok);
+                } else
+                    Utils.showToastLong(this, R.string.export_failed);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Utils.showToastLong(this, R.string.export_failed);
+            }
+        }
+
+        mRawPayloadToExport = null;
+        mStringPayloadToExport = null;
     }
 }

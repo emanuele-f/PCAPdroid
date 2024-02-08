@@ -43,7 +43,6 @@
     <string name="rcvd_and_sent">%1$s otrzymane — %2$s wysłane</string>
     <string name="query">Zapytanie</string>
     <string name="host">Host</string>
-    <string name="app_filter">Skanuj aplikacje</string>
     <string name="ready">Gotowe</string>
     <string name="about">Informacje</string>
     <string name="status">Status</string>
@@ -127,7 +126,6 @@
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
     <string name="socks5_auth">Uwierzytelnianie SOCKS5n</string>
     <string name="socks5_auth_summary">Uwierzytelnij serwer proxy za pomocą nazwy użytkownika i hasła</string>
-    <string name="proxy_ip_address">Adres IP serwera proxy</string>
     <string name="proxy_port">Port proxy</string>
     <string name="root_capture">Przechwyć jako root</string>
     <string name="root_capture_summary">Pozwala PCAPdroid działać z innymi aplikacjami VPN</string>
@@ -272,7 +270,6 @@
     <string name="install_action">Instalacja</string>
     <string name="export_action">Eksport</string>
     <string name="install_the_mitm_addon">Zainstaluj PCAPdroid <a href="%1$s">dodatek mitm</a></string>
-    <string name="configure_action">Skonfiguruj</string>
     <string name="export_ca_certificate">Wyeksportuj certyfikat PCAPdroid CA, a następnie otwórz ustawienia Androida \"Szyfrowanie i poświadczenia\" i wybierz zainstaluj go jako \"Certyfikat CA\""</string>
     <string name="install_ca_certificate">Zainstaluj certyfikat PCAPdroid CA, wybierając \"VPN i aplikacje\". Android poprosi o ekran blokady lub hasło</string>
     <string name="checking_the_certificate">Sprawdzanie certyfikatu…</string>
@@ -345,7 +342,6 @@
     <string name="firewall_summary">Blokuj dostęp aplikacji do Internetu, konfiguruj reguły dla określonych domen i adresów IP. Działa tylko z przechwytywaniem innym niż root</string>
     <string name="no_root_firewall">Zapora bez roota</string>
     <string name="block_quick">Zablokuj QUIC</string>
-    <string name="block_quick_summary">Blokuj połączenia QUIC, aby ewentualnie wrócić do odszyfrowywanego TLS. Niektóre aplikacje mogą przestać działać</string>
     <string name="block_private_dns">Zablokuj prywatny DNS</string>
     <string name="block_private_dns_summary">Wykryj i prawdopodobnie zablokuj prywatny DNS, aby sprawdzić ruch DNS. Wyłączenie tej opcji może utrudnić analizę ruchu</string>
     <string name="mitm_setup_wizard_intro">Ten kreator przeprowadzi Cię przez proces instalacji dodatku PCAPdroid mitm i certyfikacji, które są potrzebne do wykonania <a href="%1$s">odszyfrowania TLS</a></string>
