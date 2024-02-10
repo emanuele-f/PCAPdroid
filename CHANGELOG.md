@@ -2,7 +2,7 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
-## [1.7.0] - 2024-02-08
+## [1.7.0] - 2024-02-10
 - Select multiple target apps
 - Copy/export the connections payload
 - Android 14 support
@@ -15,7 +15,6 @@ Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 - Remove mitm-addon permission
 - Show termux main app instead of its sub-apps
 - Use ISO 8601 dates in CSV export
-- Fix inaccurate firewall grace period
 
 ## [1.6.9] - 2023-12-04
 - Fix root capture start on some devices
