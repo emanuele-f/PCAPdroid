@@ -183,7 +183,7 @@ class ModifyHttp:
 addons = [ModifyHttp()]
 ```
 
-This addon will modify the HTTP response of the "https://example.com" page, by changing the "Example Domain" text with "Modified by PCAPdroid mitm".
+This addon will modify the HTTP response of the https://example.com web page, by changing the "Example Domain" text with "Modified by PCAPdroid mitm".
 After copying it to the addons dir, in the Addons activity click the refresh icon and the addon should appear. Now enable it via the toggle and restart the PCAPdroid capture with TLS decryption.
 
 <p align="center">
