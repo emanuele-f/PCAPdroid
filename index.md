@@ -18,6 +18,7 @@ Welcome to the PCAPdroid User Guide.
     - [3.3 Decrypting](tls_decryption#33-decrypting)
     - [3.4 Caveats and possible solutions](tls_decryption#34-caveats-and-possible-solutions)
     - [3.5 Decrypting via an external mitmproxy](tls_decryption#35-decrypting-via-an-external-mitmproxy)
+    - [3.6 Custom mitm addons](tls_decryption#36-custom-mitm-addons)
 - [4. Advanced Features](advanced_features)
     - [4.1 DNS Server](advanced_features#41-dns-server)
     - [4.2 DoH Support](advanced_features#42-doh-support)
