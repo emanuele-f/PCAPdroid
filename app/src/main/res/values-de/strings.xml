@@ -26,7 +26,7 @@
     <string name="source_code">Quellcode</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
-    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden. Stelle sicher, dass Always-on VPN deaktiviert ist.</string>
+    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden. Stelle sicher, dass Always-on VPN deaktiviert ist</string>
     <string name="app_not_found">App %1$s konnte nicht gefunden werden</string>
     <string name="stats">Statistiken</string>
     <string name="active_connections">Aktive Verbindungen</string>
@@ -182,7 +182,7 @@
     <string name="update_now">Jetzt aktualisieren</string>
     <string name="status_updating">Aktualisierung…</string>
     <string name="private_dns_hinders_detection">Privates DNS verhindert die Erkennung</string>
-    <string name="decryption_no_filter_warn">Wählen Sie eine Ziel-App aus oder verwenden Sie beim Entschlüsseln von TLS die Entschlüsselungs-Whitelist, um zu vermeiden, dass Ihre Verbindung zum Internet unterbrochen wird</string>
+    <string name="decryption_no_filter_warn">Wähle beim Entschlüsseln von TLS eine Ziel-App aus, um die Internetverbindung nicht zu verlieren</string>
     <string name="block">Sperren…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall-Regeln</string>
@@ -204,7 +204,7 @@
     <string name="malware_status_update_failed">Einige Sperrlisten sind veraltet</string>
     <string name="copied">Kopiert</string>
     <string name="can_use_purchased_feature">Gekaufte Funktion jetzt verwenden werden</string>
-    <string name="disconnect_vpn_confirm">Wenn Sie fortfahren wird die aktive VPN Verbindung unterbrochen.</string>
+    <string name="disconnect_vpn_confirm">Wenn Sie fortfahren wird die aktive VPN Verbindung unterbrochen</string>
     <string name="loading_apps">Lade Apps…</string>
     <string name="open_nav_drawer">Menü öffnen</string>
     <string name="close_nav_drawer">Menü schließen</string>
@@ -226,7 +226,7 @@
     <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren
 \n
 \nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
-    <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a> 
+    <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a>
 \n
 \nDurch die Verwendung aktueller Blacklists kann es bösartige Verbindungen in Echtzeit erkennen, blockieren und warnen</string>
     <string name="block_new_apps">Neu installierte Apps sperren</string>
@@ -481,6 +481,8 @@
     <string name="pcap_file_load_aborted">Laden der PCAP Datei abgebrochen</string>
     <string name="host_resolution_failed">Der Host %1$s konnte nicht gefunden werden</string>
     <string name="capture_interface_open_error">Die Aufnahmeschnittstelle konnte nicht geöffnet werden</string>
-    <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher dass das Gerät mit Magisk gerootet ist.</string>
+    <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher, dass das Gerät mit Magisk gerootet ist</string>
     <string name="live_capture">Live Aufzeichnung</string>
+    <string name="mitm_doze_notice">Batterieoptimierung kann das Mitm-Addon stören</string>
+    <string name="redirected">umgeleitet</string>
 </resources>
