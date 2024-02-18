@@ -505,4 +505,9 @@
     <string name="both">Both</string>
     <string name="whats_new">What\'s new</string>
     <string name="raw_bytes">Raw bytes</string>
+    <string name="restart_on_disconnection">Restart on disconnection</string>
+    <string name="restart_on_disconnection_summary">Automatically restart the capture after being stopped by other VPN apps</string>
+    <string name="vpn_reconnection">VPN reconnection</string>
+    <string name="vpn_reconnection_aborted">VPN reconnection aborted</string>
+    <string name="waiting_for_vpn_disconnect">Waiting for the active VPN to disconnect…</string>
 </resources>

@@ -109,6 +109,7 @@ public class Prefs {
     public static final String PREF_DNS_SERVER_V6 = "dns_v6";
     public static final String PREF_USE_SYSTEM_DNS = "system_dns";
     public static final String PREF_PCAPNG_ENABLED = "pcapng_format";
+    public static final String PREF_RESTART_ON_DISCONNECT = "restart_on_disconnect";
 
     public enum DumpMode {
         NONE,
@@ -225,6 +226,7 @@ public class Prefs {
                 && p.getBoolean(PREF_PCAPNG_ENABLED, true));
     }
     public static boolean startAtBoot(SharedPreferences p)        { return(p.getBoolean(PREF_START_AT_BOOT, false)); }
+    public static boolean restartOnDisconnect(SharedPreferences p)        { return(p.getBoolean(PREF_RESTART_ON_DISCONNECT, false)); }
     public static boolean isTLSDecryptionSetupDone(SharedPreferences p)     { return(p.getBoolean(PREF_TLS_DECRYPTION_SETUP_DONE, false)); }
     public static boolean getFullPayloadMode(SharedPreferences p) { return(p.getBoolean(PREF_FULL_PAYLOAD, false)); }
     public static boolean isPrivateDnsBlockingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_AUTO_BLOCK_PRIVATE_DNS, true)); }

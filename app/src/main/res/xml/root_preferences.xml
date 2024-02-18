@@ -154,6 +154,13 @@
             android:defaultValue="false" />
 
         <SwitchPreference
+            app:key="restart_on_disconnect"
+            android:title="@string/restart_on_disconnection"
+            app:iconSpaceReserved="false"
+            app:summary="@string/restart_on_disconnection_summary"
+            android:defaultValue="false" />
+
+        <SwitchPreference
             app:key="pcapdroid_trailer"
             app:title="@string/pcapdroid_trailer"
             app:iconSpaceReserved="false"

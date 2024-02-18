@@ -44,6 +44,7 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.BaseActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.MitmSetupWizard;
@@ -147,6 +148,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mMalwareDetectionEnabled;
         private SwitchPreference mTrailerEnabled;
         private SwitchPreference mPcapngEnabled;
+        private SwitchPreference mRestartOnDisconnect;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
@@ -265,6 +267,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 });
             } else
                 mRootCaptureEnabled.setVisible(false);
+
+            mRestartOnDisconnect = requirePreference(Prefs.PREF_RESTART_ON_DISCONNECT);
+            mRestartOnDisconnect.setVisible(VpnReconnectService.isAvailable());
 
             mDnsSettings = requirePreference("dns_settings");;
             mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
@@ -408,6 +413,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mBlockQuic.setVisible(true);
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), false);
             }
+
+            if (VpnReconnectService.isAvailable())
+                mRestartOnDisconnect.setVisible(!enabled);
 
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -112,6 +112,7 @@ public class CaptureService extends VpnService implements Runnable {
     final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
     private boolean mIsAlwaysOnVPN;
+    private boolean mRevoked;
     private SharedPreferences mPrefs;
     private CaptureSettings mSettings;
     private Billing mBilling;
@@ -235,6 +236,9 @@ public class CaptureService extends VpnService implements Runnable {
             Log.e(TAG, "Restarting the capture is not supported");
             return abortStart();
         }
+
+        if (VpnReconnectService.isAvailable())
+            VpnReconnectService.stopService();
 
         mHandler = new Handler(Looper.getMainLooper());
         mBilling = Billing.newInstance(this);
@@ -605,6 +609,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onRevoke() {
         Log.d(CaptureService.TAG, "onRevoke");
+        mRevoked = true;
         stopService();
         super.onRevoke();
     }
@@ -1404,6 +1409,15 @@ public class CaptureService extends VpnService implements Runnable {
                 reloadDecryptionList();
             reloadBlocklist();
             reloadFirewallWhitelist();
+        } else if (cur_status == ServiceStatus.STOPPED) {
+            if (mRevoked && Prefs.restartOnDisconnect(mPrefs) && !mIsAlwaysOnVPN && (isVpnCapture() == 1)) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    Log.i(TAG, "VPN disconnected, starting reconnect service");
+
+                    final Intent intent = new Intent(this, VpnReconnectService.class);
+                    ContextCompat.startForegroundService(this, intent);
+                }
+            }
         }
     }
 

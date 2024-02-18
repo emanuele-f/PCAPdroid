@@ -128,6 +128,14 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".VpnReconnectService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="waits for the termination of the active VpnService"/>
+        </service>
 
         <receiver android:name="com.emanuelef.remote_capture.ActionReceiver" />
 
