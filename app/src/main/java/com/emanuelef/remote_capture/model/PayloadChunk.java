@@ -27,8 +27,16 @@ public class PayloadChunk implements Serializable {
     public boolean is_sent;
     public long timestamp;
     public ChunkType type;
-    public String contentType;
-    public String path;
+
+    // HTTP
+    public int httpResponseCode = 0;
+    public String httpResponseStatus = "";
+    public String httpMethod = "";
+    public String httpHost = "";
+    public String httpPath = "";
+    public String httpQuery = "";
+    public String httpContentType = "";
+    public int httpBodyLength = 0;
 
     // Serializable need in ConnectionPayload fragment
     public enum ChunkType implements Serializable {
@@ -45,6 +53,9 @@ public class PayloadChunk implements Serializable {
     }
 
     public PayloadChunk subchunk(int start, int size) {
+        if (payload == null)
+            return this;
+
         byte[] subarr = new byte[size];
         System.arraycopy(payload, start, subarr, 0, size);
         return new PayloadChunk(subarr, type, is_sent, timestamp);

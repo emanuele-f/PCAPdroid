@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -22,18 +22,18 @@ package com.emanuelef.remote_capture.activities;
 import android.os.Bundle;
 
 import com.emanuelef.remote_capture.R;
-import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.fragments.HttpLogFragment;
 
-public class ConnectionsActivity extends BaseActivity {
+public class HttpLogActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.connections_view);
-        displayBackAction(); // Use explicit back to restore the AppDetailsActivity state
+        setTitle(R.string.http_log);
+        displayBackAction();
         setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new ConnectionsFragment())
+                .replace(R.id.fragment, new HttpLogFragment())
                 .commit();
     }
 }

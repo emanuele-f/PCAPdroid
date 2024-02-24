@@ -1,0 +1,10 @@
+<!--
+    Resource generated based on Font Awesome 6 Free icons set:
+    https://fontawesome.com/
+-->
+<vector android:height="24dp" android:viewportHeight="512"
+    android:tint="?attr/colorControlNormal"
+    android:viewportWidth="512" android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M27.79,93.86C27.79,77.34 40.42,64 56.05,64H395.14c15.63,0 28.26,13.34 28.26,29.86 0,16.52 -12.63,29.86 -28.26,29.86H56.05c-15.63,0 -28.26,-13.34 -28.26,-29.86zM84.31,243.16c0,-16.52 12.63,-29.86 28.26,-29.86h339.09c15.63,0 28.26,13.34 28.26,29.86 0,16.52 -12.63,29.86 -28.26,29.86H112.57c-15.63,0 -28.26,-13.34 -28.26,-29.86zM423.4,392.46c0,16.52 -12.63,29.86 -28.26,29.86H56.05c-15.63,0 -28.26,-13.34 -28.26,-29.86 0,-16.52 12.63,-29.86 28.26,-29.86H395.14c15.63,0 28.26,13.34 28.26,29.86z" android:strokeWidth="0.907734"/>
+</vector>

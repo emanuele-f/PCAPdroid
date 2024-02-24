@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -69,6 +70,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
     private final boolean mSupportsFileDialog;
+    private final PayloadChunk mSingleChunk;
     private boolean mShowAsPrintable;
     private ExportPayloadHandler mExportHandler;
 
@@ -77,22 +79,51 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         void exportPayload(byte[] payload, String contentType, String fname);
     }
 
-    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode, boolean showAsPrintable) {
+    /* if singleChunk is set, this adapter will only show that chunk */
+    private PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode,
+                          boolean showAsPrintable, PayloadChunk singleChunk) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mConn = conn;
         mContext = context;
         mMode = mode;
         mShowAsPrintable = showAsPrintable;
         mSupportsFileDialog = Utils.supportsFileDialog(context);
+        mSingleChunk = singleChunk;
 
-        // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
-        boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
+        if (mSingleChunk == null) {
+            // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
+            boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
 
-        // each direction must have its separate reassembly
-        mHttpReq = new HTTPReassembly(reassemble, this);
-        mHttpRes = new HTTPReassembly(reassemble, this);
+            // each direction must have its separate reassembly
+            mHttpReq = new HTTPReassembly(reassemble, this);
+            mHttpRes = new HTTPReassembly(reassemble, this);
 
-        handleChunksAdded(mConn.getNumPayloadChunks());
+            handleChunksAdded(mConn.getNumPayloadChunks());
+        } else {
+            mHttpReq = null;
+            mHttpRes = null;
+
+            mChunks.add(new AdapterChunk(mSingleChunk, 0));
+            notifyItemInserted(0);
+        }
+    }
+
+    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode,  boolean showAsPrintable) {
+        this(context, conn, mode, showAsPrintable, null);
+    }
+
+    public PayloadAdapter(Context context, HttpLog.HttpRequest req, boolean show_reply) {
+        this(context, req.conn, ChunkType.HTTP, true, getChunk(req, show_reply));
+    }
+
+    private static PayloadChunk getChunk(HttpLog.HttpRequest req, boolean show_reply) {
+        if (show_reply) {
+            if (req.reply != null)
+                return req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
+        } else
+            return req.conn.getHttpRequestChunk(req.firstChunkPos);
+
+        return null;
     }
 
     public void setExportPayloadHandler(ExportPayloadHandler handler) {
@@ -277,19 +308,19 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         if(mMode == ChunkType.HTTP) {
             String payload = chunk.getExpandedText(true);
             int crlf_pos = payload.indexOf("\r\n\r\n");
-            String content_type = ((chunk.mChunk.contentType != null) && (!chunk.mChunk.contentType.isEmpty())) ?
-                    chunk.mChunk.contentType : "text/plain";
+            String content_type = ((chunk.mChunk.httpContentType != null) && (!chunk.mChunk.httpContentType.isEmpty())) ?
+                    chunk.mChunk.httpContentType : "text/plain";
 
             Log.d(TAG, "Export body content type: " + content_type);
 
             String fname = "";
-            if (chunk.mChunk.is_sent && (chunk.mChunk.path != null))
-                fname = chunk.mChunk.path;
+            if (chunk.mChunk.is_sent && (chunk.mChunk.httpPath != null))
+                fname = chunk.mChunk.httpPath;
             else if (payload_pos > 0) {
                 // Try to match the HTTP request, to determine the file name
                 AdapterChunk req_chunk = getItem(payload_pos - 1).adaptChunk;
-                if (req_chunk.mChunk.is_sent && (req_chunk.mChunk.path != null))
-                    fname = req_chunk.mChunk.path;
+                if (req_chunk.mChunk.is_sent && (req_chunk.mChunk.httpPath != null))
+                    fname = req_chunk.mChunk.httpPath;
             }
 
             if (!fname.isEmpty()) {
@@ -407,11 +438,18 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             holder.headerLine.setVisibility(View.VISIBLE);
 
             Locale locale = Utils.getPrimaryLocale(mContext);
-            holder.header.setText(String.format(locale,
-                    "#%d [%s] %s — %s", page.adaptChunk.incrId + 1,
-                    getHeaderTag(chunk),
-                    (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
-                    Utils.formatBytes(chunk.payload.length)));
+            String formattedTstamp = (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp));
+            String formattedBytes = Utils.formatBytes(chunk.payload.length);
+
+            if (mSingleChunk == null)
+                holder.header.setText(String.format(locale,
+                        "#%d [%s] %s — %s", page.adaptChunk.incrId + 1,
+                        getHeaderTag(chunk),
+                        formattedTstamp, formattedBytes));
+            else
+                holder.header.setText(String.format(locale,
+                        "%s — %s",
+                        formattedTstamp, formattedBytes));
         } else
             holder.headerLine.setVisibility(View.GONE);
 
@@ -542,6 +580,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mUnrepliedHttpReq = null;
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void onChunkReassembled(PayloadChunk chunk) {
         AdapterChunk adapterChunk = new AdapterChunk(chunk, mChunks.size());

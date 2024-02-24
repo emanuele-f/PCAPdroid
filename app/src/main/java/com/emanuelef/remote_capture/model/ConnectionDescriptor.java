@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 
@@ -34,6 +35,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
 /* Holds the information about a single connection.
@@ -44,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * thread. However this does not create concurrency problems as the update only increments counters
  * or sets a previously null field to a non-null value.
  */
-public class ConnectionDescriptor {
+public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     // sync with zdtun_conn_status_t
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
@@ -128,6 +130,11 @@ public class ConnectionDescriptor {
     /* Internal */
     public boolean alerted;
     public boolean block_accounted;
+    private HTTPReassembly mHttpReqReassembly;
+    private HTTPReassembly mHttpReplyReassembly;
+    private int mFirstReqChunkPos = -1;
+    private int mFirstReplyChunkPos = -1;
+    private LinkedList<HttpLog.HttpRequest> mPendingRequests;
 
     // NOTE: invoked from JNI
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip, String _country,
@@ -189,16 +196,49 @@ public class ConnectionDescriptor {
             // Payload for decryptable connections should be received via the MitmReceiver
             assert(decryption_ignored || isNotDecryptable() || PCAPdroid.getInstance().isDecryptingPcap());
 
-            // Some pending updates with payload may still be received after low memory has been
-            // triggered and payload disabled
-            if(!CaptureService.isLowMemory()) {
-                synchronized (this) {
+            synchronized (this) {
+                if (HTTPReassembly.TODO_ENABLED && (update.payload_chunks != null)) {
+                    int chunk_pos = payload_chunks.size();
+
+                    for (PayloadChunk chunk: update.payload_chunks) {
+                        if (chunk.type == PayloadChunk.ChunkType.HTTP)
+                            logHttpChunk(chunk, chunk_pos);
+
+                        chunk_pos++;
+                    }
+                }
+
+                // Some pending updates with payload may still be received after low memory has been
+                // triggered and payload disabled
+                if(!CaptureService.isLowMemory()) {
                     if(update.payload_chunks != null)
                         payload_chunks.addAll(update.payload_chunks);
                     payload_truncated = update.payload_truncated;
                     internal_decrypt = update.payload_decrypted;
                 }
             }
+        }
+    }
+
+    private void logHttpChunk(PayloadChunk chunk, int chunk_pos) {
+        assert (chunk.type == PayloadChunk.ChunkType.HTTP);
+
+        if (mHttpReqReassembly == null) {
+            // use a lightweight reassembly, without dumping the payload
+            mHttpReqReassembly = new HTTPReassembly(true, this, false);
+            mHttpReplyReassembly = new HTTPReassembly(true, this, false);
+            mPendingRequests = new LinkedList<>();
+        }
+
+        // will call onChunkReassembled
+        if (chunk.is_sent) {
+            if (mFirstReqChunkPos == -1)
+                mFirstReqChunkPos = chunk_pos;
+            mHttpReqReassembly.handleChunk(chunk);
+        } else {
+            if (mFirstReplyChunkPos == -1)
+                mFirstReplyChunkPos = chunk_pos;
+            mHttpReplyReassembly.handleChunk(chunk);
         }
     }
 
@@ -327,6 +367,9 @@ public class ConnectionDescriptor {
     }
 
     public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
+        if (HTTPReassembly.TODO_ENABLED && (chunk.type == PayloadChunk.ChunkType.HTTP))
+            logHttpChunk(chunk, payload_chunks.size());
+
         payload_chunks.add(chunk);
         payload_length += chunk.payload.length;
     }
@@ -346,19 +389,21 @@ public class ConnectionDescriptor {
     public boolean hasHttpRequest() { return hasHttp(true); }
     public boolean hasHttpResponse() { return hasHttp(false); }
 
-    private synchronized String getHttp(boolean is_sent) {
-        if(getNumPayloadChunks() == 0)
-            return "";
+    private synchronized PayloadChunk getHttpChunks(boolean is_sent, int firstChunkPos) {
+        if((getNumPayloadChunks() == 0) || (firstChunkPos < 0))
+            return null;
 
-        // Need to wrap the String to set it from the lambda
-        final AtomicReference<String> rv = new AtomicReference<>();
-
-        HTTPReassembly reassembly = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL,
-                chunk -> rv.set(new String(chunk.payload, StandardCharsets.UTF_8))
+        // Need to wrap the chunk to set it from the lambda
+        final AtomicReference<PayloadChunk> rv = new AtomicReference<>();
+        HTTPReassembly reassembly = new HTTPReassembly(
+                CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL,
+                rv::set
         );
 
         // Possibly reassemble/decode the request
-        for(PayloadChunk chunk: payload_chunks) {
+        for (int i = firstChunkPos; i < payload_chunks.size(); i++) {
+            PayloadChunk chunk = payload_chunks.get(i);
+
             if(chunk.is_sent == is_sent)
                 reassembly.handleChunk(chunk);
 
@@ -369,8 +414,58 @@ public class ConnectionDescriptor {
 
         return rv.get();
     }
-    public String getHttpRequest() { return getHttp(true); }
-    public String getHttpResponse() { return getHttp(false); }
+
+    private String getHttpAsString(boolean is_sent) {
+        PayloadChunk reassembled = getHttpChunks(is_sent, 0);
+        if (reassembled == null)
+            return "";
+
+        return new String(reassembled.payload, StandardCharsets.UTF_8);
+    }
+
+    public String getHttpRequest() { return getHttpAsString(true); }
+    public String getHttpResponse() { return getHttpAsString(false); }
+
+    public PayloadChunk getHttpRequestChunk(int firstChunkPos) { return getHttpChunks(true, firstChunkPos); }
+    public PayloadChunk getHttpResponseChunk(int firstChunkPos) { return getHttpChunks(false, firstChunkPos); }
+
+    @Override
+    public void onChunkReassembled(PayloadChunk chunk) {
+        if (chunk.type != PayloadChunk.ChunkType.HTTP)
+            return;
+
+        HttpLog httplog = CaptureService.getHttpLog();
+        if (httplog == null)
+            return;
+
+        if (chunk.is_sent) {
+            HttpLog.HttpRequest request = new HttpLog.HttpRequest(this, mFirstReqChunkPos);
+            request.host = !chunk.httpHost.isEmpty() ? chunk.httpHost : info;
+            request.method = chunk.httpMethod;
+            request.path = chunk.httpPath;
+            request.query = chunk.httpQuery;
+            request.bodyLength = chunk.httpBodyLength;
+            request.timestamp = chunk.timestamp;
+            httplog.addHttpRequest(request);
+
+            mPendingRequests.add(request);
+            mFirstReqChunkPos = -1;
+        } else if (!mPendingRequests.isEmpty()) {
+            // find the first un-replied request
+            HttpLog.HttpRequest request = mPendingRequests.remove(0);
+
+            HttpLog.HttpReply reply = new HttpLog.HttpReply(request, mFirstReplyChunkPos);
+            reply.responseCode = chunk.httpResponseCode;
+            reply.responseStatus = chunk.httpResponseStatus;
+            reply.contentType = chunk.httpContentType;
+            reply.bodyLength = chunk.httpBodyLength;
+            request.timestamp = chunk.timestamp;
+            request.reply = reply;
+            httplog.addHttpReply(reply);
+
+            mFirstReplyChunkPos = -1;
+        }
+    }
 
     public boolean hasSeenStart() {
         if((ipproto != 6 /* TCP */) || !CaptureService.isCapturingAsRoot())

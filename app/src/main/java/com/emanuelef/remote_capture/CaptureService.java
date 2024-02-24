@@ -135,6 +135,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
+    private HttpLog mHttpLog;
     private Uri mPcapUri;
     private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
@@ -358,6 +359,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
+        mHttpLog = new HttpLog();
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
@@ -1085,6 +1087,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static @Nullable ConnectionsRegister getConnsRegister() {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
+    }
+
+    public static @Nullable HttpLog getHttpLog() {
+        return((INSTANCE != null) ? INSTANCE.mHttpLog : null);
     }
 
     public static @NonNull ConnectionsRegister requireConnsRegister() {

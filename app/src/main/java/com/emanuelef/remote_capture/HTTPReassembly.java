@@ -39,21 +39,33 @@ public class HTTPReassembly {
     private boolean mReadingHeaders;
     private boolean mChunkedEncoding;
     private ContentEncoding mContentEncoding;
-    private String mContentType;
-    private String mPath;
     private int mContentLength;
     private int mHeadersSize;
+    private int mBodySize;
     private final ArrayList<PayloadChunk> mHeaders = new ArrayList<>();
     private final ArrayList<PayloadChunk> mBody = new ArrayList<>();
     private final ReassemblyListener mListener;
+    private final boolean mDumpPayload;
     private boolean mReassembleChunks;
     private boolean mInvalidHttp;
-    private boolean mIsTx;
+    private PayloadChunk mFirstChunk;
 
-    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
+    public static final boolean TODO_ENABLED = true;
+
+    /**
+     * @param reassembleChunks if false, all the chunks will be considered as RAW chunks
+     * @param listener a listener for the reassembly
+     * @param dumpPayload if false, PayloadChunk notified via onChunkReassembled will have no payload
+     */
+    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener, boolean dumpPayload) {
         mListener = listener;
         mReassembleChunks = reassembleChunks;
+        mDumpPayload = dumpPayload;
         reset();
+    }
+
+    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
+        this(reassembleChunks, listener, true);
     }
 
     private enum ContentEncoding {
@@ -63,13 +75,16 @@ public class HTTPReassembly {
         BROTLI,
     }
 
+    private boolean isTx() {
+        return (mFirstChunk != null) && mFirstChunk.is_sent;
+    }
+
     private void reset() {
         mReadingHeaders = true;
         mContentEncoding = ContentEncoding.UNKNOWN;
         mChunkedEncoding = false;
         mContentLength = -1;
-        mContentType = null;
-        mPath = null;
+        mFirstChunk = null;
         mHeadersSize = 0;
         mHeaders.clear();
         mBody.clear();
@@ -84,7 +99,7 @@ public class HTTPReassembly {
     }
 
     private void log_d(String msg) {
-        Log.d(TAG + "(" + (mIsTx ? "TX" : "RX") + ")", msg);
+        Log.d(TAG + "(" + (isTx() ? "TX" : "RX") + ")", msg);
     }
 
     /* The request/response tab shows reassembled HTTP chunks.
@@ -96,7 +111,9 @@ public class HTTPReassembly {
         int body_start = 0;
         byte[] payload = chunk.payload;
         boolean chunked_complete = false;
-        mIsTx = chunk.is_sent;
+
+        if (mFirstChunk == null)
+            mFirstChunk = chunk.withPayload(null);
 
         if(mReadingHeaders) {
             // Reading the HTTP headers
@@ -109,19 +126,52 @@ public class HTTPReassembly {
                 String line = reader.readLine();
 
                 if (is_first_line && (line != null)) {
-                    if (line.startsWith("GET ") || line.startsWith("POST ")
-                            || line.startsWith("HEAD ") || line.startsWith("PUT ")) {
+                    if (chunk.is_sent && (
+                            line.startsWith("GET ") || line.startsWith("POST ") ||
+                            line.startsWith("HEAD ") || line.startsWith("PUT "))
+                    ) {
                         int first_space = line.indexOf(' ');
                         int second_space = line.indexOf(' ', first_space + 1);
 
                         if ((first_space > 0) && (second_space > 0)) {
-                            mPath = line.substring(first_space + 1, second_space);
+                            mFirstChunk.httpMethod = line.substring(0, first_space).toUpperCase();
+                            String path = line.substring(first_space + 1, second_space);
 
-                            int query_start = mPath.indexOf('?');
-                            if (query_start >= 0)
-                                mPath = mPath.substring(0, query_start);
+                            if (!path.startsWith("/")) {
+                                // it may include the protocol and host
+                                int proto_sep = path.indexOf("://");
 
-                            log_d("Path: " + mPath);
+                                if (proto_sep > 0)
+                                    path = path.substring(proto_sep + 3);
+
+                                int slash = path.indexOf('/');
+                                if (slash > 0) {
+                                    mFirstChunk.httpHost = path.substring(0, slash);
+                                    path = path.substring(slash);
+                                }
+                            }
+
+                            int query_start = path.indexOf('?');
+                            if (query_start >= 0) {
+                                path = path.substring(0, query_start);
+                                mFirstChunk.httpQuery = path.substring(query_start);
+                            }
+
+                            mFirstChunk.httpPath = path;
+                        }
+                    } else if (!chunk.is_sent && line.startsWith("HTTP/")) {
+                        int first_space = line.indexOf(' ');
+                        if (first_space > 0) {
+                            try {
+                                // NOTE: the response status may be missing when the response is reconstructed by the ushark HTTP2 reassembly
+                                int second_space = line.indexOf(' ', first_space + 1);
+
+                                mFirstChunk.httpResponseCode = Integer.parseInt(line.substring(first_space + 1,
+                                        (second_space > 0) ? second_space : line.length()));
+
+                                if (second_space > 0)
+                                    mFirstChunk.httpResponseStatus = line.substring(second_space + 1);
+                            } catch (NumberFormatException ignored) {}
                         }
                     }
                 }
@@ -149,9 +199,9 @@ public class HTTPReassembly {
                         }
                     } else if(line.startsWith("content-type: ")) {
                         int endIdx = line.indexOf(";");
-                        mContentType = line.substring(14, (endIdx > 0) ? endIdx : line.length());
+                        mFirstChunk.httpContentType = line.substring(14, (endIdx > 0) ? endIdx : line.length());
 
-                        log_d("Content-Type: " + mContentType);
+                        log_d("Content-Type: " + mFirstChunk.httpContentType);
                     } else if(line.startsWith("content-length: ")) {
                         try {
                             mContentLength = Integer.parseInt(line.substring(16));
@@ -163,6 +213,9 @@ public class HTTPReassembly {
                     } else if(line.equals("transfer-encoding: chunked")) {
                         log_d("Detected chunked encoding");
                         mChunkedEncoding = true;
+                    } else if(line.startsWith("host: ")) {
+                        log_d("Detected HTTP host");
+                        mFirstChunk.httpHost = line.substring(6);
                     }
 
                     line = reader.readLine();
@@ -172,7 +225,9 @@ public class HTTPReassembly {
             if(headers_end > 0) {
                 mReadingHeaders = false;
                 body_start = headers_end;
-                mHeaders.add(chunk.subchunk(0, body_start));
+
+                if (mDumpPayload)
+                    mHeaders.add(chunk.subchunk(0, body_start));
             } else {
                 if(mHeadersSize > MAX_HEADERS_SIZE) {
                     log_d("Assuming not HTTP");
@@ -184,7 +239,8 @@ public class HTTPReassembly {
                 }
 
                 // Headers span all the packet
-                mHeaders.add(chunk);
+                if (mDumpPayload)
+                    mHeaders.add(chunk);
                 body_start = payload.length;
             }
         }
@@ -241,10 +297,14 @@ public class HTTPReassembly {
                     }
                 }
 
-                if((body_start == 0) && (body_size == chunk.payload.length))
-                    mBody.add(chunk);
-                else
-                    mBody.add(chunk.subchunk(body_start, body_size));
+                if (mDumpPayload) {
+                    if ((body_start == 0) && (body_size == chunk.payload.length))
+                        mBody.add(chunk);
+                    else
+                        mBody.add(chunk.subchunk(body_start, body_size));
+                }
+
+                mBodySize += body_size;
             }
 
             if(chunked_complete || !mReassembleChunks)
@@ -252,33 +312,46 @@ public class HTTPReassembly {
 
             if(((mContentLength <= 0) || !mReassembleChunks)
                     && !mChunkedEncoding) {
-                // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
-                PayloadChunk headers = reassembleChunks(mHeaders);
-                PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
-
-                //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
-
-                // Decode body
-                if((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
-                    decodeBody(body);
-
                 PayloadChunk to_add;
 
-                if(body != null) {
-                    // Reassemble headers and body into a single chunk
-                    byte[] reassembly = new byte[headers.payload.length + body.payload.length];
-                    System.arraycopy(headers.payload, 0, reassembly, 0, headers.payload.length);
-                    System.arraycopy(body.payload, 0, reassembly, headers.payload.length, body.payload.length);
+                if (mDumpPayload) {
+                    // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
+                    PayloadChunk headers = reassembleChunks(mHeaders);
+                    PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
 
-                    to_add = body.withPayload(reassembly);
-                } else
-                    to_add = headers;
+                    //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
 
-                if(mInvalidHttp)
+                    // Decode body
+                    if ((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
+                        decodeBody(body);
+
+                    if (body != null) {
+                        // Reassemble headers and body into a single chunk
+                        byte[] reassembly = new byte[headers.payload.length + body.payload.length];
+                        System.arraycopy(headers.payload, 0, reassembly, 0, headers.payload.length);
+                        System.arraycopy(body.payload, 0, reassembly, headers.payload.length, body.payload.length);
+
+                        to_add = body.withPayload(reassembly);
+                    } else
+                        to_add = headers;
+                } else {
+                    to_add = mFirstChunk;
+                }
+
+                if (mInvalidHttp)
                     to_add.type = PayloadChunk.ChunkType.RAW;
+                else {
+                    to_add.httpContentType = mFirstChunk.httpContentType;
+                    to_add.httpResponseCode = mFirstChunk.httpResponseCode;
+                    to_add.httpResponseStatus = mFirstChunk.httpResponseStatus;
+                    to_add.httpMethod = mFirstChunk.httpMethod;
+                    to_add.httpHost = mFirstChunk.httpHost;
+                    to_add.httpPath = mFirstChunk.httpPath;
+                    to_add.httpQuery = mFirstChunk.httpQuery;
+                    to_add.httpBodyLength = mBodySize;
+                }
 
-                to_add.contentType = mContentType;
-                to_add.path = mPath;
+                mBodySize = 0;
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
             }

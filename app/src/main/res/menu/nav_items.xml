@@ -14,6 +14,10 @@
             android:title="@string/decryption_rules"
             android:icon="@drawable/ic_lock_open_alt" />
         <item
+            android:id="@+id/http_log"
+            android:title="@string/http_log"
+            android:icon="@drawable/bars_staggered_solid" />
+        <item
             android:id="@+id/firewall"
             android:title="@string/firewall"
             android:icon="@drawable/ic_shield" />

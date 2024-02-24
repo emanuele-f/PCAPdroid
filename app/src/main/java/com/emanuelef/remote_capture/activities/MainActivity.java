@@ -572,6 +572,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent intent = new Intent(MainActivity.this, EditListActivity.class);
             intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_LIST);
             startActivity(intent);
+        } else if(id == R.id.http_log) {
+            Intent intent = new Intent(MainActivity.this, HttpLogActivity.class);
+            startActivity(intent);
         } else if(id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, FirewallActivity.class);
             startActivity(intent);

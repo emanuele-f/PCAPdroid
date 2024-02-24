@@ -233,7 +233,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public long getItemId(int pos) {
         ConnectionDescriptor conn = getItem(pos);
 
-        return ((conn != null) ? conn.incr_id : Utils.UID_UNKNOWN);
+        return ((conn != null) ? conn.incr_id : -1);
     }
 
     private boolean matches(ConnectionDescriptor conn) {
