@@ -1131,11 +1131,17 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
         data->sent_bytes += pkt->len;
         pd->capture_stats.sent_pkts++;
         pd->capture_stats.sent_bytes += pkt->len;
+        if(pkt->tuple.ipver == 6) {
+            pd->capture_stats.ipv6_send_bytes += pkt->len;
+        }
     } else {
         data->rcvd_pkts++;
         data->rcvd_bytes += pkt->len;
         pd->capture_stats.rcvd_pkts++;
         pd->capture_stats.rcvd_bytes += pkt->len;
+        if(pkt->tuple.ipver == 6) {
+            pd->capture_stats.ipv6_rcvd_bytes += pkt->len;
+        }
     }
 
     /* New stats to notify */

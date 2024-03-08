@@ -43,6 +43,8 @@ import java.util.Locale;
 public class StatsActivity extends BaseActivity implements MenuProvider {
     private TextView mBytesSent;
     private TextView mBytesRcvd;
+    private TextView mIPv6BytesSent;
+    private TextView mIPv6BytesRcvd;
     private TextView mPacketsSent;
     private TextView mPacketsRcvd;
     private TextView mActiveConns;
@@ -69,6 +71,8 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         mTable = findViewById(R.id.table);
         mBytesSent = findViewById(R.id.bytes_sent);
         mBytesRcvd = findViewById(R.id.bytes_rcvd);
+        mIPv6BytesSent = findViewById(R.id.ipv6_bytes_sent);
+        mIPv6BytesRcvd = findViewById(R.id.ipv6_bytes_rcvd);
         mPacketsSent = findViewById(R.id.packets_sent);
         mPacketsRcvd = findViewById(R.id.packets_rcvd);
         mActiveConns = findViewById(R.id.active_connections);
@@ -98,6 +102,8 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
     private void updateStats(CaptureStats stats) {
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
+        mIPv6BytesSent.setText(Utils.formatBytes(stats.ipv6_bytes_sent));
+        mIPv6BytesRcvd.setText(Utils.formatBytes(stats.ipv6_bytes_rcvd));
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
         mPacketsRcvd.setText(Utils.formatIntShort(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));

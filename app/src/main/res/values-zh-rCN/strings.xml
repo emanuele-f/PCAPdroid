@@ -68,6 +68,8 @@
     <string name="open_sockets">开放套接字</string>
     <string name="bytes_sent">已发送字节数</string>
     <string name="bytes_rcvd">已接收字节数</string>
+    <string name="ipv6_bytes_sent">已发送IPv6字节数</string>
+    <string name="ipv6_bytes_rcvd">已接收IPv6字节数</string>
     <string name="packets_sent">已发送数据包</string>
     <string name="packets_rcvd">已接收数据包</string>
     <string name="dns_queries">DNS 查询</string>

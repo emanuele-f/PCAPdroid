@@ -216,11 +216,17 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private void onStatsUpdate(CaptureStats stats) {
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
-
-        mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
+        if (CaptureService.getIPv6Bytes() != 0) {
+            mCaptureStatus.setText(String.format("%s\n%.02f%%IPv6",
+                    Utils.formatBytes(CaptureService.getBytes()),
+                    100*((float)CaptureService.getIPv6Bytes()/(float)CaptureService.getBytes())));
+        } else {
+            mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+        }
     }
 
     private Pair<String, Drawable> getAppFilterTextAndIcon(@NonNull Context context) {
@@ -301,6 +307,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             mCollectorInfoIcon.setVisibility(View.GONE);
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void appStateChanged(AppState state) {
         Context context = getContext();
@@ -339,7 +346,13 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                     mStopBtn.setEnabled(false);
                 break;
             case running:
-                mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+                if (CaptureService.getIPv6Bytes() != 0) {
+                    mCaptureStatus.setText(String.format("%s\n%.02f%%IPv6",
+                            Utils.formatBytes(CaptureService.getBytes()),
+                            (float)CaptureService.getIPv6Bytes()/CaptureService.getBytes()));
+                } else {
+                    mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+                }
                 mCollectorInfoLayout.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
                 CaptureService service = CaptureService.requireInstance();

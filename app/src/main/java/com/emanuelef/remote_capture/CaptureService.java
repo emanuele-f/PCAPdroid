@@ -128,6 +128,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String dns_server;
     private long last_bytes;
+    private long last_ipv6_bytes;
     private int last_connections;
     private int[] mAppFilterUids;
     private PcapDumper mDumper;
@@ -324,6 +325,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
+        last_ipv6_bytes = 0;
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
@@ -1000,6 +1002,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.last_bytes : 0);
     }
 
+    public static long getIPv6Bytes() {
+        return((INSTANCE != null) ? INSTANCE.last_ipv6_bytes : 0);
+    }
+
     public static String getCollectorAddress() {
         return((INSTANCE != null) ? INSTANCE.mSettings.collector_address : "");
     }
@@ -1385,6 +1391,7 @@ public class CaptureService extends VpnService implements Runnable {
         //Log.d(TAG, "sendStatsDump");
 
         last_bytes = stats.bytes_sent + stats.bytes_rcvd;
+        last_ipv6_bytes = stats.ipv6_bytes_sent + stats.ipv6_bytes_rcvd;
         last_connections = stats.tot_conns;
         mHandler.post(this::updateNotification);
 
