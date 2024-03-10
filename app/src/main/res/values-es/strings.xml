@@ -498,4 +498,12 @@
     <string name="raw_bytes">Bytes sin formato</string>
     <string name="decrypt_quic_notice">Actualmente no es posible descifrar QUIC. Como solución, detenga la captura y seleccione la opción de bloquear QUIC en los ajustes de PCAPdroid</string>
     <string name="export_ellipsis">Exportar…</string>
+    <string name="vpn_reconnection">Reconectar a la VPN</string>
+    <string name="vpn_reconnection_aborted">Reconexión a la VPN abortada</string>
+    <string name="waiting_for_vpn_disconnect">Esperando a que la VPN activa se desconecte…</string>
+    <string name="restart_on_disconnection">Reiniciar al desconectarse</string>
+    <string name="restart_on_disconnection_summary">Reiniciar automáticamente la captura después de ser detenido por otras aplicaciones VPN</string>
+    <string name="ipv6_bytes_rcvd">Bytes IPv6 recibidos</string>
+    <string name="ipv6_bytes_percentage">Porcentaje de bytes IPv6</string>
+    <string name="ipv6_bytes_sent">Bytes IPv6 enviados</string>
 </resources>
