@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -36,6 +37,8 @@ import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.Prefs;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Set;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -116,11 +119,15 @@ public class PCAPdroid extends Application {
                     String packageName = intent.getData().getSchemeSpecificPart();
                     Log.d(TAG, "ACTION_PACKAGE_REMOVED [update=" + isUpdate + "]: " + packageName);
 
-                    if(!isUpdate)
+                    if(!isUpdate) {
                         checkUidMapping(packageName);
+                        removeUninstalledAppsFromAppFilter();
+                    }
                 }
             }
         }, filter);
+
+        removeUninstalledAppsFromAppFilter();
     }
 
     public static @NonNull PCAPdroid getInstance() {
@@ -192,6 +199,29 @@ public class PCAPdroid extends Application {
         if((mBlocklist != null) && mBlocklist.uidMappingChanged(pkg)) {
             if(CaptureService.isServiceActive())
                 CaptureService.requireInstance().reloadBlocklist();
+        }
+    }
+
+    private void removeUninstalledAppsFromAppFilter() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> filter = Prefs.getAppFilter(prefs);
+        ArrayList<String> to_remove = new ArrayList<>();
+        PackageManager pm = getPackageManager();
+
+        for (String package_name: filter) {
+            try {
+                Utils.getPackageInfo(pm, package_name, 0);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.i(TAG, "Package " + package_name + " uninstalled, removing from app filter");
+                to_remove.add(package_name);
+            }
+        }
+
+        if (!to_remove.isEmpty()) {
+            filter.removeAll(to_remove);
+            prefs.edit()
+                    .putStringSet(Prefs.PREF_APP_FILTER, filter)
+                    .apply();
         }
     }
 
