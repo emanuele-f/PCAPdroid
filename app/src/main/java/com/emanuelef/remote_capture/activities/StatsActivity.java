@@ -108,11 +108,11 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         mIPv6BytesSent.setText(Utils.formatBytes(stats.ipv6_bytes_sent));
         mIPv6BytesRcvd.setText(Utils.formatBytes(stats.ipv6_bytes_rcvd));
 
-        float percentage = ((stats.bytes_sent + stats.bytes_rcvd) > 0) ?
-                ((float)(stats.ipv6_bytes_sent + stats.ipv6_bytes_rcvd) /
-                        (float)(stats.bytes_sent + stats.bytes_rcvd)) : 0;
+        long tot_bytes = stats.bytes_sent + stats.bytes_rcvd;
+        long percentage = (tot_bytes > 0) ?
+                ((stats.ipv6_bytes_sent + stats.ipv6_bytes_rcvd) * 100 / tot_bytes) : 0;
         mIPv6BytesPercentage.setText(
-                String.format(Utils.getPrimaryLocale(this),"%.02f%%", 100*percentage));
+                String.format(Utils.getPrimaryLocale(this),"%d%%", percentage));
 
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
         mPacketsRcvd.setText(Utils.formatIntShort(stats.pkts_rcvd));
