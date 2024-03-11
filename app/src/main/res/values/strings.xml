@@ -82,6 +82,7 @@
     <string name="bytes_rcvd">Bytes received</string>
     <string name="ipv6_bytes_sent">IPv6 Bytes sent</string>
     <string name="ipv6_bytes_rcvd">IPv6 Bytes received</string>
+    <string name="ipv6_bytes_percentage">IPv6 Bytes percentage</string>
     <string name="packets_sent">Packets sent</string>
     <string name="packets_rcvd">Packets received</string>
     <string name="dns_queries">DNS queries</string>

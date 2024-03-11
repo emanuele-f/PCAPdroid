@@ -45,6 +45,7 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
     private TextView mBytesRcvd;
     private TextView mIPv6BytesSent;
     private TextView mIPv6BytesRcvd;
+    private TextView mIPv6BytesPercentage;
     private TextView mPacketsSent;
     private TextView mPacketsRcvd;
     private TextView mActiveConns;
@@ -73,6 +74,7 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         mBytesRcvd = findViewById(R.id.bytes_rcvd);
         mIPv6BytesSent = findViewById(R.id.ipv6_bytes_sent);
         mIPv6BytesRcvd = findViewById(R.id.ipv6_bytes_rcvd);
+        mIPv6BytesPercentage = findViewById(R.id.ipv6_bytes_percentage);
         mPacketsSent = findViewById(R.id.packets_sent);
         mPacketsRcvd = findViewById(R.id.packets_rcvd);
         mActiveConns = findViewById(R.id.active_connections);
@@ -104,6 +106,11 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
         mIPv6BytesSent.setText(Utils.formatBytes(stats.ipv6_bytes_sent));
         mIPv6BytesRcvd.setText(Utils.formatBytes(stats.ipv6_bytes_rcvd));
+
+        float percentage = ((float)stats.ipv6_bytes_sent + (float)stats.ipv6_bytes_rcvd) /
+                ((float)stats.bytes_sent + (float)stats.bytes_rcvd);
+        mIPv6BytesPercentage.setText(
+                String.format(Locale.getDefault(),"%.02f%%", 100*percentage));
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
         mPacketsRcvd.setText(Utils.formatIntShort(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));
