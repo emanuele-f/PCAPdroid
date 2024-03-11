@@ -157,6 +157,8 @@ In the result of the `stop` and `get_status` actions and in the broadcast of `Ca
 | pkts_sent           | int    |  50 | packets sent                                                       |
 | pkts_rcvd           | int    |  50 | packets received                                                   |
 | pkts_dropped        | int    |  50 | in root mode, number of packets not analyzed and not dumped        |
+| ipv6_bytes_sent     | long   |  74 | IPv6 bytes sent (from the device to the Internet)                  |
+| ipv6_bytes_recv     | long   |  74 | IPv6 bytes received (from the Internet to the device)              |
 
 ## Dumping PCAP to file
 
