@@ -219,7 +219,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private void onStatsUpdate(CaptureStats stats) {
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
-        mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
+        mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
     private Pair<String, Drawable> getAppFilterTextAndIcon(@NonNull Context context) {
