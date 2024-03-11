@@ -51,7 +51,7 @@
 typedef struct {
     jlong sent_bytes;
     jlong rcvd_bytes;
-    jlong ipv6_send_bytes;
+    jlong ipv6_sent_bytes;
     jlong ipv6_rcvd_bytes;
     jint sent_pkts;
     jint rcvd_pkts;
