@@ -497,4 +497,12 @@
     <string name="body">Corpo</string>
     <string name="both">Entrambi</string>
     <string name="raw_bytes">Byte grezzi</string>
+    <string name="restart_on_disconnection">Riavvia su disconnessione</string>
+    <string name="restart_on_disconnection_summary">Riavvia in automatico la cattura dopo che questa è stata interrotta da altre app di VPN</string>
+    <string name="ipv6_bytes_rcvd">Bytes IPv6 ricevuti</string>
+    <string name="ipv6_bytes_percentage">Percentuale bytes IPv6</string>
+    <string name="waiting_for_vpn_disconnect">In attesa che la VPN attiva termini…</string>
+    <string name="ipv6_bytes_sent">Bytes IPv6 inviati</string>
+    <string name="vpn_reconnection">Riconnessione VPN</string>
+    <string name="vpn_reconnection_aborted">Riconnessione VPN annullata</string>
 </resources>

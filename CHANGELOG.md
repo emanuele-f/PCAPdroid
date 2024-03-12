@@ -2,6 +2,20 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.7.0] - 2024-02-10
+- Select multiple target apps
+- Copy/export the connections payload
+- Android 14 support
+- mitmproxy 10.1.6 and Doze fix
+- Ability to block QUIC only on decryption
+- Fix decryption status for QUIC connections
+- Fix inaccurate firewall grace period
+- Integrations to run with Tor and DNSCrypt
+- Use your own mitmproxy addons (experimental)
+- Remove mitm-addon permission
+- Show termux main app instead of its sub-apps
+- Use ISO 8601 dates in CSV export
+
 ## [1.6.9] - 2023-12-04
 - Fix root capture start on some devices
 - Fix root permission incorrectly requested on read from pcap file

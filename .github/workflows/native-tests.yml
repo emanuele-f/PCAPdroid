@@ -6,9 +6,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+      
     - name: Run native tests
       working-directory: ./app/src/main/jni/tests
       run: make run_tests

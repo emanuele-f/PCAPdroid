@@ -646,7 +646,7 @@ public class Utils {
     // Using the deprecated API instead to keep things simple.
     // https://developer.android.com/reference/android/net/ConnectivityManager#getAllNetworks()
     @SuppressWarnings("deprecation")
-    public static boolean hasVPNRunning(Context context) {
+    public static Network getRunningVpn(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if(cm != null) {
             try {
@@ -657,7 +657,7 @@ public class Utils {
 
                     if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
                         Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
-                        return true;
+                        return net;
                     }
                 }
             } catch (SecurityException e) {
@@ -666,7 +666,7 @@ public class Utils {
             }
         }
 
-        return false;
+        return null;
     }
 
     public static void showToast(Context context, int id, Object... args) {

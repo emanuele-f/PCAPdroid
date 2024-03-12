@@ -43,6 +43,9 @@ import java.util.Locale;
 public class StatsActivity extends BaseActivity implements MenuProvider {
     private TextView mBytesSent;
     private TextView mBytesRcvd;
+    private TextView mIPv6BytesSent;
+    private TextView mIPv6BytesRcvd;
+    private TextView mIPv6BytesPercentage;
     private TextView mPacketsSent;
     private TextView mPacketsRcvd;
     private TextView mActiveConns;
@@ -69,6 +72,9 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         mTable = findViewById(R.id.table);
         mBytesSent = findViewById(R.id.bytes_sent);
         mBytesRcvd = findViewById(R.id.bytes_rcvd);
+        mIPv6BytesSent = findViewById(R.id.ipv6_bytes_sent);
+        mIPv6BytesRcvd = findViewById(R.id.ipv6_bytes_rcvd);
+        mIPv6BytesPercentage = findViewById(R.id.ipv6_bytes_percentage);
         mPacketsSent = findViewById(R.id.packets_sent);
         mPacketsRcvd = findViewById(R.id.packets_rcvd);
         mActiveConns = findViewById(R.id.active_connections);
@@ -86,8 +92,16 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         if(CaptureService.isCapturingAsRoot()) {
             findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
-        } else
+        } else {
+            if (!CaptureService.isReadingFromPcapFile() && !CaptureService.isIPv6Enabled()) {
+                // vpn mode without IPv6
+                findViewById(R.id.ipv6_bytes_sent_row).setVisibility(View.GONE);
+                findViewById(R.id.ipv6_bytes_rcvd_row).setVisibility(View.GONE);
+                findViewById(R.id.ipv6_bytes_percentage_row).setVisibility(View.GONE);
+            }
+
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
+        }
 
         // Listen for stats updates
         CaptureService.observeStats(this, this::updateStats);
@@ -98,6 +112,16 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
     private void updateStats(CaptureStats stats) {
         mBytesSent.setText(Utils.formatBytes(stats.bytes_sent));
         mBytesRcvd.setText(Utils.formatBytes(stats.bytes_rcvd));
+
+        mIPv6BytesSent.setText(Utils.formatBytes(stats.ipv6_bytes_sent));
+        mIPv6BytesRcvd.setText(Utils.formatBytes(stats.ipv6_bytes_rcvd));
+
+        long tot_bytes = stats.bytes_sent + stats.bytes_rcvd;
+        long percentage = (tot_bytes > 0) ?
+                ((stats.ipv6_bytes_sent + stats.ipv6_bytes_rcvd) * 100 / tot_bytes) : 0;
+        mIPv6BytesPercentage.setText(
+                String.format(Utils.getPrimaryLocale(this),"%d%%", percentage));
+
         mPacketsSent.setText(Utils.formatIntShort(stats.pkts_sent));
         mPacketsRcvd.setText(Utils.formatIntShort(stats.pkts_rcvd));
         mActiveConns.setText(Utils.formatNumber(this, stats.active_conns));
