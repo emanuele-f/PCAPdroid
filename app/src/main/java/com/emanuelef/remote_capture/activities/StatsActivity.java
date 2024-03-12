@@ -92,8 +92,16 @@ public class StatsActivity extends BaseActivity implements MenuProvider {
         if(CaptureService.isCapturingAsRoot()) {
             findViewById(R.id.open_sockets_row).setVisibility(View.GONE);
             findViewById(R.id.row_dropped_connections).setVisibility(View.GONE);
-        } else
+        } else {
+            if (!CaptureService.isReadingFromPcapFile() && !CaptureService.isIPv6Enabled()) {
+                // vpn mode without IPv6
+                findViewById(R.id.ipv6_bytes_sent_row).setVisibility(View.GONE);
+                findViewById(R.id.ipv6_bytes_rcvd_row).setVisibility(View.GONE);
+                findViewById(R.id.ipv6_bytes_percentage_row).setVisibility(View.GONE);
+            }
+
             findViewById(R.id.row_pkts_dropped).setVisibility(View.GONE);
+        }
 
         // Listen for stats updates
         CaptureService.observeStats(this, this::updateStats);

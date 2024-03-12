@@ -52,6 +52,7 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/ipv6_bytes_sent_row"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp">
@@ -70,6 +71,7 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/ipv6_bytes_rcvd_row"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp">
@@ -88,6 +90,7 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/ipv6_bytes_percentage_row"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp">

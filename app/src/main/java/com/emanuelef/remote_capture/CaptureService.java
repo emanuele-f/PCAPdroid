@@ -1057,6 +1057,11 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isPcapFileCapture() == 1));
     }
 
+    public static boolean isIPv6Enabled() {
+        return((INSTANCE != null) &&
+                (INSTANCE.getIPv6Enabled() == 1));
+    }
+
     public static boolean isDecryptionListEnabled() {
         return(INSTANCE != null && (INSTANCE.mDecryptionList != null));
     }
