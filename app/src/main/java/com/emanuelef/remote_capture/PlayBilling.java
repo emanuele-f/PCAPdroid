@@ -189,8 +189,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                             .setPurchaseToken(purchase.getPurchaseToken())
                             .build();
 
-                    mBillingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult1 ->
-                            Log.d(TAG, "acknowledgePurchase: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage()));
+                    if (mBillingClient != null)
+                        mBillingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult1 ->
+                                Log.d(TAG, "acknowledgePurchase: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage()));
                 }
             }
 
