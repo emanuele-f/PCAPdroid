@@ -498,4 +498,11 @@
     <string name="both">كلاهما</string>
     <string name="whats_new">ما الجديد</string>
     <string name="export_ellipsis">صدر…</string>
+    <string name="restart_on_disconnection">إعادة التشغيل عند انقطاع الاتصال</string>
+    <string name="ipv6_bytes_percentage">نسبة بايت IPv6</string>
+    <string name="vpn_reconnection">إعادة اتصال VPN</string>
+    <string name="vpn_reconnection_aborted">تم إحباط إعادة اتصال VPN</string>
+    <string name="ipv6_bytes_sent">تم إرسال بايت IPv6</string>
+    <string name="ipv6_bytes_rcvd">تلقيت بايت IPv6</string>
+    <string name="restart_on_disconnection_summary">إعادة تشغيل الالتقاط تلقائيًا بعد إيقافه بواسطة تطبيقات VPN الأخرى</string>
 </resources>
