@@ -8,8 +8,8 @@ android {
         minSdkVersion 21
         compileSdk 34
         targetSdk 34
-        versionCode 73
-        versionName "1.7.0"
+        versionCode 74
+        versionName "1.7.1"
 
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
