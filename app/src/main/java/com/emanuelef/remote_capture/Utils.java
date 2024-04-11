@@ -917,7 +917,9 @@ public class Utils {
             ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
             clipboard.setPrimaryClip(clip);
 
-            Utils.showToast(ctx, R.string.copied);
+            // Only show a toast for Android 12 and lower
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
+                Utils.showToast(ctx, R.string.copied);
         } catch (Exception e) {
             Log.e(TAG, "copyToClipboard failed: " + e.getMessage());
             Utils.showToastLong(ctx, R.string.error);
