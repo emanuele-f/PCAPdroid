@@ -106,6 +106,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private boolean mWasStarted = false;
     private boolean mStartPressed = false;
     private boolean mDecEmptyRulesNoticeShown = false;
+    private boolean mTrailerNoticeShown = false;
 
     private static final String TAG = "Main";
 
@@ -619,12 +620,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             if((reg != null) && (reg.getConnCount() > 0)
                     && !CaptureService.hasSeenPcapdroidTrailer()
-                    && !Prefs.trailerNoticeShown(mPrefs)
+                    && !mTrailerNoticeShown
             ) {
                 new AlertDialog.Builder(this)
                         .setMessage(getString(R.string.pcapdroid_trailer_notice,
                                 getString(R.string.unknown_app), getString(R.string.pcapdroid_trailer)))
-                        .setPositiveButton(R.string.ok, (d, whichButton) -> Prefs.setTrailerNoticeShown(mPrefs))
+                        .setPositiveButton(R.string.ok, (d, whichButton) -> mTrailerNoticeShown = true)
                         .show();
             } else
                 Utils.showToastLong(this, R.string.pcap_load_success);
@@ -907,7 +908,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mPcapLoadDialog.show();
 
             mPcapLoadDialog.setOnCancelListener(dialogInterface -> {
-                Log.i(TAG, "Abort download");
+                Log.i(TAG, "Abort PCAP loading");
                 executor.shutdownNow();
 
                 if (CaptureService.isServiceActive())
