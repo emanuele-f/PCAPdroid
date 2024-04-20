@@ -678,7 +678,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.start_live_capture) {
+        if(id == R.id.action_start) {
             mStartPressed = true;
             startCapture();
             return true;
