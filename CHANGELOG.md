@@ -2,6 +2,15 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.7.2] - 2024-04-20
+- Fix broken PCAP file loading feature
+- Minor enhancements
+
+## [1.7.1] - 2024-03-28
+- Add toggle for auto-reconnection on third-party VPN termination
+- Fix uninstalled apps not removed from app filter
+- Add IPv6 bytes stats (credits: myzhan)
+
 ## [1.7.0] - 2024-02-10
 - Select multiple target apps
 - Copy/export the connections payload

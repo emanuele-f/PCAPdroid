@@ -917,7 +917,9 @@ public class Utils {
             ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
             clipboard.setPrimaryClip(clip);
 
-            Utils.showToast(ctx, R.string.copied);
+            // Only show a toast for Android 12 and lower
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
+                Utils.showToast(ctx, R.string.copied);
         } catch (Exception e) {
             Log.e(TAG, "copyToClipboard failed: " + e.getMessage());
             Utils.showToastLong(ctx, R.string.error);
@@ -998,39 +1000,6 @@ public class Utils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             flags |= PendingIntent.FLAG_IMMUTABLE;
         return flags;
-    }
-
-    public static boolean unzip(InputStream is, String dstpath) {
-        try(ZipInputStream zipIn = new ZipInputStream(is)) {
-            ZipEntry entry = zipIn.getNextEntry();
-
-            while (entry != null) {
-                File dst = new File(dstpath + File.separator + entry.getName());
-
-                if (entry.isDirectory()) {
-                    if(!dst.mkdirs()) {
-                        Log.w("unzip", "Could not create directories");
-                        return false;
-                    }
-                } else {
-                    // Extract file
-                    try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
-                        byte[] bytesIn = new byte[4096];
-                        int read;
-                        while ((read = zipIn.read(bytesIn)) != -1)
-                            bos.write(bytesIn, 0, read);
-                    }
-                }
-
-                zipIn.closeEntry();
-                entry = zipIn.getNextEntry();
-            }
-
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     public static boolean ungzip(InputStream is, String dst) {
