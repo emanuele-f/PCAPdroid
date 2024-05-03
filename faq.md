@@ -36,4 +36,4 @@ This depends on your OS implementation. Usually, this is not possible without ro
 
 **I make a connection to the Android device but it's not captured**
 
-In non-root mode, only egress connections (i.e. started by the Android device) are routed into the VPNService and captured. If you start a connection from another device into the LAN (e.g. ping), such connection will not show up in PCAPdroid. Most networks are behind a [NAT](https://it.wikipedia.org/wiki/Network_address_translation) or firewall, so in practice ingress connections are only possible from devices into your LAN.
+In non-root mode, only egress connections (i.e. started by the Android device) are routed into the VPNService and captured. If you start a connection from another device into the LAN (e.g. ping), such connection will not show up in PCAPdroid. Most networks are behind a [NAT](https://en.wikipedia.org/wiki/Network_address_translation) or firewall, so in practice ingress connections are only possible from devices into your LAN.
