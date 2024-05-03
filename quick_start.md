@@ -96,4 +96,6 @@ When running in non-root mode, PCAPdroid alters the network traffic, which is a 
 - While proxying connections, some IP and TCP features may be disabled or altered.
 - Because PCAPdroid proxies connections using L4 sockets, packet sizes for packets coming from the Internet will not correspond to the original ones.
 
+Moreover, in non-root mode, only outgoing connections (i.e. started by the Android device) are routed into the VPNService and captured.
+
 For a technical explanation of why this happens, check out the [how_it_works](https://github.com/emanuele-f/PCAPdroid/blob/master/docs/how_it_works.md) document.
