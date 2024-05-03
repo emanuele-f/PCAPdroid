@@ -33,3 +33,7 @@ Yes! You need a rooted device, check out the [user guide](https://emanuele-f.git
 
 This depends on your OS implementation. Usually, this is not possible without root. A detailed explanation is provided at https://github.com/emanuele-f/PCAPdroid/issues/20. There is a workaround to capture only the HTTP/S traffic, which is to install an HTTP proxy on the Android phone and configure the client device to use this proxy.
 <br/><br/>
+
+**I make a connection to the Android device but it's not captured**
+
+In non-root mode, only egress connections (i.e. started by the Android device) are routed into the VPNService and captured. If you start a connection from another device into the LAN (e.g. ping), such connection will not show up in PCAPdroid. Most networks are behind a [NAT](https://it.wikipedia.org/wiki/Network_address_translation) or firewall, so in practice ingress connections are only possible from devices into your LAN.
