@@ -290,9 +290,9 @@
 \n
 \nSchauen Sie sich das Benutzerhandbuch <a href="%1$s"/> an, um mehr über die Sicherheitsmaßnahmen zu erfahren, die eine Entschlüsselung verhindern können und wie diese umgangen werden können</string>
     <string name="welcome_to_pcapdroid">Willkommen bei PCAPdroid</string>
-    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen.
-\n
-\nWie können Sie sich sicher sein\? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den Quellcode <a href="%2$s">an.</a></string>
+    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen. 
+\n 
+\nWie können Sie sich sicher sein? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den <a href="%2$s">Quellcode</a>.</string>
     <string name="app_intro_geolocation_msg">PCAPdroid kann eine lokale Datenbank abfragen, um das Land eines entfernten Servers zu bestimmen
 \n
 \nSie müssen zuerst die Geolokalisierungsdatenbank aus den App-Einstellungen herunterladen</string>
@@ -466,8 +466,7 @@
     <string name="copy_error">Datei kann nicht geschrieben werden</string>
     <string name="proxy_host">Proxy Host</string>
     <string name="pcap_load_success">PCAP Datei geladen</string>
-    <string name="decryption_info_no_rule">Die Verbindung wird nicht entschlüsselt.
-\nErstelle eine Entschlüsselungsregel um die Verbindung zu entschlüsseln</string>
+    <string name="decryption_info_no_rule">Die Verbindung wird nicht entschlüsselt. Erstelle eine Entschlüsselungsregel um die Verbindung zu entschlüsseln</string>
     <string name="pcap_read_error">PCAP Lesefehler</string>
     <string name="pcap_load_in_progress">PCAP Datei wird geladen, bitte warten</string>
     <string name="open_pcap_file">Öffne PCAP Datei…</string>
@@ -485,4 +484,26 @@
     <string name="live_capture">Live Aufzeichnung</string>
     <string name="mitm_doze_notice">Batterieoptimierung kann das Mitm-Addon stören</string>
     <string name="redirected">umgeleitet</string>
+    <string name="ipv6_bytes_sent">IPv6 Bytes gesendet</string>
+    <string name="connection_redirected_port_map">Diese Verbindung wurde durch eine Port-Mapping-Regel umgeleitet</string>
+    <string name="dnscrypt_how_to">Wie man DoH / DNSCrypt mit PCAPdroid verwendet</string>
+    <string name="decrypt_quic_notice">Das Entschlüsseln von QUIC wird derzeit nicht unterstützt. Als Workaround stoppen Sie die Erfassung und wählen Sie die Option, um QUIC in den PCAPdroid-Einstellungen zu blockieren</string>
+    <string name="target_apps">Ziel-Apps</string>
+    <string name="export_ellipsis">Export…</string>
+    <string name="ipv6_bytes_rcvd">IPv6 Bytes empfangen</string>
+    <string name="ipv6_bytes_percentage">IPv6 bys prozentual</string>
+    <string name="never">Nie</string>
+    <string name="always">Immer</string>
+    <string name="for_connections_to_decrypt">Nur für Verbindungen zur Entschlüsselung</string>
+    <string name="target_apps_help">Wählen Sie die zu erfassenden Anwendungen aus</string>
+    <string name="headers">HTTP-Headers</string>
+    <string name="body">HTTP-Body</string>
+    <string name="both">beides</string>
+    <string name="whats_new">Was ist neu</string>
+    <string name="waiting_for_vpn_disconnect">Warten darauf, dass die aktive VPN-Verbindung getrennt wird …</string>
+    <string name="raw_bytes">Raw -Bytes</string>
+    <string name="restart_on_disconnection">Neustart bei Trennung</string>
+    <string name="restart_on_disconnection_summary">Startet die Aufnahme automatisch neu, nachdem sie von anderen VPN-Apps gestoppt wurde</string>
+    <string name="vpn_reconnection">VPN-Wiederverbindung</string>
+    <string name="vpn_reconnection_aborted">VPN-Wiederverbindung abgebrochen</string>
 </resources>
