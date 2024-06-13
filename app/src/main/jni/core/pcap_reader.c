@@ -475,6 +475,48 @@ static reader_rv read_uid_map_block(pd_reader_t *reader, pd_read_callbacks_t *cb
     return READER_CONTINUE;
 }
 
+static reader_rv read_dsb_block(pd_reader_t *reader, pd_read_callbacks_t *cb, void *userdata) {
+    pcapng_decr_secrets_block_t dsb;
+
+    if (fread(&dsb, sizeof(dsb), 1, reader->fp) != 1) {
+        log_e("Error reading DSB block[%u]: %s", errno, strerror(errno));
+        reader->has_error = true;
+        return READER_ERROR;
+    }
+
+    if ((dsb.total_length < sizeof(pcapng_decr_secrets_block_t)) ||
+        (dsb.secrets_length > (dsb.total_length - sizeof(pcapng_decr_secrets_block_t)))
+    ) {
+        log_e("DSB bad length: total=%u, secrets_length=%u",
+              dsb.total_length, dsb.secrets_length);
+        errno = EINVAL;
+        reader->has_error = true;
+        return READER_ERROR;
+    }
+
+    if ((dsb.secrets_type == 0x544c534b /* TLS_KEYLOG */) &&
+        (dsb.secrets_length > 0) &&
+        (cb->on_dsb_secrets != NULL)
+    ) {
+        uint32_t secrets_len = dsb.secrets_length;
+
+        if (secrets_len <= MAX_DSB_SECRETS_LENGTH) {
+            if (!reserve_buffer(reader, secrets_len))
+                return READER_ERROR;
+
+            if (fread(reader->buffer, secrets_len, 1, reader->fp) != 1) {
+                log_e("Error reading the DSB secrets");
+                return READER_ERROR;
+            }
+
+            cb->on_dsb_secrets(userdata, (u_char*) reader->buffer, secrets_len);
+        } else
+            log_w("Invalid secrets length (%u), ignored", secrets_len);
+    }
+
+    return READER_CONTINUE;
+}
+
 static reader_rv read_pd_custom_block(pd_reader_t *reader, pd_read_callbacks_t *cb, void *userdata) {
     pcapng_pd_custom_block_t block;
 
@@ -545,6 +587,8 @@ static reader_rv pd_pcapng_read_next(pd_reader_t *reader, pcapd_hdr_t *hdr, char
             rv = read_enhanced_packet_block(reader, hdr, buffer, cb, userdata);
         else if (block.type == 0x00000001)
             rv = read_interface_description_block(reader);
+        else if (block.type == 0x0000000a)
+            rv = read_dsb_block(reader, cb, userdata);
         else if (block.type == 0x00000bad)
             rv = read_pd_custom_block(reader, cb, userdata);
         else
@@ -569,4 +613,46 @@ reader_rv pd_read_next(pd_reader_t *reader, pcapd_hdr_t *hdr, char* buffer, pd_r
         return pd_pcapng_read_next(reader, hdr, buffer, cb, userdata);
     else
         return pd_pcap_read_next(reader, hdr, buffer, cb, userdata);
+}
+
+static void dump_dsb_secrets(void *userdata, const char *secrets, size_t length) {
+    FILE *fout = (FILE*) userdata;
+
+    if (fwrite(secrets, length, 1, fout) != 1)
+        log_e("Error writing the KEYLOG file[%d]: %s", errno, strerror(errno));
+}
+
+bool pcapng_to_keylog(const char *pcapng_path, const char *out_path) {
+    char* error = NULL;
+    pd_reader_t* reader = pd_new_reader(pcapng_path, &error);
+
+    if (!reader)
+        return false;
+
+    if (reader->dump_format != PCAPNG_DUMP) {
+        log_e("Input file is not a Pcapng");
+        pd_destroy_reader(reader);
+        return false;
+    }
+
+    FILE *fout = fopen(out_path, "w");
+    if (!fout) {
+        pd_destroy_reader(reader);
+        log_e("Open keylog failed[%d]: %s", errno, strerror(errno));
+        return false;
+    }
+
+    pcapd_hdr_t hdr;
+    char buffer[PCAPD_SNAPLEN];
+    pd_read_callbacks_t cb = { .on_dsb_secrets = dump_dsb_secrets };
+    reader_rv rv;
+
+    // process all the blocks, DSB will be handled via the callbacks
+    while (((rv = pd_read_next(reader, &hdr, buffer, &cb, fout)) == READER_PACKET_OK) &&
+           (!ferror(fout)))
+        ;
+
+    fclose(fout);
+    pd_destroy_reader(reader);
+    return (rv == READER_EOF);
 }

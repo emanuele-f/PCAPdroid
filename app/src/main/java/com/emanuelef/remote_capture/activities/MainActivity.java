@@ -106,12 +106,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private NavigationView mNavView;
     private CaptureHelper mCapHelper;
     private AlertDialog mPcapLoadDialog;
+    private Uri mPcapUri;
+    private ExecutorService mPcapExecutor;
 
     // helps detecting duplicate state reporting of STOPPED in MutableLiveData
     private boolean mWasStarted = false;
     private boolean mStartPressed = false;
     private boolean mDecEmptyRulesNoticeShown = false;
     private boolean mExtensionsNoticeShown = false;
+    private boolean mOpenPcapDecrypt = false;
+    private boolean mDecryptPcap = false;
 
     private static final String TAG = "Main";
 
@@ -140,6 +144,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             registerForActivityResult(new StartActivityForResult(), this::peerInfoResult);
     private final ActivityResultLauncher<Intent> pcapFileOpenLauncher =
             registerForActivityResult(new StartActivityForResult(), this::pcapFileOpenResult);
+    private final ActivityResultLauncher<Intent> keylogFileOpenLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::keylogFileOpenResult);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -634,11 +640,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    private void checkLoadedPcap() {
+    private void dismissPcapLoadDialog() {
         if(mPcapLoadDialog != null) {
             mPcapLoadDialog.dismiss();
             mPcapLoadDialog = null;
         }
+
+        mPcapExecutor = null;
+        mPcapUri = null;
+    }
+
+    private void checkLoadedPcap() {
+        dismissPcapLoadDialog();
 
         if(!CaptureService.hasError()) {
             // pcap file loaded successfully
@@ -712,7 +725,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             stopCapture();
             return true;
         } else if(id == R.id.open_pcap) {
-            startOpenPcapFile();
+            selectOpenPcapFile(false);
+            return true;
+        } else if(id == R.id.decrypt_pcap) {
+            selectOpenPcapFile(true);
             return true;
         } else if (id == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
@@ -740,6 +756,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void doStartCaptureService(String input_pcap_path) {
         appStateStarting();
+
+        PCAPdroid.getInstance().setIsDecryptingPcap(mDecryptPcap);
+        mDecryptPcap = false;
 
         CaptureSettings settings = new CaptureSettings(this, mPrefs);
         settings.input_pcap_path = input_pcap_path;
@@ -927,78 +946,165 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    private void startOpenPcapFile() {
+    private void selectOpenPcapFile(boolean decrypt) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
 
-        Log.d(TAG, "startOpenPcapFile: launching dialog");
+        Log.d(TAG, "selectOpenPcapFile: launching dialog");
+        mOpenPcapDecrypt = decrypt;
+        if (mOpenPcapDecrypt)
+            Utils.showToast(this, R.string.select_the_pcap_file);
         Utils.launchFileDialog(this, intent, pcapFileOpenLauncher);
     }
 
     private void pcapFileOpenResult(final ActivityResult result) {
-        if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
+        if ((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
             Uri uri = result.getData().getData();
-            if(uri == null)
+            if (uri == null)
                 return;
 
             Log.d(TAG, "pcapFileOpenResult: " + uri);
-            ExecutorService executor = Executors.newSingleThreadExecutor();
+            if (mOpenPcapDecrypt &&
+                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !uri.toString().endsWith(".pcapng"))
+            ) {
+                // Ask to select the keylog
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.loading);
-            builder.setMessage(R.string.pcap_load_in_progress);
+                Log.d(TAG, "pcapFileOpenResult: launching dialog");
+                mPcapUri = uri;
+                Utils.showToast(this, R.string.select_the_keylog_file);
+                Utils.launchFileDialog(this, intent, keylogFileOpenLauncher);
+            } else
+                startOpenPcap(uri, null);
+        }
+    }
 
-            mPcapLoadDialog = builder.create();
-            mPcapLoadDialog.setCanceledOnTouchOutside(false);
-            mPcapLoadDialog.show();
+    private void keylogFileOpenResult(final ActivityResult result) {
+        if ((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
+            Uri uri = result.getData().getData();
+            if (uri == null)
+                return;
 
-            mPcapLoadDialog.setOnCancelListener(dialogInterface -> {
-                Log.i(TAG, "Abort PCAP loading");
-                executor.shutdownNow();
+            Log.d(TAG, "keylogFileOpenResult: " + uri);
+            startOpenPcap(mPcapUri, uri);
+        }
+    }
 
-                if (CaptureService.isServiceActive())
-                    CaptureService.stopService();
+    private void startOpenPcap(Uri pcap_uri, Uri keylog_uri) {
+        mPcapExecutor = Executors.newSingleThreadExecutor();
 
-                Utils.showToastLong(this, R.string.pcap_file_load_aborted);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.loading);
+        builder.setMessage(R.string.pcap_load_in_progress);
+
+        mPcapLoadDialog = builder.create();
+        mPcapLoadDialog.setCanceledOnTouchOutside(false);
+        mPcapLoadDialog.setOnCancelListener(dialogInterface -> {
+            Log.i(TAG, "Abort PCAP loading");
+
+            if (mPcapExecutor != null) {
+                mPcapExecutor.shutdownNow();
+                mPcapExecutor = null;
+            }
+
+            if (CaptureService.isServiceActive())
+                CaptureService.stopService();
+
+            Utils.showToastLong(this, R.string.pcap_file_load_aborted);
+        });
+        mPcapLoadDialog.setOnDismissListener(dialog -> mPcapLoadDialog = null);
+        mPcapLoadDialog.show();
+
+        // get an actual file path which can be read from the native side
+        String path = Utils.uriToFilePath(this, pcap_uri);
+        if((path == null) || !Utils.isReadable(path)) {
+            // Unable to get a direct file path (e.g. for files in Downloads). Copy file to the
+            // cache directory
+            File out = getTmpPcapPath();
+            out.deleteOnExit();
+            String abs_path = out.getAbsolutePath();
+
+            // PCAP file can be big, copy in a different thread
+            mPcapExecutor.execute(() -> {
+                try (InputStream in_stream = getContentResolver().openInputStream(pcap_uri)) {
+                    Utils.copy(in_stream, out);
+                } catch (IOException | SecurityException e) {
+                    e.printStackTrace();
+
+                    runOnUiThread(() -> {
+                        Utils.showToastLong(this, R.string.copy_error);
+                        dismissPcapLoadDialog();
+                    });
+                    return;
+                }
+
+                runOnUiThread(() -> continueOpenPcap(abs_path, keylog_uri));
             });
-            mPcapLoadDialog.setOnDismissListener(dialog -> mPcapLoadDialog = null);
+        } else {
+            Log.d(TAG, "pcapFileOpenResult: path: " + path);
+            continueOpenPcap(path, keylog_uri);
+        }
+    }
 
-            String path = Utils.uriToFilePath(this, uri);
-            if((path == null) || !Utils.isReadable(path)) {
-                // Unable to get a direct file path (e.g. for files in Downloads). Copy file to the
-                // cache directory
-                File out = getTmpPcapPath();
-                out.deleteOnExit();
-                String abs_path = out.getAbsolutePath();
+    private void continueOpenPcap(String pcap_path, Uri keylog_uri) {
+        //noinspection ResultOfMethodCallIgnored
+        getKeylogPath().delete();
 
-                // PCAP file can be big, copy in a different thread
-                executor.execute(() -> {
-                    try (InputStream in_stream = getContentResolver().openInputStream(uri)) {
-                        Utils.copy(in_stream, out);
-                    } catch (IOException | SecurityException e) {
-                        e.printStackTrace();
+        if (mOpenPcapDecrypt)
+            loadKeylogfile(pcap_path, keylog_uri);
+        else
+            doStartCaptureService(pcap_path);
+    }
 
-                        runOnUiThread(() -> {
-                            Utils.showToastLong(this, R.string.copy_error);
-                            if(mPcapLoadDialog != null) {
-                                mPcapLoadDialog.dismiss();
-                                mPcapLoadDialog = null;
-                            }
-                        });
-                        return;
-                    }
+    private void loadKeylogfile(String pcap_path, Uri keylog_uri) {
+        mPcapExecutor.execute(() -> {
+            File out = getKeylogPath();
+            out.deleteOnExit();
 
-                    runOnUiThread(() -> doStartCaptureService(abs_path));
+            if (keylog_uri != null) {
+                // keylog is in a separate file
+                try (InputStream in_stream = getContentResolver().openInputStream(keylog_uri)) {
+                    Utils.copy(in_stream, out);
+                } catch (IOException | SecurityException e) {
+                    e.printStackTrace();
+
+                    runOnUiThread(() -> {
+                        Utils.showToastLong(this, R.string.keylog_read_error);
+                        dismissPcapLoadDialog();
+                    });
+                    return;
+                }
+
+                runOnUiThread(() -> {
+                    mDecryptPcap = true;
+                    doStartCaptureService(pcap_path);
                 });
             } else {
-                Log.d(TAG, "pcapFileOpenResult: path: " + path);
-                doStartCaptureService(path);
+                // keylog is from PCAPNG
+                boolean success = CaptureService.extractKeylogFromPcapng(pcap_path, out.getAbsolutePath());
+
+                runOnUiThread(() -> {
+                    if (success && out.exists()) {
+                        mDecryptPcap = true;
+                        doStartCaptureService(pcap_path);
+                    } else {
+                        Utils.showToastLong(this, R.string.keylog_read_error);
+                        dismissPcapLoadDialog();
+                    }
+                });
             }
-        }
+        });
     }
 
     private File getTmpPcapPath() {
         return new File(getCacheDir() + "/tmp.pcap");
+    }
+
+    private File getKeylogPath() {
+        // NOTE: keep in sync with run_libpcap
+        return new File(getCacheDir() + "/sslkeylog.txt");
     }
 }

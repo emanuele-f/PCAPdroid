@@ -596,18 +596,36 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
     if((pd->payload_mode == PAYLOAD_MODE_NONE) ||
        (pd->cb.dump_payload_chunk == NULL) ||
        (pkt->l7_len <= 0) ||
+       (data->has_decrypted_data && !pctx->plain_data) ||
        (pd->tls_decryption.enabled && data->proxied)) // NOTE: when performing TLS decryption, TCP connections data is handled by the MitmReceiver
         return;
 
     if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
-        int to_dump = pkt->l7_len;
+        const char *to_dump;
+        int dump_size;
 
-        if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (pkt->l7_len > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
-            to_dump = MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE;
+        if (pctx->plain_data) {
+            // if there is plaintext (decrypted) data, dump it instead of the encrypted data
+            to_dump = (const char*) pctx->plain_data->data;
+            dump_size = pctx->plain_data->data_len;
+
+            if (!data->has_decrypted_data) {
+                // existing chunks are encrypted, so drop them
+                if (pd->cb.clear_payload_chunks)
+                    pd->cb.clear_payload_chunks(pd, pctx);
+                data->has_decrypted_data = true;
+            }
+        } else {
+            to_dump = pkt->l7;
+            dump_size = pkt->l7_len;
+        }
+
+        if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (dump_size > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
+            dump_size = MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE;
             truncated = true;
         }
 
-        if(pd->cb.dump_payload_chunk(pd, pctx, to_dump)) {
+        if(pd->cb.dump_payload_chunk(pd, pctx, to_dump, dump_size)) {
             data->has_payload[pctx->is_tx] = true;
             updated = true;
         } else
@@ -1101,15 +1119,25 @@ void pd_refresh_time(pcapdroid_t *pd) {
 
 /* ******************************************************* */
 
-/* Process the packet (e.g. perform DPI) and fill the packet context. */
-void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
-                       pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx) {
+void pd_init_pkt_context(pkt_context_t *pctx,
+                         zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
+                         pd_conn_t *data, struct timeval *tv
+) {
     pctx->pkt = pkt;
     pctx->tv = *tv;
     pctx->ms = (uint64_t)tv->tv_sec * 1000 + tv->tv_usec / 1000;
     pctx->is_tx = is_tx;
     pctx->tuple = tuple;
     pctx->data = data;
+    pctx->plain_data = NULL; // managed by capture_libpcap
+}
+
+/* ******************************************************* */
+
+/* Process the packet (e.g. perform DPI) and fill the packet context. */
+void pd_process_packet(pcapdroid_t *pd, pkt_context_t *pctx) {
+    pd_conn_t *data = pctx->data;
+    zdtun_pkt_t *pkt = pctx->pkt;
 
     // NOTE: pd_account_stats will not be called for blocked connections
     data->last_seen = pctx->ms;
@@ -1120,6 +1148,15 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
        (!(pkt->flags & ZDTUN_PKT_IS_FRAGMENT) || (pkt->flags & ZDTUN_PKT_IS_FIRST_FRAGMENT))) {
         // nDPI cannot handle fragments, since they miss the L4 layer (see ndpi_iph_is_valid_and_not_fragmented)
         perform_dpi(pd, pctx);
+    }
+
+    if (pctx->plain_data && (data->alpn != NDPI_PROTOCOL_UNKNOWN) && (data->alpn != pctx->data->l7proto)) {
+        // we have the L7 decrypted data
+        pd_giveup_dpi(pd, data, pctx->tuple);
+        pctx->data->l7proto = data->alpn;
+
+        data->update_type |= CONN_UPDATE_INFO;
+        pd_notify_connection_update(pd, pctx->tuple, data);
     }
 
     process_payload(pd, pctx);

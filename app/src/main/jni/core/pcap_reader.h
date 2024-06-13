@@ -34,6 +34,8 @@
 
 typedef struct pd_reader pd_reader_t;
 
+#define MAX_DSB_SECRETS_LENGTH       (1024*1024)        // 1 MB
+
 typedef enum {
     READER_PACKET_OK,       // a packet was read successfully into the buffer
     READER_CONTINUE,        // continue reading next packet (internal use)
@@ -44,6 +46,7 @@ typedef enum {
 typedef struct pd_read_callbacks {
     void (*on_uid_mapping)(void *userdata, uid_t uid, const char *package_name, const char *app_name);
     void (*on_dump_extensions_seen)(void *userdata);
+    void (*on_dsb_secrets)(void *userdata, const char *secrets, size_t length);
 } pd_read_callbacks_t;
 
 pd_reader_t* pd_new_reader(const char *fpath, char **error);
@@ -60,5 +63,12 @@ bool pd_has_seen_dump_extensions(pd_reader_t *reader);
  * @param userdata opaque data passed to the callbacks
  */
 reader_rv pd_read_next(pd_reader_t *reader, pcapd_hdr_t *hdr, char* buffer, pd_read_callbacks_t *cb, void *userdata);
+
+/**
+ * Read a Pcapng file and extract the SSL keylog into a file
+ * @param pcapng_path the Pcapng to read
+ * @param out_path the output keylog path
+ */
+bool pcapng_to_keylog(const char *pcapng_path, const char *out_path);
 
 #endif
