@@ -68,6 +68,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += '../submodules/MaxMind-DB-Reader-java/src/main/java'
+        main.jniLibs.srcDirs += '../submodules/PCAPdroid-ushark-bin/release'
     }
 
     testOptions {

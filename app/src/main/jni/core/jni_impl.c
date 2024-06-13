@@ -24,6 +24,7 @@
 #include "common/utils.h"
 #include "log_writer.h"
 #include "port_map.h"
+#include "pcap_dump.h"
 
 // This files contains functions to make the capture core communicate
 // with the Android system.
@@ -191,7 +192,8 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     }
     if(data->update_type & CONN_UPDATE_PAYLOAD) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetPayload, data->payload_chunks,
-                               data->payload_truncated);
+                               data->payload_truncated |
+                               (data->has_decrypted_data << 1));
         (*pd->env)->DeleteLocalRef(pd->env, data->payload_chunks);
         data->payload_chunks = NULL;
     }
@@ -423,7 +425,7 @@ static void notifyBlacklistsLoaded(pcapdroid_t *pd, bl_status_arr_t *status_arr)
 
 /* ******************************************************* */
 
-static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, int dump_size) {
+static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size) {
     JNIEnv *env = pd->env;
     bool rv = false;
 
@@ -444,7 +446,7 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
 
     jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, pctx->is_tx, pctx->ms);
     if(chunk && !jniCheckException(env)) {
-        (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*)pctx->pkt->l7);
+        (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*) dump_data);
         rv = (*env)->CallBooleanMethod(env, pctx->data->payload_chunks, mids.arraylistAdd, chunk);
     }
 
@@ -453,6 +455,17 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
     (*env)->DeleteLocalRef(env, barray);
     (*env)->DeleteLocalRef(env, chunk);
     return rv;
+}
+
+/* ******************************************************* */
+
+static void clearPayloadChunks(struct pcapdroid *pd, const pkt_context_t *pctx) {
+    JNIEnv *env = pd->env;
+
+    if (pctx->data->payload_chunks) {
+        (*env)->DeleteLocalRef(env, pctx->data->payload_chunks);
+        pctx->data->payload_chunks = NULL;
+    }
 }
 
 /* ******************************************************* */
@@ -535,7 +548,7 @@ static void init_jni(JNIEnv *env) {
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
     mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJJIIIII)V");
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
-    mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;Z)V");
+    mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;I)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJJJJIIIIIIIII)V");
     mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
@@ -585,6 +598,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_service_status = notifyServiceStatus,
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
+                    .clear_payload_chunks = clearPayloadChunks,
             },
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
@@ -1287,9 +1301,22 @@ Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, 
 /* ******************************************************* */
 
 JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env,
-                                                                          jclass clazz) {
+Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env, jclass clazz) {
     return has_seen_pcapdroid_trailer;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_extractKeylogFromPcapng(JNIEnv *env, jclass clazz,
+                    jstring pcapng_path, jstring out_path
+) {
+    const char *pcapng_s = (*env)->GetStringUTFChars(env, pcapng_path, 0);
+    const char *out_s = (*env)->GetStringUTFChars(env, out_path, 0);
+
+    bool rv = pcapng_to_keylog(pcapng_s, out_s);
+
+    (*env)->ReleaseStringUTFChars(env, out_path, out_s);
+    (*env)->ReleaseStringUTFChars(env, pcapng_path, pcapng_s);
+    return rv;
 }
 
 #endif // ANDROID

@@ -14,9 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2023 - Emanuele Faranda
+ * Copyright 2023-24 - Emanuele Faranda
  */
 
+#include <stdio.h>
 #include <linux/if_ether.h>
 #include <pthread.h>
 #include "common/utils.h"
@@ -25,6 +26,10 @@
 
 #define LINKTYPE_ETHERNET 1
 #define LINKTYPE_RAW      101
+
+#define PCAPNG_MAGIC 0x1a2b3c4d
+#define PCAPNG_DSB_BLOCK 0x0000000A
+#define PCAPNG_DSB_TLS_KEYLOG 0x544c534b
 
 #define MAX_PCAP_DUMP_DELAY_MS 1000
 #define PCAP_BUFFER_SIZE             (512*1024)         // 512K
@@ -109,9 +114,9 @@ static void export_keylog_buffer(pcap_dumper_t *dumper) {
 
     // prepare the block header
     pcapng_decr_secrets_block_t *dsb = (pcapng_decr_secrets_block_t*) dumper->keylog_buf;
-    dsb->type = 0x0000000A;
+    dsb->type = PCAPNG_DSB_BLOCK;
     dsb->total_length = block_size;
-    dsb->secrets_type = 0x544c534b /* TLS_KEYLOG */;
+    dsb->secrets_type = PCAPNG_DSB_TLS_KEYLOG;
     dsb->secrets_length = sec_len;
 
     // padding
@@ -226,7 +231,7 @@ static int get_pcapng_preamble(pcap_dumper_t *dumper, char **out) {
     pcapng_section_hdr_block_t *shb = (pcapng_section_hdr_block_t*) preamble;
     shb->type = 0x0A0D0D0A;
     shb->total_length = shb_length;
-    shb->magic = 0x1a2b3c4d;
+    shb->magic = PCAPNG_MAGIC;
     shb->version_major = 1;
     shb->version_minor = 0;
     shb->section_length = -1;
@@ -446,4 +451,104 @@ bool pcap_dump_secret(pcap_dumper_t *dumper, int8_t *sec_data, int sec_len) {
 
     pthread_mutex_unlock(&dumper->keylog_mutex);
     return true;
+}
+
+/* ******************************************************* */
+
+// Generates an SSLKEYLOG from a PCAPNG file
+bool pcapng_to_keylog(const char *pcapng_path, const char *out_path) {
+    FILE *fin = fopen(pcapng_path, "rb");
+    if (!fin) {
+        log_e("Open PCAPNG failed[%d]: %s", errno, strerror(errno));
+        return false;
+    }
+
+    FILE *fout = fopen(out_path, "w");
+    if (!fout) {
+        fclose(fin);
+        log_e("Open keylog failed[%d]: %s", errno, strerror(errno));
+        return false;
+    }
+
+    bool rv = false;
+
+    pcapng_section_hdr_block_t section_block;
+    if (!fread(&section_block, sizeof(section_block), 1, fin)) {
+        log_e("Error reading the Section Header Block");
+        goto done;
+    }
+
+    if ((section_block.type != 0x0A0D0D0A) ||
+        (section_block.magic != PCAPNG_MAGIC) ||
+        (section_block.version_major != 1)
+    ) {
+        log_e("Invalid Section Header Block");
+        goto done;
+    }
+
+    rewind(fin);
+    pcapng_generic_block_t block;
+    char secbuf[4096];
+
+    while (!ferror(fin) && !ferror(fout)) {
+        int block_start = ftell(fin);
+
+        if (fread(&block, sizeof(block), 1, fin) != 1) {
+            if (ferror(fin)) {
+                log_e("Error reading the next block");
+                goto done;
+            } else
+                break;
+        }
+
+        if (block.total_length < 12) {
+            log_e("Invalid Block length: %u", block.total_length);
+            goto done;
+        }
+
+        //log_d("Block: %08x - %u B", block.type, block.total_length);
+
+        if ((block.type == PCAPNG_DSB_BLOCK) && (block.total_length > sizeof(pcapng_decr_secrets_block_t))) {
+            pcapng_decr_secrets_block_t dsb;
+
+            fseek(fin, block_start, SEEK_SET);
+            if (fread(&dsb, sizeof(dsb), 1, fin) != 1) {
+                log_e("Error reading the DSB block");
+                goto done;
+            }
+
+            if (dsb.secrets_type == PCAPNG_DSB_TLS_KEYLOG) {
+                uint32_t secrets_len = dsb.secrets_length;
+
+                if (secrets_len > 0) {
+                    if (secrets_len <= sizeof(secbuf)) {
+                        if (fread(secbuf, secrets_len, 1, fin) != 1) {
+                            log_e("Error reading the DSB secrets");
+                            goto done;
+                        }
+
+                        if (fwrite(secbuf, secrets_len, 1, fout) != 1) {
+                            log_e("Error writing the KEYLOG file[%d]: %s", errno, strerror(errno));
+                            goto done;
+                        }
+                    } else
+                        log_w("Invalid secrets length (%u), ignored", secrets_len);
+                }
+            }
+        }
+
+        // skip block
+        if (fseek(fin, block_start + block.total_length, SEEK_SET) != 0) {
+            log_e("fseek failed [%d]: %s", errno, strerror(errno));
+            goto done;
+        }
+    }
+
+    fflush(fout);
+    rv = !ferror(fin) && !ferror(fout);
+
+done:
+    fclose(fin);
+    fclose(fout);
+    return rv;
 }

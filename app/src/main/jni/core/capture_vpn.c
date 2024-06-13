@@ -97,7 +97,8 @@ static int remote2vpn(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_i
     pkt_context_t pctx;
     pd_refresh_time(pd);
 
-    pd_process_packet(pd, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+    pd_init_pkt_context(&pctx, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv));
+    pd_process_packet(pd, &pctx);
     if(data->to_block) {
         data->blocked_pkts++;
         data->update_type |= CONN_UPDATE_STATS;
@@ -590,7 +591,8 @@ int run_vpn(pcapdroid_t *pd) {
                     }
                 }
 
-                pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+                pd_init_pkt_context(&pctx, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv));
+                pd_process_packet(pd, &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
                     if (!data->port_mapping_applied)

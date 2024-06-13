@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 
 import java.net.InetAddress;
@@ -106,6 +107,7 @@ public class ConnectionDescriptor {
     public final int ifidx;
     public final int incr_id;
     private final boolean mitm_decrypt; // true if the connection is under mitm for TLS decryption
+    private boolean internal_decrypt;
     public int status;
     private int tcp_flags;
     private boolean blacklisted_ip;
@@ -145,6 +147,7 @@ public class ConnectionDescriptor {
         asn = new Geomodel.ASN();
         payload_chunks = new ArrayList<>();
         mitm_decrypt = _mitm_decrypt;
+        internal_decrypt = false;
     }
 
     public void processUpdate(ConnectionUpdate update) {
@@ -181,7 +184,7 @@ public class ConnectionDescriptor {
         }
         if((update.update_type & ConnectionUpdate.UPDATE_PAYLOAD) != 0) {
             // Payload for decryptable connections should be received via the MitmReceiver
-            assert(decryption_ignored || isNotDecryptable());
+            assert(decryption_ignored || isNotDecryptable() || PCAPdroid.getInstance().isDecryptingPcap());
 
             // Some pending updates with payload may still be received after low memory has been
             // triggered and payload disabled
@@ -190,6 +193,7 @@ public class ConnectionDescriptor {
                     if(update.payload_chunks != null)
                         payload_chunks.addAll(update.payload_chunks);
                     payload_truncated = update.payload_truncated;
+                    internal_decrypt = update.payload_decrypted;
                 }
             }
         }
@@ -257,7 +261,7 @@ public class ConnectionDescriptor {
             return DecryptionStatus.ERROR;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
-        else if(decryption_ignored)
+        else if(decryption_ignored || (PCAPdroid.getInstance().isDecryptingPcap() && !internal_decrypt))
             return DecryptionStatus.ENCRYPTED;
         else if(isDecrypted())
             return DecryptionStatus.DECRYPTED;
@@ -307,8 +311,8 @@ public class ConnectionDescriptor {
     public boolean isPayloadTruncated() { return payload_truncated; }
     public boolean isPortMappingApplied() { return port_mapping_applied; }
 
-    public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt); }
-    public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (getNumPayloadChunks() > 0); }
+    public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt) && !PCAPdroid.getInstance().isDecryptingPcap(); }
+    public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (mitm_decrypt || internal_decrypt) && (getNumPayloadChunks() > 0); }
     public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }
 
     public synchronized int getNumPayloadChunks() { return payload_chunks.size(); }
@@ -346,8 +350,9 @@ public class ConnectionDescriptor {
         // Need to wrap the String to set it from the lambda
         final AtomicReference<String> rv = new AtomicReference<>();
 
-        HTTPReassembly reassembly = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL, chunk ->
-                rv.set(new String(chunk.payload, StandardCharsets.UTF_8)));
+        HTTPReassembly reassembly = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL,
+                chunk -> rv.set(new String(chunk.payload, StandardCharsets.UTF_8))
+        );
 
         // Possibly reassemble/decode the request
         for(PayloadChunk chunk: payload_chunks) {

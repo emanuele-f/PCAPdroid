@@ -251,6 +251,8 @@ public class CaptureCtrl extends AppCompatActivity {
                 return;
             }
 
+            PCAPdroid.getInstance().setIsDecryptingPcap(false);
+
             if(!settings.pcap_uri.isEmpty()) {
                 persistableUriPermission.checkPermission(settings.pcap_uri, settings.pcapng_format, granted_uri -> {
                     Log.d(TAG, "persistable uri granted? " + granted_uri);

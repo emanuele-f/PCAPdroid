@@ -60,6 +60,7 @@ public class PCAPdroid extends Application {
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
+    private boolean mIsDecryptingPcap = false;
     private static WeakReference<PCAPdroid> mInstance;
     protected static boolean isUnderTest = false;
 
@@ -249,5 +250,13 @@ public class PCAPdroid extends Application {
         if(mCtrlPermissions == null)
             mCtrlPermissions = new CtrlPermissions(this);
         return mCtrlPermissions;
+    }
+
+    public void setIsDecryptingPcap(boolean val) {
+        mIsDecryptingPcap = val;
+    }
+
+    public boolean isDecryptingPcap() {
+        return mIsDecryptingPcap;
     }
 }

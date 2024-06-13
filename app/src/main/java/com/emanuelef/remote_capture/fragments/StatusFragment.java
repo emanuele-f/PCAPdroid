@@ -69,6 +69,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
     private MenuItem mOpenPcap;
+    private MenuItem mDecryptPcap;
     private ImageView mFilterIcon;
     private MenuItem mMenuSettings;
     private TextView mInterfaceInfo;
@@ -170,6 +171,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         mOpenPcap = mMenu.findItem(R.id.open_pcap);
+        mDecryptPcap = mMenu.findItem(R.id.decrypt_pcap);
         refreshStatus();
     }
 
@@ -317,12 +319,14 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 mStopBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(false);
                 mOpenPcap.setEnabled(false);
+                mDecryptPcap.setEnabled(false);
             } else { // ready || starting
                 mStopBtn.setVisible(false);
                 mStartBtn.setEnabled(true);
                 mStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(true);
                 mOpenPcap.setEnabled(true);
+                mDecryptPcap.setEnabled(true);
             }
         }
 

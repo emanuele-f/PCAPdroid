@@ -49,6 +49,7 @@ public class ConnectionUpdate {
     /* set if update_type & UPDATE_PAYLOAD */
     public ArrayList<PayloadChunk> payload_chunks;
     public boolean payload_truncated;
+    public boolean payload_decrypted;
 
     public ConnectionUpdate(int _incr_id) {
         incr_id = _incr_id;
@@ -79,10 +80,11 @@ public class ConnectionUpdate {
         info_flags = flags;
     }
 
-    public void setPayload(ArrayList<PayloadChunk> _chunks, boolean _payload_truncated) {
+    public void setPayload(ArrayList<PayloadChunk> _chunks, int flags) {
         update_type |= UPDATE_PAYLOAD;
 
         payload_chunks = _chunks;
-        payload_truncated = _payload_truncated;
+        payload_truncated = (flags & 0x1) != 0;
+        payload_decrypted = (flags & 0x2) != 0;
     }
 }

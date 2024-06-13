@@ -37,6 +37,7 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor.Status;
@@ -114,7 +115,13 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
                 new Pair<>(DecryptionStatus.ERROR, findViewById(R.id.dec_status_error))
         ));
 
-        if(CaptureService.isDecryptingTLS()) {
+        if (PCAPdroid.getInstance().isDecryptingPcap()) {
+            // unable to show the following statuses
+            findViewById(R.id.dec_status_not_decryptable).setVisibility(View.GONE);
+            findViewById(R.id.dec_status_error).setVisibility(View.GONE);
+        }
+
+        if(CaptureService.isDecryptingTLS() || PCAPdroid.getInstance().isDecryptingPcap()) {
             findViewById(R.id.decryption_status_label).setVisibility(View.VISIBLE);
             findViewById(R.id.decryption_status_group).setVisibility(View.VISIBLE);
             mOnlyCleartext.setVisibility(View.GONE);

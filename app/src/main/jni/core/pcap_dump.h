@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 /* Packet dump module, dumping packet records in the PCAP/PCAPNG format.
  * Packets are first buffered and then exported periodically to the callback. pcap_check_export must
@@ -31,6 +32,13 @@
  * allows, for example, multiple HTTP clients to connect at different times, each one getting a valid
  * PCAP header. */
 typedef struct pcap_dumper pcap_dumper_t;
+
+// compatible with pcap.h
+struct pcap_pkthdr {
+    struct timeval ts;
+    uint32_t caplen;
+    uint32_t len;
+};
 
 /* ******************************************************* */
 
@@ -52,6 +60,13 @@ typedef struct pcap_rec {
 } __attribute__((packed)) pcap_rec_t;
 
 /* ******************************************************* */
+
+typedef struct pcapng_generic_block {
+    uint32_t type;
+    uint32_t total_length;
+
+    /* ..options.. */
+} __attribute__((packed)) pcapng_generic_block_t;
 
 // NOTE: all the PCAPNG block addresses are aligned to 32-bits
 typedef struct pcapng_section_hdr_block {
@@ -132,5 +147,6 @@ bool pcap_dump_secret(pcap_dumper_t *dumper, int8_t *sec_data, int seclen);
 int pcap_get_preamble(pcap_dumper_t *dumper, char **out);
 uint64_t pcap_get_dump_size(pcap_dumper_t *dumper);
 bool pcap_check_export(pcap_dumper_t *dumper);
+bool pcapng_to_keylog(const char *pcapng_path, const char *out_path);
 
 #endif // __MY_PCAP_H__

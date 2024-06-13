@@ -25,6 +25,8 @@
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
+#include "pcap_dump.h"
+#include "ushark_dll.h"
 
 #ifdef FUZZING
 extern int openPcap(pcapdroid_t *pd);
@@ -407,6 +409,23 @@ static int get_ip_offset(int linktype) {
 
 /* ******************************************************* */
 
+static plain_data_t g_plain_data = {};
+
+static void handle_tls_data(const unsigned char *plain_data, unsigned int data_len) {
+    if (data_len == 0)
+        return;
+
+    //log_w("<DATA> %s", plain_data);
+    g_plain_data.data = (unsigned char *) pd_realloc(g_plain_data.data, g_plain_data.data_len + data_len);
+    if (!g_plain_data.data) {
+        log_e("realloc(tls_data) failed[%d]: %s", errno, strerror(errno));
+        g_plain_data.data_len = 0;
+    } else {
+        memcpy(g_plain_data.data + g_plain_data.data_len, plain_data, data_len);
+        g_plain_data.data_len += data_len;
+    }
+}
+
 /* Returns true if packet is valid. If false is returned, the pkt must still be dumped, so a call to
  * pd_dump_packet is required. */
 static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer, int ipoffset) {
@@ -519,12 +538,34 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
     struct timeval tv = hdr->ts;
     pkt_context_t pinfo;
-    pd_process_packet(pd, &pkt, is_tx, &conn_tuple, conn->data, &tv, &pinfo);
+    pd_init_pkt_context(&pinfo, &pkt, is_tx, &conn_tuple, conn->data, &tv);
+
+    if (pd->pcap.usk && (pkt.len > 0)) {
+        struct pcap_pkthdr pcap_hdr;
+        pcap_hdr.len = pcap_hdr.caplen = pkt.len;
+        pcap_hdr.ts = hdr->ts;
+
+        ushark_dissect_tls(pd->pcap.usk,
+                           (const unsigned char*) pkt.l3,
+                           &pcap_hdr, handle_tls_data);
+
+        if (g_plain_data.data)
+            pinfo.plain_data = &g_plain_data;
+    }
+
+    pd_process_packet(pd, &pinfo);
 
     // NOTE: this may free the conn
     update_connection_status(pd, conn, &pkt, !is_tx);
 
     pd_account_stats(pd, &pinfo);
+
+    if (g_plain_data.data) {
+        pd_free(g_plain_data.data);
+        g_plain_data.data = NULL;
+        g_plain_data.data_len = 0;
+    }
+
     return true;
 }
 
@@ -619,6 +660,20 @@ int run_libpcap(pcapdroid_t *pd) {
     bool iptables_cleanup = false;
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+    if (pd->pcap_file_capture) {
+        // check if the SSL keylog exists
+        const char *keylog_path = get_cache_path(pd, "sslkeylog.txt");
+
+        if (access(keylog_path, F_OK) == 0) {
+            log_i("Use ushark for TLS decryption");
+
+            if (ushark_init(pd)) {
+                pd->pcap.usk = ushark_new(PCAPD_DLT_RAW, "");
+                ushark_set_pref("tls.keylog_file", keylog_path);
+            }
+        }
+    }
 
 #if ANDROID
     char capture_interface[PATH_MAX] = "@inet";
@@ -787,6 +842,13 @@ cleanup:
         pd->pcap.app_filter_uids_size = 0;
     }
 #endif
+
+    if (pd->pcap.usk) {
+        ushark_destroy(pd->pcap.usk);
+        pd->pcap.usk = NULL;
+
+        ushark_cleanup();
+    }
 
     return rv;
 }

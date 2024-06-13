@@ -11,6 +11,7 @@ add_library(capture SHARED
         pcap_dump.c
         log_writer.c
         port_map.c
+        ushark_dll.c
         jni_impl.c)
 
 # nDPI
@@ -25,7 +26,6 @@ configure_file(${NDPI_GEN}/ndpi_config.h ${NDPI_ROOT}/src/include/ndpi_config.h)
 configure_file(${NDPI_GEN}/ndpi_define.h ${NDPI_ROOT}/src/include/ndpi_define.h)
 
 ADD_LIBRARY(ndpi SHARED ${ndpiSources} ${NDPI_ROOT}/src/include/ndpi_api.h)
-
 
 if(ANDROID)
         find_library(log-lib log)

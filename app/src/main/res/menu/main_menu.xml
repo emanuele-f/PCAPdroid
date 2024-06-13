@@ -29,4 +29,10 @@
         android:title="@string/open_pcap_file"
         android:enabled="true"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/decrypt_pcap"
+        android:title="@string/decrypt_pcap_file"
+        android:enabled="true"
+        app:showAsAction="never" />
 </menu>
