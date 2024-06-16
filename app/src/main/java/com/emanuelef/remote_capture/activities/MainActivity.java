@@ -966,14 +966,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             Log.d(TAG, "pcapFileOpenResult: " + uri);
             if (mOpenPcapDecrypt &&
-                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !uri.toString().endsWith(".pcapng"))
+                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !Utils.isPcapng(this, uri))
             ) {
                 // Ask to select the keylog
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("*/*");
 
-                Log.d(TAG, "pcapFileOpenResult: launching dialog");
+                Log.i(TAG, "separate keylog file needed, launching dialog");
                 mPcapUri = uri;
                 Utils.showToast(this, R.string.select_the_keylog_file);
                 Utils.launchFileDialog(this, intent, keylogFileOpenLauncher);
