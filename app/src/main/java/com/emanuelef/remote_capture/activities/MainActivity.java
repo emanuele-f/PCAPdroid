@@ -736,6 +736,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         CaptureSettings settings = new CaptureSettings(this, mPrefs);
         settings.input_pcap_path = input_pcap_path;
+
+        // to properly show decrypted PCAP files, full payload must be enabled
+        if (PCAPdroid.getInstance().isDecryptingPcap())
+            settings.full_payload = true;
+
         mCapHelper.startCapture(settings);
     }
 
