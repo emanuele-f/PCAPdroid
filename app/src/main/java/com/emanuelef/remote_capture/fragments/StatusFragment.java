@@ -100,6 +100,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @Override
     public void onResume() {
         super.onResume();
+
+        CaptureService.checkAlwaysOnVpnActivated();
         refreshStatus();
     }
 
