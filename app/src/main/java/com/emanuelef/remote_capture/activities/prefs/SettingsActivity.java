@@ -19,10 +19,15 @@
 
 package com.emanuelef.remote_capture.activities.prefs;
 
+import android.app.LocaleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.LocaleList;
+import android.provider.Settings;
 import android.text.InputType;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -353,28 +358,54 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mSocks5Settings.setVisible(!tlsDecryption && !rootEnabled);
         }
 
-        private void setupOtherPrefs() {
+        private void setupAppLanguagePref() {
             DropDownPreference appLang = requirePreference(Prefs.PREF_APP_LANGUAGE);
+            Preference appLangExternal = requirePreference("app_language_external");
 
-            if(SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
-                scrollToPreference(appLang);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // On Android 33+, app language is configurable from the system settings
+                appLang.setVisible(false);
+                appLangExternal.setVisible(true);
 
-            // Current locale applied via BaseActivity.attachBaseContext
-            appLang.setOnPreferenceChangeListener((preference, newValue) -> {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+                LocaleList locales = requireContext().getSystemService(LocaleManager.class)
+                        .getApplicationLocales();
+                if (locales.equals(LocaleList.getEmptyLocaleList()))
+                    appLangExternal.setSummary(getString(R.string.system_default));
+                else if (!locales.isEmpty())
+                    appLangExternal.setSummary(locales.get(0).getDisplayName());
 
-                if(prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
-                    // Restart the activity to apply the language change
-                    Intent intent = new Intent(getContext(), SettingsActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    intent.setAction(SettingsActivity.ACTION_LANG_RESTART);
+                appLangExternal.setOnPreferenceClickListener(preference -> {
+                    Intent intent = new Intent(Settings.ACTION_APP_LOCALE_SETTINGS);
+                    intent.setData(Uri.fromParts("package", requireContext().getPackageName(), null));
                     startActivity(intent);
+                    return true;
+                });
+            } else {
+                // Fallback selector for older Android versions
+                if (SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
+                    scrollToPreference(appLang);
 
-                    Runtime.getRuntime().exit(0);
-                }
+                // Current locale applied via BaseActivity.attachBaseContext
+                appLang.setOnPreferenceChangeListener((preference, newValue) -> {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
-                return false;
-            });
+                    if (prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
+                        // Restart the activity to apply the language change
+                        Intent intent = new Intent(requireContext(), SettingsActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        intent.setAction(SettingsActivity.ACTION_LANG_RESTART);
+                        startActivity(intent);
+
+                        Runtime.getRuntime().exit(0);
+                    }
+
+                    return false;
+                });
+            }
+        }
+
+        private void setupOtherPrefs() {
+            setupAppLanguagePref();
 
             DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
             appTheme.setOnPreferenceChangeListener((preference, newValue) -> {

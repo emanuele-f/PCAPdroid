@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.LocaleManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -58,6 +59,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -142,8 +144,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -343,6 +343,19 @@ public class Utils {
     public static Configuration getLocalizedConfig(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Configuration config = context.getResources().getConfiguration();
+
+        // On Android 33+, app language is configured from the system settings
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Prefs.useEnglishLanguage(prefs)) {
+                Log.i(TAG, "Migrate from in-app language picker to system picker");
+                prefs.edit().remove(Prefs.PREF_APP_LANGUAGE).apply();
+
+                context.getSystemService(LocaleManager.class)
+                        .setApplicationLocales(new LocaleList(Locale.forLanguageTag("en-US")));
+            }
+
+            return config;
+        }
 
         if(!Prefs.useEnglishLanguage(prefs))
             return config;

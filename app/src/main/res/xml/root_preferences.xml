@@ -213,6 +213,13 @@
             app:useSimpleSummaryProvider="true"/>
 
         <Preference
+            app:key="app_language_external"
+            app:title="@string/app_language"
+            app:isPreferenceVisible="false"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <Preference
             app:key="port_mapping"
             app:title="@string/port_mapping"
             app:summary="@string/port_mapping_summary"
