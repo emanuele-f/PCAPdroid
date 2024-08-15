@@ -127,13 +127,20 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     public void onBackPressed() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
         if(f instanceof SettingsFragment) {
-            // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        } else
-            super.onBackPressed();
+            Intent intent = getIntent();
+
+            if ((intent != null) && SettingsActivity.ACTION_LANG_RESTART.equals(intent.getAction())) {
+                // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
+                intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        }
+
+        // default behavior
+        super.onBackPressed();
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
