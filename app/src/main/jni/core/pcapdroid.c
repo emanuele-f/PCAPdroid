@@ -657,6 +657,9 @@ static void process_dns_reply(pd_conn_t *data, pcapdroid_t *pd, const struct zdt
             uint16_t addr_len = ntohs((*(uint16_t*)(reply + 8)));
             reply += 10; len -= 10;
 
+            if (len < addr_len)
+                return;
+
             if((rec_type == 0x1) && (addr_len == 4)) { // A record
                 ipver = 4;
                 rsp_addr.ip4 = *((u_int32_t*)reply);
