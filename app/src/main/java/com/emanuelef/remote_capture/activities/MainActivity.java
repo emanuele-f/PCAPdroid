@@ -727,10 +727,30 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(showRemoteServerAlert())
             return;
 
-        if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
-            Intent intent = new Intent(this, MitmSetupWizard.class);
-            startActivity(intent);
-            return;
+        if(Prefs.getTlsDecryptionEnabled(mPrefs)) {
+            if (MitmAddon.needsSetup(this)) {
+                Intent intent = new Intent(this, MitmSetupWizard.class);
+                startActivity(intent);
+                return;
+            }
+
+            if (!MitmAddon.getNewVersionAvailable(this).isEmpty()) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.update_available)
+                        .setMessage(R.string.mitm_addon_update_available)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.update_action, (dialog, whichButton) -> {
+                            Intent intent = new Intent(this, MitmSetupWizard.class);
+                            startActivity(intent);
+                        })
+                        .setNegativeButton(R.string.cancel_action, (dialog, whichButton) -> {
+                            MitmAddon.ignoreNewVersion(this);
+                            startCapture();
+                        })
+                        .show();
+
+                return;
+            }
         }
 
         if(!Prefs.isRootCaptureEnabled(mPrefs) && (Utils.getRunningVpn(this) != null)) {

@@ -285,9 +285,11 @@
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Please install version %1$s and retry</string>
-    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be upgraded</string>
+    <string name="update_available">Update available</string>
+    <string name="mitm_addon_update_available">A new mitm addon update is available. Update to get the latest bug fixes</string>
+    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be updated</string>
     <string name="mitm_addon">mitm addon</string>
-    <string name="upgrade_action">Upgrade</string>
+    <string name="update_action">Update</string>
     <string name="export_failed">Export failed</string>
     <string name="not_encrypted">Not encrypted</string>
     <string name="request">Request</string>

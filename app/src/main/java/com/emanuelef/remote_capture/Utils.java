@@ -1802,4 +1802,28 @@ public class Utils {
             return false;
         }
     }
+
+    public static int getMajorVersion(String ver) {
+        int start_idx = 0;
+
+        // optionally starts with "v"
+        if (ver.startsWith("v"))
+            start_idx = 1;
+
+        int end_idx = ver.indexOf('.');
+        if (end_idx < 0)
+            return -1;
+
+        try {
+            return Integer.parseInt(ver.substring(start_idx, end_idx));
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
+
+    // true if the two provided versions are semantically compatible (i.e. same major)
+    public static boolean isSemanticVersionCompatible(String a, String b) {
+        int va = getMajorVersion(a);
+        return (va >= 0) && (va == getMajorVersion(b));
+    }
 }
