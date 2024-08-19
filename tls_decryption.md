@@ -166,7 +166,10 @@ Select "Allow" to grant PCAPdroid the ability to read the directory.
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/addons_3.png" width="250" />
 </p>
 
-In that directory, create the following script (or create on a pc and transfer via `adb push "Modify HTTP.py" /sdcard/PCAPdroid_addons`):
+By default, custom addons run in the private app directory, which is not accessible by other apps.
+If you want your addons to read or write public files, e.g. the ones under /sdcard or the selected addons directory, select "Enable files access" from the same hamburger menu and grant the related permission.
+
+In selected addons directory, create the following script (or create on a pc and transfer via `adb push "Modify HTTP.py" /sdcard/PCAPdroid_addons`):
 
 ```python
 # Modify HTTP.py
