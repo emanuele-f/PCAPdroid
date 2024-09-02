@@ -175,6 +175,10 @@ In selected addons directory, create the following script (or create on a pc and
 # Modify HTTP.py
 
 class ModifyHttp:
+    def done(self):
+        # addon unloaded, close global resources (e.g. open files) here
+        pass
+
     def response(self, flow):
         if flow.request.pretty_url == "https://example.com/":
             flow.response.content = flow.response.content.replace(
