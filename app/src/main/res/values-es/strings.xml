@@ -75,7 +75,7 @@
     <string name="other_prefs">Otros</string>
     <string name="app_language">Idioma de la app</string>
     <string name="lang_english">Inglés</string>
-    <string name="system_default">Sistema</string>
+    <string name="system_default">Predeterminado del sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como administrador de archivos</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
@@ -274,7 +274,7 @@
     <string name="export_ca_certificate">Exporta el certificado PCAPDROID CA, abre \"Cifrado y Credenciales\" en Ajustes y selecciona \"Instalar certificado CA\"</string>
     <string name="install_ca_certificate">Instala el certificado PCAPDROID CA, selecciona \"VPN y aplicaciones\". Android te pedirá la contraseña</string>
     <string name="upgrade_action">Actualizar</string>
-    <string name="mitm_addon_new_version">El complemento mitm debe ser actualizado</string>
+    <string name="mitm_addon_new_version">El complemento mitm de PCAPdroid debe actualizarse</string>
     <string name="export_failed">Exportación fallida</string>
     <string name="not_encrypted">No cifrado</string>
     <string name="request">Petición</string>
@@ -506,4 +506,7 @@
     <string name="ipv6_bytes_rcvd">Bytes IPv6 recibidos</string>
     <string name="ipv6_bytes_percentage">Porcentaje de bytes IPv6</string>
     <string name="ipv6_bytes_sent">Bytes IPv6 enviados</string>
+    <string name="update_available">Actualización disponible</string>
+    <string name="mitm_addon_update_available">Hay una nueva actualización del complemento MITM disponible. Actualiza para obtener las últimas correcciones de errores</string>
+    <string name="update_action">Actualizar</string>
 </resources>
