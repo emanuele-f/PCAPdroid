@@ -505,4 +505,7 @@
     <string name="ipv6_bytes_sent">Bytes IPv6 inviati</string>
     <string name="vpn_reconnection">Riconnessione VPN</string>
     <string name="vpn_reconnection_aborted">Riconnessione VPN annullata</string>
+    <string name="update_available">Aggiornamento disponibile</string>
+    <string name="update_action">Aggiorna</string>
+    <string name="mitm_addon_update_available">Una nuova versione dell\'addon mitm è disponibile. Aggiorna per ottenere gli ultimi miglioramenti</string>
 </resources>
