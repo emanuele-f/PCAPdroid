@@ -30,7 +30,8 @@
         android:theme="@style/AppTheme"
         android:allowBackup="true"
         tools:replace="android:label"
-        tools:targetApi="m">
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="tiramisu">
 
         <activity
             android:name=".activities.MainActivity"

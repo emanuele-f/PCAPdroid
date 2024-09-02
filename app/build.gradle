@@ -11,6 +11,10 @@ android {
         versionCode 75
         versionName "1.7.2"
 
+        // only include full translations
+        // NOTE: keep in sync with locales_config.xml
+        resourceConfigurations += ["en", "ar", "de", "es", "in", "it", "ru", "tr", "uk", "zh-rCN"]
+
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
@@ -42,10 +46,6 @@ android {
             // NOTE: needed to unpack libpcapd.so when installed as app bundle
             useLegacyPackaging = true
         }
-    }
-
-    androidResources {
-        generateLocaleConfig true
     }
 
     externalNativeBuild {
