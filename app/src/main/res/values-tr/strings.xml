@@ -13,7 +13,7 @@
     <string name="can_use_purchased_feature">Artık satın alınan özelliği kullanabilirsiniz</string>
     <string name="disconnect_vpn_confirm">Devam edildiğinde etkin VPN bağlantısı kesilecektir</string>
     <string name="http_server">HTTP sunucusu</string>
-    <string name="system_default">Sistem</string>
+    <string name="system_default">Sistem öntanımlı değeri</string>
     <string name="ip_address_val">IP adresi: %1$s</string>
     <string name="start_button">Başla</string>
     <string name="protocol">Protokol</string>
@@ -221,7 +221,7 @@
     <string name="cert_exported_now_installed">Sertifika dışa aktarıldı, şimdi Android ayarlarından onu kurun</string>
     <string name="cert_installed_correctly">CA sertifikası kuruldu</string>
     <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Lütfen %1$s sürümünü yükleyin ve tekrar deneyin</string>
-    <string name="mitm_addon_new_version">PCAPdroid ortadaki adam eklentisi yükseltilmelidir</string>
+    <string name="mitm_addon_new_version">PCAPdroid ortadaki adam eklentisi güncellenmelidir</string>
     <string name="upgrade_action">Yükselt</string>
     <string name="request">İstek</string>
     <string name="overview">Genel bakış</string>
@@ -506,4 +506,7 @@
     <string name="ipv6_bytes_sent">Gönderilen IPv6 bayt</string>
     <string name="ipv6_bytes_percentage">IPv6 bayt yüzdesi</string>
     <string name="ipv6_bytes_rcvd">Alınan IPv6 bayt</string>
+    <string name="update_available">Güncelleme var</string>
+    <string name="mitm_addon_update_available">Yeni bir ortadaki adam eklentisi güncellemesi var. En son hata düzeltmelerini almak için güncelleyin</string>
+    <string name="update_action">Güncelle</string>
 </resources>
