@@ -255,7 +255,7 @@
     <string name="cert_installed_correctly">CA 证书已安装</string>
     <string name="cert_reinstall_required">CA 证书未安装，运行 mitim 设置向导</string>
     <string name="mitm_addon_bad_version">PCAPdroid mitm 附加组件版本号不对。请安装版本 %1$s 并重试</string>
-    <string name="mitm_addon_new_version">必须升级 PCAPdroid mitm 附加组件</string>
+    <string name="mitm_addon_new_version">必须更新 PCAPdroid mitm 附加组件</string>
     <string name="upgrade_action">升级</string>
     <string name="export_failed">导出失败</string>
     <string name="not_encrypted">未加密</string>
@@ -531,4 +531,7 @@
     <string name="vpn_reconnection">VPN 重连</string>
     <string name="vpn_reconnection_aborted">VPN 重连被终止</string>
     <string name="waiting_for_vpn_disconnect">等待活跃 VPN 断开…</string>
+    <string name="update_action">更新</string>
+    <string name="update_available">有更新可用</string>
+    <string name="mitm_addon_update_available">有新的 mitim 附加组件更新可用。请更新获得最新的 bug 修复</string>
 </resources>
