@@ -75,7 +75,7 @@
     <string name="other_prefs">Другое</string>
     <string name="app_language">Язык приложения</string>
     <string name="lang_english">Английский</string>
-    <string name="system_default">Системный</string>
+    <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
@@ -210,7 +210,7 @@
     <string name="hidden_connections_help">Список правил для скрытия элементов из списка соединений, чтобы сфокусироваться только на нужном</string>
     <string name="enable_socks5_proxy_summary">Перенаправляет все TCP соединения на SOCKS5 прокси</string>
     <string name="malware_whitelist_help">Определенный пользователем белый список для подавления обнаружения вредоносов. Удерживайте вредоносное соединение, чтобы создать правило согласно которому данное соединение не будет считаться вредоносным</string>
-    <string name="decryption_no_filter_warn">При расшифровке TLS выберите целевое приложение, чтобы избежать потери соединения с интернетом</string>
+    <string name="decryption_no_filter_warn">При дешифровании TLS выберите целевое приложение, чтобы избежать потери соединения с интернетом</string>
     <string name="traffic_dump">Дамп траффика</string>
     <string name="phone_app">Телефон</string>
     <string name="phone_app_info">Службы телефонии</string>
@@ -223,8 +223,7 @@
     <string name="export_action">Экспорт</string>
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Корневой сертификат не установлен, запустите мастер настройки mitm</string>
-    <string name="mitm_addon_new_version">PCAPdroid mitm дополнение требуется обновить</string>
-    <string name="upgrade_action">Обновить</string>
+    <string name="mitm_addon_new_version">PCAPdroid mitm-дополнение необходимо обновить</string>
     <string name="string_http_request">HTTP запрос</string>
     <string name="string_http_response">HTTP ответ</string>
     <string name="request">Запрос</string>
@@ -456,10 +455,10 @@
     <string name="socks5_auth">Аутентификация SOCKS5</string>
     <string name="mitm_addon_starting">MITM-аддон запускается…</string>
     <string name="mitm_addon_running">MITM-аддон запущен</string>
-    <string name="decryption_rules">Правила расшифровки</string>
-    <string name="decrypt_action">Расшифровывать…</string>
-    <string name="decryption_rules_help">Эти правила указывают на те соединения, которые необходимо расшифровывать. Правила на основе хостов работают только если найден соответствующий отклик от DNS сервера</string>
-    <string name="dont_decrypt_action">Не расшифровывать…</string>
+    <string name="decryption_rules">Правила дешифрования</string>
+    <string name="decrypt_action">Дешифровать…</string>
+    <string name="decryption_rules_help">Эти правила указывают на те соединения, которые необходимо дешифровать. Правила на основе хостов работают только если найден соответствующий отклик от DNS сервера</string>
+    <string name="dont_decrypt_action">Не дешифровать…</string>
     <string name="status_encrypted">Зашифровано</string>
     <string name="injected">Инжектировано</string>
     <string name="tls_decryption_no_rules_notice">Дешифрование TLS применяется только к соединениям, которые соответствуют настроенным правилам. Вы хотите создать правила дешифрования\?</string>
@@ -479,7 +478,6 @@
     <string name="pcap_file_load_aborted">Загрузка PCAP файла прервана</string>
     <string name="root_capture_start_failed">Не удалось начать захват. Убедитесь, что устройство рутовано с помощью Magisk</string>
     <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед экспортом PCAP файла</string>
-    <string name="live_capture">Live-захват</string>
     <string name="never">Никогда</string>
     <string name="target_apps">Целевые приложения</string>
     <string name="target_apps_help">Выберите приложения для захвата</string>
@@ -497,4 +495,15 @@
     <string name="body">Тело</string>
     <string name="unsupported_pcap_datalink">PCAP файл содержит неподдерживаемый datalink</string>
     <string name="export_ellipsis">Экспорт…</string>
+    <string name="ipv6_bytes_rcvd">IPv6 байт получено</string>
+    <string name="restart_on_disconnection_summary">Автоматически перезапускать захват после остановки другими VPN приложениями</string>
+    <string name="ipv6_bytes_sent">IPv6 байт отправлено</string>
+    <string name="ipv6_bytes_percentage">Процент IPv6 байт</string>
+    <string name="waiting_for_vpn_disconnect">Ожидается отключение активного VPN…</string>
+    <string name="vpn_reconnection">Переподключение VPN</string>
+    <string name="vpn_reconnection_aborted">Переподключение VPN прервано</string>
+    <string name="restart_on_disconnection">Перезапуск при отключении</string>
+    <string name="update_available">Доступно обновление</string>
+    <string name="mitm_addon_update_available">Доступно свежее обновление для mitm-дополнения. Обновитесь для получения последних исправлений</string>
+    <string name="update_action">Обновить</string>
 </resources>

@@ -35,7 +35,7 @@
     <string name="ip_rules">Правил IP</string>
     <string name="update_now">Оновити зараз</string>
     <string name="status_updating">Оновлення…</string>
-    <string name="decryption_no_filter_warn">Виберіть цільову програму або використовуйте білий список дешифрування при дешифруванні TLS, щоб уникнути втрати з\'єднання з Інтернетом</string>
+    <string name="decryption_no_filter_warn">Виберіть цільову програму при дешифруванні TLS, щоб уникнути втрати з\'єднання з Інтернетом</string>
     <string name="block">Блокується…</string>
     <string name="unblock">Розблоковується…</string>
     <string name="firewall">Фаєрвол</string>
@@ -215,7 +215,6 @@
     <string name="root_capture_start_failed">Запуск захоплення не вдався. Переконайтеся що пристрій рутовано з Magisk</string>
     <string name="pcap_file_load_aborted">Вантаження файлу PCAP перервано</string>
     <string name="host_resolution_failed">Не вдається визначити хост %1$s</string>
-    <string name="live_capture">Захоплення наживо</string>
     <string name="decryption_info_no_rule">Це з\'єднання не дешифрується. Створіть правило дешифрування, щоб дешифрувати його</string>
     <string name="tls_decryption_no_rules_notice">Дешифрування TLS застосовується лише для з\'єднань, які відповідають налаштованим правилам. Ви хочете створити правила дешифрування зараз\?</string>
     <string name="stop_button">Зупинити</string>
@@ -356,7 +355,7 @@
     <string name="show_me">Показати</string>
     <string name="hint">Підказка</string>
     <string name="once">Раз</string>
-    <string name="forever">Завжди</string>
+    <string name="forever">Назавжди</string>
     <string name="control_permissions_summary">Виберіть, яким програмам дозволено керувати захопленням PCAPdroid</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
     <string name="country">Країна</string>
@@ -412,7 +411,6 @@
     <string name="mitm_addon_bad_version">Неправильна версія доповнення PCAPdroid mitm. Будь ласка, встановіть версію %1$s і повторіть спробу</string>
     <string name="mitm_addon_new_version">Необхідно оновити доповнення PCAPdroid mitm</string>
     <string name="mitm_addon">доповнення mitm</string>
-    <string name="upgrade_action">Оновити</string>
     <string name="export_failed">Не вдалося експортувати</string>
     <string name="not_encrypted">Не зашифровано</string>
     <string name="request">Запит</string>
@@ -482,4 +480,28 @@
     <string name="control_permissions">Керування дозволами</string>
     <string name="blacklist_type_domain">Домен чорного списку</string>
     <string name="root_capture_pcapd_start_failure">Збій запуску захоплення. Переконайтеся, що ви надали рут доступ PCAPdroid</string>
+    <string name="redirected">перенаправлено</string>
+    <string name="never">Ніколи</string>
+    <string name="both">Обидва</string>
+    <string name="whats_new">Що нового</string>
+    <string name="ipv6_bytes_sent">Надіслано IPv6 байт</string>
+    <string name="ipv6_bytes_rcvd">Отримано IPv6 байт</string>
+    <string name="mitm_doze_notice">Оптимізація акумулятора може перешкоджати роботі доповнення mitm</string>
+    <string name="headers">Заголовки</string>
+    <string name="connection_redirected_port_map">Це з\'єднання перенаправлено через правило мапування портів</string>
+    <string name="always">Завжди</string>
+    <string name="for_connections_to_decrypt">Тільки для з\'єднань для дешифрування</string>
+    <string name="target_apps_help">Виберіть додатки для захоплення</string>
+    <string name="restart_on_disconnection_summary">Автоматичний перезапуск захоплення після зупинки іншими VPN-програмами</string>
+    <string name="raw_bytes">Необроблених байт</string>
+    <string name="waiting_for_vpn_disconnect">Очікується від\'єднання активного VPN…</string>
+    <string name="body">Головна частина</string>
+    <string name="decrypt_quic_notice">Дешифрування QUIC наразі не підтримується. Як обхідний шлях, зупиніть захоплення і виберіть опцію блокування QUIC в налаштуваннях PCAPdroid</string>
+    <string name="ipv6_bytes_percentage">Відсоток IPv6 байт</string>
+    <string name="export_ellipsis">Експорт…</string>
+    <string name="target_apps">Цільові додатки</string>
+    <string name="vpn_reconnection">Перепід\'єднання VPN</string>
+    <string name="vpn_reconnection_aborted">Перепід\'єднання VPN перервано</string>
+    <string name="restart_on_disconnection">Перезапускати при від\'єднанні</string>
+    <string name="dnscrypt_how_to">Як використовувати DoH / DNSCrypt з PCAPdroid</string>
 </resources>

@@ -280,7 +280,6 @@
     <string name="mitm_addon_bad_version">Zła wersja dodatku PCAPdroid mitm. Zainstaluj wersję %1$s i spróbuj ponownie</string>
     <string name="mitm_addon_new_version">Dodatek PCAPdroid mitm musi zostać zaktualizowany</string>
     <string name="mitm_addon">Dodatek mitm</string>
-    <string name="upgrade_action">Aktualizacja</string>
     <string name="export_failed">Eksport nie powiódł się</string>
     <string name="not_encrypted">Nie zaszyfrowane</string>
     <string name="request">Żądanie</string>

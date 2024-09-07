@@ -89,7 +89,7 @@
     <string name="update_now">تحديث الان</string>
     <string name="valid">صالح</string>
     <string name="copied">تم نسخّه</string>
-    <string name="install_the_mitm_addon">قم بتثبيت PCAPdroid <a href="%1$s">mitm إضافة</a></string>
+    <string name="install_the_mitm_addon">ثبّت PCAPdroid <a href="%1$s">mitm إضافة</a></string>
     <string name="size_x">الحجم: %1$s</string>
     <string name="block_quick">حظر QUIC</string>
     <string name="welcome_to_pcapdroid">مرحبًا بك في PCAPdroid</string>
@@ -111,7 +111,7 @@
     <string name="phone_app">تطبيق الهاتف</string>
     <string name="unknown_app">غير معروف</string>
     <string name="other_prefs">آخر</string>
-    <string name="system_default">النظام</string>
+    <string name="system_default">النظام الافتراضي</string>
     <string name="conn_status_unreachable">لا يمكن الوصول إليه</string>
     <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
@@ -281,7 +281,6 @@
     <string name="pcap_file_load_aborted">تم إحباط تحميل ملف PCAP</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
     <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل تصدير ملف PCAP</string>
-    <string name="live_capture">إلتقاط مباشر</string>
     <string name="decryption_info_no_rule">لن يتم فك تشفير هذا الاتصال. قم بإنشاء قاعدة فك التشفير لفك تشفيرها</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -289,7 +288,6 @@
     <string name="asn">ASN</string>
     <string name="export_ca_certificate">قم بتصدير شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
     <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>
-    <string name="upgrade_action">ترقية</string>
     <string name="checking_the_certificate">جارِ التحقق من الشهادة…</string>
     <string name="ca_cert_export_failed">حدث خطأ أثناء تصدير شهادة CA
 \n
@@ -298,7 +296,7 @@
     <string name="cert_installed_correctly">تم تثبيت شهادة CA</string>
     <string name="cert_reinstall_required">لم يتم تثبيت شهادة CA، قم بتشغيل معالج إعداد mitm</string>
     <string name="mitm_addon_bad_version">نُسخة إضافة PCAPdroid mitm سيئة. الرجاء تثبيت إصدار %1$s وإعادة المحاولة</string>
-    <string name="mitm_addon_new_version">يجب ترقية الملحق PCAPdroid mitm</string>
+    <string name="mitm_addon_new_version">يجب ترقية إضافة PCAPdroid mitm</string>
     <string name="mitm_addon">المُلحق mitm</string>
     <string name="export_failed">فشل التصدير</string>
     <string name="overview">نظرة عامة</string>
@@ -505,4 +503,8 @@
     <string name="ipv6_bytes_sent">تم إرسال بايت IPv6</string>
     <string name="ipv6_bytes_rcvd">تلقيت بايت IPv6</string>
     <string name="restart_on_disconnection_summary">إعادة تشغيل الالتقاط تلقائيًا بعد إيقافه بواسطة تطبيقات VPN الأخرى</string>
+    <string name="waiting_for_vpn_disconnect">في انتظار قطع اتصال شبكة VPN النشطة…</string>
+    <string name="update_available">يتوفر تحديث</string>
+    <string name="mitm_addon_update_available">يتوفر تحديث جديد لإضافة mitm. حدّث للحصول على أحدث إصلاحات العلل</string>
+    <string name="update_action">حدّث</string>
 </resources>

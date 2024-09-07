@@ -276,7 +276,6 @@
     <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
     <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Instal versi %1$s dan coba lagi</string>
     <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
-    <string name="upgrade_action">Tingkatkan</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="payload">Muatan</string>
@@ -462,7 +461,6 @@
 \n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
     <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
     <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
-    <string name="live_capture">Pemcatatan secara live</string>
     <string name="malware_whitelist_action">Daftar putih (malware)…</string>
     <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya, bukan \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum mengekspor file PCAP</string>
     <string name="mitm_addon_starting">Addon Mitm sudah dijalankan…</string>
@@ -482,4 +480,28 @@
     <string name="mitmproxy_opts">Opsi mitmproxy tambahan</string>
     <string name="destination_port">Port tujuan</string>
     <string name="capture_interface_open_error">Tidak dapat membuka antarmuka pencatatan</string>
+    <string name="raw_bytes">Byte mentah</string>
+    <string name="dnscrypt_how_to">Cara penggunaan DoH / DNSCrypt dengan PCAPdroid</string>
+    <string name="export_ellipsis">Ekspor…</string>
+    <string name="never">Jangan pernah</string>
+    <string name="always">Selalu</string>
+    <string name="ipv6_bytes_sent">Byte IPv6 terkirim</string>
+    <string name="ipv6_bytes_rcvd">Byte IPv6 diterima</string>
+    <string name="connection_redirected_port_map">Koneksi ini telah dialihkan karena aturan pemetaan port</string>
+    <string name="decrypt_quic_notice">Mendekripsi QUIC saat ini tidak didukung. Sebagai solusi sementara, hentikan penangkapan dan pilih opsi untuk memblokir QUIC di pengaturan PCAPdroid</string>
+    <string name="restart_on_disconnection">Mulai ulang saat putus koneksi</string>
+    <string name="restart_on_disconnection_summary">Jalankan ulang tangkapan karena penggunaan apl VPN lain</string>
+    <string name="vpn_reconnection">Menghubungkan kembali VPN</string>
+    <string name="vpn_reconnection_aborted">Penghubungan ulang VPN dihentikan</string>
+    <string name="waiting_for_vpn_disconnect">VPN yang sedang berjalan akan diberhentikan…</string>
+    <string name="ipv6_bytes_percentage">Persentase byte IPv6</string>
+    <string name="target_apps">Aplikasi target</string>
+    <string name="target_apps_help">Pilih apl yang ingin ditangkap</string>
+    <string name="whats_new">Apa yang baru</string>
+    <string name="mitm_doze_notice">Optimasi baterai mungkin mengintervensi add-on mitm</string>
+    <string name="redirected">dialihkan</string>
+    <string name="for_connections_to_decrypt">Hanya untuk koneksi yang akan didekripsi</string>
+    <string name="headers">Header</string>
+    <string name="body">Body</string>
+    <string name="both">Keduanya</string>
 </resources>

@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 18;
-    public static final String PACKAGE_VERSION_NAME = "v1.1";
+    public static final long PACKAGE_VERSION_CODE = 19;
+    public static final String PACKAGE_VERSION_NAME = "1.2";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -109,6 +109,15 @@ public class MitmAddon {
         }
     }
 
+    public static @NonNull String getInstalledVersionName(Context ctx) {
+        try {
+            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
+            return pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
+
     public static int getUid(Context ctx) {
         try {
             return Utils.getPackageUid(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
@@ -117,13 +126,51 @@ public class MitmAddon {
         }
     }
 
-    public static boolean isInstalled(Context ctx) {
-        return getInstalledVersion(ctx) == PACKAGE_VERSION_CODE;
+    // Returns a non-empty string if a newer, compatible addon version is available
+    // Use ignoreNewVersion to silence this
+    public static @NonNull String getNewVersionAvailable(Context ctx) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+        if (Prefs.isIgnoredMitmVersion(prefs, PACKAGE_VERSION_NAME))
+            // update was ignored by the user
+            return "";
+
+        // NOTE: currently for the update check we only rely on the addon version hard-coded
+        // in the source
+        try {
+            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
+
+            if (PackageInfoCompat.getLongVersionCode(pInfo) >= PACKAGE_VERSION_CODE)
+                // same version or better installed
+                return "";
+
+            if (Utils.isSemanticVersionCompatible(PACKAGE_VERSION_NAME, pInfo.versionName))
+                return PACKAGE_VERSION_NAME;
+        } catch (PackageManager.NameNotFoundException ignored) {}
+
+        return "";
     }
 
-    public static String getGithubReleaseUrl() {
-        return REPOSITORY + "/releases/download/" +
-                PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
+    public static void ignoreNewVersion(Context ctx) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        prefs.edit()
+                .putString(Prefs.PREF_IGNORED_MITM_VERSION, PACKAGE_VERSION_NAME)
+                .apply();
+    }
+
+    // returns true only if a compatible addon version is installed
+    public static boolean isInstalled(Context ctx) {
+        try {
+            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
+            return Utils.isSemanticVersionCompatible(PACKAGE_VERSION_NAME, pInfo.versionName);
+        } catch (PackageManager.NameNotFoundException ignored) {
+            return false;
+        }
+    }
+
+    public static String getGithubReleaseUrl(String version) {
+        return REPOSITORY + "/releases/download/v" +
+                version + "/PCAPdroid-mitm_v" + version + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
     }
 
     public static void setCAInstallationSkipped(Context ctx, boolean skipped) {

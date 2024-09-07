@@ -118,7 +118,7 @@
     <string name="other_prefs">Other</string>
     <string name="app_language">App language</string>
     <string name="lang_english">English</string>
-    <string name="system_default">System</string>
+    <string name="system_default">System default</string>
     <string name="no_activity_file_selection">No app found to handle file selection</string>
     <string name="file_saved_with_name">File saved as \"%1$s\"</string>
     <string name="theme_light">Light</string>
@@ -285,9 +285,11 @@
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Please install version %1$s and retry</string>
-    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be upgraded</string>
+    <string name="update_available">Update available</string>
+    <string name="mitm_addon_update_available">A new mitm addon update is available. Update to get the latest bug fixes</string>
+    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be updated</string>
     <string name="mitm_addon">mitm addon</string>
-    <string name="upgrade_action">Upgrade</string>
+    <string name="update_action">Update</string>
     <string name="export_failed">Export failed</string>
     <string name="not_encrypted">Not encrypted</string>
     <string name="request">Request</string>
@@ -489,7 +491,6 @@
     <string name="pcap_file_load_aborted">PCAP file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before exporting the PCAP file</string>
-    <string name="live_capture">Live capture</string>
     <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>

@@ -224,7 +224,6 @@
     <string name="cert_reinstall_required">Il certificato CA non è installato, eseguire nuovamente la configurazione</string>
     <string name="mitm_addon_bad_version">Versione dell\'addon mitm non supportata. Installa la versione %1$s e riprovare</string>
     <string name="mitm_addon_new_version">L\'addon mitm deve essere aggiornato</string>
-    <string name="upgrade_action">Aggiorna</string>
     <string name="export_failed">Esport fallito</string>
     <string name="not_encrypted">Non cifrata</string>
     <string name="string_http_response">Risposta HTTP</string>
@@ -477,7 +476,6 @@
     <string name="pcap_file_load_aborted">Caricamento file PCAP annullato</string>
     <string name="host_resolution_failed">Impossibile risolvere l\'host %1$s</string>
     <string name="pcapdroid_trailer_notice">Per visualizzare le app effettive invece di \"%1$s\", abilitare l\'opzione \"%2$s\" prima di esportare il file PCAP</string>
-    <string name="live_capture">Cattura live</string>
     <string name="decryption_info_no_rule">La connessione non sarà decrittata. Per decrittarla, crea una regola di decrittazione</string>
     <string name="tls_decryption_no_rules_notice">La decrittazione TLS è applicata soltanto alle connessioni che matchano le regole configurate. Vuoi creare ora delle regole di decrittazione\?</string>
     <string name="root_capture_pcapd_start_failure">Avvio della cattura fallito. Assicurati di concedere l\'accesso root a PCAPdroid</string>
@@ -505,4 +503,7 @@
     <string name="ipv6_bytes_sent">Bytes IPv6 inviati</string>
     <string name="vpn_reconnection">Riconnessione VPN</string>
     <string name="vpn_reconnection_aborted">Riconnessione VPN annullata</string>
+    <string name="update_available">Aggiornamento disponibile</string>
+    <string name="update_action">Aggiorna</string>
+    <string name="mitm_addon_update_available">Una nuova versione dell\'addon mitm è disponibile. Aggiorna per ottenere gli ultimi miglioramenti</string>
 </resources>

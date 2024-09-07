@@ -109,6 +109,7 @@ public class Prefs {
     public static final String PREF_USE_SYSTEM_DNS = "system_dns";
     public static final String PREF_PCAPNG_ENABLED = "pcapng_format";
     public static final String PREF_RESTART_ON_DISCONNECT = "restart_on_disconnect";
+    public static final String PREF_IGNORED_MITM_VERSION = "ignored_mitm_version";
 
     public enum DumpMode {
         NONE,
@@ -234,6 +235,7 @@ public class Prefs {
     public static boolean useSystemDns(SharedPreferences p)     { return(p.getBoolean(PREF_USE_SYSTEM_DNS, true)); }
     public static String getDnsServerV4(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V4, "1.1.1.1")); }
     public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
+    public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
 
     // Gets a StringSet from the prefs
     // The preference should either be a StringSet or a String

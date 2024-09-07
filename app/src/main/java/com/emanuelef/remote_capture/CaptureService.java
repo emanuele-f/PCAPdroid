@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -214,6 +215,26 @@ public class CaptureService extends VpnService implements Runnable {
         return START_NOT_STICKY;
     }
 
+    private static boolean alwaysOnVpnErrorLogged = false;
+
+    // Android does not provide a reliable API to track the always-on VPN state
+    // This function tries to detect but may fail to do so
+    private boolean isAlwaysOnVpnDetected() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return isAlwaysOn();
+
+        try {
+            String always_on_vpn_app = Settings.Secure.getString(getContentResolver(), "always_on_vpn_app");
+            return always_on_vpn_app.equals(getPackageName());
+        } catch (Exception e) {
+            if (!alwaysOnVpnErrorLogged) {
+                Log.w(TAG, "Querying the always-on VPN state failed: " + e);
+                alwaysOnVpnErrorLogged = true;
+            }
+            return false;
+        }
+    }
+
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         mStopping = false;
@@ -262,8 +283,7 @@ public class CaptureService extends VpnService implements Runnable {
             mIsAlwaysOnVPN = false;
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            mIsAlwaysOnVPN |= isAlwaysOn();
+        mIsAlwaysOnVPN |= isAlwaysOnVpnDetected();
 
         Log.d(TAG, "alwaysOn? " + mIsAlwaysOnVPN);
         if(mIsAlwaysOnVPN) {
@@ -518,7 +538,8 @@ public class CaptureService extends VpnService implements Runnable {
 
             try {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
+                e.printStackTrace();
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
@@ -938,6 +959,20 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
     }
 
+    public static boolean checkAlwaysOnVpnActivated() {
+        CaptureService instance = INSTANCE;
+        if (instance == null)
+            return false;
+
+        if (!instance.mIsAlwaysOnVPN && instance.isAlwaysOnVpnDetected()) {
+            Log.i(TAG, "Always-on VPN was activated");
+            instance.mIsAlwaysOnVPN = true;
+            return true;
+        }
+
+        return false;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public static boolean isLockdownVPN() {
         return ((INSTANCE != null) && INSTANCE.isLockdownEnabled());
@@ -1089,6 +1124,8 @@ public class CaptureService extends VpnService implements Runnable {
             ifname = INSTANCE.getIfname(ifidx);
         return (ifname != null) ? ifname : "";
     }
+
+
 
     // Inside the mCaptureThread
     @Override
