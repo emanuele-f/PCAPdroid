@@ -538,7 +538,8 @@ public class CaptureService extends VpnService implements Runnable {
 
             try {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
+                e.printStackTrace();
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
