@@ -258,7 +258,6 @@
     <string name="mitm_addon">mitm Addon</string>
     <string name="export_failed">Export fehlgeschlagen</string>
     <string name="not_encrypted">Nicht verschlüsselt</string>
-    <string name="upgrade_action">Aktualisierung</string>
     <string name="request">Anfrage</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
@@ -481,7 +480,6 @@
     <string name="host_resolution_failed">Der Host %1$s konnte nicht gefunden werden</string>
     <string name="capture_interface_open_error">Die Aufnahmeschnittstelle konnte nicht geöffnet werden</string>
     <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher, dass das Gerät mit Magisk gerootet ist</string>
-    <string name="live_capture">Live Aufzeichnung</string>
     <string name="mitm_doze_notice">Batterieoptimierung kann das Mitm-Addon stören</string>
     <string name="redirected">umgeleitet</string>
     <string name="ipv6_bytes_sent">IPv6 Bytes gesendet</string>

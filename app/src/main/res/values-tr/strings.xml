@@ -222,7 +222,6 @@
     <string name="cert_installed_correctly">CA sertifikası kuruldu</string>
     <string name="mitm_addon_bad_version">Hatalı PCAPdroid ortadaki adam eklentisi sürümü. Lütfen %1$s sürümünü yükleyin ve tekrar deneyin</string>
     <string name="mitm_addon_new_version">PCAPdroid ortadaki adam eklentisi güncellenmelidir</string>
-    <string name="upgrade_action">Yükselt</string>
     <string name="request">İstek</string>
     <string name="overview">Genel bakış</string>
     <string name="payload_truncated">Yükün bir kısmı gösteriliyor. Tam olarak göstermek için yakalamayı durdurun ve PCAPdroid ayarlarından \"%1$s\" seçeneğini etkinleştirin</string>
@@ -474,7 +473,6 @@
     <string name="pcap_read_error">PCAP okuma hatası</string>
     <string name="active_vpn_detected">Etkin VPN algılandı</string>
     <string name="pcap_load_in_progress">PCAP dosyası yükleniyor, lütfen bekleyin</string>
-    <string name="live_capture">Canlı yakala</string>
     <string name="pcapdroid_trailer_notice">\"%1$s\" yerine gerçek uygulamaları göstermek için, PCAP dosyasını dışa aktarmadan önce \"%2$s\" seçeneğini etkinleştirdiğinizden emin olun</string>
     <string name="copy_error">Dosya yazılamadı</string>
     <string name="open_pcap_file">PCAP dosyasını aç…</string>

@@ -224,7 +224,6 @@
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Корневой сертификат не установлен, запустите мастер настройки mitm</string>
     <string name="mitm_addon_new_version">PCAPdroid mitm-дополнение необходимо обновить</string>
-    <string name="upgrade_action">Обновить</string>
     <string name="string_http_request">HTTP запрос</string>
     <string name="string_http_response">HTTP ответ</string>
     <string name="request">Запрос</string>
@@ -479,7 +478,6 @@
     <string name="pcap_file_load_aborted">Загрузка PCAP файла прервана</string>
     <string name="root_capture_start_failed">Не удалось начать захват. Убедитесь, что устройство рутовано с помощью Magisk</string>
     <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед экспортом PCAP файла</string>
-    <string name="live_capture">Live-захват</string>
     <string name="never">Никогда</string>
     <string name="target_apps">Целевые приложения</string>
     <string name="target_apps_help">Выберите приложения для захвата</string>

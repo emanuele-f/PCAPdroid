@@ -276,7 +276,6 @@
     <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
     <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Instal versi %1$s dan coba lagi</string>
     <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
-    <string name="upgrade_action">Tingkatkan</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="payload">Muatan</string>
@@ -462,7 +461,6 @@
 \n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
     <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
     <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
-    <string name="live_capture">Pemcatatan secara live</string>
     <string name="malware_whitelist_action">Daftar putih (malware)…</string>
     <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya, bukan \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum mengekspor file PCAP</string>
     <string name="mitm_addon_starting">Addon Mitm sudah dijalankan…</string>

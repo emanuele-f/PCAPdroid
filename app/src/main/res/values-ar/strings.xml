@@ -281,7 +281,6 @@
     <string name="pcap_file_load_aborted">تم إحباط تحميل ملف PCAP</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
     <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل تصدير ملف PCAP</string>
-    <string name="live_capture">إلتقاط مباشر</string>
     <string name="decryption_info_no_rule">لن يتم فك تشفير هذا الاتصال. قم بإنشاء قاعدة فك التشفير لفك تشفيرها</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -289,7 +288,6 @@
     <string name="asn">ASN</string>
     <string name="export_ca_certificate">قم بتصدير شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
     <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>
-    <string name="upgrade_action">ترقية</string>
     <string name="checking_the_certificate">جارِ التحقق من الشهادة…</string>
     <string name="ca_cert_export_failed">حدث خطأ أثناء تصدير شهادة CA
 \n

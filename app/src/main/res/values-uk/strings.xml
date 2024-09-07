@@ -215,7 +215,6 @@
     <string name="root_capture_start_failed">Запуск захоплення не вдався. Переконайтеся що пристрій рутовано з Magisk</string>
     <string name="pcap_file_load_aborted">Вантаження файлу PCAP перервано</string>
     <string name="host_resolution_failed">Не вдається визначити хост %1$s</string>
-    <string name="live_capture">Захоплення наживо</string>
     <string name="decryption_info_no_rule">Це з\'єднання не дешифрується. Створіть правило дешифрування, щоб дешифрувати його</string>
     <string name="tls_decryption_no_rules_notice">Дешифрування TLS застосовується лише для з\'єднань, які відповідають налаштованим правилам. Ви хочете створити правила дешифрування зараз\?</string>
     <string name="stop_button">Зупинити</string>
@@ -412,7 +411,6 @@
     <string name="mitm_addon_bad_version">Неправильна версія доповнення PCAPdroid mitm. Будь ласка, встановіть версію %1$s і повторіть спробу</string>
     <string name="mitm_addon_new_version">Необхідно оновити доповнення PCAPdroid mitm</string>
     <string name="mitm_addon">доповнення mitm</string>
-    <string name="upgrade_action">Оновити</string>
     <string name="export_failed">Не вдалося експортувати</string>
     <string name="not_encrypted">Не зашифровано</string>
     <string name="request">Запит</string>

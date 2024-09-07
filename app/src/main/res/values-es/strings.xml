@@ -273,7 +273,6 @@
     <string name="mitm_wizard_description">Configura el dispositivo para el descifrado TLS</string>
     <string name="export_ca_certificate">Exporta el certificado PCAPDROID CA, abre \"Cifrado y Credenciales\" en Ajustes y selecciona \"Instalar certificado CA\"</string>
     <string name="install_ca_certificate">Instala el certificado PCAPDROID CA, selecciona \"VPN y aplicaciones\". Android te pedirá la contraseña</string>
-    <string name="upgrade_action">Actualizar</string>
     <string name="mitm_addon_new_version">El complemento mitm de PCAPdroid debe actualizarse</string>
     <string name="export_failed">Exportación fallida</string>
     <string name="not_encrypted">No cifrado</string>
@@ -478,7 +477,6 @@
     <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones actuales en lugar de \"%1$s\", asegúrate de activar la opción \"%2$s\" antes de exportar el archivo PCAP</string>
     <string name="decryption_info_no_rule">Esta conexión no se descifrará. Crea una regla de descifrado para descifrarla</string>
     <string name="tls_decryption_no_rules_notice">El descifrado TLS sólo se aplica a las conexiones que coinciden con las reglas configuradas. ¿Deseas crear las reglas de descifrado ahora\?</string>
-    <string name="live_capture">Capturas en directo</string>
     <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
     <string name="pcap_load_in_progress">Carga del fichero PCAP en curso, por favor espera</string>
     <string name="root_capture_pcapd_start_failure">Fallo al realizar la captura. Asegúrate de conceder acceso root a PCAPdroid</string>
