@@ -240,6 +240,13 @@ int start_subprocess(const char *prog, const char *args, bool as_root, int* out_
         close(in_p[0]);
 
         // write "su" command input
+        if(as_root) {
+            char* cwd = getcwd(NULL, 0);
+            log_d("start_subprocess[%d]: cd %s", pid, cwd);
+            write(in_p[1], "cd ",3);
+            write(in_p[1], cwd, strlen(cwd));
+            write(in_p[1], "\n", 1);
+        }
         log_d("start_subprocess[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);
