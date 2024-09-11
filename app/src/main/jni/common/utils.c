@@ -251,7 +251,7 @@ int start_subprocess(const char *prog, const char *args, bool as_root, int* out_
                 write(in_p[1], "\"\n", 2);
                 free(cwd);
             } else
-                log_w("start_subprocess[%d]: getcwd failed[%d], non-magisk su may fail",
+                log_w("start_subprocess[%d]: getcwd failed[%d]: %s - non-magisk 'su' may fail",
                       pid, errno, strerror(errno));
         }
 
