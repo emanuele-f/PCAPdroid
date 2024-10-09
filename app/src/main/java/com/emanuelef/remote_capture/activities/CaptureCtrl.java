@@ -320,8 +320,6 @@ public class CaptureCtrl extends AppCompatActivity {
     private static void putStats(Intent intent, CaptureStats stats) {
         intent.putExtra("bytes_sent", stats.bytes_sent);
         intent.putExtra("bytes_rcvd", stats.bytes_rcvd);
-        intent.putExtra("ipv6_bytes_sent", stats.ipv6_bytes_sent);
-        intent.putExtra("ipv6_bytes_rcvd", stats.ipv6_bytes_rcvd);
         intent.putExtra("bytes_dumped", stats.pcap_dump_size);
         intent.putExtra("pkts_sent", stats.pkts_sent);
         intent.putExtra("pkts_rcvd", stats.pkts_rcvd);

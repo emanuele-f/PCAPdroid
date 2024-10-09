@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-24 - Emanuele Faranda
+ * Copyright 2021 - Emanuele Faranda
  */
 
 #include <sys/un.h>
@@ -103,25 +103,6 @@ static bool valid_bpf(const char *bpf) {
 
 /* ******************************************************* */
 
-static const char* get_uids_filter(pcapdroid_t *pd, char *buf, size_t buf_size) {
-    if (pd->tls_decryption.enabled || (pd->pcap.app_filter_uids_size <= 0))
-        return "-1";
-
-    size_t off = 0;
-
-    for (int i = 0; (i < pd->pcap.app_filter_uids_size) && (off < buf_size); i++) {
-        const char * fmt = (i == 0) ? "%d" : ",%d";
-        off += snprintf(buf + off, (buf_size - off), fmt, pd->pcap.app_filter_uids[i]);
-    }
-
-    if (off >= buf_size)
-        log_e("The UID filter has been truncated");
-
-    return buf;
-}
-
-/* ******************************************************* */
-
 static int connectPcapd(pcapdroid_t *pd) {
     int sock;
     int client = -1;
@@ -204,11 +185,9 @@ static int connectPcapd(pcapdroid_t *pd) {
     }
 
     // Start the daemon
-    char uids_filter_buf[128];
     char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %s -t -b '%s'%s",
-             getuid(), pd->pcap.capture_interface,
-             get_uids_filter(pd, uids_filter_buf, sizeof(uids_filter_buf)),
+    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %d -t -b '%s'%s",
+             getuid(), pd->pcap.capture_interface, pd->tls_decryption.enabled ? -1 : pd->app_filter,
              bpf, pd->pcap.daemonize ? " -d" : "");
 
     pid = start_subprocess(pcapd, args, pd->pcap.as_root, NULL);
@@ -292,10 +271,10 @@ cleanup:
 
 /* ******************************************************* */
 
-static char* get_mitm_redirection_args(pcapdroid_t *pd, char *buf, int uid, bool add) {
+static char* get_mitm_redirection_args(pcapdroid_t *pd, char *buf, bool add) {
     int off = sprintf(buf, "-t nat -%c OUTPUT -p tcp -m owner ", add ? 'I' : 'D');
-    if(uid >= 0)
-        off += sprintf(buf + off, "--uid-owner %d", uid);
+    if(pd->app_filter >= 0)
+        off += sprintf(buf + off, "--uid-owner %d", pd->app_filter);
     else
         off += sprintf(buf + off, "! --uid-owner %d", pd->mitm_addon_uid);
     sprintf(buf + off, " -j REDIRECT --to 7780");
@@ -625,7 +604,6 @@ int run_libpcap(pcapdroid_t *pd) {
     char bpf[256];
     bpf[0] = '\0';
 
-    pd->pcap.app_filter_uids_size = getIntArrayPref(pd->env, pd->capture_service, "getAppFilterUids", &pd->pcap.app_filter_uids);
     pd->pcap.as_root = !pd->pcap_file_capture;
     pd->pcap.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
     pd->pcap.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
@@ -650,23 +628,10 @@ int run_libpcap(pcapdroid_t *pd) {
     if(pd->tls_decryption.enabled) {
         char args[128];
 
-        if(pd->pcap.app_filter_uids_size > 0) {
-            for (int i = 0; i < pd->pcap.app_filter_uids_size; i++) {
-                int uid = pd->pcap.app_filter_uids[i];
+        if(run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, true), true, true) != 0)
+            goto cleanup;
 
-                if (uid >= 0) {
-                    if(run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, uid, true), true, true) != 0)
-                        goto cleanup;
-
-                    iptables_cleanup = true;
-                }
-            }
-        } else {
-            if(run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, -1, true), true, true) != 0)
-                goto cleanup;
-
-            iptables_cleanup = true;
-        }
+        iptables_cleanup = true;
     }
 
     pd_refresh_time(pd);
@@ -757,16 +722,7 @@ cleanup:
 
     if(iptables_cleanup) {
         char args[128];
-
-        if(pd->pcap.app_filter_uids_size > 0) {
-            for (int i = 0; i < pd->pcap.app_filter_uids_size; i++) {
-                int uid = pd->pcap.app_filter_uids[i];
-
-                if (uid >= 0)
-                    run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, uid, false), true, false);
-            }
-        } else
-            run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, -1, false), true, false);
+        run_shell_cmd("iptables", get_mitm_redirection_args(pd, args, false), true, false);
     }
 
     if((pd->pcap.pcapd_pid > 0) && !pd->pcap.daemonize) {
@@ -778,15 +734,6 @@ cleanup:
         if(WIFEXITED(status))
             process_pcapd_rv(pd, WEXITSTATUS(status));
     }
-
-#if ANDROID
-    if (pd->pcap.app_filter_uids) {
-        pd_free(pd->pcap.app_filter_uids);
-
-        pd->pcap.app_filter_uids = NULL;
-        pd->pcap.app_filter_uids_size = 0;
-    }
-#endif
 
     return rv;
 }

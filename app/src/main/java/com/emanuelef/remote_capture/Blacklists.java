@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
 import android.util.ArrayMap;
 
 import androidx.collection.ArraySet;
@@ -57,7 +56,7 @@ import java.util.Map;
  */
 public class Blacklists {
     public static final String PREF_BLACKLISTS_STATUS = "blacklists_status";
-    public static final long BLACKLISTS_UPDATE_MILLIS = 86400 * 1000; // 1d
+    public static final int BLACKLISTS_UPDATE_SECONDS = 86400; // 1d
     private static final String TAG = "Blacklists";
     private final ArrayList<BlacklistDescriptor> mLists = new ArrayList<>();
     private final ArrayMap<String, BlacklistDescriptor> mListByFname = new ArrayMap<>();
@@ -67,13 +66,11 @@ public class Blacklists {
     private boolean mUpdateInProgress;
     private boolean mStopRequest;
     private long mLastUpdate;
-    private long mLastUpdateMonotonic;
     private int mNumDomainRules;
     private int mNumIPRules;
 
     public Blacklists(Context ctx) {
         mLastUpdate = 0;
-        mLastUpdateMonotonic = -BLACKLISTS_UPDATE_MILLIS;
         mNumDomainRules = 0;
         mNumIPRules = 0;
         mContext = ctx;
@@ -124,14 +121,10 @@ public class Blacklists {
         String serialized = mPrefs.getString(PREF_BLACKLISTS_STATUS, "");
         if(!serialized.isEmpty()) {
             JsonObject obj = JsonParser.parseString(serialized).getAsJsonObject();
+
             mLastUpdate = obj.getAsJsonPrimitive("last_update").getAsLong();
             mNumDomainRules = obj.getAsJsonPrimitive("num_domain_rules").getAsInt();
             mNumIPRules = obj.getAsJsonPrimitive("num_ip_rules").getAsInt();
-
-            // set the monotonic time based on the last update wall clock time
-            long millis_since_last_update = System.currentTimeMillis() - mLastUpdate;
-            if (millis_since_last_update > 0)
-                mLastUpdateMonotonic = SystemClock.elapsedRealtime() - millis_since_last_update;
 
             JsonObject blacklists_obj = obj.getAsJsonObject("blacklists");
             if(blacklists_obj != null) { // support old format
@@ -197,7 +190,7 @@ public class Blacklists {
 
             if(!f.exists()) {
                 // must update
-                mLastUpdateMonotonic = -BLACKLISTS_UPDATE_MILLIS;
+                mLastUpdate = 0;
             }
         }
 
@@ -218,9 +211,9 @@ public class Blacklists {
     }
 
     public boolean needsUpdate(boolean firstUpdate) {
-        long now = SystemClock.elapsedRealtime();
-        return (((now - mLastUpdateMonotonic) >= BLACKLISTS_UPDATE_MILLIS)
-                || (firstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists())));
+        long now = System.currentTimeMillis();
+        return((now - mLastUpdate) >= BLACKLISTS_UPDATE_SECONDS * 1000)
+                || (firstUpdate && (getNumUpdatedBlacklists() < getNumBlacklists()));
     }
 
     // NOTE: invoked in a separate thread (CaptureService.mBlacklistsUpdateThread)
@@ -250,7 +243,6 @@ public class Blacklists {
         }
 
         mLastUpdate = System.currentTimeMillis();
-        mLastUpdateMonotonic = SystemClock.elapsedRealtime();
         notifyListeners();
     }
 

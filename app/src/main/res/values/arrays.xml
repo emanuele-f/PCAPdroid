@@ -49,15 +49,4 @@
         <item>@string/theme_light</item>
         <item>@string/theme_dark</item>
     </string-array>
-
-    <string-array name="block_quic">
-        <item>never</item>
-        <item>always</item>
-        <item>to_decrypt</item>
-    </string-array>
-    <string-array name="block_quic_labels">
-        <item>@string/never</item>
-        <item>@string/always</item>
-        <item>@string/for_connections_to_decrypt</item>
-    </string-array>
 </resources>

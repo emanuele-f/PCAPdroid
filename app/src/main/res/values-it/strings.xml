@@ -8,6 +8,7 @@
     <string name="rcvd_and_sent">%1$s ricevuti — %2$s inviati</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
+    <string name="app_filter">Filtro app</string>
     <string name="ready">Pronto</string>
     <string name="about">Informazioni</string>
     <string name="status">Stato</string>
@@ -80,7 +81,8 @@
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="app_theme">Tema</string>
-    <string name="socks5_proxy">SOCKS5</string>
+    <string name="socks5_proxy">Abilita proxy SOCKS5</string>
+    <string name="proxy_ip_address">Indirizzo IP del proxy</string>
     <string name="proxy_port">Porta del proxy</string>
     <string name="root_capture">Cattura come root</string>
     <string name="root_capture_summary">Permette a PCAPdroid di funzionare assieme ad altre app VPN</string>
@@ -210,7 +212,7 @@
     <string name="start_at_boot_summary">Avvia la cattura in automatico all\'avvio del dispositivo</string>
     <string name="malware_whitelist_help">Whitelist definita dall\'utente per inibire il rilevamento di malware. Tieni premuto su una connessione malevola per creare una regola</string>
     <string name="enable_socks5_proxy_summary">Redirigi tutte le connessioni TCP verso un proxy SOCKS5</string>
-    <string name="decryption_no_filter_warn">Quando la decrittazione TLS è abilitata, è necessario selezionare un filtro app per evitare di perdere la connessione a Internet</string>
+    <string name="decryption_no_filter_warn">Quando la decrittazione TLS è abilitata, è necessario selezionare un filtro app o usare la whitelist di decrittazione per evitare di perdere la connessione a Internet</string>
     <string name="traffic_dump">Salvataggio del traffico</string>
     <string name="conn_status_active">Attiva</string>
     <string name="phone_app">Telefono</string>
@@ -224,6 +226,7 @@
     <string name="cert_reinstall_required">Il certificato CA non è installato, eseguire nuovamente la configurazione</string>
     <string name="mitm_addon_bad_version">Versione dell\'addon mitm non supportata. Installa la versione %1$s e riprovare</string>
     <string name="mitm_addon_new_version">L\'addon mitm deve essere aggiornato</string>
+    <string name="upgrade_action">Aggiorna</string>
     <string name="export_failed">Esport fallito</string>
     <string name="not_encrypted">Non cifrata</string>
     <string name="string_http_response">Risposta HTTP</string>
@@ -280,6 +283,7 @@
     <string name="traffic_inspection">Ispezione del traffico</string>
     <string name="install_action">Installa</string>
     <string name="export_action">Esporta</string>
+    <string name="configure_action">Configura</string>
     <string name="export_ca_certificate">Esporta il certificato CA di PCAPdroid, poi importalo dalle impostazioni Android di \"Crittografia e Credenziali\", installandolo come \"Certificato CA\"</string>
     <string name="ca_cert_export_failed">Errore durante l\'esportazione del certificato CA
 \n
@@ -307,6 +311,7 @@
     <string name="block_quick">Blocca QUIC</string>
     <string name="firewall_summary">Blocca l\'accesso Internet alle app, configura regole per domini e indirizzi IP specifici. Funziona solamente con la cattura non-root</string>
     <string name="no_root_firewall">Firewall senza root</string>
+    <string name="block_quick_summary">Blocca le connessioni QUIC per cercare di forzare l\'utilizzo di TLS decrittabile. Alcune app potrebbero smettere di funzionare</string>
     <string name="mitm_setup_wizard_done">PCAPdroid è pronto a decrittare il traffico TLS
 \n
 \nPer saperne di più sulle misure di sicurezza adottate dalle app, che potrebbero interferire con la decrittazione, e su come bypassarle, far riferimento alla <a href="%1$s">guida utente</a></string>
@@ -476,34 +481,8 @@
     <string name="pcap_file_load_aborted">Caricamento file PCAP annullato</string>
     <string name="host_resolution_failed">Impossibile risolvere l\'host %1$s</string>
     <string name="pcapdroid_trailer_notice">Per visualizzare le app effettive invece di \"%1$s\", abilitare l\'opzione \"%2$s\" prima di esportare il file PCAP</string>
+    <string name="live_capture">Cattura live</string>
     <string name="decryption_info_no_rule">La connessione non sarà decrittata. Per decrittarla, crea una regola di decrittazione</string>
     <string name="tls_decryption_no_rules_notice">La decrittazione TLS è applicata soltanto alle connessioni che matchano le regole configurate. Vuoi creare ora delle regole di decrittazione\?</string>
     <string name="root_capture_pcapd_start_failure">Avvio della cattura fallito. Assicurati di concedere l\'accesso root a PCAPdroid</string>
-    <string name="export_ellipsis">Esporta…</string>
-    <string name="redirected">redirezionata</string>
-    <string name="always">Sempre</string>
-    <string name="target_apps">Filtri app</string>
-    <string name="whats_new">Novità</string>
-    <string name="mitm_doze_notice">L\'ottimizzazione della batteria potrebbe interferire con l\'addon mitm</string>
-    <string name="never">Mai</string>
-    <string name="for_connections_to_decrypt">Solo per connessioni da decrittare</string>
-    <string name="decrypt_quic_notice">La decrittazione di QUIC non è attualmente supportata. Come soluzione temporanea, ferma la cattura e seleziona l\'opzione di blocco QUIC dalle opzioni PCAPdroid</string>
-    <string name="target_apps_help">Seleziona le applicazione da catturare</string>
-    <string name="headers">Header</string>
-    <string name="connection_redirected_port_map">Questa connessione è stata redirezionata per via di una regola di port mapping</string>
-    <string name="dnscrypt_how_to">Come usare DoH / DNSCrypt con PCAPdroid</string>
-    <string name="body">Corpo</string>
-    <string name="both">Entrambi</string>
-    <string name="raw_bytes">Byte grezzi</string>
-    <string name="restart_on_disconnection">Riavvia su disconnessione</string>
-    <string name="restart_on_disconnection_summary">Riavvia in automatico la cattura dopo che questa è stata interrotta da altre app di VPN</string>
-    <string name="ipv6_bytes_rcvd">Bytes IPv6 ricevuti</string>
-    <string name="ipv6_bytes_percentage">Percentuale bytes IPv6</string>
-    <string name="waiting_for_vpn_disconnect">In attesa che la VPN attiva termini…</string>
-    <string name="ipv6_bytes_sent">Bytes IPv6 inviati</string>
-    <string name="vpn_reconnection">Riconnessione VPN</string>
-    <string name="vpn_reconnection_aborted">Riconnessione VPN annullata</string>
-    <string name="update_available">Aggiornamento disponibile</string>
-    <string name="update_action">Aggiorna</string>
-    <string name="mitm_addon_update_available">Una nuova versione dell\'addon mitm è disponibile. Aggiorna per ottenere gli ultimi miglioramenti</string>
 </resources>

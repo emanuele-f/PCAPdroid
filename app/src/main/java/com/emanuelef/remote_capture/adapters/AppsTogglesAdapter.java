@@ -99,12 +99,8 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         view.setOnClickListener((v) -> {
             if(mRecyclerView != null) {
                 int pos = recyclerViewHolder.getAbsoluteAdapterPosition();
-                AppDescriptor app = getItem(pos);
-
-                if (app != null) {
-                    boolean checked = mCheckedItems.contains(app.getPackageName());
-                    handleToggle(pos, !checked);
-                }
+                boolean checked = mCheckedItems.contains(getItem(pos).getPackageName());
+                handleToggle(pos, !checked);
             }
         });
 

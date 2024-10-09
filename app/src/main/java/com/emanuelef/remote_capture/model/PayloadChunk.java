@@ -28,7 +28,6 @@ public class PayloadChunk implements Serializable {
     public long timestamp;
     public ChunkType type;
     public String contentType;
-    public String path;
 
     // Serializable need in ConnectionPayload fragment
     public enum ChunkType implements Serializable {

@@ -15,6 +15,6 @@ PCAPdroid simuliert ein VPN, um den Netzwerkverkehr ohne Root abzufangen. Es wir
 * Identifizieren Sie das Land und die ASN des Remote-Servers über Offline-DB-Lookups
 * Erfassen Sie auf gerooteten Geräten den Datenverkehr, während andere VPN-Apps ausgeführt werden
 
-Wenn Sie planen, PCAPdroid zur Durchführung von Paketanalysen zu verwenden, lesen Sie bitte den <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>spezifischen Abschnitt</a> im Handbuch.
+Wenn Sie planen, PCAPdroid zur Durchführung von Paketanalysen zu verwenden, lesen Sie bitte den <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>spezifischen Abschnitt</a> von das Handbuch.
 
 Treten Sie der internationalen PCAPdroid-Community auf <a href="https://t.me/PCAPdroid">Telegram</a> oder auf <a href="https://matrix.to/#/#pcapdroid:matrix.org bei ">Matrix</a>.
