@@ -18,3 +18,9 @@ jobs:
         
     - run: ./gradlew test
     - run: ./gradlew assembleDebug -PdoNotStrip
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/*/**.apk
