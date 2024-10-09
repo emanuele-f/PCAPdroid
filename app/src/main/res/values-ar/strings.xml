@@ -15,9 +15,8 @@
     <string name="http_server_status">خادم HTTP: http://%1$s:%2$d</string>
     <string name="query">استعلام</string>
     <string name="host">استضافة</string>
-    <string name="app_filter">استهداف تطبيق</string>
     <string name="ready">مستعد</string>
-    <string name="status">حالة</string>
+    <string name="status">الحالة</string>
     <string name="about">حول</string>
     <string name="connections_view">الاتصالات</string>
     <string name="no_connections">لا اتصالات</string>
@@ -53,7 +52,7 @@
     <string name="apps">التطبيقات</string>
     <string name="pcap_file">ملف PCAP</string>
     <string name="rcvd_and_sent">استقبلت %1$s - ارسلت %2$s</string>
-    <string name="notification_msg">%1$s ملتقط و %2$s من الاتصالات</string>
+    <string name="notification_msg">%1$s ملتقط و %2$s اتصالات</string>
     <string name="get_app">أحصل عليه:</string>
     <string name="pcap_file_info">قم بإنشاء ملف PCAP في مساحة تخزين الجهاز</string>
     <string name="cannot_write_file">لا يمكن كتابة الملف</string>
@@ -61,7 +60,7 @@
     <string name="share">مشاركة</string>
     <string name="pcap_file_action">حُفظت حركة المرور في ملف %1$s (%2$s)</string>
     <string name="delete">حذف</string>
-    <string name="copy_error">لا يمكن كتابة الملف</string>
+    <string name="copy_error">تعذر كتابة الملف</string>
     <string name="capture_running">الالتقاط يعمل</string>
     <string name="conn_status_active">مفعّل</string>
     <string name="first_seen">أول ظهور</string>
@@ -74,10 +73,9 @@
     <string name="delete_error">لا يمكن حذف الملف</string>
     <string name="socks5_auth">مصادقة SOCKS5</string>
     <string name="socks5_auth_summary">قم بالمصادقة على الوكيل عبر اسم المستخدم وكلمة المرور</string>
-    <string name="proxy_ip_address">عنوان IP الوكيل</string>
     <string name="proxy_port">منفذ الوكيل</string>
     <string name="select_all">اختيار الكل</string>
-    <string name="target_sdk">هدف SDK</string>
+    <string name="target_sdk">SDK المستهدفة</string>
     <string name="installed_on">مثبت على</string>
     <string name="last_update">آخر تحديث</string>
     <string name="permissions">الأذونات</string>
@@ -91,7 +89,7 @@
     <string name="update_now">تحديث الان</string>
     <string name="valid">صالح</string>
     <string name="copied">تم نسخّه</string>
-    <string name="install_the_mitm_addon">قم بتثبيت PCAPdroid <a href="%1$s">mitm إضافة</a></string>
+    <string name="install_the_mitm_addon">ثبّت PCAPdroid <a href="%1$s">mitm إضافة</a></string>
     <string name="size_x">الحجم: %1$s</string>
     <string name="block_quick">حظر QUIC</string>
     <string name="welcome_to_pcapdroid">مرحبًا بك في PCAPdroid</string>
@@ -113,7 +111,7 @@
     <string name="phone_app">تطبيق الهاتف</string>
     <string name="unknown_app">غير معروف</string>
     <string name="other_prefs">آخر</string>
-    <string name="system_default">النظام</string>
+    <string name="system_default">النظام الافتراضي</string>
     <string name="conn_status_unreachable">لا يمكن الوصول إليه</string>
     <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
@@ -213,7 +211,7 @@
     <string name="malware_detection_learn_more">تعرف المزيد حول ميزة الكشف عن البرامج الضارة</string>
     <string name="private_dns_message_notice">يمنع DNS الخاص PCAPdroid من فحص حركة مرور DNS. يمكنك إيقاف تشغيله من إعدادات شبكة Android</string>
     <string name="private_dns_hinders_detection">DNS الخاص يعيق الكشف</string>
-    <string name="decryption_no_filter_warn">حدد تطبيقًا مستهدفًا أو استخدم القائمة البيضاء لفك التشفير عند فك تشفير TLS لتجنب فقدان اتصالك بالإنترنت</string>
+    <string name="decryption_no_filter_warn">حدد تطبيقًا مستهدفًا عند فك تشفير TLS لتجنب فقدان اتصالك بالإنترنت</string>
     <string name="block">حظر…</string>
     <string name="blocked_pkts">محظور</string>
     <string name="validate">التحقق من صحة</string>
@@ -249,7 +247,6 @@
     <string name="mitm_setup_wizard">إعداد Mitm</string>
     <string name="install_action">ثَبَّتَ</string>
     <string name="export_action">تصدير</string>
-    <string name="configure_action">تَهيئة</string>
     <string name="sort_by">الترتيب حسب</string>
     <string name="username">أسم المستخدم</string>
     <string name="write_ext_storage_failed">فشلت الكتابة إلى وحدة التخزين الخارجية. تحقق من سجل التطبيق للحصول على التفاصيل</string>
@@ -284,7 +281,6 @@
     <string name="pcap_file_load_aborted">تم إحباط تحميل ملف PCAP</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
     <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل تصدير ملف PCAP</string>
-    <string name="live_capture">إلتقاط مباشر</string>
     <string name="decryption_info_no_rule">لن يتم فك تشفير هذا الاتصال. قم بإنشاء قاعدة فك التشفير لفك تشفيرها</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -292,7 +288,6 @@
     <string name="asn">ASN</string>
     <string name="export_ca_certificate">قم بتصدير شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
     <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>
-    <string name="upgrade_action">ترقية</string>
     <string name="checking_the_certificate">جارِ التحقق من الشهادة…</string>
     <string name="ca_cert_export_failed">حدث خطأ أثناء تصدير شهادة CA
 \n
@@ -301,7 +296,7 @@
     <string name="cert_installed_correctly">تم تثبيت شهادة CA</string>
     <string name="cert_reinstall_required">لم يتم تثبيت شهادة CA، قم بتشغيل معالج إعداد mitm</string>
     <string name="mitm_addon_bad_version">نُسخة إضافة PCAPdroid mitm سيئة. الرجاء تثبيت إصدار %1$s وإعادة المحاولة</string>
-    <string name="mitm_addon_new_version">يجب ترقية الملحق PCAPdroid mitm</string>
+    <string name="mitm_addon_new_version">يجب ترقية إضافة PCAPdroid mitm</string>
     <string name="mitm_addon">المُلحق mitm</string>
     <string name="export_failed">فشل التصدير</string>
     <string name="overview">نظرة عامة</string>
@@ -367,7 +362,7 @@
     <string name="country_and_asn">البلد و ASN</string>
     <string name="app_intro_back_button">رجوع</string>
     <string name="app_intro_done_button">تم</string>
-    <string name="app_intro_welcome_msg">PCAPdroid هو تطبيق صديق للخصوصية يتيح لك تتبع وتحليل الاتصالات التي تجريها التطبيقات الموجودة على جهازك
+    <string name="app_intro_welcome_msg">تطبيق PCAPdroid صديق للخصوصية يتيح لك تتبع وتحليل الاتصالات التي تجريها التطبيقات الموجودة على جهازك
 \n
 \nعلاوة على ذلك، فهو يسمح لك بتصدير تفريغ PCAP لحركة المرور واستخراج البيانات الوصفية وغير ذلك الكثير!</string>
     <string name="privacy_first">الخصوصية أولاً</string>
@@ -397,12 +392,12 @@
     <string name="permission_granted">تم منح الإذن %1$s</string>
     <string name="permission_grant_fail">تعذر منح الإذن %1$s</string>
     <string name="connection_not_found">تعذر العثور على الاتصال المحدد</string>
-    <string name="low_memory_info">نفدت ذاكرة التطبيق، توقع حدوث أعطال</string>
+    <string name="low_memory_info">نفذت ذاكرة التطبيق، توقع حدوث أعطال</string>
     <string name="full_payload_disabled">تم تعطيل خيار الحمولة الكاملة</string>
     <string name="vpn_lockdown_notice">لمنع التطبيقات من الوصول إلى الإنترنت عندما لا يكون PCAPdroid قيد التشغيل (على سبيل المثال، بعد إعادة التشغيل)، يمكنك تعيين PCAPdroid كشبكة VPN تعمل دائمًا في وضع التأمين.
 \n
 \nهل تريد فتح إعدادات VPN الآن؟</string>
-    <string name="app_blocked">تم حظر التطبيق</string>
+    <string name="app_blocked">حُظر التطبيق</string>
     <string name="ipv4_only">IPv4 فقط</string>
     <string name="remote_collector_notice">لقد قمت بتكوين PCAPdroid لإرسال حركة المرور إلى خادم بعيد. سيكون الخادم قادرًا على الوصول إلى معلوماتك الحساسة.
 \n
@@ -416,8 +411,8 @@
     <string name="show_data_action">عرض البيانات</string>
     <string name="unblock_for_n_minutes">قم بإلغاء الحظر عن %1$dm</string>
     <string name="block_new_apps">حظر التطبيقات المثبتة حديثًا</string>
-    <string name="app_unblocked">تم إلغاء حظر التطبيق %1$s</string>
-    <string name="app_blocked_info">تم حظر تطبيق %1$s بواسطة جدار الحماية</string>
+    <string name="app_unblocked">أُلغي حظر التطبيق %1$s</string>
+    <string name="app_blocked_info">حُظر تطبيق %1$s بواسطة جدار الحماية</string>
     <string name="payload_scams_notice">قد يحتوي هذا العرض على معلومات حساسة، مثل كلمات المرور ورموز الوصول المميزة.
 \n
 \nلا تقم أبدًا بإعطاء هذه المعلومات لأي شخص، فقد تكون محاولة احتيال</string>
@@ -427,7 +422,7 @@
     <string name="unlock_token_summary">رمز مميز يمكن استخدامه لفتح الميزات المدفوعة في إصدارات التطبيق غير التابعة لـ Google Play (مثل F-Droid/Github)</string>
     <string name="license_service_unavailable">خدمة ترخيص PCAPdroid غير متوفرة حاليًا. يرجى إعادة المحاولة خلال بضع دقائق</string>
     <string name="unlock_token_msg1">هذا هو رمز إلغاء القفل الخاص بك. لاحظ ذلك لأنك ستحتاج إليه <a href="%1$s">لإنشاء رموز الترخيص</a></string>
-    <string name="firewall_purchase_msg">قم بشراء ميزة <i>%1$s</i> لبدء حظر الاتصالات</string>
+    <string name="firewall_purchase_msg">اشترِ مِيزة <i>%1$s</i> لبدء حظر الاتصالات</string>
     <string name="requesting_unlock_token">جارٍ طلب رمز إلغاء القفل، برجاء الانتظار</string>
     <string name="mitm_skip_notice">يبدو أن شهادة mitm غير مثبتة. إذا قمت بالمتابعة، فقد تفشل عملية فك التشفير</string>
     <string name="mitm_wizard_description">قم بتكوين الجهاز لفك تشفير TLS</string>
@@ -452,9 +447,8 @@
     <string name="last_firewall_block">أخر حظر</string>
     <string name="firewall_is_disabled">تم تعطيل جِدار الحماية</string>
     <string name="netd_block_missed">تم بدء هذا الاتصال بواسطة netd لذلك لا يمكن حظره</string>
-    <string name="block_quick_summary">قم بحظر اتصالات QUIC حتى تتمكن من العودة إلى TLS القابل لفك التشفير. قد تتوقف بعض التطبيقات عن العمل</string>
     <string name="block_private_dns">حظر DNS الخاص</string>
-    <string name="low_memory">ذاكرة منخفضة</string>
+    <string name="low_memory">الذاكرة منخفضة</string>
     <string name="remote_server_warning">لأسباب أمنية، غير مسموح بإرسال حركة المرور إلى الخادم البعيد \"%1$s\"</string>
     <string name="tls_decryption_with_root_msg">تعد القدرة على تشغيل فك تشفير TLS باستخدام الجذر ميزة تجريبية. هذه قائمة بالأخطاء المعروفة:
 \n
@@ -464,7 +458,7 @@
 \n- قد لا يعمل هذا على نظام Android 12 والإصدارات الأحدث
 \n- إذا كان تطبيق VPN قيد التشغيل، فيجب عليك إما استهداف تطبيق معين لفك التشفير أو استبعاد ملحق PCAPdroid mitm من VPN، وإلا ستستمر حركة المرور في حلقة</string>
     <string name="access_paid_features_msg">راجع <a href="%1$s">دليل المستخدم</a> للتعرف على كيفية الوصول إلى الميزات المدفوعة</string>
-    <string name="paid_feature">مَيزة مدفوعة</string>
+    <string name="paid_feature">مِيزة مدفوعة</string>
     <string name="firewall_whitelist_notice">في هذا الوضع، سيتم حظر جميع الاتصالات، ما لم يتم إدراجها يدويًا في القائمة البيضاء. قد تفوتك إشعارات الدفع بدون قائمة بيضاء مناسبة</string>
     <string name="destination_port">ميناء الوصول</string>
     <string name="port_mapping_exists">تعيين المنفذ محدد بالفعل</string>
@@ -478,7 +472,7 @@
     <string name="tls_decryption_no_rules_notice">يتم تطبيق فك تشفير TLS فقط على الاتصالات التي تطابق القواعد التي تم تكوينها. هل تريد إنشاء قواعد فك التشفير الآن؟</string>
     <string name="active_vpn_detected">تم اكتشاف شبكة VPN نشطة</string>
     <string name="proto_and_port">%1$s ،%2$d</string>
-    <string name="n_pkts">%1$s pkts</string>
+    <string name="n_pkts">%1$s حِزم</string>
     <string name="traffic_inspection">تَفَقُّد حركة المرور</string>
     <string name="tx_direction">TX</string>
     <string name="heap_usage">استهلاك الكومة</string>
@@ -486,4 +480,31 @@
     <string name="cleartext_connection">نص غير مشفر</string>
     <string name="rx_direction">RX</string>
     <string name="root_capture_pcapd_start_failure">بدء لالتقاط فشل . تأكد من منح حق الوصول إلى الجذر (root) لPCAPdroid</string>
+    <string name="redirected">حُوّلت</string>
+    <string name="dnscrypt_how_to">كيفية استخدام DoH / DNSCrypt مع PCAPdroid</string>
+    <string name="always">دائمًا</string>
+    <string name="target_apps_help">حدّد التطبيقات المراد التقاطها</string>
+    <string name="body">المحتوى</string>
+    <string name="raw_bytes">البايتات الخام</string>
+    <string name="mitm_doze_notice">قد يتداخل تحسين البطارية مع الملحق mitm</string>
+    <string name="connection_redirected_port_map">حُوّل توجيه هذا الاتصال بسبب قاعدة تعيين المنفذ</string>
+    <string name="never">أبداً</string>
+    <string name="for_connections_to_decrypt">فقط للاتصالات لفك التشفير</string>
+    <string name="decrypt_quic_notice">فك تشفير QUIC غير مدعوم حاليًا. كحل بديل، أوقِف الالتقاط وحدّد خيار حظر QUIC في إعدادات PCAPdroid</string>
+    <string name="target_apps">استهدف التطبيقات</string>
+    <string name="headers">الترويسات</string>
+    <string name="both">كلاهما</string>
+    <string name="whats_new">ما الجديد</string>
+    <string name="export_ellipsis">صدر…</string>
+    <string name="restart_on_disconnection">إعادة التشغيل عند انقطاع الاتصال</string>
+    <string name="ipv6_bytes_percentage">نسبة بايت IPv6</string>
+    <string name="vpn_reconnection">إعادة اتصال VPN</string>
+    <string name="vpn_reconnection_aborted">احبطت إعادة اتصال VPN</string>
+    <string name="ipv6_bytes_sent">تم إرسال بايت IPv6</string>
+    <string name="ipv6_bytes_rcvd">تلقيت بايت IPv6</string>
+    <string name="restart_on_disconnection_summary">إعادة تشغيل الالتقاط تلقائيًا بعد إيقافه بواسطة تطبيقات VPN الأخرى</string>
+    <string name="waiting_for_vpn_disconnect">في انتظار قطع اتصال شبكة VPN النشطة…</string>
+    <string name="update_available">يتوفر تحديث</string>
+    <string name="mitm_addon_update_available">يتوفر تحديث جديد لإضافة mitm. حدّث للحصول على أحدث إصلاحات العلل</string>
+    <string name="update_action">حدّث</string>
 </resources>

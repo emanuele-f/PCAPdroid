@@ -15,7 +15,6 @@
     <string name="host">Hôte</string>
     <string name="ready">Prêt</string>
     <string name="about">À propos</string>
-    <string name="app_filter">Filtrer l\'appli</string>
     <string name="no_connections">Aucune connexion</string>
     <string name="source">Source</string>
     <string name="destination">Destination</string>
@@ -111,7 +110,6 @@
     <string name="proxy_port">Port de proxy</string>
     <string name="root_capture">Capturer comme administrateur</string>
     <string name="enable_socks5_proxy_summary">Rediriger toutes les connexions TCP vers le proxy SOCKS5 spécifié</string>
-    <string name="proxy_ip_address">Adresse IP du proxy</string>
     <string name="root_capture_summary">Autorise le lancement de PCAPdroid avec d\'autres applications de VPN</string>
     <string name="socks5_proxy">Activer le proxy SOCKS5</string>
     <string name="capture_prefs">Capture</string>
@@ -222,10 +220,8 @@
     <string name="traffic_inspection">Inspection du trafic</string>
     <string name="install_action">Installer</string>
     <string name="export_action">Exporter</string>
-    <string name="configure_action">Configurer</string>
     <string name="cert_installed_correctly">Le certificat CA est installé</string>
     <string name="checking_the_certificate">Vérification du certificat…</string>
-    <string name="upgrade_action">Mettre à jour</string>
     <string name="export_failed">Échec de l\'export</string>
     <string name="not_encrypted">Non crypté</string>
     <string name="response">Réponse</string>

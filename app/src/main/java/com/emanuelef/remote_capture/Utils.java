@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.LocaleManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -58,6 +59,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -142,8 +144,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -343,6 +343,19 @@ public class Utils {
     public static Configuration getLocalizedConfig(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Configuration config = context.getResources().getConfiguration();
+
+        // On Android 33+, app language is configured from the system settings
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Prefs.useEnglishLanguage(prefs)) {
+                Log.i(TAG, "Migrate from in-app language picker to system picker");
+                prefs.edit().remove(Prefs.PREF_APP_LANGUAGE).apply();
+
+                context.getSystemService(LocaleManager.class)
+                        .setApplicationLocales(new LocaleList(Locale.forLanguageTag("en-US")));
+            }
+
+            return config;
+        }
 
         if(!Prefs.useEnglishLanguage(prefs))
             return config;
@@ -646,7 +659,7 @@ public class Utils {
     // Using the deprecated API instead to keep things simple.
     // https://developer.android.com/reference/android/net/ConnectivityManager#getAllNetworks()
     @SuppressWarnings("deprecation")
-    public static boolean hasVPNRunning(Context context) {
+    public static Network getRunningVpn(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if(cm != null) {
             try {
@@ -657,7 +670,7 @@ public class Utils {
 
                     if ((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
                         Log.d("hasVPNRunning", "detected VPN connection: " + net.toString());
-                        return true;
+                        return net;
                     }
                 }
             } catch (SecurityException e) {
@@ -666,7 +679,7 @@ public class Utils {
             }
         }
 
-        return false;
+        return null;
     }
 
     public static void showToast(Context context, int id, Object... args) {
@@ -917,7 +930,9 @@ public class Utils {
             ClipData clip = ClipData.newPlainText(ctx.getString(R.string.stats), contents);
             clipboard.setPrimaryClip(clip);
 
-            Utils.showToast(ctx, R.string.copied);
+            // Only show a toast for Android 12 and lower
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
+                Utils.showToast(ctx, R.string.copied);
         } catch (Exception e) {
             Log.e(TAG, "copyToClipboard failed: " + e.getMessage());
             Utils.showToastLong(ctx, R.string.error);
@@ -998,39 +1013,6 @@ public class Utils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             flags |= PendingIntent.FLAG_IMMUTABLE;
         return flags;
-    }
-
-    public static boolean unzip(InputStream is, String dstpath) {
-        try(ZipInputStream zipIn = new ZipInputStream(is)) {
-            ZipEntry entry = zipIn.getNextEntry();
-
-            while (entry != null) {
-                File dst = new File(dstpath + File.separator + entry.getName());
-
-                if (entry.isDirectory()) {
-                    if(!dst.mkdirs()) {
-                        Log.w("unzip", "Could not create directories");
-                        return false;
-                    }
-                } else {
-                    // Extract file
-                    try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dst))) {
-                        byte[] bytesIn = new byte[4096];
-                        int read;
-                        while ((read = zipIn.read(bytesIn)) != -1)
-                            bos.write(bytesIn, 0, read);
-                    }
-                }
-
-                zipIn.closeEntry();
-                entry = zipIn.getNextEntry();
-            }
-
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     public static boolean ungzip(InputStream is, String dst) {
@@ -1819,5 +1801,29 @@ public class Utils {
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public static int getMajorVersion(String ver) {
+        int start_idx = 0;
+
+        // optionally starts with "v"
+        if (ver.startsWith("v"))
+            start_idx = 1;
+
+        int end_idx = ver.indexOf('.');
+        if (end_idx < 0)
+            return -1;
+
+        try {
+            return Integer.parseInt(ver.substring(start_idx, end_idx));
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
+
+    // true if the two provided versions are semantically compatible (i.e. same major)
+    public static boolean isSemanticVersionCompatible(String a, String b) {
+        int va = getMajorVersion(a);
+        return (va >= 0) && (va == getMajorVersion(b));
     }
 }

@@ -239,7 +239,22 @@ int start_subprocess(const char *prog, const char *args, bool as_root, int* out_
 
         close(in_p[0]);
 
-        // write "su" command input
+        // write "su"/"sh" command input
+        if(as_root) {
+            // Some su implementations (e.g. Android-x86) change the PWD when activated,
+            // cd to the cache dir to ensure that the UNIX socket can be found by pcapd
+            char* cwd = getcwd(NULL, 0);
+            if (cwd) {
+                log_d("start_subprocess[%d]: cd %s", pid, cwd);
+                write(in_p[1], "cd \"",4);
+                write(in_p[1], cwd, strlen(cwd));
+                write(in_p[1], "\"\n", 2);
+                free(cwd);
+            } else
+                log_w("start_subprocess[%d]: getcwd failed[%d]: %s - non-magisk 'su' may fail",
+                      pid, errno, strerror(errno));
+        }
+
         log_d("start_subprocess[%d]: %s %s", pid, prog, args);
         write(in_p[1], prog, strlen(prog));
         write(in_p[1], " ", 1);

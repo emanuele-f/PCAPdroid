@@ -52,6 +52,63 @@ android:layout_height="fill_parent">
     </TableRow>
 
     <TableRow
+        android:id="@+id/ipv6_bytes_sent_row"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textStyle="bold"
+            android:text="@string/ipv6_bytes_sent" />
+        <TextView
+            android:id="@+id/ipv6_bytes_sent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textIsSelectable="true" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/ipv6_bytes_rcvd_row"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textStyle="bold"
+            android:text="@string/ipv6_bytes_rcvd" />
+        <TextView
+            android:id="@+id/ipv6_bytes_rcvd"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textIsSelectable="true" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/ipv6_bytes_percentage_row"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="4dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textStyle="bold"
+            android:text="@string/ipv6_bytes_percentage" />
+        <TextView
+            android:id="@+id/ipv6_bytes_percentage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:textIsSelectable="true" />
+    </TableRow>
+
+    <TableRow
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="4dp">

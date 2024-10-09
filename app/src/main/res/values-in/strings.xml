@@ -58,7 +58,6 @@
     <string name="capture_all_apps">Tangkap lalu lintas semua aplikasi</string>
     <string name="collector_info">Kolektor UDP: %1$s:%2$d</string>
     <string name="host">Host</string>
-    <string name="app_filter">Aplikasi target</string>
     <string name="ready">Siap</string>
     <string name="about">Tentang</string>
     <string name="connection_details">Detail koneksi</string>
@@ -101,7 +100,7 @@
     <string name="file_saved_with_name">File disimpan sebagai \"%1$s\"</string>
     <string name="theme_dark">Gelap</string>
     <string name="app_theme">Tema</string>
-    <string name="enable_socks5_proxy_summary">Arahkan ulang semua koneksi TCP ke proxy SOCKS5 yang ditentukan</string>
+    <string name="enable_socks5_proxy_summary">Arahkan ulang semua koneksi TCP ke proxy SOCKS5</string>
     <string name="proxy_port">Port proksi</string>
     <string name="root_capture">Capture dengan akses root</string>
     <string name="donate">Donasi</string>
@@ -170,7 +169,7 @@
     <string name="no_items_for_purchase">Tidak ada item yang tersedia untuk dibeli</string>
     <string name="learn_more">Pelajari lebih lanjut</string>
     <string name="can_use_purchased_feature">Sekarang Anda dapat menggunakan fitur yang telah dibeli</string>
-    <string name="disconnect_vpn_confirm">Putuskan sambungan aplikasi VPN aktif dan lanjutkan\?</string>
+    <string name="disconnect_vpn_confirm">Melanjutkan akan memutuskan sambungan VPN yang aktif</string>
     <string name="open_nav_drawer">Buka drawer</string>
     <string name="close_nav_drawer">Tutup drawer</string>
     <string name="save_ok">Disimpan</string>
@@ -186,7 +185,7 @@
     <string name="packets">Paket</string>
     <string name="duration">Durasi</string>
     <string name="udp_exporter_info">Mengirim PCAP ke penerima UDP jarak jauh</string>
-    <string name="vpn_setup_failed">Tidak dapat mengatur VPN</string>
+    <string name="vpn_setup_failed">Tidak dapat mengatur VPN. Pastikan VPN Selalu Aktif dinonaktifkan</string>
     <string name="lang_english">Inggris</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
@@ -210,7 +209,6 @@
     <string name="unknown_app">Tidak diketahui</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
-    <string name="proxy_ip_address">Alamat IP proxy</string>
     <string name="theme_light">Terang</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
@@ -263,11 +261,10 @@
     <string name="tls_decryption">Dekripsi TLS</string>
     <string name="tls_decryption_summary">Dekripsi lalu lintas SSL/TLS dengan melakukan mitm. Saat ini dapat bekerja dengan beberapa aplikasi, lihat panduan pengguna</string>
     <string name="traffic_inspection">Inspeksi lalu lintas</string>
-    <string name="mitm_start_failed">Tidak dapat memulai layanan mitm. Instal ulang mitm addon dan coba lagi</string>
+    <string name="mitm_start_failed">Tidak dapat memulai layanan mitm. Coba buka aplikasi addon mitm secara manual dan coba lagi</string>
     <string name="mitm_setup_wizard">Petunjuk instalasi Mitm</string>
     <string name="install_action">Instal</string>
     <string name="export_action">Ekspor</string>
-    <string name="configure_action">Konfigurasikan</string>
     <string name="export_ca_certificate">Ekspor sertifikat CA PCAPdroid, lalu buka pengaturan \"Enkripsi &amp; Kredensial\" Android dan pilih instal sebagai \"sertifikat CA\"</string>
     <string name="export_failed">Ekspor gagal</string>
     <string name="not_encrypted">Tidak dienkripsi</string>
@@ -279,7 +276,6 @@
     <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
     <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Instal versi %1$s dan coba lagi</string>
     <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
-    <string name="upgrade_action">Tingkatkan</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="payload">Muatan</string>
@@ -305,7 +301,6 @@
     <string name="netd_block_missed">Koneksi ini dimulai oleh netd sehingga tidak dapat diblokir</string>
     <string name="app_intro_next_button">Lanjut</string>
     <string name="block_quick">Blokir QUIC</string>
-    <string name="block_quick_summary">Blokir koneksi QUIC untuk kemungkinan kembali ke TLS yang dapat didekripsi. Beberapa aplikasi mungkin berhenti bekerja</string>
     <string name="block_private_dns_summary">Mendeteksi dan mungkin memblokir DNS pribadi untuk memeriksa lalu lintas DNS. Menonaktifkan ini dapat menghambat analisis lalu lintas</string>
     <string name="app_intro_back_button">Kembali</string>
     <string name="mitm_setup_wizard_intro">Wizard ini akan memandu Anda melalui penginstalan PCAPdroid mitm addon dan otoritas sertifikasi, yang diperlukan untuk melakukan <a href="%1$s">dekripsi TLS</a></string>
@@ -326,7 +321,9 @@
     <string name="privacy_first">Utamakan privasi</string>
     <string name="vpn_setup_msg">PCAPdroid mensimulasikan VPN untuk menangkap lalu lintas jaringan tanpa root.
 \n
-\nUntuk memulai pengambilan, Anda harus menerima permintaan VPN di layar berikutnya</string>
+\nUntuk memulai pengambilan, Anda harus menerima permintaan VPN di layar berikutnya
+\n
+\n<b>CATATAN:</b> untuk melanjutkan, nonaktifkan VPN Selalu Aktif yang dikonfigurasi dari pengaturan Android</string>
     <string name="app_intro_traffic_inspection">Memeriksa permintaan HTTP, respons, dan data mentah menjadi mudah, berkat dekoder bawaan
 \n
 \nPunya koneksi terenkripsi\? Anda dapat mengaktifkan <a href="%1$s">dekripsi TLS</a> untuk mendapatkan data yang didekripsi</string>
@@ -339,7 +336,7 @@
     <string name="app_intro_traffic_dump">PCAPdroid menyediakan <a href="%1$s">berbagai cara</a> untuk membuang lalu lintas dalam format PCAP standar untuk analisis lebih lanjut
 \n
 \nMelalui <a href="%2$s">opsi cuplikan</a>, Anda dapat menambahkan nama aplikasi ke paket</string>
-    <string name="low_memory">Memori rendah</string>
+    <string name="low_memory">Kekurangan Memori</string>
     <string name="heap_usage">memori menumpuk</string>
     <string name="no_matches_found">Tidak ada yang cocok</string>
     <string name="cleartext_connection">Teks bersih</string>
@@ -358,7 +355,7 @@
     <string name="ip_mode">Alamat IP VPN</string>
     <string name="mitm_skip_notice">Sertifikat mitm tampaknya tidak diinstal. Jika Anda melanjutkan, dekripsi mungkin gagal</string>
     <string name="mitm_wizard_description">Konfigurasikan perangkat untuk dekripsi TLS</string>
-    <string name="install_the_mitm_addon">Pasang PCAPdroid <a href="%1$s">add-on mitm</a></string>
+    <string name="install_the_mitm_addon">Instal PCAPdroid <a href="%1$s">addon mitm</a></string>
     <string name="permission_grant_fail">%1$s izin tidak dapat diberikan</string>
     <string name="low_memory_info">Aplikasi kehabisan memori, perkirakan macet</string>
     <string name="full_payload_disabled">Opsi muatan penuh telah dinonaktifkan</string>
@@ -377,7 +374,7 @@
     <string name="requesting_unlock_token">Meminta sebuah unlock token, tunggu sebentar</string>
     <string name="show_action">Lihat</string>
     <string name="unlock_token_msg1">Ini adalah token pembuka kunci Anda. Catat karena Anda akan memerlukannya <a href="%1$s">untuk membuat kode lisensi</a></string>
-    <string name="show_only_cleartext">Koneksi teks yang jelas</string>
+    <string name="show_only_cleartext">Bersihkan koneksi teks</string>
     <string name="allowed_connection_filter">Di Izinkan</string>
     <string name="permission_granted">%1$s izin diberikan</string>
     <string name="firewall_filter">Firewall : %1$s</string>
@@ -394,4 +391,117 @@
     <string name="paid_features_unlocked">Fitur berbayar tidak terkunci. Mulai ulang penangkapan jika berjalan</string>
     <string name="build_info">Info build</string>
     <string name="paid_feature">Fitur berbayar</string>
+    <string name="socks5_summary">Konfigurasikan pengarahan ulang ke proxy SOCKS5</string>
+    <string name="copy_error">Tidak dapat menulis berkas</string>
+    <string name="socks5_redirection">Pengarahan ulang SOCKS5</string>
+    <string name="firewall_whitelist_notice">Dalam mode ini semua koneksi akan diblokir, kecuali jika dimasukkan ke dalam daftar putih secara manual. Anda mungkin melewatkan notifikasi push tanpa daftar putih yang tepat</string>
+    <string name="host_resolution_failed">Tidak dapat menyelesaikan host %1$s</string>
+    <string name="dns_servers_summary">Mengonfigurasi server DNS yang akan digunakan selama pencatatan</string>
+    <string name="pcap_file_load_aborted">Pemuatan file PCAP dibatalkan</string>
+    <string name="password">Sandi</string>
+    <string name="many_rules_warning">Anda mencoba mengimpor banyak aturan, yang bisa membuat aplikasi tidak responsif selama berinteraksi. Apakah Anda benar-benar ingin melanjutkan\?</string>
+    <string name="mitm_addon">addon mitm</string>
+    <string name="decryption_rules">Aturan dekripsi</string>
+    <string name="tls_decryption_no_rules_notice">Dekripsi TLS hanya diterapkan pada koneksi yang sesuai dengan aturan yang dikonfigurasi. Apakah Anda ingin membuat aturan dekripsi sekarang\?</string>
+    <string name="pcap_load_success">File PCAP dimuat</string>
+    <string name="ipv4_dns_server">Server DNS IPv4</string>
+    <string name="firewall_whitelist_help">Aturan-aturan ini menentukan koneksi mana yang diizinkan. Aturan daftar blokir memiliki prioritas di atas aturan daftar putih</string>
+    <string name="status_encrypted">Terenkripsi</string>
+    <string name="ip_address">Alamat IP</string>
+    <string name="remove_from_fw_whitelist">Hapus dari daftar putih firewall</string>
+    <string name="unsupported_pcap_datalink">File PCAP memiliki datalink yang tidak didukung</string>
+    <string name="rule_exists">Aturan yang sudah ditetapkan</string>
+    <string name="use_system_dns_summary">Gunakan server DNS sistem jika memungkinkan</string>
+    <string name="license_error">Kesalahan pembuatan lisensi [%1$d]: %2$s</string>
+    <string name="activate_via_qr_code">Aktivasi melalui kode QR</string>
+    <string name="qr_code_expired">Kode QR kedaluwarsa. Buat kode QR baru dan coba lagi</string>
+    <string name="license_limit_reached">Anda telah mencapai batas lisensi untuk token buka kunci ini. Beli token baru untuk membuat lebih banyak lisensi</string>
+    <string name="socks5_auth_summary">Autentikasi ke proxy melalui nama pengguna dan kata sandi</string>
+    <string name="destination_ip">Alamat IP tujuan</string>
+    <string name="mitm_addon_error">Kesalahan saat memulai addon mitm. Periksa log untuk detailnya</string>
+    <string name="username">Nama pengguna (username)</string>
+    <string name="total_bytes">Total bytes</string>
+    <string name="reset_stats_confirm">Apakah Anda benar-benar ingin mengatur ulang statistik ini\?</string>
+    <string name="pcap_file_not_exists">File PCAP yang ditentukan tidak ada</string>
+    <string name="dns_servers">Server DNS</string>
+    <string name="license_activation_ok">Aktivasi lisensi selesai</string>
+    <string name="sort_by">Urutkan berdasarkan</string>
+    <string name="root_capture_start_failed">Pencatatan gagal dijalankan. Pastikan perangkat telah di-root dengan Magisk</string>
+    <string name="add_to_fw_whitelist">Tambahkan ke daftar putih firewall</string>
+    <string name="external_storage_perm_required">Izin penyimpanan eksternal diperlukan</string>
+    <string name="port_mapping_summary">Mengkonfigurasi aturan pemetaan port untuk mengalihkan koneksi ke host atau port yang berbeda</string>
+    <string name="write_ext_storage_failed">Gagal menyimpan ke penyimpanan eksternal. Periksa riwayat log aplikasi untuk detailnya</string>
+    <string name="mitmproxy_opts_description">Menyediakan opsi tambahan untuk mitmproxy</string>
+    <string name="socks5_auth">Autentikasi SOCKS5</string>
+    <string name="decryption_info_no_rule">Sambungan ini tidak akan didekripsi. Buat aturan dekripsi untuk mendekripsi</string>
+    <string name="pcapng_format_summary">Dump paket dalam format dump pcapng, yang memungkinkan penyematan TLS terdekripsi dan rahasia</string>
+    <string name="dont_decrypt_action">Jangan mendekripsi…</string>
+    <string name="pcap_read_error">Kesalahan pembacaan PCAP</string>
+    <string name="add_action">Tambahkan</string>
+    <string name="active_vpn_detected">VPN aktif terdeteksi</string>
+    <string name="pcap_load_in_progress">Pemuatan file PCAP sedang berlangsung, harap tunggu</string>
+    <string name="app_log">Riwayat</string>
+    <string name="required">dibutuhkan</string>
+    <string name="pcapng_format">format Pcapng</string>
+    <string name="ipv6_dns_server">Server DNS IPv6</string>
+    <string name="port_mapping">Pemetaan port</string>
+    <string name="redirect_to">Arahkan ke:</string>
+    <string name="mitm_addon_autostart_workaround">Koneksi ke addon mitm gagal. Sebagai solusi, Anda dapat mencoba membuka aplikasi addon mitm dan kembali ke PCAPdroid tanpa menutupnya. Apakah Anda ingin membukanya sekarang\?</string>
+    <string name="items_delete_confirm">Hapus item yang dipilih\?</string>
+    <string name="no_data">Tidak ada data</string>
+    <string name="qr_license_confirm">Apakah Anda ingin membuat lisensi untuk perangkat \"%1$s\" menggunakan token pembuka kunci berikut ini\?</string>
+    <string name="qr_info_text">Instal PCAPdroid dari Google Play dan pindai kode QR ini</string>
+    <string name="injected">Injected</string>
+    <string name="tls_decryption_with_root_msg">Kemampuan untuk menjalankan dekripsi TLS dengan root adalah fitur eksperimental. Ini adalah daftar bug yang diketahui:
+\n
+\n - di PCAPdroid Anda akan melihat lalu lintas yang dihasilkan dari aplikasi mitm-addon sebagai pengganti aplikasi asli
+\n - ketika filter aplikasi ditetapkan, dekripsi hanya akan terjadi untuk aplikasi target, tetapi PCAPdroid masih akan menampilkan lalu lintas aplikasi lain
+\n - jika penangkapan gagal dimulai, pastikan bahwa Anda benar-benar dapat menjalankan perintah iptables sebagai root (mis. melalui termux)
+\n - ini mungkin tidak bekerja pada Android 12 dan yang lebih baru
+\n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
+    <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
+    <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
+    <string name="malware_whitelist_action">Daftar putih (malware)…</string>
+    <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya, bukan \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum mengekspor file PCAP</string>
+    <string name="mitm_addon_starting">Addon Mitm sudah dijalankan…</string>
+    <string name="original_port">Port asli</string>
+    <string name="open_pcap_file">Buka file PCAP…</string>
+    <string name="use_system_dns">Gunakan DNS sistem</string>
+    <string name="decrypt_action">Dekripsi…</string>
+    <string name="root_capture_pcapd_start_failure">Pencatatan gagal dijalankan. Pastikan Anda memberikan akses root ke PCAPdroid</string>
+    <string name="qr_purchase_required">Beli token pembuka kunci untuk melanjutkan aktivasi melalui kode QR</string>
+    <string name="connection_error">Kesalahan koneksi: %1$s</string>
+    <string name="invalid_pcap_file">File PCAP tidak valid</string>
+    <string name="invalid_license">Lisensi tidak valid</string>
+    <string name="decryption_rules_help">Aturan-aturan ini menentukan koneksi mana yang akan didekripsi. Aturan berbasis host hanya berfungsi jika balasan DNS sebelumnya terlihat</string>
+    <string name="proxy_host">Proxy host</string>
+    <string name="port_mapping_exists">Pemetaan port telah ditentukan</string>
+    <string name="whitelist_mode">Mode daftar putih</string>
+    <string name="mitmproxy_opts">Opsi mitmproxy tambahan</string>
+    <string name="destination_port">Port tujuan</string>
+    <string name="capture_interface_open_error">Tidak dapat membuka antarmuka pencatatan</string>
+    <string name="raw_bytes">Byte mentah</string>
+    <string name="dnscrypt_how_to">Cara penggunaan DoH / DNSCrypt dengan PCAPdroid</string>
+    <string name="export_ellipsis">Ekspor…</string>
+    <string name="never">Jangan pernah</string>
+    <string name="always">Selalu</string>
+    <string name="ipv6_bytes_sent">Byte IPv6 terkirim</string>
+    <string name="ipv6_bytes_rcvd">Byte IPv6 diterima</string>
+    <string name="connection_redirected_port_map">Koneksi ini telah dialihkan karena aturan pemetaan port</string>
+    <string name="decrypt_quic_notice">Mendekripsi QUIC saat ini tidak didukung. Sebagai solusi sementara, hentikan penangkapan dan pilih opsi untuk memblokir QUIC di pengaturan PCAPdroid</string>
+    <string name="restart_on_disconnection">Mulai ulang saat putus koneksi</string>
+    <string name="restart_on_disconnection_summary">Jalankan ulang tangkapan karena penggunaan apl VPN lain</string>
+    <string name="vpn_reconnection">Menghubungkan kembali VPN</string>
+    <string name="vpn_reconnection_aborted">Penghubungan ulang VPN dihentikan</string>
+    <string name="waiting_for_vpn_disconnect">VPN yang sedang berjalan akan diberhentikan…</string>
+    <string name="ipv6_bytes_percentage">Persentase byte IPv6</string>
+    <string name="target_apps">Aplikasi target</string>
+    <string name="target_apps_help">Pilih apl yang ingin ditangkap</string>
+    <string name="whats_new">Apa yang baru</string>
+    <string name="mitm_doze_notice">Optimasi baterai mungkin mengintervensi add-on mitm</string>
+    <string name="redirected">dialihkan</string>
+    <string name="for_connections_to_decrypt">Hanya untuk koneksi yang akan didekripsi</string>
+    <string name="headers">Header</string>
+    <string name="body">Body</string>
+    <string name="both">Keduanya</string>
 </resources>

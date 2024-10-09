@@ -8,10 +8,15 @@ import android.os.Bundle;
 import com.emanuelef.remote_capture.Billing;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CaptureSettings implements Serializable {
     public Prefs.DumpMode dump_mode;
-    public String app_filter;
+    public Set<String> app_filter;
     public String collector_address;
     public int collector_port;
     public int http_server_port;
@@ -26,7 +31,7 @@ public class CaptureSettings implements Serializable {
     public boolean root_capture;
     public boolean pcapdroid_trailer;
     public boolean full_payload;
-    public boolean block_quic;
+    public Prefs.BlockQuicMode block_quic_mode;
     public boolean auto_block_private_dns;
     public boolean pcapng_format;
     public String capture_interface;
@@ -54,7 +59,7 @@ public class CaptureSettings implements Serializable {
         capture_interface = Prefs.getCaptureInterface(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
-        block_quic = Prefs.blockQuic(prefs);
+        block_quic_mode = Prefs.getBlockQuicMode(prefs);
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
         pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
@@ -62,7 +67,7 @@ public class CaptureSettings implements Serializable {
 
     public CaptureSettings(Context ctx, Intent intent) {
         dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
-        app_filter = getString(intent, Prefs.PREF_APP_FILTER, "");
+        app_filter = new HashSet<>(getStringList(intent, Prefs.PREF_APP_FILTER));
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
         http_server_port = getInt(intent, Prefs.PREF_HTTP_SERVER_PORT, 8080);
@@ -82,7 +87,7 @@ public class CaptureSettings implements Serializable {
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
         tls_decryption = getBool(intent, Prefs.PREF_TLS_DECRYPTION_KEY, false);
         full_payload = false;
-        block_quic = getBool(intent, Prefs.PREF_BLOCK_QUIC, false);
+        block_quic_mode = Prefs.getBlockQuicMode(getString(intent, "block_quic", Prefs.BLOCK_QUIC_MODE_DEFAULT));
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
@@ -111,6 +116,25 @@ public class CaptureSettings implements Serializable {
         if(s != null)
             return Boolean.parseBoolean(s);
         return bundle.getBoolean(key, def_value);
+    }
+
+    // get a list of comma-separated strings from the bundle
+    private static List<String> getStringList(Intent intent, String key) {
+        List<String> rv;
+
+        String s = intent.getStringExtra(key);
+        if(s != null) {
+            if (s.indexOf(',') < 0) {
+                rv = new ArrayList<>();
+                rv.add(s);
+            } else {
+                String[] arr = s.split(",");
+                rv = Arrays.asList(arr);
+            }
+        } else
+            rv = new ArrayList<>();
+
+        return rv;
     }
 
     public boolean readFromPcap() {

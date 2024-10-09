@@ -15,7 +15,6 @@
     <string name="http_server_status">HTTP-Server: http://%1$s:%2$d</string>
     <string name="query">Abfrage</string>
     <string name="host">Host</string>
-    <string name="app_filter">Ziel-App</string>
     <string name="about">Über</string>
     <string name="status">Status</string>
     <string name="app">App</string>
@@ -27,7 +26,7 @@
     <string name="source_code">Quellcode</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
-    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden</string>
+    <string name="vpn_setup_failed">VPN konnte nicht eingerichtet werden. Stelle sicher, dass Always-on VPN deaktiviert ist</string>
     <string name="app_not_found">App %1$s konnte nicht gefunden werden</string>
     <string name="stats">Statistiken</string>
     <string name="active_connections">Aktive Verbindungen</string>
@@ -104,7 +103,6 @@
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
     <string name="app_theme">Thema</string>
-    <string name="proxy_ip_address">Proxy-IP-Adresse</string>
     <string name="proxy_port">Proxy-Port</string>
     <string name="root_capture_summary">Erlaubt PCAPdroid die Ausführung mit anderen VPN-Apps</string>
     <string name="donate">Spenden</string>
@@ -184,7 +182,7 @@
     <string name="update_now">Jetzt aktualisieren</string>
     <string name="status_updating">Aktualisierung…</string>
     <string name="private_dns_hinders_detection">Privates DNS verhindert die Erkennung</string>
-    <string name="decryption_no_filter_warn">Wählen Sie eine Ziel-App aus oder verwenden Sie beim Entschlüsseln von TLS die Entschlüsselungs-Whitelist, um zu vermeiden, dass Ihre Verbindung zum Internet unterbrochen wird</string>
+    <string name="decryption_no_filter_warn">Wähle beim Entschlüsseln von TLS eine Ziel-App aus, um die Internetverbindung nicht zu verlieren</string>
     <string name="block">Sperren…</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall-Regeln</string>
@@ -206,7 +204,7 @@
     <string name="malware_status_update_failed">Einige Sperrlisten sind veraltet</string>
     <string name="copied">Kopiert</string>
     <string name="can_use_purchased_feature">Gekaufte Funktion jetzt verwenden werden</string>
-    <string name="disconnect_vpn_confirm">Aktive VPN-App trennen und fortfahren\?</string>
+    <string name="disconnect_vpn_confirm">Wenn Sie fortfahren wird die aktive VPN Verbindung unterbrochen</string>
     <string name="loading_apps">Lade Apps…</string>
     <string name="open_nav_drawer">Menü öffnen</string>
     <string name="close_nav_drawer">Menü schließen</string>
@@ -228,7 +226,7 @@
     <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren
 \n
 \nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
-    <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a> 
+    <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a>
 \n
 \nDurch die Verwendung aktueller Blacklists kann es bösartige Verbindungen in Echtzeit erkennen, blockieren und warnen</string>
     <string name="block_new_apps">Neu installierte Apps sperren</string>
@@ -240,7 +238,6 @@
     <string name="firewall_purchase_msg">Kaufe die Funktion <i>%1$s</i>, um Verbindungen zu sperren</string>
     <string name="show_only_cleartext">Klartext-Verbindungen</string>
     <string name="block_quick">QUIC sperren</string>
-    <string name="block_quick_summary">QUIC-Verbindungen sperren, um möglicherweise auf entschlüsselbares TLS zurückzugreifen. Einige Apps funktionieren möglicherweise nicht mehr</string>
     <string name="block_private_dns_summary">Private DNS erkennen und möglicherweise sperren, um DNS-Verkehr zu untersuchen. Die Deaktivierung dieser Funktion kann die Analyse des Datenverkehrs behindern</string>
     <string name="firewall_filter">Firewall: %1$s</string>
     <string name="unblock_permanently">Dauerhaft entsperren</string>
@@ -251,7 +248,6 @@
     <string name="phone_app">Telefon</string>
     <string name="install_action">Installieren</string>
     <string name="export_action">Exportieren</string>
-    <string name="configure_action">Konfigurieren</string>
     <string name="checking_the_certificate">Zertifikat wird überprüft…</string>
     <string name="app_log">Protokoll</string>
     <string name="no_data">Keine Daten</string>
@@ -262,7 +258,6 @@
     <string name="mitm_addon">mitm Addon</string>
     <string name="export_failed">Export fehlgeschlagen</string>
     <string name="not_encrypted">Nicht verschlüsselt</string>
-    <string name="upgrade_action">Aktualisierung</string>
     <string name="request">Anfrage</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
@@ -294,9 +289,9 @@
 \n
 \nSchauen Sie sich das Benutzerhandbuch <a href="%1$s"/> an, um mehr über die Sicherheitsmaßnahmen zu erfahren, die eine Entschlüsselung verhindern können und wie diese umgangen werden können</string>
     <string name="welcome_to_pcapdroid">Willkommen bei PCAPdroid</string>
-    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen.
-\n
-\nWie können Sie sich sicher sein\? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den Quellcode <a href="%2$s">an.</a></string>
+    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen. 
+\n 
+\nWie können Sie sich sicher sein? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den <a href="%2$s">Quellcode</a>.</string>
     <string name="app_intro_geolocation_msg">PCAPdroid kann eine lokale Datenbank abfragen, um das Land eines entfernten Servers zu bestimmen
 \n
 \nSie müssen zuerst die Geolokalisierungsdatenbank aus den App-Einstellungen herunterladen</string>
@@ -379,7 +374,7 @@
     <string name="response">Antwort</string>
     <string name="string_http_request">HTTP-Anfrage</string>
     <string name="string_http_response">HTTP-Antwort</string>
-    <string name="payload_truncated">Die Nutzlast ist gekürzt. Aktivieren Sie \"%1$s\", um sie vollständig anzuzeigen</string>
+    <string name="payload_truncated">Der Payload ist gekürzt. Aktivieren Sie \"%1$s\", um den Payload vollständig anzuzeigen</string>
     <string name="full_payload_summary">Zeigen Sie die volle Verbindung Payload (z.B. die volle HTTP-Anfrage und Antwort). Dies erfordert viel Speicher, nicht auf lange Sicht verwenden</string>
     <string name="payload">Nutzlast</string>
     <string name="tx_direction">Senden</string>
@@ -409,9 +404,11 @@
     <string name="app_intro_welcome_msg">PCAPdroid ist eine datenschutzfreundliche App, mit der Sie die von den Apps auf Ihrem Gerät hergestellten Verbindungen verfolgen und analysieren können
 \n
 \nDarüber hinaus können Sie einen PCAP-Dump des Datenverkehrs exportieren, Metadaten extrahieren und vieles mehr!</string>
-    <string name="vpn_setup_msg">PCAPdroid simuliert ein VPN, um den Netzwerkverkehr ohne Root zu erfassen.
+    <string name="vpn_setup_msg">PCAPdroid simuliert einen VPN, um den Netzwerkverkehr ohne Root zu erfassen.
 \n
-\nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren</string>
+\nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren.
+\n
+\n<b>ANMERKUNG:</b> um fortzufahren deaktivieren Sie bitte alle Always-on VPNs in den Android Einstellungen</string>
     <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, um den Datenverkehr im Standard-PCAP-Format zur weiteren Analyse auszugeben
 \n
 \nÜber die <a href="%2$s">Trailer-Option</a> können Sie den Paketen App-Namen hinzufügen und diese in Wireshark anzeigen</string>
@@ -465,4 +462,46 @@
     <string name="mitm_addon_running">Mitm addon läuft</string>
     <string name="decryption_rules_help">Diese Regeln geben an, welche Verbindungen zu entschlüsseln sind. Host-basierte Regeln funktionieren nur, wenn eine vorherige DNS-Antwort angezeigt wird</string>
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
+    <string name="copy_error">Datei kann nicht geschrieben werden</string>
+    <string name="proxy_host">Proxy Host</string>
+    <string name="pcap_load_success">PCAP Datei geladen</string>
+    <string name="decryption_info_no_rule">Die Verbindung wird nicht entschlüsselt. Erstelle eine Entschlüsselungsregel um die Verbindung zu entschlüsseln</string>
+    <string name="pcap_read_error">PCAP Lesefehler</string>
+    <string name="pcap_load_in_progress">PCAP Datei wird geladen, bitte warten</string>
+    <string name="open_pcap_file">Öffne PCAP Datei…</string>
+    <string name="invalid_pcap_file">Ungültige PCAP Datei</string>
+    <string name="unsupported_pcap_datalink">PCAP-Datei hat einen nicht unterstützten Datenlink</string>
+    <string name="pcap_file_not_exists">Die angegebene PCAP-Datei existiert nicht</string>
+    <string name="root_capture_pcapd_start_failure">Fehler beim starten der Aufzeichnung. Stelle sicher dass PCAPdroid root Berechtigungen erhalten hat</string>
+    <string name="pcapdroid_trailer_notice">Um statt \"%1$s\" die tatsächlichen Apps anzuzeigen Stelle sicher dass die \"%2$s\" Option vor exportieren der PCAP Datei aktiviert wurde</string>
+    <string name="tls_decryption_no_rules_notice">Nur Verbindungen die mit den vorkonfigurierten Regeln übereinstimmen werden entschlüsselt. Möchtest du jetzt eine Entschlüsselungsregel erstellen?</string>
+    <string name="active_vpn_detected">Aktiver VPN festgestellt</string>
+    <string name="pcap_file_load_aborted">Laden der PCAP Datei abgebrochen</string>
+    <string name="host_resolution_failed">Der Host %1$s konnte nicht gefunden werden</string>
+    <string name="capture_interface_open_error">Die Aufnahmeschnittstelle konnte nicht geöffnet werden</string>
+    <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher, dass das Gerät mit Magisk gerootet ist</string>
+    <string name="mitm_doze_notice">Batterieoptimierung kann das Mitm-Addon stören</string>
+    <string name="redirected">umgeleitet</string>
+    <string name="ipv6_bytes_sent">IPv6 Bytes gesendet</string>
+    <string name="connection_redirected_port_map">Diese Verbindung wurde durch eine Port-Mapping-Regel umgeleitet</string>
+    <string name="dnscrypt_how_to">Wie man DoH / DNSCrypt mit PCAPdroid verwendet</string>
+    <string name="decrypt_quic_notice">Das Entschlüsseln von QUIC wird derzeit nicht unterstützt. Als Workaround stoppen Sie die Erfassung und wählen Sie die Option, um QUIC in den PCAPdroid-Einstellungen zu blockieren</string>
+    <string name="target_apps">Ziel-Apps</string>
+    <string name="export_ellipsis">Export…</string>
+    <string name="ipv6_bytes_rcvd">IPv6 Bytes empfangen</string>
+    <string name="ipv6_bytes_percentage">IPv6 bys prozentual</string>
+    <string name="never">Nie</string>
+    <string name="always">Immer</string>
+    <string name="for_connections_to_decrypt">Nur für Verbindungen zur Entschlüsselung</string>
+    <string name="target_apps_help">Wählen Sie die zu erfassenden Anwendungen aus</string>
+    <string name="headers">HTTP-Headers</string>
+    <string name="body">HTTP-Body</string>
+    <string name="both">beides</string>
+    <string name="whats_new">Was ist neu</string>
+    <string name="waiting_for_vpn_disconnect">Warten darauf, dass die aktive VPN-Verbindung getrennt wird …</string>
+    <string name="raw_bytes">Raw -Bytes</string>
+    <string name="restart_on_disconnection">Neustart bei Trennung</string>
+    <string name="restart_on_disconnection_summary">Startet die Aufnahme automatisch neu, nachdem sie von anderen VPN-Apps gestoppt wurde</string>
+    <string name="vpn_reconnection">VPN-Wiederverbindung</string>
+    <string name="vpn_reconnection_aborted">VPN-Wiederverbindung abgebrochen</string>
 </resources>

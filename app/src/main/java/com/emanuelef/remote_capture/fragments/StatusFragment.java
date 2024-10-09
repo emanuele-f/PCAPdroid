@@ -14,33 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.method.LinkMovementMethod;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
@@ -49,6 +48,7 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
+import com.emanuelef.remote_capture.activities.AppFilterActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
@@ -58,27 +58,31 @@ import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.CaptureStats;
-import com.emanuelef.remote_capture.views.AppSelectDialog;
 import com.emanuelef.remote_capture.views.PrefSpinner;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 public class StatusFragment extends Fragment implements AppStateListener, MenuProvider {
     private static final String TAG = "StatusFragment";
-    private Handler mHandler;
     private Menu mMenu;
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
+    private MenuItem mOpenPcap;
+    private ImageView mFilterIcon;
     private MenuItem mMenuSettings;
     private TextView mInterfaceInfo;
-    private TextView mCollectorInfo;
+    private View mCollectorInfoLayout;
+    private TextView mCollectorInfoText;
+    private ImageView mCollectorInfoIcon;
     private TextView mCaptureStatus;
     private View mQuickSettings;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
-    private String mAppFilter;
-    private TextView mFilterWarning;
-    private AppSelectDialog mAppSelDialog;
+    private Set<String> mAppFilter;
+    private TextView mFilterRootDecryptionWarning;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -89,7 +93,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @Override
     public void onDetach() {
         super.onDetach();
-        abortAppSelection();
         mActivity.setAppStateListener(null);
         mActivity = null;
     }
@@ -97,6 +100,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @Override
     public void onResume() {
         super.onResume();
+
+        CaptureService.checkAlwaysOnVpnActivated();
         refreshStatus();
     }
 
@@ -110,12 +115,13 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mHandler = new Handler(Looper.getMainLooper());
         mInterfaceInfo = view.findViewById(R.id.interface_info);
-        mCollectorInfo = view.findViewById(R.id.collector_info);
+        mCollectorInfoLayout = view.findViewById(R.id.collector_info_layout);
+        mCollectorInfoText = mCollectorInfoLayout.findViewById(R.id.collector_info_text);
+        mCollectorInfoIcon = mCollectorInfoLayout.findViewById(R.id.collector_info_icon);
         mCaptureStatus = view.findViewById(R.id.status_view);
         mQuickSettings = view.findViewById(R.id.quick_settings);
-        mFilterWarning = view.findViewById(R.id.app_filter_warning);
+        mFilterRootDecryptionWarning = view.findViewById(R.id.app_filter_root_decryption_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         mAppFilter = Prefs.getAppFilter(mPrefs);
 
@@ -127,33 +133,13 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         View filterRow = view.findViewById(R.id.app_filter_text);
         TextView filterTitle = filterRow.findViewById(R.id.title);
         mFilterDescription = filterRow.findViewById(R.id.description);
+        mFilterIcon = filterRow.findViewById(R.id.icon);
 
-        // Needed to update the filter icon after mFilterDescription is measured
-        final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
-        if(vto.isAlive()) {
-            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    refreshFilterInfo();
+        filterTitle.setText(R.string.target_apps);
 
-                    final ViewTreeObserver vto = mFilterDescription.getViewTreeObserver();
-
-                    if(vto.isAlive()) {
-                        vto.removeOnGlobalLayoutListener(this);
-                        Log.d(TAG, "removeOnGlobalLayoutListener called");
-                    }
-                }
-            });
-        }
-
-        filterTitle.setText(R.string.app_filter);
-
-        mAppFilterSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if(isChecked) {
-                if((mAppFilter == null) || (mAppFilter.isEmpty()))
-                    openAppFilterSelector();
-            } else
-                setAppFilter(null);
+        mAppFilterSwitch.setOnClickListener((buttonView) -> {
+            mAppFilterSwitch.setChecked(!mAppFilterSwitch.isChecked());
+            openAppFilterSelector();
         });
 
         refreshFilterInfo();
@@ -168,7 +154,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         CaptureService.observeStats(this, this::onStatsUpdate);
 
         // Make URLs clickable
-        mCollectorInfo.setMovementMethod(LinkMovementMethod.getInstance());
+        mCollectorInfoText.setMovementMethod(LinkMovementMethod.getInstance());
 
         /* Important: call this after all the fields have been initialized */
         mActivity.setAppStateListener(this);
@@ -183,6 +169,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mStartBtn = mMenu.findItem(R.id.action_start);
         mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
+        mOpenPcap = mMenu.findItem(R.id.open_pcap);
         refreshStatus();
     }
 
@@ -194,7 +181,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private void recheckFilterWarning() {
         boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
 
-        mFilterWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
+        mFilterRootDecryptionWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
                 Prefs.isRootCaptureEnabled(mPrefs)
                 && !hasFilter) ? View.VISIBLE : View.GONE);
     }
@@ -216,51 +203,66 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
         if((mAppFilter == null) || (mAppFilter.isEmpty())) {
             mFilterDescription.setText(R.string.capture_all_apps);
-            mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+            mFilterIcon.setVisibility(View.GONE);
             mAppFilterSwitch.setChecked(false);
             return;
         }
 
         mAppFilterSwitch.setChecked(true);
 
-        AppDescriptor app = AppsResolver.resolveInstalledApp(context.getPackageManager(), mAppFilter, 0);
-        String description;
+        Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
 
-        if(app == null)
-            description = mAppFilter;
-        else {
-            description = app.getName() + " (" + app.getPackageName() + ")";
-            int height = mFilterDescription.getMeasuredHeight();
+        mFilterDescription.setText(pair.first);
 
-            if((height > 0) && (app.getIcon() != null)) {
-                Drawable drawable = Utils.scaleDrawable(context.getResources(), app.getIcon(), height, height);
-
-                if(drawable != null)
-                    mFilterDescription.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-            }
+        if (pair.second != null) {
+            mFilterIcon.setImageDrawable(pair.second);
+            mFilterIcon.setVisibility(View.VISIBLE);
         }
-
-        mFilterDescription.setText(description);
-    }
-
-    private void setAppFilter(AppDescriptor filter) {
-        SharedPreferences.Editor editor = mPrefs.edit();
-        mAppFilter = (filter != null) ? filter.getPackageName() : "";
-
-        editor.putString(Prefs.PREF_APP_FILTER, mAppFilter);
-        editor.apply();
-        refreshFilterInfo();
-        recheckFilterWarning();
     }
 
     private void onStatsUpdate(CaptureStats stats) {
         Log.d("MainReceiver", "Got StatsUpdate: bytes_sent=" + stats.pkts_sent + ", bytes_rcvd=" +
                 stats.bytes_rcvd + ", pkts_sent=" + stats.pkts_sent + ", pkts_rcvd=" + stats.pkts_rcvd);
-
         mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
-    private void refreshPcapDumpInfo() {
+    private Pair<String, Drawable> getAppFilterTextAndIcon(@NonNull Context context) {
+        Drawable icon = null;
+        String text = "";
+
+        if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
+            if (mAppFilter.size() == 1) {
+                // only a single app is selected, show its image and text
+                String package_name = mAppFilter.iterator().next();
+                AppDescriptor app = AppsResolver.resolveInstalledApp(requireContext().getPackageManager(), package_name, 0);
+
+                if((app != null) && (app.getIcon() != null)) {
+                    icon = app.getIcon();
+                    text = app.getName() + " (" + app.getPackageName() + ")";
+                }
+            } else {
+                // multiple apps, show default icon and comprehensive text
+                icon = ContextCompat.getDrawable(context, R.drawable.ic_image);
+                ArrayList<String> parts = new ArrayList<>();
+
+                for (String package_name: mAppFilter) {
+                    AppDescriptor app = AppsResolver.resolveInstalledApp(requireContext().getPackageManager(), package_name, 0);
+                    String tmp = package_name;
+
+                    if (app != null)
+                        tmp = app.getName();
+
+                    parts.add(tmp);
+                }
+
+                text = Utils.shorten(String.join(", ", parts), 48);
+            }
+        }
+
+        return new Pair<>(text, icon);
+    }
+
+    private void refreshPcapDumpInfo(Context context) {
         String info = "";
 
         Prefs.DumpMode mode = CaptureService.getDumpMode();
@@ -286,33 +288,26 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             break;
         }
 
-        mCollectorInfo.setText(info);
+        mCollectorInfoText.setText(info);
 
         // Check if a filter is set
+        Drawable drawable = null;
         if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
-            AppDescriptor app = AppsResolver.resolveInstalledApp(requireContext().getPackageManager(), mAppFilter, 0);
+            Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
+            drawable = pair.second;
+        }
 
-            if((app != null) && (app.getIcon() != null)) {
-                // Rendering after mCollectorInfo.setText is deferred, so getMeasuredHeight must be postponed
-                mHandler.post(() -> {
-                    if(getContext() == null)
-                        return;
-
-                    int height = mCollectorInfo.getMeasuredHeight();
-                    Drawable drawable = Utils.scaleDrawable(getResources(), app.getIcon(), height, height);
-
-                    if(drawable != null)
-                        mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-                });
-            } else
-                mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+        if (drawable != null) {
+            mCollectorInfoIcon.setImageDrawable(drawable);
+            mCollectorInfoIcon.setVisibility(View.VISIBLE);
         } else
-            mCollectorInfo.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+            mCollectorInfoIcon.setVisibility(View.GONE);
     }
 
     @Override
     public void appStateChanged(AppState state) {
-        if(getContext() == null)
+        Context context = getContext();
+        if(context == null)
             return;
 
         if(mMenu != null) {
@@ -321,18 +316,20 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 mStopBtn.setEnabled(true);
                 mStopBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(false);
+                mOpenPcap.setEnabled(false);
             } else { // ready || starting
                 mStopBtn.setVisible(false);
                 mStartBtn.setEnabled(true);
                 mStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(true);
+                mOpenPcap.setEnabled(true);
             }
         }
 
         switch(state) {
             case ready:
                 mCaptureStatus.setText(R.string.ready);
-                mCollectorInfo.setVisibility(View.GONE);
+                mCollectorInfoLayout.setVisibility(View.GONE);
                 mInterfaceInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
                 mAppFilter = Prefs.getAppFilter(mPrefs);
@@ -348,7 +345,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 break;
             case running:
                 mCaptureStatus.setText(Utils.formatBytes(CaptureService.getBytes()));
-                mCollectorInfo.setVisibility(View.VISIBLE);
+                mCollectorInfoLayout.setVisibility(View.VISIBLE);
                 mQuickSettings.setVisibility(View.GONE);
                 CaptureService service = CaptureService.requireInstance();
 
@@ -373,7 +370,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                     mInterfaceInfo.setVisibility(View.GONE);
 
                 mAppFilter = CaptureService.getAppFilter();
-                refreshPcapDumpInfo();
+                refreshPcapDumpInfo(context);
                 break;
             default:
                 break;
@@ -387,26 +384,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     }
 
     private void openAppFilterSelector() {
-        mAppSelDialog = new AppSelectDialog((AppCompatActivity) requireActivity(), R.string.app_filter,
-                new AppSelectDialog.AppSelectListener() {
-            @Override
-            public void onSelectedApp(AppDescriptor app) {
-                abortAppSelection();
-                setAppFilter(app);
-            }
-
-            @Override
-            public void onAppSelectionAborted() {
-                abortAppSelection();
-                setAppFilter(null);
-            }
-        });
-    }
-
-    private void abortAppSelection() {
-        if(mAppSelDialog != null) {
-            mAppSelDialog.abort();
-            mAppSelDialog = null;
-        }
+        Intent intent = new Intent(requireContext(), AppFilterActivity.class);
+        startActivity(intent);
     }
 }

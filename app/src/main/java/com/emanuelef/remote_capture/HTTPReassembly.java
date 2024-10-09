@@ -40,6 +40,7 @@ public class HTTPReassembly {
     private boolean mChunkedEncoding;
     private ContentEncoding mContentEncoding;
     private String mContentType;
+    private String mPath;
     private int mContentLength;
     private int mHeadersSize;
     private final ArrayList<PayloadChunk> mHeaders = new ArrayList<>();
@@ -68,6 +69,7 @@ public class HTTPReassembly {
         mChunkedEncoding = false;
         mContentLength = -1;
         mContentType = null;
+        mPath = null;
         mHeadersSize = 0;
         mHeaders.clear();
         mBody.clear();
@@ -100,10 +102,30 @@ public class HTTPReassembly {
             // Reading the HTTP headers
             int headers_end = Utils.getEndOfHTTPHeaders(payload);
             int headers_size = (headers_end == 0) ? payload.length : headers_end;
+            boolean is_first_line = (mHeadersSize == 0);
             mHeadersSize += headers_size;
 
             try(BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(payload, 0, headers_size)))) {
                 String line = reader.readLine();
+
+                if (is_first_line && (line != null)) {
+                    if (line.startsWith("GET ") || line.startsWith("POST ")
+                            || line.startsWith("HEAD ") || line.startsWith("PUT ")) {
+                        int first_space = line.indexOf(' ');
+                        int second_space = line.indexOf(' ', first_space + 1);
+
+                        if ((first_space > 0) && (second_space > 0)) {
+                            mPath = line.substring(first_space + 1, second_space);
+
+                            int query_start = mPath.indexOf('?');
+                            if (query_start >= 0)
+                                mPath = mPath.substring(0, query_start);
+
+                            log_d("Path: " + mPath);
+                        }
+                    }
+                }
+
                 while((line != null) && (line.length() > 0)) {
                     line = line.toLowerCase();
                     //log_d("[HEADER] " + line);
@@ -256,6 +278,7 @@ public class HTTPReassembly {
                     to_add.type = PayloadChunk.ChunkType.RAW;
 
                 to_add.contentType = mContentType;
+                to_add.path = mPath;
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
             }

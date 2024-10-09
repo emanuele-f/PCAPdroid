@@ -30,7 +30,7 @@ local fields = {}
 
 fields.magic   = ProtoField.uint32("pcapdroid.magic", "Magic", base.HEX)
 fields.uid     = ProtoField.int32("pcapdroid.uid", "UID", base.DEC)
-fields.appname = ProtoField.string("pcapdroid.appname", "App name", base.ASCII)
+fields.appname = ProtoField.string("pcapdroid.appname", "App name", base.UNICODE)
 
 pcapdroid.fields = fields
 
@@ -51,7 +51,7 @@ function pcapdroid.dissector(buffer, pinfo, tree)
     return
   end
 
-  local appname = trailer(8, 20):string()
+  local appname = trailer(8, 20):raw()
   local subtree = tree:add(pcapdroid, buffer(), string.format("PCAPdroid, App: %s", appname))
 
   subtree:add(fields.magic, trailer(0, 4))

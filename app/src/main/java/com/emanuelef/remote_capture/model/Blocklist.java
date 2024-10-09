@@ -22,13 +22,13 @@ public class Blocklist extends MatchList {
     }
 
     public synchronized boolean unblockAppForMinutes(int uid, int minutes) {
-        Long old_val = mUidToGrace.put(uid, SystemClock.uptimeMillis() + (minutes * 60_000L));
+        Long old_val = mUidToGrace.put(uid, SystemClock.elapsedRealtime() + (minutes * 60_000L));
         Log.i(TAG, "Grace app: " + uid + " for " + minutes + " minutes (old: " + old_val + ")");
         return (old_val == null);
     }
 
     public synchronized boolean checkGracePeriods() {
-        long now = SystemClock.uptimeMillis();
+        long now = SystemClock.elapsedRealtime();
         boolean changed = false;
         Iterator<Map.Entry<Integer,Long>> iter = mUidToGrace.entrySet().iterator();
 
