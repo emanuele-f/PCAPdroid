@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -86,6 +87,7 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,6 +113,7 @@ public class CaptureService extends VpnService implements Runnable {
     final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
     private boolean mIsAlwaysOnVPN;
+    private boolean mRevoked;
     private SharedPreferences mPrefs;
     private CaptureSettings mSettings;
     private Billing mBilling;
@@ -127,7 +130,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String dns_server;
     private long last_bytes;
     private int last_connections;
-    private int app_filter_uid;
+    private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private Uri mPcapUri;
@@ -212,6 +215,26 @@ public class CaptureService extends VpnService implements Runnable {
         return START_NOT_STICKY;
     }
 
+    private static boolean alwaysOnVpnErrorLogged = false;
+
+    // Android does not provide a reliable API to track the always-on VPN state
+    // This function tries to detect but may fail to do so
+    private boolean isAlwaysOnVpnDetected() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return isAlwaysOn();
+
+        try {
+            String always_on_vpn_app = Settings.Secure.getString(getContentResolver(), "always_on_vpn_app");
+            return always_on_vpn_app.equals(getPackageName());
+        } catch (Exception e) {
+            if (!alwaysOnVpnErrorLogged) {
+                Log.w(TAG, "Querying the always-on VPN state failed: " + e);
+                alwaysOnVpnErrorLogged = true;
+            }
+            return false;
+        }
+    }
+
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         mStopping = false;
@@ -235,6 +258,9 @@ public class CaptureService extends VpnService implements Runnable {
             return abortStart();
         }
 
+        if (VpnReconnectService.isAvailable())
+            VpnReconnectService.stopService();
+
         mHandler = new Handler(Looper.getMainLooper());
         mBilling = Billing.newInstance(this);
 
@@ -257,8 +283,7 @@ public class CaptureService extends VpnService implements Runnable {
             mIsAlwaysOnVPN = false;
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            mIsAlwaysOnVPN |= isAlwaysOn();
+        mIsAlwaysOnVPN |= isAlwaysOnVpnDetected();
 
         Log.d(TAG, "alwaysOn? " + mIsAlwaysOnVPN);
         if(mIsAlwaysOnVPN) {
@@ -269,7 +294,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mSettings.readFromPcap()) {
             // Disable incompatible settings
             mSettings.dump_mode = Prefs.DumpMode.NONE;
-            mSettings.app_filter = "";
+            mSettings.app_filter.clear();
             mSettings.socks5_enabled = false;
             mSettings.tls_decryption = false;
             mSettings.root_capture = false;
@@ -406,14 +431,29 @@ public class CaptureService extends VpnService implements Runnable {
             mDecryptionList = null;
 
         if ((mSettings.app_filter != null) && (!mSettings.app_filter.isEmpty())) {
-            try {
-                app_filter_uid = Utils.getPackageUid(getPackageManager(), mSettings.app_filter, 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-                app_filter_uid = -1;
+            ArrayList<Integer> uids = new ArrayList<>();
+
+            for (String package_name: mSettings.app_filter) {
+                int uid;
+
+                try {
+                    uid = Utils.getPackageUid(getPackageManager(), package_name, 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+
+                uids.add(uid);
             }
+
+            // populate the array only with resolved UIDs
+            mAppFilterUids = new int[uids.size()];
+
+            int i = 0;
+            for (Integer uid: uids)
+                mAppFilterUids[i++] = uid;
         } else
-            app_filter_uid = -1;
+            mAppFilterUids = new int[0];
 
         mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
         mFirewallEnabled = Prefs.isFirewallEnabled(this, mPrefs);
@@ -458,7 +498,8 @@ public class CaptureService extends VpnService implements Runnable {
                     // NOTE: the API requires a package name, however it is converted to a UID
                     // (see Vpn.java addUserToRanges). This means that vpn routing happens on a UID basis,
                     // not on a package-name basis!
-                    builder.addAllowedApplication(mSettings.app_filter);
+                    for (String package_name: mSettings.app_filter)
+                        builder.addAllowedApplication(package_name);
                 } catch (PackageManager.NameNotFoundException e) {
                     String msg = String.format(getResources().getString(R.string.app_not_found), mSettings.app_filter);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -497,7 +538,8 @@ public class CaptureService extends VpnService implements Runnable {
 
             try {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
+                e.printStackTrace();
                 Utils.showToast(this, R.string.vpn_setup_failed);
                 return abortStart();
             }
@@ -588,6 +630,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onRevoke() {
         Log.d(CaptureService.TAG, "onRevoke");
+        mRevoked = true;
         stopService();
         super.onRevoke();
     }
@@ -916,6 +959,20 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) && INSTANCE.mIsAlwaysOnVPN);
     }
 
+    public static boolean checkAlwaysOnVpnActivated() {
+        CaptureService instance = INSTANCE;
+        if (instance == null)
+            return false;
+
+        if (!instance.mIsAlwaysOnVPN && instance.isAlwaysOnVpnDetected()) {
+            Log.i(TAG, "Always-on VPN was activated");
+            instance.mIsAlwaysOnVPN = true;
+            return true;
+        }
+
+        return false;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public static boolean isLockdownVPN() {
         return ((INSTANCE != null) && INSTANCE.isLockdownEnabled());
@@ -958,7 +1015,7 @@ public class CaptureService extends VpnService implements Runnable {
         return rv;
     }
 
-    public static String getAppFilter() {
+    public static Set<String> getAppFilter() {
         return((INSTANCE != null) ? INSTANCE.mSettings.app_filter : null);
     }
 
@@ -1035,6 +1092,11 @@ public class CaptureService extends VpnService implements Runnable {
                 (INSTANCE.isPcapFileCapture() == 1));
     }
 
+    public static boolean isIPv6Enabled() {
+        return((INSTANCE != null) &&
+                (INSTANCE.getIPv6Enabled() == 1));
+    }
+
     public static boolean isDecryptionListEnabled() {
         return(INSTANCE != null && (INSTANCE.mDecryptionList != null));
     }
@@ -1063,12 +1125,14 @@ public class CaptureService extends VpnService implements Runnable {
         return (ifname != null) ? ifname : "";
     }
 
+
+
     // Inside the mCaptureThread
     @Override
     public void run() {
-        if(mSettings.root_capture) {
+        if(mSettings.root_capture || mSettings.readFromPcap()) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
-            if(checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED) {
+            if(mSettings.root_capture && (checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED)) {
                 boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
                 mHandler.post(() -> Utils.showToast(this, success ? R.string.permission_granted : R.string.permission_grant_fail, "INTERACT_ACROSS_USERS"));
             }
@@ -1291,7 +1355,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int isPcapngEnabled() { return(mSettings.pcapng_format ? 1 : 0); }
 
-    public int getAppFilterUid() { return(app_filter_uid); }
+    public int[] getAppFilterUids() { return(mAppFilterUids); }
 
     public int getMitmAddonUid() {
         return MitmAddon.getUid(this);
@@ -1309,7 +1373,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int getVpnMTU()      { return VPN_MTU; }
 
-    public int blockQuick()     { return(mSettings.block_quic ? 1 : 0); }
+    public int getBlockQuickMode() { return mSettings.block_quic_mode.ordinal(); }
 
     // returns 1 if dumpPcapData should be called
     public int pcapDumpEnabled() {
@@ -1387,6 +1451,15 @@ public class CaptureService extends VpnService implements Runnable {
                 reloadDecryptionList();
             reloadBlocklist();
             reloadFirewallWhitelist();
+        } else if (cur_status == ServiceStatus.STOPPED) {
+            if (mRevoked && Prefs.restartOnDisconnect(mPrefs) && !mIsAlwaysOnVPN && (isVpnCapture() == 1)) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    Log.i(TAG, "VPN disconnected, starting reconnect service");
+
+                    final Intent intent = new Intent(this, VpnReconnectService.class);
+                    ContextCompat.startForegroundService(this, intent);
+                }
+            }
         }
     }
 

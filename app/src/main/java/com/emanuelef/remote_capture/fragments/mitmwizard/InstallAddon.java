@@ -37,17 +37,19 @@ public class InstallAddon extends StepFragment {
         super.onViewCreated(view, savedInstanceState);
         Utils.setTextUrls(mStepLabel, R.string.install_the_mitm_addon, MitmAddon.REPOSITORY);
 
-        if(MitmAddon.isInstalled(requireContext()))
+        String new_ver = MitmAddon.getNewVersionAvailable(requireContext());
+        if(new_ver.isEmpty() && MitmAddon.isInstalled(requireContext()))
             addonOk();
         else
-            installAddon();
+            installAddon(new_ver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if(MitmAddon.isInstalled(requireContext()))
+        if(MitmAddon.getNewVersionAvailable(requireContext()).isEmpty() &&
+                MitmAddon.isInstalled(requireContext()))
             addonOk();
     }
 
@@ -55,15 +57,19 @@ public class InstallAddon extends StepFragment {
         nextStep(R.id.navto_install_cert);
     }
 
-    private void installAddon() {
-        long installed_ver = MitmAddon.getInstalledVersion(requireContext());
+    private void installAddon(String new_ver) {
+        String installed_ver = MitmAddon.getInstalledVersionName(requireContext());
 
-        if(installed_ver < 0) {
+        if(installed_ver.isEmpty()) {
             mStepLabel.setText(R.string.install_the_mitm_addon);
             mStepButton.setText(R.string.install_action);
-        } else if(installed_ver < MitmAddon.PACKAGE_VERSION_CODE) {
+        } else if(Utils.isSemanticVersionCompatible(installed_ver, new_ver)) {
+            mStepLabel.setText(R.string.mitm_addon_update_available);
+            mStepButton.setText(R.string.update_action);
+            showSkipButton(view -> gotoStep(R.id.navto_install_cert));
+        } else if(MitmAddon.getInstalledVersion(requireContext()) < MitmAddon.PACKAGE_VERSION_CODE) {
             mStepLabel.setText(R.string.mitm_addon_new_version);
-            mStepButton.setText(R.string.upgrade_action);
+            mStepButton.setText(R.string.update_action);
         } else {
             mStepLabel.setText(getString(R.string.mitm_addon_bad_version, MitmAddon.PACKAGE_VERSION_NAME));
             mStepIcon.setColorFilter(mDangerColor);
@@ -73,8 +79,10 @@ public class InstallAddon extends StepFragment {
         }
 
         mStepButton.setOnClickListener(v -> {
+            String target_ver = new_ver.isEmpty() ? MitmAddon.PACKAGE_VERSION_NAME : new_ver;
+
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(MitmAddon.getGithubReleaseUrl()));
+                    Uri.parse(MitmAddon.getGithubReleaseUrl(target_ver)));
             Utils.startActivity(requireContext(), browserIntent);
         });
     }

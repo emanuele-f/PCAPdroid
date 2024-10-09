@@ -1,1 +1,1 @@
-Monitor jaringan tanpa root dan alat dump trafik untuk Android
+Monitor jaringan tanpa root dan alat penyimpan lalu lintas data untuk perangkat Android

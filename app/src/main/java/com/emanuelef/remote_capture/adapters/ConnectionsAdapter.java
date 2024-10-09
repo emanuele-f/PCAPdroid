@@ -79,6 +79,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ImageView jsInjectorInd;
         ImageView blacklistedInd;
         ImageView blockedInd;
+        ImageView redirectedInd;
         ImageView decryptionInd;
         TextView statusInd;
         TextView remote;
@@ -103,6 +104,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             jsInjectorInd = itemView.findViewById(R.id.js_injector);
             blacklistedInd = itemView.findViewById(R.id.blacklisted);
             blockedInd = itemView.findViewById(R.id.blocked);
+            redirectedInd = itemView.findViewById(R.id.redirected);
             //countryFlag = itemView.findViewById(R.id.country_flag);
 
             Context context = itemView.getContext();
@@ -160,6 +162,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             jsInjectorInd.setVisibility(((conn.js_injected_scripts != null) && !conn.js_injected_scripts.isEmpty()) ? View.VISIBLE : View.GONE);
             blacklistedInd.setVisibility(conn.isBlacklisted() ? View.VISIBLE : View.GONE);
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
+            redirectedInd.setVisibility((conn.isPortMappingApplied() && !conn.is_blocked) ? View.VISIBLE : View.GONE);
 
             if(CaptureService.isDecryptingTLS()) {
                 decryptionInd.setVisibility(View.VISIBLE);

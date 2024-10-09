@@ -8,7 +8,6 @@
     <string name="rcvd_and_sent">%1$s получено — %2$s отправлено</string>
     <string name="query">Запрос</string>
     <string name="host">Хост</string>
-    <string name="app_filter">Целевое приложение</string>
     <string name="ready">Готов</string>
     <string name="about">О приложении</string>
     <string name="status">Состояние</string>
@@ -35,7 +34,7 @@
     <string name="source_code">Исходный код</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
-    <string name="vpn_setup_failed">Не удалось настроить VPN</string>
+    <string name="vpn_setup_failed">Не удалось настроить VPN. Убедитесь, что опция Постоянный VPN отключена</string>
     <string name="app_not_found">Не удалось найти приложение %1$s</string>
     <string name="stats">Показатели</string>
     <string name="active_connections">Активные соединения</string>
@@ -76,13 +75,12 @@
     <string name="other_prefs">Другое</string>
     <string name="app_language">Язык приложения</string>
     <string name="lang_english">Английский</string>
-    <string name="system_default">Системный</string>
+    <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="app_theme">Тема</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
-    <string name="proxy_ip_address">IP-адрес прокси</string>
     <string name="proxy_port">Порт прокси</string>
     <string name="root_capture">Захват в root режиме</string>
     <string name="donate">Пожертвовать</string>
@@ -199,7 +197,7 @@
     <string name="save_ok">Сохранено</string>
     <string name="loading_apps">Загрузка приложений…</string>
     <string name="file_saved_with_name">Файл сохранен как \"%1$s\"</string>
-    <string name="disconnect_vpn_confirm">Отключиться от активного VPN соединения и продолжить\?</string>
+    <string name="disconnect_vpn_confirm">Продолжение приведёт к отключению от активного VPN</string>
     <string name="copied">Скопировано</string>
     <string name="capture_not_running_status">Захват не производится</string>
     <string name="start_capture_first">Сначала запустите захват траффика</string>
@@ -212,7 +210,7 @@
     <string name="hidden_connections_help">Список правил для скрытия элементов из списка соединений, чтобы сфокусироваться только на нужном</string>
     <string name="enable_socks5_proxy_summary">Перенаправляет все TCP соединения на SOCKS5 прокси</string>
     <string name="malware_whitelist_help">Определенный пользователем белый список для подавления обнаружения вредоносов. Удерживайте вредоносное соединение, чтобы создать правило согласно которому данное соединение не будет считаться вредоносным</string>
-    <string name="decryption_no_filter_warn">При расшифровке TLS выберите целевое приложение или используйте белый список дешифрования, чтобы избежать потери соединения с интернетом</string>
+    <string name="decryption_no_filter_warn">При дешифровании TLS выберите целевое приложение, чтобы избежать потери соединения с интернетом</string>
     <string name="traffic_dump">Дамп траффика</string>
     <string name="phone_app">Телефон</string>
     <string name="phone_app_info">Службы телефонии</string>
@@ -223,11 +221,9 @@
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
     <string name="install_action">Установить</string>
     <string name="export_action">Экспорт</string>
-    <string name="configure_action">Настроить</string>
     <string name="cert_exported_now_installed">Сертификат экспортирован, теперь установите его из настроек Android</string>
     <string name="cert_reinstall_required">Корневой сертификат не установлен, запустите мастер настройки mitm</string>
-    <string name="mitm_addon_new_version">PCAPdroid mitm дополнение требуется обновить</string>
-    <string name="upgrade_action">Обновить</string>
+    <string name="mitm_addon_new_version">PCAPdroid mitm-дополнение необходимо обновить</string>
     <string name="string_http_request">HTTP запрос</string>
     <string name="string_http_response">HTTP ответ</string>
     <string name="request">Запрос</string>
@@ -281,7 +277,7 @@
     <string name="conn_status_active">Активно</string>
     <string name="export_failed">Экспорт не удался</string>
     <string name="not_encrypted">Не зашифровано</string>
-    <string name="payload_truncated">Содержимое сокращено. Включите \"%1$s\" чтобы отображать его полностью</string>
+    <string name="payload_truncated">Содержимое сокращено. Чтобы отобразить его полностью, остановите захват и включите %1$s в настройках PCAPdroid</string>
     <string name="decrypted">Дешифровано</string>
     <string name="decryption">Дешифрование</string>
     <string name="waiting_application_data">Ожидаем данные</string>
@@ -310,7 +306,6 @@
 \nЕсли на вашем устройстве есть Autostart или похожие программы, ограничивающие активность фоновых процессов, убедитесь в том, что <a href="%1$s">разрешили все для PCAPdroid</a></string>
     <string name="netd_block_missed">Это соединение инициировано сервисом netd, поэтому оно не может быть заблокировано</string>
     <string name="firewall_summary">Блокируйте доступ в интернет для приложений, настраивайте правила для доменов и IP адресов. Работает только при захвате без root</string>
-    <string name="block_quick_summary">Блокировка QUIC соединений возможно вернет к TLS, который можно дешифровать. Некоторые приложения могут перестать работать</string>
     <string name="app_intro_back_button">Назад</string>
     <string name="app_intro_done_button">Готово</string>
     <string name="mitm_setup_wizard_intro">Этот мастер настройки проведет вас через установку дополнения PCAPdroid mitm и корневого сертификата, которые необходимы для проведения <a href="%1$s">дешифрования TLS</a></string>
@@ -325,7 +320,9 @@
 \nБолее того, приложение позволяет вам экспортировать дамп траффика в виде PCAP, извлекать метаданные и многое другое!</string>
     <string name="vpn_setup_msg">PCAPdroid симулирует VPN чтобы захватывать весь траффик устройства без необходимости в root.
 \n
-\nЧтобы начать захват, вам необходимо принять запрос на включение VPN на следующем экране</string>
+\nЧтобы начать захват, вам необходимо принять запрос на включение VPN на следующем экране
+\n
+\n<b>ПРИМЕЧАНИЕ:</b> чтобы продолжить, отключите любой настроенный Постоянный VPN из настроек Android</string>
     <string name="app_intro_firewall_msg">Со встроенным <a href="%1$s">файрволом</a> вы можете легко заблокировать доступ в интернет отдельным приложениям и доменам
 \n
 \nСкомбинируйте это со встроенной возможностью просматривать траффик и получите идеальный инструмент для защиты своей конфиденциальности</string>
@@ -458,10 +455,55 @@
     <string name="socks5_auth">Аутентификация SOCKS5</string>
     <string name="mitm_addon_starting">MITM-аддон запускается…</string>
     <string name="mitm_addon_running">MITM-аддон запущен</string>
-    <string name="decryption_rules">Правила расшифровки</string>
-    <string name="decrypt_action">Расшифровывать…</string>
-    <string name="decryption_rules_help">Эти правила указывают на те соединения, которые необходимо расшифровывать. Правила на основе хостов работают только если найден соответствующий отклик от DNS сервера</string>
-    <string name="dont_decrypt_action">Не расшифровывать…</string>
+    <string name="decryption_rules">Правила дешифрования</string>
+    <string name="decrypt_action">Дешифровать…</string>
+    <string name="decryption_rules_help">Эти правила указывают на те соединения, которые необходимо дешифровать. Правила на основе хостов работают только если найден соответствующий отклик от DNS сервера</string>
+    <string name="dont_decrypt_action">Не дешифровать…</string>
     <string name="status_encrypted">Зашифровано</string>
     <string name="injected">Инжектировано</string>
+    <string name="tls_decryption_no_rules_notice">Дешифрование TLS применяется только к соединениям, которые соответствуют настроенным правилам. Вы хотите создать правила дешифрования\?</string>
+    <string name="root_capture_pcapd_start_failure">Не удалось начать захват. Убедитесь, что вы разрешили root-доступ для PCAPdroid</string>
+    <string name="active_vpn_detected">Обнаружен активный VPN</string>
+    <string name="copy_error">Не удаётся записать файл</string>
+    <string name="proxy_host">Прокси хост</string>
+    <string name="pcap_load_in_progress">PCAP файл загружается, пожалуйста подождите</string>
+    <string name="open_pcap_file">Открыть PCAP файл…</string>
+    <string name="decryption_info_no_rule">Это соединение не будет дешифровано. Создайте правило для его дешифрования</string>
+    <string name="host_resolution_failed">Не удалось разрешить хост %1$s</string>
+    <string name="capture_interface_open_error">Не удалось открыть интерфейс захвата</string>
+    <string name="pcap_load_success">PCAP файл загружен</string>
+    <string name="invalid_pcap_file">Некорректный PCAP файл</string>
+    <string name="pcap_file_not_exists">Указанного PCAP файла не существует</string>
+    <string name="pcap_read_error">Ошибка чтения PCAP</string>
+    <string name="pcap_file_load_aborted">Загрузка PCAP файла прервана</string>
+    <string name="root_capture_start_failed">Не удалось начать захват. Убедитесь, что устройство рутовано с помощью Magisk</string>
+    <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед экспортом PCAP файла</string>
+    <string name="never">Никогда</string>
+    <string name="target_apps">Целевые приложения</string>
+    <string name="target_apps_help">Выберите приложения для захвата</string>
+    <string name="connection_redirected_port_map">Это соединение было перенаправлено по правилу сопоставления портов</string>
+    <string name="for_connections_to_decrypt">Только для дешифруемых соединений</string>
+    <string name="whats_new">Что нового</string>
+    <string name="both">Обе части</string>
+    <string name="redirected">перенаправлено</string>
+    <string name="dnscrypt_how_to">Как использовать DoH / DNSCrypt с PCAPdroid</string>
+    <string name="always">Всегда</string>
+    <string name="raw_bytes">Raw байты</string>
+    <string name="mitm_doze_notice">Оптимизации батареи могут помешать работе mitm дополнения</string>
+    <string name="decrypt_quic_notice">Дешифрование QUIC в данный момент не поддерживается. В качестве временной меры, остановите захват и в настройках PCAPdroid включите опцию блокировки QUIC</string>
+    <string name="headers">Заголовки</string>
+    <string name="body">Тело</string>
+    <string name="unsupported_pcap_datalink">PCAP файл содержит неподдерживаемый datalink</string>
+    <string name="export_ellipsis">Экспорт…</string>
+    <string name="ipv6_bytes_rcvd">IPv6 байт получено</string>
+    <string name="restart_on_disconnection_summary">Автоматически перезапускать захват после остановки другими VPN приложениями</string>
+    <string name="ipv6_bytes_sent">IPv6 байт отправлено</string>
+    <string name="ipv6_bytes_percentage">Процент IPv6 байт</string>
+    <string name="waiting_for_vpn_disconnect">Ожидается отключение активного VPN…</string>
+    <string name="vpn_reconnection">Переподключение VPN</string>
+    <string name="vpn_reconnection_aborted">Переподключение VPN прервано</string>
+    <string name="restart_on_disconnection">Перезапуск при отключении</string>
+    <string name="update_available">Доступно обновление</string>
+    <string name="mitm_addon_update_available">Доступно свежее обновление для mitm-дополнения. Обновитесь для получения последних исправлений</string>
+    <string name="update_action">Обновить</string>
 </resources>

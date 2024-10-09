@@ -111,7 +111,8 @@ public class ConnectionDescriptor {
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
     public boolean is_blocked;
-    public boolean decryption_ignored;
+    private boolean port_mapping_applied;
+    private boolean decryption_ignored;
     public boolean netd_block_missed;
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
@@ -155,11 +156,12 @@ public class ConnectionDescriptor {
             rcvd_pkts = update.rcvd_pkts;
             blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            port_mapping_applied = (update.status & 0x2000) != 0;
             decryption_ignored = (update.status & 0x1000) != 0;
             netd_block_missed = (update.status & 0x0800) != 0;
             is_blocked = (update.status & 0x0400) != 0;
-            blacklisted_ip = (update.status & 0x0100) != 0;
             blacklisted_host = (update.status & 0x0200) != 0;
+            blacklisted_ip = (update.status & 0x0100) != 0;
             last_seen = update.last_seen;
             tcp_flags = update.tcp_flags; // NOTE: only for root capture
 
@@ -253,10 +255,10 @@ public class ConnectionDescriptor {
             return DecryptionStatus.CLEARTEXT;
         else if(decryption_error != null)
             return DecryptionStatus.ERROR;
-        else if(decryption_ignored)
-            return DecryptionStatus.ENCRYPTED;
         else if(isNotDecryptable())
             return DecryptionStatus.NOT_DECRYPTABLE;
+        else if(decryption_ignored)
+            return DecryptionStatus.ENCRYPTED;
         else if(isDecrypted())
             return DecryptionStatus.DECRYPTED;
         else
@@ -302,9 +304,8 @@ public class ConnectionDescriptor {
         payload_truncated = true;
     }
 
-    public boolean isPayloadTruncated() {
-        return payload_truncated;
-    }
+    public boolean isPayloadTruncated() { return payload_truncated; }
+    public boolean isPortMappingApplied() { return port_mapping_applied; }
 
     public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt); }
     public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (getNumPayloadChunks() > 0); }

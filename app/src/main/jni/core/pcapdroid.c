@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-24 - Emanuele Faranda
  */
 
 #include <inttypes.h>
@@ -657,6 +657,9 @@ static void process_dns_reply(pd_conn_t *data, pcapdroid_t *pd, const struct zdt
             uint16_t addr_len = ntohs((*(uint16_t*)(reply + 8)));
             reply += 10; len -= 10;
 
+            if (len < addr_len)
+                return;
+
             if((rec_type == 0x1) && (addr_len == 4)) { // A record
                 ipver = 4;
                 rsp_addr.ip4 = *((u_int32_t*)reply);
@@ -1131,11 +1134,17 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
         data->sent_bytes += pkt->len;
         pd->capture_stats.sent_pkts++;
         pd->capture_stats.sent_bytes += pkt->len;
+        if(pkt->tuple.ipver == 6) {
+            pd->capture_stats.ipv6_sent_bytes += pkt->len;
+        }
     } else {
         data->rcvd_pkts++;
         data->rcvd_bytes += pkt->len;
         pd->capture_stats.rcvd_pkts++;
         pd->capture_stats.rcvd_bytes += pkt->len;
+        if(pkt->tuple.ipver == 6) {
+            pd->capture_stats.ipv6_rcvd_bytes += pkt->len;
+        }
     }
 
     /* New stats to notify */
