@@ -93,6 +93,11 @@ public class Blacklists {
                 "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"); // NOTE: some IPs are in emergingthreats, but not all
         addList("DigitalSide Threat-Intel", BlacklistDescriptor.Type.IP_BLACKLIST,  "digitalsideit_ips.txt",
                 "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestips.txt");
+        
+        // https://cinsscore.com/list/ci-badguys.txt
+        addList("CINS Army", BlacklistDescriptor.Type.IP_BLACKLIST, "ci_badguys.txt",
+                "https://cinsscore.com/list/ci-badguys.txt");
+     
 
         // Experimental blacklists
         addList("Phishing Army", BlacklistDescriptor.Type.IP_BLACKLIST,  "phishing_army_blocklist.txt",
