@@ -14,35 +14,19 @@
         android:layout_height="wrap_content"
         tools:context="com.emanuelef.remote_capture.activities.MainActivity">
 
-        <LinearLayout
-            android:id="@+id/collector_info_layout"
-            android:orientation="horizontal"
+        <TextView
+            android:id="@+id/collector_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
             android:gravity="center"
-            android:visibility="gone"
+            android:autoLink="web"
+            android:drawablePadding="10dp"
+            tools:text="Collector Info"
+            tools:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/status_view">
-
-            <TextView
-                android:id="@+id/collector_info_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:autoLink="web"
-                tools:text="Collector Info" />
-
-            <ImageView
-                android:id="@+id/collector_info_icon"
-                android:adjustViewBounds="false"
-                android:layout_width="24dp"
-                android:layout_height="match_parent"
-                android:layout_marginVertical="1dp"
-                android:layout_marginHorizontal="2dp"
-                tools:src="@drawable/ic_apps"
-                tools:tint="?attr/colorAccent" />
-        </LinearLayout>
+            app:layout_constraintTop_toBottomOf="@id/status_view" />
 
         <TextView
             android:id="@+id/interface_info"
@@ -54,7 +38,7 @@
             tools:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/collector_info_layout" />
+            app:layout_constraintTop_toBottomOf="@id/collector_info" />
 
         <TextView
             android:id="@+id/status_view"
@@ -107,7 +91,7 @@
                     android:layout_centerInParent="true" />
 
                 <TextView
-                    android:id="@+id/app_filter_root_decryption_warning"
+                    android:id="@+id/app_filter_warning"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/app_filter_text"

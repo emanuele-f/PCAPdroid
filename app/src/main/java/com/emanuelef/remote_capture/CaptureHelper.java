@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Handler;
@@ -34,7 +33,6 @@ import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
@@ -43,40 +41,33 @@ import java.net.UnknownHostException;
 
 public class CaptureHelper {
     private static final String TAG = "CaptureHelper";
-    private final Context mContext;
-    private final @Nullable ActivityResultLauncher<Intent> mLauncher;
+    private final ComponentActivity mActivity;
+    private final ActivityResultLauncher<Intent> mLauncher;
     private final boolean mResolveHosts;
     private CaptureSettings mSettings;
     private CaptureStartListener mListener;
 
     public CaptureHelper(ComponentActivity activity, boolean resolve_hosts) {
-        mContext = activity;
+        mActivity = activity;
         mResolveHosts = resolve_hosts;
         mLauncher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), this::captureServiceResult);
-    }
-
-    /** Note: This constructor does not handle the first-time VPN prepare */
-    public CaptureHelper(Context context) {
-        mContext = context;
-        mResolveHosts = true;
-        mLauncher = null;
     }
 
     private void captureServiceResult(final ActivityResult result) {
         if(result.getResultCode() == Activity.RESULT_OK)
             resolveHosts();
         else if(mListener != null) {
-            Utils.showToastLong(mContext, R.string.vpn_setup_failed);
+            Utils.showToastLong(mActivity, R.string.vpn_setup_failed);
             mListener.onCaptureStartResult(false);
         }
     }
 
     private void startCaptureOk() {
-        final Intent intent = new Intent(mContext, CaptureService.class);
+        final Intent intent = new Intent(mActivity, CaptureService.class);
         intent.putExtra("settings", mSettings);
 
-        ContextCompat.startForegroundService(mContext, intent);
+        ContextCompat.startForegroundService(mActivity, intent);
         if(mListener != null)
             mListener.onCaptureStartResult(true);
     }
@@ -130,7 +121,7 @@ public class CaptureHelper {
                 if(failed_host == null)
                     startCaptureOk();
                 else {
-                    Utils.showToastLong(mContext, R.string.host_resolution_failed, failed_host);
+                    Utils.showToastLong(mActivity, R.string.host_resolution_failed, failed_host);
                     mListener.onCaptureStartResult(false);
                 }
             });
@@ -148,26 +139,23 @@ public class CaptureHelper {
             return;
         }
 
-        Intent vpnPrepareIntent = VpnService.prepare(mContext);
+        Intent vpnPrepareIntent = VpnService.prepare(mActivity);
         if(vpnPrepareIntent != null) {
-            if (mLauncher != null)
-                new AlertDialog.Builder(mContext)
-                        .setMessage(R.string.vpn_setup_msg)
-                        .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
-                            try {
-                                mLauncher.launch(vpnPrepareIntent);
-                            } catch (ActivityNotFoundException e) {
-                                Utils.showToastLong(mContext, R.string.no_intent_handler_found);
-                                mListener.onCaptureStartResult(false);
-                            }
-                        })
-                        .setOnCancelListener(dialog -> {
-                            Utils.showToastLong(mContext, R.string.vpn_setup_failed);
+            new AlertDialog.Builder(mActivity)
+                    .setMessage(R.string.vpn_setup_msg)
+                    .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+                        try {
+                            mLauncher.launch(vpnPrepareIntent);
+                        } catch (ActivityNotFoundException e) {
+                            Utils.showToastLong(mActivity, R.string.no_intent_handler_found);
                             mListener.onCaptureStartResult(false);
-                        })
-                        .show();
-            else if (mListener != null)
-                mListener.onCaptureStartResult(false);
+                        }
+                    })
+                    .setOnCancelListener(dialog -> {
+                        Utils.showToastLong(mActivity, R.string.vpn_setup_failed);
+                        mListener.onCaptureStartResult(false);
+                    })
+                    .show();
         } else
             resolveHosts();
     }

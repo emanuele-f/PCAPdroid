@@ -7,7 +7,17 @@
         android:title="@string/start_button"
         android:orderInCategory="10"
         android:icon="@drawable/ic_play_arrow"
-        app:showAsAction="always" />
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/start_live_capture"
+                android:title="@string/live_capture" />
+
+            <item
+                android:id="@+id/open_pcap"
+                android:title="@string/open_pcap_file" />
+        </menu>
+    </item>
 
     <item
         android:id="@+id/action_stop"
@@ -23,10 +33,4 @@
         android:orderInCategory="30"
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/open_pcap"
-        android:title="@string/open_pcap_file"
-        android:enabled="true"
-        app:showAsAction="never" />
 </menu>

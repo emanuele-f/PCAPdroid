@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022-24 - Emanuele Faranda
+ * Copyright 2022 - Emanuele Faranda
  */
 
 #if ANDROID
@@ -92,7 +92,6 @@ static void sendStatsDump(pcapdroid_t *pd) {
     (*env)->CallVoidMethod(env, stats_obj, mids.statsSetData,
                            allocs_summary,
                            capstats->sent_bytes, capstats->rcvd_bytes,
-                           capstats->ipv6_sent_bytes, capstats->ipv6_rcvd_bytes,
                            (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0),
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
@@ -168,8 +167,7 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->port_mapping_applied << 13) |
-                                    (data->decryption_ignored << 12) |
+                               (data->decryption_ignored << 12) |
                                     (data->netd_block_missed << 11) |
                                     (blocked << 10) |
                                     (data->blacklisted_domain << 9) |
@@ -537,7 +535,7 @@ static void init_jni(JNIEnv *env) {
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
     mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;Z)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
-    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJJJJIIIIIIIII)V");
+    mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJJIIIIIIIII)V");
     mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
     mids.listSize = jniGetMethodID(env, cls.list, "size", "()I");
     mids.listGet = jniGetMethodID(env, cls.list, "get", "(I)Ljava/lang/Object;");
@@ -586,6 +584,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
             },
+            .app_filter = getIntPref(env, vpn, "getAppFilterUid"),
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
             .pcap_file_capture = (bool) getIntPref(env, vpn, "isPcapFileCapture"),
@@ -1209,41 +1208,6 @@ int getIntPref(JNIEnv *env, jobject vpn_inst, const char *key) {
     log_d("getIntPref(%s) = %d", key, value);
 
     return(value);
-}
-
-/* ******************************************************* */
-
-// Retrieve a int[] pref.
-// If rv is >0, out points to the allocated array. It's up to the caller to free it with pd_free
-int getIntArrayPref(JNIEnv *env, jobject vpn_inst, const char *key, int **out) {
-    int rv = -1;
-    jmethodID midMethod = jniGetMethodID(env, cls.vpn_service, key, "()[I");
-    jintArray jarr = (jintArray) (*env)->CallObjectMethod(env, vpn_inst, midMethod);
-
-    if (!jniCheckException(env)) {
-        int size = (*env)->GetArrayLength(env, jarr);
-        log_d("getIntArrayPref(%s) = #%d", key, size);
-
-        if (size > 0) {
-            jint *array = (*env)->GetIntArrayElements(env, jarr, NULL);
-            if (array) {
-                size_t arr_size = size * sizeof(int);
-
-                *out = (int*) pd_malloc(arr_size);
-                if (*out) {
-                    // success
-                    memcpy(*out, array, arr_size);
-                    rv = size;
-                }
-
-                (*env)->ReleaseIntArrayElements(env, jarr, array, 0);
-            }
-        } else
-            rv = size;
-    }
-
-    (*env)->DeleteLocalRef(env, jarr);
-    return rv;
 }
 
 /* ******************************************************* */

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022-24 - Emanuele Faranda
+ * Copyright 2022 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -34,7 +34,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
-import android.os.PowerManager;
 import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
@@ -49,8 +48,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 19;
-    public static final String PACKAGE_VERSION_NAME = "1.2";
+    public static final long PACKAGE_VERSION_CODE = 16;
+    public static final String PACKAGE_VERSION_NAME = "v0.16";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -109,15 +108,6 @@ public class MitmAddon {
         }
     }
 
-    public static @NonNull String getInstalledVersionName(Context ctx) {
-        try {
-            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
-            return pInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "";
-        }
-    }
-
     public static int getUid(Context ctx) {
         try {
             return Utils.getPackageUid(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
@@ -126,51 +116,13 @@ public class MitmAddon {
         }
     }
 
-    // Returns a non-empty string if a newer, compatible addon version is available
-    // Use ignoreNewVersion to silence this
-    public static @NonNull String getNewVersionAvailable(Context ctx) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-
-        if (Prefs.isIgnoredMitmVersion(prefs, PACKAGE_VERSION_NAME))
-            // update was ignored by the user
-            return "";
-
-        // NOTE: currently for the update check we only rely on the addon version hard-coded
-        // in the source
-        try {
-            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
-
-            if (PackageInfoCompat.getLongVersionCode(pInfo) >= PACKAGE_VERSION_CODE)
-                // same version or better installed
-                return "";
-
-            if (Utils.isSemanticVersionCompatible(PACKAGE_VERSION_NAME, pInfo.versionName))
-                return PACKAGE_VERSION_NAME;
-        } catch (PackageManager.NameNotFoundException ignored) {}
-
-        return "";
-    }
-
-    public static void ignoreNewVersion(Context ctx) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        prefs.edit()
-                .putString(Prefs.PREF_IGNORED_MITM_VERSION, PACKAGE_VERSION_NAME)
-                .apply();
-    }
-
-    // returns true only if a compatible addon version is installed
     public static boolean isInstalled(Context ctx) {
-        try {
-            PackageInfo pInfo = Utils.getPackageInfo(ctx.getPackageManager(), MitmAPI.PACKAGE_NAME, 0);
-            return Utils.isSemanticVersionCompatible(PACKAGE_VERSION_NAME, pInfo.versionName);
-        } catch (PackageManager.NameNotFoundException ignored) {
-            return false;
-        }
+        return getInstalledVersion(ctx) == PACKAGE_VERSION_CODE;
     }
 
-    public static String getGithubReleaseUrl(String version) {
-        return REPOSITORY + "/releases/download/v" +
-                version + "/PCAPdroid-mitm_v" + version + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
+    public static String getGithubReleaseUrl() {
+        return REPOSITORY + "/releases/download/" +
+                PACKAGE_VERSION_NAME + "/PCAPdroid-mitm_" + PACKAGE_VERSION_NAME + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
     }
 
     public static void setCAInstallationSkipped(Context ctx, boolean skipped) {
@@ -241,8 +193,7 @@ public class MitmAddon {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(MitmAPI.PACKAGE_NAME, MitmAPI.MITM_SERVICE));
 
-        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE |
-                Context.BIND_ALLOW_ACTIVITY_STARTS | extra_flags)) {
+        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE | extra_flags)) {
             try {
                 mContext.unbindService(mConnection);
             } catch (IllegalArgumentException ignored) {
@@ -343,29 +294,5 @@ public class MitmAddon {
             e.printStackTrace();
             return false;
         }
-    }
-
-    // NOTE: doze could be disabled by PCAPdroid itself, however this is moved to the addon to avoid
-    // any issues with the REQUEST_IGNORE_BATTERY_OPTIMIZATIONS Google Play policies
-    public boolean disableDoze() {
-        if(mService == null)
-            return false;
-
-        Log.i(TAG, "Send disable doze");
-        Message msg = Message.obtain(null, MitmAPI.MSG_DISABLE_DOZE);
-        try {
-            mService.send(msg);
-            return true;
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public static boolean isDozeEnabled(Context context) {
-        final PowerManager manager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && (manager != null)
-                && !manager.isIgnoringBatteryOptimizations(MitmAPI.PACKAGE_NAME);
     }
 }

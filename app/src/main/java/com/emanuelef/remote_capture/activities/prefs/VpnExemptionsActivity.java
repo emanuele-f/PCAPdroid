@@ -46,7 +46,6 @@ public class VpnExemptionsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setTitle(R.string.vpn_exemptions);
         setContentView(R.layout.fragment_activity);
-        displayBackAction();
 
         if(savedInstanceState != null)
             mFragment = (VpnExceptionsFragment) getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
@@ -62,6 +61,15 @@ public class VpnExemptionsActivity extends BaseActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         getSupportFragmentManager().putFragment(outState, "fragment", mFragment);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

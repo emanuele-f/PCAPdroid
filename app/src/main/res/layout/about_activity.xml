@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:autoLink="email"
-                android:text="Copyright (C) 2020-24 - Emanuele Faranda black.silver@hotmail.it" />
+                android:text="Copyright (C) 2020-23 - Emanuele Faranda black.silver@hotmail.it" />
 
             <TextView
                 android:id="@+id/app_license"

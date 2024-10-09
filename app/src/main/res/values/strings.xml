@@ -44,6 +44,7 @@
     <string name="rcvd_and_sent">%1$s received — %2$s sent</string>
     <string name="query">Query</string>
     <string name="host">Host</string>
+    <string name="app_filter">Target app</string>
     <string name="ready">Ready</string>
     <string name="about">About</string>
     <string name="status">Status</string>
@@ -80,9 +81,6 @@
     <string name="open_sockets">Open sockets</string>
     <string name="bytes_sent">Bytes sent</string>
     <string name="bytes_rcvd">Bytes received</string>
-    <string name="ipv6_bytes_sent">IPv6 bytes sent</string>
-    <string name="ipv6_bytes_rcvd">IPv6 bytes received</string>
-    <string name="ipv6_bytes_percentage">IPv6 bytes percentage</string>
     <string name="packets_sent">Packets sent</string>
     <string name="packets_rcvd">Packets received</string>
     <string name="dns_queries">DNS queries</string>
@@ -118,7 +116,7 @@
     <string name="other_prefs">Other</string>
     <string name="app_language">App language</string>
     <string name="lang_english">English</string>
-    <string name="system_default">System default</string>
+    <string name="system_default">System</string>
     <string name="no_activity_file_selection">No app found to handle file selection</string>
     <string name="file_saved_with_name">File saved as \"%1$s\"</string>
     <string name="theme_light">Light</string>
@@ -131,6 +129,7 @@
     <string name="socks5_info">SOCKS5 proxy: %1$s:%2$d</string>
     <string name="socks5_auth">SOCKS5 authentication</string>
     <string name="socks5_auth_summary">Authenticate to the proxy via username and password</string>
+    <string name="proxy_ip_address">Proxy IP address</string>
     <string name="proxy_host">Proxy host</string>
     <string name="proxy_port">Proxy port</string>
     <string name="root_capture">Capture as root</string>
@@ -235,7 +234,7 @@
     <string name="malware_detection_learn_more">Learn more about the malware detection feature</string>
     <string name="private_dns_message_notice">Private DNS prevents PCAPdroid from inspecting the DNS traffic. You can turn it off from the Android network settings</string>
     <string name="private_dns_hinders_detection">Private DNS hinders detection</string>
-    <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
+    <string name="decryption_no_filter_warn">Select a target app or use the decryption whitelist when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="unblock">Unblock…</string>
     <string name="firewall">Firewall</string>
@@ -275,8 +274,8 @@
     <string name="mitm_setup_wizard">Mitm setup wizard</string>
     <string name="install_action">Install</string>
     <string name="export_action">Export</string>
-    <string name="export_ellipsis">Export…</string>
     <string name="install_the_mitm_addon">Install the PCAPdroid <a href='%1$s'>mitm addon</a></string>
+    <string name="configure_action">Configure</string>
     <string name="export_ca_certificate">Export the PCAPdroid CA certificate, then open the Android \"Encryption &amp; Credentials\" settings and choose install it as a \"CA certificate\"</string>
     <string name="install_ca_certificate">Install the PCAPdroid CA certificate, choosing \"VPN and apps\". Android will ask for your lockscreen or password</string>
     <string name="checking_the_certificate">Checking the certificate…</string>
@@ -285,11 +284,9 @@
     <string name="cert_installed_correctly">The CA certificate is installed</string>
     <string name="cert_reinstall_required">The CA certificate is not installed, run the mitm setup wizard</string>
     <string name="mitm_addon_bad_version">Bad PCAPdroid mitm addon version. Please install version %1$s and retry</string>
-    <string name="update_available">Update available</string>
-    <string name="mitm_addon_update_available">A new mitm addon update is available. Update to get the latest bug fixes</string>
-    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be updated</string>
+    <string name="mitm_addon_new_version">The PCAPdroid mitm addon must be upgraded</string>
     <string name="mitm_addon">mitm addon</string>
-    <string name="update_action">Update</string>
+    <string name="upgrade_action">Upgrade</string>
     <string name="export_failed">Export failed</string>
     <string name="not_encrypted">Not encrypted</string>
     <string name="request">Request</string>
@@ -352,6 +349,7 @@
     <string name="firewall_summary">Block internet access to apps, configure rules for specific domains and IP addresses. Only works with the non-root capture</string>
     <string name="no_root_firewall">No-root firewall</string>
     <string name="block_quick">Block QUIC</string>
+    <string name="block_quick_summary">Block QUIC connections to possibly fall back to decryptable TLS. Some apps may stop working</string>
     <string name="block_private_dns">Block private DNS</string>
     <string name="block_private_dns_summary">Detect and possibly block private DNS to inspect DNS traffic. Disabling this can hinder traffic analysis</string>
     <string name="mitm_setup_wizard_intro">This wizard will guide you through the installation of the PCAPdroid mitm addon and certification authority, which are needed to perform the <a href='%1$s'>TLS decryption</a></string>
@@ -491,27 +489,8 @@
     <string name="pcap_file_load_aborted">PCAP file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before exporting the PCAP file</string>
+    <string name="live_capture">Live capture</string>
     <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>
-    <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
-    <string name="redirected">redirected</string>
-    <string name="connection_redirected_port_map">This connection has been redirected due to a port mapping rule</string>
-    <string name="dnscrypt_how_to">How to use DoH / DNSCrypt with PCAPdroid</string>
-    <string name="never">Never</string>
-    <string name="always">Always</string>
-    <string name="for_connections_to_decrypt">Only for connections to decrypt</string>
-    <string name="decrypt_quic_notice">Decrypting QUIC is currently not supported. As a workaround, stop the capture and select the option to block QUIC in the PCAPdroid settings</string>
-    <string name="target_apps">Target apps</string>
-    <string name="target_apps_help">Select the applications to capture</string>
-    <string name="headers">Headers</string>
-    <string name="body">Body</string>
-    <string name="both">Both</string>
-    <string name="whats_new">What\'s new</string>
-    <string name="raw_bytes">Raw bytes</string>
-    <string name="restart_on_disconnection">Restart on disconnection</string>
-    <string name="restart_on_disconnection_summary">Automatically restart the capture after being stopped by other VPN apps</string>
-    <string name="vpn_reconnection">VPN reconnection</string>
-    <string name="vpn_reconnection_aborted">VPN reconnection aborted</string>
-    <string name="waiting_for_vpn_disconnect">Waiting for the active VPN to disconnect…</string>
 </resources>

@@ -362,36 +362,33 @@ static bool matches_decryption_whitelist(pcapdroid_t *pd, const zdtun_5tuple_t *
 
 /* ******************************************************* */
 
-// NOTE: this handles both user-specified SOCKS5 and TLS decryption
 static bool should_proxify(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    if(!pd->socks5.enabled)
+    // NOTE: connections must be proxified as soon as the first packet arrives.
+    // In case of TLS decryption, since we cannot reliably determine TLS connections with 1 packet,
+    // we must proxify all the TCP connections.
+    if(!pd->socks5.enabled || (tuple->ipproto != IPPROTO_TCP)) {
+        data->decryption_ignored = true;
         return false;
-
-    if (pd->tls_decryption.list) {
-        // TLS decryption
-        if(!matches_decryption_whitelist(pd, tuple, data)) {
-            data->decryption_ignored = true;
-            return false;
-        }
-
-        // Since we cannot reliably determine TLS connections with 1 packet, and connections must be
-        // proxified on the 1st packet, we proxify all the TCP connections
     }
 
-    return (tuple->ipproto == IPPROTO_TCP);
+    if(pd->tls_decryption.list) {
+        if(matches_decryption_whitelist(pd, tuple, data))
+            return true;
+
+        data->decryption_ignored = true;
+        return false;
+    }
+
+    return true;
 }
 
 /* ******************************************************* */
 
 void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
-    if(data->l7proto == NDPI_PROTOCOL_QUIC) {
-        block_quic_mode_t block_mode = pd->vpn.block_quic_mode;
-
-        if ((block_mode == BLOCK_QUIC_MODE_ALWAYS) ||
-                ((block_mode == BLOCK_QUIC_MODE_TO_DECRYPT) && matches_decryption_whitelist(pd, tuple, data))) {
-            data->blacklisted_internal = true;
-            data->to_block = true;
-        }
+    if(pd->vpn.block_quic && (data->l7proto == NDPI_PROTOCOL_QUIC) &&
+            pd->tls_decryption.enabled && matches_decryption_whitelist(pd, tuple, data)) {
+        data->blacklisted_internal = true;
+        data->to_block = true;
     }
 
     if(block_private_dns && !data->to_block &&
@@ -452,7 +449,7 @@ int run_vpn(pcapdroid_t *pd) {
 #if ANDROID
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.known_dns_servers = blacklist_init();
-    pd->vpn.block_quic_mode = getIntPref(pd->env, pd->capture_service, "getBlockQuickMode");
+    pd->vpn.block_quic = getIntPref(pd->env, pd->capture_service, "blockQuick");
 
     pd->vpn.ipv4.enabled = (bool) getIntPref(pd->env, pd->capture_service, "getIPv4Enabled");
     pd->vpn.ipv4.dns_server = getIPv4Pref(pd->env, pd->capture_service, "getDnsServer");
@@ -583,7 +580,7 @@ int run_vpn(pcapdroid_t *pd) {
                 // To be run before pd_process_packet/process_payload
                 if(data->sent_pkts == 0) {
                     if(pd_check_port_map(conn))
-                        data->port_mapping_applied = true;
+                        /* port mapping applied */;
                     else if(should_proxify(pd, tuple, data)) {
                         zdtun_conn_proxy(conn);
                         data->proxied = true;
@@ -593,8 +590,7 @@ int run_vpn(pcapdroid_t *pd) {
                 pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
-                    if (!data->port_mapping_applied)
-                        data->blacklisted_internal |= !check_dns_req_allowed(pd, conn, &pctx);
+                    data->blacklisted_internal |= !check_dns_req_allowed(pd, conn, &pctx);
                     data->to_block |= data->blacklisted_internal;
 
                     if(data->to_block) {

@@ -29,7 +29,6 @@ import android.os.UserHandle;
 import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 
 import java.io.Serializable;
@@ -42,8 +41,6 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private Drawable mIcon;
     private final DrawableLoader mIconLoader;
     private String mDescription;
-    private static final String TAG = "AppDescriptor";
-    private static boolean badgedIconFails = false;
 
     // NULL for virtual apps
     PackageManager mPm;
@@ -100,18 +97,8 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
             // the badge is added below via getUserHandleForUid
             mIcon = mPackageInfo.applicationInfo.loadUnbadgedIcon(mPm);
 
-            if (!badgedIconFails) {
-                try {
-                    UserHandle handle = UserHandle.getUserHandleForUid(mUid);
-
-                    // On some systems may throw "java.lang.SecurityException: You need MANAGE_USERS permission to:
-                    // check if specified user a managed profile outside your profile group"
-                    mIcon = mPm.getUserBadgedIcon(mIcon, handle);
-                } catch (SecurityException e) {
-                    Log.w(TAG, "getUserBadgedIcon failed, using icons without badges: " + e.getMessage());
-                    badgedIconFails = true;
-                }
-            }
+            UserHandle handle = UserHandle.getUserHandleForUid(mUid);
+            mIcon = mPm.getUserBadgedIcon(mIcon, handle);
         } else
             mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
 

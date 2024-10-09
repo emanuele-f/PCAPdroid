@@ -8,6 +8,7 @@
     <string name="rcvd_and_sent">%1$s 受信 — %2$s 送信</string>
     <string name="query">クエリ</string>
     <string name="host">ホスト</string>
+    <string name="app_filter">アプリ フィルター</string>
     <string name="ready">準備完了</string>
     <string name="about">詳細</string>
     <string name="status">状態</string>
@@ -83,6 +84,7 @@
     <string name="app_theme">テーマ</string>
     <string name="socks5_proxy">SOCKS5 プロキシを有効にする</string>
     <string name="enable_socks5_proxy_summary">すべての TCP 接続を指定した SOCKS5 プロキシにリダイレクトします</string>
+    <string name="proxy_ip_address">プロキシ IP アドレス</string>
     <string name="proxy_port">プロキシ ポート</string>
     <string name="root_capture">ルートとしてキャプチャ</string>
     <string name="root_capture_summary">PCAPdroid とほかの VPN アプリとの併用を許可します</string>

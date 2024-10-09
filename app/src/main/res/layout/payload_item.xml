@@ -49,25 +49,6 @@
             app:iconPadding="0dp"
             app:iconTint="@color/colorTabText"
             style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/export_button"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingVertical="2dp"
-            android:paddingHorizontal="2dp"
-            android:layout_marginHorizontal="2dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_save_alt_small"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconTint="@color/colorTabText"
-            style="@style/Widget.MaterialComponents.Button.TextButton" />
     </LinearLayout>
 
     <RelativeLayout

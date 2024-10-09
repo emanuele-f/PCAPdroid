@@ -76,9 +76,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         super.onAttach(context);
         mActivity = (ConnectionDetailsActivity) context;
         mActivity.addConnUpdateListener(this);
-
-        if (mAdapter != null)
-            mAdapter.setExportPayloadHandler(mActivity);
     }
 
     @Override
@@ -86,9 +83,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         super.onDetach();
         mActivity.removeConnUpdateListener(this);
         mActivity = null;
-
-        if (mAdapter != null)
-            mAdapter.setExportPayloadHandler(null);
     }
 
     @Override
@@ -129,7 +123,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         else
             mShowAsPrintable = false;
         mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
-        mAdapter.setExportPayloadHandler(mActivity);
         mJustCreated = true;
 
         // only set adapter after acknowledged (see setMenuVisibility below)

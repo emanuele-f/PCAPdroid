@@ -19,15 +19,10 @@
 
 package com.emanuelef.remote_capture.activities.prefs;
 
-import android.app.LocaleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.LocaleList;
-import android.provider.Settings;
 import android.text.InputType;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -49,7 +44,6 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
-import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.BaseActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.activities.MitmSetupWizard;
@@ -127,31 +121,24 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     public void onBackPressed() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
         if(f instanceof SettingsFragment) {
-            Intent intent = getIntent();
-
-            if ((intent != null) && SettingsActivity.ACTION_LANG_RESTART.equals(intent.getAction())) {
-                // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
-                intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-                return;
-            }
-        }
-
-        // default behavior
-        super.onBackPressed();
+            // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        } else
+            super.onBackPressed();
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private SwitchPreference mTlsDecryption;
+        private SwitchPreference mBlockQuic;
         private SwitchPreference mFullPayloadEnabled;
         private SwitchPreference mRootCaptureEnabled;
         private SwitchPreference mAutoBlockPrivateDNS;
         private EditTextPreference mMitmproxyOpts;
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
-        private DropDownPreference mBlockQuic;
         private Preference mVpnExceptions;
         private Preference mSocks5Settings;
         private Preference mDnsSettings;
@@ -160,7 +147,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mMalwareDetectionEnabled;
         private SwitchPreference mTrailerEnabled;
         private SwitchPreference mPcapngEnabled;
-        private SwitchPreference mRestartOnDisconnect;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
@@ -181,8 +167,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupSecurityPrefs();
             setupOtherPrefs();
 
-            socks5ProxyHideShow(mTlsDecryption.isChecked(), rootCaptureEnabled());
-            mBlockQuic.setVisible(!rootCaptureEnabled());
+            socks5ProxyAndQuicHideShow(mTlsDecryption.isChecked(), rootCaptureEnabled());
             rootCaptureHideShow(rootCaptureEnabled());
 
             Intent intent = requireActivity().getIntent();
@@ -280,9 +265,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else
                 mRootCaptureEnabled.setVisible(false);
 
-            mRestartOnDisconnect = requirePreference(Prefs.PREF_RESTART_ON_DISCONNECT);
-            mRestartOnDisconnect.setVisible(VpnReconnectService.isAvailable());
-
             mDnsSettings = requirePreference("dns_settings");;
             mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
             mVpnExceptions.setOnPreferenceClickListener(preference -> {
@@ -327,7 +309,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
                 mMitmWizard.setVisible((boolean) newValue);
                 mMitmproxyOpts.setVisible((boolean) newValue);
-                socks5ProxyHideShow((boolean) newValue, rootCaptureEnabled());
+                socks5ProxyAndQuicHideShow((boolean) newValue, rootCaptureEnabled());
                 return true;
             });
 
@@ -361,58 +343,33 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mSocks5Settings = requirePreference("socks5_settings");
         }
 
-        private void socks5ProxyHideShow(boolean tlsDecryption, boolean rootEnabled) {
+        private void socks5ProxyAndQuicHideShow(boolean tlsDecryption, boolean rootEnabled) {
             mSocks5Settings.setVisible(!tlsDecryption && !rootEnabled);
-        }
-
-        private void setupAppLanguagePref() {
-            DropDownPreference appLang = requirePreference(Prefs.PREF_APP_LANGUAGE);
-            Preference appLangExternal = requirePreference("app_language_external");
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                // On Android 33+, app language is configurable from the system settings
-                appLang.setVisible(false);
-                appLangExternal.setVisible(true);
-
-                LocaleList locales = requireContext().getSystemService(LocaleManager.class)
-                        .getApplicationLocales();
-                if (locales.equals(LocaleList.getEmptyLocaleList()))
-                    appLangExternal.setSummary(getString(R.string.system_default));
-                else if (!locales.isEmpty())
-                    appLangExternal.setSummary(locales.get(0).getDisplayName());
-
-                appLangExternal.setOnPreferenceClickListener(preference -> {
-                    Intent intent = new Intent(Settings.ACTION_APP_LOCALE_SETTINGS);
-                    intent.setData(Uri.fromParts("package", requireContext().getPackageName(), null));
-                    startActivity(intent);
-                    return true;
-                });
-            } else {
-                // Fallback selector for older Android versions
-                if (SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
-                    scrollToPreference(appLang);
-
-                // Current locale applied via BaseActivity.attachBaseContext
-                appLang.setOnPreferenceChangeListener((preference, newValue) -> {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-
-                    if (prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
-                        // Restart the activity to apply the language change
-                        Intent intent = new Intent(requireContext(), SettingsActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        intent.setAction(SettingsActivity.ACTION_LANG_RESTART);
-                        startActivity(intent);
-
-                        Runtime.getRuntime().exit(0);
-                    }
-
-                    return false;
-                });
-            }
+            mBlockQuic.setVisible(tlsDecryption && !rootEnabled);
         }
 
         private void setupOtherPrefs() {
-            setupAppLanguagePref();
+            DropDownPreference appLang = requirePreference(Prefs.PREF_APP_LANGUAGE);
+
+            if(SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
+                scrollToPreference(appLang);
+
+            // Current locale applied via BaseActivity.attachBaseContext
+            appLang.setOnPreferenceChangeListener((preference, newValue) -> {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
+                if(prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
+                    // Restart the activity to apply the language change
+                    Intent intent = new Intent(getContext(), SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intent.setAction(SettingsActivity.ACTION_LANG_RESTART);
+                    startActivity(intent);
+
+                    Runtime.getRuntime().exit(0);
+                }
+
+                return false;
+            });
 
             DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
             appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -449,11 +406,8 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             } else {
                 mAutoBlockPrivateDNS.setVisible(true);
                 mBlockQuic.setVisible(true);
-                socks5ProxyHideShow(mTlsDecryption.isChecked(), false);
+                socks5ProxyAndQuicHideShow(mTlsDecryption.isChecked(), false);
             }
-
-            if (VpnReconnectService.isAvailable())
-                mRestartOnDisconnect.setVisible(!enabled);
 
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);

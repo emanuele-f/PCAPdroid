@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-24 - Emanuele Faranda
+ * Copyright 2021-23 - Emanuele Faranda
  */
 
 /*
@@ -83,62 +83,6 @@ static int str2mac(const char *buf, uint64_t *mac) {
       mac_bytes[i] = m[i];
 
   *mac = bytes2mac(mac_bytes);
-  return 0;
-}
-
-/* ******************************************************* */
-
-static int* parse_uid_filter(char *s) {
-  int num_uids = 1;
-
-  for(int i=0; s[i]; i++) {
-    if(s[i] == ',')
-      num_uids++;
-  }
-
-  int* rv = malloc((num_uids + 1 /* terminator */) * sizeof(int));
-  if(rv == NULL) {
-    fprintf(stderr, "parse_uid_filter: malloc failed[%d]: %s",
-        errno, strerror(errno));
-    exit(PCAPD_ERROR);
-  }
-
-  int i = 0;
-  char *token;
-  char *tmp;
-  token = strtok_r(s, ",", &tmp);
-
-  while(token && (i < num_uids)) {
-    int uid = atoi(token);
-    if(uid < -1) {
-      fprintf(stderr, "Invalid UID: %s\n", token);
-      exit(PCAPD_ERROR);
-    }
-
-    if(uid != -1)
-      rv[i++] = uid;
-
-    token = strtok_r(NULL, ",", &tmp);
-  }
-
-  // terminator
-  rv[i++] = -1;
-
-  return rv;
-}
-
-/* ******************************************************* */
-
-static int matches_uid_filter(const int *filter, int uid) {
-  if (!filter || (*filter == -1))
-    return 1;
-
-  while (*filter != -1) {
-    if (*filter == uid)
-      return 1;
-  }
-
-  // no match
   return 0;
 }
 
@@ -835,7 +779,7 @@ static pcapd_rv read_pkt(pcapd_runtime_t *rt, pcapd_iface_t *iface, time_t now) 
     }
 
     // export packet even if zdtun_parse_pkt failed
-    if(!rt->conf->uid_filter || matches_uid_filter(rt->conf->uid_filter, uid)) {
+    if((rt->conf->uid_filter == -1) || (rt->conf->uid_filter == uid)) {
       if(rt->conf->dump_datalink) {
         // Include the datalink header
         pkt -= to_skip;
@@ -984,10 +928,10 @@ cleanup:
   for(int i=0; i<conf->num_interfaces; i++)
     free(conf->ifnames[i]);
 
-  free(conf->uid_filter);
-  free(conf->bpf);
-  free(conf->log_file);
-
+  if(conf->bpf)
+    free(conf->bpf);
+  if(conf->log_file)
+    free(conf->log_file);
   if(logf)
     fclose(logf);
 
@@ -1005,7 +949,7 @@ static void usage() {
     "                the internet interface\n"
     " -d             daemonize the process\n"
     " -t             dump the interface datalink header. Default: don't dump\n"
-    " -u [uid, ...]  filter packets by the specified UIDs\n"
+    " -u [uid]       filter packets by uid\n"
     " -b [bpf]       filter packets by BPF filter\n"
     " -l [file]      log output to the specified file\n"
     " -L uid         specify the UID to use to create the log file\n"
@@ -1020,6 +964,7 @@ static void usage() {
 
 void init_conf(pcapd_conf_t *conf) {
   memset(conf, 0, sizeof(pcapd_conf_t));
+  conf->uid_filter = -1;
   conf->inet_ifid = -1;
 }
 
@@ -1057,10 +1002,11 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
         conf->no_client = 1;
         break;
       case 'u':
-        if (conf->uid_filter)
-          free(conf->uid_filter);
-
-        conf->uid_filter = parse_uid_filter(optarg);
+        conf->uid_filter = atoi(optarg);
+        if(conf->uid_filter < -1) {
+          fprintf(stderr, "Invalid UID: %s\n", optarg);
+          exit(PCAPD_ERROR);
+        }
         break;
       case 'b':
         if(conf->bpf) free(conf->bpf);

@@ -38,7 +38,7 @@ typedef struct {
   char *ifnames[PCAPD_MAX_INTERFACES];
   char *bpf;
   char *log_file;
-  int* uid_filter;
+  int uid_filter;
   int num_interfaces;
   int inet_ifid;
   uint8_t dump_datalink;

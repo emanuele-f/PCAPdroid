@@ -68,15 +68,6 @@
                     android:src="@drawable/ic_baseline_javascript" />
 
                 <ImageView
-                    android:id="@+id/redirected"
-                    android:layout_width="wrap_content"
-                    android:layout_height="12sp"
-                    android:layout_marginEnd="5dp"
-                    app:tint="@color/colorTabText"
-                    android:contentDescription="@string/redirected"
-                    android:src="@drawable/reply" />
-
-                <ImageView
                     android:id="@+id/blacklisted"
                     android:layout_width="wrap_content"
                     android:layout_height="12sp"
