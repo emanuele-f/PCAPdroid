@@ -32,7 +32,7 @@
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
         </string>
-    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
+    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,PackageName,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="unlock_token" translatable="false">Unlock token</string>
 
     <!-- Localized -->
