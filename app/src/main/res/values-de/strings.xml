@@ -497,4 +497,5 @@
     <string name="restart_on_disconnection_summary">Startet die Aufnahme automatisch neu, nachdem sie von anderen VPN-Apps gestoppt wurde</string>
     <string name="vpn_reconnection">VPN-Wiederverbindung</string>
     <string name="vpn_reconnection_aborted">VPN-Wiederverbindung abgebrochen</string>
+    <string name="update_available">Aktualisierung verfügbar</string>
 </resources>
