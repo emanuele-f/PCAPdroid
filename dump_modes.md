@@ -25,15 +25,19 @@ After the capture is stopped, a dialog is displayed which offers the option to s
 
 ## 2.4 UDP Exporter
 
-This advanced mode is specifically designed to provide a real time analysis of the traffic. It requires the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script and a PC. In this mode PCAPdroid encapsulates the PCAP records into an UDP stream and sends the stream to the remote UDP collector. The collector IP and port must be configured through the settings.
+This advanced mode is specifically designed to provide a real time analysis of the traffic. In this mode PCAPdroid encapsulates the PCAP records in an UDP stream, sent to a remote UDP collector. The collector IP and port can be configured in the PCAPdroid settings.
 
-**NOTE**: UDP is a unreliable transport protocol, which means that packets may be dropped or they may be reordered, in particular over wifi. This dump mode is not appropriate if you want to produce a full capture.
+**NOTE**: UDP is a unreliable transport protocol, which means that packets may be dropped or reordered, in particular over wifi, so this mode may produce a partial capture
 
-The udp_receiver.py script will receive the UDP packets on the specified port, decapsulate them, and print the raw PCAP records to the stdout. By piping it into a network monitoring program it is possible to analyze the captured packets in real time.
+To use this mode, you either need a linux system or a Windows system with Wireshark.
 
-Here are some examples of the applicability of this mode:
+### Capturing on a linux system
 
-- Analyze the traffic with [wireshark](https://www.wireshark.org/):
+Download the [udp_receiver.py](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/udp_receiver.py) python script. This script will receive the UDP packets, decapsulate them, and print the raw PCAP records to the stdout. By piping it into a network monitoring program it is possible to analyze the captured packets in real time.
+
+Here are some examples of how to combine this mode with some common tools:
+
+- Analyze the traffic with [Wireshark](https://www.wireshark.org/) in real-time:
 
 ```bash
 udp_receiver.py -p 1234 | wireshark -k -i -
@@ -58,3 +62,20 @@ socat -b 65535 - udp4-listen:1234
 ```
 
 Using `nc` will not work as bigger packets will be truncated.
+
+### Capturing on a Windows system
+
+You can capture packets on Windows in real-time via Wireshark and the "UDP listener remote capture" interface (udpdump).
+
+To do this, configure Wireshark as follows:
+
+1. When installing Wireshark, ensure to select udpdump in the optional section
+2. Copy the [pcapdroid.lua](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/pcapdroid.lua) and the [pcapdroid_udpdump.lua](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/pcapdroid_udpdump.lua) plugins to the [plugins directory](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html (usually `%APPDATA%\Wireshark\plugins`)
+3. Restart Wireshark and in the About -> Plugins ensure that both the PCAPdroid plugins are listed
+4. Start the Wireshark capture in UDP listener mode
+5. In the PCAPdroid settings, set the UDP exporter IP address to the IP address of the Windows pc, and the port to 5555
+6. From the PCAPdroid main screen, select the UDP dump mode and start the capture
+
+You should now see the packets correctly decapsulated in Wireshark. If you see `127.0.0.1` as the destination IP and just a `Data` field without any dissection, double check that the plugins are correctly loaded.
+
+**NOTE**: when capturing via `udpdump`, decrypting PCAPNG is currently not supported. Use the PCAP file dump instead
