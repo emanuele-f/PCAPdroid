@@ -36,7 +36,16 @@ pcapdroid.fields = fields
 
 -- #############################################
 
+local status, udpdump_dissector = pcall(require, "pcapdroid_udpdump")
+if not status then
+  udpdump_dissector = nil
+end
+
 function pcapdroid.dissector(buffer, pinfo, tree)
+  if udpdump_dissector ~= nil then
+    udpdump_dissector(buffer, pinfo, tree)
+  end
+
   local length = buffer:len()
 
   if(length < PCAPDROID_TRAILER_SIZE) then
