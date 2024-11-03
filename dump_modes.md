@@ -67,8 +67,6 @@ Using `nc` will not work as bigger packets will be truncated.
 
 You can capture packets on Windows in real-time via Wireshark and the "UDP listener remote capture" interface (udpdump).
 
-To do this, configure Wireshark as follows:
-
 1. When installing Wireshark, ensure to select udpdump in the optional section
 2. Copy the [pcapdroid.lua](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/pcapdroid.lua) and the [pcapdroid_udpdump.lua](https://github.com/emanuele-f/PCAPdroid/blob/master/tools/pcapdroid_udpdump.lua) plugins to the [plugins directory](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html) (usually `%APPDATA%\Wireshark\plugins`)
 3. Restart Wireshark and in the About -> Plugins ensure that both the PCAPdroid plugins are listed
