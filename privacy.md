@@ -1,3 +1,5 @@
+## Privacy Policy
+
 PCAPdroid does not collect any information.
 
 PCAPdroid does not use a remote VPN server. All the data is processed locally on the device.
