@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.7.5] - 2024-11-09
+- Fix root capture stall when target apps are set
+
 ## [1.7.4] - 2024-10-16
 - Fix root capture start in some non-magisk su binaries (credits: jackyzy823)
 - The mitm addon now uses mitmproxy 11
