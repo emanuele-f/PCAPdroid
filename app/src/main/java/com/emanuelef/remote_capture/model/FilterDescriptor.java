@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -101,6 +102,8 @@ public class FilterDescriptor implements Serializable {
         }
         if(iface != null)
             addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
+
+        group.setVisibility(group.getChildCount() > 0 ? View.VISIBLE : View.GONE);
     }
 
     public void clear(int filter_id) {

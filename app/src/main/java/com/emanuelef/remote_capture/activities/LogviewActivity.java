@@ -58,6 +58,7 @@ public class LogviewActivity extends BaseActivity implements MenuProvider {
         addMenuProvider(this);
 
         mPager = findViewById(R.id.pager);
+        Utils.fixViewPager2Insets(mPager);
         setupTabs();
     }
 
@@ -65,7 +66,9 @@ public class LogviewActivity extends BaseActivity implements MenuProvider {
         mPagerAdapter = new StateAdapter(this);
         mPager.setAdapter(mPagerAdapter);
 
-        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
+        var tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        Utils.fixScrollableTabLayoutInsets(tabLayout);
+        new TabLayoutMediator(tabLayout, mPager, (tab, position) ->
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
     }

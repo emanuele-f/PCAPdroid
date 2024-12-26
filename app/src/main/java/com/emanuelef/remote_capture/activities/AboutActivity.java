@@ -49,8 +49,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.text.HtmlCompat;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
@@ -90,6 +93,14 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         setTitle(R.string.about);
         setContentView(R.layout.about_activity);
         addMenuProvider(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollView), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, insets.top, insets.right, 0);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         mHandler = new Handler(Looper.getMainLooper());
         TextView appVersion = findViewById(R.id.app_version);

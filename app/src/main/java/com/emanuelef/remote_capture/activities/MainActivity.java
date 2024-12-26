@@ -38,7 +38,10 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.pm.PackageInfoCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -53,6 +56,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.emanuelef.remote_capture.AppsResolver;
@@ -140,6 +144,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -175,6 +180,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         });
 
         mPager = findViewById(R.id.pager);
+        Utils.fixViewPager2Insets(mPager);
         setupTabs();
 
         /* Register for service status */
@@ -247,6 +253,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.open_nav_drawer, R.string.close_nav_drawer);
         mDrawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        ViewCompat.setOnApplyWindowInsetsListener(mDrawer, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            // layout hamburger menu and drawer when in horizontal orientation
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+
+            // only pass down the vertical insets
+            return windowInsets.inset(insets.left, 0, insets.right, 0);
+        });
 
         mNavView = findViewById(R.id.nav_view);
         mNavView.setNavigationItemSelectedListener(this);

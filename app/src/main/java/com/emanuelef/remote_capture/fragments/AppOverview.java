@@ -35,12 +35,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
@@ -163,7 +167,15 @@ public class AppOverview extends Fragment implements MenuProvider {
 
         mTable = view.findViewById(R.id.table);
 
+        ScrollView sv = view.findViewById(R.id.app_overview);
+        ViewCompat.setOnApplyWindowInsetsListener(sv, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, 0, insets.right, insets.bottom);
 
+            return WindowInsetsCompat.CONSUMED;
+        });
+        sv.setClipToPadding(false);
     }
 
     @Override

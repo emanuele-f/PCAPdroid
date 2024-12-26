@@ -45,7 +45,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
@@ -86,6 +89,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private Handler mHandler;
     private ConnectionsAdapter mAdapter;
     private FloatingActionButton mFabDown;
+    private int mFabDownMargin = 0;
     private EmptyRecyclerView mRecyclerView;
     private TextView mEmptyText;
     private TextView mOldConnectionsText;
@@ -216,7 +220,31 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         autoScroll = true;
         showFabDown(false);
 
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.linearlayout), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            v.setPadding(insets.left, insets.top, insets.right, 0);
+
+            // only consume the top inset
+            return windowInsets.inset(insets.left, insets.top, insets.right, 0);
+        });
+
         mFabDown.setOnClickListener(v -> scrollToBottom());
+        ViewCompat.setOnApplyWindowInsetsListener(mFabDown, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
+
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            if (mFabDownMargin == 0)
+                // save base margin from the layout
+                mFabDownMargin = mlp.bottomMargin;
+
+            mlp.bottomMargin = mFabDownMargin + insets.bottom;
+            v.setLayoutParams(mlp);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override

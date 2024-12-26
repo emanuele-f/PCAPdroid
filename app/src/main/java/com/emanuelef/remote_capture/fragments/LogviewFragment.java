@@ -23,10 +23,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.emanuelef.remote_capture.R;
@@ -65,11 +69,21 @@ public class LogviewFragment extends Fragment {
         mLogPath = args.getString("path");
         assert(mLogPath != null);
 
+        var scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+        ViewCompat.setOnApplyWindowInsetsListener(scrollView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            v.setPadding(0, 0, 0, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+        scrollView.setClipToPadding(false);
+
         if(Utils.isTv(view.getContext())) {
             // necessary to make scroll work on TV
             // but disables ability to select and copy the textview contents
-            ViewGroup layout = view.findViewById(R.id.scrollView);
-            layout.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+            scrollView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         }
 
         mLogView = view.findViewById(R.id.log);

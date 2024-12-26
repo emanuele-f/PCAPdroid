@@ -19,26 +19,6 @@
             app:popupTheme="@style/PopupOverlay" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tablayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabTextColor="@color/colorTabText"
-            app:tabSelectedTextColor="@color/colorTabTextSelected"
-            app:tabIndicatorColor="@color/colorTab"
-            app:tabMode="scrollable"
-            app:tabGravity="start" />
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/pager"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-    </LinearLayout>
+    <include
+        layout="@layout/simple_list" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

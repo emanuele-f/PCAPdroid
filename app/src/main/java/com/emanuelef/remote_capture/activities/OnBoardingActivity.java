@@ -130,8 +130,10 @@ public class OnBoardingActivity extends AppIntro {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         boolean backEnabled = false;
         Billing billing = Billing.newInstance(this);
+        setImmersiveMode();
 
         Intent intent = getIntent();
         if(intent != null)

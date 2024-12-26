@@ -31,6 +31,7 @@ import com.emanuelef.remote_capture.model.MatchList;
 public class EditListActivity extends BaseActivity {
     private static final String TAG = "EditListActivity";
     public static final String LIST_TYPE_EXTRA = "list_type";
+    private static final String FITS_SYSTEM_WINDOWS_ARG = "fits_system_windows";
     private ListInfo mListInfo;
 
     @Override
@@ -56,7 +57,7 @@ public class EditListActivity extends BaseActivity {
         setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, mListInfo.newFragment())
+                .replace(R.id.fragment, mListInfo.newFragment(true))
                 .commit();
     }
 

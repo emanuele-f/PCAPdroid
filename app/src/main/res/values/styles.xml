@@ -46,6 +46,7 @@
 
     <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
         <item name="background">@color/colorActionBar</item>
+        <item name="elevation">0dp</item>
         <!--<item name="backgroundStacked">@color/colorActionBar</item>-->
         <!--<item name="backgroundSplit">@color/colorActionBar</item>-->
     </style>

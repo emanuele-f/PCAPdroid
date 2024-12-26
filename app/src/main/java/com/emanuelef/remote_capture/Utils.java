@@ -75,14 +75,18 @@ import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -92,13 +96,19 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.text.HtmlCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.PreferenceManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.google.android.material.tabs.TabLayout;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -141,6 +151,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -1781,6 +1792,83 @@ public class Utils {
             return PrivateDnsMode.OPPORTUNISTIC;
         else
             return PrivateDnsMode.DISABLED;
+    }
+
+    /// Enables edge-to-edge. Must be called in all the activities before super.onCreate
+    // https://medium.com/androiddevelopers/insets-handling-tips-for-android-15s-edge-to-edge-enforcement-872774e8839b
+    public static void enableEdgeToEdge(ComponentActivity activity) {
+        EdgeToEdge.enable(activity);
+
+        // use light icons even with the light theme
+        Window window = activity.getWindow();
+        WindowCompat.getInsetsController(window, window.getDecorView())
+                .setAppearanceLightStatusBars(false);
+    }
+
+    /// Fixes dispatching of insets to ViewPager2 children
+    // https://issuetracker.google.com/issues/145617093#comment10
+    public static void fixViewPager2Insets(ViewPager2 pager) {
+        AtomicReference<WindowInsetsCompat> lastInsets = new AtomicReference<>();
+
+        ViewCompat.setOnApplyWindowInsetsListener(pager, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            // in horizontal orientation, ensure that pager content stays visible
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            var remainingInsets = windowInsets.inset(insets.left, insets.top, insets.right, 0);
+            lastInsets.set(remainingInsets);
+
+            return remainingInsets;
+        });
+
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                // NOTE: this is not very reliable, but postDelayed is necessary to let rendering complete
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    View view = pager.getChildAt(0);
+                    WindowInsetsCompat insets = lastInsets.get();
+
+                    if ((view != null) && (insets != null) && !insets.isConsumed())
+                        // manually dispatch to children
+                        ViewCompat.dispatchApplyWindowInsets(view, insets);
+                }, 5);
+            }
+        });
+    }
+
+    public static void fixListviewInsetsBottom(ListView lv) {
+        ViewCompat.setOnApplyWindowInsetsListener(lv, (v, windowInsets) -> {
+            var insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(0, 0, 0, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        lv.setClipToPadding(false);
+    }
+
+    // to be used with tabs_activity_fixed, having tabMode "scrollable"
+    public static void fixScrollableTabLayoutInsets(TabLayout tl) {
+        ViewCompat.setOnApplyWindowInsetsListener(tl, (v, windowInsets) -> {
+            var insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     public static @NonNull Enumeration<NetworkInterface> getNetworkInterfaces() {

@@ -1,195 +1,215 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_height="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_margin="15dp">
+        android:layout_height="wrap_content"
+        android:id="@+id/app_bar_layout">
 
-        <RelativeLayout
-            android:id="@+id/connections_mask"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:background="@color/colorActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppBarOverlay"
+            app:popupTheme="@style/PopupOverlay" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_marginBottom="10dp">
+            android:layout_margin="15dp">
+
+            <RelativeLayout
+                android:id="@+id/connections_mask"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginBottom="10dp">
+
+                <CheckBox
+                    android:id="@+id/not_hidden"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/edit_mask"
+                    android:text="@string/not_hidden_filter" />
+
+                <Button
+                    android:id="@+id/edit_mask"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/edit_list"
+                    android:textColor="@color/colorTabText" />
+            </RelativeLayout>
 
             <CheckBox
-                android:id="@+id/not_hidden"
+                android:id="@+id/only_blacklisted"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/edit_mask"
-                android:text="@string/not_hidden_filter" />
+                android:layout_marginBottom="10dp"
+                android:text="@string/show_only_malicious" />
 
-            <Button
-                android:id="@+id/edit_mask"
-                style="?attr/materialButtonOutlinedStyle"
+            <CheckBox
+                android:id="@+id/only_cleartext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:text="@string/edit_list"
-                android:textColor="@color/colorTabText" />
-        </RelativeLayout>
+                android:layout_marginBottom="10dp"
+                android:text="@string/show_only_cleartext" />
 
-        <CheckBox
-            android:id="@+id/only_blacklisted"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/show_only_malicious" />
-
-        <CheckBox
-            android:id="@+id/only_cleartext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="@string/show_only_cleartext" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/status"
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp"
-            android:layout_marginBottom="5dp"/>
-        <com.google.android.material.chip.ChipGroup
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            app:singleSelection="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_active"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/conn_status_active"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_closed"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:text="@string/status"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:layout_marginBottom="5dp"/>
+            <com.google.android.material.chip.ChipGroup
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/conn_status_closed"/>
+                android:layout_marginBottom="10dp"
+                app:singleSelection="true">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_unreachable"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_active"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/conn_status_active"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_closed"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/conn_status_closed"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_unreachable"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/conn_status_unreachable"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_error"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/error"/>
+            </com.google.android.material.chip.ChipGroup>
+
+            <TextView
+                android:id="@+id/decryption_status_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/conn_status_unreachable"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_error"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:text="@string/decryption"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/decryption_status_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/error"/>
-        </com.google.android.material.chip.ChipGroup>
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
 
-        <TextView
-            android:id="@+id/decryption_status_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/decryption"
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:layout_marginBottom="5dp"/>
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/decryption_status_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            app:singleSelection="true">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/dec_status_decrypted"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/decrypted"/>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/dec_status_decrypted"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/dec_status_not_decryptable"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/not_decryptable"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/dec_status_error"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/error"/>
+            </com.google.android.material.chip.ChipGroup>
+
+            <TextView
+                android:id="@+id/firewall_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/decrypted"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/dec_status_not_decryptable"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:text="@string/firewall"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/firewall_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/not_decryptable"/>
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/dec_status_error"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_blocked"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/blocked_connection_filter"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/status_allowed"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/allowed_connection_filter"/>
+            </com.google.android.material.chip.ChipGroup>
+
+            <TextView
+                android:id="@+id/interfaces_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/error"/>
-        </com.google.android.material.chip.ChipGroup>
+                android:text="@string/network_interface"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
 
-        <TextView
-            android:id="@+id/firewall_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/firewall"
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:layout_marginBottom="5dp"/>
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/firewall_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            app:singleSelection="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_blocked"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/interfaces"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/blocked_connection_filter"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/status_allowed"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/allowed_connection_filter"/>
-        </com.google.android.material.chip.ChipGroup>
-
-        <TextView
-            android:id="@+id/interfaces_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/network_interface"
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:layout_marginBottom="5dp"/>
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/interfaces"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            app:singleSelection="true">
-        </com.google.android.material.chip.ChipGroup>
-    </LinearLayout>
-</ScrollView>
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

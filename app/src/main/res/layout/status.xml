@@ -12,6 +12,7 @@
         android:id="@+id/main_screen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
         tools:context="com.emanuelef.remote_capture.activities.MainActivity">
 
         <LinearLayout
@@ -117,8 +118,6 @@
                     android:textColor="@color/warning"
                     android:textSize="14sp" />
             </RelativeLayout>
-
         </LinearLayout>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
