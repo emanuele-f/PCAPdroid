@@ -1264,7 +1264,9 @@ public class CaptureService extends VpnService implements Runnable {
     // NOTE: this is only called on low system memory (e.g. obtained via getMemoryInfo). The app
     // may still run out of heap memory, whose monitoring requires polling (see checkAvailableHeap)
     @Override
+    @SuppressWarnings("deprecation")
     public void onTrimMemory(int level) {
+        // NOTE: most trim levels are not available anymore since API 34
         String lvlStr = Utils.trimlvl2str(level);
         boolean lowMemory = (level != TRIM_MEMORY_UI_HIDDEN) && (level >= TRIM_MEMORY_RUNNING_LOW);
         boolean critical = lowMemory && (level >= TRIM_MEMORY_COMPLETE);

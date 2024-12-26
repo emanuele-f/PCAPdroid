@@ -1372,7 +1372,9 @@ public class Utils {
         return unallocated + runtime.freeMemory();
     }
 
+    @SuppressWarnings("deprecation")
     public static String trimlvl2str(int lvl) {
+        // NOTE: most trim levels are not available anymore since API 34
         switch (lvl) {
             case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN:         return "TRIM_MEMORY_UI_HIDDEN";
             case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE:  return "TRIM_MEMORY_RUNNING_MODERATE";
