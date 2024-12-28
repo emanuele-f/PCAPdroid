@@ -36,6 +36,7 @@
 #define PCAP_BUFFER_ALMOST_FULL_SIZE (450*1024)         // 450K
 #define KEYLOG_BUFFER_HEADROOM       (sizeof(pcapng_decr_secrets_block_t))
 #define KEYLOG_BUFFER_TAILROOM       8 /* block "total_size" field + max 3 bytes of padding + 1 */
+#define MAX_DSB_SECRETS_LENGTH       (1024*1024)        // 1 MB
 
 struct pcap_dumper {
     pcap_dump_mode_t mode;
@@ -488,7 +489,8 @@ bool pcapng_to_keylog(const char *pcapng_path, const char *out_path) {
 
     rewind(fin);
     pcapng_generic_block_t block;
-    char secbuf[4096];
+    char *secbuf = NULL;
+    size_t secbuf_size = 0;
 
     while (!ferror(fin) && !ferror(fout)) {
         int block_start = ftell(fin);
@@ -521,7 +523,18 @@ bool pcapng_to_keylog(const char *pcapng_path, const char *out_path) {
                 uint32_t secrets_len = dsb.secrets_length;
 
                 if (secrets_len > 0) {
-                    if (secrets_len <= sizeof(secbuf)) {
+                    if (secrets_len <= MAX_DSB_SECRETS_LENGTH) {
+                        if (secbuf_size < secrets_len) {
+                            secbuf = (char*) pd_realloc(secbuf, secrets_len);
+                            secbuf_size = secrets_len;
+
+                            if (!secbuf) {
+                                log_e("Cannot allocate %zu B secrets buffer[%d]: %s", secrets_len, errno,
+                                      strerror(errno));
+                                goto done;
+                            }
+                        }
+
                         if (fread(secbuf, secrets_len, 1, fin) != 1) {
                             log_e("Error reading the DSB secrets");
                             goto done;
@@ -548,6 +561,9 @@ bool pcapng_to_keylog(const char *pcapng_path, const char *out_path) {
     rv = !ferror(fin) && !ferror(fout);
 
 done:
+    if (secbuf)
+        pd_free(secbuf);
+
     fclose(fin);
     fclose(fout);
     return rv;
