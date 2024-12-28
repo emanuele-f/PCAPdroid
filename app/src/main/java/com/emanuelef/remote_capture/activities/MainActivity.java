@@ -111,6 +111,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private boolean mTrailerNoticeShown = false;
     private boolean mOpenPcapDecrypt = false;
     private boolean mDecryptPcap = false;
+    private boolean mIsLoadingPcapng = false;
 
     private static final String TAG = "Main";
 
@@ -633,6 +634,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             if((reg != null) && (reg.getConnCount() > 0)
                     && !CaptureService.hasSeenPcapdroidTrailer()
+                    && !mIsLoadingPcapng
                     && !mTrailerNoticeShown
             ) {
                 new AlertDialog.Builder(this)
@@ -943,9 +945,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             if (uri == null)
                 return;
 
+            mIsLoadingPcapng = Utils.isPcapng(this, uri);
+
             Log.d(TAG, "pcapFileOpenResult: " + uri);
             if (mOpenPcapDecrypt &&
-                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !Utils.isPcapng(this, uri))
+                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !mIsLoadingPcapng)
             ) {
                 // Ask to select the keylog
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
