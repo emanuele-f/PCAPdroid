@@ -970,9 +970,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 return;
 
             Log.d(TAG, "pcapFileOpenResult: " + uri);
-            if (mOpenPcapDecrypt &&
-                    (!mIab.isPurchased(Billing.PCAPNG_SKU) || !Utils.isPcapng(this, uri))
-            ) {
+            if (mOpenPcapDecrypt && !Utils.isPcapng(this, uri)) {
                 // Ask to select the keylog
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
