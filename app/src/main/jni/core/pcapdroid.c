@@ -68,11 +68,12 @@ static void conn_free_ndpi(pd_conn_t *data) {
 
 /* ******************************************************* */
 
-uint16_t pd_ndpi2proto(ndpi_protocol proto) {
+uint16_t pd_ndpi2proto(ndpi_protocol nproto) {
     // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
     // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
     // in the app protocols, so just take the one that's not unknown.
-    uint16_t l7proto = ((proto.master_protocol != NDPI_PROTOCOL_UNKNOWN) ? proto.master_protocol : proto.app_protocol);
+    uint16_t l7proto = ((nproto.proto.master_protocol != NDPI_PROTOCOL_UNKNOWN) ?
+            nproto.proto.master_protocol : nproto.proto.app_protocol);
 
     if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
         l7proto = NDPI_PROTOCOL_HTTP;
@@ -99,7 +100,8 @@ static bool is_encrypted_l7(struct ndpi_detection_module_struct *ndpi_str, uint1
     if(l7proto >= (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS))
         return false;
 
-    return(ndpi_str->proto_defaults[l7proto].isClearTextProto == 0);
+    ndpi_proto_defaults_t *proto_defaults = ndpi_get_proto_defaults(ndpi_str);
+    return (proto_defaults && (proto_defaults[l7proto].isClearTextProto == 0));
 }
 
 /* ******************************************************* */
@@ -223,7 +225,7 @@ struct ndpi_detection_module_struct* init_ndpi() {
       return ndpi_cache;
 #endif
 
-    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(NULL);
     NDPI_PROTOCOL_BITMASK protocols;
 
     if(!ndpi)
@@ -500,18 +502,18 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
     switch(data->l7proto) {
         case NDPI_PROTOCOL_TLS:
             // ALPN extension in client hello (https://datatracker.ietf.org/doc/html/rfc7301)
-            if(!data->alpn && data->ndpi_flow->protos.tls_quic.alpn) {
-                if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "http/")) {
+            if(!data->alpn && data->ndpi_flow->protos.tls_quic.negotiated_alpn) {
+                if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "http/")) {
                     data->alpn = NDPI_PROTOCOL_HTTP;
                     data->update_type |= CONN_UPDATE_INFO;
-                } else if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "imap")) {
+                } else if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "imap")) {
                     data->alpn = NDPI_PROTOCOL_MAIL_IMAP;
                     data->update_type |= CONN_UPDATE_INFO;
-                } else if(strstr(data->ndpi_flow->protos.tls_quic.alpn, "stmp")) {
+                } else if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "stmp")) {
                     data->alpn = NDPI_PROTOCOL_MAIL_SMTP;
                     data->update_type |= CONN_UPDATE_INFO;
                 } else {
-                    log_d("Unknown ALPN: %s", data->ndpi_flow->protos.tls_quic.alpn);
+                    log_d("Unknown ALPN: %s", data->ndpi_flow->protos.tls_quic.negotiated_alpn);
                     data->alpn = NDPI_PROTOCOL_TLS; // mark to avoid port-based guessing
                 }
             }
@@ -556,7 +558,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
     if(data->l7proto == NDPI_PROTOCOL_UNKNOWN) {
         uint8_t proto_guessed;
-        struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow, 1 /* Guess */,
+        struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow,
                               &proto_guessed);
         data->l7proto = pd_ndpi2proto(n_proto);
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
@@ -694,7 +696,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
 
     uint16_t old_proto = data->l7proto;
     struct ndpi_proto n_proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
-                                  pkt->len, data->last_seen);
+                                  pkt->len, data->last_seen, NULL);
     data->l7proto = pd_ndpi2proto(n_proto);
 
     if(old_proto != data->l7proto) {

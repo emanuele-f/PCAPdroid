@@ -17,6 +17,9 @@
  * Copyright 2021 - Emanuele Faranda
  */
 
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+
 #include "pcapdroid.h"
 #include "common/utils.h"
 #include "port_map.h"

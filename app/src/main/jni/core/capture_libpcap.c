@@ -20,6 +20,7 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <linux/limits.h>
+#include <netinet/tcp.h>
 #include "pcapdroid.h"
 #include "errors.h"
 #include "pcapd/pcapd.h"

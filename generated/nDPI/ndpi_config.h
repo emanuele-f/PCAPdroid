@@ -10,20 +10,26 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the `gcrypt' library (-lgcrypt). */
+/* Define to 1 if you have the 'gcrypt' library (-lgcrypt). */
 /* #undef HAVE_LIBGCRYPT */
 
-/* Define to 1 if you have the `gpg-error' library (-lgpg-error). */
+/* Define to 1 if you have the 'gpg-error' library (-lgpg-error). */
 /* #undef HAVE_LIBGPG_ERROR */
 
-/* Define to 1 if you have the `json-c' library (-ljson-c). */
+/* libjson-c is present */
 /* #undef HAVE_LIBJSON_C */
 
-/* Define to 1 if you have the `m' library (-lm). */
+/* Define to 1 if you have the 'm' library (-lm). */
 /* #undef HAVE_LIBM */
 
-/* Define to 1 if you have the `maxminddb' library (-lmaxminddb). */
+/* Define to 1 if you have the 'maxminddb' library (-lmaxminddb). */
 /* #undef HAVE_LIBMAXMINDDB */
+
+/* Define to 1 if you have the 'pcap' library (-lpcap). */
+/* #undef HAVE_LIBPCAP */
+
+/* Define to 1 if you have the 'pthread' library (-lpthread). */
+/* #undef HAVE_LIBPTHREAD */
 
 /* Define to 1 if you have the <math.h> header file. */
 #define HAVE_MATH_H 1
@@ -34,11 +40,14 @@
 /* Define to 1 if you have the <maxminddb.h> header file. */
 /* #undef HAVE_MAXMINDDB_H */
 
+/* PF_RING nBPF is present */
+/* #undef HAVE_NBPF */
+
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #define HAVE_NETINET_IN_H 1
 
-/* libpcre(-dev) is present */
-/* #undef HAVE_PCRE */
+/* libpcre2(-dev) is present */
+/* #undef HAVE_PCRE2 */
 
 /* Define if you have POSIX threads libraries and header files. */
 /* #undef HAVE_PTHREAD */
@@ -79,20 +88,23 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
+/* nDPI base directory */
+#define NDPI_BASE_DIR "/home/emanuele/src/PCAPdroid/submodules/nDPI"
+
 /* Enable ndpi_debug_messages */
 /* #undef NDPI_ENABLE_DEBUG_MESSAGES */
 
 /* Last GIT change */
-#define NDPI_GIT_DATE "Tue Feb 1 09:14:05 2022 +0100"
+#define NDPI_GIT_DATE "Tue Dec 17 14:59:14 2024 +0100"
 
 /* GIT Release */
-#define NDPI_GIT_RELEASE "4.2.0-3463-8b5c6af7"
+#define NDPI_GIT_RELEASE "4.12.0-5031-b4455a0"
 
 /* nDPI major release */
 #define NDPI_MAJOR_RELEASE "4"
 
 /* nDPI minor release */
-#define NDPI_MINOR_RELEASE "2"
+#define NDPI_MINOR_RELEASE "12"
 
 /* nDPI patch level */
 #define NDPI_PATCH_LEVEL "0"
@@ -110,7 +122,7 @@
 #define PACKAGE_NAME "libndpi"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libndpi 4.2.0"
+#define PACKAGE_STRING "libndpi 4.12.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libndpi"
@@ -119,16 +131,28 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.2.0"
+#define PACKAGE_VERSION "4.12.0"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #define STDC_HEADERS 1
 
+/* Use locally installed libgcrypt instead of builtin gcrypt-light */
+/* #undef USE_HOST_LIBGCRYPT */
+
+/* Use CRoaring 2.1.x */
+/* #undef USE_ROARING_V2 */
+
 /* Version number of package */
-#define VERSION "4.2.0"
+#define VERSION "4.12.0"
+
+/* Define to '__inline__' or '__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+/* #undef inline */
+#endif

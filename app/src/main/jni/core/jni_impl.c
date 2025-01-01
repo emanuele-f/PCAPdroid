@@ -1048,7 +1048,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     jmethodID arrayListNew = jniGetMethodID(env, arrayListClass, "<init>", "()V");
     jmethodID arrayListAdd = jniGetMethodID(env, arrayListClass, "add", "(Ljava/lang/Object;)Z");
 
-    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(NULL);
     if(!ndpi)
         return(NULL);
 

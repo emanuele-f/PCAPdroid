@@ -2,12 +2,10 @@ project(pcapd C)
 
 # libpcap
 set(LIBPCAP_ROOT ${ROOTDIR}/submodules/libpcap)
-add_definitions(-DPACKAGE_VERSION="1.10.1-PRE-GIT")
-add_definitions(-DHAVE_STRERROR)
-add_definitions(-DHAVE_SOCKLEN_T)
 include_directories(${LIBPCAP_ROOT})
 
 set(LIBPCAP_GEN ${ROOTDIR}/generated/libpcap)
+configure_file(${LIBPCAP_GEN}/config.h ${LIBPCAP_ROOT}/config.h)
 configure_file(${LIBPCAP_GEN}/grammar.c ${LIBPCAP_ROOT}/grammar.c)
 configure_file(${LIBPCAP_GEN}/grammar.h ${LIBPCAP_ROOT}/grammar.h)
 configure_file(${LIBPCAP_GEN}/scanner.c ${LIBPCAP_ROOT}/scanner.c)
@@ -16,6 +14,7 @@ configure_file(${LIBPCAP_GEN}/scanner.h ${LIBPCAP_ROOT}/scanner.h)
 ADD_LIBRARY(pcap STATIC
         ${LIBPCAP_ROOT}/pcap.c
         ${LIBPCAP_ROOT}/pcap-common.c
+        ${LIBPCAP_ROOT}/pcap-util.c
         ${LIBPCAP_ROOT}/sf-pcap.c
         ${LIBPCAP_ROOT}/sf-pcapng.c
         ${LIBPCAP_ROOT}/pcap-linux.c

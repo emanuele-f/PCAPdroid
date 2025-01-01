@@ -15,8 +15,10 @@ add_library(capture SHARED
 
 # nDPI
 add_definitions(-DNDPI_LIB_COMPILATION)
+add_definitions(-D__bswap_64=bswap_64)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src ndpiSources)
+AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src/hll ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/protocols ndpiSources)
 
 set(NDPI_GEN ${ROOTDIR}/generated/nDPI)
