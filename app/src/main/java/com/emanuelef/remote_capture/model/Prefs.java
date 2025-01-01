@@ -72,7 +72,6 @@ public class Prefs {
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_IP_MODE = "ip_mode";
     public static final String PREF_APP_LANGUAGE = "app_language";
-    public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
     public static final String PREF_VISUALIZATION_MASK = "vis_mask";
     public static final String PREF_MALWARE_WHITELIST = "malware_whitelist";

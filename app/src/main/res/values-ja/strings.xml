@@ -78,9 +78,6 @@
     <string name="system_default">システム標準</string>
     <string name="no_activity_file_selection">ファイル選択を処理するアプリが見つかりません</string>
     <string name="file_saved_with_name">「%1$s」としてファイルを保存しました</string>
-    <string name="theme_light">ライト</string>
-    <string name="theme_dark">ダーク</string>
-    <string name="app_theme">テーマ</string>
     <string name="socks5_proxy">SOCKS5 プロキシを有効にする</string>
     <string name="enable_socks5_proxy_summary">すべての TCP 接続を指定した SOCKS5 プロキシにリダイレクトします</string>
     <string name="proxy_port">プロキシ ポート</string>

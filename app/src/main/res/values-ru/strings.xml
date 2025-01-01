@@ -77,9 +77,6 @@
     <string name="lang_english">Английский</string>
     <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
-    <string name="theme_light">Светлая</string>
-    <string name="theme_dark">Тёмная</string>
-    <string name="app_theme">Тема</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
     <string name="proxy_port">Порт прокси</string>
     <string name="root_capture">Захват в root режиме</string>

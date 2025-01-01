@@ -116,9 +116,6 @@
     <string name="system_default">System</string>
     <string name="no_activity_file_selection">Nie znaleziono aplikacji obsługującej wybór plików</string>
     <string name="file_saved_with_name">Plik zapisany jako \"%1$s\"</string>
-    <string name="theme_light">Jasny</string>
-    <string name="theme_dark">Ciemny</string>
-    <string name="app_theme">Motyw</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="socks5_redirection">Przekierowanie SOCKS5</string>
     <string name="socks5_summary">Skonfiguruj przekierowanie do serwera proxy SOCKS5</string>

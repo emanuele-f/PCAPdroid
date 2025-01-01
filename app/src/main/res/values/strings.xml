@@ -121,9 +121,6 @@
     <string name="system_default">System default</string>
     <string name="no_activity_file_selection">No app found to handle file selection</string>
     <string name="file_saved_with_name">File saved as \"%1$s\"</string>
-    <string name="theme_light">Light</string>
-    <string name="theme_dark">Dark</string>
-    <string name="app_theme">Theme</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="socks5_redirection">SOCKS5 redirection</string>
     <string name="socks5_summary">Configure the redirection to a SOCKS5 proxy</string>

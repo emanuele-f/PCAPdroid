@@ -77,9 +77,6 @@
     <string name="lang_english">Inglese</string>
     <string name="system_default">Predefinita del sistema</string>
     <string name="no_activity_file_selection">App di selezione file mancante</string>
-    <string name="theme_light">Chiaro</string>
-    <string name="theme_dark">Scuro</string>
-    <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="proxy_port">Porta del proxy</string>
     <string name="root_capture">Cattura come root</string>

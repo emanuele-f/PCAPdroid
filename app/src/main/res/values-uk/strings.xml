@@ -9,8 +9,6 @@
     <string name="dns_queries">Запитів DNS</string>
     <string name="notification_msg">%1$s захоплено, %2$s з\'єднань</string>
     <string name="lang_english">Англійська</string>
-    <string name="theme_dark">Темна</string>
-    <string name="app_theme">Тема</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="ip_address_val">IP адреса: %1$s</string>
     <string name="host_val">Хост: %1$s</string>
@@ -288,7 +286,6 @@
     <string name="system_default">Системна</string>
     <string name="no_activity_file_selection">Не знайдено програми для ручного вибирання файлу</string>
     <string name="file_saved_with_name">Файл збережено як \"%1$s\"</string>
-    <string name="theme_light">Світла</string>
     <string name="socks5_redirection">Перенаправлення SOCKS5</string>
     <string name="socks5_summary">Параметри перенаправлення до проксі SOCKS5</string>
     <string name="enable_socks5_proxy_summary">Перенаправити TCP всі з\'єднання до проксі SOCKS5</string>

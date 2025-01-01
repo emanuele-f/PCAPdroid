@@ -77,9 +77,6 @@
     <string name="lang_english">Inglés</string>
     <string name="system_default">Predeterminado del sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como administrador de archivos</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_dark">Oscuro</string>
-    <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="proxy_port">Puerto proxy</string>
     <string name="root_capture">Capturar como root</string>

@@ -6,8 +6,6 @@
     <string name="status">État</string>
     <string name="dns_server">Serveur DNS</string>
     <string name="notification_msg">%1$s capturés, %2$s connexions</string>
-    <string name="theme_dark">Sombre</string>
-    <string name="app_theme">Thème</string>
     <string name="title_activity_settings">Paramètres</string>
     <string name="collector_info">Collecteur UDP : %1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s reçus – %2$s envoyés</string>
@@ -57,7 +55,6 @@
     <string name="system_default">Système</string>
     <string name="no_activity_file_selection">Aucune application trouvée pour gérer la sélection des fichiers</string>
     <string name="file_saved_with_name">Fichier enregistré sous le nom de « %1$s »</string>
-    <string name="theme_light">Clair</string>
     <string name="donate">Faire un don</string>
     <string name="search">Recherche…</string>
     <string name="app_val">Appli : %1$s</string>

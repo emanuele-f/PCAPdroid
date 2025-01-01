@@ -116,9 +116,6 @@
     <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
     <string name="file_saved_with_name">تم حفظ الملف باسم \"%1$s\"</string>
-    <string name="theme_dark">داكن</string>
-    <string name="theme_light">فاتح</string>
-    <string name="app_theme">السمة</string>
     <string name="socks5_redirection">إعادة توجيه SOCKS5</string>
     <string name="socks5_summary">قم بتكوين إعادة التوجيه إلى وكيل SOCKS5</string>
     <string name="enable_socks5_proxy_summary">إعادة توجيه كافة اتصالات TCP إلى وكيل SOCKS5</string>

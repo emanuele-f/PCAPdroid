@@ -98,8 +98,6 @@
     <string name="app_language">Bahasa</string>
     <string name="no_activity_file_selection">Tidak ada aplikasi yang ditemukan untuk menangani pemilihan file</string>
     <string name="file_saved_with_name">File disimpan sebagai \"%1$s\"</string>
-    <string name="theme_dark">Gelap</string>
-    <string name="app_theme">Tema</string>
     <string name="enable_socks5_proxy_summary">Arahkan ulang semua koneksi TCP ke proxy SOCKS5</string>
     <string name="proxy_port">Port proksi</string>
     <string name="root_capture">Capture dengan akses root</string>
@@ -209,7 +207,6 @@
     <string name="unknown_app">Tidak diketahui</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
-    <string name="theme_light">Terang</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
     <string name="warn_no_app_data">Tidak ada data aplikasi yang dipertukarkan</string>

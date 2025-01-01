@@ -456,13 +456,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private void setupOtherPrefs() {
             setupAppLanguagePref();
 
-            DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
-            appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
-                Utils.setAppTheme(newValue.toString());
-
-                return true;
-            });
-
             mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
             mPortMapping.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireContext(), PortMapActivity.class);

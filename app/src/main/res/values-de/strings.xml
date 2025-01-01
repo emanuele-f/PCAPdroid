@@ -78,7 +78,6 @@
     <string name="last_blacklists_update">Letzte Aktualisierung</string>
     <string name="select_all">Alles auswählen</string>
     <string name="enable_socks5_proxy_summary">Umleiten aller TCP-Verbindungen an einen SOCKS5 Proxy</string>
-    <string name="theme_dark">Dunkel</string>
     <string name="receiver_ip_address">Empfänger-IP-Adresse</string>
     <string name="malware_detection_learn_more">Erfahre mehr über die Malware-Erkennungsfunktion</string>
     <string name="save_ok">Gespeichert</string>
@@ -98,11 +97,9 @@
     <string name="lang_english">Englisch</string>
     <string name="system_default">System</string>
     <string name="file_saved_with_name">Datei als \"%1$s\" gespeichert</string>
-    <string name="theme_light">Hell</string>
     <string name="get_app">Kapiert:</string>
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
-    <string name="app_theme">Thema</string>
     <string name="proxy_port">Proxy-Port</string>
     <string name="root_capture_summary">Erlaubt PCAPdroid die Ausführung mit anderen VPN-Apps</string>
     <string name="donate">Spenden</string>

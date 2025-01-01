@@ -191,13 +191,10 @@
     <string name="get_app">Edin:</string>
     <string name="error">Hata</string>
     <string name="no_activity_file_selection">Dosya seçimini yapacak uygulama bulunamadı</string>
-    <string name="theme_dark">Koyu</string>
-    <string name="app_theme">Tema</string>
     <string name="proxy_port">Vekil bağlantı noktası</string>
     <string name="root_capture">Root olarak yakala</string>
     <string name="host_val">Ana makine: %1$s</string>
     <string name="app_details">Uygulama ayrıntıları</string>
-    <string name="theme_light">Açık</string>
     <string name="netd_app_info">DNS çözümlemelerini gerçekleştiren sistem arka plan programı</string>
     <string name="loading">Yükleniyor…</string>
     <string name="capturing_from">\"%1$s\" paketlerini yakala</string>

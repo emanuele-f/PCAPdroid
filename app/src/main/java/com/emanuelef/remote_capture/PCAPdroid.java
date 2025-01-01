@@ -86,19 +86,6 @@ public class PCAPdroid extends Application {
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String theme = prefs.getString(Prefs.PREF_APP_THEME, "");
-
-        if("".equals(theme)) {
-            if(Utils.isTv(this)) {
-                // Use the dark theme by default on Android TV
-                theme = "dark";
-                prefs.edit().putString(Prefs.PREF_APP_THEME, theme).apply();
-            } else
-                theme = "system";
-        }
-        Utils.setAppTheme(theme);
-
         // Listen to package events
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PACKAGE_ADDED);

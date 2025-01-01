@@ -378,15 +378,6 @@ public class Utils {
         return config;
     }
 
-    public static void setAppTheme(String theme) {
-        if(theme.equals("light"))
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        else if(theme.equals("dark"))
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        else
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-    }
-
     public static String proto2str(int proto) {
         switch(proto) {
             case 6:     return "TCP";

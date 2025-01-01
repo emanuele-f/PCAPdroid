@@ -105,9 +105,6 @@
     <string name="lang_english">英语</string>
     <string name="system_default">系统默认</string>
     <string name="no_activity_file_selection">没有找到应用来处理选中的文件</string>
-    <string name="theme_light">浅色</string>
-    <string name="theme_dark">深色</string>
-    <string name="app_theme">主题</string>
     <string name="socks5_proxy">启用 SOCKS5 代理</string>
     <string name="proxy_port">代理端口</string>
     <string name="root_capture">以 root 用户身份捕获流量</string>
