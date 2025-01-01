@@ -1858,7 +1858,7 @@ public class Utils {
             mlp.rightMargin = insets.right;
             v.setLayoutParams(mlp);
 
-            return WindowInsetsCompat.CONSUMED;
+            return windowInsets;
         });
     }
 

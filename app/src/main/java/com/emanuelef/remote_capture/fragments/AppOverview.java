@@ -173,7 +173,7 @@ public class AppOverview extends Fragment implements MenuProvider {
                     WindowInsetsCompat.Type.displayCutout());
             v.setPadding(insets.left, 0, insets.right, insets.bottom);
 
-            return WindowInsetsCompat.CONSUMED;
+            return windowInsets;
         });
         sv.setClipToPadding(false);
     }

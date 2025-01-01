@@ -39,7 +39,7 @@ public class BaseActivity extends AppCompatActivity {
                 if (topInset > 0)
                     view.setPadding(0, topInset, 0, 0); // Shift the toolbar down if needed
 
-                return WindowInsetsCompat.CONSUMED;
+                return insets;
             });
         }
     }

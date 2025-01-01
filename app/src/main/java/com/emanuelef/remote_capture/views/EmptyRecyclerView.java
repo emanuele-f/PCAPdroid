@@ -95,7 +95,7 @@ public class EmptyRecyclerView extends RecyclerView {
             // when not open, apply as a padding for an optimal edge-to-edge experience
             v.setPadding(0, 0, 0, !isImeOpen ? insets.bottom : 0);
 
-            return WindowInsetsCompat.CONSUMED;
+            return windowInsets;
         });
         setClipToPadding(false);
     }
@@ -158,7 +158,7 @@ public class EmptyRecyclerView extends RecyclerView {
                         WindowInsetsCompat.Type.displayCutout());
                 v.setPadding(0, insets.top, 0, 0);
 
-                return WindowInsetsCompat.CONSUMED;
+                return windowInsets;
             });
         }
     }
