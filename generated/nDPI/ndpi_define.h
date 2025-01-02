@@ -27,7 +27,7 @@
  * The #define below is used for apps that dynamically link with nDPI to make
  * sure that datastructures and in sync across versions
  */
-#define NDPI_API_VERSION 11711
+#define NDPI_API_VERSION 11721
 
 /*
   gcc -E -dM - < /dev/null |grep ENDIAN

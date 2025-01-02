@@ -21,7 +21,6 @@
  *
  */
 
-
 #ifndef __NDPI_API_H__
 #define __NDPI_API_H__
 
@@ -2107,6 +2106,8 @@ extern "C" {
 
   /* ******************************* */
 
+#ifndef NDPI_SLIM
+
   /*
     Bitmap with 64 bit values based
     on https://github.com/FastFilter/xor_singleheader/tree/master
@@ -2159,6 +2160,8 @@ extern "C" {
   void         ndpi_filter_free(ndpi_filter *f);
   size_t       ndpi_filter_size(ndpi_filter *f);
   u_int32_t    ndpi_filter_cardinality(ndpi_filter *f);
+
+#endif // NDPI_SLIM
 
   /* ******************************* */
 

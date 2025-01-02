@@ -28,5 +28,5 @@ SUBMODULES_PATH=../submodules
 cp $SUBMODULES_PATH/libpcap/{grammar.c,grammar.h,scanner.c,scanner.h,config.h} ./libpcap
 
 # nDPI
-( cd $SUBMODULES_PATH/nDPI && ./autogen.sh || true; ./configure --host $TARGET --disable-gcrypt --with-only-libndpi )
+( cd $SUBMODULES_PATH/nDPI && ./autogen.sh || true; ./configure --host $TARGET --enable-slim --with-only-libndpi )
 cp $SUBMODULES_PATH/nDPI/src/include/{ndpi_api.h,ndpi_config.h,ndpi_define.h} ./nDPI

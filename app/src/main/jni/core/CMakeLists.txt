@@ -21,6 +21,19 @@ AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/third_party/src/hll ndpiSources)
 AUX_SOURCE_DIRECTORY(${NDPI_ROOT}/src/lib/protocols ndpiSources)
 
+# slim build, see nDPI lib/Makefile.in
+add_definitions(-DNDPI_SLIM)
+list(REMOVE_ITEM ndpiSources
+        ${NDPI_ROOT}/src/lib/third_party/src/libinjection_html5.c
+        ${NDPI_ROOT}/src/lib/third_party/src/libinjection_xss.c
+        ${NDPI_ROOT}/src/lib/third_party/src/libinjection_sqli.c
+        ${NDPI_ROOT}/src/lib/third_party/src/roaring.c
+        ${NDPI_ROOT}/src/lib/third_party/src/roaring_v2.c
+        ${NDPI_ROOT}/src/lib/ndpi_bitmap.c
+        ${NDPI_ROOT}/src/lib/ndpi_bitmap64_fuse.c
+        ${NDPI_ROOT}/src/lib/ndpi_binary_bitmap.c
+        ${NDPI_ROOT}/src/lib/ndpi_filter.c)
+
 set(NDPI_GEN ${ROOTDIR}/generated/nDPI)
 configure_file(${NDPI_GEN}/ndpi_api.h ${NDPI_ROOT}/src/include/ndpi_api.h)
 configure_file(${NDPI_GEN}/ndpi_config.h ${NDPI_ROOT}/src/include/ndpi_config.h)
