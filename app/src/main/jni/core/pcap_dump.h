@@ -22,7 +22,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <sys/types.h>
 
 #define PCAPDROID_TRAILER_MAGIC 0x01072021
 #define PCAPDROID_PEN 62652

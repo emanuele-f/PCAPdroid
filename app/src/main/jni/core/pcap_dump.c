@@ -535,7 +535,7 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
 
 static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktlen,
                                       const struct timeval *tv, int uid, u_int ifidx) {
-    uint_t pcapng_ifid = 0;
+    u_int pcapng_ifid = 0;
 
     if(ifidx > 0) {
         dumped_interface_t *item;
