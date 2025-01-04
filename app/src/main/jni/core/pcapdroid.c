@@ -1194,16 +1194,12 @@ int pd_run(pcapdroid_t *pd) {
         if((pd->pcap_dump.snaplen <= 0) || (pd->pcap_dump.snaplen > max_snaplen))
             pd->pcap_dump.snaplen = max_snaplen;
 
-        pcap_dump_mode_t dump_mode;
-        if(pd->pcap_dump.pcapng_format)
-            dump_mode = PCAPNG_DUMP;
-        else if(pd->pcap_dump.trailer_enabled)
-            dump_mode = PCAP_DUMP_WITH_TRAILER;
-        else
-            dump_mode = PCAP_DUMP;
+        pcap_dump_format_t dump_fmt = pd->pcap_dump.pcapng_format ? PCAPNG_DUMP : PCAP_DUMP;
+        bool trailer_enabled = pd->pcap_dump.trailer_enabled;
 
-        log_d("dump_mode: %d", dump_mode);
-        pd->pcap_dump.dumper = pcap_new_dumper(dump_mode,pd->pcap_dump.snaplen,
+        log_d("dump_mode: %d - trailer: %u", dump_fmt, trailer_enabled);
+        pd->pcap_dump.dumper = pcap_new_dumper(dump_fmt, trailer_enabled,
+                                               pd->pcap_dump.snaplen,
                                                pd->pcap_dump.max_dump_size,
                                                pd->cb.send_pcap_dump, pd);
         if(!pd->pcap_dump.dumper) {

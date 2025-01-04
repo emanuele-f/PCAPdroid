@@ -191,7 +191,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
-        private SwitchPreference mTrailerEnabled;
         private SwitchPreference mPcapngEnabled;
         private SwitchPreference mRestartOnDisconnect;
         private Billing mIab;
@@ -332,9 +331,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 startActivity(intent);
                 return true;
             });
-
-            mTrailerEnabled = requirePreference("pcapdroid_trailer");
-            mTrailerEnabled.setVisible(!isPcapngEnabled()); // TODO support
         }
 
         private void setupSecurityPrefs() {
@@ -379,7 +375,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mPcapngEnabled.setOnPreferenceClickListener((preference -> {
                     // Billing code here
 
-                    mTrailerEnabled.setVisible(!mPcapngEnabled.isChecked());
                     return false;
                 }));
                 if(!mIab.isPurchased(Billing.PCAPNG_SKU))

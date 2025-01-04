@@ -1475,6 +1475,15 @@ public class CaptureService extends VpnService implements Runnable {
         return dsc.getName();
     }
 
+    public String getPackageNameByUid(int uid) {
+        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
+
+        if(dsc == null)
+            return "";
+
+        return dsc.getPackageName();
+    }
+
     /* Exports a PCAP data chunk */
     public void dumpPcapData(byte[] data) {
         if((mDumper != null) && (data.length > 0)) {

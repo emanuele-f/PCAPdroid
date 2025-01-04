@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2023 - Emanuele Faranda
+ * Copyright 2023-25 - Emanuele Faranda
  */
 
 #ifndef __MY_PCAP_H__
@@ -22,6 +22,12 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+
+#define PCAPDROID_TRAILER_MAGIC 0x01072021
+#define PCAPDROID_PEN 62652
+#define PCAPDROID_PCAPNG_VERSION 1
+
+#define PCAPDROID_BLOCK_UID_MAP 1
 
 /* Packet dump module, dumping packet records in the PCAP/PCAPNG format.
  * Packets are first buffered and then exported periodically to the callback. pcap_check_export must
@@ -96,15 +102,38 @@ typedef struct pcapng_enh_packet_block {
     /* ..options.. */
 } __attribute__((packed)) pcapng_enh_packet_block_t;
 
+typedef struct pcapng_enh_option {
+    uint16_t code;
+    uint16_t length;
+} pcapng_enh_option_t;
+
+/* ******************************************************* */
+
+typedef struct pcapng_pd_custom_block {
+    int32_t block_type;
+    uint32_t total_length;
+    uint32_t pen;
+
+    uint16_t version;
+    uint8_t type;
+    uint8_t padding;
+} __attribute__((packed)) pcapng_pd_custom_block_t;
+
+typedef struct pcapng_pd_uid_map_block {
+    pcapng_pd_custom_block_t hdr;
+
+    int32_t uid;
+    uint8_t package_name_len;
+    uint8_t app_name_len;
+    /* ..package_name, app_name.. */
+} __attribute__((packed)) pcapng_pd_uid_map_block_t;
+
 /* ******************************************************* */
 
 typedef enum {
     PCAP_DUMP,                // PCAP file
-    PCAP_DUMP_WITH_TRAILER,   // PCAP file with PCAPdroid trailer
     PCAPNG_DUMP,              // PcapNg file
-} pcap_dump_mode_t;
-
-#define PCAPDROID_TRAILER_MAGIC 0x01072021
+} pcap_dump_format_t;
 
 /* A trailer to the packet which contains PCAPdroid-specific information.
  * When pcapdroid_trailer is set, the raw packet will be prepended with a bogus ethernet header,
@@ -124,7 +153,7 @@ typedef struct pcapdroid_trailer {
 struct pcapdroid;
 typedef void pcap_dump_callback(struct pcapdroid *pd, const int8_t *buf, int dump_size);
 
-pcap_dumper_t* pcap_new_dumper(pcap_dump_mode_t mode, int snaplen, uint64_t max_dump_size,
+pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool trailer_enabled, int snaplen, uint64_t max_dump_size,
                                pcap_dump_callback dumpcb, struct pcapdroid *pd);
 void pcap_destroy_dumper(pcap_dumper_t *dumper);
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen, const struct timeval *tv, int uid);
