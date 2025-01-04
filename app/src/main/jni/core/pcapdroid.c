@@ -36,7 +36,7 @@ extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_co
 bool running = false;
 uint32_t new_dns_server = 0;
 bool block_private_dns = false;
-bool has_seen_pcapdroid_trailer = false;
+bool has_seen_dump_extensions = false;
 
 bool dump_capture_stats_now = false;
 bool reload_blacklists_now = false;
@@ -1165,7 +1165,7 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
 int pd_run(pcapdroid_t *pd) {
     /* Important: init global state every time. Android may reuse the service. */
     running = true;
-    has_seen_pcapdroid_trailer = false;
+    has_seen_dump_extensions = false;
     netd_resolve_waiting = 0;
 
     /* nDPI */
@@ -1195,7 +1195,7 @@ int pd_run(pcapdroid_t *pd) {
             pd->pcap_dump.snaplen = max_snaplen;
 
         pcap_dump_format_t dump_fmt = pd->pcap_dump.pcapng_format ? PCAPNG_DUMP : PCAP_DUMP;
-        bool trailer_enabled = pd->pcap_dump.trailer_enabled;
+        bool trailer_enabled = pd->pcap_dump.dump_extensions;
 
         log_d("dump_mode: %d - trailer: %u", dump_fmt, trailer_enabled);
         pd->pcap_dump.dumper = pcap_new_dumper(dump_fmt, trailer_enabled,

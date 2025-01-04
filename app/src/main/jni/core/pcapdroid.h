@@ -242,7 +242,7 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        bool trailer_enabled;
+        bool dump_extensions;
         bool pcapng_format;
         int snaplen;
         int max_pkts_per_flow;
@@ -378,7 +378,7 @@ extern uint32_t new_dns_server;
 extern bool block_private_dns;
 extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
-extern bool has_seen_pcapdroid_trailer;
+extern bool has_seen_dump_extensions;
 extern int bl_num_checked_connections;
 extern int fw_num_checked_connections;
 extern char *pd_appver;

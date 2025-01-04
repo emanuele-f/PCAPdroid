@@ -40,7 +40,7 @@ typedef struct {
 
 struct pcap_dumper {
     pcap_dump_format_t format;
-    bool trailer_enabled;
+    bool dump_extensions;
     pcap_dump_callback *dump_cb;
     pcapdroid_t *pd;
     int snaplen;
@@ -62,7 +62,7 @@ struct pcap_dumper {
 
 /* ******************************************************* */
 
-pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool trailer_enabled,
+pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool dump_extensions,
                                int snaplen, uint64_t max_dump_size,
                                pcap_dump_callback dumpcb, pcapdroid_t *pd) {
     pcap_dumper_t *dumper = pd_calloc(1, sizeof(pcap_dumper_t));
@@ -89,7 +89,7 @@ pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool trailer_enabled,
 
     dumper->snaplen = snaplen;
     dumper->format = format;
-    dumper->trailer_enabled = trailer_enabled;
+    dumper->dump_extensions = dump_extensions;
     dumper->max_dump_size = max_dump_size;
     dumper->dump_cb = dumpcb;
     dumper->pd = pd;
@@ -255,7 +255,7 @@ static int get_pcap_file_header(pcap_dumper_t *dumper, char **out) {
     pcap_hdr->thiszone = 0;
     pcap_hdr->sigfigs = 0;
     pcap_hdr->snaplen = dumper->snaplen;
-    pcap_hdr->network = dumper->trailer_enabled ? LINKTYPE_ETHERNET : LINKTYPE_RAW;
+    pcap_hdr->network = dumper->dump_extensions ? LINKTYPE_ETHERNET : LINKTYPE_RAW;
 
     *out = (char*)pcap_hdr;
     return sizeof(struct pcap_hdr);
@@ -343,7 +343,7 @@ static bool dump_packet_pcap(pcap_dumper_t *dumper, const char *pkt, int pktlen,
     bool with_trailer = false;
     int trailer_overhead = 0;
 
-    if(dumper->trailer_enabled) {
+    if(dumper->dump_extensions) {
         // Pad the frame so that the buffer keeps its 4-bytes alignment
         pre_trailer_padding = (~(sizeof(struct ethhdr) + incl_len) + 1) & 0x3;
         trailer_overhead = (int)(sizeof(struct ethhdr) + pre_trailer_padding + sizeof(pcapdroid_trailer_t));
@@ -473,7 +473,7 @@ static bool dump_pcapng_uid_mapping(pcap_dumper_t *dumper, int uid) {
 
 static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktlen,
                                       const struct timeval *tv, int uid) {
-    if(dumper->trailer_enabled) {
+    if(dumper->dump_extensions) {
         mapped_uid_t *item;
         HASH_FIND_INT(dumper->mapped_uids, &uid, item);
 
@@ -497,7 +497,7 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
     uint8_t comment_padding = 0;
     bool has_comment = false;
 
-    if(dumper->trailer_enabled) {
+    if(dumper->dump_extensions) {
         comment_len = snprintf(comment, sizeof(comment), "u-%d", uid);
         comment_padding = (~comment_len + 1) & 0x3;
         total_length += sizeof(pcapng_enh_option_t) + comment_len + comment_padding;

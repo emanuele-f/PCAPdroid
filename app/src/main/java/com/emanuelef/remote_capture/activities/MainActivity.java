@@ -110,7 +110,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private boolean mWasStarted = false;
     private boolean mStartPressed = false;
     private boolean mDecEmptyRulesNoticeShown = false;
-    private boolean mTrailerNoticeShown = false;
+    private boolean mExtensionsNoticeShown = false;
 
     private static final String TAG = "Main";
 
@@ -638,13 +638,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             ConnectionsRegister reg = CaptureService.getConnsRegister();
 
             if((reg != null) && (reg.getConnCount() > 0)
-                    && !CaptureService.hasSeenPcapdroidTrailer()
-                    && !mTrailerNoticeShown
+                    && !CaptureService.hasSeenDumpExtensions()
+                    && !mExtensionsNoticeShown
             ) {
                 new AlertDialog.Builder(this)
                         .setMessage(getString(R.string.pcapdroid_trailer_notice,
-                                getString(R.string.unknown_app), getString(R.string.pcapdroid_trailer)))
-                        .setPositiveButton(R.string.ok, (d, whichButton) -> mTrailerNoticeShown = true)
+                                getString(R.string.unknown_app), getString(R.string.dump_extensions)))
+                        .setPositiveButton(R.string.ok, (d, whichButton) -> mExtensionsNoticeShown = true)
                         .show();
             } else
                 Utils.showToastLong(this, R.string.pcap_load_success);

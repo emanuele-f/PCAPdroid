@@ -593,7 +593,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
-                    .trailer_enabled = (bool)getIntPref(env, vpn, "addPcapdroidTrailer"),
+                    .dump_extensions = (bool)getIntPref(env, vpn, "dumpExtensionsEnabled"),
                     .pcapng_format = (bool)getIntPref(env, vpn, "isPcapngEnabled"),
                     .snaplen = getIntPref(env, vpn, "getSnaplen"),
                     .max_pkts_per_flow = getIntPref(env, vpn, "getMaxPktsPerFlow"),
@@ -1306,9 +1306,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, 
 /* ******************************************************* */
 
 JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env,
-                                                                          jclass clazz) {
-    return has_seen_pcapdroid_trailer;
+Java_com_emanuelef_remote_1capture_CaptureService_hasSeenDumpExtensions(JNIEnv *env,
+                                                                        jclass clazz) {
+    return has_seen_dump_extensions;
 }
 
 #endif // ANDROID

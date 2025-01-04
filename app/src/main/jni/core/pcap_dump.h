@@ -153,7 +153,7 @@ typedef struct pcapdroid_trailer {
 struct pcapdroid;
 typedef void pcap_dump_callback(struct pcapdroid *pd, const int8_t *buf, int dump_size);
 
-pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool trailer_enabled, int snaplen, uint64_t max_dump_size,
+pcap_dumper_t* pcap_new_dumper(pcap_dump_format_t format, bool dump_extensions, int snaplen, uint64_t max_dump_size,
                                pcap_dump_callback dumpcb, struct pcapdroid *pd);
 void pcap_destroy_dumper(pcap_dumper_t *dumper);
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen, const struct timeval *tv, int uid);

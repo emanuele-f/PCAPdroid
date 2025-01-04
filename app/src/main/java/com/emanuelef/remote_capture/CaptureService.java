@@ -1353,7 +1353,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     public int firewallEnabled() { return(mFirewallEnabled ? 1 : 0); }
 
-    public int addPcapdroidTrailer() { return(mSettings.pcapdroid_trailer ? 1 : 0); }
+    public int dumpExtensionsEnabled() { return(mSettings.dump_extensions ? 1 : 0); }
 
     public int isPcapngEnabled() { return(mSettings.pcapng_format ? 1 : 0); }
 
@@ -1671,5 +1671,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void setPayloadMode(int mode);
     public static native List<String> getL7Protocols();
     public static native void dumpMasterSecret(byte[] secret);
-    public static native boolean hasSeenPcapdroidTrailer();
+    public static native boolean hasSeenDumpExtensions();
 }

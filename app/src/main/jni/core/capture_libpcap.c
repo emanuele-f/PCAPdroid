@@ -430,7 +430,7 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
             if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC) {
                 hdr->uid = ntohl(trailer->uid);
-                has_seen_pcapdroid_trailer = true;
+                has_seen_dump_extensions = true;
             }
         }
     }
