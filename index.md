@@ -24,7 +24,7 @@ Welcome to the PCAPdroid User Guide.
     - [4.2 DoH Support](advanced_features#42-doh-support)
     - [4.3 IPv6 Support](advanced_features#43-ipv6-support)
     - [4.4 Root Capture](advanced_features#44-root-capture)
-    - [4.5 PCAPdroid Trailer](advanced_features#45-pcapdroid-trailer)
+    - [4.5 PCAPdroid Extensions](advanced_features#45-pcapdroid-extensions)
     - [4.6 Js Injector](advanced_features#46-js-injector)
     - [4.7 Tor](advanced_features#47-tor)
 - [5. Paid Features](paid_features)
