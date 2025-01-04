@@ -132,9 +132,6 @@
     <string name="unknown_app_info">\"未知\" 标记无法确定来自什么应用的连接</string>
     <string name="packets_dropped">丢弃的数据包</string>
     <string name="capture_prefs">捕获</string>
-    <string name="pcapdroid_trailer">PCAPdroid Trailer</string>
-    <string name="pcapdroid_trailer_summary">包含附加元数据 (如应用程序名称) 的 Trailer 将被添加到转储数据包中</string>
-    <string name="trailer_how_to">如何在 Wireshark 中显示 Trailer 数据</string>
     <string name="pending_transaction">请完成您的交易以兑换此功能</string>
     <string name="ctrl_consent">一个应用程序想要捕获你的设备流量。
 \n如果你不确定，最好拒绝</string>

@@ -104,9 +104,6 @@
     <string name="unknown_app_info">\"Desconocido\" marca las conexiones cuya aplicación no se pudo determinar</string>
     <string name="packets_dropped">Paquetes perdidos</string>
     <string name="capture_prefs">Captura</string>
-    <string name="pcapdroid_trailer">Tráiler PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Se añadirá un tráiler con metadatos adicionales (como el nombre de la aplicación) a los paquetes volcados</string>
-    <string name="trailer_how_to">Cómo mostrar los datos del remolque en Wireshark</string>
     <string name="pending_transaction">Por favor, completa tu transacción para canjear esta función</string>
     <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.
 \nRecházala si no estás seguro</string>

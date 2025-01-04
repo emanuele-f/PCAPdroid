@@ -107,9 +107,6 @@
     <string name="unknown_app_info">どのアプリの接続かわからない場合に「不明」と表示されます</string>
     <string name="packets_dropped">ドロップ済みパケット</string>
     <string name="capture_prefs">キャプチャ</string>
-    <string name="pcapdroid_trailer">PCAPdroid トレーラー</string>
-    <string name="pcapdroid_trailer_summary">追加のメタデータ (アプリ名など) を含んだトレーラーをダンプされたパケットに追加します</string>
-    <string name="trailer_how_to">Wireshark で流れているデータを表示する方法</string>
     <string name="pending_transaction">決済を完了させて機能を回復させてください</string>
     <string name="ctrl_consent">アプリはデバイスのトラフィックをキャプチャしようとしています。よくわからない場合は拒否してください</string>
     <string name="deny">拒否</string>

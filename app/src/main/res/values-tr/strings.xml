@@ -76,9 +76,6 @@
     <string name="permissions">İzinler</string>
     <string name="root_app_info">En yüksek ayrıcalıklarla çalışan sistem arka plan programları</string>
     <string name="packets_dropped">Düşürülen paketler</string>
-    <string name="pcapdroid_trailer">PCAPdroid izlemesi</string>
-    <string name="pcapdroid_trailer_summary">Dökülen paketlere, ek üst veriler (uygulama adı gibi) içeren bir izleme eklenecektir</string>
-    <string name="trailer_how_to">İzleme verileri Wireshark\'ta nasıl görüntülenir</string>
     <string name="ctrl_consent">Bir uygulama, aygıtınızın trafiğini yakalamak istiyor.
 \nEmin değilseniz reddedin</string>
     <string name="deny">Reddet</string>

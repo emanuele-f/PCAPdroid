@@ -127,7 +127,6 @@
     <string name="app_not_found">Fant ikke programmet «%1$s»</string>
     <string name="no_activity_file_selection">Fant ikke noe program til å håndtere valg av filer</string>
     <string name="file_saved_with_name">Filen «%1$s» ble lagret</string>
-    <string name="pcapdroid_trailer_summary">En trailer som inneholder ytterligere metadata (som programnavn) vil bli lagt til i registrerte pakker.</string>
     <string name="ctrl_consent_denied">PCAPdroid: Kontrollforespørsel ble avslått</string>
     <string name="all_interfaces">Alle grensesnitt</string>
     <string name="edit_filter">Rediger filter</string>
@@ -176,10 +175,8 @@
     <string name="enable_socks5_proxy_summary">Videresend alle TCP-tilkoblinger til angitt SOCKS5-mellomtjener</string>
     <string name="unknown_app_info">«Ukjent» tilkjennegir tilkoblinger hvis program ikke kunne fastsettes.</string>
     <string name="root_capture">Fangst med rot-tilgang</string>
-    <string name="pcapdroid_trailer">PCAPdroid-trailer</string>
     <string name="ctrl_consent">Et program vil fane din enhetstrafikk.
 \nNekt det hvis du ikke er sikker</string>
-    <string name="trailer_how_to">Hvordan vise trailer-data i Wireshark</string>
     <string name="malware_whitelist_rules">Skadevare-hvitlisteregler</string>
     <string name="malware_detection_summary">Oppdag tilkoblinger til kjente ondsinnede verter via tredjeparts-svartelister</string>
     <string name="billing_connecting">Kobler til Google Play …Prøv igjen om en stund.</string>

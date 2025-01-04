@@ -92,17 +92,14 @@
     <string name="app_val">앱: %1$s</string>
     <string name="ip_address_val">IP 주소: %1$s</string>
     <string name="protocol_val">프로토콜: %1$s</string>
-    <string name="pcapdroid_trailer">PCAPdroid 트레일러</string>
     <string name="root_app_info">최대 권한으로 동작 중인 시스템 데몬</string>
     <string name="android_app_info">안드로이드 시스템</string>
     <string name="netd_app_info">DNS 이름 확인을 수행 중인 시스템 데몬</string>
     <string name="phone_app_info">텔레포니 서비스</string>
     <string name="capture_prefs">캡처</string>
-    <string name="pcapdroid_trailer_summary">트레일러는 추가적인 메타데이터(앱 이름 등)를 덤프된 패킷에 포함합니다</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
     <string name="ip_rules">IP 규칙</string>
     <string name="show_only_malicious">악성 커넥션</string>
-    <string name="trailer_how_to">와이어샤크에서 트레일러 데이터를 표시하는 방법</string>
     <string name="malicious_connection_filter">악성 연결</string>
     <string name="once">한번만</string>
     <string name="n_rules">%1$s 규칙</string>

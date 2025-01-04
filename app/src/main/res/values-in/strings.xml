@@ -10,13 +10,11 @@
     <string name="target_sdk">SDK Target</string>
     <string name="unknown_app_info">\"Tidak diketahui\" menandai koneksi yang aplikasinya tidak dapat ditentukan</string>
     <string name="android_app_info">Sistem Android</string>
-    <string name="trailer_how_to">Cara menampilkan data trailer di Wireshark</string>
     <string name="pending_transaction">Silakan selesaikan transaksi Anda untuk menukarkan fitur ini</string>
     <string name="ctrl_consent">Sebuah aplikasi ingin menangkap lalu lintas perangkat Anda.
 \nTolak jika Anda tidak yakin</string>
     <string name="ctrl_consent_title">Permintaan kontrol PCAPdroid</string>
     <string name="ctrl_consent_denied">PCAPdroid: permintaan kontrol ditolak</string>
-    <string name="pcapdroid_trailer_summary">Cuplikan yang berisi metadata tambahan (seperti nama aplikasi) akan ditambahkan ke paket yang dibuang</string>
     <string name="deny">Tolak</string>
     <string name="all_interfaces">Semua interface</string>
     <string name="list_is_empty">Daftar kosong</string>
@@ -116,7 +114,6 @@
     <string name="root_app_info">Daemon sistem berjalan dengan hak istimewa maksimum</string>
     <string name="packets_dropped">Paket dikecualikan</string>
     <string name="capture_prefs">Tangkap</string>
-    <string name="pcapdroid_trailer">Cuplikan PCAPdroid</string>
     <string name="allow">Izinkan</string>
     <string name="ctrl_consent_allowed">PCAPdroid: permintaan kontrol diizinkan</string>
     <string name="capture_interface">Tangkap interface</string>

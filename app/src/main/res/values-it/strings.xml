@@ -105,9 +105,6 @@
     <string name="unknown_app_info">\"Sconosciuta\" indica connessioni la cui app non può essere determinata</string>
     <string name="packets_dropped">Pacchetti persi</string>
     <string name="capture_prefs">Cattura</string>
-    <string name="pcapdroid_trailer">Trailer PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Aggiunge alla cattura un trailer contenente info aggiuntive sui pacchetti salvati</string>
-    <string name="trailer_how_to">Come visualizzare le info del trailer su Wireshark</string>
     <string name="pending_transaction">Completa la transazione per ottenere l\'accesso a questa funzionalità</string>
     <string name="ctrl_consent">Un\'altra app vuole catturare il traffico di questo dispositivo.\nNegare l\'accesso se non si è sicuri</string>
     <string name="deny">Nega</string>

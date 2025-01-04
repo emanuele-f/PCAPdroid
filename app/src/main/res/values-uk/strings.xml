@@ -315,9 +315,6 @@
     <string name="phone_app_info">Телефонні сервіси</string>
     <string name="unknown_app_info">\"Невідомо\" позначаються з\'єднання, якщо додаток не вдалося визначити</string>
     <string name="packets_dropped">Втрачено пакетів</string>
-    <string name="pcapdroid_trailer">Вкладення PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Вкладення, що містить додаткові метадані (наприклад, назва програми) буде додано до вивантажених пакетів</string>
-    <string name="trailer_how_to">Як показувати вкладені дані в Wireshark</string>
     <string name="pending_transaction">Будь ласка, виконайте транзакцію, щоб активувати цю функцію</string>
     <string name="ctrl_consent">Додаток хоче захопити трафік вашого пристрою.
 \nЗабороніть, якщо не впевнені</string>

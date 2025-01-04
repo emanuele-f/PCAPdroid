@@ -104,9 +104,6 @@
     <string name="unknown_app_info">Пометка \"Неизвестное\" присваивается соединениям, у которых не удалось определить приложение-источник</string>
     <string name="packets_dropped">Отброшенные пакеты</string>
     <string name="capture_prefs">Захват трафика</string>
-    <string name="pcapdroid_trailer">PCAPdroid trailer</string>
-    <string name="pcapdroid_trailer_summary">Trailer содержит дополнительные мета-данные (такие как название приложения), которые будут добавлены в дамп</string>
-    <string name="trailer_how_to">Как отобразить данные из Trailer в Wireshark</string>
     <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности</string>
     <string name="ctrl_consent">Внешнее приложение хочет начать захват трафика посредством PCAPdroid.\nЕсли вы не уверены (или это не вы), то отклоните запрос</string>
     <string name="deny">Отклонить</string>

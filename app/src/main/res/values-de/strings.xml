@@ -84,7 +84,6 @@
     <string name="internet">Internet</string>
     <string name="uid">UID</string>
     <string name="netd_app_info">Der System-Daemon, der die DNS-Auflösungen durchführt</string>
-    <string name="pcapdroid_trailer_summary">Den gedumpten Paketen wird eine Fußzeile mit zusätzlichen Metadaten (z. B. dem App-Namen) hinzugefügt</string>
     <string name="rcvd_and_sent">%1$s empfangen — %2$s gesendet</string>
     <string name="collector_info">UDP-Kollektor: %1$s:%2$d</string>
     <string name="save_to_file">Speichern unter</string>
@@ -123,8 +122,6 @@
     <string name="unknown_app_info">„Unbekannt“ markiert Verbindungen, deren App nicht ermittelt werden konnte</string>
     <string name="packets_dropped">Entfallene Pakete</string>
     <string name="root_capture">Als Root aufnehmen</string>
-    <string name="pcapdroid_trailer">PCAPdroid-Fußzeile</string>
-    <string name="trailer_how_to">So zeigst du die Fußzeilendaten in Wireshark an</string>
     <string name="pending_transaction">Bitte schließe deine Transaktion ab, um diese Funktion einzulösen</string>
     <string name="allow">Erlauben</string>
     <string name="ctrl_consent_title">PCAPdroid-Steuerungsanforderung</string>

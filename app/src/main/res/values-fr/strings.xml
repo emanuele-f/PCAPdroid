@@ -115,9 +115,6 @@
     <string name="unknown_app_info">\"Inconnu\" signale les connexions où l\'application n\'a pu être déterminée</string>
     <string name="netd_app_info">Le démon système qui gère de la résolution DNS</string>
     <string name="target_sdk">SDK cible</string>
-    <string name="pcapdroid_trailer_summary">Des données supplémentaires (comme le nom de l\'application) seront ajoutées aux paquets extraits</string>
-    <string name="pcapdroid_trailer">Méta-données PCAPdroid</string>
-    <string name="trailer_how_to">Comment afficher ces méta-données dans Wireshark</string>
     <string name="ctrl_consent">Une application voudrait capturer le trafic de l\'appareil.
 \nRefusez si vous n\'est pas sûr(e)</string>
     <string name="pending_transaction">Veuillez terminer votre transaction pour débloquer cette fonctionnalité</string>

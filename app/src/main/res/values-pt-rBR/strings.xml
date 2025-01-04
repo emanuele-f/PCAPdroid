@@ -104,9 +104,6 @@
     <string name="unknown_app_info">\"Desconhecido\" indica as conexões do app que não podiam ser determinadas</string>
     <string name="packets_dropped">Pacotes desconsiderados</string>
     <string name="capture_prefs">Capturar</string>
-    <string name="pcapdroid_trailer">Trailer do PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Trailer contém metadados complementares (como o nome do app) que serão adicionados aos pacotes despejados</string>
-    <string name="trailer_how_to">Como exibir os dados do trailer em Wireshark</string>
     <string name="pending_transaction">Por favor, finalize a transação para liberar esta funcionalidade</string>
     <string name="ctrl_consent">Um app quer capturar o tráfego no seu dispositivo.
 \nSe não tiver certeza, melhor recusar</string>

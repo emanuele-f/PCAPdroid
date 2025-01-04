@@ -154,9 +154,6 @@
     <string name="unknown_app_info">\„Nieznane\” oznacza połączenia, których aplikacji nie można określić</string>
     <string name="packets_dropped">Pakiety upuszczone</string>
     <string name="capture_prefs">Przechytywanie</string>
-    <string name="pcapdroid_trailer">PCAPdroid trailer</string>
-    <string name="pcapdroid_trailer_summary">Do zrzuconych pakietów zostanie dodany zwiastun zawierający dodatkowe metadane (takie jak nazwa aplikacji)</string>
-    <string name="trailer_how_to">Jak wyświetlić dane stopki w Wireshark</string>
     <string name="pending_transaction">Dokończ transakcję, aby skorzystać z tej funkcji</string>
     <string name="ctrl_consent">Aplikacja chce przechwytywać ruch na Twoim urządzeniu.\nOdrzuć, jeśli nie masz pewności</string>
     <string name="deny">Odmowa</string>

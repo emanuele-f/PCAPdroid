@@ -143,11 +143,8 @@
     <string name="phone_app_info">الخدمات الهاتفية</string>
     <string name="unknown_app_info">يشير \"غير معروف\" إلى الاتصالات التي لا يمكن تحديد تطبيقها</string>
     <string name="packets_dropped">إسقاط الحزم</string>
-    <string name="pcapdroid_trailer">مقطورة PCAPdroid</string>
     <string name="ctrl_consent_denied">pcapdroid: تم رفض طلب التحكم</string>
-    <string name="pcapdroid_trailer_summary">ستتم إضافة مقطع دعائي يحتوي على بيانات تعريف إضافية (مثل اسم التطبيق) إلى الحزم المُلقاة</string>
     <string name="allow">السماح</string>
-    <string name="trailer_how_to">كيفية عرض بيانات المقطورة في Wireshark</string>
     <string name="pending_transaction">يرجى إكمال معاملتك لاسترداد هذه الميزة</string>
     <string name="ctrl_consent">يريد أحد التطبيقات التقاط حركة مرور جهازك.
 \nارفض ذلك إذا لم تكن متأكد</string>
