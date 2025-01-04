@@ -391,7 +391,8 @@ void pd_refresh_time(pcapdroid_t *pd);
 void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
                        pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
-void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid);
+void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv,
+                       int uid, u_int ifidx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);

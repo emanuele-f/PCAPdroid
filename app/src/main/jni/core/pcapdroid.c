@@ -1114,11 +1114,11 @@ void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtu
 
 /* ******************************************************* */
 
-void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid) {
+void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid, u_int ifidx) {
     if(!pd->pcap_dump.dumper)
         return;
 
-    if(!pcap_dump_packet(pd->pcap_dump.dumper, pktbuf, pktlen, tv, uid))
+    if(!pcap_dump_packet(pd->pcap_dump.dumper, pktbuf, pktlen, tv, uid, ifidx))
         stop_pcap_dump(pd);
 }
 
@@ -1156,8 +1156,10 @@ void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx) {
 
     if((pd->pcap_dump.dumper) &&
             ((pd->pcap_dump.max_pkts_per_flow <= 0) ||
-                ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow)))
-        pd_dump_packet(pd, pkt->buf, pkt->len, &pctx->tv, pctx->data->uid);
+                ((data->sent_pkts + data->rcvd_pkts) <= pd->pcap_dump.max_pkts_per_flow))) {
+        u_int ifidx = !pd->vpn_capture ? pctx->data->pcap.ifidx : 0;
+        pd_dump_packet(pd, pkt->buf, pkt->len, &pctx->tv, pctx->data->uid, ifidx);
+    }
 }
 
 /* ******************************************************* */

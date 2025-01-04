@@ -18,6 +18,7 @@
  */
 
 #include <linux/if_ether.h>
+#include <net/if.h>
 #include <pthread.h>
 #include "common/utils.h"
 #include "pcapdroid.h"
@@ -38,6 +39,12 @@ typedef struct {
     UT_hash_handle hh;
 } mapped_uid_t;
 
+typedef struct {
+    u_int ifidx;
+    u_int pcapng_ifid;
+    UT_hash_handle hh;
+} dumped_interface_t;
+
 struct pcap_dumper {
     pcap_dump_format_t format;
     bool dump_extensions;
@@ -49,6 +56,8 @@ struct pcap_dumper {
     uint64_t dump_size;
     uint64_t last_dump_ms;
     mapped_uid_t *mapped_uids;
+    dumped_interface_t *dumped_interfaces;
+    u_int num_dumped_interfaces;
 
     // the crc32 implementation requires 4-bytes aligned accesses.
     // frames are padded to honor the 4-bytes alignment.
@@ -195,9 +204,18 @@ static int8_t* alloc_dump_buffer(pcap_dumper_t *dumper, int size) {
 void pcap_destroy_dumper(pcap_dumper_t *dumper) {
     export_dump_buffer(dumper);
 
-    mapped_uid_t *entry, *tmp;
-    HASH_ITER(hh, dumper->mapped_uids, entry, tmp) {
-        pd_free(entry);
+    {
+        mapped_uid_t *entry, *tmp;
+        HASH_ITER(hh, dumper->mapped_uids, entry, tmp) {
+            pd_free(entry);
+        }
+    }
+
+    {
+        dumped_interface_t *entry, *tmp;
+        HASH_ITER(hh, dumper->dumped_interfaces, entry, tmp) {
+            pd_free(entry);
+        }
     }
 
     pthread_mutex_destroy(&dumper->keylog_mutex);
@@ -471,8 +489,69 @@ static bool dump_pcapng_uid_mapping(pcap_dumper_t *dumper, int uid) {
     return true;
 }
 
+static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
+    int total_length = sizeof(pcapng_intf_descr_block_t) + 4 /* total length */;
+
+    // try to get the interface name
+    char ifname[IF_NAMESIZE];
+    uint8_t ifname_padding = 0;
+    if (!if_indextoname(ifidx, ifname))
+        ifname[0] = '\0';
+
+    if (ifname[0]) {
+        total_length += sizeof(pcapng_enh_option_t) + strlen(ifname);
+        ifname_padding = (~total_length + 1) & 0x3;
+        total_length += ifname_padding;
+    }
+
+    int8_t *buffer = alloc_dump_buffer(dumper, total_length);
+    if (!buffer)
+        return false;
+
+    pcapng_intf_descr_block_t *idb = (pcapng_intf_descr_block_t*) buffer;
+    idb->type = 0x00000001;
+    idb->total_length = total_length;
+    idb->reserved = 0;
+    idb->linktype = LINKTYPE_RAW /* even with root, we always dump IP packets */;
+    idb->snaplen = dumper->snaplen;
+    buffer += sizeof(*idb);
+
+    if (ifname[0]) {
+        pcapng_enh_option_t *opt = (pcapng_enh_option_t*) buffer;
+        opt->code = 2; // if_name
+        opt->length = strlen(ifname);
+        buffer += sizeof(*opt);
+
+        memcpy(buffer, ifname, opt->length);
+        buffer += opt->length;
+
+        for(uint8_t i=0; i<ifname_padding; i++)
+            *(buffer++) = 0x00;
+    }
+
+    *buffer = idb->total_length;
+    return true;
+}
+
 static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktlen,
-                                      const struct timeval *tv, int uid) {
+                                      const struct timeval *tv, int uid, u_int ifidx) {
+    uint_t pcapng_ifid = 0;
+
+    if(ifidx > 0) {
+        dumped_interface_t *item;
+        HASH_FIND_INT(dumper->dumped_interfaces, &ifidx, item);
+
+        if (!item) {
+            if (dump_pcapng_interface(dumper, ifidx)) {
+                item = pd_calloc(sizeof(dumped_interface_t), 1);
+                item->ifidx = ifidx;
+                item->pcapng_ifid = pcapng_ifid = ++dumper->num_dumped_interfaces;
+                HASH_ADD_INT(dumper->dumped_interfaces, ifidx, item);
+            }
+        } else
+            pcapng_ifid = item->pcapng_ifid;
+    }
+
     if(dumper->dump_extensions) {
         mapped_uid_t *item;
         HASH_FIND_INT(dumper->mapped_uids, &uid, item);
@@ -510,7 +589,7 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
     pcapng_enh_packet_block_t *epb = (pcapng_enh_packet_block_t*) buffer;
     epb->type = 0x00000006;
     epb->total_length = total_length;
-    epb->interface_id = 0;
+    epb->interface_id = pcapng_ifid;
     epb->timestamp_high = now_usec >> 32;
     epb->timestamp_low = now_usec;
     epb->captured_len = incl_len;
@@ -546,10 +625,10 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
 /* Dump a single packet into the buffer. Returns false if PCAP dump must be stopped (e.g. if max
  * dump size reached or an error occurred). */
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
-                      const struct timeval *tv, int uid) {
+                      const struct timeval *tv, int uid, u_int ifidx) {
     bool rv;
     if (dumper->format == PCAPNG_DUMP)
-        rv = dump_packet_pcapng(dumper, pkt, pktlen, tv, uid);
+        rv = dump_packet_pcapng(dumper, pkt, pktlen, tv, uid, ifidx);
     else
         rv = dump_packet_pcap(dumper, pkt, pktlen, tv, uid);
 
