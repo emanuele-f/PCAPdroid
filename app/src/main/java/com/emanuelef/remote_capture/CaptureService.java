@@ -455,8 +455,8 @@ public class CaptureService extends VpnService implements Runnable {
         } else
             mAppFilterUids = new int[0];
 
-        mMalwareDetectionEnabled = Prefs.isMalwareDetectionEnabled(this, mPrefs);
-        mFirewallEnabled = Prefs.isFirewallEnabled(this, mPrefs);
+        mMalwareDetectionEnabled = !mSettings.readFromPcap() && Prefs.isMalwareDetectionEnabled(this, mPrefs);
+        mFirewallEnabled = !mSettings.readFromPcap() && Prefs.isFirewallEnabled(this, mPrefs);
 
         if(!mSettings.root_capture && !mSettings.readFromPcap()) {
             Log.i(TAG, "Using DNS server " + dns_server);
