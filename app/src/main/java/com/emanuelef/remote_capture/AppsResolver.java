@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.util.ArrayMap;
 import android.util.SparseArray;
 
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
@@ -37,6 +38,8 @@ import java.lang.reflect.Method;
 
 public class AppsResolver {
     private static final String TAG = "AppsResolver";
+    private static final SparseArray<AppDescriptor> mMappedUids = new SparseArray<>();
+    private static final ArrayMap<String, AppDescriptor> mMappedPackages = new ArrayMap<>();
     private final SparseArray<AppDescriptor> mApps;
     private final PackageManager mPm;
     private final Context mContext;
@@ -90,10 +93,35 @@ public class AppsResolver {
                 virtualIconLoader,"nobody", 9999, true));
     }
 
+    public synchronized static void clearMappedApps() {
+        mMappedUids.clear();
+        mMappedPackages.clear();
+    }
+
+    // Map the uid to the given package_name and app_name
+    // This is need for apps which are not installed in this device
+    public synchronized static void addMappedApp(int uid, String packageName, String appName) {
+        AppDescriptor dsc = new AppDescriptor(appName, null, packageName, uid, false);
+        mMappedUids.put(uid, dsc);
+        mMappedPackages.put(packageName, dsc);
+    }
+
+    private synchronized static AppDescriptor getMappedApp(int uid) {
+        return mMappedUids.get(uid);
+    }
+
+    private synchronized static AppDescriptor getMappedApp(String packageName) {
+        return mMappedPackages.get(packageName);
+    }
+
     // Get the AppDescriptor corresponding to the given package name
     // No caching occurs. Virtual apps cannot be used.
     // This is public to provide a fast resolution alternative to getAppByPackage
     public static AppDescriptor resolveInstalledApp(PackageManager pm, String packageName, int pm_flags, boolean warn_not_found) {
+        AppDescriptor dsc = getMappedApp(packageName);
+        if (dsc != null)
+            return dsc;
+
         PackageInfo pinfo;
 
         try {
@@ -113,6 +141,10 @@ public class AppsResolver {
 
     @SuppressLint("DiscouragedPrivateApi")
     public @Nullable AppDescriptor getAppByUid(int uid, int pm_flags) {
+        AppDescriptor dsc = getMappedApp(uid);
+        if (dsc != null)
+            return dsc;
+
         AppDescriptor app = mApps.get(uid);
         if(app != null)
             return app;
@@ -180,6 +212,10 @@ public class AppsResolver {
     /* Lookup a UID by package name (including virtual apps).
      * UID_NO_FILTER is returned if no match is found. */
     public int getUid(String package_name) {
+        AppDescriptor dsc = getMappedApp(package_name);
+        if (dsc != null)
+            return dsc.getUid();
+
         if(!package_name.contains(".")) {
             // This is a virtual app
             for(int i=0; i<mApps.size(); i++) {

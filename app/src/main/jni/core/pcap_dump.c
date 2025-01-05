@@ -25,9 +25,6 @@
 #include "pcap_dump.h"
 #include "third_party/uthash.h"
 
-#define LINKTYPE_ETHERNET 1
-#define LINKTYPE_RAW      101
-
 #define MAX_PCAP_DUMP_DELAY_MS 1000
 #define PCAP_BUFFER_SIZE             (512*1024)         // 512K
 #define PCAP_BUFFER_ALMOST_FULL_SIZE (450*1024)         // 450K
@@ -493,7 +490,7 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
     int total_length = sizeof(pcapng_intf_descr_block_t) + 4 /* total length */;
 
     // try to get the interface name
-    char ifname[IF_NAMESIZE];
+    char ifname[IFNAMSIZ];
     uint8_t ifname_padding = 0;
     if (!if_indextoname(ifidx, ifname))
         ifname[0] = '\0';

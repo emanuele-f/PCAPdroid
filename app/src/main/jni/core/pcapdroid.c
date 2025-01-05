@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 #include <inttypes.h>
@@ -27,8 +27,8 @@
 #include "ndpi_protocol_ids.h"
 
 extern int run_vpn(pcapdroid_t *pd);
-extern int run_libpcap(pcapdroid_t *pd);
-extern void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb);
+extern int run_pcap(pcapdroid_t *pd);
+extern void pcap_iter_connections(pcapdroid_t *pd, conn_cb cb);
 extern void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
 
 /* ******************************************************* */
@@ -901,7 +901,7 @@ static int zdtun_iter_adapter(zdtun_t *zdt, const zdtun_conn_t *conn_info, void 
 
 static void iter_active_connections(pcapdroid_t *pd, conn_cb cb) {
     if(!pd->vpn_capture)
-        libpcap_iter_connections(pd, cb);
+        pcap_iter_connections(pd, cb);
     else {
         struct iter_conn_data idata = {
                 .pd = pd,
@@ -1197,10 +1197,10 @@ int pd_run(pcapdroid_t *pd) {
             pd->pcap_dump.snaplen = max_snaplen;
 
         pcap_dump_format_t dump_fmt = pd->pcap_dump.pcapng_format ? PCAPNG_DUMP : PCAP_DUMP;
-        bool trailer_enabled = pd->pcap_dump.dump_extensions;
+        bool dump_extensions = pd->pcap_dump.dump_extensions;
 
-        log_d("dump_mode: %d - trailer: %u", dump_fmt, trailer_enabled);
-        pd->pcap_dump.dumper = pcap_new_dumper(dump_fmt, trailer_enabled,
+        log_d("dump_mode: %d - extensions: %u", dump_fmt, dump_extensions);
+        pd->pcap_dump.dumper = pcap_new_dumper(dump_fmt, dump_extensions,
                                                pd->pcap_dump.snaplen,
                                                pd->pcap_dump.max_dump_size,
                                                pd->cb.send_pcap_dump, pd);
@@ -1219,7 +1219,7 @@ int pd_run(pcapdroid_t *pd) {
     fw_num_checked_connections = 0;
 
     // Run the capture
-    int rv = pd->vpn_capture ? run_vpn(pd) : run_libpcap(pd);
+    int rv = pd->vpn_capture ? run_vpn(pd) : run_pcap(pd);
 
     log_i("Stopped packet loop");
 

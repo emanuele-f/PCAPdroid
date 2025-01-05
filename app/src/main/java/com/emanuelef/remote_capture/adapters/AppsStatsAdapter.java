@@ -125,7 +125,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mContext = context;
         mApps = new AppsResolver(context);
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mUnknownIcon = ContextCompat.getDrawable(mContext, android.R.drawable.ic_menu_help);
+        mUnknownIcon = ContextCompat.getDrawable(mContext, R.drawable.ic_image);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();

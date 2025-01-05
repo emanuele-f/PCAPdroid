@@ -312,6 +312,7 @@ typedef struct {
     jmethodID reportError;
     jmethodID getApplicationByUid;
     jmethodID getPackageNameByUid;
+    jmethodID loadUidMapping;
     jmethodID protect;
     jmethodID dumpPcapData;
     jmethodID stopPcapDump;
@@ -418,6 +419,7 @@ uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
+void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name);
 
 #endif // ANDROID
 

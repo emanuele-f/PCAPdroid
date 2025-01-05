@@ -522,6 +522,7 @@ static void init_jni(JNIEnv *env) {
     mids.reportError = jniGetMethodID(env, cls.vpn_service, "reportError", "(Ljava/lang/String;)V");
     mids.getApplicationByUid = jniGetMethodID(env, cls.vpn_service, "getApplicationByUid", "(I)Ljava/lang/String;"),
     mids.getPackageNameByUid = jniGetMethodID(env, cls.vpn_service, "getPackageNameByUid", "(I)Ljava/lang/String;"),
+    mids.loadUidMapping = jniGetMethodID(env, cls.vpn_service, "loadUidMapping", "(ILjava/lang/String;Ljava/lang/String;)V"),
     mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, cls.vpn_service, "dumpPcapData", "([B)V");
     mids.stopPcapDump = jniGetMethodID(env, cls.vpn_service, "stopPcapDump", "()V");
@@ -1287,6 +1288,21 @@ void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
 
     if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
     if(obj) (*env)->DeleteLocalRef(env, obj);
+}
+
+/* ******************************************************* */
+
+void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name) {
+    JNIEnv *env = pd->env;
+
+    jstring package_str = (*env)->NewStringUTF(env, package_name);
+    jstring app_str = (*env)->NewStringUTF(env, app_name);
+
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.loadUidMapping, uid, package_str, app_str);
+    jniCheckException(env);
+
+    (*env)->DeleteLocalRef(env, package_str);
+    (*env)->DeleteLocalRef(env, app_str);
 }
 
 /* ******************************************************* */

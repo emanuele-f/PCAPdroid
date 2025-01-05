@@ -3,12 +3,13 @@ project(core)
 add_library(capture SHARED
         pcapdroid.c
         capture_vpn.c
-        capture_libpcap.c
+        capture_pcap.c
         ip_lru.c
         ndpi_config.c
         crc32.c
         blacklist.c
         pcap_dump.c
+        pcap_reader.c
         log_writer.c
         port_map.c
         jni_impl.c)

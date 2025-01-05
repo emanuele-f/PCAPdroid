@@ -2071,6 +2071,8 @@ extern "C" {
 
   /* ******************************* */
 
+#ifndef NDPI_SLIM
+
   /*
     Bitmap based on compressed bitmaps
     implemented by https://roaringbitmap.org
@@ -2105,8 +2107,6 @@ extern "C" {
   bool ndpi_bitmap_iterator_next(ndpi_bitmap_iterator* i, u_int64_t *value);
 
   /* ******************************* */
-
-#ifndef NDPI_SLIM
 
   /*
     Bitmap with 64 bit values based

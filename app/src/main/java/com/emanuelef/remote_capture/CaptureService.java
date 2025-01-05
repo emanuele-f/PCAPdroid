@@ -201,6 +201,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
+        AppsResolver.clearMappedApps();
         nativeAppsResolver = new AppsResolver(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
@@ -1484,6 +1485,18 @@ public class CaptureService extends VpnService implements Runnable {
         return dsc.getPackageName();
     }
 
+    public void loadUidMapping(int uid, String package_name, String app_name) {
+        if (uid < 0)
+            return;
+
+        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
+
+        if ((dsc == null) || !dsc.getPackageName().equals(package_name)) {
+            // This uid corresponds to a different app than the one on the Pcapng
+            AppsResolver.addMappedApp(uid, package_name, app_name);
+        }
+    }
+
     /* Exports a PCAP data chunk */
     public void dumpPcapData(byte[] data) {
         if((mDumper != null) && (data.length > 0)) {
@@ -1513,7 +1526,10 @@ public class CaptureService extends VpnService implements Runnable {
 
             // Try to get a translated string (see errors.h)
             switch (msg) {
-                case "Invalid PCAP file":
+                case "Unsupported PCAP/Pcapng file":
+                    err = getString(R.string.unsupported_pcap_file);
+                    break;
+                case "Invalid PCAP/Pcapng file":
                     err = getString(R.string.invalid_pcap_file);
                     break;
                 case "Could not open the capture interface":
@@ -1522,7 +1538,7 @@ public class CaptureService extends VpnService implements Runnable {
                 case "Unsupported datalink":
                     err = getString(R.string.unsupported_pcap_datalink);
                     break;
-                case "The specified PCAP file does not exist":
+                case "The specified PCAP/Pcapng file does not exist":
                     err = getString(R.string.pcap_file_not_exists);
                     break;
                 case "pcapd daemon start failure":
@@ -1533,7 +1549,7 @@ public class CaptureService extends VpnService implements Runnable {
                     if(mSettings.root_capture)
                         err = getString(R.string.root_capture_start_failed);
                     break;
-                case "PCAP read error":
+                case "PCAP/Pcapng read error":
                     err = getString(R.string.pcap_read_error);
                     break;
             }

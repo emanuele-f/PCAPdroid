@@ -17,8 +17,8 @@
  * Copyright 2023-25 - Emanuele Faranda
  */
 
-#ifndef __MY_PCAP_H__
-#define __MY_PCAP_H__
+#ifndef __PCAPDROID_DUMP_H__
+#define __PCAPDROID_DUMP_H__
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -29,13 +29,20 @@
 
 #define PCAPDROID_BLOCK_UID_MAP 1
 
-/* Packet dump module, dumping packet records in the PCAP/PCAPNG format.
+#define LINKTYPE_ETHERNET   1
+#define LINKTYPE_RAW        101
+#define LINKTYPE_LINUX_SLL  113
+#define LINKTYPE_LINUX_SLL2 276
+
+/*
+ * Packet dump module, dumping packet records in the PCAP/PCAPNG format.
  * Packets are first buffered and then exported periodically to the callback. pcap_check_export must
  * be called periodically to ensure that buffered packets are exported on time.
  *
  * The PCAP/PCAPNG preambles are *not* dumped, use pcap_get_preamble to get the preamble to be dumped. This
  * allows, for example, multiple HTTP clients to connect at different times, each one getting a valid
- * PCAP header. */
+ * PCAP header.
+ */
 typedef struct pcap_dumper pcap_dumper_t;
 
 /* ******************************************************* */
@@ -60,6 +67,14 @@ typedef struct pcap_rec {
 /* ******************************************************* */
 
 // NOTE: all the PCAPNG block addresses are aligned to 32-bits
+typedef struct pcapng_generic_block {
+    uint32_t type;
+    uint32_t total_length;
+
+    /* ..options.. */
+} __attribute__((packed)) pcapng_generic_block_t;
+
+// NOTE: pd_new_reader assumes sizeof(pcapng_section_hdr_block_t) <= sizeof(pcap_hdr)
 typedef struct pcapng_section_hdr_block {
     uint32_t type;
     uint32_t total_length;
@@ -162,4 +177,4 @@ int pcap_get_preamble(pcap_dumper_t *dumper, char **out);
 uint64_t pcap_get_dump_size(pcap_dumper_t *dumper);
 bool pcap_check_export(pcap_dumper_t *dumper);
 
-#endif // __MY_PCAP_H__
+#endif // __PCAPDROID_DUMP_H__

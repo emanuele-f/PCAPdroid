@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,6 +42,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
@@ -116,7 +118,10 @@ public class AppOverview extends Fragment implements MenuProvider {
 
         ((TextView)view.findViewById(R.id.uid)).setText(Utils.formatInteger(ctx, dsc.getUid()));
         ((TextView)view.findViewById(R.id.name)).setText(dsc.getName());
-        ((ImageView)view.findViewById(R.id.app_icon)).setImageDrawable(dsc.getIcon());
+        Drawable icon = dsc.getIcon();
+        if (icon == null)
+            icon = ContextCompat.getDrawable(ctx, R.drawable.ic_image);
+        ((ImageView)view.findViewById(R.id.app_icon)).setImageDrawable(icon);
 
         mPinfo = dsc.getPackageInfo();
 

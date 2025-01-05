@@ -58,7 +58,7 @@ Here are the steps to make it communicate with your app:
 5. The app can now receive the packets on the UNIX socket.
 6. When the app closes the UNIX socket, the pcapd daemon is automatically stopped.
 
-Check out the [capture_libpcap.c source](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/jni/core/capture_libpcap.c) to see an example of integration.
+Check out the [capture_pcap.c source](https://github.com/emanuele-f/PCAPdroid/blob/master/app/src/main/jni/core/capture_pcap.c) to see an example of integration.
 
 Packets Data
 ------------
