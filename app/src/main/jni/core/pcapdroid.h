@@ -107,6 +107,7 @@ typedef struct {
     zdtun_conn_status_t status;
     char *info;
     jint uid;
+    char country_code[3];
     uint8_t tcp_flags[2]; // cli2srv, srv2cli
     union {
         uint8_t last_ack;
@@ -313,6 +314,7 @@ typedef struct {
     jmethodID getApplicationByUid;
     jmethodID getPackageNameByUid;
     jmethodID loadUidMapping;
+    jmethodID getCountryCode;
     jmethodID protect;
     jmethodID dumpPcapData;
     jmethodID stopPcapDump;
@@ -357,6 +359,7 @@ typedef struct {
     jfieldID ld_apps;
     jfieldID ld_hosts;
     jfieldID ld_ips;
+    jfieldID ld_countries;
 } jni_fields_t;
 
 typedef struct {
@@ -420,6 +423,7 @@ struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name);
+bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 
 #endif // ANDROID
 

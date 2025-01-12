@@ -109,10 +109,12 @@ public class MatchList {
         void onListChanged();
     }
 
+    // Accessed by JNI (see blacklist.c)
     public static class ListDescriptor {
         public final List<String> apps = new ArrayList<>();
         public final List<String> hosts = new ArrayList<>();
         public final List<String> ips = new ArrayList<>();
+        public final List<String> countries = new ArrayList<>();
     }
 
     public MatchList(Context ctx, String pref_name) {
@@ -474,7 +476,7 @@ public class MatchList {
     }
 
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
-     * Only the following RuleTypes are supported: APP, IP, HOST.
+     * Only the following RuleTypes are supported: APP, IP, HOST, COUNTRY.
      */
     public ListDescriptor toListDescriptor() {
         final ListDescriptor rv = new ListDescriptor();
@@ -489,6 +491,8 @@ public class MatchList {
                 rv.hosts.add(val);
             else if(tp.equals(MatchList.RuleType.IP))
                 rv.ips.add(val);
+            else if(tp.equals(MatchList.RuleType.COUNTRY))
+                rv.countries.add(val);
             else if(!tp.equals(MatchList.RuleType.APP)) // apps handled below
                 Log.w(TAG, "ListDescriptor does not support RuleType " + tp.name());
         }

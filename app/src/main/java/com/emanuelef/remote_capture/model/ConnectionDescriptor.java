@@ -126,7 +126,8 @@ public class ConnectionDescriptor {
     public boolean alerted;
     public boolean block_accounted;
 
-    public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip,
+    // NOTE: invoked from JNI
+    public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip, String _country,
                                 int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx,
                                 boolean _mitm_decrypt, long when) {
         incr_id = _incr_id;
@@ -141,7 +142,7 @@ public class ConnectionDescriptor {
         ifidx = _ifidx;
         first_seen = last_seen = when;
         l7proto = "";
-        country = "";
+        country = _country;
         asn = new Geomodel.ASN();
         payload_chunks = new ArrayList<>();
         mitm_decrypt = _mitm_decrypt;

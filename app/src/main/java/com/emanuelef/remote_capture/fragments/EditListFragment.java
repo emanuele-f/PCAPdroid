@@ -47,10 +47,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.Log;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
@@ -345,6 +347,10 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
                 Utils.showToastLong(ctx, R.string.rule_exists);
             else
                 saveAndReload();
+
+            Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+            blocklist.showNoticeIfGeoMissing(ctx);
+
             return true;
         });
     }
@@ -541,6 +547,12 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
 
         String msg = String.format(context.getResources().getString(R.string.rules_import_success), num_imported);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+
+        if (mList instanceof Blocklist) {
+            Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+            if (blocklist.hasCountryRules())
+                blocklist.showNoticeIfGeoMissing(context);
+        }
     }
 
     @Override

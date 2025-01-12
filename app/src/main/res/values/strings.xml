@@ -320,6 +320,8 @@
     <string name="pcap_load_in_progress">Capture file loading in progress, please wait</string>
     <string name="download_failed">Download failed</string>
     <string name="geo_db_not_found">Database not found. Geolocation is disabled</string>
+    <string name="geo_db_missing">Geolocation database missing</string>
+    <string name="country_rules_warning">To use country-based firewall rules, download the geolocation database from the PCAPdroid settings, otherwise country-based rules will be ineffective</string>
     <string name="database">Database</string>
     <string name="built_on">Built on: %1$s</string>
     <string name="geo_db_download">Tap to download the latest database. New databases are available monthly</string>

@@ -75,6 +75,7 @@ import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.model.CaptureStats;
@@ -603,6 +604,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         else if(mStartPressed) { // STOPPED -> STARTED
             if(CaptureService.isDecryptingTLS() && !CaptureService.isCapturingAsRoot())
                 checkDecryptionRulesNotice();
+        }
+
+        if (mIab.isFirewallVisible()) {
+            Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+            if (blocklist.hasCountryRules())
+                blocklist.showNoticeIfGeoMissing(this);
         }
     }
 

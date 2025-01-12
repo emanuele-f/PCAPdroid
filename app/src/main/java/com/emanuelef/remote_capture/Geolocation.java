@@ -66,6 +66,15 @@ public class Geolocation {
         }
     }
 
+    public boolean isAvailable() {
+        return (mCountryReader != null) && (mAsnReader != null);
+    }
+
+    public static boolean isAvailable(Context ctx) {
+        Date builtDate = Geolocation.getDbDate(ctx);
+        return (builtDate != null);
+    }
+
     private static File getCountryFile(Context ctx) {
         return new File(ctx.getFilesDir() + "/dbip_country_lite.mmdb");
     }

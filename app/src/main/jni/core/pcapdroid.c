@@ -377,18 +377,23 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
         }
     }
 
-    // Try to resolve host name via the LRU cache
+    // Query country info
     const zdtun_ip_t dst_ip = tuple->dst_ip;
+    char remote_ip[INET6_ADDRSTRLEN];
+    int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
+
+    remote_ip[0] = '\0';
+    inet_ntop(family, &dst_ip, remote_ip, sizeof(remote_ip));
+
+#ifdef ANDROID
+    getCountryCode(pd, remote_ip, data->country_code);
+#endif
+
+    // Try to resolve host name via the LRU cache
     data->info = ip_lru_find(pd->ip_to_host, &dst_ip);
 
     if(data->info) {
-        char resip[INET6_ADDRSTRLEN];
-        int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
-
-        resip[0] = '\0';
-        inet_ntop(family, &dst_ip, resip, sizeof(resip));
-
-        log_d("Host LRU cache HIT: %s -> %s", resip, data->info);
+        log_d("Host LRU cache HIT: %s -> %s", remote_ip, data->info);
         data->info_from_lru = true;
 
         if(data->uid != UID_UNKNOWN) {
@@ -450,21 +455,29 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
     }
 
     if(pd->firewall.enabled && pd->firewall.bl && !data->to_block) {
+        char appbuf[64];
+        char buf[256];
+
         data->to_block |= blacklist_match_ip(pd->firewall.bl, &dst_ip, tuple->ipver);
         if(data->to_block) {
-            char appbuf[64];
-            char buf[256];
-
             get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
             log_d("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
-        } else {
-            data->to_block |= blacklist_match_uid(pd->firewall.bl, data->uid);
-            if(data->to_block) {
-                char appbuf[64];
-                char buf[256];
+        }
 
+        if(!data->to_block) {
+            data->to_block = blacklist_match_uid(pd->firewall.bl, data->uid);
+            if(data->to_block) {
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
                 log_d("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            }
+        }
+
+        if(!data->to_block) {
+            data->to_block = blacklist_match_country(pd->firewall.bl, data->country_code);
+            if(data->to_block) {
+                get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
+                log_d("Blocked country \"%s\": %s [%s]", data->country_code,
+                      zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
 

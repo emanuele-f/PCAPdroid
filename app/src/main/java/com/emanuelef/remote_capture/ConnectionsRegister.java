@@ -176,10 +176,8 @@ public class ConnectionsRegister {
                 mConnsByIface.put(conn.ifidx, num_conn + 1);
             }
 
-            // Geolocation
-            InetAddress dstAddr = conn.getDstAddr();
-            conn.country = mGeo.getCountryCode(dstAddr);
-            conn.asn = mGeo.getASN(dstAddr);
+            // ASN (country is set by native code)
+            conn.asn = mGeo.getASN(conn.getDstAddr());
             //Log.d(TAG, "IP geolocation: IP=" + conn.dst_ip + " -> country=" + conn.country + ", ASN: " + conn.asn);
 
             AppDescriptor app = mAppsResolver.getAppByUid(conn.uid, 0);

@@ -463,8 +463,21 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         if(!conn.country.isEmpty()) {
+            boolean countryBlocked = blocklist.matchesCountry(conn.country);
+            String label = Utils.shorten(String.format(getString(R.string.country_val), Utils.getCountryName(ctx, conn.country)), max_length);
+            blockVisible |= !countryBlocked;
+            unblockVisible |= countryBlocked;
+
+            item = menu.findItem(R.id.block_country);
+            item.setTitle(label);
+            item.setVisible(!countryBlocked);
+
+            item = menu.findItem(R.id.unblock_country);
+            item.setTitle(label);
+            item.setVisible(countryBlocked);
+
             item = menu.findItem(R.id.hide_country);
-            item.setTitle(Utils.shorten(String.format(getString(R.string.country_val), Utils.getCountryName(ctx, conn.country)), max_length));
+            item.setTitle(label);
             item.setVisible(true);
         }
 
@@ -620,6 +633,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 blocklist_changed = true;
             } else
                 showFirewallPurchaseDialog();
+        } else if(id == R.id.block_country) {
+            if(firewallPurchased) {
+                blocklist.addCountry(conn.country);
+                blocklist_changed = true;
+            } else
+                showFirewallPurchaseDialog();
         } else if(id == R.id.unblock_app_permanently) {
             blocklist.removeApp(conn.uid);
             blocklist_changed = true;
@@ -637,6 +656,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             blocklist_changed = true;
         } else if(id == R.id.unblock_domain) {
             blocklist.removeHost(Utils.getSecondLevelDomain(conn.info));
+            blocklist_changed = true;
+        } else if(id == R.id.unblock_country) {
+            blocklist.removeCountry(conn.country);
             blocklist_changed = true;
         } else if(id == R.id.add_to_fw_whitelist) {
             fwWhitelist.addApp(conn.uid);

@@ -71,6 +71,7 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
+import com.emanuelef.remote_capture.model.Geomodel;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.PortMapping;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -139,7 +140,8 @@ public class CaptureService extends VpnService implements Runnable {
     private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
-    private AppsResolver nativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
+    private AppsResolver mNativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
+    private Geolocation mNativeGeolocation;   // only native
     private boolean mMalwareDetectionEnabled;
     private boolean mBlacklistsUpdateRequested;
     private boolean mFirewallEnabled;
@@ -202,7 +204,8 @@ public class CaptureService extends VpnService implements Runnable {
     public void onCreate() {
         Log.d(CaptureService.TAG, "onCreate");
         AppsResolver.clearMappedApps();
-        nativeAppsResolver = new AppsResolver(this);
+        mNativeAppsResolver = new AppsResolver(this);
+        mNativeGeolocation = new Geolocation(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
@@ -1468,7 +1471,7 @@ public class CaptureService extends VpnService implements Runnable {
 
     // NOTE: to be invoked only by the native code
     public String getApplicationByUid(int uid) {
-        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
+        AppDescriptor dsc = mNativeAppsResolver.getAppByUid(uid, 0);
 
         if(dsc == null)
             return "";
@@ -1477,7 +1480,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public String getPackageNameByUid(int uid) {
-        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
+        AppDescriptor dsc = mNativeAppsResolver.getAppByUid(uid, 0);
 
         if(dsc == null)
             return "";
@@ -1489,12 +1492,23 @@ public class CaptureService extends VpnService implements Runnable {
         if (uid < 0)
             return;
 
-        AppDescriptor dsc = nativeAppsResolver.getAppByUid(uid, 0);
+        AppDescriptor dsc = mNativeAppsResolver.getAppByUid(uid, 0);
 
         if ((dsc == null) || !dsc.getPackageName().equals(package_name)) {
             // This uid corresponds to a different app than the one on the Pcapng
             AppsResolver.addMappedApp(uid, package_name, app_name);
         }
+    }
+
+    public String getCountryCode(String host) {
+        if (mNativeGeolocation.isAvailable()) {
+            try {
+                InetAddress addr = InetAddress.getByName(host);
+                return mNativeGeolocation.getCountryCode(addr);
+            } catch (UnknownHostException ignored) {}
+        }
+
+        return "";
     }
 
     /* Exports a PCAP data chunk */

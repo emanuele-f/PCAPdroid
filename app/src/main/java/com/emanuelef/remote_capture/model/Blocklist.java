@@ -4,14 +4,19 @@ import android.content.Context;
 import android.os.SystemClock;
 import android.util.ArrayMap;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Geolocation;
 import com.emanuelef.remote_capture.Log;
+import com.emanuelef.remote_capture.R;
 
 import java.util.Iterator;
 import java.util.Map;
 
 public class Blocklist extends MatchList {
     private static final String TAG = "Blocklist";
+    private boolean mGeoWarningShown = false;
 
     // access to mUidToGrace must be synchronized as it can happen either from the UI thread or from
     // the CaptureService.connUpdateWork thread
@@ -77,5 +82,32 @@ public class Blocklist extends MatchList {
 
         if(CaptureService.isServiceActive())
             CaptureService.requireInstance().reloadBlocklist();
+    }
+
+    public synchronized boolean hasCountryRules() {
+        Iterator<MatchList.Rule> it = iterRules();
+        while(it.hasNext()) {
+            MatchList.Rule rule = it.next();
+
+            if (rule.getType() == MatchList.RuleType.COUNTRY)
+                return true;
+        }
+
+        return false;
+    }
+
+    public void showNoticeIfGeoMissing(Context ctx) {
+        if (mGeoWarningShown)
+            return;
+
+        if (!Geolocation.isAvailable(ctx)) {
+            new AlertDialog.Builder(ctx)
+                    .setTitle(R.string.geo_db_missing)
+                    .setMessage(R.string.country_rules_warning)
+                    .setNeutralButton(R.string.ok, (dialog, whichButton) -> {})
+                    .show();
+
+            mGeoWarningShown = true;
+        }
     }
 }
