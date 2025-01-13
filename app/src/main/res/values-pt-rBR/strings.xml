@@ -34,7 +34,7 @@
     <string name="source_code">Código-fonte</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
-    <string name="vpn_setup_failed">Configuração da VPN falhou</string>
+    <string name="vpn_setup_failed">A Configuração da VPN falhou. Certifique-se de que a VPN Always-on esteja desabilitada</string>
     <string name="app_not_found">O app %1$s não foi encontrado</string>
     <string name="stats">Estatísticas</string>
     <string name="active_connections">Conexões ativas</string>
@@ -75,7 +75,7 @@
     <string name="other_prefs">Outro</string>
     <string name="app_language">Idioma do app</string>
     <string name="lang_english">Inglês</string>
-    <string name="system_default">Sistema</string>
+    <string name="system_default">Padrão do Sistema</string>
     <string name="no_activity_file_selection">Não foi encontrado nenhum app de seleção de arquivos</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="proxy_port">Porta do proxy</string>
@@ -383,4 +383,15 @@
     <string name="requesting_unlock_token">Solicitando um token de desbloqueio, aguarde</string>
     <string name="show_action">Mostrar</string>
     <string name="unlock_token_msg1">Este é seu token de desbloqueio. Anote-o, porque será preciso <a href="%1$s">para gerar seus códigos de licença</a></string>
+    <string name="app_log">Log</string>
+    <string name="no_data">Exibido na visualização de log quando os logs estão vazios</string>
+    <string name="socks5_auth_summary">Faça a autenticação para o proxy via nome de usuário e senha</string>
+    <string name="socks5_auth">Autenticação SOCKS5</string>
+    <string name="ipv6_bytes_percentage">Porcentagem de bytes IPv6</string>
+    <string name="socks5_summary">Configurar o redirecionamento para um proxy SOCKS5</string>
+    <string name="socks5_redirection">Redirecionamento de SOCKS5</string>
+    <string name="copy_error">Não foi possível salvar o arquivo</string>
+    <string name="proxy_host">Endereço da Proxy</string>
+    <string name="ipv6_bytes_sent">Bytes IPv6 enviados</string>
+    <string name="ipv6_bytes_rcvd">Bytes IPv6 recebidos</string>
 </resources>
