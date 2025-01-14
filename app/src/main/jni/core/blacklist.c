@@ -99,13 +99,34 @@ int blacklist_add_ip(blacklist_t *bl, const ndpi_ip_addr_t *addr, uint8_t bits) 
 /* ******************************************************* */
 
 int blacklist_add_ipstr(blacklist_t *bl, const char *ip) {
+    char buf[INET6_ADDRSTRLEN];
+    int bits = -1;
+
+    // check for CIDR
+    const char* slash = strchr(ip, '/');
+    if (slash) {
+        size_t to_copy = slash - ip;
+        if ((to_copy == 0) || (to_copy >= sizeof(buf)))
+            return -EINVAL;
+
+        memcpy(buf, ip, to_copy);
+        buf[to_copy] = '\0';
+        ip = buf;
+        bits = atoi(slash + 1);
+    }
+
     ndpi_ip_addr_t addr;
     int ipver = ndpi_parse_ip_string(ip, &addr);
 
     if((ipver != 4) && (ipver != 6))
         return -EINVAL;
 
-    int bits = (ipver == 4) ? 32 : 128;
+    if (bits < 0)
+        bits = (ipver == 4) ? 32 : 128;
+    else if (((ipver == 4) && (bits > 32)) ||
+             ((ipver == 6) && (bits > 128)))
+        return -EINVAL;
+
     return blacklist_add_ip(bl, &addr, bits);
 }
 

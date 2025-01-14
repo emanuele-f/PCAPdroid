@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -1645,6 +1645,28 @@ public class Utils {
 
     public static boolean validateIpv6Address(String s) {
         return isValidIPv6(s) && !validateIpv4Address(s);
+    }
+
+    public static boolean validateCidr(String value) {
+        int slash = value.indexOf('/');
+        if (slash < 0)
+            return validateIpAddress(value);
+
+        int prefix;
+        try {
+            prefix = Integer.parseInt(value.substring(slash + 1));
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+
+        String ip_addr = value.substring(0, slash);
+        if (!validateIpAddress(ip_addr))
+            return false;
+
+        boolean is_v6 = (ip_addr.indexOf(':') >= 0);
+        return (prefix >= 0) &&
+                ((is_v6 && (prefix <= 128)) ||
+                (!is_v6 && (prefix <= 32)));
     }
 
     // rough validation

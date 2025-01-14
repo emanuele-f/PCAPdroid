@@ -296,8 +296,8 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     private void showAddIpRule() {
-        RuleAddDialog.showText(requireContext(), R.string.ip_address, (value, field) -> {
-            if(!Utils.validateIpAddress(value)) {
+        RuleAddDialog.showText(requireContext(), R.string.ip_address_or_cidr, (value, field) -> {
+            if(!Utils.validateCidr(value)) {
                 field.setError(getString(R.string.invalid));
                 return false;
             }

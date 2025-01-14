@@ -58,6 +58,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.Cidr;
 import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -103,6 +104,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private AppsResolver mApps;
     private SearchView mSearchView;
     private String mQueryToApply;
+    private String mUnblockCidr;
+    private String mDecRemoveCidr;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
@@ -485,12 +488,32 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         menu.findItem(R.id.hide_ip).setTitle(label);
         menu.findItem(R.id.copy_ip).setTitle(label);
         menu.findItem(R.id.search_ip).setTitle(label);
+        String unblockIpLabel = label;
+        String decRemoveIpLabel = label;
+        mUnblockCidr = null;
+        mDecRemoveCidr = null;
 
-        boolean ipBlocked = blocklist.matchesIP(conn.dst_ip);
+        boolean ipBlocked = blocklist.matchesExactIP(conn.dst_ip);
+        if (!ipBlocked) {
+            Cidr blockedCidr = blocklist.matchesCidr(conn.dst_ip);
+            if (blockedCidr != null) {
+                ipBlocked = true;
+                mUnblockCidr = blockedCidr.toString();
+                unblockIpLabel = MatchList.getCidrLabel(ctx, blockedCidr);
+            }
+        }
         blockVisible |= !ipBlocked;
         unblockVisible |= ipBlocked;
 
-        boolean decryptIp = decryptionList.matchesIP(conn.dst_ip);
+        boolean decryptIp = decryptionList.matchesExactIP(conn.dst_ip);
+        if (!decryptIp) {
+            Cidr decryptCidr = decryptionList.matchesCidr(conn.dst_ip);
+            if (decryptCidr != null) {
+                decryptIp = true;
+                mDecRemoveCidr = decryptCidr.toString();
+                decRemoveIpLabel = MatchList.getCidrLabel(ctx, decryptCidr);
+            }
+        }
         decryptVisible |= !decryptIp;
         dontDecryptVisible |= decryptIp;
 
@@ -498,14 +521,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
                 .setTitle(label)
                 .setVisible(!ipBlocked);
         menu.findItem(R.id.unblock_ip)
-                .setTitle(label)
+                .setTitle(unblockIpLabel)
                 .setVisible(ipBlocked);
 
         menu.findItem(R.id.dec_add_ip)
                 .setTitle(label)
                 .setVisible(!decryptIp);
         menu.findItem(R.id.dec_rem_ip)
-                .setTitle(label)
+                .setTitle(decRemoveIpLabel)
                 .setVisible(decryptIp);
 
         if(conn.isBlacklistedIp())
@@ -604,7 +627,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             decryptionList.removeApp(conn.uid);
             decryption_list_changed = true;
         } else if(id == R.id.dec_rem_ip)  {
-            decryptionList.removeIp(conn.dst_ip);
+            decryptionList.removeIp((mDecRemoveCidr != null) ? mDecRemoveCidr : conn.dst_ip);
             decryption_list_changed = true;
         } else if(id == R.id.dec_rem_host)  {
             decryptionList.removeHost(conn.info);
@@ -649,7 +672,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         } else if(id == R.id.unblock_app_8h) {
             blocklist_changed = blocklist.unblockAppForMinutes(conn.uid, 480);
         } else if(id == R.id.unblock_ip) {
-            blocklist.removeIp(conn.dst_ip);
+            blocklist.removeIp((mUnblockCidr != null) ? mUnblockCidr : conn.dst_ip);
             blocklist_changed = true;
         } else if(id == R.id.unblock_host) {
             blocklist.removeHost(conn.info);
