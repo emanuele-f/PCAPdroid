@@ -491,6 +491,7 @@ public class MatchList {
         mMatches.clear();
         mPackageToUid.clear();
         mUids.clear();
+        mCidrs.clear();
 
         if(notify && hasRules)
             notifyListeners();
