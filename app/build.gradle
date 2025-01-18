@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion "26.1.10909125"
+    ndkVersion "23.2.8568313"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
@@ -16,6 +16,13 @@ android {
         resourceConfigurations += ["en", "ar", "de", "es", "in", "it", "ru", "tr", "uk", "zh-rCN"]
 
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
+
+        externalNativeBuild {
+            cmake {
+                // Disable NEON instructions with armv7a, to support older devices
+                arguments "-DANDROID_ARM_NEON=OFF"
+            }
+        }
     }
 
     buildTypes {
