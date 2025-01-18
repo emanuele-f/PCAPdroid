@@ -32,7 +32,6 @@ import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +63,7 @@ public class ConnectionsRegister {
     private int mNumMalicious;
     private int mNumBlocked;
     private long mLastFirewallBlock;
+    private long mMaxConnectionSize;
     private final SparseArray<AppStats> mAppsStats;
     private final SparseIntArray mConnsByIface;
     private final ArrayList<ConnectionsListener> mListeners;
@@ -74,6 +74,7 @@ public class ConnectionsRegister {
         mTail = 0;
         mCurItems = 0;
         mUntrackedItems = 0;
+        mMaxConnectionSize = 0;
         mSize = _size;
         mGeo = new Geolocation(ctx);
         mItemsRing = new ConnectionDescriptor[mSize];
@@ -189,6 +190,7 @@ public class ConnectionsRegister {
             stats.numConnections++;
             stats.rcvdBytes += conn.rcvd_bytes;
             stats.sentBytes += conn.sent_bytes;
+            mMaxConnectionSize = Math.max(mMaxConnectionSize, conn.sent_bytes + conn.rcvd_bytes);
         }
 
         mUntrackedItems += out_items;
@@ -229,6 +231,7 @@ public class ConnectionsRegister {
                 AppStats stats = getAppsStatsOrCreate(conn.uid);
                 stats.sentBytes += update.sent_bytes - conn.sent_bytes;
                 stats.rcvdBytes += update.rcvd_bytes - conn.rcvd_bytes;
+                mMaxConnectionSize = Math.max(mMaxConnectionSize, update.sent_bytes + update.rcvd_bytes);
 
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
                 conn.processUpdate(update);
@@ -395,5 +398,9 @@ public class ConnectionsRegister {
             ConnectionDescriptor conn = mItemsRing[i];
             conn.dropPayload();
         }
+    }
+
+    public synchronized long getMaxConnectionSize() {
+        return mMaxConnectionSize;
     }
 }

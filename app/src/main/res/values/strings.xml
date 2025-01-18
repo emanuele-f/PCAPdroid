@@ -517,4 +517,5 @@
     <string name="vpn_reconnection">VPN reconnection</string>
     <string name="vpn_reconnection_aborted">VPN reconnection aborted</string>
     <string name="waiting_for_vpn_disconnect">Waiting for the active VPN to disconnect…</string>
+    <string name="larger_than">Larger than</string>
 </resources>

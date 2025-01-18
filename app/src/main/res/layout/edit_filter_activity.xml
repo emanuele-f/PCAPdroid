@@ -76,8 +76,10 @@
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
+                android:labelFor="@id/status_group"
                 android:layout_marginBottom="5dp"/>
             <com.google.android.material.chip.ChipGroup
+                android:id="@+id/status_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
@@ -120,6 +122,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
+                android:labelFor="@id/decryption_status_group"
                 android:visibility="gone"
                 tools:visibility="visible"
                 android:layout_marginBottom="5dp"/>
@@ -162,6 +165,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
+                android:labelFor="@+id/firewall_group"
                 android:visibility="gone"
                 tools:visibility="visible"
                 android:layout_marginBottom="5dp"/>
@@ -199,6 +203,7 @@
                 android:textSize="18sp"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:labelFor="@id/interfaces"
                 android:layout_marginBottom="5dp"/>
 
             <com.google.android.material.chip.ChipGroup
@@ -210,6 +215,35 @@
                 tools:visibility="visible"
                 app:singleSelection="true">
             </com.google.android.material.chip.ChipGroup>
+
+            <TextView
+                android:id="@+id/size_slider_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/larger_than"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/size_slider"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/size_slider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:thumbColor="@color/colorAccent"
+                app:trackColorActive="@color/colorAccent"
+                app:trackColorInactive="@color/colorAccentLight"
+                app:labelBehavior="visible"
+                android:valueFrom="0"
+                android:valueTo="1024"
+                android:stepSize="1"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:value="100"
+                tools:valueTo="1024"/>
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

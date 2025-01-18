@@ -79,6 +79,8 @@ import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
 import com.emanuelef.remote_capture.activities.EditFilterActivity;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -97,6 +99,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private boolean autoScroll;
     private boolean listenerSet;
     private ChipGroup mActiveFilter;
+    private Slider mSizeSlider;
+    private boolean mSizeSliderActive = false;
     private MenuItem mMenuFilter;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
@@ -122,6 +126,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
 
         refreshMenuIcons();
+
+        if (mAdapter != null) {
+            boolean visible = mAdapter.mFilter.minSize >= 1024;
+            mSizeSlider.setVisibility(visible ? View.VISIBLE : View.GONE);
+            mSizeSlider.setLabelBehavior(visible ? LabelFormatter.LABEL_VISIBLE : LabelFormatter.LABEL_GONE);
+        }
     }
 
     @Override
@@ -191,6 +201,34 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mApps = new AppsResolver(requireContext());
 
         mEmptyText = view.findViewById(R.id.no_connections);
+        mSizeSlider = view.findViewById(R.id.size_slider);
+        mSizeSlider.setLabelFormatter(value -> Utils.formatBytes(((long) value) * 1024));
+        mSizeSlider.addOnChangeListener((slider, value, fromUser) -> {
+            if (mAdapter != null) {
+                mAdapter.mFilter.minSize = ((long) value) * 1024;
+                refreshFilteredConnections();
+            }
+        });
+        mSizeSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                mSizeSliderActive = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                if (slider.getValue() == 0) {
+                    // NOTE: setting LABEL_GONE is also necessary to
+                    // prevent the label from being still visible in some cases
+                    slider.setVisibility(View.GONE);
+                    slider.setLabelBehavior(LabelFormatter.LABEL_GONE);
+                }
+
+                mSizeSliderActive = false;
+                recheckMaxConnectionSize();
+            }
+        });
+
         mActiveFilter = view.findViewById(R.id.active_filter);
         mActiveFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if(mAdapter != null) {
@@ -783,6 +821,38 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mActiveFilter.removeAllViews();
         mAdapter.mFilter.toChips(getLayoutInflater(), mActiveFilter);
+
+        // minSize slider
+        long minSizeKB = mAdapter.mFilter.minSize / 1024;
+        boolean sliderVisible = false;
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if ((reg != null) && (minSizeKB > 0)) {
+            long maxSizeKb = reg.getMaxConnectionSize() / 1024;
+            if (maxSizeKb >= 2) {
+                // NOTE: visible -> hidden transition is performed in onStopTrackingTouch
+                mSizeSlider.setValueTo(maxSizeKb);
+                mSizeSlider.setValue(minSizeKB);
+                sliderVisible = true;
+            }
+        }
+
+        if (sliderVisible && (mSizeSlider.getVisibility() != View.VISIBLE)) {
+            mSizeSlider.setVisibility(View.VISIBLE);
+            mSizeSlider.setLabelBehavior(LabelFormatter.LABEL_VISIBLE);
+        }
+    }
+
+    private void recheckMaxConnectionSize() {
+        if ((mSizeSlider.getVisibility() == View.VISIBLE) && !mSizeSliderActive) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if (reg != null) {
+                long maxSizeKB = reg.getMaxConnectionSize() / 1024;
+
+                if (maxSizeKB > mSizeSlider.getValueTo())
+                    mSizeSlider.setValueTo(maxSizeKB);
+            }
+        }
     }
 
     // This performs an unoptimized adapter refresh
@@ -831,6 +901,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(autoScroll)
                 scrollToBottom();
             recheckUntrackedConnections();
+            recheckMaxConnectionSize();
         });
     }
 
@@ -844,7 +915,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     @Override
     public void connectionsUpdated(int[] positions) {
-        mHandler.post(() -> mAdapter.connectionsUpdated(positions));
+        mHandler.post(() -> {
+            mAdapter.connectionsUpdated(positions);
+            recheckMaxConnectionSize();
+        });
     }
 
     @Override
