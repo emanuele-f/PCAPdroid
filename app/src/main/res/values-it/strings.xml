@@ -120,7 +120,6 @@
     <string name="edit_list">Modifica lista</string>
     <string name="hidden_connections_rules">Regole connessioni nascoste</string>
     <string name="list_is_empty">La lista è vuota</string>
-    <string name="malicious_connection_app">Rilevata connessione malevola (%1$s)</string>
     <string name="show_only_malicious">Connessioni malevole</string>
     <string name="security">Sicurezza</string>
     <string name="malware_detection">Rilevamento malware</string>

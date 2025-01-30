@@ -133,7 +133,6 @@
     <string name="edit_list">Liste bearbeiten</string>
     <string name="hidden_connections_rules">Versteckte Verbindungsregeln</string>
     <string name="list_is_empty">Die Liste ist leer</string>
-    <string name="malicious_connection_app">Bösartige Verbindung erkannt (%1$s)</string>
     <string name="show_only_malicious">Bösartige Verbindungen</string>
     <string name="security">Sicherheit</string>
     <string name="malware_detection">Malware-Erkennung</string>

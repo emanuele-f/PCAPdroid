@@ -119,7 +119,6 @@
     <string name="edit_list">Изменить список</string>
     <string name="hidden_connections_rules">Правила скрытия соединений</string>
     <string name="list_is_empty">Список пуст</string>
-    <string name="malicious_connection_app">Вредоносные соединения обнаружены (%1$s)</string>
     <string name="show_only_malicious">Вредоносные соединения</string>
     <string name="security">Безопасность</string>
     <string name="malware_detection">Обнаружение вредоносов</string>

@@ -122,7 +122,6 @@
     <string name="edit_filter">Ubah filter</string>
     <string name="edit_list">Ubah daftar</string>
     <string name="hidden_connections_rules">Aturan koneksi tersembunyi</string>
-    <string name="malicious_connection_app">Koneksi berbahaya terdeteksi (%1$s)</string>
     <string name="show_only_malicious">Koneksi berbahaya</string>
     <string name="security">Keamanan</string>
     <string name="malware_detection">Pendeteksi malware</string>

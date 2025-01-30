@@ -158,7 +158,6 @@
     <string name="edit_list">تعديل القائمة</string>
     <string name="hidden_connections_rules">قواعد الاتصالات المخفية</string>
     <string name="list_is_empty">القائمة فارغة</string>
-    <string name="malicious_connection_app">تم اكتشاف اتصال ضار (%1$s)</string>
     <string name="show_only_cleartext">اتصالات النص الواضح</string>
     <string name="malware_detection">الكشف عن البرامج الضارة</string>
     <string name="malware_detection_summary">اكتشف الاتصالات بالمضيفين الضارين المعروفين عبر القوائم السوداء التابعة لجهات خارجية</string>

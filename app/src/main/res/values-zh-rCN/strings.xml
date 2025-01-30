@@ -148,7 +148,6 @@
     <string name="edit_list">编辑列表</string>
     <string name="hidden_connections_rules">隐藏的连接规则</string>
     <string name="list_is_empty">列表为空</string>
-    <string name="malicious_connection_app">检测到恶意连接 (%1$s)</string>
     <string name="show_only_malicious">恶意连接</string>
     <string name="security">安全</string>
     <string name="malware_detection">恶意软件检测</string>

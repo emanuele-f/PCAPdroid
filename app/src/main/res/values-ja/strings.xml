@@ -122,7 +122,6 @@
     <string name="edit_list">リストを編集</string>
     <string name="hidden_connections_rules">隠された接続ルール</string>
     <string name="list_is_empty">リストは空です</string>
-    <string name="malicious_connection_app">悪意ある接続の検出 (%1$s)</string>
     <string name="show_only_malicious">悪意ある接続</string>
     <string name="security">セキュリティ</string>
     <string name="malware_detection">マルウェアの検出</string>

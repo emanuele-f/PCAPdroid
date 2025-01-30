@@ -131,7 +131,6 @@
     <string name="capturing_from">Capture des paquets depuis « %1$s »</string>
     <string name="hidden_connections_rules">Règles de connexions masquées</string>
     <string name="list_is_empty">La liste est vide</string>
-    <string name="malicious_connection_app">Connexion indésirable détectée (%1$s)</string>
     <string name="malware_detection">Détection de virus</string>
     <string name="malware_detection_summary">Détecte les connexions connues des listes de bannissements pour héberger des virus</string>
     <string name="show_only_malicious">Connexions malveillantes</string>

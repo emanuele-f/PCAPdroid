@@ -180,7 +180,6 @@
     <string name="edit_list">Edit list</string>
     <string name="hidden_connections_rules">Hidden connections rules</string>
     <string name="list_is_empty">The list is empty</string>
-    <string name="malicious_connection_app">Malicious connection detected (%1$s)</string>
     <string name="show_only_malicious">Malicious connections</string>
     <string name="show_only_cleartext">Cleartext connections</string>
     <string name="security">Security</string>
@@ -223,6 +222,8 @@
     <string name="n_rules">%1$s rules</string>
     <string name="last_update_val">Last update: %1$s</string>
     <string name="malicious_connections">Malicious connections</string>
+    <string name="malicious_connection_description">A connection from app \"%1$s\" triggered a malware detection rule (%2$s)</string>
+    <string name="malicious_connections_notice">Blacklists may contain false positives. Be sure to double check the IP address/domain reputation online. You can exclude false positives via the malware whitelist</string>
     <string name="updated_blacklists">Updated blacklists</string>
     <string name="connections_checked">Connections checked</string>
     <string name="last_blacklists_update">Last update</string>

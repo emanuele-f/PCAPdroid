@@ -134,7 +134,6 @@
     <string name="hidden_connections_rules">Skjul tilkolbingsregler</string>
     <string name="list_is_empty">Listen er tom</string>
     <string name="ctrl_consent_allowed">PCAPdroid: Kontrollforespørsel ble innvilget</string>
-    <string name="malicious_connection_app">Ondsinnet tilkobling opdaget (%1$s)</string>
     <string name="security">Sikkerhet</string>
     <string name="show_only_malicious">Ondsinnede tilkoblinger</string>
     <string name="control_permissions">Kontrolltilganger</string>

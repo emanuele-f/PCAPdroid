@@ -122,7 +122,6 @@
     <string name="capture_interface">캡처할 인터페이스</string>
     <string name="list_is_empty">이 리스트는 비어있습니다</string>
     <string name="billing_connecting">Google Play로의 커넥션이 진행중이니, 잠시후 다시 시도해주세요</string>
-    <string name="malicious_connection_app">악성 커넥션 탐지됨 (%1$s)</string>
     <string name="malware_detection">멀웨어 감지</string>
     <string name="reset">초기화</string>
     <string name="feature_not_available">이 기능은 현재 당신의 기기에서 사용할 수 없습니다</string>

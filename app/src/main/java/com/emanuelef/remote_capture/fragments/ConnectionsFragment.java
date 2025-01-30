@@ -87,6 +87,7 @@ import java.io.OutputStream;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
+    private static boolean maliciousWarningShown = false;
     public static final String FILTER_EXTRA = "filter";
     public static final String QUERY_EXTRA = "query";
     private Handler mHandler;
@@ -306,6 +307,16 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(filter != null) {
                 mAdapter.mFilter = filter;
                 fromIntent = true;
+
+                if (filter.onlyBlacklisted && !maliciousWarningShown) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.malicious_connections)
+                            .setMessage(R.string.malicious_connections_notice)
+                            .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
+                            .show();
+
+                    maliciousWarningShown = true;
+                }
             }
 
             search = intent.getStringExtra(QUERY_EXTRA);

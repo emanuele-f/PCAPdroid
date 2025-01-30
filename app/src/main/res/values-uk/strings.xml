@@ -331,7 +331,6 @@
     <string name="edit_list">Редагувати список</string>
     <string name="hidden_connections_rules">Правила прихованих з\'єднань</string>
     <string name="list_is_empty">Список порожній</string>
-    <string name="malicious_connection_app">Виявлено зловмисне з\'єднання (%1$s)</string>
     <string name="show_only_cleartext">Незашифровані текстові з\'єднання</string>
     <string name="security">Захист</string>
     <string name="malware_detection">Виявлення зловмисного ПЗ</string>

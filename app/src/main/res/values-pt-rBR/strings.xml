@@ -122,7 +122,6 @@
     <string name="edit_list">Editar lista</string>
     <string name="hidden_connections_rules">Regras de conexões ocultas</string>
     <string name="list_is_empty">A lista está vazia</string>
-    <string name="malicious_connection_app">Conexão maliciosa detectada (%1$s)</string>
     <string name="show_only_malicious">Conexão maliciosa</string>
     <string name="security">Segurança</string>
     <string name="malware_detection">Detecção de malware</string>

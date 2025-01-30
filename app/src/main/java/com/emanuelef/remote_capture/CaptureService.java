@@ -748,12 +748,17 @@ public class CaptureService extends VpnService implements Runnable {
             rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.HOST, conn.info);
         else
             rule_label = MatchList.getRuleLabel(this, MatchList.RuleType.IP, conn.dst_ip);
+        String content = String.format(
+                getResources().getString(R.string.malicious_connection_description),
+                app.getName(),
+                rule_label);
 
         mMalwareBuilder
                 .setContentIntent(pi)
                 .setWhen(System.currentTimeMillis())
-                .setContentTitle(String.format(getResources().getString(R.string.malicious_connection_app), app.getName()))
-                .setContentText(rule_label);
+                .setContentTitle(getResources().getString(R.string.malware_detection))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+                .setContentText(content);
         Notification notification = mMalwareBuilder.build();
 
         // Use the UID as the notification ID to group alerts from the same app

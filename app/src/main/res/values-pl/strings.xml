@@ -169,7 +169,6 @@
     <string name="edit_list">Edytuj listę</string>
     <string name="hidden_connections_rules">Zasady połączeń ukrytych</string>
     <string name="list_is_empty">Lista jest pusta</string>
-    <string name="malicious_connection_app">Wykryto złośliwe połączenie (%1$s)</string>
     <string name="show_only_malicious">Złośliwe połączenia</string>
     <string name="show_only_cleartext">Wyczyść połączenia tekstowe</string>
     <string name="security">Ochrona</string>

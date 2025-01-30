@@ -86,7 +86,6 @@
     <string name="capture_interface">Yakalama arayüzü</string>
     <string name="internet">İnternet</string>
     <string name="edit_filter">Filtreyi düzenle</string>
-    <string name="malicious_connection_app">Kötü amaçlı bağlantı algılandı (%1$s)</string>
     <string name="security">Güvenlik</string>
     <string name="malware_detection">Kötü amaçlı yazılım algılama</string>
     <string name="reset">Sıfırla</string>
