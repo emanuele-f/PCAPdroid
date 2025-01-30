@@ -87,10 +87,6 @@ public class Blacklists {
         // IPs
         addList("Emerging Threats", BlacklistDescriptor.Type.IP_BLACKLIST, "emerging-Block-IPs.txt",
                 "https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt");
-        addList("SSLBL Botnet C2", BlacklistDescriptor.Type.IP_BLACKLIST, "abuse_sslipblacklist.txt",
-                "https://sslbl.abuse.ch/blacklist/sslipblacklist.txt");
-        addList("Feodo Tracker Botnet C2", BlacklistDescriptor.Type.IP_BLACKLIST, "feodotracker_ipblocklist.txt",
-                "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"); // NOTE: some IPs are in emergingthreats, but not all
         addList("DigitalSide Threat-Intel", BlacklistDescriptor.Type.IP_BLACKLIST,  "digitalsideit_ips.txt",
                 "https://raw.githubusercontent.com/davidonzo/Threat-Intel/master/lists/latestips.txt");
 
