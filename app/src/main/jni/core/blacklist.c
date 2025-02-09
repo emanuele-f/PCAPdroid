@@ -73,7 +73,7 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
     if(blacklist_match_domain(bl, domain))
         return -EADDRINUSE; // duplicate domain
 
-    HTItem* entry = HashInsert(bl->domains, PTR_KEY(bl->domains, domain), 0);
+    HTItem* entry = HashInsert(bl->domains, PTR_KEY(bl->domains, domain));
     if (!entry)
         return -ENOMEM;
 

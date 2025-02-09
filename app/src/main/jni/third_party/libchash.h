@@ -115,6 +115,9 @@
  *        from disk.
  */
 
+/* Make insert-only to remove the need to track deleted buckets */
+#define INSERT_ONLY
+
 #include <sys/types.h>         /* includes definition of "ulong", we hope */
 #define ulong u_long
 
@@ -169,15 +172,9 @@
         exit(2); } while ( 0 )
 #endif
 
-   /* We need the following only for dense buckets (Dense##x above).  *
-    * If you need to, set this to a value you'll never use for data.  */
-#define EMPTY -3UL                /* steal more of the bck->data space */
-
-
    /* This is what an item is.  Either can be cast to a pointer. */
 typedef struct {
-   ulong data;        /* 4 bytes for data: either a pointer or an integer */
-   ulong key;         /* 4 bytes for the key: either a pointer or an int */
+   ulong key;         /* 4/8 bytes for the key: either a pointer or an int */
 } HTItem;
 
 struct Table(Bin);                            /* defined in chash.c, I hope */
@@ -196,10 +193,6 @@ typedef struct HashTable {
    int cDeltaGoalSize;  /* # of coming inserts (or deletes, if <0) we expect */
    HTItem *posLastFind; /* position of last Find() command */
    TableIterator *iter; /* used in First/NextBucket */
-
-   FILE *fpData;        /* if non-NULL, what item->data points into */
-   char * (*dataRead)(FILE *, int);   /* how to load data from disk */
-   HTItem bckData;      /* holds data after being loaded from disk */
 } HashTable;
 
    /* Small keys are stored and passed directly, but large keys are
@@ -233,20 +226,18 @@ void FreeHashTable(struct HashTable *ht);
 
 HTItem *HashFind(struct HashTable *ht, ulong key);
 HTItem *HashFindLast(struct HashTable *ht);
-HTItem *HashFindOrInsert(struct HashTable *ht, ulong key, ulong dataInsert);
+HTItem *HashFindOrInsert(struct HashTable *ht, ulong key);
 HTItem *HashFindOrInsertItem(struct HashTable *ht, HTItem *pItem);
 
-HTItem *HashInsert(struct HashTable *ht, ulong key, ulong data);
+HTItem *HashInsert(struct HashTable *ht, ulong key);
 HTItem *HashInsertItem(struct HashTable *ht, HTItem *pItem);
 
+#ifndef INSERT_ONLY
 int HashDelete(struct HashTable *ht, ulong key);
 int HashDeleteLast(struct HashTable *ht);
+#endif
 
 HTItem *HashFirstBucket(struct HashTable *ht);
 HTItem *HashNextBucket(struct HashTable *ht);
 
 int HashSetDeltaGoalSize(struct HashTable *ht, int delta);
-
-void HashSave(FILE *fp, struct HashTable *ht, int (*write)(FILE *, char *));
-struct HashTable *HashLoad(FILE *fp, char * (*read)(FILE *, int));
-struct HashTable *HashLoadKeys(FILE *fp, char * (*read)(FILE *, int));
