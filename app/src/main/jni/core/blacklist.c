@@ -21,11 +21,7 @@
 #include <string.h>
 #include "pcapdroid.h"
 #include "common/utils.h"
-
-typedef struct {
-    char *key;
-    UT_hash_handle hh;
-} string_entry_t;
+#include "third_party/libchash.h"
 
 typedef struct {
     char country_code[3];
@@ -38,7 +34,7 @@ typedef struct {
 } int_entry_t;
 
 struct blacklist {
-    string_entry_t *domains;
+    struct HashTable *domains;
     int_entry_t *uids;
     ndpi_ptree_t *ptree;
     country_entry_t* countries;
@@ -58,6 +54,13 @@ blacklist_t* blacklist_init() {
         return NULL;
     }
 
+    bl->domains = AllocateHashTable(0 /* keys are null terminated */, 1 /* copy keys */);
+    if (!bl->domains) {
+        ndpi_ptree_destroy(bl->ptree);
+        bl_free(bl);
+        return NULL;
+    }
+
     return bl;
 }
 
@@ -70,17 +73,10 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain) {
     if(blacklist_match_domain(bl, domain))
         return -EADDRINUSE; // duplicate domain
 
-    string_entry_t *entry = bl_malloc(sizeof(string_entry_t));
-    if(!entry)
+    HTItem* entry = HashInsert(bl->domains, PTR_KEY(bl->domains, domain), 0);
+    if (!entry)
         return -ENOMEM;
 
-    entry->key = bl_strdup(domain);
-    if(!entry->key) {
-        bl_free(entry);
-        return -ENOMEM;
-    }
-
-    HASH_ADD_KEYPTR(hh, bl->domains, entry->key, strlen(entry->key), entry);
     bl->stats.num_domains++;
     return 0;
 }
@@ -172,7 +168,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
     FILE *f;
     char buffer[256];
     int num_ok = 0, num_fail = 0, num_dup = 0;
-    int max_file_rules = 500000;
+    int max_file_rules = 15000000;
 
     f = fopen(path, "r");
     if(!f) {
@@ -270,12 +266,7 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
 /* ******************************************************* */
 
 void blacklist_destroy(blacklist_t *bl) {
-    string_entry_t *entry, *tmp;
-    HASH_ITER(hh, bl->domains, entry, tmp) {
-        HASH_DELETE(hh, bl->domains, entry);
-        bl_free(entry->key);
-        bl_free(entry);
-    }
+    FreeHashTable(bl->domains);
 
     int_entry_t *entry_i, *tmp_i;
     HASH_ITER(hh, bl->uids, entry_i, tmp_i) {
@@ -350,20 +341,21 @@ static char* get_second_level_domain(const char *domain) {
 
 bool blacklist_match_domain(blacklist_t *bl, const char *domain) {
     // Keep in sync with MatchList.matchesHost
-    string_entry_t *entry = NULL;
+    HashTable* ht = bl->domains;
+    HTItem *entry = NULL;
 
     if(strncmp(domain, "www.", 4) == 0)
         domain += 4;
 
     // exact domain match
-    HASH_FIND_STR(bl->domains, domain, entry);
+    entry = HashFind(ht, PTR_KEY(ht, domain));
     if(entry != NULL)
         return true;
 
     // 2nd-level domain match
     char *domain2 = get_second_level_domain(domain);
     if(domain2 != domain) {
-        HASH_FIND_STR(bl->domains, domain2, entry);
+        entry = HashFind(ht, PTR_KEY(ht, domain2));
         if(entry != NULL)
             return true;
     }
