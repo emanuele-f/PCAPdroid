@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.collection.ArraySet;
+
 import com.emanuelef.remote_capture.Billing;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -67,7 +68,7 @@ public class CaptureSettings implements Serializable {
 
     public CaptureSettings(Context ctx, Intent intent) {
         dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
-        app_filter = new HashSet<>(getStringList(intent, Prefs.PREF_APP_FILTER));
+        app_filter = new ArraySet<>(getStringList(intent, Prefs.PREF_APP_FILTER));
         collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
         http_server_port = getInt(intent, Prefs.PREF_HTTP_SERVER_PORT, 8080);

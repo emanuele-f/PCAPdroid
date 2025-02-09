@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Billing;
@@ -31,7 +32,6 @@ import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.Utils;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class Prefs {
@@ -250,13 +250,13 @@ public class Prefs {
             String s = p.getString(key, "");
 
             if (!s.isEmpty()) {
-                rv = new HashSet<>();
+                rv = new ArraySet<>();
                 rv.add(s);
             }
         }
 
         if (rv == null)
-            rv = new HashSet<>();
+            rv = new ArraySet<>();
 
         return rv;
     }

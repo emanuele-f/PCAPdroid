@@ -38,7 +38,7 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import androidx.collection.ArraySet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
 
     public AppsTogglesAdapter(Context context, Set<String> checkedItems) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mCheckedItems = new HashSet<>(checkedItems);
+        mCheckedItems = new ArraySet<>(checkedItems);
         mListener = null;
     }
 
