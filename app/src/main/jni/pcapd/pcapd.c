@@ -1033,7 +1033,7 @@ static void parse_args(pcapd_conf_t *conf, int argc, char **argv) {
   init_conf(conf);
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "hdtni:u:b:l:L:")) != -1) {
+  while ((c = getopt (argc, argv, "hdtnqi:u:b:l:L:")) != -1) {
     switch(c) {
       case 'i':
         if(conf->num_interfaces >= PCAPD_MAX_INTERFACES) {
