@@ -59,6 +59,7 @@ import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -108,7 +109,10 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
 
         ((TextView)findViewById(R.id.app_license)).setMovementMethod(LinkMovementMethod.getInstance());
         ((TextView)findViewById(R.id.opensource_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
-        ((TextView)findViewById(R.id.wireshark_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView wsLicenses = findViewById(R.id.wireshark_licenses);
+        wsLicenses.setMovementMethod(LinkMovementMethod.getInstance());
+        wsLicenses.setVisibility(PCAPdroid.getInstance().isUsharkAvailable() ? View.VISIBLE : View.GONE);
 
         TextView sourceLink = findViewById(R.id.app_source_link);
         String localized = sourceLink.getText().toString();

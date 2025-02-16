@@ -61,6 +61,7 @@ public class PCAPdroid extends Application {
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private boolean mIsDecryptingPcap = false;
+    private boolean mIsUsharkAvailable = false;
     private static WeakReference<PCAPdroid> mInstance;
     protected static boolean isUnderTest = false;
 
@@ -86,6 +87,7 @@ public class PCAPdroid extends Application {
 
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
+        mIsUsharkAvailable = CaptureService.isUsharkAvailable(this);
 
         // Listen to package events
         IntentFilter filter = new IntentFilter();
@@ -245,5 +247,9 @@ public class PCAPdroid extends Application {
 
     public boolean isDecryptingPcap() {
         return mIsDecryptingPcap;
+    }
+
+    public boolean isUsharkAvailable() {
+        return mIsUsharkAvailable;
     }
 }

@@ -1463,7 +1463,8 @@ public class Utils {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
         boolean rooted = Utils.isRootAvailable();
 
-        return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() + "\n" +
+        return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() +
+                (PCAPdroid.getInstance().isUsharkAvailable() ? " (with ushark)" : "") + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
                 "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +

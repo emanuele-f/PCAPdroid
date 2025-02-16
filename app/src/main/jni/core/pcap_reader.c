@@ -509,7 +509,7 @@ static reader_rv read_dsb_block(pd_reader_t *reader, pd_read_callbacks_t *cb, vo
                 return READER_ERROR;
             }
 
-            cb->on_dsb_secrets(userdata, (u_char*) reader->buffer, secrets_len);
+            cb->on_dsb_secrets(userdata, (const char *) reader->buffer, secrets_len);
         } else
             log_w("Invalid secrets length (%u), ignored", secrets_len);
     }

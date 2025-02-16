@@ -48,6 +48,7 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.activities.AppFilterActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -172,6 +173,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         mOpenPcap = mMenu.findItem(R.id.open_pcap);
         mDecryptPcap = mMenu.findItem(R.id.decrypt_pcap);
+        mDecryptPcap.setVisible(PCAPdroid.getInstance().isUsharkAvailable());
         refreshStatus();
     }
 
