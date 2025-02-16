@@ -108,6 +108,7 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
 
         ((TextView)findViewById(R.id.app_license)).setMovementMethod(LinkMovementMethod.getInstance());
         ((TextView)findViewById(R.id.opensource_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
+        ((TextView)findViewById(R.id.wireshark_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
 
         TextView sourceLink = findViewById(R.id.app_source_link);
         String localized = sourceLink.getText().toString();

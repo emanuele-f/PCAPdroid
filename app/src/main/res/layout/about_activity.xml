@@ -93,6 +93,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="@string/opensource_licenses"/>
+
+                <TextView
+                    android:id="@+id/wireshark_licenses"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wireshark_licenses"/>
             </LinearLayout>
         </RelativeLayout>
     </ScrollView>
