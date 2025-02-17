@@ -88,9 +88,9 @@
     <string name="mitm_wizard_description">Налаштувати пристрій для дешифрування TLS</string>
     <string name="license_error">Помилка генерування ліцензії [%1$d]: %2$s</string>
     <string name="requesting_license">Запит коду ліцензії, будь ласка, зачекайте</string>
-    <string name="pcap_file_not_exists">Вказаний файл PCAP не існує</string>
-    <string name="pcap_read_error">Помилка читання PCAP</string>
-    <string name="pcapdroid_trailer_notice">Для показу актуальних додатків замість \"%1$s\", переконайтеся, що увімкнено опцію \"%2$s\" перед експортуванням файлу PCAP</string>
+    <string name="pcap_file_not_exists">Вказаний файл не існує</string>
+    <string name="pcap_read_error">Помилка читання файла захоплення. Перевірте журнал для подробиць</string>
+    <string name="pcapdroid_trailer_notice">Для показу актуальних додатків замість \"%1$s\", переконайтеся, що увімкнено опцію \"%2$s\" перед генеруванням дампу</string>
     <string name="active_vpn_detected">Виявлено активний VPN</string>
     <string name="app_intro_firewall_msg">З вбудованим <a href="%1$s">Фаєрволом</a> можна легко блокувати доступ до інтернету для окремих додатків і доменів
 \n
@@ -98,9 +98,7 @@
     <string name="app_intro_malware_detection">Покращить безпеку вашого пристрою з функцією <a href="%1$s">виявлення зловмисного ПЗ</a>
 \n
 \nВикористовуючи актуальні чорні списки, він може виявляти, блокувати та попереджати про зловмисні з\'єднання в реальному часі</string>
-    <string name="app_intro_traffic_dump">PCAPdroid надає <a href="%1$s">кілька способів</a> дампувати трафік у стандартний формат PCAP для подальшого аналізу
-\n
-\nЗа допомогою <a href="%2$s">опції вкладення</a>, ви можете додати назви додатків до пакетів і показувати їх у Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid надає <a href="%1$s">кілька способів</a> дампувати трафік у стандартний формат PCAP для подальшого аналізу \n \nЗа допомогою <a href="%2$s">опції розширення PCAPdroid</a>, ви можете додати назви додатків до пакетів і показувати їх у Wireshark</string>
     <string name="low_memory">Недостатньо пам\'яті</string>
     <string name="low_memory_info">Додатку не вистачає пам\'яті, очікуються збої</string>
     <string name="full_payload_disabled">Опцію повного корисного навантаження вимкнуто</string>
@@ -181,7 +179,7 @@
     <string name="external_storage_perm_required">Потрібен дозвіл на доступ до зовнішньої пам\'яті</string>
     <string name="many_rules_warning">Ви намагаєтеся імпортувати багато правил, які можуть зробити додаток не відповідним під час деяких взаємодій. Ви дійсно хочете продовжити\?</string>
     <string name="pcapng_format">Формат Pcapng</string>
-    <string name="pcapng_format_summary">Дамп пакетів у форматі дампу pcapng, який дозволяє вкладання секретів дешифрування TLS</string>
+    <string name="pcapng_format_summary">Дамп пакетів у форматі дампу Pcapng, який більш гнучкий і дозволяє вкладання секретів дешифрування TLS</string>
     <string name="sort_by">Сортувати за</string>
     <string name="total_bytes">Всього байт</string>
     <string name="write_ext_storage_failed">Не вдалося записати на зовнішню пам\'ять. Перевірте лог додатку для подробиць</string>
@@ -205,15 +203,15 @@
     <string name="dont_decrypt_action">Не дешифрується…</string>
     <string name="status_encrypted">Зашифровано</string>
     <string name="injected">Введено</string>
-    <string name="open_pcap_file">Відкрити файл PCAP…</string>
-    <string name="pcap_load_success">Файл PCAP завантажено</string>
-    <string name="invalid_pcap_file">Недійсний файл PCAP</string>
+    <string name="open_pcap_file">Відкрити файл PCAP/Pcapng…</string>
+    <string name="pcap_load_success">Файл захоплення завантажено</string>
+    <string name="invalid_pcap_file">Недійсний формат файла захоплення</string>
     <string name="capture_interface_open_error">Не вдалося відкрити інтерфейс захоплення</string>
-    <string name="unsupported_pcap_datalink">Файл PCAP не підтримується каналом передачі даних</string>
+    <string name="unsupported_pcap_datalink">Файл не підтримується каналом передачі даних</string>
     <string name="root_capture_start_failed">Запуск захоплення не вдався. Переконайтеся що пристрій рутовано з Magisk</string>
-    <string name="pcap_file_load_aborted">Вантаження файлу PCAP перервано</string>
+    <string name="pcap_file_load_aborted">Вантаження файлу захоплення перервано</string>
     <string name="host_resolution_failed">Не вдається визначити хост %1$s</string>
-    <string name="decryption_info_no_rule">Це з\'єднання не дешифрується. Створіть правило дешифрування, щоб дешифрувати його</string>
+    <string name="decryption_info_no_rule">Щоб дешифрувати це з\'єднання, створіть правило дешифрування з лівої панелі або з контекстного меню в списку З\'єднання</string>
     <string name="tls_decryption_no_rules_notice">Дешифрування TLS застосовується лише для з\'єднань, які відповідають налаштованим правилам. Ви хочете створити правила дешифрування зараз\?</string>
     <string name="stop_button">Зупинити</string>
     <string name="title_activity_settings">Налаштування</string>
@@ -258,7 +256,7 @@
     <string name="dns_server">Сервер DNS</string>
     <string name="apps">Додатки</string>
     <string name="pcap_file">Файл PCAP</string>
-    <string name="pcap_file_info">Створити файл PCAP на пристрої</string>
+    <string name="pcap_file_info">Створити файл PCAP/Pcapng на пристрої</string>
     <string name="cannot_write_file">Неможливо записати файл</string>
     <string name="share">Поділитися</string>
     <string name="delete">Видалити</string>
@@ -424,7 +422,7 @@
     <string name="geolocation">Геолокація</string>
     <string name="downloading">Завантаження…</string>
     <string name="download_in_progress">Триває завантаження, зачекайте, будь ласка</string>
-    <string name="pcap_load_in_progress">Триває вантаження файлу PCAP, будь ласка, зачекайте</string>
+    <string name="pcap_load_in_progress">Триває вантаження файлу захоплення, будь ласка, зачекайте</string>
     <string name="download_failed">Не вдалося завантажити</string>
     <string name="built_on">Створено: %1$s</string>
     <string name="geo_db_download">Торкніться, щоб завантажити останню базу даних. Нові бази даних доступні щомісячно</string>
@@ -497,4 +495,43 @@
     <string name="vpn_reconnection_aborted">Перепід\'єднання VPN перервано</string>
     <string name="restart_on_disconnection">Перезапускати при від\'єднанні</string>
     <string name="dnscrypt_how_to">Як використовувати DoH / DNSCrypt з PCAPdroid</string>
+    <string name="update_available">Доступне оновлення</string>
+    <string name="mitm_addon_update_available">Вийшло нове оновлення доповнення mitm. Оновіть, щоб отримати найсвіжіші виправлення помилок</string>
+    <string name="update_action">Оновити</string>
+    <string name="errno_econnreset">З\'єднання скинуто одноранговим пристроєм</string>
+    <string name="dns_conn_info">DNS перетворює доменне ім\'я на IP адресу. Фактичні дані зазвичай обмінюються через подальші з\'єднання HTTPS/TLS</string>
+    <string name="errno_econnreset_msg">Сервер раптово закрив з\'єднання, зазвичай через збій або несподіване вимкнення</string>
+    <string name="errno_econnrefused">Відмовлено у підключенні</string>
+    <string name="errno_econnrefused_msg">Сервер відхилив з\'єднання, що може свідчити про надмірну зайнятість або несправність сервера</string>
+    <string name="tls_conn_info">Трафік TLS/HTTPS зашифрований. Щоб оглядати цей трафік, необхідно його дешифрувати. Детальніше в <a href="%1$s">посібнику користувача</a> PCAPdroid</string>
+    <string name="select_the_keylog_file">Вибрати файл журналу ключів SSL</string>
+    <string name="errno_enetdown_msg">Мережевий інтерфейс не працює або неможливо підключитися до мережі</string>
+    <string name="malicious_connection_description">З\'єднання з додатка \"%1$s\" викликало правило виявлення зловмисного ПЗ (%2$s)</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions_summary">Розширити формат дампа пакетів додатковими метаданими, такими як додаток, який відправив/отримав врахований пакет</string>
+    <string name="country_rules_warning">Щоб використовувати правила фаєрвола на основі країн, завантажте базу даних геолокацій з налаштувань PCAPdroid, інакше правила на основі країн будуть неефективними</string>
+    <string name="malicious_connections_notice">Чорні списки можуть містити помилкові спрацьовування. Обов\'язково перевірте репутацію IP адреси/домену в Інтернеті. Можна виключити хибні спрацьовування за допомогою білого списку зловмисного ПЗ</string>
+    <string name="decrypt_pcap_file">Розшифрувати файл PCAP/Pcapng…</string>
+    <string name="geo_db_missing">Відсутня база даних геолокацій</string>
+    <string name="ip_address_or_cidr">IP адреса / CIDR</string>
+    <string name="unsupported_pcap_file">Непідтримуваний формат файла захоплення</string>
+    <string name="keylog_read_error">Помилка читання журналу ключів SSL</string>
+    <string name="errno_enetunreach_msg">Система не може знайти дійсний маршрут до мережі призначення</string>
+    <string name="bytes_threshold">Поріг у байтах</string>
+    <string name="errno_enetreset">Мережу скинуто</string>
+    <string name="errno_econnaborted">З\'єднання перервано</string>
+    <string name="select_the_pcap_file">Вибрати файл PCAP/Pcapng</string>
+    <string name="errno_epipe">Розрив тунелювання</string>
+    <string name="errno_epipe_msg">Сервер несподівано закрив з\'єднання під час передачі даних</string>
+    <string name="errno_enetdown">Мережа не працює</string>
+    <string name="errno_enetunreach">Мережа недосяжна</string>
+    <string name="errno_econnaborted_msg">З\'єднання було перервано, як правило, через зміну мережі</string>
+    <string name="errno_etimedout">Вичерпано час з\'єднання</string>
+    <string name="errno_etimedout_msg">Сервер надто довго відповідав, ймовірно, через затримки в мережі чи зайнятість сервера</string>
+    <string name="errno_ehostunreach">Немає маршруту до хосту</string>
+    <string name="errno_ehostunreach_msg">Система не може знайти маршрут до хоста призначення</string>
+    <string name="dump_extensions">Розширення PCAPdroid</string>
+    <string name="dump_extensions_how_to">Як зображати розширення дампа PCAPdroid у Wireshark</string>
+    <string name="error_code_with_text">%1$s (помилка %2$d)</string>
+    <string name="errno_enetreset_msg">Мережеве з\'єднання було скинуто пристроєм-посередником (наприклад, роутером або мобільним оператором)</string>
 </resources>
