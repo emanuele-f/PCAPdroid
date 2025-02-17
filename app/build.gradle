@@ -18,16 +18,16 @@ android {
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
-    flavorDimensions = ["ushark"]
+    flavorDimensions = ["type"]
 
     productFlavors {
-        /* Note: alphabetical order determines the default flavor, which is noUshark */
-        noUshark {
-            dimension "ushark"
+        /* Note: alphabetical order determines the default flavor, which is standard */
+        standard {
+            dimension "type"
         }
 
-        withUshark {
-            dimension "ushark"
+        withoutUshark {
+            dimension "type"
         }
     }
 
@@ -84,7 +84,7 @@ android {
         main.java.srcDirs += '../submodules/MaxMind-DB-Reader-java/src/main/java'
 
         // Note: must use "setRoot" to make this a per-flavor setting
-        withUshark.setRoot('../submodules/PCAPdroid-ushark-bin/release')
+        standard.setRoot('../submodules/PCAPdroid-ushark-bin/release')
     }
 
     testOptions {
