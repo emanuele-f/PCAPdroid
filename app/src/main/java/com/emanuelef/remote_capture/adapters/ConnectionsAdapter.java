@@ -164,7 +164,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             blockedInd.setVisibility(conn.is_blocked ? View.VISIBLE : View.GONE);
             redirectedInd.setVisibility((conn.isPortMappingApplied() && !conn.is_blocked) ? View.VISIBLE : View.GONE);
 
-            if(CaptureService.isDecryptingTLS()) {
+            if(CaptureService.isDecryptingTLS() || PCAPdroid.getInstance().isDecryptingPcap()) {
                 decryptionInd.setVisibility(View.VISIBLE);
                 Utils.setDecryptionIcon(decryptionInd, conn);
             } else

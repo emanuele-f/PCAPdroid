@@ -34,6 +34,15 @@
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
         </string>
+    <string name="wireshark_licenses" translatable="false"><b>PCAP Decryption:</b><br />\n\n
+        - Wireshark: <a href='hhttps://github.com/wireshark/wireshark/blob/master/COPYING'>GPL-2.0</a>\n\n
+        - ushark: <a href='https://github.com/altafinance/ushark'>GPL-2.0</a>\n\n
+        - libiconv: <a href='https://www.gnu.org/software/libiconv'>LGPL-2.1</a>\n\n
+        - glib: <a href='https://gitlab.gnome.org/GNOME/glib/-/blob/main/COPYING'>LGPL-2.1</a>\n\n
+        - gpgerror: <a href='https://github.com/gpg/libgpg-error/blob/master/COPYING'>LGPL-2.1</a>\n\n
+        - gcrypt: <a href='https://gnupg.org/software/libgcrypt/index.html'>LGPL-2.1</a>\n\n
+        - nghttp2: <a href='https://github.com/nghttp2/nghttp2/blob/master/COPYING'>MIT</a>\n\n
+        </string>
     <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,PackageName,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="unlock_token" translatable="false">Unlock token</string>
 
@@ -486,6 +495,7 @@
     <string name="open_pcap_file">Open PCAP/Pcapng file…</string>
     <string name="pcap_load_success">Capture file loaded</string>
     <string name="unsupported_pcap_file">Unsupported capture file format</string>
+    <string name="decrypt_pcap_file">Decrypt PCAP/Pcapng file…</string>
     <string name="invalid_pcap_file">Invalid capture file format</string>
     <string name="capture_interface_open_error">Could not open the capture interface</string>
     <string name="unsupported_pcap_datalink">The file has an unsupported datalink</string>
@@ -493,6 +503,7 @@
     <string name="root_capture_start_failed">Capture start failure. Ensure that the device is rooted with Magisk</string>
     <string name="root_capture_pcapd_start_failure">Capture start failure. Make sure you grant root access to PCAPdroid</string>
     <string name="pcap_read_error">Error reading the capture file. Check the log for details</string>
+    <string name="keylog_read_error">SSL keylog read error</string>
     <string name="pcap_file_load_aborted">Capture file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before generating the dump</string>
@@ -520,4 +531,6 @@
     <string name="vpn_reconnection_aborted">VPN reconnection aborted</string>
     <string name="waiting_for_vpn_disconnect">Waiting for the active VPN to disconnect…</string>
     <string name="larger_than">Larger than</string>
+    <string name="select_the_pcap_file">Select the PCAP/Pcapng file</string>
+    <string name="select_the_keylog_file">Select the SSL keylog file</string>
 </resources>

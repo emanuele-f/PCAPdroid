@@ -82,6 +82,7 @@ import com.emanuelef.remote_capture.interfaces.PcapDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 import com.pcapdroid.mitm.MitmAPI;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -1134,8 +1135,6 @@ public class CaptureService extends VpnService implements Runnable {
         return (ifname != null) ? ifname : "";
     }
 
-
-
     // Inside the mCaptureThread
     @Override
     public void run() {
@@ -1433,6 +1432,10 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
+    public static boolean isUsharkAvailable(Context ctx) {
+        return new File(getLibprogPath(ctx, "ushark")).exists();
+    }
+
     // called from native
     public void sendStatsDump(CaptureStats stats) {
         //Log.d(TAG, "sendStatsDump");
@@ -1583,8 +1586,12 @@ public class CaptureService extends VpnService implements Runnable {
     public String getPersistentDir() { return getFilesDir().getAbsolutePath(); }
 
     public String getLibprogPath(String prog_name) {
+        return getLibprogPath(this, prog_name);
+    }
+
+    public static String getLibprogPath(Context ctx, String prog_name) {
         // executable binaries are stored into the /lib folder of the app
-        String dir = getApplicationInfo().nativeLibraryDir;
+        String dir = ctx.getApplicationInfo().nativeLibraryDir;
         return(dir + "/lib" + prog_name + ".so");
     }
 
@@ -1707,4 +1714,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native List<String> getL7Protocols();
     public static native void dumpMasterSecret(byte[] secret);
     public static native boolean hasSeenDumpExtensions();
+    public static native boolean extractKeylogFromPcapng(String pcapng_path, String out_path);
 }

@@ -18,9 +18,23 @@ android {
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
+    flavorDimensions = ["type"]
+
+    productFlavors {
+        /* Note: alphabetical order determines the default flavor, which is standard */
+        standard {
+            dimension "type"
+        }
+
+        withoutUshark {
+            dimension "type"
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             // Use a different app ID for debug to allow its coexistence with release builds
@@ -68,6 +82,9 @@ android {
 
     sourceSets {
         main.java.srcDirs += '../submodules/MaxMind-DB-Reader-java/src/main/java'
+
+        // Note: must use "setRoot" to make this a per-flavor setting
+        standard.setRoot('../submodules/PCAPdroid-ushark-bin/release')
     }
 
     testOptions {

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 #define PCAPDROID_TRAILER_MAGIC 0x01072021
 #define PCAPDROID_PEN 62652
@@ -44,6 +45,13 @@
  * PCAP header.
  */
 typedef struct pcap_dumper pcap_dumper_t;
+
+// compatible with pcap.h
+struct pcap_pkthdr {
+    struct timeval ts;
+    uint32_t caplen;
+    uint32_t len;
+};
 
 /* ******************************************************* */
 
