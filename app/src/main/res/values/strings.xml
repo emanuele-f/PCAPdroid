@@ -34,7 +34,7 @@
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
         </string>
-    <string name="wireshark_licenses" translatable="false"><b>Wireshark/ushark:</b><br />\n\n
+    <string name="wireshark_licenses" translatable="false"><b>PCAP Decryption:</b><br />\n\n
         - Wireshark: <a href='hhttps://github.com/wireshark/wireshark/blob/master/COPYING'>GPL-2.0</a>\n\n
         - ushark: <a href='https://github.com/altafinance/ushark'>GPL-2.0</a>\n\n
         - libiconv: <a href='https://www.gnu.org/software/libiconv'>LGPL-2.1</a>\n\n
