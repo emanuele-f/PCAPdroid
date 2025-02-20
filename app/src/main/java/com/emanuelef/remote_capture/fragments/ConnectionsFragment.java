@@ -839,7 +839,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if ((reg != null) && (minSizeKB > 0)) {
-            long maxSizeKb = reg.getMaxConnectionSize() / 1024;
+            long maxSizeKb = reg.getMaxBytes() / 1024;
             if (maxSizeKb >= 2) {
                 // NOTE: visible -> hidden transition is performed in onStopTrackingTouch
                 mSizeSlider.setValueTo(maxSizeKb);
@@ -858,7 +858,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         if ((mSizeSlider.getVisibility() == View.VISIBLE) && !mSizeSliderActive) {
             ConnectionsRegister reg = CaptureService.getConnsRegister();
             if (reg != null) {
-                long maxSizeKB = reg.getMaxConnectionSize() / 1024;
+                long maxSizeKB = reg.getMaxBytes() / 1024;
 
                 if (maxSizeKB > mSizeSlider.getValueTo())
                     mSizeSlider.setValueTo(maxSizeKB);

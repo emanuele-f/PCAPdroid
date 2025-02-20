@@ -36,6 +36,7 @@
             android:id="@+id/size_slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
             app:thumbColor="@color/colorAccent"
             app:trackColorActive="@color/colorAccent"
             app:trackColorInactive="@color/colorAccentLight"

@@ -157,7 +157,7 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
         }
 
         if (reg != null) {
-            long maxSizeKB = reg.getMaxConnectionSize() / 1024;
+            long maxSizeKB = reg.getMaxBytes() / 1024;
             if (maxSizeKB >= 2) {
                 mSizeSider.setValueTo(maxSizeKB);
                 mSizeSider.setLabelFormatter(value -> Utils.formatBytes(((long) value) * 1024));

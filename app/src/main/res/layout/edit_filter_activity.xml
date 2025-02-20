@@ -220,7 +220,7 @@
                 android:id="@+id/size_slider_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/larger_than"
+                android:text="@string/bytes_threshold"
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
