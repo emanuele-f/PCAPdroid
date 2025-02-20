@@ -695,8 +695,13 @@ public class Utils {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
-    public static void showHelpDialog(Context context, int id){
+    public static void showHelpDialog(Context context, int id) {
         String msg = context.getResources().getString(id);
+        showHelpDialog(context, msg);
+    }
+
+    // NOTE: to get clickable links, retrieve the msg via Utils.getText()
+    public static void showHelpDialog(Context context, CharSequence msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.hint);
         builder.setMessage(msg);
@@ -706,6 +711,10 @@ public class Utils {
 
         AlertDialog alert = builder.create();
         alert.show();
+
+        TextView tv = alert.findViewById(android.R.id.message);
+        if (tv != null)
+            tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public static String getUniqueFileName(Context context, String ext) {
@@ -1464,7 +1473,7 @@ public class Utils {
         boolean rooted = Utils.isRootAvailable();
 
         return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() +
-                (PCAPdroid.getInstance().isUsharkAvailable() ? " (with ushark)" : "") + "\n" +
+                (!PCAPdroid.getInstance().isUsharkAvailable() ? " (withoutUshark)" : "") + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
                 "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +

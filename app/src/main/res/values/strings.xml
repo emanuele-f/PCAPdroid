@@ -507,7 +507,7 @@
     <string name="pcap_file_load_aborted">Capture file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before generating the dump</string>
-    <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it (e.g from the left drawer)</string>
+    <string name="decryption_info_no_rule">To decrypt this connection, create a decryption rule from the left drawer or from the contextual menu in the Connections list</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>
     <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
@@ -552,4 +552,6 @@
     <string name="errno_econnrefused_msg">The server rejected the connection, which may indicate a too busy or malfunctioning server</string>
     <string name="errno_ehostunreach">No route to host</string>
     <string name="errno_ehostunreach_msg">The system cannot find a route to the destination host</string>
+    <string name="dns_conn_info">DNS translates a domain name into an IP address. The actual data is typically exchanged over subsequent HTTPS/TLS connections</string>
+    <string name="tls_conn_info">TLS/HTTPS traffic is encrypted. To inspect this traffic, you need to decrypt it. Check out the PCAPdroid <a href='%1$s'>user guide</a> for details</string>
 </resources>

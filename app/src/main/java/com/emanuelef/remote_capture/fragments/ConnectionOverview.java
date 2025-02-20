@@ -49,6 +49,7 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
+import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.haipq.android.flagkit.FlagImageView;
@@ -165,6 +166,24 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
                 proto.setText(String.format(getResources().getString(R.string.app_and_proto), mConn.l7proto, l4proto));
             else
                 proto.setText(mConn.l7proto);
+
+            CharSequence protoMsg = null;
+            if (mConn.l7proto.equals("DNS"))
+                protoMsg = getString(R.string.dns_conn_info);
+            else if ((mConn.l7proto.equals("TLS")) || (mConn.l7proto.equals("HTTPS")))
+                protoMsg = Utils.getText(view.getContext(), R.string.tls_conn_info, MainActivity.TLS_DECRYPTION_DOCS_URL);
+
+            if (protoMsg != null) {
+                final CharSequence msg = protoMsg;
+                View protoInfo = view.findViewById(R.id.protocol_info);
+                protoInfo.setVisibility(View.VISIBLE);
+
+                protoInfo.setOnClickListener(view1 -> {
+                    Context ctx = getContext();
+                    if (ctx != null)
+                        Utils.showHelpDialog(ctx, msg);
+                });
+            }
 
             if(l4proto.equals("ICMP")) {
                 source.setText(mConn.src_ip);
