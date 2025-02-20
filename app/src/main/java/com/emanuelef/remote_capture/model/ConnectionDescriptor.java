@@ -109,6 +109,7 @@ public class ConnectionDescriptor {
     private final boolean mitm_decrypt; // true if the connection is under mitm for TLS decryption
     private boolean internal_decrypt;
     public int status;
+    public int error;
     private int tcp_flags;
     private boolean blacklisted_ip;
     private boolean blacklisted_host;
@@ -160,6 +161,7 @@ public class ConnectionDescriptor {
             rcvd_pkts = update.rcvd_pkts;
             blocked_pkts = update.blocked_pkts;
             status = (update.status & 0x00FF);
+            error = (update.status & 0xFF0000) >> 16;
             port_mapping_applied = (update.status & 0x2000) != 0;
             decryption_ignored = (update.status & 0x1000) != 0;
             netd_block_missed = (update.status & 0x0800) != 0;

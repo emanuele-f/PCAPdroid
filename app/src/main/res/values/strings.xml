@@ -507,7 +507,7 @@
     <string name="pcap_file_load_aborted">Capture file loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before generating the dump</string>
-    <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it</string>
+    <string name="decryption_info_no_rule">This connection will not be decrypted. Create a decryption rule to decrypt it (e.g from the left drawer)</string>
     <string name="tls_decryption_no_rules_notice">TLS decryption is only applied to connections that match the configured rules. Do you want to create decryption rules now?</string>
     <string name="active_vpn_detected">Active VPN detected</string>
     <string name="mitm_doze_notice">Battery optimization may interfere with the mitm addon</string>
@@ -533,4 +533,23 @@
     <string name="larger_than">Larger than</string>
     <string name="select_the_pcap_file">Select the PCAP/Pcapng file</string>
     <string name="select_the_keylog_file">Select the SSL keylog file</string>
+    <string name="error_code_with_text">%1$s (error %2$d)</string>
+    <string name="errno_epipe">Broken pipe</string>
+    <string name="errno_epipe_msg">The server unexpectedly closed the connection during the data transfer</string>
+    <string name="errno_enetdown">Network is down</string>
+    <string name="errno_enetdown_msg">The network interface is down or it\'s unable to connect to the network</string>
+    <string name="errno_enetunreach">Network is unreachable</string>
+    <string name="errno_enetunreach_msg">The system cannot find a valid route to the destination network</string>
+    <string name="errno_enetreset">Network reset</string>
+    <string name="errno_enetreset_msg">The network connection was reset by an intermediary device (e.g. router or mobile carrier)</string>
+    <string name="errno_econnaborted">Connection aborted</string>
+    <string name="errno_econnaborted_msg">The connection was aborted, usually due to a network transition</string>
+    <string name="errno_econnreset">Connection reset by peer</string>
+    <string name="errno_econnreset_msg">The server abruptly closed the connection, usually due to a crash or ungraceful shutdown</string>
+    <string name="errno_etimedout">Connection timed out</string>
+    <string name="errno_etimedout_msg">The server took too long to respond, likely due to network delays or a busy server</string>
+    <string name="errno_econnrefused">Connection refused</string>
+    <string name="errno_econnrefused_msg">The server rejected the connection, which may indicate a too busy or malfunctioning server</string>
+    <string name="errno_ehostunreach">No route to host</string>
+    <string name="errno_ehostunreach_msg">The system cannot find a route to the destination host</string>
 </resources>

@@ -147,6 +147,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             else if((conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                     || (conn.status == ConnectionDescriptor.CONN_STATUS_RESET))
                 color = R.color.statusClosed;
+            else if ((conn.status == ConnectionDescriptor.CONN_STATUS_ERROR)
+                    || ((conn.status == ConnectionDescriptor.CONN_STATUS_SOCKET_ERROR))
+                    || (conn.status == ConnectionDescriptor.CONN_STATUS_UNREACHABLE))
+                color = R.color.warning;
             else
                 color = R.color.statusError;
 

@@ -105,6 +105,7 @@ typedef struct {
     jint rcvd_pkts;
     jint blocked_pkts;
     zdtun_conn_status_t status;
+    int error;
     char *info;
     jint uid;
     char country_code[3];

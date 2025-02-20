@@ -334,6 +334,7 @@ static void connection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
 
     pd_giveup_dpi(pd, data, tuple);
     data->status = zdtun_conn_get_status(conn_info);
+    data->error = zdtun_conn_get_error(conn_info);
     data->to_purge = true;
 }
 
@@ -346,8 +347,10 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
     // Update the connection status
     data->status = zdtun_conn_get_status(conn_info);
-    if(data->status >= CONN_STATUS_CLOSED)
+    if(data->status >= CONN_STATUS_CLOSED) {
         data->to_purge = true;
+        data->error = zdtun_conn_get_error(conn_info);
+    }
 }
 
 /* ******************************************************* */

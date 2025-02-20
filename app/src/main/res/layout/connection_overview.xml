@@ -178,6 +178,43 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/error_row"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:textStyle="bold"
+                android:text="@string/error" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.75"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/detail_errno"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    android:textColor="@color/warning"
+                    tools:text="No route to host (error 113)" />
+
+                <ImageView
+                    android:id="@+id/error_info"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingTop="1sp"
+                    android:src="@drawable/ic_info" />
+            </LinearLayout>
+        </TableRow>
+
+        <TableRow
             android:id="@+id/interface_row"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -496,6 +533,7 @@
         android:textIsSelectable="true"
         android:layout_marginTop="8dp"
         android:visibility="gone"
+        tools:visibility="visible"
         tools:text="The client may not trust certificate" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
