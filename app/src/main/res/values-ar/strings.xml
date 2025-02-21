@@ -54,7 +54,7 @@
     <string name="rcvd_and_sent">استقبلت %1$s - ارسلت %2$s</string>
     <string name="notification_msg">%1$s ملتقط و %2$s اتصالات</string>
     <string name="get_app">أحصل عليه:</string>
-    <string name="pcap_file_info">قم بإنشاء ملف PCAP في مساحة تخزين الجهاز</string>
+    <string name="pcap_file_info">أنشئ ملف Pcapng/PCAP في مساحة تخزين الجهاز</string>
     <string name="cannot_write_file">لا يمكن كتابة الملف</string>
     <string name="ok">حسناً</string>
     <string name="share">مشاركة</string>
@@ -252,7 +252,7 @@
     <string name="qr_info_text">قم بتثبيت PCAPdroid من Google Play وقم بمسح رمز QR هذا ضوئيًا</string>
     <string name="qr_purchase_required">قم بشراء رمز إلغاء القفل لمتابعة تنشيط رمز QR</string>
     <string name="decryption_rules_help">تحدد هذه القواعد الاتصالات التي سيتم فك تشفيرها. تعمل القواعد المستندة إلى المضيف فقط في حالة رؤية رد DNS سابق</string>
-    <string name="pcap_read_error">خطأ في قِراءة PCAP</string>
+    <string name="pcap_read_error">خطأ في قراءة ملف الالتقاط. تحقق من السجل للحصول على التفاصيل</string>
     <string name="license_error">خطأ في إنشاء الترخيص [%1$d]: %2$s</string>
     <string name="license_limit_reached">لقد وصلت إلى الحد الأقصى للتراخيص لرمز إلغاء القفل هذا. قم بشراء رمز مميز جديد لإنشاء المزيد من التراخيص</string>
     <string name="mitm_addon_starting">يبدأ الملحق Mitm…</string>
@@ -264,13 +264,13 @@
     <string name="decryption_rules">قواعد فك التشفير</string>
     <string name="status_encrypted">مُشفرة</string>
     <string name="injected">حقن</string>
-    <string name="open_pcap_file">فَتح ملف PCAP…</string>
-    <string name="pcap_load_success">تم تحميل ملف PCAP</string>
-    <string name="invalid_pcap_file">ملف PCAP غير صالح</string>
+    <string name="open_pcap_file">افتح ملف Pcapng/PCAP…</string>
+    <string name="pcap_load_success">ملف التقاط محمّل</string>
+    <string name="invalid_pcap_file">تنسيق ملف الالتقاط غير صالح</string>
     <string name="root_capture_start_failed">التقاط فشل البداية. تأكد من أن الجهاز متجذر باستخدام Magisk</string>
     <string name="capture_interface_open_error">لا يمكن فتح واجهة الالتقاط</string>
-    <string name="unsupported_pcap_datalink">يحتوي ملف PCAP على رابط بيانات غير مدعوم</string>
-    <string name="pcap_file_not_exists">ملف PCAP المحدد غير موجود</string>
+    <string name="unsupported_pcap_datalink">يحتوي الملف على datalink غير مدعوم</string>
+    <string name="pcap_file_not_exists">الملف المحدد غير موجود</string>
     <string name="pcap_file_load_aborted">تم إحباط تحميل ملف PCAP</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
     <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل تصدير ملف PCAP</string>
@@ -320,7 +320,7 @@
     <string name="downloading">جارى التحميل…</string>
     <string name="download_in_progress">التنزيل قيد التقدم، يُرجى الأنتظار</string>
     <string name="download_failed">فشل التحميل</string>
-    <string name="pcap_load_in_progress">جارٍ تحميل ملف PCAP، يُرجى الأنتظار</string>
+    <string name="pcap_load_in_progress">التقاط الملف التحميل قيد التقدم، يُرجى الانتظار</string>
     <string name="geo_db_not_found">لم يتم العثور على قاعدة البيانات. تم تعطيل تحديد الموقع الجغرافي</string>
     <string name="database">قاعدة البيانات</string>
     <string name="built_on">مبني على: %1$s</string>
@@ -379,9 +379,7 @@
     <string name="app_intro_malware_detection">يمكنك تحسين أمان جهازك باستخدام ميزة <a href="%1$s">الكشف عن البرامج الضارة</a>
 \n
 \nوباستخدام قوائم سوداء محدثة، يمكنه اكتشاف الاتصالات الضارة وحظرها وتنبيهها في الوقت الفعلي</string>
-    <string name="app_intro_traffic_dump">يوفر PCAPdroid <a href="%1$s">طرق متعددة</a> لتفريغ حركة المرور بتنسيق PCAP القياسي لمزيد من التحليل
-\n
-\nعبر <a href="%2$s">خيار المقطع الدعائي</a>، يمكنك إضافة أسماء التطبيقات إلى الحزم وعرضها في Wireshark</string>
+    <string name="app_intro_traffic_dump">يوفر PCAPdroid <a href="%1$s">طرق متعددة</a> لتفريغ حركة المرور بتنسيق PCAP القياسي لمزيد من التحليل \n \nعبر <a href="%2$s">خيار امتدادات PCAPdroid</a>، يمكنك إضافة أسماء التطبيقات إلى الحزم وعرضها في Wireshark</string>
     <string name="permission_granted">تم منح الإذن %1$s</string>
     <string name="permission_grant_fail">تعذر منح الإذن %1$s</string>
     <string name="connection_not_found">تعذر العثور على الاتصال المحدد</string>
@@ -461,7 +459,7 @@
     <string name="ipv6_dns_server">خادم DNS IPv6</string>
     <string name="many_rules_warning">أنت تحاول استيراد العديد من القواعد، مما قد يجعل التطبيق لا يستجيب أثناء بعض التفاعلات. هل تريد حقا الاستمرار؟</string>
     <string name="pcapng_format">تنسيق Pcapng</string>
-    <string name="pcapng_format_summary">تفريغ الحزم بتنسيق تفريغ pcapng، والذي يسمح بتضمين أسرار فك تشفير TLS</string>
+    <string name="pcapng_format_summary">تفريغ الحزم بتنسيق تفريغ Pcapng، وهو أكثر مرونة ويسمح بتضمين أسرار فك تشفير TLS</string>
     <string name="tls_decryption_no_rules_notice">يتم تطبيق فك تشفير TLS فقط على الاتصالات التي تطابق القواعد التي تم تكوينها. هل تريد إنشاء قواعد فك التشفير الآن؟</string>
     <string name="active_vpn_detected">تم اكتشاف شبكة VPN نشطة</string>
     <string name="proto_and_port">%1$s ،%2$d</string>
@@ -500,4 +498,15 @@
     <string name="update_available">يتوفر تحديث</string>
     <string name="mitm_addon_update_available">يتوفر تحديث جديد لإضافة mitm. حدّث للحصول على أحدث إصلاحات العلل</string>
     <string name="update_action">حدّث</string>
+    <string name="dump_extensions">امتدادات PCAPdroid</string>
+    <string name="dump_extensions_summary">مدّد تنسيق تفريغ الحزمة مع بيانات وصفية إضافية، مثل التطبيق الذي أرسل/تلقى حزمة معينة</string>
+    <string name="ip_address_or_cidr">عنوان CIDR / IP</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions_how_to">كيفية عرض امتدادات تفريغ PCAPdroid في Wireshark</string>
+    <string name="malicious_connections_notice">قد تحتوي القوائم السوداء على إيجابيات خاطئة. تأكد من التحقق من سمعة عنوان IP/المجال عبر الإنترنت. يمكنك استبعاد الإيجابيات الخاطئة عبر قائمة البرامج الخبيثة البيضاء</string>
+    <string name="malicious_connection_description">أدى اتصال من التطبيق %1$s\" إلى قاعدة اكتشاف البرامج الخبيثة (%2$s)</string>
+    <string name="geo_db_missing">قاعدة بيانات تحديد الموقع الجغرافي مفقود</string>
+    <string name="country_rules_warning">لاستخدام قواعد جدار الحماية القائمة على الدول، نزّل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات PCAPdroid، وإلا ستكون القواعد القائمة على الدول غير فعالة</string>
+    <string name="unsupported_pcap_file">تنسيق ملف التقاط غير مدعوم</string>
+    <string name="decrypt_pcap_file">فك تشفير Pcapng/PCAP…</string>
 </resources>
