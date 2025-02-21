@@ -51,7 +51,7 @@
     <string name="dns_server">Server DNS</string>
     <string name="apps">App</string>
     <string name="pcap_file">File PCAP</string>
-    <string name="pcap_file_info">Crea un file PCAP nella memoria del dispositivo</string>
+    <string name="pcap_file_info">Crea un file PCAP/Pcapng nella memoria del dispositivo</string>
     <string name="cannot_write_file">Impossibile scrivere il file</string>
     <string name="share">Condividi</string>
     <string name="delete">Elimina</string>
@@ -325,9 +325,7 @@
     <string name="app_intro_malware_detection">Migliora la sicurezza del dispositivo tramite la funzione di <a href="%1$s">rilevamento malware</a>
 \n
 \nUtilizzando blacklist in continuo aggiornamento, è in grado di rilevare, bloccare e allertare in tempo reale connessioni malevole</string>
-    <string name="app_intro_traffic_dump">PCAPdroid dispone di <a href="%1$s">diversi metodi</a> per salvare il traffico in formato PCAP ed effettuare analisi successive
-\n
-\nTramite <a href="%2$s">l\'opzione di trailer</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid dispone di <a href="%1$s">diversi metodi</a> per salvare il traffico in formato PCAP ed effettuare analisi successive \n \nTramite <a href="%2$s">l\'opzione estensioni PCAPdroid</a>, puoi aggiungere i nomi delle app ai pacchetti e visualizzarli in Wireshark</string>
     <string name="permission_granted">Il permesso %1$s è stato concesso</string>
     <string name="permission_grant_fail">Non è stato possibile concedere il permesso %1$s</string>
     <string name="low_memory_info">L\'app sta esaurendo la memoria disponibile, attenzione a possibili crash</string>
@@ -424,7 +422,7 @@
     <string name="external_storage_perm_required">Il permesso di accesso ai file esterni è richiesto</string>
     <string name="many_rules_warning">Si sta cercando d\'importare molte regole, che potrebbero causare il rallentamento dell\'app durante alcune interazioni con la stessa. Procedere\?</string>
     <string name="pcapng_format">Formato pcapng</string>
-    <string name="pcapng_format_summary">Salva i pacchetti di rete nel formato pcapng, che permette di integrare al suo interno i segreti della decrittazione TLS</string>
+    <string name="pcapng_format_summary">Salva i pacchetti di rete nel formato Pcapng, che è più flessibile e consente di incorporare segreti di decrittografia TLS</string>
     <string name="sort_by">Ordina per</string>
     <string name="total_bytes">Bytes totali</string>
     <string name="write_ext_storage_failed">Errore nella scrittura sull\'archivio esterno. Per maggiori dettagli controllare il log dell\'applicazione</string>
@@ -456,20 +454,20 @@
     <string name="dont_decrypt_action">Non decrittare…</string>
     <string name="copy_error">Impossibile scrivere il file</string>
     <string name="proxy_host">Host del proxy</string>
-    <string name="pcap_load_in_progress">Caricamento file PCAP in corso, attendere</string>
-    <string name="open_pcap_file">Apri file PCAP…</string>
-    <string name="pcap_load_success">File PCAP caricato</string>
-    <string name="invalid_pcap_file">File PCAP non valido</string>
+    <string name="pcap_load_in_progress">Caricamento del file di acquisizione in corso, attendere</string>
+    <string name="open_pcap_file">Apri file PCAP/Pcapng…</string>
+    <string name="pcap_load_success">File di cattura caricato</string>
+    <string name="invalid_pcap_file">Formato file di cattura non valido</string>
     <string name="capture_interface_open_error">Impossibile aprire l\'interfaccia di cattura</string>
     <string name="active_vpn_detected">Rilevata una VPN attiva</string>
-    <string name="unsupported_pcap_datalink">Il file PCAP has un datalink non supportato</string>
-    <string name="pcap_file_not_exists">Il file PCAP specificato non esiste</string>
+    <string name="unsupported_pcap_datalink">Il file ha un datalink non supportato</string>
+    <string name="pcap_file_not_exists">Il file specificato non esiste</string>
     <string name="root_capture_start_failed">Avvio della cattura fallito. Assicurarsi che il root del dispositivo sia effettuato con Magisk</string>
-    <string name="pcap_read_error">Errore nella lettura del PCAP</string>
-    <string name="pcap_file_load_aborted">Caricamento file PCAP annullato</string>
+    <string name="pcap_read_error">Errore durante la lettura del file di cattura. Controlla il registro per i dettagli</string>
+    <string name="pcap_file_load_aborted">Caricamento file di cattura annullato</string>
     <string name="host_resolution_failed">Impossibile risolvere l\'host %1$s</string>
-    <string name="pcapdroid_trailer_notice">Per visualizzare le app effettive invece di \"%1$s\", abilitare l\'opzione \"%2$s\" prima di esportare il file PCAP</string>
-    <string name="decryption_info_no_rule">La connessione non sarà decrittata. Per decrittarla, crea una regola di decrittazione</string>
+    <string name="pcapdroid_trailer_notice">Per visualizzare le app effettive invece di \"%1$s\", abilitare l\'opzione \"%2$s\" prima di generare il dump</string>
+    <string name="decryption_info_no_rule">Per decrittografare questa connessione, crea una regola di decrittografia dal menù a sinistra o dal menu contestuale nell\'elenco Connessioni</string>
     <string name="tls_decryption_no_rules_notice">La decrittazione TLS è applicata soltanto alle connessioni che matchano le regole configurate. Vuoi creare ora delle regole di decrittazione\?</string>
     <string name="root_capture_pcapd_start_failure">Avvio della cattura fallito. Assicurati di concedere l\'accesso root a PCAPdroid</string>
     <string name="export_ellipsis">Esporta…</string>
@@ -499,4 +497,40 @@
     <string name="update_available">Aggiornamento disponibile</string>
     <string name="update_action">Aggiorna</string>
     <string name="mitm_addon_update_available">Una nuova versione dell\'addon mitm è disponibile. Aggiorna per ottenere gli ultimi miglioramenti</string>
+    <string name="dump_extensions_summary">Estendi il dump dei pacchetti con metadati aggiuntivi, come l\'app che ha inviato/ricevuto un determinato pacchetto</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions">Estensioni PCAPdroid</string>
+    <string name="unsupported_pcap_file">Formato file di cattura non supportato</string>
+    <string name="errno_etimedout_msg">Il server ha impiegato troppo tempo per rispondere, probabilmente a causa di ritardi di rete o di un server occupato</string>
+    <string name="dns_conn_info">Il DNS traduce un nome di dominio in un indirizzo IP. I dati effettivi vengono generalmente scambiati tramite connessioni HTTPS/TLS successive</string>
+    <string name="tls_conn_info">Il traffico TLS/HTTPS è criptato. Per ispezionare questo traffico, è necessario decriptarlo. Dai un\'occhiata alla <a href="%1$s">guida dell\'utente di PCAPdroid</a> per i dettagli</string>
+    <string name="malicious_connection_description">Una connessione dall\'app \"%1$s\" ha attivato una regola di rilevamento malware (%2$s)</string>
+    <string name="malicious_connections_notice">Le Blacklist possono contenere falsi positivi. Assicurati di ricontrollare online l\'indirizzo IP/reputazione del dominio. Puoi escludere i falsi positivi tramite la whitelist malware</string>
+    <string name="geo_db_missing">Database geolocalizzazione non presente</string>
+    <string name="country_rules_warning">Per utilizzare le regole del firewall basate sul paese, scarica il database di geolocalizzazione dalle impostazioni di PCAPdroid, altrimenti le regole basate sul paese saranno inefficaci</string>
+    <string name="keylog_read_error">Errore di lettura del keylog SSL</string>
+    <string name="bytes_threshold">Soglia di byte</string>
+    <string name="select_the_pcap_file">Seleziona il file PCAP/Pcapng</string>
+    <string name="select_the_keylog_file">Seleziona il file keylog SSL</string>
+    <string name="error_code_with_text">%1$s (errore %2$d)</string>
+    <string name="errno_epipe_msg">Il server ha chiuso inaspettatamente la connessione durante il trasferimento dei dati</string>
+    <string name="errno_enetdown">La rete non funziona</string>
+    <string name="errno_enetdown_msg">L\'interfaccia di rete è inattiva o non è in grado di connettersi alla rete</string>
+    <string name="errno_epipe">Pipe interrotto</string>
+    <string name="errno_enetunreach">La rete è irraggiungibile</string>
+    <string name="errno_enetunreach_msg">Il sistema non riesce a trovare una rotta valida verso la rete di destinazione</string>
+    <string name="errno_enetreset">Ripristino della rete</string>
+    <string name="errno_enetreset_msg">La connessione di rete è stata ripristinata da un dispositivo intermediario (ad esempio router o operatore di telefonia mobile)</string>
+    <string name="errno_econnaborted">Connessione interrotta</string>
+    <string name="errno_econnaborted_msg">La connessione è stata interrotta, solitamente a causa di una transizione di rete</string>
+    <string name="errno_econnreset">Connessione ripristinata dal peer</string>
+    <string name="errno_econnreset_msg">Il server ha chiuso improvvisamente la connessione, solitamente a causa di un crash o di un arresto anomalo o uno spegnimento forzato</string>
+    <string name="errno_etimedout">Timeout connessione</string>
+    <string name="errno_econnrefused">Connessione rifiutata</string>
+    <string name="errno_econnrefused_msg">Il server ha rifiutato la connessione, potrebbe indicare un sovraccarico o un malfunzionamento</string>
+    <string name="errno_ehostunreach">Nessuna rotta per l\'host</string>
+    <string name="errno_ehostunreach_msg">Il sistema non riesce a trovare una rotta verso l\'host di destinazione</string>
+    <string name="decrypt_pcap_file">Decrittografa il file PCAP/Pcapng…</string>
+    <string name="dump_extensions_how_to">Come visualizzare le estensioni dump PCAPdroid in Wireshark</string>
+    <string name="ip_address_or_cidr">Indirizzo IP / CIDR</string>
 </resources>
