@@ -79,7 +79,7 @@
     <string name="dns_server">DNS 服务器</string>
     <string name="apps">应用程序</string>
     <string name="pcap_file">PCAP 文件</string>
-    <string name="pcap_file_info">在设备存储中创建一个 PCAP 文件</string>
+    <string name="pcap_file_info">在设备存储中创建一个 PCAP/Pcapng 文件</string>
     <string name="cannot_write_file">无法写文件</string>
     <string name="share">分享</string>
     <string name="delete">删除</string>
@@ -320,9 +320,7 @@
     <string name="app_intro_malware_detection">借助 <a href="%1$s">恶意软件检测</a>功能增强你设备的安全性
 \n
 \n通过使用最新的黑名单，它可以实时检测、阻止和警告恶意连接</string>
-    <string name="app_intro_traffic_dump">PCAPdroid 提供<a href="%1$s">多种方式</a>以标准的 PCAP 格式转储流量，以便深入分析
-\n
-\n通过 <a href="%2$s">trailer 选项</a>，可以向数据包添加应用名称，并在 Wireshark 中显示它们</string>
+    <string name="app_intro_traffic_dump">PCAPdroid 提供<a href="%1$s">多种方式</a>以标准的 PCAP 格式转储流量，以便深入分析 \n \n通过 <a href="%2$s"> PCAPdroid 扩展选项</a>，可以向数据包添加应用名称，并在 Wireshark 中显示它们</string>
     <string name="app_intro_welcome_msg">PCAPdroid 是一款隐私友好的应用，允许你追踪并分析你设备中应用所作的连接
 \n
 \n此外，它允许你导出流量的 PCAP 转储，提取元数据及其他更多功能！</string>
@@ -426,7 +424,7 @@
     <string name="rule_exists">已定义了规则</string>
     <string name="dns_servers_summary">配置流量捕获期间要使用的 DNS 服务器</string>
     <string name="many_rules_warning">你正试图导入许多规则，可能使应用程序在某些交互期间无响应。你真想继续吗？</string>
-    <string name="pcapng_format_summary">用 PCAPNG 格式转储数据包，该格式允许内嵌 TLS 解密 secrets</string>
+    <string name="pcapng_format_summary">用 Pcapng 格式转储数据包，该格式更为灵活，允许内嵌 TLS 解密 secrets</string>
     <string name="use_system_dns_summary">如果可能，使用系统 DNS 服务器</string>
     <string name="port_mapping_summary">配置将连接重定向到不同主机或端口的端口映射规则</string>
     <string name="app_log">日志</string>
@@ -483,22 +481,22 @@
     <string name="mitm_addon_running">Mitim 附加组件运行中</string>
     <string name="dont_decrypt_action">不解密…</string>
     <string name="status_encrypted">已加密</string>
-    <string name="pcap_load_in_progress">正在加载 PCAP 文件，请等待</string>
+    <string name="pcap_load_in_progress">正在加载捕获的文件，请等待</string>
     <string name="capture_interface_open_error">无法打开流量捕获界面</string>
-    <string name="unsupported_pcap_datalink">PCAP 文件有一个不受支持的数据链</string>
-    <string name="pcap_file_not_exists">指定的 PCAP 文件不存在</string>
+    <string name="unsupported_pcap_datalink">文件有一个不受支持的数据链</string>
+    <string name="pcap_file_not_exists">指定的文件不存在</string>
     <string name="root_capture_start_failed">流量捕获启动失败。请确保设备已使用 Magisk 获取根权限</string>
-    <string name="pcap_read_error">PCAP 读取出错</string>
-    <string name="pcap_file_load_aborted">PCAP 文件加载中断</string>
+    <string name="pcap_read_error">读取捕获文件时出错，详情请查看日志</string>
+    <string name="pcap_file_load_aborted">捕获文件加载中断</string>
     <string name="copy_error">无法写入文件</string>
     <string name="proxy_host">代理主机</string>
-    <string name="open_pcap_file">打开 PCAP 文件…</string>
-    <string name="pcap_load_success">已加载 PCAP 文件</string>
+    <string name="open_pcap_file">打开 PCAP/Pcapng 文件…</string>
+    <string name="pcap_load_success">已加载捕获的文件</string>
     <string name="host_resolution_failed">无法解析主机 %1$s</string>
-    <string name="invalid_pcap_file">无效的 PCAP 文件</string>
-    <string name="pcapdroid_trailer_notice">要显示实际应用而非“%1$s”，请在导出 PCAP 文件前确保开启了“%2$s”选项</string>
+    <string name="invalid_pcap_file">无效的捕获文件格式</string>
+    <string name="pcapdroid_trailer_notice">要显示实际应用而非“%1$s”，请在生成转储文件前确保开启了“%2$s”选项</string>
     <string name="tls_decryption_no_rules_notice">TLS 解密仅应用于匹配所配置规则的连接。你想立即创建解密规则吗？</string>
-    <string name="decryption_info_no_rule">此连接不会被解密。创建解密规则来解密它</string>
+    <string name="decryption_info_no_rule">要解密此连接，从左侧抽屉或从连接列表的上下文菜单创建一条解密规则</string>
     <string name="active_vpn_detected">检测到活动 VPN</string>
     <string name="root_capture_pcapd_start_failure">流量捕获启动失败。请确保你授予了 PCAPdroid 根权限</string>
     <string name="whats_new">更新记录</string>
@@ -525,4 +523,40 @@
     <string name="update_action">更新</string>
     <string name="update_available">有更新可用</string>
     <string name="mitm_addon_update_available">有新的 mitim 附加组件更新可用。请更新获得最新的 bug 修复</string>
+    <string name="dump_extensions_summary">扩展的数据包转出格式，包含额外的元数据，比如发送/接收了一个给定数据包的应用</string>
+    <string name="errno_econnreset_msg">服务器突然关闭了连接，通常由于崩溃或笨拙的关闭</string>
+    <string name="cidr_val">CIDR： %1$s</string>
+    <string name="errno_enetunreach_msg">系统无法找到前往目标网络的有效路由</string>
+    <string name="malicious_connections_notice">黑名单可能包含误报。请在网上仔细检查 IP 地址/域名的信誉。你可以通过恶意软件白名单排除误报</string>
+    <string name="errno_econnaborted_msg">连接被终止，通过是由于网络转换</string>
+    <string name="keylog_read_error">SSL 密钥记录读取出错</string>
+    <string name="bytes_threshold">字节数临界值</string>
+    <string name="select_the_pcap_file">选择 PCAP/Pcapng 文件</string>
+    <string name="select_the_keylog_file">选择 SSL 密钥记录文件</string>
+    <string name="error_code_with_text">%1$s （错误 %2$d）</string>
+    <string name="errno_epipe">管道损坏</string>
+    <string name="errno_epipe_msg">服务器在数据传输期间意外地关闭了连接</string>
+    <string name="errno_enetdown">网络不通</string>
+    <string name="errno_enetdown_msg">网络接口不通或无法连接到网络</string>
+    <string name="errno_enetunreach">网络无法访问</string>
+    <string name="errno_enetreset">网络重置</string>
+    <string name="errno_enetreset_msg">网络连接被中间设备重置（如路由器或手机运营商）</string>
+    <string name="errno_econnaborted">连接被终止</string>
+    <string name="errno_econnreset">连接被 peer 重置</string>
+    <string name="errno_etimedout">连接超时</string>
+    <string name="errno_etimedout_msg">服务器响应时间过长，可能由于网络延迟或服务器忙</string>
+    <string name="errno_econnrefused">连接被拒绝</string>
+    <string name="errno_econnrefused_msg">服务器拒绝了连接，可能表示服务器太忙或出了问题</string>
+    <string name="errno_ehostunreach">没有到主机的路由</string>
+    <string name="errno_ehostunreach_msg">系统无法找到前往目标主机的路由</string>
+    <string name="dns_conn_info">DNS 将域名翻译成 IP 地址。实际数据通常经由后续的 HTTPS/TLS 连接进行交换</string>
+    <string name="tls_conn_info">TLS/HTTPS 流量是加密的。要检查这样的流量，你需要进行解密。 详情见 PCAPdroid <a href="%1$s">用户指南</a></string>
+    <string name="dump_extensions">PCAPdroid 扩展</string>
+    <string name="dump_extensions_how_to">如何在 Wireshark 中展示 PCAPdroid 转储扩展</string>
+    <string name="malicious_connection_description">来自 \"%1$s\" 应用的连接触发了恶意软件检测规则（%2$s）</string>
+    <string name="geo_db_missing">缺少地理位置数据库</string>
+    <string name="country_rules_warning">要使用基于地理位置的防火墙规则，请从 PCAPdroid 设置下载地理位置数据库，不然规则无效</string>
+    <string name="ip_address_or_cidr">IP 地址 / CIDR</string>
+    <string name="unsupported_pcap_file">不受支持的捕获文件格式</string>
+    <string name="decrypt_pcap_file">解密 PCAP/Pcapng 文件…</string>
 </resources>
