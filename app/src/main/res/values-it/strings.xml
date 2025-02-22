@@ -422,7 +422,7 @@
     <string name="external_storage_perm_required">Il permesso di accesso ai file esterni è richiesto</string>
     <string name="many_rules_warning">Si sta cercando d\'importare molte regole, che potrebbero causare il rallentamento dell\'app durante alcune interazioni con la stessa. Procedere\?</string>
     <string name="pcapng_format">Formato pcapng</string>
-    <string name="pcapng_format_summary">Salva i pacchetti di rete nel formato Pcapng, che è più flessibile e consente di incorporare segreti di decrittografia TLS</string>
+    <string name="pcapng_format_summary">Salva i pacchetti di rete nel formato Pcapng, che è più flessibile e consente di incorporare segreti di decrittazione TLS</string>
     <string name="sort_by">Ordina per</string>
     <string name="total_bytes">Bytes totali</string>
     <string name="write_ext_storage_failed">Errore nella scrittura sull\'archivio esterno. Per maggiori dettagli controllare il log dell\'applicazione</string>
@@ -467,7 +467,7 @@
     <string name="pcap_file_load_aborted">Caricamento file di cattura annullato</string>
     <string name="host_resolution_failed">Impossibile risolvere l\'host %1$s</string>
     <string name="pcapdroid_trailer_notice">Per visualizzare le app effettive invece di \"%1$s\", abilitare l\'opzione \"%2$s\" prima di generare il dump</string>
-    <string name="decryption_info_no_rule">Per decrittografare questa connessione, crea una regola di decrittografia dal menù a sinistra o dal menu contestuale nell\'elenco Connessioni</string>
+    <string name="decryption_info_no_rule">Per decrittare questa connessione, crea una regola di decrittazione dal menù a sinistra o dal menu contestuale nell\'elenco Connessioni</string>
     <string name="tls_decryption_no_rules_notice">La decrittazione TLS è applicata soltanto alle connessioni che matchano le regole configurate. Vuoi creare ora delle regole di decrittazione\?</string>
     <string name="root_capture_pcapd_start_failure">Avvio della cattura fallito. Assicurati di concedere l\'accesso root a PCAPdroid</string>
     <string name="export_ellipsis">Esporta…</string>
@@ -503,7 +503,7 @@
     <string name="unsupported_pcap_file">Formato file di cattura non supportato</string>
     <string name="errno_etimedout_msg">Il server ha impiegato troppo tempo per rispondere, probabilmente a causa di ritardi di rete o di un server occupato</string>
     <string name="dns_conn_info">Il DNS traduce un nome di dominio in un indirizzo IP. I dati effettivi vengono generalmente scambiati tramite connessioni HTTPS/TLS successive</string>
-    <string name="tls_conn_info">Il traffico TLS/HTTPS è criptato. Per ispezionare questo traffico, è necessario decriptarlo. Dai un\'occhiata alla <a href="%1$s">guida dell\'utente di PCAPdroid</a> per i dettagli</string>
+    <string name="tls_conn_info">Il traffico TLS/HTTPS è criptato. Per ispezionare questo traffico, è necessario decriptarlo. Dai un\'occhiata alla <a href="%1$s">guida utente di PCAPdroid</a> per i dettagli</string>
     <string name="malicious_connection_description">Una connessione dall\'app \"%1$s\" ha attivato una regola di rilevamento malware (%2$s)</string>
     <string name="malicious_connections_notice">Le Blacklist possono contenere falsi positivi. Assicurati di ricontrollare online l\'indirizzo IP/reputazione del dominio. Puoi escludere i falsi positivi tramite la whitelist malware</string>
     <string name="geo_db_missing">Database geolocalizzazione non presente</string>
@@ -516,7 +516,7 @@
     <string name="errno_epipe_msg">Il server ha chiuso inaspettatamente la connessione durante il trasferimento dei dati</string>
     <string name="errno_enetdown">La rete non funziona</string>
     <string name="errno_enetdown_msg">L\'interfaccia di rete è inattiva o non è in grado di connettersi alla rete</string>
-    <string name="errno_epipe">Pipe interrotto</string>
+    <string name="errno_epipe">Broken pipe</string>
     <string name="errno_enetunreach">La rete è irraggiungibile</string>
     <string name="errno_enetunreach_msg">Il sistema non riesce a trovare una rotta valida verso la rete di destinazione</string>
     <string name="errno_enetreset">Ripristino della rete</string>
@@ -530,7 +530,7 @@
     <string name="errno_econnrefused_msg">Il server ha rifiutato la connessione, potrebbe indicare un sovraccarico o un malfunzionamento</string>
     <string name="errno_ehostunreach">Nessuna rotta per l\'host</string>
     <string name="errno_ehostunreach_msg">Il sistema non riesce a trovare una rotta verso l\'host di destinazione</string>
-    <string name="decrypt_pcap_file">Decrittografa il file PCAP/Pcapng…</string>
+    <string name="decrypt_pcap_file">Decritta il file PCAP/Pcapng…</string>
     <string name="dump_extensions_how_to">Come visualizzare le estensioni dump PCAPdroid in Wireshark</string>
     <string name="ip_address_or_cidr">Indirizzo IP / CIDR</string>
 </resources>
