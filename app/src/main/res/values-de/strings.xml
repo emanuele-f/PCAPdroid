@@ -94,7 +94,7 @@
     <string name="other_prefs">Andere</string>
     <string name="app_language">App-Sprache</string>
     <string name="lang_english">Englisch</string>
-    <string name="system_default">System</string>
+    <string name="system_default">Systemvorgabe</string>
     <string name="file_saved_with_name">Datei als \"%1$s\" gespeichert</string>
     <string name="get_app">Kapiert:</string>
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
@@ -498,4 +498,7 @@
     <string name="vpn_reconnection">VPN-Wiederverbindung</string>
     <string name="vpn_reconnection_aborted">VPN-Wiederverbindung abgebrochen</string>
     <string name="update_available">Aktualisierung verfügbar</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions">PCAPdroid-Erweiterungen</string>
+    <string name="errno_econnaborted">Verbindung abgebrochen</string>
 </resources>
