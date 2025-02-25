@@ -48,7 +48,7 @@
     <string name="dns_server">DNS-Server</string>
     <string name="apps">Apps</string>
     <string name="pcap_file">PCAP-Datei</string>
-    <string name="pcap_file_info">Erstelle eine PCAP-Datei im Gerätespeicher</string>
+    <string name="pcap_file_info">Erstellen einer PCAP/Pcapng-Datei im Gerätespeicher</string>
     <string name="cannot_write_file">Datei kann nicht geschrieben werden</string>
     <string name="share">Teilen</string>
     <string name="pcap_file_action">In der Datei \"%1$s\" gespeicherter Netzwerktraffic (%2$s)</string>
@@ -151,7 +151,7 @@
     <string name="show_me">Anzeigen</string>
     <string name="hint">Hinweis</string>
     <string name="once">Einmal</string>
-    <string name="forever">Immer</string>
+    <string name="forever">Für immer</string>
     <string name="country">Land</string>
     <string name="asn">ASN</string>
     <string name="country_val">Land: %1$s</string>
@@ -282,9 +282,7 @@
 \n
 \nSchauen Sie sich das Benutzerhandbuch <a href="%1$s"/> an, um mehr über die Sicherheitsmaßnahmen zu erfahren, die eine Entschlüsselung verhindern können und wie diese umgangen werden können</string>
     <string name="welcome_to_pcapdroid">Willkommen bei PCAPdroid</string>
-    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen. 
-\n 
-\nWie können Sie sich sicher sein? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den <a href="%2$s">Quellcode</a>.</string>
+    <string name="app_intro_privacy_msg">Die App beinhaltet keine Tracking-, Analyse- oder Datensammel-Funktionen.\n \nWie können Sie sich sicher sein? Überprüfen Sie die Datenschutzrichtlinie <a href="%1$s"/> und den <a href="%2$s">Quellcode</a>.</string>
     <string name="app_intro_geolocation_msg">PCAPdroid kann eine lokale Datenbank abfragen, um das Land eines entfernten Servers zu bestimmen
 \n
 \nSie müssen zuerst die Geolokalisierungsdatenbank aus den App-Einstellungen herunterladen</string>
@@ -310,7 +308,7 @@
     <string name="vpn_exemptions_summary">Nehmen Sie einige Anwendungen von der VPN-Verbindung aus. Deren Datenverkehr wird nicht überwacht</string>
     <string name="cancel_action">Abbrechen</string>
     <string name="show_data_action">Daten anzeigen</string>
-    <string name="remote_server_warning">Aus Sicherheitsgründen ist das Senden von Daten an den Remote-Server \"%1$s\" nicht erlaubt</string>
+    <string name="remote_server_warning">Aus Sicherheitsgründen ist das Senden von Daten an den Remote-Server \"%1$s\" nicht erlaubt\"</string>
     <string name="paid_features_unlocked">Kostenpflichtige Funktionen freigeschaltet. Starten Sie die Aufzeichnung neu, wenn sie ausgeführt wird</string>
     <string name="build_info">Build-Informationen</string>
     <string name="mitmproxy_opts">Zusätzliche mitmproxy-Optionen</string>
@@ -343,7 +341,7 @@
     <string name="external_storage_perm_required">Die Berechtigung für den externen Speicher ist erforderlich</string>
     <string name="many_rules_warning">Sie versuchen, viele Regeln zu importieren, was dazu führen kann, dass die App bei einigen Interaktionen nicht mehr reagiert. Wollen Sie wirklich fortfahren\?</string>
     <string name="pcapng_format">Pcapng Format</string>
-    <string name="pcapng_format_summary">Dump-Pakete im pcapng-Dump-Format, die das Einbetten von TLS-Entschlüsselungsgeheimnissen ermöglichen</string>
+    <string name="pcapng_format_summary">Dump-Pakete im Pcapng-Dump-Format, das flexibler ist und die Einbettung von TLS-Entschlüsselungsgeheimnissen ermöglicht</string>
     <string name="warning">Warnung</string>
     <string name="remote_collector_notice">Sie haben PCAPdroid so konfiguriert, dass es Datenverkehr an einen entfernten Server sendet. Der Server kann auf Ihre sensiblen Daten zugreifen.
 \n
@@ -402,9 +400,7 @@
 \nUm die Aufzeichnung zu starten, müssen Sie die VPN-Anfrage auf dem nächsten Bildschirm akzeptieren.
 \n
 \n<b>ANMERKUNG:</b> um fortzufahren deaktivieren Sie bitte alle Always-on VPNs in den Android Einstellungen</string>
-    <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, um den Datenverkehr im Standard-PCAP-Format zur weiteren Analyse auszugeben
-\n
-\nÜber die <a href="%2$s">Trailer-Option</a> können Sie den Paketen App-Namen hinzufügen und diese in Wireshark anzeigen</string>
+    <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, den Datenverkehr zur weiteren Analyse in das Standard-PCAP-Format zu übertragen\n\nMit der <a href="%2$s">PCAPdroid-Erweiterungen Option</a> können Sie den Paketen App-Namen hinzufügen und sie in Wireshark anzeigen lassen</string>
     <string name="tls_decryption_with_root_msg">Die Möglichkeit, die TLS-Entschlüsselung mit root auszuführen, ist eine experimentelle Funktion. Dies ist eine Liste von bekannten Fehlern:
 \n
 \n - in PCAPdroid wird der Datenverkehr so angezeigt, wie er von der mitm-addon-App anstelle der ursprünglichen App generiert wurde
@@ -457,19 +453,19 @@
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
     <string name="copy_error">Datei kann nicht geschrieben werden</string>
     <string name="proxy_host">Proxy Host</string>
-    <string name="pcap_load_success">PCAP Datei geladen</string>
-    <string name="decryption_info_no_rule">Die Verbindung wird nicht entschlüsselt. Erstelle eine Entschlüsselungsregel um die Verbindung zu entschlüsseln</string>
-    <string name="pcap_read_error">PCAP Lesefehler</string>
-    <string name="pcap_load_in_progress">PCAP Datei wird geladen, bitte warten</string>
-    <string name="open_pcap_file">Öffne PCAP Datei…</string>
-    <string name="invalid_pcap_file">Ungültige PCAP Datei</string>
-    <string name="unsupported_pcap_datalink">PCAP-Datei hat einen nicht unterstützten Datenlink</string>
-    <string name="pcap_file_not_exists">Die angegebene PCAP-Datei existiert nicht</string>
+    <string name="pcap_load_success">Capture-Datei geladen</string>
+    <string name="decryption_info_no_rule">Um diese Verbindung zu entschlüsseln, erstellen Sie eine Entschlüsselungsregel aus der linken Menü oder aus dem Kontextmenü in der Verbindungsliste</string>
+    <string name="pcap_read_error">Fehler beim Lesen der Erfassungsdatei. Überprüfen Sie das Protokoll für Details</string>
+    <string name="pcap_load_in_progress">Capture-Datei wird gerade geladen, bitte warten</string>
+    <string name="open_pcap_file">PCAP/Pcapng Datei öffnen…</string>
+    <string name="invalid_pcap_file">Ungültiges Erfassungsdateiformat</string>
+    <string name="unsupported_pcap_datalink">Die Datei hat einen nicht unterstützten Datenlink</string>
+    <string name="pcap_file_not_exists">Die angegebene Datei existiert nicht</string>
     <string name="root_capture_pcapd_start_failure">Fehler beim starten der Aufzeichnung. Stelle sicher dass PCAPdroid root Berechtigungen erhalten hat</string>
-    <string name="pcapdroid_trailer_notice">Um statt \"%1$s\" die tatsächlichen Apps anzuzeigen Stelle sicher dass die \"%2$s\" Option vor exportieren der PCAP Datei aktiviert wurde</string>
+    <string name="pcapdroid_trailer_notice">Um die tatsächlichen Anwendungen anstelle von „%1$s“ anzuzeigen, müssen Sie die Option „%2$s“ aktivieren, bevor Sie den Dump erstellen</string>
     <string name="tls_decryption_no_rules_notice">Nur Verbindungen die mit den vorkonfigurierten Regeln übereinstimmen werden entschlüsselt. Möchtest du jetzt eine Entschlüsselungsregel erstellen?</string>
     <string name="active_vpn_detected">Aktiver VPN festgestellt</string>
-    <string name="pcap_file_load_aborted">Laden der PCAP Datei abgebrochen</string>
+    <string name="pcap_file_load_aborted">Laden der Aufzeichnungsdatei abgebrochen</string>
     <string name="host_resolution_failed">Der Host %1$s konnte nicht gefunden werden</string>
     <string name="capture_interface_open_error">Die Aufnahmeschnittstelle konnte nicht geöffnet werden</string>
     <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher, dass das Gerät mit Magisk gerootet ist</string>
@@ -501,4 +497,39 @@
     <string name="cidr_val">CIDR: %1$s</string>
     <string name="dump_extensions">PCAPdroid-Erweiterungen</string>
     <string name="errno_econnaborted">Verbindung abgebrochen</string>
+    <string name="dump_extensions_how_to">Wie man die PCAPdroid Dump-Erweiterungen in Wireshark anzeigt</string>
+    <string name="malicious_connection_description">Eine Verbindung von App \"%1$s\" löste eine Malware-Erkennungsregel (%2$s) aus</string>
+    <string name="malicious_connections_notice">Blacklisten können falsche Positive enthalten. Achten Sie darauf, die IP-Adresse/Domain-Reputation online zu überprüfen. Sie können falsche Positive über die Malware Whitelist ausschließen</string>
+    <string name="geo_db_missing">Geolocation Datenbank fehlt</string>
+    <string name="country_rules_warning">Um landesbasierte Firewall-Regeln zu verwenden, laden Sie die Geolocation-Datenbank aus den PCAPdroid-Einstellungen herunter, andernfalls werden landesbasierte Regeln ineffektiv sein</string>
+    <string name="keylog_read_error">SSL keylog Lesefehler</string>
+    <string name="bytes_threshold">Bytes Schwelle</string>
+    <string name="select_the_pcap_file">Wählen Sie die PCAP/Pcapng-Datei</string>
+    <string name="select_the_keylog_file">Wählen Sie die SSL-Keylogdatei</string>
+    <string name="error_code_with_text">%1$s (Fehler %2$d)</string>
+    <string name="errno_epipe">Broken pipe</string>
+    <string name="errno_epipe_msg">Der Server hat die Verbindung während der Datenübertragung unerwartet geschlossen</string>
+    <string name="errno_enetdown">Netzwerk ist ausgefallen</string>
+    <string name="errno_enetdown_msg">Die Netzwerkschnittstelle ist ausgefallen oder es kann keine Verbindung zum Netzwerk hergestellt werden</string>
+    <string name="errno_enetunreach">Netzwerk ist nicht erreichbar</string>
+    <string name="errno_enetunreach_msg">Das System kann keine gültige Route zum Zielnetzwerk finden</string>
+    <string name="errno_enetreset">Netzwerk-Reset</string>
+    <string name="errno_enetreset_msg">Die Netzwerkverbindung wurde von einem Zwischengerät (z. B. Router oder Mobilfunkanbieter) zurückgesetzt</string>
+    <string name="errno_econnaborted_msg">Die Verbindung wurde abgebrochen, normalerweise aufgrund eines Netzwerkübergangs</string>
+    <string name="errno_econnreset">Verbindungsreset durch Peer</string>
+    <string name="errno_econnreset_msg">Der Server hat die Verbindung schlagartig geschlossen, in der Regel aufgrund eines Absturzes oder plötzlicher Abschaltung</string>
+    <string name="errno_etimedout">Zeitüberschreitung der Verbindung</string>
+    <string name="errno_etimedout_msg">Der Server hat zu lange gebraucht, um zu antworten, wahrscheinlich aufgrund von Netzwerkverzögerungen oder einem ausgelasteten Server</string>
+    <string name="errno_econnrefused">Verbindung wurde abgelehnt</string>
+    <string name="errno_econnrefused_msg">Der Server hat die Verbindung abgelehnt, was auf einen überlasteten oder nicht funktionierenden Server hinweisen kann</string>
+    <string name="errno_ehostunreach">Keine Route zum Host</string>
+    <string name="errno_ehostunreach_msg">Das System kann keine Route zum Ziel-Host finden</string>
+    <string name="dns_conn_info">DNS übersetzt einen Domainnamen in eine IP-Adresse. Die tatsächlichen Daten werden typischerweise über nachfolgende HTTPS/TLS-Verbindungen ausgetauscht</string>
+    <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">user Anleitung</a> für Details</string>
+    <string name="dump_extensions_summary">Erweitern Sie das Paket-Dump-Format mit zusätzlichen Metadaten, wie die App, die ein bestimmtes Paket gesendet / empfangen</string>
+    <string name="unsupported_pcap_file">Ununterstütztes Erfassungsdateiformat</string>
+    <string name="decrypt_pcap_file">PCAP/Pcapng Datei entschlüsseln…</string>
+    <string name="mitm_addon_update_available">Ein neues Update für das mitm AddOn ist verfügbar. Aktualisiere, um die aktuellsten Fehlerbehebungen zu installieren</string>
+    <string name="update_action">Aktualisierung</string>
+    <string name="ip_address_or_cidr">IP-Adresse / CIDR</string>
 </resources>
