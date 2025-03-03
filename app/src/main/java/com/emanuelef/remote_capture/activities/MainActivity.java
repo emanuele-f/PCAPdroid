@@ -165,7 +165,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             finish();
             return;
         } else {
-            if (appver < 73)
+            if (appver < 79)
                 showWhatsNew();
 
             Prefs.refreshAppVersion(mPrefs);
@@ -297,12 +297,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         new AlertDialog.Builder(this)
                 .setTitle(R.string.whats_new)
                 .setMessage(
-                        "- Select multiple target apps\n" +
-                        "- Button to copy the connections payload\n" +
-                        "- Android 14 support\n" +
-                        "- Integrations to run with Tor and DNSCrypt\n" +
-                        "- mitmproxy 10.1.6 and Doze fix\n" +
-                        "- Use your own mitmproxy addons (experimental)\n"
+                        "- Android 15 support with edge-to-edge UI\n" +
+                        (PCAPdroid.getInstance().isUsharkAvailable() ?
+                                "- Decrypt PCAP/Pcapng files (Wireshark integration)\n" : "") +
+                        "- New firewall rules: block by country and by CIDR\n" +
+                        "- Add support for PCAPdroid extensions in Pcapng\n" +
+                        "- Reduced RAM usage of malware blacklists\n"
                 )
                 .setNeutralButton(R.string.ok, (dialogInterface, i) -> {})
                 .show();
