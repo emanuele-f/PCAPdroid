@@ -2,6 +2,20 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.0] - 2025-03-03
+- Android 15 support with edge-to-edge UI
+- Decrypt TLS traffic in PCAP/Pcapng files (Wireshark integration)
+- New firewall rules: block by country and by CIDR
+- Add support for PCAPdroid extensions in Pcapng
+- Reduce blacklists RAM usage by ~25 MB and increase limit to 1500k rules
+- Show detailed error information for failed connections in VPN mode
+- New UI filter to show connections bigger than a given bytes threshold
+- Add Azerbaijani translation (Jamil Farajov)
+- Add Tamil translation (credits: தமிழ்நேரம்)
+- Update nDPI to 4.12 and reduce library size by 66%
+- Enable r8 minify to reduce apk size
+- Update to Java 17 and enable desugaring to support older devices
+
 ## [1.7.5] - 2024-11-09
 - Fix root capture stall when target apps are set
 
