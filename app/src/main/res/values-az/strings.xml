@@ -28,9 +28,6 @@
     <string name="system_default">Sistem standartı</string>
     <string name="no_activity_file_selection">Fayl seçimi edəcək tətbiq tapılmadı</string>
     <string name="file_saved_with_name">Fayl %1$s olaraq yadda saxlanıldı</string>
-    <string name="theme_light">Açıq</string>
-    <string name="theme_dark">Tünd</string>
-    <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="enable_socks5_proxy_summary">Bütün TCP bağlantıları SOCKS5 proksisinə yönləndir</string>
     <string name="socks5_auth">SOCKS5 şəxsiyyət doğrulaması</string>
@@ -218,7 +215,6 @@
     <string name="unknown_app_info">\"Bilinməyən\", təyin olunmayan bağlantıları müəyyənləşdirir</string>
     <string name="packets_dropped">Dayandırılan paketlər</string>
     <string name="capture_prefs">İzlə (yaxala)</string>
-    <string name="trailer_how_to">Treyler məlumatları Wireshark-da necə görünəcək</string>
     <string name="pending_transaction">Bu xüsusiyyətdən istifadə etmək üçün zəhmət olmasa prossesə davam edin</string>
     <string name="deny">Rədd et</string>
     <string name="ctrl_consent_denied">PCAPdroid: kontrol etmə istəyi rədd edildi</string>
@@ -230,7 +226,6 @@
     <string name="edit_filter">Filterə düzəliş et</string>
     <string name="hidden_connections_rules">Gizli bağlantı qaydaları</string>
     <string name="list_is_empty">Siyahı boşdur</string>
-    <string name="malicious_connection_app">Zərərli bağlantı aşkarlandı (%1$s)</string>
     <string name="show_only_malicious">Zərərli bağlantılar</string>
     <string name="show_only_cleartext">Şifrəsiz mətnli bağlantılar</string>
     <string name="reset">Sıfırla</string>
@@ -374,7 +369,6 @@
     <string name="pcap_read_error">PCAP oxuma xətası</string>
     <string name="pcap_file_load_aborted">PCAP faylının yüklənməsi ləğv edildi</string>
     <string name="host_resolution_failed">%1$s host ünvanı problemini həll etmək mümkün olmadı</string>
-    <string name="live_capture">Canlı izləmə</string>
     <string name="active_vpn_detected">Aktiv VPN aşkarlandı</string>
     <string name="redirected">yenidən yönləndirmək</string>
     <string name="connection_redirected_port_map">Bu bağlantı port yönləndirməsinə görə yenidən yönləndirilmişdir</string>
@@ -395,9 +389,7 @@
     <string name="waiting_for_vpn_disconnect">Aktiv VPN bağlantısının kəsilməsi gözlənilir…</string>
     <string name="no_dump">Dempinq yoxdur</string>
     <string name="tot_connections">Toplam bağlantılar</string>
-    <string name="pcapdroid_trailer_summary">Əlavə məlumatların (tətbiq adı kimi) olduğu treyler dempinq olunmuş paketlərə əlavə olunacaqdır</string>
     <string name="notification_msg">%1$s izlənildi, %2$s bağlantılar</string>
-    <string name="pcapdroid_trailer">PCAPdroid treyleri</string>
     <string name="ctrl_consent">Bir tətbiq sizin cihazınızın trafikini izləmək (yaxalamaq) istəyir\nƏmin deyilsinizsə, rədd edin</string>
     <string name="allow">İcazə ver</string>
     <string name="ctrl_consent_allowed">PCAPdroid: kontrol etmə istəyinə icazə verildi</string>

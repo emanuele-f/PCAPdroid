@@ -45,7 +45,6 @@
     <string name="app_unblocked">%1$s பயன்பாடு தடைசெய்யப்பட்டுள்ளது</string>
     <string name="sort_by">வரிசைப்படுத்தவும்</string>
     <string name="invalid_license">தவறான உரிமம்</string>
-    <string name="live_capture">நேரடி பிடிப்பு</string>
     <string name="mitm_doze_notice">பேட்டரி உகப்பாக்கம் MITM துணை நிரலில் தலையிடக்கூடும்</string>
     <string name="whats_new">புதியது என்ன</string>
     <string name="tot_connections">மொத்த இணைப்புகள்</string>
@@ -92,9 +91,6 @@
     <string name="system_default">கணினி இயல்புநிலை</string>
     <string name="no_activity_file_selection">கோப்பு தேர்வைக் கையாள எந்த பயன்பாடும் கிடைக்கவில்லை</string>
     <string name="file_saved_with_name">கோப்பு \"%1$s \\ என சேமிக்கப்பட்டது</string>
-    <string name="theme_light">ஒளி</string>
-    <string name="theme_dark">இருண்ட</string>
-    <string name="app_theme">கருப்பொருள்</string>
     <string name="socks5_proxy">சாக்ச் 5</string>
     <string name="socks5_redirection">SOCKS5 திருப்பிவிடுதல்</string>
     <string name="socks5_summary">ஒரு சாக்ச் 5 ப்ராக்சிக்கு திருப்பிவிடுவதை உள்ளமைக்கவும்</string>
@@ -134,9 +130,6 @@
     <string name="unknown_app_info">\"தெரியாதது\" பயன்பாட்டை தீர்மானிக்க முடியாத இணைப்புகளைக் குறிக்கிறது</string>
     <string name="packets_dropped">பாக்கெட்டுகள் கைவிடப்பட்டன</string>
     <string name="capture_prefs">பிடிப்பு</string>
-    <string name="pcapdroid_trailer">Pcapdroid டிரெய்லர்</string>
-    <string name="pcapdroid_trailer_summary">கூடுதல் மெட்டாடேட்டாவைக் கொண்ட ஒரு டிரெய்லர் (பயன்பாட்டு பெயர் போன்றவை) கொட்டப்பட்ட பாக்கெட்டுகளில் சேர்க்கப்படும்</string>
-    <string name="trailer_how_to">டிரெய்லர் தரவை வயர்சார்க்கில் காண்பிப்பது எப்படி</string>
     <string name="pending_transaction">இந்த அம்சத்தை மீட்டெடுக்க உங்கள் பரிவர்த்தனையை முடிக்கவும்</string>
     <string name="ctrl_consent">ஒரு பயன்பாடு உங்கள் சாதன போக்குவரத்தை கைப்பற்ற விரும்புகிறது.\n உங்களுக்கு உறுதியாக தெரியவில்லை என்றால் அதை மறுக்கவும்</string>
     <string name="deny">மறுக்கவும்</string>
@@ -152,7 +145,6 @@
     <string name="edit_list">பட்டியலைத் திருத்து</string>
     <string name="hidden_connections_rules">மறைக்கப்பட்ட இணைப்புகள் விதிகள்</string>
     <string name="list_is_empty">பட்டியல் காலியாக உள்ளது</string>
-    <string name="malicious_connection_app">தீங்கிழைக்கும் இணைப்பு கண்டறியப்பட்டது (%1$s)</string>
     <string name="show_only_malicious">தீங்கிழைக்கும் இணைப்புகள்</string>
     <string name="show_only_cleartext">ClearText இணைப்புகள்</string>
     <string name="malware_detection">தீம்பொருள் கண்டறிதல்</string>
