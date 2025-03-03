@@ -44,7 +44,8 @@ public class IABActivity extends BaseActivity implements PlayBilling.PurchaseRea
         super.onCreate(savedInstanceState);
         setTitle(R.string.paid_features);
         displayBackAction();
-        setContentView(R.layout.simple_list);
+        setContentView(R.layout.simple_list_activity);
+        findViewById(R.id.simple_list).setFitsSystemWindows(true);
 
         mIab = new PlayBilling(this);
         mListEmpty = findViewById(R.id.list_empty);
