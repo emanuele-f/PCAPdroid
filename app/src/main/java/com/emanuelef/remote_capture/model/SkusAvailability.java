@@ -49,7 +49,7 @@ public class SkusAvailability implements Serializable {
 
         try {
             obj = gson.fromJson(serialized, SkusAvailability.class);
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | IllegalArgumentException e) {
             Log.e(TAG, "SkusAvailability JSON load error: " + e);
         }
 
