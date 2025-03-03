@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Billing;
@@ -31,7 +32,6 @@ import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.Utils;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class Prefs {
@@ -72,11 +72,10 @@ public class Prefs {
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_IP_MODE = "ip_mode";
     public static final String PREF_APP_LANGUAGE = "app_language";
-    public static final String PREF_APP_THEME = "app_theme";
     public static final String PREF_ROOT_CAPTURE = "root_capture";
     public static final String PREF_VISUALIZATION_MASK = "vis_mask";
     public static final String PREF_MALWARE_WHITELIST = "malware_whitelist";
-    public static final String PREF_PCAPDROID_TRAILER = "pcapdroid_trailer";
+    public static final String PREF_DUMP_EXTENSIONS = "dump_extensions";
     public static final String PREF_BLOCKLIST = "bl";
     public static final String PREF_FIREWALL_WHITELIST_MODE = "firewall_wl_mode";
     public static final String PREF_FIREWALL_WHITELIST_INIT_VER = "firewall_wl_init";
@@ -206,7 +205,7 @@ public class Prefs {
     public static BlockQuicMode getBlockQuicMode(SharedPreferences p) { return(getBlockQuicMode(p.getString(PREF_BLOCK_QUIC, BLOCK_QUIC_MODE_DEFAULT))); }
     public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
-    public static boolean isPcapdroidTrailerEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PCAPDROID_TRAILER, false)); }
+    public static boolean isPcapdroidMetadataEnabled(SharedPreferences p) { return(p.getBoolean(PREF_DUMP_EXTENSIONS, false)); }
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }
     public static boolean isMalwareDetectionEnabled(Context ctx, SharedPreferences p) {
         return(Billing.newInstance(ctx).isPurchased(Billing.MALWARE_DETECTION_SKU)
@@ -251,13 +250,13 @@ public class Prefs {
             String s = p.getString(key, "");
 
             if (!s.isEmpty()) {
-                rv = new HashSet<>();
+                rv = new ArraySet<>();
                 rv.add(s);
             }
         }
 
         if (rv == null)
-            rv = new HashSet<>();
+            rv = new ArraySet<>();
 
         return rv;
     }
@@ -282,7 +281,7 @@ public class Prefs {
                 "\nBlockNewApps: " + blockNewApps(p) +
                 "\nTargetApps: " + getAppFilter(p) +
                 "\nIpMode: " + getIPMode(p) +
-                "\nTrailer: " + isPcapdroidTrailerEnabled(p) +
+                "\nDumpExtensions: " + isPcapdroidMetadataEnabled(p) +
                 "\nStartAtBoot: " + startAtBoot(p);
     }
 }

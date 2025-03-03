@@ -22,8 +22,12 @@ package com.emanuelef.remote_capture.views;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -73,6 +77,27 @@ public class EmptyRecyclerView extends RecyclerView {
         ItemAnimator animator = getItemAnimator();
         if(animator instanceof SimpleItemAnimator)
             ((SimpleItemAnimator)animator).setSupportsChangeAnimations(false);
+
+        ViewCompat.setOnApplyWindowInsetsListener(this, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
+
+            boolean isImeOpen = windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0;
+
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.topMargin = insets.top;
+            mlp.bottomMargin = isImeOpen ? insets.bottom : 0;
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            // when IME is open, apply as a margin for proper resizing
+            // when not open, apply as a padding for an optimal edge-to-edge experience
+            v.setPadding(0, 0, 0, !isImeOpen ? insets.bottom : 0);
+
+            return windowInsets;
+        });
+        setClipToPadding(false);
     }
 
     private void initEmptyView() {
@@ -106,7 +131,7 @@ public class EmptyRecyclerView extends RecyclerView {
 
     @Override
     public void setAdapter(Adapter adapter) {
-        Adapter oldAdapter = getAdapter();
+        var oldAdapter = getAdapter();
         super.setAdapter(adapter);
 
         if (oldAdapter != null) {
@@ -120,8 +145,21 @@ public class EmptyRecyclerView extends RecyclerView {
         initEmptyView();
     }
 
-    public void setEmptyView(View view) {
-        this.mEmptyView = view;
+    public void setEmptyView(@Nullable View view) {
+        if (mEmptyView != null)
+            mEmptyView.setOnApplyWindowInsetsListener(null);
+
+        mEmptyView = view;
         initEmptyView();
+
+        if (view != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                        WindowInsetsCompat.Type.displayCutout());
+                v.setPadding(0, insets.top, 0, 0);
+
+                return windowInsets;
+            });
+        }
     }
 }

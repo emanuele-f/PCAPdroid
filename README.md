@@ -71,13 +71,15 @@ Some features of PCAPdroid can be integrated into a third-party app to provide p
 - For rooted devices, the [pcapd daemon](https://github.com/emanuele-f/PCAPdroid/tree/master/app/src/main/jni/pcapd) can be directly integrated into your APK to capture network packets.
 - For all the devices, PCAPdroid [exposes an API](https://github.com/emanuele-f/PCAPdroid/blob/master/docs/app_api.md) to control the packet capture and send the captured packets via UDP to your app. This requires to install PCAPdroid along with your app.
 
-## Third Party
+## Open Source
 
-- [zdtun](https://github.com/emanuele-f/zdtun): TCP/UDP/ICMP connections proxy
-- [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, used to extract the connections metadata
-- [mitmproxy](https://github.com/mitmproxy/mitmproxy): a local proxy used to perform TLS decryption
+PCAPdroid is powered by open source technologies.
 
-For the complete list of third party libraries and the corresponding licenses check out the "About" page in the app.
+- [nDPI](https://github.com/ntop/nDPI): deep packet inspection library, provides the connections metadata
+- [mitmproxy](https://github.com/mitmproxy/mitmproxy): a local proxy for the TLS decryption
+- [zdtun](https://github.com/emanuele-f/zdtun): minimal TCP/IP stack for the non-root capture
+
+For the complete list of third party libraries check out the "About" page in the app.
 
 ## Building
 

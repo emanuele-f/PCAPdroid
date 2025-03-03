@@ -27,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import com.emanuelef.remote_capture.Geolocation;
 import com.emanuelef.remote_capture.Log;
@@ -38,7 +37,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GeoipSettings extends PreferenceFragmentCompat {
+public class GeoipSettings extends SettingsSubFragment {
     private static final String TAG = "GeoipSettings";
     private Preference mStatus;
     private Preference mDelete;

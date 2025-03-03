@@ -26,7 +26,7 @@
                 android:visible="false" />
             <item
                 android:id="@+id/add_ip"
-                android:title="@string/ip_address"
+                android:title="@string/ip_address_or_cidr"
                 android:visible="false" />
             <item
                 android:id="@+id/add_proto"

@@ -29,12 +29,15 @@ import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.Settings;
 import android.text.InputType;
+import android.util.AttributeSet;
+import android.view.View;
 
-import androidx.annotation.Nullable;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -58,6 +61,7 @@ import com.emanuelef.remote_capture.activities.MitmSetupWizard;
 import com.emanuelef.remote_capture.fragments.prefs.DnsSettings;
 import com.emanuelef.remote_capture.fragments.prefs.GeoipSettings;
 import com.emanuelef.remote_capture.fragments.prefs.Socks5Settings;
+import com.emanuelef.remote_capture.interfaces.FragmentViewCreatedListener;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 
@@ -66,24 +70,47 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, FragmentManager.OnBackStackChangedListener {
+public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback,
+        FragmentManager.OnBackStackChangedListener,
+        FragmentViewCreatedListener {
     private static final String TAG = "SettingsActivity";
     private static final String ACTION_LANG_RESTART = "lang_restart";
     public static final String TARGET_PREF_EXTRA = "target_pref";
+    private WindowInsetsCompat mInsets = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.title_activity_settings); // note: setting via manifest does not honor custom locale
         displayBackAction();
-        setContentView(R.layout.settings_activity);
+        setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings_container, new SettingsFragment(), "root")
+                .replace(R.id.fragment, new SettingsFragment(), "root")
                 .commit();
 
         getSupportFragmentManager().addOnBackStackChangedListener(this);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@Nullable View parent, @NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
+        View view = super.onCreateView(parent, name, context, attrs);
+        if (view != null)
+            ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+                mInsets = windowInsets;
+                return windowInsets;
+            });
+
+        return view;
+    }
+
+    @Override
+    public void onFragmentViewCreated(@NonNull View view) {
+        // necessary, otherwise insets are not dispatched after fragment replace
+        if (mInsets != null)
+            ViewCompat.dispatchApplyWindowInsets(view, mInsets);
     }
 
     @Override
@@ -107,7 +134,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         if(targetFragment != null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.settings_container, targetFragment, pref.getKey())
+                    .replace(R.id.fragment, targetFragment, pref.getKey())
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                     .addToBackStack(pref.getKey())
                     .commit();
@@ -119,15 +146,20 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
     @Override
     public void onBackStackChanged() {
-        Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
-        if(f instanceof SettingsFragment)
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment);
+        if(f instanceof SettingsFragment) {
             setTitle(R.string.title_activity_settings);
+
+            var view = f.getView();
+            if ((mInsets != null) && (view != null))
+                ViewCompat.dispatchApplyWindowInsets(view, mInsets);
+        }
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
-        Fragment f = getSupportFragmentManager().findFragmentById(R.id.settings_container);
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment);
         if(f instanceof SettingsFragment) {
             Intent intent = getIntent();
 
@@ -160,16 +192,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private Preference mPortMapping;
         private Preference mMitmWizard;
         private SwitchPreference mMalwareDetectionEnabled;
-        private SwitchPreference mTrailerEnabled;
         private SwitchPreference mPcapngEnabled;
         private SwitchPreference mRestartOnDisconnect;
         private Billing mIab;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
-
-        private final ActivityResultLauncher<String> requestPermissionLauncher =
-                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->
-                        Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied")));
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -207,6 +234,19 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 if(target_pref != null)
                     scrollToPreference(target_pref);
             }
+        }
+
+        @Override
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+
+            ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                        WindowInsetsCompat.Type.displayCutout());
+                v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+
+                return WindowInsetsCompat.CONSUMED;
+            });
         }
 
         @Override
@@ -306,9 +346,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 startActivity(intent);
                 return true;
             });
-
-            mTrailerEnabled = requirePreference("pcapdroid_trailer");
-            mTrailerEnabled.setVisible(!isPcapngEnabled()); // TODO support
         }
 
         private void setupSecurityPrefs() {
@@ -371,7 +408,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                         return true;
                     }
 
-                    mTrailerEnabled.setVisible(!mPcapngEnabled.isChecked());
                     return false;
                 }));
                 if(!mIab.isPurchased(Billing.PCAPNG_SKU))
@@ -447,13 +483,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         private void setupOtherPrefs() {
             setupAppLanguagePref();
-
-            DropDownPreference appTheme = requirePreference(Prefs.PREF_APP_THEME);
-            appTheme.setOnPreferenceChangeListener((preference, newValue) -> {
-                Utils.setAppTheme(newValue.toString());
-
-                return true;
-            });
 
             mPortMapping = requirePreference(Prefs.PREF_PORT_MAPPING);
             mPortMapping.setOnPreferenceClickListener(preference -> {

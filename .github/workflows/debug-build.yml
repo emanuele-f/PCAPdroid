@@ -17,4 +17,4 @@ jobs:
         distribution: 'temurin'
         
     - run: ./gradlew test
-    - run: ./gradlew assembleDebug -PdoNotStrip
+    - run: ./gradlew assembleStandardDebug -PdoNotStrip

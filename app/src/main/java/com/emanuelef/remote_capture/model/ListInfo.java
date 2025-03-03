@@ -113,7 +113,7 @@ public class ListInfo {
             case MALWARE_WHITELIST:
             case DECRYPTION_LIST:
             case BLOCKLIST:
-                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST));
+                return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST, RuleType.COUNTRY));
             case FIREWALL_WHITELIST:
                 return new ArraySet<>(Collections.singletonList(RuleType.APP));
         }
@@ -141,7 +141,7 @@ public class ListInfo {
         }
     }
 
-    public EditListFragment newFragment() {
-        return EditListFragment.newInstance(mType);
+    public EditListFragment newFragment(boolean fitsSystemWindows) {
+        return EditListFragment.newInstance(mType, fitsSystemWindows);
     }
 }

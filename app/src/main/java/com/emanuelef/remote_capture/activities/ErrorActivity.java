@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
@@ -38,18 +37,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
-import com.emanuelef.remote_capture.BuildConfig;
+import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
-import cat.ereza.customactivityoncrash.R;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public final class ErrorActivity extends AppCompatActivity {
@@ -57,7 +52,21 @@ public final class ErrorActivity extends AppCompatActivity {
     @SuppressLint("PrivateResource")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Utils.enableEdgeToEdge(this);
         super.onCreate(savedInstanceState);
+
+        View toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            // Fix padding of content below the toolbar
+            ViewCompat.setOnApplyWindowInsetsListener(toolbar, (view, insets) -> {
+                int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars() |
+                        WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()).top;
+                if (topInset > 0)
+                    view.setPadding(0, topInset, 0, 0); // Shift the toolbar down if needed
+
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
 
         //This is needed to avoid a crash if the developer has not specified
         //an app-level theme that extends Theme.AppCompat

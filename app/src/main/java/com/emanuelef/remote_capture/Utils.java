@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -75,14 +75,18 @@ import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -92,18 +96,25 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.text.HtmlCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.PreferenceManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.google.android.material.tabs.TabLayout;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -141,6 +152,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -365,15 +377,6 @@ public class Utils {
         config.setLocale(locale);
 
         return config;
-    }
-
-    public static void setAppTheme(String theme) {
-        if(theme.equals("light"))
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        else if(theme.equals("dark"))
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        else
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
     }
 
     public static String proto2str(int proto) {
@@ -692,8 +695,13 @@ public class Utils {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
-    public static void showHelpDialog(Context context, int id){
+    public static void showHelpDialog(Context context, int id) {
         String msg = context.getResources().getString(id);
+        showHelpDialog(context, msg);
+    }
+
+    // NOTE: to get clickable links, retrieve the msg via Utils.getText()
+    public static void showHelpDialog(Context context, CharSequence msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.hint);
         builder.setMessage(msg);
@@ -703,6 +711,10 @@ public class Utils {
 
         AlertDialog alert = builder.create();
         alert.show();
+
+        TextView tv = alert.findViewById(android.R.id.message);
+        if (tv != null)
+            tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     public static String getUniqueFileName(Context context, String ext) {
@@ -1372,7 +1384,9 @@ public class Utils {
         return unallocated + runtime.freeMemory();
     }
 
+    @SuppressWarnings("deprecation")
     public static String trimlvl2str(int lvl) {
+        // NOTE: most trim levels are not available anymore since API 34
         switch (lvl) {
             case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN:         return "TRIM_MEMORY_UI_HIDDEN";
             case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE:  return "TRIM_MEMORY_RUNNING_MODERATE";
@@ -1458,7 +1472,8 @@ public class Utils {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
         boolean rooted = Utils.isRootAvailable();
 
-        return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() + "\n" +
+        return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() +
+                (!PCAPdroid.getInstance().isUsharkAvailable() ? " (withoutUshark)" : "") + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
                 "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
@@ -1643,6 +1658,28 @@ public class Utils {
         return isValidIPv6(s) && !validateIpv4Address(s);
     }
 
+    public static boolean validateCidr(String value) {
+        int slash = value.indexOf('/');
+        if (slash < 0)
+            return validateIpAddress(value);
+
+        int prefix;
+        try {
+            prefix = Integer.parseInt(value.substring(slash + 1));
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+
+        String ip_addr = value.substring(0, slash);
+        if (!validateIpAddress(ip_addr))
+            return false;
+
+        boolean is_v6 = (ip_addr.indexOf(':') >= 0);
+        return (prefix >= 0) &&
+                ((is_v6 && (prefix <= 128)) ||
+                (!is_v6 && (prefix <= 32)));
+    }
+
     // rough validation
     public static boolean validateHost(String host) {
         int len = host.length();
@@ -1781,6 +1818,83 @@ public class Utils {
             return PrivateDnsMode.DISABLED;
     }
 
+    /// Enables edge-to-edge. Must be called in all the activities before super.onCreate
+    // https://medium.com/androiddevelopers/insets-handling-tips-for-android-15s-edge-to-edge-enforcement-872774e8839b
+    public static void enableEdgeToEdge(ComponentActivity activity) {
+        EdgeToEdge.enable(activity);
+
+        // use light icons even with the light theme
+        Window window = activity.getWindow();
+        WindowCompat.getInsetsController(window, window.getDecorView())
+                .setAppearanceLightStatusBars(false);
+    }
+
+    /// Fixes dispatching of insets to ViewPager2 children
+    // https://issuetracker.google.com/issues/145617093#comment10
+    public static void fixViewPager2Insets(ViewPager2 pager) {
+        AtomicReference<WindowInsetsCompat> lastInsets = new AtomicReference<>();
+
+        ViewCompat.setOnApplyWindowInsetsListener(pager, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            // in horizontal orientation, ensure that pager content stays visible
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            var remainingInsets = windowInsets.inset(insets.left, insets.top, insets.right, 0);
+            lastInsets.set(remainingInsets);
+
+            return remainingInsets;
+        });
+
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                // NOTE: this is not very reliable, but postDelayed is necessary to let rendering complete
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    View view = pager.getChildAt(0);
+                    WindowInsetsCompat insets = lastInsets.get();
+
+                    if ((view != null) && (insets != null) && !insets.isConsumed())
+                        // manually dispatch to children
+                        ViewCompat.dispatchApplyWindowInsets(view, insets);
+                }, 5);
+            }
+        });
+    }
+
+    public static void fixListviewInsetsBottom(ListView lv) {
+        ViewCompat.setOnApplyWindowInsetsListener(lv, (v, windowInsets) -> {
+            var insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(0, 0, 0, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        lv.setClipToPadding(false);
+    }
+
+    // to be used with tabs_activity_fixed, having tabMode "scrollable"
+    public static void fixScrollableTabLayoutInsets(TabLayout tl) {
+        ViewCompat.setOnApplyWindowInsetsListener(tl, (v, windowInsets) -> {
+            var insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+
+            return windowInsets;
+        });
+    }
+
     public static @NonNull Enumeration<NetworkInterface> getNetworkInterfaces() {
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
@@ -1801,6 +1915,23 @@ public class Utils {
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public static boolean isPcapng(Context ctx, Uri uri) {
+        try (InputStream in_stream = ctx.getContentResolver().openInputStream(uri)) {
+            try (DataInputStream data_in = new DataInputStream(in_stream)) {
+                int block_type = data_in.readInt();
+                data_in.skipBytes(4);
+                int magic = data_in.readInt();
+
+                return ((block_type == 0x0A0D0D0A) &&
+                        ((magic == 0x1a2b3c4d) || (magic == 0x4d3c2b1a)));
+            }
+        } catch (IOException e) {
+            Log.w(TAG, "Reading " + uri + " failed: " + e);
+        }
+
+        return false;
     }
 
     public static int getMajorVersion(String ver) {

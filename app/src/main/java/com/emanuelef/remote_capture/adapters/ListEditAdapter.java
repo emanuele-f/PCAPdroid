@@ -38,6 +38,7 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.MatchList;
+import com.haipq.android.flagkit.FlagImageView;
 
 import java.util.Iterator;
 
@@ -65,15 +66,29 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
 
         MatchList.Rule rule = getItem(position);
         ((TextView)convertView.findViewById(R.id.item_label)).setText(rule.getLabel());
-        ImageView icon = convertView.findViewById(R.id.icon);
 
-        if(rule.getType() == MatchList.RuleType.APP) {
-            String package_name = (String)rule.getValue();
-            AppDescriptor app = mApps.getAppByPackage(package_name, 0);
-            Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
-            icon.setImageDrawable(drawable);
-        } else
-            icon.setImageDrawable(mDefaultIcon);
+        ImageView icon = convertView.findViewById(R.id.icon);
+        FlagImageView country_flag = convertView.findViewById(R.id.country_flag);
+        boolean showFlag = false;
+
+        if (rule.getType() == MatchList.RuleType.COUNTRY) {
+            // try to load the country flag, fall back to default icon on failure
+            country_flag.setCountryCode((String) rule.getValue());
+            showFlag = (country_flag.getDrawable() != null);
+        }
+
+        icon.setVisibility(showFlag ? View.GONE : View.VISIBLE);
+        country_flag.setVisibility(!showFlag ? View.GONE : View.VISIBLE);
+
+        if (!showFlag) {
+            if (rule.getType() == MatchList.RuleType.APP) {
+                String package_name = (String) rule.getValue();
+                AppDescriptor app = mApps.getAppByPackage(package_name, 0);
+                Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
+                icon.setImageDrawable(drawable);
+            } else
+                icon.setImageDrawable(mDefaultIcon);
+        }
 
         return convertView;
     }

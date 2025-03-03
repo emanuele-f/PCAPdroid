@@ -77,9 +77,6 @@
     <string name="lang_english">Inglés</string>
     <string name="system_default">Predeterminado del sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como administrador de archivos</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_dark">Oscuro</string>
-    <string name="app_theme">Tema</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="proxy_port">Puerto proxy</string>
     <string name="root_capture">Capturar como root</string>
@@ -107,9 +104,6 @@
     <string name="unknown_app_info">\"Desconocido\" marca las conexiones cuya aplicación no se pudo determinar</string>
     <string name="packets_dropped">Paquetes perdidos</string>
     <string name="capture_prefs">Captura</string>
-    <string name="pcapdroid_trailer">Tráiler PCAPdroid</string>
-    <string name="pcapdroid_trailer_summary">Se añadirá un tráiler con metadatos adicionales (como el nombre de la aplicación) a los paquetes volcados</string>
-    <string name="trailer_how_to">Cómo mostrar los datos del remolque en Wireshark</string>
     <string name="pending_transaction">Por favor, completa tu transacción para canjear esta función</string>
     <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.
 \nRecházala si no estás seguro</string>
@@ -126,7 +120,6 @@
     <string name="edit_list">Editar lista</string>
     <string name="hidden_connections_rules">Reglas de conexiones ocultas</string>
     <string name="list_is_empty">La lista está vacía</string>
-    <string name="malicious_connection_app">Conexión maliciosa detectada (%1$s)</string>
     <string name="show_only_malicious">Conexiones maliciosas</string>
     <string name="security">Securidad</string>
     <string name="malware_detection">Detección de malware</string>

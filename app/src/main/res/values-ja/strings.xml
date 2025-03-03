@@ -78,9 +78,6 @@
     <string name="system_default">システム標準</string>
     <string name="no_activity_file_selection">ファイル選択を処理するアプリが見つかりません</string>
     <string name="file_saved_with_name">「%1$s」としてファイルを保存しました</string>
-    <string name="theme_light">ライト</string>
-    <string name="theme_dark">ダーク</string>
-    <string name="app_theme">テーマ</string>
     <string name="socks5_proxy">SOCKS5 プロキシを有効にする</string>
     <string name="enable_socks5_proxy_summary">すべての TCP 接続を指定した SOCKS5 プロキシにリダイレクトします</string>
     <string name="proxy_port">プロキシ ポート</string>
@@ -110,9 +107,6 @@
     <string name="unknown_app_info">どのアプリの接続かわからない場合に「不明」と表示されます</string>
     <string name="packets_dropped">ドロップ済みパケット</string>
     <string name="capture_prefs">キャプチャ</string>
-    <string name="pcapdroid_trailer">PCAPdroid トレーラー</string>
-    <string name="pcapdroid_trailer_summary">追加のメタデータ (アプリ名など) を含んだトレーラーをダンプされたパケットに追加します</string>
-    <string name="trailer_how_to">Wireshark で流れているデータを表示する方法</string>
     <string name="pending_transaction">決済を完了させて機能を回復させてください</string>
     <string name="ctrl_consent">アプリはデバイスのトラフィックをキャプチャしようとしています。よくわからない場合は拒否してください</string>
     <string name="deny">拒否</string>
@@ -128,7 +122,6 @@
     <string name="edit_list">リストを編集</string>
     <string name="hidden_connections_rules">隠された接続ルール</string>
     <string name="list_is_empty">リストは空です</string>
-    <string name="malicious_connection_app">悪意ある接続の検出 (%1$s)</string>
     <string name="show_only_malicious">悪意ある接続</string>
     <string name="security">セキュリティ</string>
     <string name="malware_detection">マルウェアの検出</string>

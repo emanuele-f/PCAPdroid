@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class CaptureSettings implements Serializable {
     public Prefs.DumpMode dump_mode;
-    public Set<String> app_filter;
+    public HashSet<String> app_filter;
     public String collector_address;
     public int collector_port;
     public int http_server_port;
@@ -29,7 +29,7 @@ public class CaptureSettings implements Serializable {
     public Prefs.IpMode ip_mode;
     public String input_pcap_path;
     public boolean root_capture;
-    public boolean pcapdroid_trailer;
+    public boolean dump_extensions;
     public boolean full_payload;
     public Prefs.BlockQuicMode block_quic_mode;
     public boolean auto_block_private_dns;
@@ -44,7 +44,7 @@ public class CaptureSettings implements Serializable {
 
     public CaptureSettings(Context ctx, SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
-        app_filter = Prefs.getAppFilter(prefs);
+        app_filter = new HashSet<>(Prefs.getAppFilter(prefs));
         collector_address = Prefs.getCollectorIp(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
@@ -55,7 +55,7 @@ public class CaptureSettings implements Serializable {
         socks5_password = Prefs.isSocks5AuthEnabled(prefs) ? Prefs.getSocks5Password(prefs) : "";
         ip_mode = Prefs.getIPMode(prefs);
         root_capture = Prefs.isRootCaptureEnabled(prefs);
-        pcapdroid_trailer = Prefs.isPcapdroidTrailerEnabled(prefs);
+        dump_extensions = Prefs.isPcapdroidMetadataEnabled(prefs);
         capture_interface = Prefs.getCaptureInterface(prefs);
         tls_decryption = Prefs.getTlsDecryptionEnabled(prefs);
         full_payload = Prefs.getFullPayloadMode(prefs);
@@ -78,7 +78,8 @@ public class CaptureSettings implements Serializable {
         socks5_password = getString(intent, Prefs.PREF_SOCKS5_PASSWORD_KEY, "");
         ip_mode = Prefs.getIPMode(getString(intent, Prefs.PREF_IP_MODE, Prefs.IP_MODE_DEFAULT));
         root_capture = getBool(intent, Prefs.PREF_ROOT_CAPTURE, false);
-        pcapdroid_trailer = getBool(intent, Prefs.PREF_PCAPDROID_TRAILER, false);
+        dump_extensions = getBool(intent, Prefs.PREF_DUMP_EXTENSIONS, false) ||
+                getBool(intent, "pcapdroid_trailer", false) /* deprecated */;
         capture_interface = getString(intent, Prefs.PREF_CAPTURE_INTERFACE, "@inet");
         pcap_uri = getString(intent, "pcap_uri", "");
         pcap_name = getString(intent, "pcap_name", "");

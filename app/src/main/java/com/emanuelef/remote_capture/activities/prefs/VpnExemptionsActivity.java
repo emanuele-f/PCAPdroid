@@ -26,6 +26,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Log;
@@ -35,7 +36,6 @@ import com.emanuelef.remote_capture.fragments.AppsToggles;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class VpnExemptionsActivity extends BaseActivity {
@@ -75,7 +75,7 @@ public class VpnExemptionsActivity extends BaseActivity {
 
     public static class VpnExceptionsFragment extends AppsToggles {
         private static final String TAG = "VpnExceptions";
-        private final Set<String> mExcludedApps = new HashSet<>();
+        private final Set<String> mExcludedApps = new ArraySet<>();
         private @Nullable SharedPreferences mPrefs;
 
         @Override

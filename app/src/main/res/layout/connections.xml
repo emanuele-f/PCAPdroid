@@ -7,17 +7,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/old_connections_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:textSize="15sp"
+            android:textStyle="italic"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="74 older connections not shown" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/active_filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginVertical="4dp"
+            android:visibility="gone"
             app:singleSelection="true">
         </com.google.android.material.chip.ChipGroup>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/size_slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            app:thumbColor="@color/colorAccent"
+            app:trackColorActive="@color/colorAccent"
+            app:trackColorInactive="@color/colorAccentLight"
+            app:labelBehavior="visible"
+            android:valueFrom="0"
+            android:valueTo="1024"
+            android:stepSize="1"
+            android:visibility="gone"
+            tools:value="100"
+            tools:valueTo="1024"/>
 
         <TextView
             android:id="@+id/no_connections"
@@ -39,17 +68,6 @@
             android:scrollbars="vertical"
             android:scrollbarStyle="outsideOverlay"
             android:fillViewport="true" />
-
-        <TextView
-            android:id="@+id/old_connections_notice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:textSize="15sp"
-            android:textStyle="italic"
-            android:visibility="gone"
-            tools:visibility="visible"
-            tools:text="74 older connections not shown" />
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

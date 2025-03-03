@@ -76,9 +76,6 @@
     <string name="permissions">İzinler</string>
     <string name="root_app_info">En yüksek ayrıcalıklarla çalışan sistem arka plan programları</string>
     <string name="packets_dropped">Düşürülen paketler</string>
-    <string name="pcapdroid_trailer">PCAPdroid izlemesi</string>
-    <string name="pcapdroid_trailer_summary">Dökülen paketlere, ek üst veriler (uygulama adı gibi) içeren bir izleme eklenecektir</string>
-    <string name="trailer_how_to">İzleme verileri Wireshark\'ta nasıl görüntülenir</string>
     <string name="ctrl_consent">Bir uygulama, aygıtınızın trafiğini yakalamak istiyor.
 \nEmin değilseniz reddedin</string>
     <string name="deny">Reddet</string>
@@ -89,7 +86,6 @@
     <string name="capture_interface">Yakalama arayüzü</string>
     <string name="internet">İnternet</string>
     <string name="edit_filter">Filtreyi düzenle</string>
-    <string name="malicious_connection_app">Kötü amaçlı bağlantı algılandı (%1$s)</string>
     <string name="security">Güvenlik</string>
     <string name="malware_detection">Kötü amaçlı yazılım algılama</string>
     <string name="reset">Sıfırla</string>
@@ -191,13 +187,10 @@
     <string name="get_app">Edin:</string>
     <string name="error">Hata</string>
     <string name="no_activity_file_selection">Dosya seçimini yapacak uygulama bulunamadı</string>
-    <string name="theme_dark">Koyu</string>
-    <string name="app_theme">Tema</string>
     <string name="proxy_port">Vekil bağlantı noktası</string>
     <string name="root_capture">Root olarak yakala</string>
     <string name="host_val">Ana makine: %1$s</string>
     <string name="app_details">Uygulama ayrıntıları</string>
-    <string name="theme_light">Açık</string>
     <string name="netd_app_info">DNS çözümlemelerini gerçekleştiren sistem arka plan programı</string>
     <string name="loading">Yükleniyor…</string>
     <string name="capturing_from">\"%1$s\" paketlerini yakala</string>

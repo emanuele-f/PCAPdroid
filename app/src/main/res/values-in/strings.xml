@@ -10,13 +10,11 @@
     <string name="target_sdk">SDK Target</string>
     <string name="unknown_app_info">\"Tidak diketahui\" menandai koneksi yang aplikasinya tidak dapat ditentukan</string>
     <string name="android_app_info">Sistem Android</string>
-    <string name="trailer_how_to">Cara menampilkan data trailer di Wireshark</string>
     <string name="pending_transaction">Silakan selesaikan transaksi Anda untuk menukarkan fitur ini</string>
     <string name="ctrl_consent">Sebuah aplikasi ingin menangkap lalu lintas perangkat Anda.
 \nTolak jika Anda tidak yakin</string>
     <string name="ctrl_consent_title">Permintaan kontrol PCAPdroid</string>
     <string name="ctrl_consent_denied">PCAPdroid: permintaan kontrol ditolak</string>
-    <string name="pcapdroid_trailer_summary">Cuplikan yang berisi metadata tambahan (seperti nama aplikasi) akan ditambahkan ke paket yang dibuang</string>
     <string name="deny">Tolak</string>
     <string name="all_interfaces">Semua interface</string>
     <string name="list_is_empty">Daftar kosong</string>
@@ -98,8 +96,6 @@
     <string name="app_language">Bahasa</string>
     <string name="no_activity_file_selection">Tidak ada aplikasi yang ditemukan untuk menangani pemilihan file</string>
     <string name="file_saved_with_name">File disimpan sebagai \"%1$s\"</string>
-    <string name="theme_dark">Gelap</string>
-    <string name="app_theme">Tema</string>
     <string name="enable_socks5_proxy_summary">Arahkan ulang semua koneksi TCP ke proxy SOCKS5</string>
     <string name="proxy_port">Port proksi</string>
     <string name="root_capture">Capture dengan akses root</string>
@@ -118,7 +114,6 @@
     <string name="root_app_info">Daemon sistem berjalan dengan hak istimewa maksimum</string>
     <string name="packets_dropped">Paket dikecualikan</string>
     <string name="capture_prefs">Tangkap</string>
-    <string name="pcapdroid_trailer">Cuplikan PCAPdroid</string>
     <string name="allow">Izinkan</string>
     <string name="ctrl_consent_allowed">PCAPdroid: permintaan kontrol diizinkan</string>
     <string name="capture_interface">Tangkap interface</string>
@@ -127,7 +122,6 @@
     <string name="edit_filter">Ubah filter</string>
     <string name="edit_list">Ubah daftar</string>
     <string name="hidden_connections_rules">Aturan koneksi tersembunyi</string>
-    <string name="malicious_connection_app">Koneksi berbahaya terdeteksi (%1$s)</string>
     <string name="show_only_malicious">Koneksi berbahaya</string>
     <string name="security">Keamanan</string>
     <string name="malware_detection">Pendeteksi malware</string>
@@ -209,7 +203,6 @@
     <string name="unknown_app">Tidak diketahui</string>
     <string name="system_default">Sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
-    <string name="theme_light">Terang</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
     <string name="warn_no_app_data">Tidak ada data aplikasi yang dipertukarkan</string>

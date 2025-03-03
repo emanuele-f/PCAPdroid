@@ -17,6 +17,9 @@
  * Copyright 2021 - Emanuele Faranda
  */
 
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+
 #include "pcapdroid.h"
 #include "common/utils.h"
 #include "port_map.h"
@@ -97,7 +100,8 @@ static int remote2vpn(zdtun_t *zdt, zdtun_pkt_t *pkt, const zdtun_conn_t *conn_i
     pkt_context_t pctx;
     pd_refresh_time(pd);
 
-    pd_process_packet(pd, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+    pd_init_pkt_context(&pctx, pkt, false, tuple, data, get_pkt_timestamp(pd, &tv));
+    pd_process_packet(pd, &pctx);
     if(data->to_block) {
         data->blocked_pkts++;
         data->update_type |= CONN_UPDATE_STATS;
@@ -330,6 +334,7 @@ static void connection_closed(zdtun_t *zdt, const zdtun_conn_t *conn_info) {
 
     pd_giveup_dpi(pd, data, tuple);
     data->status = zdtun_conn_get_status(conn_info);
+    data->error = zdtun_conn_get_error(conn_info);
     data->to_purge = true;
 }
 
@@ -342,8 +347,10 @@ static void update_conn_status(zdtun_t *zdt, const zdtun_pkt_t *pkt, uint8_t fro
 
     // Update the connection status
     data->status = zdtun_conn_get_status(conn_info);
-    if(data->status >= CONN_STATUS_CLOSED)
+    if(data->status >= CONN_STATUS_CLOSED) {
         data->to_purge = true;
+        data->error = zdtun_conn_get_error(conn_info);
+    }
 }
 
 /* ******************************************************* */
@@ -590,7 +597,8 @@ int run_vpn(pcapdroid_t *pd) {
                     }
                 }
 
-                pd_process_packet(pd, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv), &pctx);
+                pd_init_pkt_context(&pctx, &pkt, true, tuple, data, get_pkt_timestamp(pd, &tv));
+                pd_process_packet(pd, &pctx);
                 if(data->sent_pkts == 0) {
                     // Newly created connections
                     if (!data->port_mapping_applied)

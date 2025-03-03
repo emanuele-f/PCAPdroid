@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.BaseActivity;
 import com.emanuelef.remote_capture.adapters.CtrlPermissionsAdapter;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
@@ -49,8 +50,9 @@ public class EditCtrlPermissions extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setTitle(R.string.control_permissions);
-        setContentView(R.layout.simple_list);
+        setContentView(R.layout.simple_list_activity);
 
+        findViewById(R.id.simple_list).setFitsSystemWindows(true);
         mEmptyText = findViewById(R.id.list_empty);
         mListView = findViewById(R.id.listview);
 
@@ -119,6 +121,7 @@ public class EditCtrlPermissions extends BaseActivity {
                 mode.setTitle(getString(R.string.n_selected, mSelected.size()));
             }
         });
+        Utils.fixListviewInsetsBottom(mListView);
 
         recheckListSize();
     }

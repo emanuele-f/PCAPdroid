@@ -32,7 +32,7 @@
         - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href="https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md">OFL-1.1</a>\n\n
         </string>
-    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
+    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,PackageName,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="unlock_token" translatable="false">Unlock token</string>
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -116,9 +116,6 @@
     <string name="system_default">System</string>
     <string name="no_activity_file_selection">Nie znaleziono aplikacji obsługującej wybór plików</string>
     <string name="file_saved_with_name">Plik zapisany jako \"%1$s\"</string>
-    <string name="theme_light">Jasny</string>
-    <string name="theme_dark">Ciemny</string>
-    <string name="app_theme">Motyw</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="socks5_redirection">Przekierowanie SOCKS5</string>
     <string name="socks5_summary">Skonfiguruj przekierowanie do serwera proxy SOCKS5</string>
@@ -157,9 +154,6 @@
     <string name="unknown_app_info">\„Nieznane\” oznacza połączenia, których aplikacji nie można określić</string>
     <string name="packets_dropped">Pakiety upuszczone</string>
     <string name="capture_prefs">Przechytywanie</string>
-    <string name="pcapdroid_trailer">PCAPdroid trailer</string>
-    <string name="pcapdroid_trailer_summary">Do zrzuconych pakietów zostanie dodany zwiastun zawierający dodatkowe metadane (takie jak nazwa aplikacji)</string>
-    <string name="trailer_how_to">Jak wyświetlić dane stopki w Wireshark</string>
     <string name="pending_transaction">Dokończ transakcję, aby skorzystać z tej funkcji</string>
     <string name="ctrl_consent">Aplikacja chce przechwytywać ruch na Twoim urządzeniu.\nOdrzuć, jeśli nie masz pewności</string>
     <string name="deny">Odmowa</string>
@@ -175,7 +169,6 @@
     <string name="edit_list">Edytuj listę</string>
     <string name="hidden_connections_rules">Zasady połączeń ukrytych</string>
     <string name="list_is_empty">Lista jest pusta</string>
-    <string name="malicious_connection_app">Wykryto złośliwe połączenie (%1$s)</string>
     <string name="show_only_malicious">Złośliwe połączenia</string>
     <string name="show_only_cleartext">Wyczyść połączenia tekstowe</string>
     <string name="security">Ochrona</string>

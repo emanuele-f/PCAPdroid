@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings;
 
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.model.Prefs;
@@ -39,7 +40,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,7 +79,7 @@ public class Billing {
     protected SharedPreferences mPrefs;
 
     // this is initialized in MainActivity
-    private static final HashSet<String> mPeerSkus = new HashSet<>();
+    private static final ArraySet<String> mPeerSkus = new ArraySet<>();
 
     protected Billing(Context ctx) {
         mContext = ctx;
@@ -228,6 +228,6 @@ public class Billing {
     }
 
     public void clearPeerSkus() {
-        handlePeerSkus(new HashSet<>());
+        handlePeerSkus(new ArraySet<>());
     }
 }

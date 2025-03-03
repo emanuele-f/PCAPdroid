@@ -22,7 +22,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.preference.EditTextPreference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -30,7 +29,7 @@ import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.Objects;
 
-public class DnsSettings extends PreferenceFragmentCompat {
+public class DnsSettings extends SettingsSubFragment {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.dns_preferences, rootKey);

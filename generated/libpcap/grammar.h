@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.7.6.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
@@ -183,7 +183,7 @@ extern int pcap_debug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 321 "grammar.y"
+#line 357 "grammar.y"
 
 	int i;
 	bpf_u_int32 h;
@@ -208,6 +208,8 @@ typedef union YYSTYPE YYSTYPE;
 
 
 
+
 int pcap_parse (void *yyscanner, compiler_state_t *cstate);
+
 
 #endif /* !YY_PCAP_GRAMMAR_H_INCLUDED  */

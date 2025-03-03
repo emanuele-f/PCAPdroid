@@ -24,6 +24,7 @@
 #include "common/utils.h"
 #include "log_writer.h"
 #include "port_map.h"
+#include "pcap_reader.h"
 
 // This files contains functions to make the capture core communicate
 // with the Android system.
@@ -168,7 +169,8 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetStats, data->last_seen,
                                data->payload_length, data->sent_bytes, data->rcvd_bytes, data->sent_pkts, data->rcvd_pkts, data->blocked_pkts,
                                (data->tcp_flags[0] << 8) | data->tcp_flags[1],
-                               (data->port_mapping_applied << 13) |
+                               (data->error << 16) /* 8 bits are enough for socket errno */ |
+                                    (data->port_mapping_applied << 13) |
                                     (data->decryption_ignored << 12) |
                                     (data->netd_block_missed << 11) |
                                     (blocked << 10) |
@@ -191,7 +193,8 @@ static jobject getConnUpdate(pcapdroid_t *pd, const conn_and_tuple_t *conn) {
     }
     if(data->update_type & CONN_UPDATE_PAYLOAD) {
         (*env)->CallVoidMethod(env, update, mids.connUpdateSetPayload, data->payload_chunks,
-                               data->payload_truncated);
+                               data->payload_truncated |
+                               (data->has_decrypted_data << 1));
         (*pd->env)->DeleteLocalRef(pd->env, data->payload_chunks);
         data->payload_chunks = NULL;
     }
@@ -234,12 +237,13 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
 
     jobject src_string = (*env)->NewStringUTF(env, srcip);
     jobject dst_string = (*env)->NewStringUTF(env, dstip);
+    jobject country_code = (*env)->NewStringUTF(env, data->country_code);
     u_int ifidx = (pd->vpn_capture ? 0 : data->pcap.ifidx);
     u_int local_port = (pd->vpn_capture ? data->vpn.local_port : conn_info->src_port);
     bool mitm_decrypt = (pd->tls_decryption.enabled && data->proxied);
     jobject conn_descriptor = (*env)->NewObject(env, cls.conn, mids.connInit, data->incr_id,
                                                 conn_info->ipver, conn_info->ipproto,
-                                                src_string, dst_string,
+                                                src_string, dst_string, country_code,
                                                 ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
                                                 ntohs(local_port),
                                                 data->uid, ifidx, mitm_decrypt, data->first_seen);
@@ -269,6 +273,7 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
 
     (*env)->DeleteLocalRef(env, src_string);
     (*env)->DeleteLocalRef(env, dst_string);
+    (*env)->DeleteLocalRef(env, country_code);
 
     return rv;
 }
@@ -423,7 +428,7 @@ static void notifyBlacklistsLoaded(pcapdroid_t *pd, bl_status_arr_t *status_arr)
 
 /* ******************************************************* */
 
-static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, int dump_size) {
+static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size) {
     JNIEnv *env = pd->env;
     bool rv = false;
 
@@ -444,7 +449,7 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
 
     jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, pctx->is_tx, pctx->ms);
     if(chunk && !jniCheckException(env)) {
-        (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*)pctx->pkt->l7);
+        (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*) dump_data);
         rv = (*env)->CallBooleanMethod(env, pctx->data->payload_chunks, mids.arraylistAdd, chunk);
     }
 
@@ -453,6 +458,17 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, in
     (*env)->DeleteLocalRef(env, barray);
     (*env)->DeleteLocalRef(env, chunk);
     return rv;
+}
+
+/* ******************************************************* */
+
+static void clearPayloadChunks(struct pcapdroid *pd, const pkt_context_t *pctx) {
+    JNIEnv *env = pd->env;
+
+    if (pctx->data->payload_chunks) {
+        (*env)->DeleteLocalRef(env, pctx->data->payload_chunks);
+        pctx->data->payload_chunks = NULL;
+    }
 }
 
 /* ******************************************************* */
@@ -521,7 +537,10 @@ static void init_jni(JNIEnv *env) {
     /* Methods */
     mids.reportError = jniGetMethodID(env, cls.vpn_service, "reportError", "(Ljava/lang/String;)V");
     mids.getApplicationByUid = jniGetMethodID(env, cls.vpn_service, "getApplicationByUid", "(I)Ljava/lang/String;"),
-            mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
+    mids.getPackageNameByUid = jniGetMethodID(env, cls.vpn_service, "getPackageNameByUid", "(I)Ljava/lang/String;"),
+    mids.loadUidMapping = jniGetMethodID(env, cls.vpn_service, "loadUidMapping", "(ILjava/lang/String;Ljava/lang/String;)V"),
+    mids.getCountryCode = jniGetMethodID(env, cls.vpn_service, "getCountryCode", "(Ljava/lang/String;)Ljava/lang/String;"),
+    mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, cls.vpn_service, "dumpPcapData", "([B)V");
     mids.stopPcapDump = jniGetMethodID(env, cls.vpn_service, "stopPcapDump", "()V");
     mids.updateConnections = jniGetMethodID(env, cls.vpn_service, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
@@ -530,12 +549,12 @@ static void init_jni(JNIEnv *env) {
     mids.getLibprogPath = jniGetMethodID(env, cls.vpn_service, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
     mids.notifyBlacklistsLoaded = jniGetMethodID(env, cls.vpn_service, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus;)V");
     mids.getBlacklistsInfo = jniGetMethodID(env, cls.vpn_service, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
-    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;IIIIIZJ)V");
+    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIZJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
     mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJJIIIII)V");
     mids.connUpdateSetInfo = jniGetMethodID(env, cls.conn_update, "setInfo", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
-    mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;Z)V");
+    mids.connUpdateSetPayload = jniGetMethodID(env, cls.conn_update, "setPayload", "(Ljava/util/ArrayList;I)V");
     mids.statsInit = jniGetMethodID(env, cls.stats, "<init>", "()V");
     mids.statsSetData = jniGetMethodID(env, cls.stats, "setData", "(Ljava/lang/String;JJJJJIIIIIIIII)V");
     mids.blacklistStatusInit = jniGetMethodID(env, cls.blacklist_status, "<init>", "(Ljava/lang/String;I)V");
@@ -551,6 +570,7 @@ static void init_jni(JNIEnv *env) {
     fields.ld_apps = jniFieldID(env, cls.matchlist_descriptor, "apps", "Ljava/util/List;");
     fields.ld_hosts = jniFieldID(env, cls.matchlist_descriptor, "hosts", "Ljava/util/List;");
     fields.ld_ips = jniFieldID(env, cls.matchlist_descriptor, "ips", "Ljava/util/List;");
+    fields.ld_countries = jniFieldID(env, cls.matchlist_descriptor, "countries", "Ljava/util/List;");
 
     /* Enums */
     enums.bltype_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");
@@ -585,6 +605,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_service_status = notifyServiceStatus,
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
+                    .clear_payload_chunks = clearPayloadChunks,
             },
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
@@ -592,7 +613,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
             .payload_mode = (payload_mode_t) getIntPref(env, vpn, "getPayloadMode"),
             .pcap_dump = {
                     .enabled = (bool) getIntPref(env, vpn, "pcapDumpEnabled"),
-                    .trailer_enabled = (bool)getIntPref(env, vpn, "addPcapdroidTrailer"),
+                    .dump_extensions = (bool)getIntPref(env, vpn, "dumpExtensionsEnabled"),
                     .pcapng_format = (bool)getIntPref(env, vpn, "isPcapngEnabled"),
                     .snaplen = getIntPref(env, vpn, "getSnaplen"),
                     .max_pkts_per_flow = getIntPref(env, vpn, "getMaxPktsPerFlow"),
@@ -1048,7 +1069,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     jmethodID arrayListNew = jniGetMethodID(env, arrayListClass, "<init>", "()V");
     jmethodID arrayListAdd = jniGetMethodID(env, arrayListClass, "add", "(Ljava/lang/Object;)Z");
 
-    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(ndpi_no_prefs);
+    struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(NULL);
     if(!ndpi)
         return(NULL);
 
@@ -1258,16 +1279,76 @@ void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
     if(obj)
         value = (*env)->GetStringUTFChars(env, obj, 0);
 
-    if(!value) {
-        strncpy(buf, "???", bufsize);
-        buf[bufsize-1] = '\0';
-    } else {
-        strncpy(buf, value, bufsize);
-        buf[bufsize - 1] = '\0';
-    }
+    if(value)
+        snprintf(buf, bufsize, "%s", value);
+    else
+        snprintf(buf, bufsize, "???");
 
     if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
     if(obj) (*env)->DeleteLocalRef(env, obj);
+}
+
+/* ******************************************************* */
+
+void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize) {
+    JNIEnv *env = pd->env;
+    const char *value = NULL;
+
+    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getPackageNameByUid, uid);
+    jniCheckException(env);
+
+    if(obj)
+        value = (*env)->GetStringUTFChars(env, obj, 0);
+
+    if(value)
+        snprintf(buf, bufsize, "%s", value);
+    else
+        buf[0] = '\0';
+
+    if(value) (*env)->ReleaseStringUTFChars(env, obj, value);
+    if(obj) (*env)->DeleteLocalRef(env, obj);
+}
+
+/* ******************************************************* */
+
+void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name) {
+    JNIEnv *env = pd->env;
+
+    jstring package_str = (*env)->NewStringUTF(env, package_name);
+    jstring app_str = (*env)->NewStringUTF(env, app_name);
+
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.loadUidMapping, uid, package_str, app_str);
+    jniCheckException(env);
+
+    (*env)->DeleteLocalRef(env, package_str);
+    (*env)->DeleteLocalRef(env, app_str);
+}
+
+/* ******************************************************* */
+
+bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
+    bool rv = false;
+    JNIEnv *env = pd->env;
+    jstring host_str = (*env)->NewStringUTF(env, host);
+
+    jstring obj = (*env)->CallObjectMethod(env, pd->capture_service, mids.getCountryCode, host_str);
+    jniCheckException(env);
+
+    if (obj) {
+        const char *value = (*env)->GetStringUTFChars(env, obj, 0);
+
+        if (value && strlen(value) == 2) {
+            out[0] = value[0];
+            out[1] = value[1];
+            out[2] = '\0';
+            rv = true;
+        }
+
+        (*env)->ReleaseStringUTFChars(env, obj, value);
+    }
+
+    (*env)->DeleteLocalRef(env, host_str);
+    return rv;
 }
 
 /* ******************************************************* */
@@ -1287,9 +1368,25 @@ Java_com_emanuelef_remote_1capture_CaptureService_dumpMasterSecret(JNIEnv *env, 
 /* ******************************************************* */
 
 JNIEXPORT jboolean JNICALL
-Java_com_emanuelef_remote_1capture_CaptureService_hasSeenPcapdroidTrailer(JNIEnv *env,
-                                                                          jclass clazz) {
-    return has_seen_pcapdroid_trailer;
+Java_com_emanuelef_remote_1capture_CaptureService_hasSeenDumpExtensions(JNIEnv *env,
+                                                                        jclass clazz) {
+    return has_seen_dump_extensions;
+}
+
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_extractKeylogFromPcapng(JNIEnv *env, jclass clazz,
+                    jstring pcapng_path, jstring out_path
+) {
+    const char *pcapng_s = (*env)->GetStringUTFChars(env, pcapng_path, 0);
+    const char *out_s = (*env)->GetStringUTFChars(env, out_path, 0);
+
+    bool rv = pcapng_to_keylog(pcapng_s, out_s);
+
+    (*env)->ReleaseStringUTFChars(env, out_path, out_s);
+    (*env)->ReleaseStringUTFChars(env, pcapng_path, pcapng_s);
+    return rv;
 }
 
 #endif // ANDROID

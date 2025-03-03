@@ -88,6 +88,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setTitle(R.string.connection_details);
         displayBackAction();
         setContentView(R.layout.tabs_activity_fixed);
@@ -109,6 +110,7 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mConnPos = -1;
 
         mPager = findViewById(R.id.pager);
+        Utils.fixViewPager2Insets(mPager);
         setupTabs();
     }
 
@@ -133,7 +135,9 @@ public class ConnectionDetailsActivity extends BaseActivity implements Connectio
         mPagerAdapter = new StateAdapter(this);
         mPager.setAdapter(mPagerAdapter);
 
-        new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
+        var tabLayout = (TabLayout) findViewById(R.id.tablayout);
+        Utils.fixScrollableTabLayoutInsets(tabLayout);
+        new TabLayoutMediator(tabLayout, mPager, (tab, position) ->
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
 

@@ -47,10 +47,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.Log;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.adapters.ListEditAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.MatchList.RuleType;
@@ -80,16 +82,18 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     private static final int MAX_RULES_BEFORE_WARNING = 5000;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
+    private static final String FITS_SYSTEM_WINDOWS_ARG = "fits_system_windows";
 
     private final ActivityResultLauncher<Intent> exportLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::exportResult);
     private final ActivityResultLauncher<Intent> importLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::importResult);
 
-    public static EditListFragment newInstance(ListInfo.Type list) {
+    public static EditListFragment newInstance(ListInfo.Type list, boolean fitsSystemWindows) {
         EditListFragment fragment = new EditListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LIST_TYPE_ARG, list);
+        args.putSerializable(FITS_SYSTEM_WINDOWS_ARG, fitsSystemWindows);
 
         fragment.setArguments(args);
         return fragment;
@@ -109,6 +113,7 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
 
         assert getArguments() != null;
         mListInfo = new ListInfo(Utils.getSerializable(getArguments(), LIST_TYPE_ARG, ListInfo.Type.class));
+        boolean fitsSystemWindows = Boolean.TRUE.equals(Utils.getSerializable(getArguments(), FITS_SYSTEM_WINDOWS_ARG, Boolean.class));
         mList = mListInfo.getList();
         mList.addListChangeListener(this);
 
@@ -169,6 +174,11 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
                 mActionMode = null;
             }
         });
+
+        if (fitsSystemWindows)
+            mListView.setFitsSystemWindows(true);
+        else
+            Utils.fixListviewInsetsBottom(mListView);
 
         mAdapter.reload(mList.iterRules());
         recheckListSize();
@@ -286,8 +296,8 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     }
 
     private void showAddIpRule() {
-        RuleAddDialog.showText(requireContext(), R.string.ip_address, (value, field) -> {
-            if(!Utils.validateIpAddress(value)) {
+        RuleAddDialog.showText(requireContext(), R.string.ip_address_or_cidr, (value, field) -> {
+            if(!Utils.validateCidr(value)) {
                 field.setError(getString(R.string.invalid));
                 return false;
             }
@@ -337,6 +347,10 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
                 Utils.showToastLong(ctx, R.string.rule_exists);
             else
                 saveAndReload();
+
+            Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+            blocklist.showNoticeIfGeoMissing(ctx);
+
             return true;
         });
     }
@@ -533,6 +547,12 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
 
         String msg = String.format(context.getResources().getString(R.string.rules_import_success), num_imported);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+
+        if (mList instanceof Blocklist) {
+            Blocklist blocklist = PCAPdroid.getInstance().getBlocklist();
+            if (blocklist.hasCountryRules())
+                blocklist.showNoticeIfGeoMissing(context);
+        }
     }
 
     @Override

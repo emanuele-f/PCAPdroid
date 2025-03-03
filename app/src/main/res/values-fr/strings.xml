@@ -6,8 +6,6 @@
     <string name="status">État</string>
     <string name="dns_server">Serveur DNS</string>
     <string name="notification_msg">%1$s capturés, %2$s connexions</string>
-    <string name="theme_dark">Sombre</string>
-    <string name="app_theme">Thème</string>
     <string name="title_activity_settings">Paramètres</string>
     <string name="collector_info">Collecteur UDP : %1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s reçus – %2$s envoyés</string>
@@ -57,7 +55,6 @@
     <string name="system_default">Système</string>
     <string name="no_activity_file_selection">Aucune application trouvée pour gérer la sélection des fichiers</string>
     <string name="file_saved_with_name">Fichier enregistré sous le nom de « %1$s »</string>
-    <string name="theme_light">Clair</string>
     <string name="donate">Faire un don</string>
     <string name="search">Recherche…</string>
     <string name="app_val">Appli : %1$s</string>
@@ -118,9 +115,6 @@
     <string name="unknown_app_info">\"Inconnu\" signale les connexions où l\'application n\'a pu être déterminée</string>
     <string name="netd_app_info">Le démon système qui gère de la résolution DNS</string>
     <string name="target_sdk">SDK cible</string>
-    <string name="pcapdroid_trailer_summary">Des données supplémentaires (comme le nom de l\'application) seront ajoutées aux paquets extraits</string>
-    <string name="pcapdroid_trailer">Méta-données PCAPdroid</string>
-    <string name="trailer_how_to">Comment afficher ces méta-données dans Wireshark</string>
     <string name="ctrl_consent">Une application voudrait capturer le trafic de l\'appareil.
 \nRefusez si vous n\'est pas sûr(e)</string>
     <string name="pending_transaction">Veuillez terminer votre transaction pour débloquer cette fonctionnalité</string>
@@ -137,7 +131,6 @@
     <string name="capturing_from">Capture des paquets depuis « %1$s »</string>
     <string name="hidden_connections_rules">Règles de connexions masquées</string>
     <string name="list_is_empty">La liste est vide</string>
-    <string name="malicious_connection_app">Connexion indésirable détectée (%1$s)</string>
     <string name="malware_detection">Détection de virus</string>
     <string name="malware_detection_summary">Détecte les connexions connues des listes de bannissements pour héberger des virus</string>
     <string name="show_only_malicious">Connexions malveillantes</string>

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -30,6 +30,7 @@ import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.AppsResolver;
+import com.emanuelef.remote_capture.Cidr;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -45,6 +46,8 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +63,7 @@ public class MatchList {
     private final ArrayList<Rule> mRules = new ArrayList<>();
     private final ArrayMap<String, Rule> mMatches = new ArrayMap<>();
     private final ArraySet<Integer> mUids = new ArraySet<>();
+    private final ArrayList<Cidr> mCidrs = new ArrayList<>();
     private final ArrayMap<String, Integer> mPackageToUid = new ArrayMap<>();
     private final AppsResolver mResolver;
     private boolean mMigration = false;
@@ -109,10 +113,12 @@ public class MatchList {
         void onListChanged();
     }
 
+    // Accessed by JNI (see blacklist.c)
     public static class ListDescriptor {
         public final List<String> apps = new ArrayList<>();
         public final List<String> hosts = new ArrayList<>();
         public final List<String> ips = new ArrayList<>();
+        public final List<String> countries = new ArrayList<>();
     }
 
     public MatchList(Context ctx, String pref_name) {
@@ -169,6 +175,10 @@ public class MatchList {
             value = Utils.getCountryName(ctx, value);
 
         return Utils.formatTextValue(ctx, null, italic, resid, value).toString();
+    }
+
+    public static String getCidrLabel(Context ctx, Cidr cidr) {
+        return Utils.formatTextValue(ctx, null, italic, R.string.cidr_val, cidr.toString()).toString();
     }
 
     private static class Serializer implements JsonSerializer<MatchList> {
@@ -302,6 +312,36 @@ public class MatchList {
         return tp + "@" + val;
     }
 
+    private boolean addCidr(String cidr_str) {
+        Cidr cidr;
+        try {
+            cidr = new Cidr(cidr_str);
+        } catch (UnknownHostException | IllegalArgumentException e) {
+            return false;
+        }
+
+        // check if already exists
+        for (Cidr test: mCidrs) {
+            if (test.equals(cidr)) {
+                return false;
+            }
+        }
+
+        mCidrs.add(cidr);
+        return true;
+    }
+
+    private boolean removeCidr(String cidr_str) {
+        Cidr cidr;
+        try {
+            cidr = new Cidr(cidr_str);
+        } catch (UnknownHostException | IllegalArgumentException e) {
+            return false;
+        }
+
+        return mCidrs.remove(cidr);
+    }
+
     private boolean addRule(Rule rule, boolean notify) {
         String value = rule.getValue().toString();
         String key = matchKey(rule.getType(), value);
@@ -317,6 +357,12 @@ public class MatchList {
 
             mPackageToUid.put(value, uid);
             mUids.add(uid);
+        } else if (rule.getType() == RuleType.IP) {
+            // Check if CIDR
+            if (value.indexOf('/') >= 0) {
+                if (!addCidr(value))
+                    return false;
+            }
         }
 
         mRules.add(rule);
@@ -359,6 +405,9 @@ public class MatchList {
                 mUids.remove(uid);
             } else
                 Log.w(TAG, "removeRule: no uid found for package " + val);
+        } else if (rule.getType() == RuleType.IP) {
+            if ((val.indexOf('/') >= 0) && !removeCidr(val))
+                Log.w(TAG, "removeRule: removing CIDR failed for " + val);
         }
 
         if(removed)
@@ -370,8 +419,27 @@ public class MatchList {
         return mUids.contains(uid);
     }
 
-    public boolean matchesIP(String ip) {
+    public boolean matchesExactIP(String ip) {
         return mMatches.containsKey(matchKey(RuleType.IP, ip));
+    }
+
+    public Cidr matchesCidr(String ip) {
+        if (!mCidrs.isEmpty()) {
+            InetAddress address;
+
+            try {
+                address = InetAddress.getByName(ip);
+            } catch (UnknownHostException ignored) {
+                return null;
+            }
+
+            for (Cidr cidr : mCidrs) {
+                if (cidr.isInRange(address))
+                    return cidr;
+            }
+        }
+
+        return null;
     }
 
     public boolean matchesProto(String l7proto) {
@@ -406,7 +474,8 @@ public class MatchList {
 
         boolean hasInfo = ((conn.info != null) && (!conn.info.isEmpty()));
         return(matchesApp(conn.uid) ||
-                matchesIP(conn.dst_ip) ||
+                matchesExactIP(conn.dst_ip) ||
+                (matchesCidr(conn.dst_ip) != null) ||
                 matchesProto(conn.l7proto) ||
                 matchesCountry(conn.country) ||
                 (hasInfo && matchesHost(conn.info)));
@@ -422,6 +491,7 @@ public class MatchList {
         mMatches.clear();
         mPackageToUid.clear();
         mUids.clear();
+        mCidrs.clear();
 
         if(notify && hasRules)
             notifyListeners();
@@ -474,7 +544,7 @@ public class MatchList {
     }
 
     /* Convert the MatchList into a ListDescriptor, which can be then loaded by JNI.
-     * Only the following RuleTypes are supported: APP, IP, HOST.
+     * Only the following RuleTypes are supported: APP, IP, HOST, COUNTRY.
      */
     public ListDescriptor toListDescriptor() {
         final ListDescriptor rv = new ListDescriptor();
@@ -489,6 +559,8 @@ public class MatchList {
                 rv.hosts.add(val);
             else if(tp.equals(MatchList.RuleType.IP))
                 rv.ips.add(val);
+            else if(tp.equals(MatchList.RuleType.COUNTRY))
+                rv.countries.add(val);
             else if(!tp.equals(MatchList.RuleType.APP)) // apps handled below
                 Log.w(TAG, "ListDescriptor does not support RuleType " + tp.name());
         }

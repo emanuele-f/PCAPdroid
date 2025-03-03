@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- Note: don't set fitsSystemWindows on this root element, set via code where necessary -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/simple_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 

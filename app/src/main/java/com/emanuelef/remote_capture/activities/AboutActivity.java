@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -49,13 +49,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.text.HtmlCompat;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmAddon;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -91,12 +95,24 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         setContentView(R.layout.about_activity);
         addMenuProvider(this);
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollView), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, insets.top, insets.right, 0);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
         mHandler = new Handler(Looper.getMainLooper());
         TextView appVersion = findViewById(R.id.app_version);
         appVersion.setText("PCAPdroid " + Utils.getAppVersion(this));
 
         ((TextView)findViewById(R.id.app_license)).setMovementMethod(LinkMovementMethod.getInstance());
         ((TextView)findViewById(R.id.opensource_licenses)).setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView wsLicenses = findViewById(R.id.wireshark_licenses);
+        wsLicenses.setMovementMethod(LinkMovementMethod.getInstance());
+        wsLicenses.setVisibility(PCAPdroid.getInstance().isUsharkAvailable() ? View.VISIBLE : View.GONE);
 
         TextView sourceLink = findViewById(R.id.app_source_link);
         String localized = sourceLink.getText().toString();

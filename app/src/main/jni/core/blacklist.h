@@ -40,13 +40,15 @@ typedef struct {
     int num_domains;
     int num_ips;
     int num_apps;
+    int num_countries;
     int num_failed;
 } blacklists_stats_t;
 
 typedef enum {
     DOMAIN_BLACKLIST,
     IP_BLACKLIST,
-    UID_BLACKLIST
+    UID_BLACKLIST,
+    COUNTRY_BLACKLIST
 } blacklist_type;
 
 typedef struct {
@@ -71,6 +73,7 @@ int blacklist_add_domain(blacklist_t *bl, const char *domain);
 int blacklist_add_ip(blacklist_t *bl, const ndpi_ip_addr_t *addr, uint8_t ipver);
 int blacklist_add_ipstr(blacklist_t *bl, const char *ip);
 int blacklist_add_uid(blacklist_t *bl, int uid);
+int blacklist_add_country(blacklist_t *bl, const char country_code[3]);
 int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype, blacklist_stats_t *bstats);
 #ifdef ANDROID
 int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld);
@@ -79,6 +82,7 @@ bool blacklist_match_ip(blacklist_t *bl, const zdtun_ip_t *ip, int ipver);
 bool blacklist_match_ipstr(blacklist_t *bl, const char *ip);
 bool blacklist_match_domain(blacklist_t *bl, const char *domain);
 bool blacklist_match_uid(blacklist_t *bl, int uid);
+bool blacklist_match_country(blacklist_t *bl, const char country_code[3]);
 void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats);
 
 #endif //PCAPDROID_BLACKLIST_H

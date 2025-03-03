@@ -17,6 +17,15 @@
         tools:tint="@color/colorTabText"
         tools:src="@drawable/ic_short_text" />
 
+    <com.haipq.android.flagkit.FlagImageView
+        android:id="@+id/country_flag"
+        android:visibility="gone"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:padding="4dp"
+        tools:src="@drawable/flag_it" />
+
     <TextView
         android:id="@+id/item_label"
         android:layout_width="match_parent"

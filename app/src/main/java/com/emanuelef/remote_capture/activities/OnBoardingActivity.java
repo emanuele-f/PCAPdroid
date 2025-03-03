@@ -130,8 +130,10 @@ public class OnBoardingActivity extends AppIntro {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         boolean backEnabled = false;
         Billing billing = Billing.newInstance(this);
+        setImmersiveMode();
 
         Intent intent = getIntent();
         if(intent != null)
@@ -166,7 +168,7 @@ public class OnBoardingActivity extends AppIntro {
         addSlide(OnBoardingFragment.createInstance(getString(R.string.traffic_dump),
                 Utils.getText(this, R.string.app_intro_traffic_dump,
                         MainActivity.DOCS_URL + "/dump_modes",
-                        MainActivity.DOCS_URL + "/advanced_features#45-pcapdroid-trailer"),
+                        MainActivity.DOCS_URL + "/advanced_features#45-pcapdroid-extensions"),
                 R.drawable.dump_modes, 0, false));
 
         addSlide(OnBoardingFragment.createInstance(getString(R.string.country_and_asn),

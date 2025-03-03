@@ -33,7 +33,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
@@ -61,6 +64,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     private Menu mMenu;
     private boolean mJustCreated;
     private boolean mShowAsPrintable;
+    private WindowInsetsCompat mInsets;
 
     public static ConnectionPayload newInstance(PayloadChunk.ChunkType mode, int conn_id) {
         ConnectionPayload fragment = new ConnectionPayload();
@@ -120,8 +124,29 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
         mTruncatedWarning = view.findViewById(R.id.truncated_warning);
         mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.full_payload)));
-        if(mConn.isPayloadTruncated())
+        if(mConn.isPayloadTruncated()) {
             mTruncatedWarning.setVisibility(View.VISIBLE);
+        }
+
+        // Allow interactions with the last item
+        ViewCompat.setOnApplyWindowInsetsListener(mRecyclerView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(0, 0, 0, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+        mRecyclerView.setClipToPadding(false);
+
+        ViewCompat.setOnApplyWindowInsetsListener(mTruncatedWarning, (v, windowInsets) -> {
+            if(mConn.isPayloadTruncated()) {
+                applyTruncatedWarningInsets(windowInsets);
+                return WindowInsetsCompat.CONSUMED;
+            } else {
+                mInsets = windowInsets;
+                return windowInsets;
+            }
+        });
 
         mCurChunks = mConn.getNumPayloadChunks();
         if(mCurChunks > 0)
@@ -135,6 +160,14 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         // only set adapter after acknowledged (see setMenuVisibility below)
         if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
             mRecyclerView.setAdapter(mAdapter);
+    }
+
+    private void applyTruncatedWarningInsets(WindowInsetsCompat windowInsets) {
+        Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                WindowInsetsCompat.Type.displayCutout());
+        ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) mTruncatedWarning.getLayoutParams();
+        mlp.bottomMargin = insets.bottom;
+        mTruncatedWarning.setLayoutParams(mlp);
     }
 
     @Override
@@ -250,5 +283,8 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
         if(mConn.isPayloadTruncated() && (mTruncatedWarning != null))
             mTruncatedWarning.setVisibility(View.VISIBLE);
+
+            if (mInsets != null)
+                applyTruncatedWarningInsets(mInsets);
     }
 }

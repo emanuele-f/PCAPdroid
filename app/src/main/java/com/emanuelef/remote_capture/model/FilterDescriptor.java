@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture.model;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.PCAPdroid;
@@ -42,6 +43,7 @@ public class FilterDescriptor implements Serializable {
     public DecryptionStatus decStatus;
     public String iface;
     public int uid = -2; // this is persistent and used internally (AppDetailsActivity)
+    public long minSize = 0;
 
     public FilterDescriptor() {
         clear();
@@ -56,6 +58,7 @@ public class FilterDescriptor implements Serializable {
                 || onlyBlacklisted
                 || onlyCleartext
                 || (uid != -2)
+                || (minSize > 0)
                 || (!showMasked && !PCAPdroid.getInstance().getVisualizationMask().isEmpty());
     }
 
@@ -67,7 +70,8 @@ public class FilterDescriptor implements Serializable {
                 && ((decStatus == DecryptionStatus.INVALID) || (conn.getDecryptionStatus() == decStatus))
                 && ((filteringStatus == FilteringStatus.INVALID) || ((filteringStatus == FilteringStatus.BLOCKED) == conn.is_blocked))
                 && ((iface == null) || (CaptureService.getInterfaceName(conn.ifidx).equals(iface)))
-                && ((uid == -2) || (uid == conn.uid));
+                && ((uid == -2) || (uid == conn.uid))
+                && ((minSize == 0) || ((conn.sent_bytes + conn.rcvd_bytes) >= minSize));
     }
 
     private void addChip(LayoutInflater inflater, ChipGroup group, int id, String text) {
@@ -101,8 +105,11 @@ public class FilterDescriptor implements Serializable {
         }
         if(iface != null)
             addChip(inflater, group, R.id.capture_interface, String.format(ctx.getString(R.string.interface_filter), iface));
+
+        group.setVisibility(group.getChildCount() > 0 ? View.VISIBLE : View.GONE);
     }
 
+    // clear one of the filters of toChips
     public void clear(int filter_id) {
         if(filter_id == R.id.not_hidden)
             showMasked = true;
@@ -128,5 +135,6 @@ public class FilterDescriptor implements Serializable {
         decStatus = DecryptionStatus.INVALID;
         filteringStatus = FilteringStatus.INVALID;
         iface = null;
+        minSize = 0;
     }
 }

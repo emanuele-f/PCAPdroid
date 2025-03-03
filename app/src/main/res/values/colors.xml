@@ -3,9 +3,9 @@
     <color name="colorTab">#7A5EBC</color>
     <color name="colorTabText">@android:color/tertiary_text_light</color>
     <color name="colorTabTextSelected">@android:color/secondary_text_light</color>
-    <color name="colorPrimary">#512da8</color>
+    <color name="colorPrimary">#4527a0</color>
     <color name="colorPrimaryDark">#4D3294</color>
-    <color name="colorActionBar">#512da8</color>
+    <color name="colorActionBar">#4527a0</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentLight">#D8ADBD</color>
     <color name="colorBackgroundGray">#2C000000</color>

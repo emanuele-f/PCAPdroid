@@ -105,8 +105,10 @@ typedef struct {
     jint rcvd_pkts;
     jint blocked_pkts;
     zdtun_conn_status_t status;
+    int error;
     char *info;
     jint uid;
+    char country_code[3];
     uint8_t tcp_flags[2]; // cli2srv, srv2cli
     union {
         uint8_t last_ack;
@@ -127,6 +129,7 @@ typedef struct {
     bool encrypted_l7;
     bool payload_truncated;
     bool has_payload[2]; // [0]: rx, [1] tx
+    bool has_decrypted_data;
     char *url;
     uint8_t update_type;
 } pd_conn_t;
@@ -148,6 +151,11 @@ typedef struct {
     UT_hash_handle hh;
 } uid_to_app_t;
 
+typedef struct {
+    unsigned char *data;
+    unsigned int data_len;
+} plain_data_t;
+
 typedef struct pkt_context {
     zdtun_pkt_t *pkt;
     struct timeval tv; // Packet timestamp, need by pcap_dump_rec
@@ -155,7 +163,10 @@ typedef struct pkt_context {
     bool is_tx;
     const zdtun_5tuple_t *tuple;
     pd_conn_t *data;
+    plain_data_t *plain_data;
 } pkt_context_t;
+
+struct ushark;
 
 /* ******************************************************* */
 
@@ -171,7 +182,8 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
-    bool (*dump_payload_chunk)(struct pcapdroid *pd, const pkt_context_t *pctx, int dump_size);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size);
+    void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -234,6 +246,7 @@ typedef struct pcapdroid {
             char *bpf;
             char *capture_interface;
             int pcapd_pid;
+            struct ushark *usk;
 
             int *app_filter_uids;
             int app_filter_uids_size;
@@ -242,7 +255,7 @@ typedef struct pcapdroid {
 
     struct {
         bool enabled;
-        bool trailer_enabled;
+        bool dump_extensions;
         bool pcapng_format;
         int snaplen;
         int max_pkts_per_flow;
@@ -311,6 +324,9 @@ typedef struct {
 typedef struct {
     jmethodID reportError;
     jmethodID getApplicationByUid;
+    jmethodID getPackageNameByUid;
+    jmethodID loadUidMapping;
+    jmethodID getCountryCode;
     jmethodID protect;
     jmethodID dumpPcapData;
     jmethodID stopPcapDump;
@@ -355,6 +371,7 @@ typedef struct {
     jfieldID ld_apps;
     jfieldID ld_hosts;
     jfieldID ld_ips;
+    jfieldID ld_countries;
 } jni_fields_t;
 
 typedef struct {
@@ -377,7 +394,7 @@ extern uint32_t new_dns_server;
 extern bool block_private_dns;
 extern bool dump_capture_stats_now;
 extern bool reload_blacklists_now;
-extern bool has_seen_pcapdroid_trailer;
+extern bool has_seen_dump_extensions;
 extern int bl_num_checked_connections;
 extern int fw_num_checked_connections;
 extern char *pd_appver;
@@ -387,10 +404,13 @@ extern char *pd_os;
 // capture API
 int pd_run(pcapdroid_t *pd);
 void pd_refresh_time(pcapdroid_t *pd);
-void pd_process_packet(pcapdroid_t *pd, zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
-                       pd_conn_t *data, struct timeval *tv, pkt_context_t *pctx);
+void pd_init_pkt_context(pkt_context_t *pctx,
+                         zdtun_pkt_t *pkt, bool is_tx, const zdtun_5tuple_t *tuple,
+                         pd_conn_t *data, struct timeval *tv);
+void pd_process_packet(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
-void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv, int uid);
+void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv,
+                       int uid, u_int ifidx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
@@ -415,6 +435,9 @@ zdtun_ip_t getIPPref(JNIEnv *env, jobject vpn_inst, const char *key, int *ip_ver
 uint32_t getIPv4Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
+void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
+void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name);
+bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 
 #endif // ANDROID
 

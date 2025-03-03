@@ -10,6 +10,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 import androidx.core.view.MenuProvider;
 import androidx.preference.PreferenceManager;
 
@@ -20,7 +21,6 @@ import com.emanuelef.remote_capture.fragments.AppsToggles;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class AppFilterActivity extends BaseActivity implements MenuProvider {
@@ -89,7 +89,7 @@ public class AppFilterActivity extends BaseActivity implements MenuProvider {
     }
 
     public static class AppFilterFragment extends AppsToggles {
-        private final Set<String> mSelectedApps = new HashSet<>();
+        private final Set<String> mSelectedApps = new ArraySet<>();
         private @Nullable SharedPreferences mPrefs;
 
         @Override

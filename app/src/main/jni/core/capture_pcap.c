@@ -14,22 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-24 - Emanuele Faranda
+ * Copyright 2021-25 - Emanuele Faranda
  */
 
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <linux/limits.h>
+#include <netinet/tcp.h>
 #include "pcapdroid.h"
 #include "errors.h"
 #include "pcapd/pcapd.h"
 #include "common/utils.h"
 #include "third_party/uthash.h"
-
-#ifdef FUZZING
-extern int openPcap(pcapdroid_t *pd);
-extern int nextPacket(pcapdroid_t *pd, pcapd_hdr_t *hdr, char *buf, size_t bufsize);
-#endif
+#include "pcap_reader.h"
+#include "ushark_dll.h"
 
 #define ICMP_TIMEOUT_SEC 5
 #define UDP_TIMEOUT_SEC 30
@@ -407,6 +405,23 @@ static int get_ip_offset(int linktype) {
 
 /* ******************************************************* */
 
+static plain_data_t g_plain_data = {};
+
+static void handle_tls_data(const unsigned char *plain_data, unsigned int data_len) {
+    if (data_len == 0)
+        return;
+
+    //log_w("<DATA> %s", plain_data);
+    g_plain_data.data = (unsigned char *) pd_realloc(g_plain_data.data, g_plain_data.data_len + data_len);
+    if (!g_plain_data.data) {
+        log_e("realloc(tls_data) failed[%d]: %s", errno, strerror(errno));
+        g_plain_data.data_len = 0;
+    } else {
+        memcpy(g_plain_data.data + g_plain_data.data_len, plain_data, data_len);
+        g_plain_data.data_len += data_len;
+    }
+}
+
 /* Returns true if packet is valid. If false is returned, the pkt must still be dumped, so a call to
  * pd_dump_packet is required. */
 static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer, int ipoffset) {
@@ -417,21 +432,6 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
     if(zdtun_parse_pkt(pd->zdt, buffer + ipoffset, hdr->len - ipoffset, &pkt) != 0) {
         log_d("zdtun_parse_pkt failed");
         return false;
-    }
-
-    if(pd->pcap_file_capture && (hdr->uid == UID_UNKNOWN)) {
-        // retrieve the UID from the PCAPdroid trailer, if available
-        int non_ip_overhead = (int)hdr->len - (int)pkt.len;
-
-        if(non_ip_overhead >= sizeof(pcapdroid_trailer_t)) {
-            const struct pcapdroid_trailer* trailer =
-                    (const struct pcapdroid_trailer*) (buffer + hdr->len - sizeof(pcapdroid_trailer_t));
-
-            if(ntohl(trailer->magic) == PCAPDROID_TRAILER_MAGIC) {
-                hdr->uid = ntohl(trailer->uid);
-                has_seen_pcapdroid_trailer = true;
-            }
-        }
     }
 
     if((pkt.flags & ZDTUN_PKT_IS_FRAGMENT) &&
@@ -482,8 +482,10 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
                 return false;
             }
 
-            if(hdr->linktype == PCAPD_DLT_LINUX_SLL2)
+            if (hdr->linktype == PCAPD_DLT_LINUX_SLL2)
                 data->pcap.ifidx = ntohl(*(uint32_t*)(buffer + 4)); // sll2_header->sll2_if_index
+            else if (pd->pcap_file_capture)
+                data->pcap.ifidx = hdr->ifid;
 
             conn->tuple = pkt.tuple;
             conn->data = data;
@@ -519,12 +521,34 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
     struct timeval tv = hdr->ts;
     pkt_context_t pinfo;
-    pd_process_packet(pd, &pkt, is_tx, &conn_tuple, conn->data, &tv, &pinfo);
+    pd_init_pkt_context(&pinfo, &pkt, is_tx, &conn_tuple, conn->data, &tv);
+
+    if (pd->pcap.usk && (pkt.len > 0)) {
+        struct pcap_pkthdr pcap_hdr;
+        pcap_hdr.len = pcap_hdr.caplen = pkt.len;
+        pcap_hdr.ts = hdr->ts;
+
+        ushark_dissect_tls(pd->pcap.usk,
+                           (const unsigned char*) pkt.l3,
+                           &pcap_hdr, handle_tls_data);
+
+        if (g_plain_data.data)
+            pinfo.plain_data = &g_plain_data;
+    }
+
+    pd_process_packet(pd, &pinfo);
 
     // NOTE: this may free the conn
     update_connection_status(pd, conn, &pkt, !is_tx);
 
     pd_account_stats(pd, &pinfo);
+
+    if (g_plain_data.data) {
+        pd_free(g_plain_data.data);
+        g_plain_data.data = NULL;
+        g_plain_data.data_len = 0;
+    }
+
     return true;
 }
 
@@ -572,7 +596,7 @@ static void purge_expired_connections(pcapdroid_t *pd, uint8_t purge_all) {
 
 /* ******************************************************* */
 
-void libpcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
+void pcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
     pcap_conn_t *conn, *tmp;
 
     HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
@@ -612,13 +636,95 @@ static void process_pcapd_rv(pcapdroid_t *pd, int rv) {
 
 /* ******************************************************* */
 
-int run_libpcap(pcapdroid_t *pd) {
+static reader_rv read_pcapd(pcapdroid_t *pd, int sock, pcapd_hdr_t* hdr, char *buffer) {
+    fd_set fdset = {0};
+
+    FD_SET(sock, &fdset);
+
+    struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
+
+    if (select(sock + 1, &fdset, NULL, NULL, &timeout) < 0) {
+        log_f("select failed[%d]: %s", errno, strerror(errno));
+        return READER_ERROR;
+    }
+
+    pd_refresh_time(pd);
+
+    if (!FD_ISSET(sock, &fdset))
+        // used to indicate housekeeping
+        return READER_CONTINUE;
+
+    if(!running)
+        return READER_EOF;
+
+    ssize_t xrv = xread(sock, hdr, sizeof(*hdr));
+    if (xrv != sizeof(*hdr)) {
+        if (xrv < 0)
+            log_f("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
+        return READER_ERROR;
+    }
+
+    if (hdr->len > PCAPD_SNAPLEN) {
+        log_f("packet too big (%d B)", hdr->len);
+        return READER_ERROR;
+    }
+
+    if (xread(sock, buffer, hdr->len) != hdr->len) {
+        log_f("read %d B packet from pcapd failed[%d]: %s", hdr->len, errno,
+              strerror(errno));
+        return READER_ERROR;
+    }
+
+    return READER_PACKET_OK;
+}
+
+static void on_dump_extensions_seen(void *_) {
+    has_seen_dump_extensions = true;
+}
+
+static void on_uid_mapping(void *userdata, uid_t uid, const char *package_name, const char *app_name) {
+    log_d("UID mapping: %u -> %s - %s", uid, package_name, app_name);
+
+#ifdef ANDROID
+    pcapdroid_t* pd = (pcapdroid_t*) userdata;
+    loadUidMapping(pd, uid, package_name, app_name);
+#endif
+}
+
+static reader_rv read_file(pcapdroid_t *pd, pd_reader_t *reader, pcapd_hdr_t* hdr, char *buffer) {
+    pd_read_callbacks_t cbs = {
+        .on_dump_extensions_seen = on_dump_extensions_seen,
+        .on_uid_mapping = on_uid_mapping,
+    };
+
+    return pd_read_next(reader, hdr, buffer, &cbs, pd);
+}
+
+/* ******************************************************* */
+
+int run_pcap(pcapdroid_t *pd) {
     int sock = -1;
+    pd_reader_t *reader = NULL;
+
     int rv = -1;
     char buffer[PCAPD_SNAPLEN];
     bool iptables_cleanup = false;
     u_int64_t next_purge_ms;
     zdtun_callbacks_t callbacks = {.send_client = (void*)1};
+
+    if (pd->pcap_file_capture) {
+        // check if the SSL keylog exists
+        const char *keylog_path = get_cache_path(pd, "sslkeylog.txt");
+
+        if (access(keylog_path, F_OK) == 0) {
+            log_i("Use ushark for TLS decryption");
+
+            if (ushark_init(pd)) {
+                pd->pcap.usk = ushark_new(PCAPD_DLT_RAW, "");
+                ushark_set_pref("tls.keylog_file", keylog_path);
+            }
+        }
+    }
 
 #if ANDROID
     char capture_interface[PATH_MAX] = "@inet";
@@ -634,18 +740,24 @@ int run_libpcap(pcapdroid_t *pd) {
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)
         return(-1);
 
+    if (pd->pcap.as_root) {
+        if ((sock = connectPcapd(pd)) < 0) {
+            rv = -1;
+            goto cleanup;
+        }
+    } else {
+        // file capture
+        char* error = NULL;
+        reader = pd_new_reader(pd->pcap.capture_interface, &error);
+        if (!reader) {
 #ifndef FUZZING
-    if((sock = connectPcapd(pd)) < 0) {
-        rv = -1;
-        goto cleanup;
-    }
-#else
-    // spawning a daemon is too expensive for fuzzing
-    if((sock = openPcap(pd)) < 0) {
-        rv = -1;
-        goto cleanup;
-    }
+            if (error)
+                log_f(error);
 #endif
+            rv = -1;
+            goto cleanup;
+        }
+    }
 
     if(pd->tls_decryption.enabled) {
         char args[128];
@@ -676,49 +788,32 @@ int run_libpcap(pcapdroid_t *pd) {
     if(pd->cb.notify_service_status && running)
         pd->cb.notify_service_status(pd, "started");
 
-    while(running) {
+    bool eof = false;
+    bool has_seen_packets = false;
+
+    while(running && !eof) {
         pcapd_hdr_t hdr;
-        fd_set fdset = {0};
 
-        FD_SET(sock, &fdset);
-
-        struct timeval timeout = {.tv_sec = 0, .tv_usec = SELECT_TIMEOUT_MS * 1000};
-
-        if(select(sock + 1, &fdset, NULL, NULL, &timeout) < 0) {
-            log_f("select failed[%d]: %s", errno, strerror(errno));
-            goto cleanup;
-        }
-
-        pd_refresh_time(pd);
-
-        if(!FD_ISSET(sock, &fdset))
-            goto housekeeping;
-
-        if(!running)
-            break;
-
+        reader_rv xrv = (reader != NULL) ?
+                read_file(pd, reader, &hdr, buffer) :
+                read_pcapd(pd, sock, &hdr, buffer);
+        switch (xrv) {
+            case READER_ERROR:
 #ifndef FUZZING
-        ssize_t xrv = xread(sock, &hdr, sizeof(hdr));
-        if(xrv != sizeof(hdr)) {
-            if(xrv < 0)
-                log_f("read hdr from pcapd failed[%d]: %s", errno, strerror(errno));
-            goto cleanup;
-        }
-        if(hdr.len > sizeof(buffer)) {
-            log_f("packet too big (%d B)", hdr.len);
-            goto cleanup;
-        }
-        if(xread(sock, buffer, hdr.len) != hdr.len) {
-            log_f("read %d B packet from pcapd failed[%d]: %s", hdr.len, errno, strerror(errno));
-            goto cleanup;
-        }
-#else
-        int xrv = nextPacket(pd, &hdr, buffer, sizeof(buffer));
-        if(xrv < 0)
-          goto cleanup;
-        else if(xrv == 0)
-          goto housekeeping;
+                if (reader != NULL)
+                    log_f(PD_ERR_PCAP_READ);
 #endif
+                goto cleanup;
+            case READER_CONTINUE:
+                goto housekeeping;
+            case READER_EOF:
+                eof = true;
+                pd_refresh_time(pd);
+                goto housekeeping; // last housekeeping
+            case READER_PACKET_OK:
+                has_seen_packets = true;
+                break;
+        }
 
         pd->num_dropped_pkts = hdr.pkt_drops;
 
@@ -735,7 +830,7 @@ int run_libpcap(pcapdroid_t *pd) {
         if(!handle_packet(pd, &hdr, buffer, ipoffset)) {
             // packet was rejected (unsupported/corrupted), dump to PCAP file anyway
             struct timeval tv = hdr.ts;
-            pd_dump_packet(pd, buffer + ipoffset, hdr.len - ipoffset, &tv, hdr.uid);
+            pd_dump_packet(pd, buffer + ipoffset, hdr.len - ipoffset, &tv, hdr.uid, hdr.ifid);
         }
 
     housekeeping:
@@ -747,13 +842,27 @@ int run_libpcap(pcapdroid_t *pd) {
         }
     }
 
+    if (eof && (reader != NULL) && !has_seen_packets &&
+            pd_has_unsupported_dlt_packets(reader) &&
+            (pd_get_dump_format(reader) == PCAPNG_DUMP)
+    ) {
+        // For Pcapng, the unsupported datalink error can only be triggered after
+        // processing the whole file
+#ifndef FUZZING
+        log_f(PD_ERR_UNSUPPORTED_DATALINK);
+#endif
+        rv = -1;
+        goto cleanup;
+    }
+
     rv = 0;
 
 cleanup:
     purge_expired_connections(pd, 1 /* purge_all */);
 
     if(pd->zdt) zdtun_finalize(pd->zdt);
-    if(sock > 0) close(sock);
+    if(sock >= 0) close(sock);
+    if(reader != NULL) pd_destroy_reader(reader);
 
     if(iptables_cleanup) {
         char args[128];
@@ -787,6 +896,13 @@ cleanup:
         pd->pcap.app_filter_uids_size = 0;
     }
 #endif
+
+    if (pd->pcap.usk) {
+        ushark_destroy(pd->pcap.usk);
+        pd->pcap.usk = NULL;
+
+        ushark_cleanup();
+    }
 
     return rv;
 }

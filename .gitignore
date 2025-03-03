@@ -13,6 +13,7 @@ local.properties
 .DS_Store
 build/
 captures/
+pcap/
 .externalNativeBuild
 .cxx
 app/release/

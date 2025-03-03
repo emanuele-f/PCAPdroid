@@ -1,164 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/firewall_status"
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
-    android:layout_margin="10dp">
+    android:id="@+id/scrollView"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="10dp"
+    android:fillViewport="true">
 
-    <ImageView
-        android:id="@+id/status_icon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="50dp"
-        app:tint="@color/ok"
-        tools:src="@drawable/ic_shield" />
-    <TextView
-        android:id="@+id/status"
-        android:layout_marginTop="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        tools:text="@string/firewall_is_enabled" />
-
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="10dp"
-        android:fillViewport="true">
-
-    <GridLayout
-        android:columnCount="2"
+    <LinearLayout
+        android:id="@+id/firewall_status"
         android:layout_width="match_parent"
+        android:orientation="vertical"
         android:layout_height="wrap_content"
-        android:descendantFocusability="blocksDescendants"
-        android:useDefaultMargins="true">
+        android:gravity="center_horizontal"
+        android:layout_margin="10dp">
 
-        <com.google.android.material.card.MaterialCardView
-            android:clickable="false"
-            android:focusable="false"
-            android:layout_width="0dp"
+        <ImageView
+            android:id="@+id/status_icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="50dp"
+            app:tint="@color/ok"
+            tools:src="@drawable/ic_shield" />
+        <TextView
+            android:id="@+id/status"
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1">
+            android:layout_marginBottom="30dp"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="@string/firewall_is_enabled" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="start"
-                android:layout_margin="15dp"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/connections_checked"/>
-                <TextView
-                    android:id="@+id/num_checked"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="30sp"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"
-                    tools:text="1.2 k"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/show_connections"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_width="0dp"
+        <GridLayout
+            android:columnCount="2"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1">
+            android:descendantFocusability="blocksDescendants"
+            android:useDefaultMargins="true">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="start"
-                android:layout_margin="15dp"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
+                android:layout_columnWeight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/connections_blocked"/>
-                <TextView
-                    android:id="@+id/num_blocked"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="30sp"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"
-                    tools:text="48"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    android:gravity="start"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="5dp"
+                        android:text="@string/connections_checked"/>
+                    <TextView
+                        android:id="@+id/num_checked"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        tools:text="1.2 k"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-
-        <com.google.android.material.card.MaterialCardView
-            android:clickable="false"
-            android:focusable="false"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1">
-
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/show_connections"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="start"
-                android:layout_margin="15dp"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/num_configured_rules"/>
-                <TextView
-                    android:id="@+id/num_rules"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="30sp"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"
-                    tools:text="21"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                android:layout_columnWeight="1">
 
-        <com.google.android.material.card.MaterialCardView
-            android:clickable="false"
-            android:focusable="false"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="5dp"
+                        android:text="@string/connections_blocked"/>
+                    <TextView
+                        android:id="@+id/num_blocked"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        tools:text="48"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+
+            <com.google.android.material.card.MaterialCardView
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="start"
-                android:layout_margin="15dp"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
+                android:layout_columnWeight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/last_firewall_block"/>
-                <TextView
-                    android:id="@+id/last_block"
-                    android:layout_width="wrap_content"
+                    android:gravity="start"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="5dp"
+                        android:text="@string/num_configured_rules"/>
+                    <TextView
+                        android:id="@+id/num_rules"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        tools:text="21"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="30sp"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"
-                    tools:text="13:04"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </GridLayout>
-    </ScrollView>
-</LinearLayout>
+                    android:gravity="start"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="5dp"
+                        android:text="@string/last_firewall_block"/>
+                    <TextView
+                        android:id="@+id/last_block"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        tools:text="13:04"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
+    </LinearLayout>
+</ScrollView>

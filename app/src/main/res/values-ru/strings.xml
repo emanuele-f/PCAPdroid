@@ -51,7 +51,7 @@
     <string name="dns_server">DNS сервер</string>
     <string name="apps">Приложения</string>
     <string name="pcap_file">PCAP файл</string>
-    <string name="pcap_file_info">Создать PCAP файл в памяти устройства</string>
+    <string name="pcap_file_info">Создать PCAP/Pcapng файл в памяти устройства</string>
     <string name="cannot_write_file">Невозможно записать файл</string>
     <string name="share">Поделиться</string>
     <string name="delete">Удалить</string>
@@ -77,9 +77,6 @@
     <string name="lang_english">Английский</string>
     <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
-    <string name="theme_light">Светлая</string>
-    <string name="theme_dark">Тёмная</string>
-    <string name="app_theme">Тема</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
     <string name="proxy_port">Порт прокси</string>
     <string name="root_capture">Захват в root режиме</string>
@@ -107,9 +104,6 @@
     <string name="unknown_app_info">Пометка \"Неизвестное\" присваивается соединениям, у которых не удалось определить приложение-источник</string>
     <string name="packets_dropped">Отброшенные пакеты</string>
     <string name="capture_prefs">Захват трафика</string>
-    <string name="pcapdroid_trailer">PCAPdroid trailer</string>
-    <string name="pcapdroid_trailer_summary">Trailer содержит дополнительные мета-данные (такие как название приложения), которые будут добавлены в дамп</string>
-    <string name="trailer_how_to">Как отобразить данные из Trailer в Wireshark</string>
     <string name="pending_transaction">Пожалуйста, завершите транзакцию для получения этой возможности</string>
     <string name="ctrl_consent">Внешнее приложение хочет начать захват трафика посредством PCAPdroid.\nЕсли вы не уверены (или это не вы), то отклоните запрос</string>
     <string name="deny">Отклонить</string>
@@ -125,7 +119,6 @@
     <string name="edit_list">Изменить список</string>
     <string name="hidden_connections_rules">Правила скрытия соединений</string>
     <string name="list_is_empty">Список пуст</string>
-    <string name="malicious_connection_app">Вредоносные соединения обнаружены (%1$s)</string>
     <string name="show_only_malicious">Вредоносные соединения</string>
     <string name="security">Безопасность</string>
     <string name="malware_detection">Обнаружение вредоносов</string>
@@ -295,9 +288,7 @@
     <string name="welcome_to_pcapdroid">Добро пожаловать в PCAPdroid</string>
     <string name="privacy_first">Конфиденциальность превыше всего</string>
     <string name="country_and_asn">Страна и ASN</string>
-    <string name="app_intro_traffic_dump">PCAPdroid предоставляет <a href="%1$s">несколько способов</a> получить дамп траффика в формате PCAP для дальнейшего анализа
-\n
-\nС помощью <a href="%2$s">опции trailer</a>, вы можете добавить в дамп названия приложений, чтобы отобразить их в Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid предоставляет <a href="%1$s">несколько способов</a> получить дамп траффика в формате PCAP для дальнейшего анализа\n\nС помощью <a href="%2$s">опции расширений PCAPdroid</a>, вы можете добавить в дамп названия приложений, чтобы отобразить их в Wireshark</string>
     <string name="app_intro_privacy_msg">Это приложение не содержит трекеры и аналитику, не собирает данные без вашего согласия.
 \n
 \nКак в этом убедиться\? Ознакомьтесь с <a href="%1$s">политикой конфиденциальности</a> и <a href="%2$s">исходным кодом</a></string>
@@ -355,7 +346,7 @@
     <string name="memory_usage">Использование памяти</string>
     <string name="cleartext_connection">Незашифрованно</string>
     <string name="vpn_exemptions_summary">Исключение некоторых приложений из VPN соединения. Их траффик не будет просматриваться</string>
-    <string name="vpn_exemptions">VPN Исключения</string>
+    <string name="vpn_exemptions">VPN исключения</string>
     <string name="notifications_notice">Приложение использует уведомления для оповещения в случае аномальных событий. Предоставьте ему разрешение на отправку уведомлений на следующем экране</string>
     <string name="cancel_action">Отмена</string>
     <string name="show_data_action">Показать данные</string>
@@ -429,7 +420,7 @@
     <string name="pcapng_format">Формат Pcapng</string>
     <string name="external_storage_perm_required">Требуется разрешение на доступ к внешнему накопителю</string>
     <string name="mitmproxy_opts">Дополнительные опции mitmproxy</string>
-    <string name="pcapng_format_summary">Делать дамп пакетов в формат pcapng, который позволяет встраивать секреты дешифрования TLS</string>
+    <string name="pcapng_format_summary">Делать дамп пакетов в формат Pcapng, который является более гибким и позволяет встраивать секреты дешифрования TLS</string>
     <string name="many_rules_warning">Вы пытаетесь импортировать множество правил, что может сделать приложение неотзывчивым в течение некоторых действий. Вы действительно хотите продолжить\?</string>
     <string name="use_system_dns_summary">Использовать системные DNS сервера, если это возможно</string>
     <string name="total_bytes">Всего байт</string>
@@ -466,18 +457,18 @@
     <string name="active_vpn_detected">Обнаружен активный VPN</string>
     <string name="copy_error">Не удаётся записать файл</string>
     <string name="proxy_host">Прокси хост</string>
-    <string name="pcap_load_in_progress">PCAP файл загружается, пожалуйста подождите</string>
-    <string name="open_pcap_file">Открыть PCAP файл…</string>
-    <string name="decryption_info_no_rule">Это соединение не будет дешифровано. Создайте правило для его дешифрования</string>
+    <string name="pcap_load_in_progress">Файл дампа загружается, пожалуйста подождите</string>
+    <string name="open_pcap_file">Открыть PCAP/Pcapng файл…</string>
+    <string name="decryption_info_no_rule">Для дешифрования этого соединения создайте соответствующее правило через боковое меню, либо через контекстное меню в списке соединений</string>
     <string name="host_resolution_failed">Не удалось разрешить хост %1$s</string>
     <string name="capture_interface_open_error">Не удалось открыть интерфейс захвата</string>
-    <string name="pcap_load_success">PCAP файл загружен</string>
-    <string name="invalid_pcap_file">Некорректный PCAP файл</string>
-    <string name="pcap_file_not_exists">Указанного PCAP файла не существует</string>
-    <string name="pcap_read_error">Ошибка чтения PCAP</string>
-    <string name="pcap_file_load_aborted">Загрузка PCAP файла прервана</string>
+    <string name="pcap_load_success">Файл захвата загружен</string>
+    <string name="invalid_pcap_file">Недопустимый формат файла захвата</string>
+    <string name="pcap_file_not_exists">Указанного файла не существует</string>
+    <string name="pcap_read_error">Ошибка чтения файла захвата. См. подробности в логах</string>
+    <string name="pcap_file_load_aborted">Загрузка файла захвата прервана</string>
     <string name="root_capture_start_failed">Не удалось начать захват. Убедитесь, что устройство рутовано с помощью Magisk</string>
-    <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед экспортом PCAP файла</string>
+    <string name="pcapdroid_trailer_notice">Чтобы отображать фактические приложения вместо \"%1$s\", убедитесь, что вы включили опцию \"%2$s\" перед генерацией дампа</string>
     <string name="never">Никогда</string>
     <string name="target_apps">Целевые приложения</string>
     <string name="target_apps_help">Выберите приложения для захвата</string>
@@ -493,7 +484,7 @@
     <string name="decrypt_quic_notice">Дешифрование QUIC в данный момент не поддерживается. В качестве временной меры, остановите захват и в настройках PCAPdroid включите опцию блокировки QUIC</string>
     <string name="headers">Заголовки</string>
     <string name="body">Тело</string>
-    <string name="unsupported_pcap_datalink">PCAP файл содержит неподдерживаемый datalink</string>
+    <string name="unsupported_pcap_datalink">Файл содержит неподдерживаемый datalink</string>
     <string name="export_ellipsis">Экспорт…</string>
     <string name="ipv6_bytes_rcvd">IPv6 байт получено</string>
     <string name="restart_on_disconnection_summary">Автоматически перезапускать захват после остановки другими VPN приложениями</string>
@@ -506,4 +497,40 @@
     <string name="update_available">Доступно обновление</string>
     <string name="mitm_addon_update_available">Доступно свежее обновление для mitm-дополнения. Обновитесь для получения последних исправлений</string>
     <string name="update_action">Обновить</string>
+    <string name="dump_extensions_summary">Расширяет формат дампа пакетов дополнительными метаданными, такими как название приложения, которое отправило/получило данный пакет</string>
+    <string name="dump_extensions_how_to">Как отобразить расширения дампа PCAPdroid в Wireshark</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="malicious_connection_description">Соединение из приложения \"%1$s\" вызвало срабатывание правила обнаружения вредоносов (%2$s)</string>
+    <string name="malicious_connections_notice">Черные списки могут содержать ошибки. Дважды убедитель в репутации адреса/домена в сети. Вы можете исключить ложные срабатывания через белый список</string>
+    <string name="ip_address_or_cidr">IP адрес / CIDR</string>
+    <string name="errno_econnaborted_msg">Соединение прервано, как правило, из-за переключения сети</string>
+    <string name="errno_enetreset_msg">Соединение сброшено промежуточным устройством (например роутером или мобильным оператором)</string>
+    <string name="errno_econnrefused_msg">Сервер отклонил соединение, что может означать высокую загруженность или неисправность сервера</string>
+    <string name="errno_etimedout_msg">Сервер отвечал слишком долго, вероятно из-за сетевых задержек или загруженности сервера</string>
+    <string name="geo_db_missing">Отсутствует база данных геолокации</string>
+    <string name="country_rules_warning">Чтобы использовать правила по странам, необходимо загрузить базу данных геолокации из настроек PCAPdroid, иначе правила по странам будут неэффективны</string>
+    <string name="unsupported_pcap_file">Неподдерживаемый формат файла захвата</string>
+    <string name="decrypt_pcap_file">Дешифровать PCAP/Pcapng файл…</string>
+    <string name="keylog_read_error">Ошибка чтения SSL keylog</string>
+    <string name="select_the_pcap_file">Выберите PCAP/Pcapng файл</string>
+    <string name="error_code_with_text">%1$s (ошибка %2$d)</string>
+    <string name="bytes_threshold">Пороговое значение в байтах</string>
+    <string name="select_the_keylog_file">Выберите файл SSL keylog</string>
+    <string name="errno_epipe">Соединение разорвано</string>
+    <string name="errno_econnaborted">Соединение прервано</string>
+    <string name="errno_enetunreach">Сеть недостижима</string>
+    <string name="errno_enetunreach_msg">Система не может найти корректый маршрут в сеть назначения</string>
+    <string name="errno_etimedout">Таймаут соединения</string>
+    <string name="errno_enetdown">Сеть отключена</string>
+    <string name="errno_enetdown_msg">Сетевой интерфейс отключен или не может подключиться к сети</string>
+    <string name="errno_enetreset">Соединение сброшено</string>
+    <string name="errno_econnreset">Соединение сброшено пиром</string>
+    <string name="errno_econnreset_msg">Сервер внезапно закрыл соединение, как правило, из-за сбоя или некорректного отключения</string>
+    <string name="errno_epipe_msg">Сервер внезапно закрыл соединение во время передачи данных</string>
+    <string name="errno_ehostunreach">Нет маршрута до хоста</string>
+    <string name="errno_ehostunreach_msg">Система не может найти маршрут до хоста назначения</string>
+    <string name="errno_econnrefused">Соединение отклонено</string>
+    <string name="tls_conn_info">TLS/HTTPS трафик зашифрован. Чтобы изучать этот трафик, вам необходимо его дешифровать. Загляните в <a href="%1$s">Руководство пользователя</a> PCAPdroid за деталями</string>
+    <string name="dns_conn_info">DNS преобразовывает доменное имя в IP адрес. Фактический обмен данными, как правило, идет через последующие HTTPS/TLS соединения</string>
+    <string name="dump_extensions">Расширения PCAPdroid</string>
 </resources>

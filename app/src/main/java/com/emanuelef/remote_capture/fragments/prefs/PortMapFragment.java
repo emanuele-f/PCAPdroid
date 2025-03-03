@@ -75,6 +75,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        view.setFitsSystemWindows(true);
         mListView = view.findViewById(R.id.listview);
         mEmptyText = view.findViewById(R.id.list_empty);
         mPortMap = new PortMapping(requireContext());
@@ -134,6 +135,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
                 mSelected = new ArrayList<>();
             }
         });
+        Utils.fixListviewInsetsBottom(mListView);
 
         recheckListSize();
     }

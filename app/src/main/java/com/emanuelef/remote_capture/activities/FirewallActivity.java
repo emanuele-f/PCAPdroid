@@ -34,6 +34,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.fragments.EditListFragment;
 import com.emanuelef.remote_capture.fragments.FirewallStatus;
 import com.emanuelef.remote_capture.model.ListInfo;
@@ -61,6 +62,7 @@ public class FirewallActivity extends BaseActivity {
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPager = findViewById(R.id.pager);
+        Utils.fixViewPager2Insets(mPager);
         setupTabs();
     }
 
@@ -77,9 +79,9 @@ public class FirewallActivity extends BaseActivity {
                 case POS_STATUS:
                     return new FirewallStatus();
                 case POS_BLOCKLIST:
-                    return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST);
+                    return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST, false);
                 case POS_WHITELIST:
-                    return EditListFragment.newInstance(ListInfo.Type.FIREWALL_WHITELIST);
+                    return EditListFragment.newInstance(ListInfo.Type.FIREWALL_WHITELIST, false);
             }
         }
 

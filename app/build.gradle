@@ -14,22 +14,37 @@ android {
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
-        compileSdk 34
-        targetSdk 34
-        versionCode 76
-        versionName "1.7.3"
+        compileSdk 35
+        targetSdk 35
+        versionCode 79
+        versionName "1.8.0"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
-        resourceConfigurations += ["en", "ar", "de", "es", "in", "it", "ru", "tr", "uk", "zh-rCN"]
+        resourceConfigurations += ["en", "ar", "az", "de", "es", "in", "it", "pl", "ru", "ta", "tr",
+                                   "uk", "zh-rCN"]
 
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
+    flavorDimensions = ["type"]
+
+    productFlavors {
+        /* Note: alphabetical order determines the default flavor, which is standard */
+        standard {
+            dimension "type"
+        }
+
+        withoutUshark {
+            dimension "type"
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             // Use a different app ID for debug to allow its coexistence with release builds
@@ -50,6 +65,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     packagingOptions {
         jniLibs {
             // NOTE: needed to unpack libpcapd.so when installed as app bundle
@@ -66,12 +85,16 @@ android {
 
     compileOptions {
         encoding "UTF-8"
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true // support devices running older Java versions
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     sourceSets {
         main.java.srcDirs += '../submodules/MaxMind-DB-Reader-java/src/main/java'
+
+        // Note: must use "setRoot" to make this a per-flavor setting
+        standard.setRoot('../submodules/PCAPdroid-ushark-bin/release')
     }
 
     testOptions {
@@ -85,21 +108,22 @@ dependencies {
 // Tests
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.6.1'
-    testImplementation "org.robolectric:robolectric:4.11.1"
+    testImplementation "org.robolectric:robolectric:4.14.1"
 
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.fragment:fragment:1.8.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.fragment:fragment:1.8.6'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    implementation "androidx.navigation:navigation-fragment:2.7.7"
-    implementation "androidx.navigation:navigation-ui:2.7.7"
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation "androidx.navigation:navigation-fragment:2.8.8"
+    implementation "androidx.navigation:navigation-ui:2.8.8"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
 // Google
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party

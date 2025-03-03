@@ -61,6 +61,7 @@ public class AppDetailsActivity extends BaseActivity {
         setupUidFilter();
 
         mPager = findViewById(R.id.pager);
+        Utils.fixViewPager2Insets(mPager);
         setupTabs();
     }
 
