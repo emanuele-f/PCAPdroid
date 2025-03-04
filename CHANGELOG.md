@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.1] - 2025-03-04
+- Fix crash on capture start if the geolocation db was downloaded
+
 ## [1.8.0] - 2025-03-03
 - Android 15 support with edge-to-edge UI
 - Decrypt TLS traffic in PCAP/Pcapng files (Wireshark integration)
