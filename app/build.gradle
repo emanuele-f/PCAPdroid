@@ -16,8 +16,8 @@ android {
         minSdkVersion 21
         compileSdk 35
         targetSdk 35
-        versionCode 80
-        versionName "1.8.1"
+        versionCode 81
+        versionName "1.8.2"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
@@ -123,7 +123,7 @@ dependencies {
 
 // Google
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party
