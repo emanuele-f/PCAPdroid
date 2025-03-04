@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.2] - 2025-03-04
+- Fix crash on capture start with port mapping rules
+
 ## [1.8.1] - 2025-03-04
 - Fix crash on capture start if the geolocation db was downloaded
 
