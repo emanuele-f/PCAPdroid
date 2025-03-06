@@ -36,10 +36,10 @@ import java.util.List;
 public class SkusAvailability implements Serializable {
     private final static String TAG = "SkusAvailability";
     private final static String PREF_KEY = "available_skus";
-    private final ArraySet<String> mSkus;
+    private final HashSet<String> mSkus;
 
     private SkusAvailability() {
-        mSkus = new ArraySet<>();
+        mSkus = new HashSet<>();
     }
 
     public static SkusAvailability load(SharedPreferences prefs) {
