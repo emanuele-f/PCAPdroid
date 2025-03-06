@@ -324,9 +324,7 @@
     <string name="requesting_unlock_token">Demande d\'un \"unlock token\", veuillez patienter</string>
     <string name="vpn_exemptions">Exception du VPN</string>
     <string name="remote_server_warning">Pour des raisons de sécurité, envoyer du trafic au serveur distant \"%1$s\" n\'est pas autorisé</string>
-    <string name="vpn_setup_msg">PCAPdroid simule un VPN pour pouvoir capturer le trafic réseau sans être root.
-\n
-\nPour lancer la capture, vous devez accepter la requête VPN de la page suivante</string>
+    <string name="vpn_setup_msg">PCAPdroid simule un VPN pour pouvoir capturer le trafic réseau sans être root. \n \nPour lancer la capture, vous devez accepter la requête VPN de la page suivante.\n\n<b>NOTE :</b> pour continuer, désactivez tout \"VPN permanent\" que vous auriez configuré depuis les paramètres Android</string>
     <string name="vpn_exemptions_summary">Exclure certaines applications de la connexion VPN. Leur trafic ne pourra pas être suivi</string>
     <string name="payload_scams_notice">Cette vue peut contenir des informations sensibles, comme des mots de passe ou des jetons d\'accès.
 \n
