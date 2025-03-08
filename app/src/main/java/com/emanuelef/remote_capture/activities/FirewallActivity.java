@@ -79,9 +79,9 @@ public class FirewallActivity extends BaseActivity {
                 case POS_STATUS:
                     return new FirewallStatus();
                 case POS_BLOCKLIST:
-                    return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST, false);
+                    return EditListFragment.newInstance(ListInfo.Type.BLOCKLIST);
                 case POS_WHITELIST:
-                    return EditListFragment.newInstance(ListInfo.Type.FIREWALL_WHITELIST, false);
+                    return EditListFragment.newInstance(ListInfo.Type.FIREWALL_WHITELIST);
             }
         }
 
