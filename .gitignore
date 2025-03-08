@@ -18,6 +18,8 @@ pcap/
 .cxx
 app/release/
 app/debug/
+app/standard/
+app/withoutUshark/
 keystore
 
 # Python
