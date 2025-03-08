@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion "26.1.10909125"
+    ndkVersion "26.3.11579264"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
