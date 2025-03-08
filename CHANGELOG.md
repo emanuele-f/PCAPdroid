@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.3] - 2025-03-08
+- Fix crash when adding a protocol filter
+- Fix possible Skus deserialization errors (Play build)
+- Fix empty state not visible in edit list views
+- Support building ushark from the source (F-Droid)
+- Update NDK to r26d
+
 ## [1.8.2] - 2025-03-04
 - Fix crash on capture start with port mapping rules
 
