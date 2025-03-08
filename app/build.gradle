@@ -9,15 +9,15 @@ android {
             keyPassword 'android'
         }
     }
-    ndkVersion "26.1.10909125"
+    ndkVersion "26.3.11579264"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         compileSdk 35
         targetSdk 35
-        versionCode 81
-        versionName "1.8.2"
+        versionCode 82
+        versionName "1.8.3"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml

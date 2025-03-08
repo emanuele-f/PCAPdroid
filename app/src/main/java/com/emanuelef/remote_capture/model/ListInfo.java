@@ -141,7 +141,7 @@ public class ListInfo {
         }
     }
 
-    public EditListFragment newFragment(boolean fitsSystemWindows) {
-        return EditListFragment.newInstance(mType, fitsSystemWindows);
+    public EditListFragment newFragment() {
+        return EditListFragment.newInstance(mType);
     }
 }

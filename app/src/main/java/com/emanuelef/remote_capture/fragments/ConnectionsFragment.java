@@ -843,6 +843,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if ((reg != null) && (minSizeKB > 0)) {
             long maxSizeKb = reg.getMaxBytes() / 1024;
+            maxSizeKb = Math.max(maxSizeKb, minSizeKB);
+
             if (maxSizeKb >= 2) {
                 // NOTE: visible -> hidden transition is performed in onStopTrackingTouch
                 mSizeSlider.setValueTo(maxSizeKb);

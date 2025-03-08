@@ -82,18 +82,16 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     private static final int MAX_RULES_BEFORE_WARNING = 5000;
     private static final String TAG = "EditListFragment";
     private static final String LIST_TYPE_ARG = "list_type";
-    private static final String FITS_SYSTEM_WINDOWS_ARG = "fits_system_windows";
 
     private final ActivityResultLauncher<Intent> exportLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::exportResult);
     private final ActivityResultLauncher<Intent> importLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::importResult);
 
-    public static EditListFragment newInstance(ListInfo.Type list, boolean fitsSystemWindows) {
+    public static EditListFragment newInstance(ListInfo.Type list) {
         EditListFragment fragment = new EditListFragment();
         Bundle args = new Bundle();
         args.putSerializable(LIST_TYPE_ARG, list);
-        args.putSerializable(FITS_SYSTEM_WINDOWS_ARG, fitsSystemWindows);
 
         fragment.setArguments(args);
         return fragment;
@@ -110,10 +108,10 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListView = view.findViewById(R.id.listview);
         mEmptyText = view.findViewById(R.id.list_empty);
+        view.findViewById(R.id.simple_list).setFitsSystemWindows(true);
 
         assert getArguments() != null;
         mListInfo = new ListInfo(Utils.getSerializable(getArguments(), LIST_TYPE_ARG, ListInfo.Type.class));
-        boolean fitsSystemWindows = Boolean.TRUE.equals(Utils.getSerializable(getArguments(), FITS_SYSTEM_WINDOWS_ARG, Boolean.class));
         mList = mListInfo.getList();
         mList.addListChangeListener(this);
 
@@ -174,11 +172,6 @@ public class EditListFragment extends Fragment implements MatchList.ListChangeLi
                 mActionMode = null;
             }
         });
-
-        if (fitsSystemWindows)
-            mListView.setFitsSystemWindows(true);
-        else
-            Utils.fixListviewInsetsBottom(mListView);
 
         mAdapter.reload(mList.iterRules());
         recheckListSize();

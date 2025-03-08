@@ -391,8 +391,11 @@ public class Utils {
     public static String[] getL7Protocols() {
         if(l7Protocols == null) {
             List<String> protos = CaptureService.getL7Protocols();
-            Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
-            l7Protocols = protos.toArray(new String[0]);
+
+            if (protos != null) {
+                Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
+                l7Protocols = protos.toArray(new String[0]);
+            }
         }
 
         return l7Protocols;
@@ -1693,6 +1696,9 @@ public class Utils {
     }
 
     public static String uriToFilePath(Context ctx, Uri uri) {
+        if (uri == null)
+            return null;
+
         // https://gist.github.com/r0b0t3d/492f375ec6267a033c23b4ab8ab11e6a
         if (isExternalStorageDocument(uri)) {
             final String docId = DocumentsContract.getDocumentId(uri);
