@@ -1073,12 +1073,16 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     if(!ndpi)
         return(NULL);
 
+    NDPI_PROTOCOL_BITMASK protocols;
+    NDPI_BITMASK_SET_ALL(protocols);
+    ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
+
     jobject plist = (*env)->NewObject(env, arrayListClass, arrayListNew);
     if((plist == NULL) || jniCheckException(env))
-        return false;
+        return NULL;
 
     bool success = true;
-    int num_protos = (int)ndpi_get_ndpi_num_supported_protocols(ndpi);
+    int num_protos = (int) ndpi_get_ndpi_num_supported_protocols(ndpi);
     ndpi_proto_defaults_t* proto_defaults = ndpi_get_proto_defaults(ndpi);
 
     ndpi_protocol_bitmask_struct_t unique_protos;

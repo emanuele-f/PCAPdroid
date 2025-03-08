@@ -391,8 +391,11 @@ public class Utils {
     public static String[] getL7Protocols() {
         if(l7Protocols == null) {
             List<String> protos = CaptureService.getL7Protocols();
-            Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
-            l7Protocols = protos.toArray(new String[0]);
+
+            if (protos != null) {
+                Collections.sort(protos, String.CASE_INSENSITIVE_ORDER);
+                l7Protocols = protos.toArray(new String[0]);
+            }
         }
 
         return l7Protocols;
