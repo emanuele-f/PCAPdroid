@@ -277,7 +277,7 @@
     <string name="geolocation">Bölgə</string>
     <string name="geolocation_summary">Oflayn axtarışlar edərək ölkə və ASN məlumatlarını göstər</string>
     <string name="download_in_progress">Yükləmə davam edir, zəhmət olmasa, gözləyin</string>
-    <string name="pcap_load_in_progress">PCAP faylının yüklənməsi davam edir, zəhmət olmasa, gözləyin</string>
+    <string name="pcap_load_in_progress">PCAP faylının yüklənməsi davam edir, zəhmət olmasa gözləyin</string>
     <string name="download_failed">Yükləmə uğursuz oldu</string>
     <string name="database">Məlumat bazası</string>
     <string name="built_on">Yaradıldı: %1$s</string>
@@ -317,9 +317,9 @@
     <string name="capture_stopped_low_memory">İzləmə prossesi dayandırıldı</string>
     <string name="heap_usage">Heap istifadəsi</string>
     <string name="vpn_exemptions">VPN istisnaları</string>
-    <string name="unlock_token_error">unlock token istəyi mümkün olmadı [%1$d]: %2$s</string>
+    <string name="unlock_token_error">kilidli jeton istəyi mümkün olmadı [%1$d]: %2$s</string>
     <string name="license_service_unavailable">PCAPdroid lisenziya xidməti hal-hazırda əlçatan deyil. Zəhmət olmasa, bir neçə dəqiqə sonra yenidən cəhd edin</string>
-    <string name="requesting_unlock_token">Unlock token istənilir, zəhmət olmasa, gözləyin</string>
+    <string name="requesting_unlock_token">Kilidaçma jetonu istənilir, zəhmət olmasa, gözləyin</string>
     <string name="show_action">Göstər</string>
     <string name="paid_feature">Ödənişli xüsusiyyət</string>
     <string name="firewall_purchase_msg">Bağlantıları bloklamağa başlamaq üçün <i>%1$s</i> xüsusiyyətini alın</string>
@@ -366,7 +366,7 @@
     <string name="capture_interface_open_error">İzləmə interfeysini açmaq mümkün olmadı</string>
     <string name="pcap_file_not_exists">Təyin edilən PCAP faylı mövcud deyil</string>
     <string name="root_capture_start_failed">İzləməni başlatmaq mümkün olmadı. Cihazın Magisk ilə root edildiyindən əmin olun</string>
-    <string name="pcap_read_error">PCAP oxuma xətası</string>
+    <string name="pcap_read_error">Yaxalanan fayl oxunarkən xəta.Ətraflı məlumat üçün günlüyü yoxla</string>
     <string name="pcap_file_load_aborted">PCAP faylının yüklənməsi ləğv edildi</string>
     <string name="host_resolution_failed">%1$s host ünvanı problemini həll etmək mümkün olmadı</string>
     <string name="active_vpn_detected">Aktiv VPN aşkarlandı</string>
@@ -446,7 +446,7 @@
     <string name="unlock_token_summary">Tətbiqin Google Play xarici versiyalarında (məsələn, F-Droid/Github) ödənişli xüsusiyyətləri açmaq üçün istifadə edilən jeton</string>
     <string name="firewall_whitelist_help">Bu qaydalar hansı bağlantılara icazə veriləcəyini müəyyən edir. Bloklama siyahısı qaydalarının ağ siyahı qaydalarından daha üstündür</string>
     <string name="port_mapping_summary">Bağlantıları fərqli host və ya porta yenidən yönləndirmək üçün port yönləndirmə qaydalarını konfiqurasiya edin</string>
-    <string name="pcapng_format_summary">Paketlərin, TLS deşifrləmə gizliliklərinə yeridilməsinə imkan verən \"pcapng dump\" formatına demping et</string>
+    <string name="pcapng_format_summary">Paketləri TLS deşifrələmə gizliliklərinə yeridilməsinə imkan verən \"pcapng dump\" formatına yığ</string>
     <string name="license_error">Lisenziya yaratma xətası[%1$d]: %2$s</string>
     <string name="mitm_addon_autostart_workaround">Ortadakı adam hücumu əlavəsinə bağlanma uğursuz oldu. Müvəqqəti həll üçün ortadakı adam hücumu əlavəsi tətbiqini açmağı və onu bağlamadan PCAPdroid tətbiqinə geri qayıtmağı yoxlaya bilərsiniz. Onu indi açmaq istəyirsinizmi?</string>
     <string name="requesting_license">Yeni lisenziya istənilir, zəhmət olmasa, gözləyin</string>
@@ -459,10 +459,44 @@
     <string name="unsupported_pcap_datalink">PCAP faylında dəstəklənməyən məlumat linki var</string>
     <string name="root_capture_pcapd_start_failure">İzləməni başlatamq mümkün olmadı. PCAPdroid-ə root icazəsi verdiyinizdən əmin olun</string>
     <string name="pcapdroid_trailer_notice">\"%1$s\" yerinə gerçək tətbiqləri göstərmək üçün PCAP faylının idxal olunmasından əvvəl \"%2$s\" seçiminin aktiv olduğundan əmin olun</string>
-    <string name="decryption_info_no_rule">Bu bağlantı deşifrələnməyəcək. Onu deşifrələmək üçün deşifrələmə qaydası yaradın</string>
+    <string name="decryption_info_no_rule">Bu bağlantını deşifrələməkçün, sol çəkməcədə ya da bağlantı siyahısındakı mətn əsaslı menyudan deşifrələmə qaydası yaradın.</string>
     <string name="vpn_setup_msg">PCAPdroid, şəbəkə trafikini root olmadan izləmək üçün VPN kimi davranır.\n\nİzləməni başlatmaq üçün bir sonrakı ekranda VPN istəyini qebul etməlisiniz.\n\n<b>QEYD:</b> Davam etmək üçün Andoid parametrlərindən konfiqurasiya edilmiş hər zaman açıq VPN-ləri dekativ edin</string>
     <string name="app_intro_traffic_inspection">Daxili dekoderlər sayəsində HTTP istəkərini, cavabları və xam məlumatları yoxlamaq asandır\n\nŞifrəli bağlantınız varmı? Deşifrələnmiş məlumatları əldə etmək üçün <a href="%1$s">TLS deşifrələməsini</a> aktiv edə bilərsiniz</string>
     <string name="app_intro_firewall_msg">Daxili <a href="%1$s">təhlükəsizlik divarı</a> ilə fərdi tətbiqlərə və domenlərə internet çıxışını asanlıqla bloklaya bilərsiniz\n\nBunu daxili trafik monitorinqi funksiyası ilə birləşdirərək gizliliyinizi qorumaq üçün çox yaxşı bir alət əldə edin</string>
-    <string name="app_intro_traffic_dump">PCAPdroid, daha çox analiz üçün trafiki standart PCAP formatında dempinq etmək üçün <a href="%1$s">müxtəlif seçimlər, üsullar</a> təqdim edir\n\n<a href="%2$s">treyler seçimi</a> ilə siz paketlərə tətbiq adlarını əlavə edə və onları Wirshark-da göstərə bilərsiniz</string>
+    <string name="app_intro_traffic_dump">PCAPdroid, daha çox analiz üçün trafiki standart PCAP formatında yığmaq üçün <a href="%1$s">müxtəlif seçimlər, üsullar</a> təqdim edir\n\n<a href="%2$s">treyler seçimi</a> ilə siz paketlərə tətbiq adlarını əlavə edə və onları Wirshark-da göstərə bilərsiniz</string>
     <string name="tls_decryption_with_root_msg">TLS deşifrələməsini root-la işlətmə funksiyası eksperimental xüsusiyyətdir. Məlum olan xətaların siyahısı:\n\n- PCAPdroid-də trafiki orijinal tətbiq yerinə ortadakı adam hücumu əlavəsi tətbiqindən hazırlanmış şəkildə görəcəksiniz\n- tətbiq filteri təyin olunduğunda deşifrələmə sadəcə hədəf tətbiq üçün keçərli olacaqdır, lakin PCAPdroid hələ də digər tətbiqlərin trafikini göstərəcəkdir\n- əgər izləməni başlatmaq uğursuz olduqda iptables əmrini həqiqətən root olaraq işə saldığınızdan əmin olun (məs. termux ilə)\n- bu, android 12 və sonrakı versiyalarda işləməyə bilər\n- əgər VPN tətbiqi işləmirsə, deşifrələmə üçün xüsusi bir tətbiq seçməlisiniz və ya VPN-dən PCAPdroid ortadakı adam hücumu əlavəsini istisna etməlisiniz, əks halda trafik sonsuz döngəyə girəcəkdir.</string>
+    <string name="malicious_connections_notice">Qara siyahılarda müsbət yalnışlar olabilir.İki dəfə basmaqla İP adres/yer adı bilinirliyindən əmin olun. Zərərli tətbiq ağ siyahısı ilə,müsbət yalnışları kənar tutabilərsiz.</string>
+    <string name="dump_extensions">PCAPdroid əlavələri</string>
+    <string name="dump_extensions_how_to">PCAPdroid məlumat yığını uzantılarını Wiresharkda necə görüntülənir</string>
+    <string name="malicious_connection_description">"\"%1$s\" Programından gələn qoşulma,  zərərli tətbiq təspit qaydasını tətiklədi  (%2$s)"</string>
+    <string name="geo_db_missing">Coğrafi məlumat bazası çatışmır</string>
+    <string name="country_rules_warning">Ölkə üzrə qorunma qaydalarını istifadə etmək üçün,PCAPdroid coğrafi məlumat bazasından ayarları yükləyin,əks halda ölkə üzrə qaydalar təsirsiz olacaq</string>
+    <string name="unsupported_pcap_file">Dəstəklənməyən yaxalama qovluq formatı</string>
+    <string name="decrypt_pcap_file">Şifrəsizləşdir PCAP/Pcaping faylı…</string>
+    <string name="keylog_read_error">SSL açar günlüyü oxu xətası</string>
+    <string name="bytes_threshold">Bit limiti</string>
+    <string name="select_the_pcap_file">PCAP/Pcapng fayl seç</string>
+    <string name="select_the_keylog_file">SSL açar günlüyü faylını seç</string>
+    <string name="error_code_with_text">%1$s (xəta %2$d)</string>
+    <string name="errno_epipe">Sınıq boru</string>
+    <string name="errno_epipe_msg">Məlumat ötürülməsi zamanı,server gözlənilmədən qapandı</string>
+    <string name="errno_enetdown">Şəbəkə çöküb</string>
+    <string name="errno_enetdown_msg">Şəbəkə görünürü çöküb ya da şəbəkəyə qoşulabilmir</string>
+    <string name="errno_enetunreach">Şəbəkə əlçatmazdır</string>
+    <string name="errno_enetunreach_msg">Sistem hədəfə çatmaq üçün, rəsmi yol tapmadı</string>
+    <string name="errno_enetreset">Şəbəkə sıfırla</string>
+    <string name="errno_econnreset_msg">Server,çökmə və istənməyən söndürülmə səbəb ilə qoşulmanı bağladı</string>
+    <string name="errno_econnrefused_msg">Server qoşulmanı rəddetdi,bu da çox məşğulluğ ya da nasazlığ göstəricisidir</string>
+    <string name="dns_conn_info">DNS çevirir sahə adları ip adresə çevirir.Əsas məlumat sonra HTTPS/TLS qoşulma üzərindən alışverişlənir</string>
+    <string name="dump_extensions_summary">Paket yığını formatını əlavə metadata ilə genişləndir,hansı ki verilən göndər/götür paketini</string>
+    <string name="errno_enetreset_msg">Şəbəkə aradakı ötürücü cihaz tərəfindən sıfırlandı (misal:yönləndirici ya da sim operator )</string>
+    <string name="errno_econnaborted">Qoşulma dayandı</string>
+    <string name="errno_econnaborted_msg">Şəbəkə keçişinə görə qoşulma dayandı</string>
+    <string name="errno_econnreset">Şəbəkə digər ucda sıfırlandı</string>
+    <string name="errno_etimedout">Qoşulma vaxtı bitdi</string>
+    <string name="errno_etimedout_msg">Server cavabı uzun çəkdi, şəbəkə gecikməsi ya da server məşğulluğu səbəbi ilə</string>
+    <string name="errno_econnrefused">Qoşulma rədd edildi</string>
+    <string name="errno_ehostunreach">Barındırıcıya marşrut yoxdur</string>
+    <string name="errno_ehostunreach_msg">Sistem hədəf barındırıcıya marşrutu tapmadı</string>
+    <string name="tls_conn_info">TLS/HTTPS trafiki şifrəlidir.Bu trafiki incələmək üçün,deşifrləməyə ehtiyacın var.Yoxla PCAPdroid <a href="%1$s">istifadəçi təlimatını</a> ətraflı üçün</string>
 </resources>
