@@ -1478,7 +1478,6 @@ public class Utils {
         return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() +
                 (!PCAPdroid.getInstance().isUsharkAvailable() ? " (withoutUshark)" : "") + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
-                "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
                 "Device: " + getDeviceModel() + (rooted ? " (rooted)" : "") + "\n" +
                 "OS version: " + getOsVersion() + "\n";

@@ -15,8 +15,6 @@ android {
         // NOTE: keep in sync with locales_config.xml
         resourceConfigurations += ["en", "ar", "az", "de", "es", "in", "it", "pl", "ru", "ta", "tr",
                                    "uk", "zh-rCN"]
-
-        buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
     flavorDimensions = ["type"]
