@@ -70,35 +70,45 @@ For example, to avoid decrypting connections to port 1234, you can use `--ignore
 
 ## 3.4 Caveats and possible solutions
 
-Google chrome is a relatively easy app to decrypt. If you try to decrypt other apps you will soon face some problems, which can mostly addressed with a rooted device and the right tools.
+Google Chrome is a relatively easy app to decrypt. If you try to decrypt other apps you will soon face some problems, which can mostly be addressed with a rooted device and the right tools.
 
 ### 3.4.1 The client does not trust the mitm certificate
-
-This decryption error may occur for different reasons:
-
-- Android > 7 and app target SDK > 23
-- App uses a custom certificates trust store
-- [Certificate pinning](https://developer.android.com/training/articles/security-ssl#Pinning) enabled on the app
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/gh-pages/images/tls_cert_not_trusted.jpg" width="250" />
 </p>
 
-If you are on Android 7 or newer and the app you are decrypting has target SDK > 23, which is usually the case, the mitm certificate will be rejected, as apps do not trust user certificates anymore. In order to overcome this issue, you either need to:
+If you see the above error "*client does not trust proxy's certificate*" while decryption, it may occur due to the following reasons:
 
-- If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA. In the network security config xml, you can specify TLDs, for example `<domain includeSubdomains="true">com</domain>` to use the CA to mitm any `.com` domain. To specify the certificate, rename the PCAPdroid CA certificate you exported during the TLS decryption setup to `pcapdroid.crt` and place it under the `raw` resources folder. Please also note that some libraries may use a custom trust store, refer to their documentation on this subject
-- On a device rooted with magisk, you can install the [Custom Certificate Authorities module](https://github.com/whalehub/custom-certificate-authorities) (Android 11+) or the [MagiskTrustUserCerts module](https://github.com/NVISOsecurity/MagiskTrustUserCerts), and then install the [hashed certificate](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#instructions) (replace `mitmproxy-ca-cert.cer` with the PCAPdroid certificate name) as a system certificate. This is the suggested solution if you have magisk
-- On any rooted device, you can install the certificate [into the system store](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), by mounting the system partition as `rw`
-- You can use [apktool](https://ibotpeaches.github.io/Apktool) to decompile the app, lower its target SDK to 23, and rebuild it
+- Starting from Android 7, when targetting the Android SDK 23 or later, apps no longer trust any user-installed certificates and instead rely only on the system-installed certificates i.e those that came pre-installed in your phone's OS, installed by default
+- An app may use its own internal database of root certificates. For example some apps (mainly browsers) implement a custom certificate trust store, separate from the system store. This will prevent them from using any certificates stored on your device certificate store. You should check if they have an option to disable it. For example, in Firefox, [you can do this](https://support.mozilla.org/en-US/questions/1304237) via `about:config`. If such option is not available, you will need to patch the app
+- The app may employ [Certificate pinning](https://developer.android.com/training/articles/security-ssl#Pinning) security measure which means that the app actively performs certificate verification against a whitelist embedded in the app. This is usually set through network_security_config.xml file in the app code. We shall discuss solutions for this in following sections
+
+#### Using a rooted Android device
+
+-  On a device rooted with Magisk, you can install the [Custom Certificate Authorities module](https://github.com/whalehub/custom-certificate-authorities) (Android 11+) or the [MagiskTrustUserCerts module](https://github.com/NVISOsecurity/MagiskTrustUserCerts), and then install the [hashed certificate](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#instructions) (replace `mitmproxy-ca-cert.cer` with the PCAPdroid certificate name) as a system certificate. This is the suggested solution if you have Magisk
+- On any rooted device, you can install the certificate [into the system store](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), by mounting the system partition as read-write (rw)
+- Alternatively you can install the [LSposed](https://github.com/LSPosed/LSPosed) module. Then install the [sslunpinning](https://github.com/Xposed-Modules-Repo/io.github.tehcneko.sslunpinning/releases) module
 - You can use [VirtualXposed](https://github.com/android-hacker/VirtualXposed) to virtualize your app, making it run as it was SDK 23 (Android 11 and later  [currently not supported](https://github.com/android-hacker/VirtualXposed/issues/1073)). To do so, open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method). Then in PCAPdroid, select VirtualXposed as the target app for the decryption. Virtualization is quite unreliable, so expect crashes
 
-Additionally, some apps (mainly browsers) implement a custom certificate trust store, separate from the system store. You should check if they have an option to disable it, for example, in Firefox [you can do this](https://support.mozilla.org/en-US/questions/1304237) via `about:config`. If such option is not available, you will need to patch the app.
+#### Using a rooted Android emulator
 
-If the client still refuses to connect, then the app may employ certificate pinning, which means that the app actively performs certificate verification against a whitelist. To bypass this, you either need to:
+ - If you don't want to root your device or can't root it, you can try the same above steps on an Android emulator and it should give the same results. The recommendation for Android emulator is Android Studio's default virtual device manager as it will give you options of emulator with all sdk versions. Here is a [video tutorial](https://www.youtube.com/watch?v=QzsNn3GhYYk) on how to set up an Android emulator and root it
 
-- On a device rooted with magisk, install the [LSposed](https://github.com/LSPosed/LSPosed) module. Then install the [sslunpinning](https://github.com/Xposed-Modules-Repo/io.github.tehcneko.sslunpinning/releases) module
-- You can use [apk-mitm](https://github.com/shroudedcode/apk-mitm) to rebuild a patched apk with pinning disabled
-- If none of the above works, then the app may use custom pinning logic, in which case you will need to unpack, reverse engineer, and patch it
+#### Patching the APK
+
+- You can use [apk-mitm](https://github.com/shroudedcode/apk-mitm) which automates rebuilding the apk with the pinning logic disabled and signs the apk for installation without errors
+- Another tool that could be useful is [android-unpinner](https://github.com/mitmproxy/android-unpinner) which may have some benefits over the apk-mitm tool
+- You can use [apktool](https://apktool.org/) to decompile the app, lower its target SDK to 23, and rebuild it
+- If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA.This would require you to have android studio or another IDE installed for editing the code and build the app. In the network security config xml, you can specify top level domains (TLDs), for example `<domain includeSubdomains="true">com</domain>`, to use the CA to mitm any `.com` domain. To specify the certificate, rename the PCAPdroid CA certificate you exported during the TLS decryption setup to `pcapdroid.crt` and place it under the `raw` resources folder. Please also note that some libraries may use a custom trust store; refer to their documentation on this subject
+
+#### Reverse engineering apks and other advanced topics
+
+- If none of the above mentioned method works, then the app may use custom pinning logic, in which case you will need to decompile the app, reverse engineer the app, and patch it. Commonly used softwares for decompiling apps are [JADX](https://github.com/skylot/jadx), [apktool](https://apktool.org/). For a guide on how to use this, refer to [blog](https://hackernoon.com/apk-decompilation-a-beginners-guide-for-reverse-engineers) and to this [video tutorial](https://www.youtube.com/watch?v=QwwLSyRzNwo) by John Hammond
+- Along with patching an Android app, you could take help of tools like [Objection](https://github.com/sensepost/objection) and [Frida tools](https://github.com/sensepost/objection) to bypass ssl pinning.
+For a full guide on how to use these tools, you can refer to this [video tutorial](https://www.youtube.com/watch?v=R3ptGaFW1AU). Instead of using the Burp Suite as in the tutorial, you could instead use pcapdroid-mitm or an [external mitmproxy](https://github.com/emanuele-f/PCAPdroid/edit/gh-pages/tls_decryption.md#35-decrypting-via-an-external-mitmproxy), if you just want to decrypt TLS traffic
+- You can also refer to the [OWASP mobile security](https://mas.owasp.org/MASTG/0x04c-Tampering-and-Reverse-Engineering/#references) website which has a repository of mobile application pen-testing and reverse-engineering [tools](https://mas.owasp.org/MASTG/tools/) discussed in-depth .You can refer to various OWASP uncrackable app tutorials on youtube for more insight
+
 
 ### 3.4.2 Certificate transparency
 
@@ -106,7 +116,7 @@ When decrypting a browser traffic, the browser may refuse to connect to websites
 
 - in some browsers, you can disable certificate transparency, e.g. in bromite via `chrome://flags`
 - uninstall the PCAPdroid CA from the system store or simply temporary disable it from the Android security settings
-- if the PCAPdroid system CA is installed via a magisk module, then you can use *magisk hide* on the browser to make it see the PCAPdroid CA as a non-system CA
+- if the PCAPdroid system CA is installed via a Magisk module, then you can use *magisk hide* on the browser to make it see the PCAPdroid CA as a non-system CA
 
 ### 3.4.3 Traffic is still encrypted
 
