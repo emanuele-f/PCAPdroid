@@ -95,10 +95,10 @@
 /* #undef NDPI_ENABLE_DEBUG_MESSAGES */
 
 /* Last GIT change */
-#define NDPI_GIT_DATE "Thu Jan 2 07:07:49 2025 +0100"
+#define NDPI_GIT_DATE "Sat Mar 22 16:35:45 2025 +0100"
 
 /* GIT Release */
-#define NDPI_GIT_RELEASE "4.12.0-5032-46a2fbf"
+#define NDPI_GIT_RELEASE "4.12.0-5035-ce606bf"
 
 /* nDPI major release */
 #define NDPI_MAJOR_RELEASE "4"
