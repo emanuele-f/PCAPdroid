@@ -2,6 +2,13 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.4] - 2025-03-23
+- Fix possible unaligned memory access on ARMv7 in libndpi.so (is_stun)
+- Fix minor crashes on specific devices
+- Remove BUILD_TIME for reproducible F-Droid builds
+- Change icons and add banners according to the Android TV guidelines
+- Update translations
+
 ## [1.8.3] - 2025-03-08
 - Fix crash when adding a protocol filter
 - Fix possible Skus deserialization errors (Play build)
