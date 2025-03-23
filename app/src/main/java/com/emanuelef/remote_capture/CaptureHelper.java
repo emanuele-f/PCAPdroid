@@ -148,14 +148,22 @@ public class CaptureHelper {
             return;
         }
 
-        Intent vpnPrepareIntent = VpnService.prepare(mContext);
+        Intent vpnPrepareIntent = null;
+        try {
+            vpnPrepareIntent = VpnService.prepare(mContext);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
+
         if(vpnPrepareIntent != null) {
+            final Intent prepareIntent = vpnPrepareIntent;
+
             if (mLauncher != null)
                 new AlertDialog.Builder(mContext)
                         .setMessage(R.string.vpn_setup_msg)
                         .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
                             try {
-                                mLauncher.launch(vpnPrepareIntent);
+                                mLauncher.launch(prepareIntent);
                             } catch (ActivityNotFoundException e) {
                                 Utils.showToastLong(mContext, R.string.no_intent_handler_found);
                                 mListener.onCaptureStartResult(false);
