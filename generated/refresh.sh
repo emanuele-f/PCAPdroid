@@ -3,7 +3,7 @@ set -e
 
 # Set this to your NDK path
 # Should match the ndkVersion in app/build.gradle
-ANDROID_NDK="${ANDROID_NDK:-${HOME}/Android/Sdk/ndk}/26.1.10909125"
+ANDROID_NDK="${ANDROID_NDK:-${HOME}/Android/Sdk/ndk}/26.3.11579264"
 
 # https://developer.android.com/ndk/guides/other_build_systems
 export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64

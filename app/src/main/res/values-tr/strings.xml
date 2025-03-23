@@ -301,9 +301,7 @@
     <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz
 \n
 \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
-    <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar
-\n
-\n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
+    <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar \n \n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
     <string name="mitm_setup_wizard_intro">Bu sihirbaz, <a href="%1$s">TLS şifre çözme</a> işlemini gerçekleştirmek için gerekli olan PCAPdroid ortadaki adam eklentisinin ve sertifika yetkilisinin kurulumunda size rehberlik edecektir</string>
     <string name="app_intro_back_button">Geri</string>
     <string name="netd_block_missed">Bu bağlantı netd tarafından başlatıldığı için engellenemedi</string>
@@ -462,8 +460,8 @@
     <string name="unsupported_pcap_datalink">PCAP dosyası desteklenmeyen bir veri bağlantısına sahip</string>
     <string name="pcap_file_not_exists">Belirtilen PCAP dosyası yok</string>
     <string name="root_capture_start_failed">Yakalama başlatma hatası. Aygıtın Magisk ile root yapıldığından emin olun</string>
-    <string name="decryption_info_no_rule">Bu bağlantının şifresi çözülmeyecek. Şifresini çözmek için bir şifre çözme kuralı oluşturun</string>
-    <string name="pcap_read_error">PCAP okuma hatası</string>
+    <string name="decryption_info_no_rule">Bu bağlantının şifresini çözmek için, sol çekmeceden veya Bağlantılar listesindeki bağlam menüsünden bir şifre çözme kuralı oluşturun</string>
+    <string name="pcap_read_error">Yakalama dosyası okunurken hata oluştu. Ayrıntılar için günlüğe bakın</string>
     <string name="active_vpn_detected">Etkin VPN algılandı</string>
     <string name="pcap_load_in_progress">PCAP dosyası yükleniyor, lütfen bekleyin</string>
     <string name="pcapdroid_trailer_notice">\"%1$s\" yerine gerçek uygulamaları göstermek için, PCAP dosyasını dışa aktarmadan önce \"%2$s\" seçeneğini etkinleştirdiğinizden emin olun</string>
@@ -500,4 +498,38 @@
     <string name="update_available">Güncelleme var</string>
     <string name="mitm_addon_update_available">Yeni bir ortadaki adam eklentisi güncellemesi var. En son hata düzeltmelerini almak için güncelleyin</string>
     <string name="update_action">Güncelle</string>
+    <string name="dump_extensions_summary">Paket dökümü biçimini, belirli bir paketi gönderen/alan uygulama gibi ek meta verilerle genişletin</string>
+    <string name="errno_econnrefused_msg">Sunucu bağlantıyı reddetti, bu da sunucunun çok meşgul veya hatalı çalıştığını gösterebilir</string>
+    <string name="errno_econnaborted">Bağlantı iptal edildi</string>
+    <string name="errno_etimedout_msg">Sunucunun, büyük olasılıkla ağ gecikmeleri veya meşgul bir sunucu nedeniyle yanıt vermesi çok uzun sürdü</string>
+    <string name="errno_econnrefused">Bağlantı reddedildi</string>
+    <string name="tls_conn_info">TLS/HTTPS trafiği şifrelenir. Bu trafiği incelemek için şifresini çözmeniz gerekir. Ayrıntılar için PCAPdroid <a href="%1$s"> kullanıcı kılavuzuna göz atın</a></string>
+    <string name="dump_extensions">PCAPdroid eklentileri</string>
+    <string name="dump_extensions_how_to">Wireshark\'ta PCAPdroid döküm uzantıları nasıl görüntülenir</string>
+    <string name="malicious_connections_notice">Kara listeler yanlış pozitifler içerebilir. IP adresini/alan adı itibarını çevrimiçi olarak iki kez kontrol ettiğinizden emin olun. Kötü amaçlı yazılım beyaz listesi aracılığıyla yanlış pozitifleri hariç tutabilirsiniz</string>
+    <string name="geo_db_missing">Coğrafi konum veritabanı eksik</string>
+    <string name="malicious_connection_description">\"%1$s\" uygulamasından gelen bir bağlantı, kötü amaçlı yazılım algılama kuralını (%2$s) tetikledi</string>
+    <string name="country_rules_warning">Ülke tabanlı güvenlik duvarı kurallarını kullanmak için PCAPdroid ayarlarından coğrafi konum veritabanını indirin, aksi takdirde ülke tabanlı kurallar etkisiz olacaktır</string>
+    <string name="bytes_threshold">Bayt eşiği</string>
+    <string name="select_the_pcap_file">PCAP/Pcapng dosyasını seçin</string>
+    <string name="select_the_keylog_file">SSL keylog dosyasını seçin</string>
+    <string name="error_code_with_text">%1$s (hata %2$d)</string>
+    <string name="errno_epipe">Kırık boru</string>
+    <string name="errno_epipe_msg">Sunucu, veri aktarımı sırasında bağlantıyı beklenmedik bir şekilde kapattı</string>
+    <string name="errno_enetdown">Ağ kapalı</string>
+    <string name="errno_enetdown_msg">Ağ arabirimi çalışmıyor veya ağa bağlanamıyor</string>
+    <string name="errno_enetunreach">Ağa ulaşılamıyor</string>
+    <string name="errno_enetunreach_msg">Sistem, hedef ağa giden geçerli bir rota bulamıyor</string>
+    <string name="errno_enetreset">Ağ sıfırlama</string>
+    <string name="errno_enetreset_msg">Ağ bağlantısı bir aracı cihaz (örn. yönlendirici veya mobil operatör) tarafından sıfırlandı</string>
+    <string name="errno_econnaborted_msg">Bağlantı, genellikle bir ağ geçişi nedeniyle iptal edildi</string>
+    <string name="errno_econnreset">Eşe göre bağlantı sıfırlama</string>
+    <string name="errno_econnreset_msg">Sunucu, genellikle bir çökme veya istenmeyen kapanma nedeniyle bağlantıyı aniden kapattı</string>
+    <string name="errno_etimedout">Bağlantı zaman aşımına uğradı</string>
+    <string name="errno_ehostunreach">Ev sahibi için rota yok</string>
+    <string name="errno_ehostunreach_msg">Sistem, hedef ana bilgisayara giden bir rota bulamıyor</string>
+    <string name="dns_conn_info">DNS, bir alan adını bir IP adresine çevirir. Gerçek veriler genellikle sonraki HTTPS/TLS bağlantıları üzerinden değiştirilir</string>
+    <string name="unsupported_pcap_file">Desteklenmeyen yakalama dosyası biçimi</string>
+    <string name="decrypt_pcap_file">PCAP/Pcapng dosyasının şifresini çöz…</string>
+    <string name="keylog_read_error">SSL keylog okuma hatası</string>
 </resources>

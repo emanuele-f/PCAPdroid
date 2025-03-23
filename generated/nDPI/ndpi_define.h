@@ -23,6 +23,9 @@
 #ifndef __NDPI_DEFINE_INCLUDE_FILE__
 #define __NDPI_DEFINE_INCLUDE_FILE__
 
+#include <stdint.h>
+#include <string.h>
+
 /*
  * The #define below is used for apps that dynamically link with nDPI to make
  * sure that datastructures and in sync across versions
@@ -174,7 +177,16 @@
 /* the get_uXX will return raw network packet bytes !! */
 #define get_u_int8_t(X,O)   (*(u_int8_t  *)((&(((u_int8_t *)X)[O]))))
 #define get_u_int16_t(X,O)  (*(u_int16_t *)((&(((u_int8_t *)X)[O]))))
+#if defined(__arm__)
+static inline uint32_t get_u_int32_t(const uint8_t* X, int O)
+{
+  uint32_t tmp;
+  memcpy(&tmp, X + O, sizeof(tmp));
+  return tmp;
+}
+#else
 #define get_u_int32_t(X,O)  (*(u_int32_t *)((&(((u_int8_t *)X)[O]))))
+#endif // __arm__
 #if defined(__arm__)
 #include <stdint.h>
 #include <string.h>

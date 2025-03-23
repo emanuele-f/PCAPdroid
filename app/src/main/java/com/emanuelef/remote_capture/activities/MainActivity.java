@@ -1067,7 +1067,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mPcapExecutor.execute(() -> {
                 try (InputStream in_stream = getContentResolver().openInputStream(pcap_uri)) {
                     Utils.copy(in_stream, out);
-                } catch (IOException | SecurityException e) {
+                } catch (IOException | RuntimeException e) {
                     e.printStackTrace();
 
                     runOnUiThread(() -> {
@@ -1104,7 +1104,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 // keylog is in a separate file
                 try (InputStream in_stream = getContentResolver().openInputStream(keylog_uri)) {
                     Utils.copy(in_stream, out);
-                } catch (IOException | SecurityException e) {
+                } catch (IOException | RuntimeException e) {
                     e.printStackTrace();
 
                     runOnUiThread(() -> {

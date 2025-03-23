@@ -1478,7 +1478,6 @@ public class Utils {
         return "Build type: " + Utils.getVerifiedBuild(ctx).toString().toLowerCase() +
                 (!PCAPdroid.getInstance().isUsharkAvailable() ? " (withoutUshark)" : "") + "\n" +
                 "Build version: " + BuildConfig.VERSION_NAME + "\n" +
-                "Build date: " + dateFormat.format(new Date(BuildConfig.BUILD_TIME)) + "\n" +
                 "Current date: " + dateFormat.format(new Date()) + "\n" +
                 "Device: " + getDeviceModel() + (rooted ? " (rooted)" : "") + "\n" +
                 "OS version: " + getOsVersion() + "\n";
@@ -1933,7 +1932,7 @@ public class Utils {
                 return ((block_type == 0x0A0D0D0A) &&
                         ((magic == 0x1a2b3c4d) || (magic == 0x4d3c2b1a)));
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             Log.w(TAG, "Reading " + uri + " failed: " + e);
         }
 

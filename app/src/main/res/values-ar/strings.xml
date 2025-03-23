@@ -271,10 +271,10 @@
     <string name="capture_interface_open_error">لا يمكن فتح واجهة الالتقاط</string>
     <string name="unsupported_pcap_datalink">يحتوي الملف على datalink غير مدعوم</string>
     <string name="pcap_file_not_exists">الملف المحدد غير موجود</string>
-    <string name="pcap_file_load_aborted">تم إحباط تحميل ملف PCAP</string>
+    <string name="pcap_file_load_aborted">تم إحباط تحميل الملف</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
-    <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل تصدير ملف PCAP</string>
-    <string name="decryption_info_no_rule">لن يتم فك تشفير هذا الاتصال. قم بإنشاء قاعدة فك التشفير لفك تشفيرها</string>
+    <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل توليد التفريغ</string>
+    <string name="decryption_info_no_rule">لفك تشفير هذا الاتصال، أنشئ قاعدة فك التشفير من الدرج الأيسر أو من القائمة السياقية في قائمة الاتصالات</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
@@ -509,4 +509,29 @@
     <string name="country_rules_warning">لاستخدام قواعد جدار الحماية القائمة على الدول، نزّل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات PCAPdroid، وإلا ستكون القواعد القائمة على الدول غير فعالة</string>
     <string name="unsupported_pcap_file">تنسيق ملف التقاط غير مدعوم</string>
     <string name="decrypt_pcap_file">فك تشفير Pcapng/PCAP…</string>
+    <string name="keylog_read_error">خطأ قراءة SSL keylog</string>
+    <string name="bytes_threshold">بايتات عتبة</string>
+    <string name="select_the_keylog_file">حدد ملف Keylog SSL</string>
+    <string name="error_code_with_text">%1$s (خطأ %2$d)</string>
+    <string name="errno_epipe_msg">أغلق الخادم الاتصال بشكل غير متوقع أثناء نقل البيانات</string>
+    <string name="errno_enetdown">الشبكة متعطلة</string>
+    <string name="errno_epipe">أنبوب مكسور</string>
+    <string name="errno_enetdown_msg">واجهة الشبكة متعطلةأو غير قادرة على الاتصال بالشبكة</string>
+    <string name="errno_enetunreach">الشبكة لا يمكن الوصول إليها</string>
+    <string name="errno_enetunreach_msg">لا يمكن للنظام العثور على مسار صالح لشبكة الوجهة</string>
+    <string name="errno_enetreset">إعادة تعيين الشبكة</string>
+    <string name="errno_econnaborted">تم إحباط الاتصال</string>
+    <string name="errno_econnaborted_msg">تم إحباط الاتصال، عادةً بسبب انتقال الشبكة</string>
+    <string name="errno_econnreset">إعادة ضبط الاتصال بواسطة نظير</string>
+    <string name="errno_econnreset_msg">أغلق الخادم بشكل مفاجئ الاتصال، عادةً بسبب تحطم أو إيقاف التشغيل</string>
+    <string name="errno_etimedout">انتهت مهلة الاتصال</string>
+    <string name="errno_etimedout_msg">استغرق الخادم وقتًا طويلاً للغاية للرد، على الأرجح بسبب تأخير الشبكة أو خادم مشغول</string>
+    <string name="errno_econnrefused">رُفض الاتصال</string>
+    <string name="errno_econnrefused_msg">رفض الخادم الاتصال، والذي قد يشير إلى خادم مشغول للغاية أو عطل</string>
+    <string name="errno_ehostunreach">لا طريق للاستضافة</string>
+    <string name="errno_ehostunreach_msg">لا يمكن للنظام العثور على طريق إلى مضيف الوجهة</string>
+    <string name="dns_conn_info">يترجم DNS اسم مجال إلى عنوان IP. عادةً ما يتم تبادل البيانات الفعلية عبر اتصالات HTTPS/TLS اللاحقة</string>
+    <string name="tls_conn_info">يتم تشفير حركة المرور TLS/HTTPS. لتفقد حركة المرور هذه، تحتاج إلى فك تشفيرها. تحقق من <a href="%1$s">دليل المستخدم</a> PCAPdroid لمزيد من التفاصيل</string>
+    <string name="select_the_pcap_file">حدد ملف PCAP/Pcapng</string>
+    <string name="errno_enetreset_msg">تمت إعادة ضبط اتصال الشبكة بواسطة جهاز وسيط (مثل جهاز التوجيه أو شركة الاتصالات المحمولة)</string>
 </resources>

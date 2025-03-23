@@ -16,15 +16,13 @@ android {
         minSdkVersion 21
         compileSdk 35
         targetSdk 35
-        versionCode 83
-        versionName "1.8.3"
+        versionCode 84
+        versionName "1.8.4"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
         resourceConfigurations += ["en", "ar", "az", "de", "es", "in", "it", "pl", "ru", "ta", "tr",
                                    "uk", "zh-rCN"]
-
-        buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
     }
 
     flavorDimensions = ["type"]
