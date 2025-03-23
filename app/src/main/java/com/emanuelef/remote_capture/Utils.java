@@ -1932,7 +1932,7 @@ public class Utils {
                 return ((block_type == 0x0A0D0D0A) &&
                         ((magic == 0x1a2b3c4d) || (magic == 0x4d3c2b1a)));
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             Log.w(TAG, "Reading " + uri + " failed: " + e);
         }
 
