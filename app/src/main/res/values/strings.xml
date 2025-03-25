@@ -31,7 +31,7 @@
         - Sparsehash: <a href='https://github.com/sparsehash/sparsehash/blob/master/COPYING'>BSD-3-Clause</a>\n\n
         - CIDRUtils: <a href='https://github.com/edazdarevic/CIDRUtils'>MIT</a>\n\n
         - Font Awesome: <a href='https://fontawesome.com/license/free'>Licenses</a>\n\n
-        - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
+        - App icon and privacy policy icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
         - SourceCodePro font: <a href='https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md'>OFL-1.1</a>\n\n
         </string>
     <string name="wireshark_licenses" translatable="false"><b>PCAP Decryption:</b><br />\n\n
