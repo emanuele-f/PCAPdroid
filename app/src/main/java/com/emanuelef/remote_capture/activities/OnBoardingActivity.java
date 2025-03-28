@@ -146,7 +146,7 @@ public class OnBoardingActivity extends AppIntro {
         addSlide(OnBoardingFragment.createInstance(getString(R.string.privacy_first),
                 Utils.getText(this, R.string.app_intro_privacy_msg,
                         MainActivity.PRIVACY_POLICY_URL, MainActivity.GITHUB_PROJECT_URL),
-                R.drawable.ic_privacy, R.color.colorAccent, true));
+                R.drawable.ic_shield, R.color.colorAccent, true));
 
         addSlide(OnBoardingFragment.createInstance(getString(R.string.traffic_inspection),
                 Utils.getText(this, R.string.app_intro_traffic_inspection,
