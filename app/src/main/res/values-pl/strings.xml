@@ -1,40 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
-    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
-    <string name="default_collector_port" translatable="false">1234</string>
-    <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
-    <string name="app_and_proto" translatable="false">%1$s (%2$s)</string>
-    <string name="sni" translatable="false">SNI</string>
-    <string name="url" translatable="false">URL</string>
-    <string name="whois_lookup" translatable="false">WHOIS</string>
-    <string name="installation_id" translatable="false">Installation ID</string>
-    <string name="license_code" translatable="false">License code</string>
-    <string name="root" translatable="false">root</string>
-    <string name="app_license" translatable="false">PCAPdroid is distributed in the hope that it will be useful, but WITHOUT
-        ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-        See the <a href="https://www.gnu.org/licenses/gpl-3.0-standalone.html">GNU General Public License or later</a> for
-        more details</string>
-    <string name="opensource_licenses" translatable="false"><b>Open Source Licenses:</b><br/>\n\n
-        - zdtun: <a href="https://github.com/emanuele-f/zdtun/blob/master/COPYING">LGPL-3.0</a>\n\n
-        - nDPI: <a href="https://github.com/ntop/nDPI/blob/dev/COPYING">LGPL-3.0</a>\n\n
-        - CustomActivityOnCrash: <a href="https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE">Apache-2.0</a>\n\n
-        - Gson: <a href="https://github.com/google/gson/blob/master/LICENSE">Apache-2.0</a>\n\n
-        - Brotli decoder: <a href="https://github.com/google/brotli/blob/master/LICENSE">MIT</a>\n\n
-        - mitmproxy: <a href="https://github.com/mitmproxy/mitmproxy/blob/main/LICENSE">MIT</a>\n\n
-        - Chaquopy: <a href="https://github.com/chaquo/chaquopy/blob/master/LICENSE.txt">MIT</a>\n\n
-        - MaxMind DB Reader: <a href="https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE">Apache-2.0</a>\n\n
-        - FlagKit: <a href="https://github.com/madebybowtie/FlagKit/blob/master/LICENSE">MIT</a>\n\n
-        - IP Geolocation by <a href="https://db-ip.com">DB-IP</a>\n\n
-        - AppIntro: <a href="https://github.com/AppIntro/AppIntro/blob/main/LICENSE">Apache-2.0</a>\n\n
-        - QrGenerator: <a href="https://github.com/androidmads/QRGenerator/blob/master/LICENSE.md">MIT</a>\n\n
-        - Font Awesome: <a href="https://fontawesome.com/license/free">Licenses</a>\n\n
-        - App icon by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">flaticon</a>\n\n
-        - SourceCodePro font: <a href="https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md">OFL-1.1</a>\n\n
-        </string>
-    <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,PackageName,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
-    <string name="unlock_token" translatable="false">Unlock token</string>
-    <!-- Localized -->
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Ustawienia</string>

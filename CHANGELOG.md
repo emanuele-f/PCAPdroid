@@ -2,6 +2,9 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.5] - 2025-03-25
+- Fix GeoIP db download with Arabic language
+
 ## [1.8.4] - 2025-03-23
 - Fix possible unaligned memory access on ARMv7 in libndpi.so (is_stun)
 - Fix minor crashes on specific devices
