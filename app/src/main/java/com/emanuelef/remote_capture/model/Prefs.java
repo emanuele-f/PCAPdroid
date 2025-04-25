@@ -38,6 +38,7 @@ public class Prefs {
     public static final String DUMP_NONE = "none";
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
+    public static final String DUMP_TCP_EXPORTER = "tcp_exporter";
     public static final String DUMP_PCAP_FILE = "pcap_file";
     public static final String DEFAULT_DUMP_MODE = DUMP_NONE;
 
@@ -114,7 +115,8 @@ public class Prefs {
         NONE,
         HTTP_SERVER,
         PCAP_FILE,
-        UDP_EXPORTER
+        UDP_EXPORTER,
+        TCP_EXPORTER
     }
 
     public enum IpMode {
@@ -140,6 +142,7 @@ public class Prefs {
             case DUMP_HTTP_SERVER:      return DumpMode.HTTP_SERVER;
             case DUMP_PCAP_FILE:        return DumpMode.PCAP_FILE;
             case DUMP_UDP_EXPORTER:     return DumpMode.UDP_EXPORTER;
+            case DUMP_TCP_EXPORTER:     return DumpMode.TCP_EXPORTER;
             default:                    return DumpMode.NONE;
         }
     }

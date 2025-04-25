@@ -824,7 +824,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(mPrefs.getBoolean(Prefs.PREF_REMOTE_COLLECTOR_ACK, false))
             return false; // already acknowledged
 
-        if(((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
+        boolean exporterEnabled = (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) ||
+                (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.TCP_EXPORTER);
+
+        if((exporterEnabled && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
                 (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyHost(mPrefs)))) {
             Log.i(TAG, "Showing possible scan notice");
 

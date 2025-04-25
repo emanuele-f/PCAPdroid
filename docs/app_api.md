@@ -78,10 +78,10 @@ As shown above, the capture settings can be specified by using intent extras. Th
 
 | Parameter               | Type   | Ver | Mode | Value                                                              |
 |-------------------------|--------|-----|------|--------------------------------------------------------------------|
-| pcap_dump_mode          | string |     |      | none \| http_server \| udp_exporter \| pcap_file                   |
+| pcap_dump_mode          | string |     |      | none \| http_server \| udp_exporter \| tcp_exporter \| pcap_file   |
 | app_filter              | string |     |      | package name of the app(s) to capture (73+: comma separated list)  |
-| collector_ip_address    | string |     |      | the IP address of the collector in udp_exporter mode               |
-| collector_port          | int    |     |      | the UDP port of the collector in udp_exporter mode                 |
+| collector_ip_address    | string |     |      | the IP address of the collector in tcp/udp_exporter mode           |
+| collector_port          | int    |     |      | the UDP port of the collector in tcp/udp_exporter mode             |
 | http_server_port        | int    |     |      | the HTTP server port in http_server mode                           |
 | pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode (overrides pcap_name)  |
 | socks5_enabled          | bool   |     | vpn  | true to redirect the TCP connections to a SOCKS5 proxy             |
