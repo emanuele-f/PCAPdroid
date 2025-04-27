@@ -220,7 +220,10 @@ public class CaptureCtrl extends AppCompatActivity {
     private String checkRemoteServerNotAllowed(CaptureSettings settings) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if((settings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) &&
+        boolean exporterEnabled = (settings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) ||
+                (settings.dump_mode == Prefs.DumpMode.TCP_EXPORTER);
+
+        if(exporterEnabled &&
                 !Utils.isLocalNetworkAddress(settings.collector_address) &&
                 !Prefs.getCollectorIp(prefs).equals(settings.collector_address))
             return settings.collector_address;

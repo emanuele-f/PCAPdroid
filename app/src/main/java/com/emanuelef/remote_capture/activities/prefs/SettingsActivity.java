@@ -202,7 +202,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             mIab = Billing.newInstance(requireContext());
 
-            setupUdpExporterPrefs();
+            setupExporterPrefs();
             setupHttpServerPrefs();
             setupTrafficInspectionPrefs();
             setupCapturePrefs();
@@ -254,7 +254,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         }
 
         @SuppressWarnings("deprecation")
-        private void setupUdpExporterPrefs() {
+        private void setupExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
             mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));

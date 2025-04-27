@@ -79,6 +79,7 @@ import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.pcap_dump.FileDumper;
 import com.emanuelef.remote_capture.pcap_dump.HTTPServer;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
+import com.emanuelef.remote_capture.pcap_dump.TCPDumper;
 import com.emanuelef.remote_capture.pcap_dump.UDPDumper;
 import com.pcapdroid.mitm.MitmAPI;
 
@@ -385,21 +386,23 @@ public class CaptureService extends VpnService implements Runnable {
             }
 
             mDumper = new UDPDumper(new InetSocketAddress(addr, mSettings.collector_port), mSettings.pcapng_format);
-        }
-
-        if(mDumper != null) {
-            // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
-            mDumpQueue = new LinkedBlockingDeque<>(64);
+        } else if(mSettings.dump_mode == Prefs.DumpMode.TCP_EXPORTER) {
+            InetAddress addr;
 
             try {
-                mDumper.startDumper();
-            } catch (IOException | SecurityException e) {
+                addr = InetAddress.getByName(mSettings.collector_address);
+            } catch (UnknownHostException e) {
                 reportError(e.getLocalizedMessage());
                 e.printStackTrace();
-                mDumper = null;
                 return abortStart();
             }
+
+            mDumper = new TCPDumper(new InetSocketAddress(addr, mSettings.collector_port), mSettings.pcapng_format);
         }
+
+        if(mDumper != null)
+            // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
+            mDumpQueue = new LinkedBlockingDeque<>(64);
 
         mSocks5Address = "";
         mSocks5Enabled = mSettings.socks5_enabled || mSettings.tls_decryption;
@@ -1230,6 +1233,19 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private void dumpWork() {
+        Log.d(TAG, "Starting the dumper");
+
+        try {
+            mDumper.startDumper();
+        } catch (IOException | SecurityException e) {
+            e.printStackTrace();
+            reportError(e.getLocalizedMessage());
+            mHandler.post(CaptureService::stopPacketLoop);
+            return;
+        }
+
+        Log.d(TAG, "Dumper running");
+
         while(true) {
             byte[] data;
             try {

@@ -51,6 +51,7 @@
     <string name="stop_button">Stop</string>
     <string name="title_activity_settings">Settings</string>
     <string name="collector_info">UDP collector: %1$s:%2$d</string>
+    <string name="tcp_collector_info">TCP collector: %1$s:%2$d</string>
     <string name="http_server_status">HTTP server: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s received — %2$s sent</string>
     <string name="query">Query</string>
@@ -69,10 +70,13 @@
     <string name="duration">Duration</string>
     <string name="http_server">HTTP server</string>
     <string name="udp_exporter">UDP exporter</string>
+    <string name="tcp_exporter">TCP exporter</string>
+    <string name="tcp_udp_exporter">TCP/UDP exporter</string>
     <string name="no_dump">No dump</string>
     <string name="no_dump_info">Traffic will not be dumped</string>
     <string name="http_server_info">Start an HTTP server for the PCAP download</string>
-    <string name="udp_exporter_info">Sends the PCAP to a remote UDP receiver</string>
+    <string name="udp_exporter_info">Send the PCAP to a remote UDP receiver</string>
+    <string name="tcp_exporter_info">Send the PCAP to a remote TCP receiver (pcap-over-ip)</string>
     <string name="http_server_port">HTTP server port</string>
     <string name="receiver_ip_address">Collector IP address</string>
     <string name="receiver_port">Collector port</string>
