@@ -4,6 +4,7 @@
     <string name="stop_button">停止</string>
     <string name="title_activity_settings">设置</string>
     <string name="collector_info">UDP 收集器： %1$s:%2$d</string>
+    <string name="tcp_collector_info">TCP 收集器：%1$s:%2$d</string>
     <string name="http_server_status">HTTP 服务器： http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s 已接收 — %2$s 已发送</string>
     <string name="query">查询</string>
@@ -22,10 +23,13 @@
     <string name="duration">持续时间</string>
     <string name="http_server">HTTP 服务器</string>
     <string name="udp_exporter">UDP 导出器</string>
+    <string name="tcp_exporter">TCP 导出器</string>
+    <string name="tcp_udp_exporter">TCP/UDP 导出器</string>
     <string name="no_dump">无转储</string>
     <string name="no_dump_info">不会转储流量</string>
     <string name="http_server_info">启动一个 HTTP 服务器下载 PCAP</string>
     <string name="udp_exporter_info">发送 PCAP 到远程 UDP 接收器</string>
+    <string name="tcp_exporter_info">发送 PCAP 到远程 TCP 接收器（pcap-over-ip）</string>
     <string name="http_server_port">HTTP 服务器端口</string>
     <string name="receiver_ip_address">收集器 IP 地址</string>
     <string name="receiver_port">收集器端口</string>
