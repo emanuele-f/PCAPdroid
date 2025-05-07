@@ -338,9 +338,7 @@
     <string name="app_intro_traffic_inspection">A inspeção de solicitações HTTP, respostas e dados brutos (raw) é muito fácil, graças aos decodificadores integrados
 \n
 \nTem uma conexão criptografada\? Você pode ativar a <a href="%1$s">decriptação do TLS</a> para ver os dados descriptografados</string>
-    <string name="app_intro_firewall_msg">Com integrado <a href="%1$s">Firewall</a> você pode facilmente bloquear o acesso à internet para apps e domínios individuais
-\n
-\nCombine isso com a funcionalidade integrada de visibilidade do tráfego e você tem nas mãos a ferramenta definitiva para proteger a sua privacidade</string>
+    <string name="app_intro_firewall_msg">Com integrado <a href="%1$s">Firewall</a> você pode facilmente bloquear o acesso à internet para apps e domínios individuais \n \nCombine isso com a funcionalidade integrada de visibilidade do tráfego e você tem nas mãos a ferramenta definitiva para proteger a sua privacidade</string>
     <string name="app_intro_privacy_msg">O app não implementa nenhuma funcionalidade de rastreamento, análise ou conexão com serviços externos
 \n
 \nComo posso ter certeza\? Confira a <a href="%1$s">política de privacidade</a> e o <a href="%2$s">código-fonte</a></string>
