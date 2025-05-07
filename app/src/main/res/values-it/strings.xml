@@ -303,9 +303,7 @@
     <string name="mitm_setup_wizard_done">PCAPdroid è pronto a decrittare il traffico TLS
 \n
 \nPer saperne di più sulle misure di sicurezza adottate dalle app, che potrebbero interferire con la decrittazione, e su come bypassarle, far riferimento alla <a href="%1$s">guida utente</a></string>
-    <string name="app_intro_firewall_msg">Grazie al <a href="%1$s">Firewall</a> integrato puoi facilmente bloccare l\'accesso Internet ad app o domini specifici
-\n
-\nCombina questa funzione con la visibilità sul traffico e otterrai lo strumento definitivo per proteggere la tua privacy</string>
+    <string name="app_intro_firewall_msg">Grazie al <a href="%1$s">Firewall</a> integrato puoi facilmente bloccare l\'accesso Internet ad app o domini specifici \n \nCombina questa funzione con la visibilità sul traffico e otterrai lo strumento definitivo per proteggere la tua privacy</string>
     <string name="block_private_dns">Blocca il DNS privato</string>
     <string name="privacy_first">Prima la privacy</string>
     <string name="block_private_dns_summary">Rileva e, se possibile, blocca il DNS privato per ispezionare il traffico DNS. Disabilitare l\'opzione potrebbe compromettere l\'analisi del traffico</string>

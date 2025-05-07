@@ -216,9 +216,7 @@
     <string name="connections_blocked">Gesperrte Verbindungen</string>
     <string name="block_private_dns">Privates DNS sperren</string>
     <string name="firewall_summary">Sperre den Internetzugang für Apps, konfiguriere Regeln für bestimmte Domänen und IP-Adressen. Funktioniert nur mit der Nicht-Root-Erfassung</string>
-    <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren
-\n
-\nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
+    <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren \n \nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
     <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a>
 \n
 \nDurch die Verwendung aktueller Blacklists kann es bösartige Verbindungen in Echtzeit erkennen, blockieren und warnen</string>

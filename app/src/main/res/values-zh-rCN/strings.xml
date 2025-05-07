@@ -293,9 +293,7 @@
     <string name="app_intro_traffic_inspection">由于内置的解码器，检查 HTTP 请求、响应和原始数据很容易
 \n
 \n加密连接怎么办？你可以启用<a href="%1$s">TLS 解密</a>获得解密的数据</string>
-    <string name="app_intro_firewall_msg">借助集成的<a href="%1$s">防火墙</a>，你可轻松阻止个别应用联网和域名
-\n
-\n将此与内置的流量可见性相结合，以获得保护你隐私的终极工具</string>
+    <string name="app_intro_firewall_msg">借助集成的<a href="%1$s">防火墙</a>，你可轻松阻止个别应用联网和域名 \n \n将此与内置的流量可见性相结合，以获得保护你隐私的终极工具</string>
     <string name="app_intro_malware_detection">借助 <a href="%1$s">恶意软件检测</a>功能增强你设备的安全性
 \n
 \n通过使用最新的黑名单，它可以实时检测、阻止和警告恶意连接</string>

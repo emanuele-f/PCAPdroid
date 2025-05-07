@@ -298,9 +298,7 @@
 \nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir.
 \n
 \n<b>NOT:</b> Devam etmek için, Android ayarlarından yapılandırılmış her zaman açık VPN\'lerin tümünü devre dışı bırakın</string>
-    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz
-\n
-\nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
+    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz \n \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
     <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar \n \n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
     <string name="mitm_setup_wizard_intro">Bu sihirbaz, <a href="%1$s">TLS şifre çözme</a> işlemini gerçekleştirmek için gerekli olan PCAPdroid ortadaki adam eklentisinin ve sertifika yetkilisinin kurulumunda size rehberlik edecektir</string>
     <string name="app_intro_back_button">Geri</string>
