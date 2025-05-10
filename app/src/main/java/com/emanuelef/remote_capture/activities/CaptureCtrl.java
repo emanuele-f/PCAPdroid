@@ -106,6 +106,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
         Intent intent = getIntent();
         String action = intent.getStringExtra("action");
+        String api_key = intent.getStringExtra("api_key");
 
         if(action == null) {
             Log.e(TAG, "no action provided");
@@ -116,6 +117,17 @@ public class CaptureCtrl extends AppCompatActivity {
         if(action.equals(ACTION_PEER_INFO)) {
             getPeerInfo();
             return;
+        }
+
+        if(api_key != null) {
+            // authenticate via API key
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            String my_key = Prefs.getApiKey(prefs);
+
+            if (!my_key.isEmpty() && my_key.equals(api_key)) {
+                processRequest(intent, action);
+                return;
+            }
         }
 
         // Check if a control permission rule was set
