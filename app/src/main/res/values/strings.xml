@@ -217,6 +217,11 @@
     <string name="control_permissions">Control permissions</string>
     <string name="control_permissions_summary">Check which apps are allowed to control the PCAPdroid capture</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">No permissions set. Invoke PCAPdroid via StartActivityForResult to show the permissions prompt</string>
+    <string name="generate_api_key">Generate API key</string>
+    <string name="show_api_key">Show API key</string>
+    <string name="api_key">API key</string>
+    <string name="api_key_discard_confirm">Do you really want to discard the current API key and generate a new one?</string>
     <string name="country">Country</string>
     <string name="asn">ASN</string>
     <string name="country_val">Country: %1$s</string>

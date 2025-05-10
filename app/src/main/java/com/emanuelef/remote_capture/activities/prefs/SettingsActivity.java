@@ -461,14 +461,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
             Preference ctrlPerm = requirePreference("control_permissions");
-            if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
-                ctrlPerm.setVisible(false);
-            else
-                ctrlPerm.setOnPreferenceClickListener(preference -> {
-                    Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
-                    startActivity(intent);
-                    return true;
-                });
+            ctrlPerm.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
+                startActivity(intent);
+                return true;
+            });
         }
 
         private void rootCaptureHideShow(boolean enabled) {
