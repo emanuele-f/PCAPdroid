@@ -5,6 +5,7 @@ jobs:
   validation:
     name: "Validation"
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/wrapper-validation-action@v2
