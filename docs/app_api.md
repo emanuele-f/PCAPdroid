@@ -7,7 +7,7 @@ The [CaptureCtrl.java](https://github.com/emanuele-f/PCAPdroid/blob/master/app/s
 The activity can be easily invoked from the cli by running:
 
 ```bash
-adb shell am start -e action [ACTION] -e [SETTINGS] -n com.emanuelef.remote_capture/.activities.CaptureCtrl
+adb shell am start -e action [ACTION] -e api_key [API_KEY] -e [SETTINGS] -n com.emanuelef.remote_capture/.activities.CaptureCtrl
 ```
 
 where ACTION is one of:
@@ -15,8 +15,15 @@ where ACTION is one of:
   - `stop`: stops the capture
   - `get_status`: get the capture status
 
-The capture parameters are specified via Intent extras, which are discussed below.
+The `api_key` parameter usage is described in the [User Consent section](#user-consent) below.
 
+*Note*: to start the *beta* apk of PCAPdroid (debug build), use the following component name instead (`-n' parameter):
+
+```
+com.emanuelef.remote_capture.debug/com.emanuelef.remote_capture.activities.CaptureCtrl
+```
+
+The capture parameters are specified via Intent extras, which are discussed below.
 For example, you can use the following command to start the capture and write the traffic dump to the PCAP file `Download/PCAPdroid/traffic.pcap`:
 
 ```bash
@@ -65,11 +72,24 @@ The result code tells if the command succeded or not. Check out the [PCAPReceive
 
 ## User Consent
 
-To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started. If the user denies consent, then the request fails. After an app is granted start permission, subsequent requests from that app are automatically granted. 
+To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started, unless a valid `api_key` is provided (see below). If the user denies consent, then the request fails. After an app is granted start permission, subsequent requests from that app are automatically granted.
 
 From the permission dialog the user can choose to permanently grant or deny the capture permission to an app. The permanently granted/denied permissions can be edited from the `Control Permissions` entry in the PCAPdroid settings.
 
 Applications interfacing with PCAPdroid should use the `startActivityForResult` (or the equivalent `ActivityResultLauncher`) when calling its API, rather than `startActivity`. This ensures that the package name of the calling app can be retrieved via [getCallingPackage](https://developer.android.com/reference/android/app/Activity#getCallingPackage()).
+
+### API Key
+
+Since PCAPdroid 1.8.6, you can pass an `api_key` parameter in the Intent to authenticate the request without the permission prompt. This is useful, in particular, when invoking PCAPdroid from adb or a third-party app which does not support `startActivityForResult`.
+
+You can generate an API key from the hamburger menu of the `Control Permissions` page, in the the PCAPdroid settings. Then set it as an Intent extra:
+
+```
+Intent intent = new Intent(Intent.ACTION_VIEW);
+intent.setClassName("com.emanuelef.remote_capture", "com.emanuelef.remote_capture.activities.CaptureCtrl");
+...
+intent.putExtra("api_key", "your_api_key_here");
+```
 
 ## Capture Settings
 
