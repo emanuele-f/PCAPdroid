@@ -17,7 +17,7 @@ where ACTION is one of:
 
 The `api_key` parameter usage is described in the [User Consent section](#user-consent) below.
 
-*Note*: to start the *beta* apk of PCAPdroid (debug build), use the following component name instead (`-n' parameter):
+*Note*: to start the *beta* apk of PCAPdroid (debug build), use the following component name instead (`-n` parameter):
 
 ```
 com.emanuelef.remote_capture.debug/com.emanuelef.remote_capture.activities.CaptureCtrl
@@ -80,7 +80,7 @@ Applications interfacing with PCAPdroid should use the `startActivityForResult` 
 
 ### API Key
 
-Since PCAPdroid 1.8.6, you can pass an `api_key` parameter in the Intent to authenticate the request without the permission prompt. This is useful, in particular, when invoking PCAPdroid from adb or a third-party app which does not support `startActivityForResult`.
+Since PCAPdroid 1.8.6, you can pass an `api_key` parameter in the Intent to authenticate the request without showing the permission prompt. This is useful, in particular, when invoking PCAPdroid from adb or a third-party app which does not support `startActivityForResult`.
 
 You can generate an API key from the hamburger menu of the `Control Permissions` page, in the the PCAPdroid settings. Then set it as an Intent extra:
 
