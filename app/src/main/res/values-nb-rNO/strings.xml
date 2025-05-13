@@ -213,9 +213,7 @@
     <string name="low_memory">Lite minne igjen</string>
     <string name="full_payload_disabled">Alternativet for full nyttelast har blitt avskrudd</string>
     <string name="block_private_dns_summary">Oppdag og potensielt blokker privat DNS for å inspisere DNS-trafikk. Å skru av dette kan forhindre trafikk-analyse.</string>
-    <string name="app_intro_firewall_msg">Med den integrerte <a href="%1$s">brannmuren</a> kan du blokkere tilgang til Internett for individuelle programmer og domener.
-\n
-\nKombiner dette med den innebygde trafikk-synligheten for å få det ultimate verktøyet for å beskytte ditt personvern.</string>
+    <string name="app_intro_firewall_msg">Med den integrerte <a href="%1$s">brannmuren</a> kan du blokkere tilgang til Internett for individuelle programmer og domener. \n \nKombiner dette med den innebygde trafikk-synligheten for å få det ultimate verktøyet for å beskytte ditt personvern.</string>
     <string name="heap_usage">Haugbruk</string>
     <string name="app_intro_done_button">Ferdig</string>
     <string name="download">Last ned</string>

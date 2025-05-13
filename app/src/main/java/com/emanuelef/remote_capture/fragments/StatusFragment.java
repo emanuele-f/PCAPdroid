@@ -290,6 +290,10 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             info = String.format(getResources().getString(R.string.collector_info),
                     CaptureService.getCollectorAddress(), CaptureService.getCollectorPort());
             break;
+        case TCP_EXPORTER:
+            info = String.format(getResources().getString(R.string.tcp_collector_info),
+                    CaptureService.getCollectorAddress(), CaptureService.getCollectorPort());
+            break;
         }
 
         mCollectorInfoText.setText(info);

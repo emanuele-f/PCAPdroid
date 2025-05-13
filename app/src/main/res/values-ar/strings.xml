@@ -30,7 +30,7 @@
     <string name="udp_exporter">مُصدر UDP</string>
     <string name="no_dump">لا تفريغ</string>
     <string name="http_server_info">ابدأ خادم HTTP لتنزيل PCAP</string>
-    <string name="udp_exporter_info">يرسل PCAP إلى جهاز استقبال UDP بعيد</string>
+    <string name="udp_exporter_info">أرسل PCAP إلى جهاز استقبال UDP بعيد</string>
     <string name="http_server_port">منفذ خادم HTTP</string>
     <string name="receiver_ip_address">عنوان IP للمجمع</string>
     <string name="receiver_port">منفذ جامع</string>
@@ -365,9 +365,7 @@
     <string name="app_intro_geolocation_msg">يمكن لـ PCAPdroid الاستعلام عن قاعدة بيانات محلية لتحديد بلد الخادم البعيد
 \n
 \nيجب عليك أولاً تنزيل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات التطبيق</string>
-    <string name="app_intro_firewall_msg">باستخدام <a href="%1$s">جدار الحماية</a> المدمج، يمكنك بسهولة حظر الوصول إلى الإنترنت للتطبيقات والمجالات الفردية
-\n
-\nادمج هذا مع رؤية حركة المرور المضمنة للحصول على الأداة المثالية لحماية خصوصيتك</string>
+    <string name="app_intro_firewall_msg">باستخدام <a href="%1$s">جدار الحماية</a> المدمج، يمكنك بسهولة حظر الوصول إلى الإنترنت للتطبيقات والمجالات الفردية والبلاد \n \nادمج هذا مع رؤية حركة المرور المضمنة للحصول على الأداة المثالية لحماية خصوصيتك</string>
     <string name="vpn_setup_msg">يحاكي برنامج pcapdroid شبكة VPN لالتقاط حركة مرور الشبكة دون الحاجة إلى الجذر.
 \n
 \nلبدء الالتقاط، تحتاج إلى قبول طلب VPN في الشاشة التالية.
@@ -534,4 +532,8 @@
     <string name="tls_conn_info">يتم تشفير حركة المرور TLS/HTTPS. لتفقد حركة المرور هذه، تحتاج إلى فك تشفيرها. تحقق من <a href="%1$s">دليل المستخدم</a> PCAPdroid لمزيد من التفاصيل</string>
     <string name="select_the_pcap_file">حدد ملف PCAP/Pcapng</string>
     <string name="errno_enetreset_msg">تمت إعادة ضبط اتصال الشبكة بواسطة جهاز وسيط (مثل جهاز التوجيه أو شركة الاتصالات المحمولة)</string>
+    <string name="tcp_udp_exporter">مُصدّر TCP/UDP</string>
+    <string name="tcp_exporter_info">أرسل ملف PCAP إلى مستقبل TCP عن بُعد (pcap-over-ip)</string>
+    <string name="tcp_collector_info">جامع TCP: %1$s:%2$d</string>
+    <string name="tcp_exporter">مُصدّر TCP</string>
 </resources>

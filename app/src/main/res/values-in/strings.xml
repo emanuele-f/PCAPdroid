@@ -81,7 +81,7 @@
     <string name="dropped_connections">Koneksi disingkirkan</string>
     <string name="packets_sent">Paket dikirim</string>
     <string name="dns_server">Server DNS</string>
-    <string name="pcap_file_info">Buat file PCAP di penyimpanan perangkat</string>
+    <string name="pcap_file_info">Buat file PCAP/Pcapng di dalam penyimpanan perangkat</string>
     <string name="cannot_write_file">Tidak dapat menulis file</string>
     <string name="apps">Apl</string>
     <string name="ok">OK</string>
@@ -150,7 +150,7 @@
     <string name="domain_rules">Aturan domain</string>
     <string name="ip_rules">Aturan IP</string>
     <string name="private_dns_message_notice">DNS Pribadi mencegah PCAPdroid memeriksa lalu lintas DNS. Anda dapat menonaktifkan dari pengaturan jaringan Android</string>
-    <string name="decryption_no_filter_warn">Pilih aplikasi target saat mendekripsi TLS untuk menghindari kehilangan koneksi ke Internet</string>
+    <string name="decryption_no_filter_warn">Pilih aplikasi tujuan saat mendekripsi TLS untuk menghindari kehilangan koneksi ke Internet</string>
     <string name="firewall_rules">Aturan firewall</string>
     <string name="blocked_pkts">Diblokir</string>
     <string name="n_pkts">%1$s pkt</string>
@@ -201,7 +201,7 @@
     <string name="copy_to_clipboard">Salin ke papan klip</string>
     <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
-    <string name="system_default">Sistem</string>
+    <string name="system_default">Bawaan sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
@@ -268,7 +268,7 @@
     <string name="string_http_response">Respon HTTP</string>
     <string name="payload_truncated">Payload terpotong. Aktifkan \"%1$s\" untuk menampilkannya secara penuh</string>
     <string name="mitm_addon_bad_version">Versi addon PCAPdroid mitm buruk. Instal versi %1$s dan coba lagi</string>
-    <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di upgrade</string>
+    <string name="mitm_addon_new_version">Addon mitm PCAPdroid harus di perbarui</string>
     <string name="websocket">WebSocket</string>
     <string name="http">HTTP</string>
     <string name="payload">Muatan</string>
@@ -320,15 +320,11 @@
     <string name="app_intro_traffic_inspection">Memeriksa permintaan HTTP, respons, dan data mentah menjadi mudah, berkat dekoder bawaan
 \n
 \nPunya koneksi terenkripsi\? Anda dapat mengaktifkan <a href="%1$s">dekripsi TLS</a> untuk mendapatkan data yang didekripsi</string>
-    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain
-\n
-\nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
+    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain \n \nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
     <string name="app_intro_malware_detection">Tingkatkan keamanan perangkat Anda dengan fitur <a href="%1$s">deteksi malware</a>
 \n
 \nDengan menggunakan daftar hitam terbaru, ini dapat mendeteksi, memblokir, dan memperingatkan koneksi berbahaya secara waktu nyata</string>
-    <string name="app_intro_traffic_dump">PCAPdroid menyediakan <a href="%1$s">berbagai cara</a> untuk membuang lalu lintas dalam format PCAP standar untuk analisis lebih lanjut
-\n
-\nMelalui <a href="%2$s">opsi cuplikan</a>, Anda dapat menambahkan nama aplikasi ke paket</string>
+    <string name="app_intro_traffic_dump">PCAPdroid menyediakan <a href="%1$s">berbagai cara</a> untuk membuang lalu lintas dalam format PCAP standar untuk analisis lebih lanjut \n \nMelalui <a href="%2$s">opsi ekstensi PCAPdroid</a>, Anda dapat menambahkan nama aplikasi ke paket dan menampilkannya di Wireshark</string>
     <string name="low_memory">Kekurangan Memori</string>
     <string name="heap_usage">memori menumpuk</string>
     <string name="no_matches_found">Tidak ada yang cocok</string>
@@ -378,7 +374,7 @@
 \nApakah Anda ingin membuka pengaturan VPN sekarang\?</string>
     <string name="vpn_exemptions_summary">Mengecualikan beberapa aplikasi dari koneksi VPN. Lalu lintas mereka tidak akan dipantau</string>
     <string name="unblock_for_n_hours">Buka blokir untuk %1$djam</string>
-    <string name="remote_server_warning">Untuk alasan keamanan, pengiriman lalu lintas ke server jarak jauh \"%1$s\" tidak diperbolehkan</string>
+    <string name="remote_server_warning">Untuk alasan keamanan, pengiriman lalu lintas ke server jarak jauh \"%1$s\" tidak diperbolehkan\"</string>
     <string name="warning">Peringatan</string>
     <string name="firewall_purchase_msg">Beli fitur <i>%1$s</i> untuk mulai memblokir koneksi</string>
     <string name="paid_features_unlocked">Fitur berbayar tidak terkunci. Mulai ulang penangkapan jika berjalan</string>
@@ -390,19 +386,19 @@
     <string name="firewall_whitelist_notice">Dalam mode ini semua koneksi akan diblokir, kecuali jika dimasukkan ke dalam daftar putih secara manual. Anda mungkin melewatkan notifikasi push tanpa daftar putih yang tepat</string>
     <string name="host_resolution_failed">Tidak dapat menyelesaikan host %1$s</string>
     <string name="dns_servers_summary">Mengonfigurasi server DNS yang akan digunakan selama pencatatan</string>
-    <string name="pcap_file_load_aborted">Pemuatan file PCAP dibatalkan</string>
+    <string name="pcap_file_load_aborted">Pemuatan file penangkapan dibatalkan</string>
     <string name="password">Sandi</string>
     <string name="many_rules_warning">Anda mencoba mengimpor banyak aturan, yang bisa membuat aplikasi tidak responsif selama berinteraksi. Apakah Anda benar-benar ingin melanjutkan\?</string>
     <string name="mitm_addon">addon mitm</string>
     <string name="decryption_rules">Aturan dekripsi</string>
     <string name="tls_decryption_no_rules_notice">Dekripsi TLS hanya diterapkan pada koneksi yang sesuai dengan aturan yang dikonfigurasi. Apakah Anda ingin membuat aturan dekripsi sekarang\?</string>
-    <string name="pcap_load_success">File PCAP dimuat</string>
+    <string name="pcap_load_success">File penangkapan dimuat</string>
     <string name="ipv4_dns_server">Server DNS IPv4</string>
     <string name="firewall_whitelist_help">Aturan-aturan ini menentukan koneksi mana yang diizinkan. Aturan daftar blokir memiliki prioritas di atas aturan daftar putih</string>
     <string name="status_encrypted">Terenkripsi</string>
     <string name="ip_address">Alamat IP</string>
     <string name="remove_from_fw_whitelist">Hapus dari daftar putih firewall</string>
-    <string name="unsupported_pcap_datalink">File PCAP memiliki datalink yang tidak didukung</string>
+    <string name="unsupported_pcap_datalink">File tersebut memiliki datalink yang tidak didukung</string>
     <string name="rule_exists">Aturan yang sudah ditetapkan</string>
     <string name="use_system_dns_summary">Gunakan server DNS sistem jika memungkinkan</string>
     <string name="license_error">Kesalahan pembuatan lisensi [%1$d]: %2$s</string>
@@ -415,7 +411,7 @@
     <string name="username">Nama pengguna (username)</string>
     <string name="total_bytes">Total bytes</string>
     <string name="reset_stats_confirm">Apakah Anda benar-benar ingin mengatur ulang statistik ini\?</string>
-    <string name="pcap_file_not_exists">File PCAP yang ditentukan tidak ada</string>
+    <string name="pcap_file_not_exists">File yang ditentukan tidak ada</string>
     <string name="dns_servers">Server DNS</string>
     <string name="license_activation_ok">Aktivasi lisensi selesai</string>
     <string name="sort_by">Urutkan berdasarkan</string>
@@ -426,10 +422,10 @@
     <string name="write_ext_storage_failed">Gagal menyimpan ke penyimpanan eksternal. Periksa riwayat log aplikasi untuk detailnya</string>
     <string name="mitmproxy_opts_description">Menyediakan opsi tambahan untuk mitmproxy</string>
     <string name="socks5_auth">Autentikasi SOCKS5</string>
-    <string name="decryption_info_no_rule">Sambungan ini tidak akan didekripsi. Buat aturan dekripsi untuk mendekripsi</string>
-    <string name="pcapng_format_summary">Dump paket dalam format dump pcapng, yang memungkinkan penyematan TLS terdekripsi dan rahasia</string>
+    <string name="decryption_info_no_rule">Untuk mendekripsi koneksi ini, buat aturan dekripsi dari menu kiri atau dari menu kontekstual di daftar Sambungan</string>
+    <string name="pcapng_format_summary">Buang paket dalam format dump Pcapng, yang lebih fleksibel dan memungkinkan penyisipan rahasia dekripsi TLS</string>
     <string name="dont_decrypt_action">Jangan mendekripsi…</string>
-    <string name="pcap_read_error">Kesalahan pembacaan PCAP</string>
+    <string name="pcap_read_error">Kesalahan membaca file tangkapan. Periksa log untuk detailnya</string>
     <string name="add_action">Tambahkan</string>
     <string name="active_vpn_detected">VPN aktif terdeteksi</string>
     <string name="pcap_load_in_progress">Pemuatan file PCAP sedang berlangsung, harap tunggu</string>
@@ -455,16 +451,16 @@
     <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
     <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
     <string name="malware_whitelist_action">Daftar putih (malware)…</string>
-    <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya, bukan \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum mengekspor file PCAP</string>
+    <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya selain \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum membuat dump</string>
     <string name="mitm_addon_starting">Addon Mitm sudah dijalankan…</string>
     <string name="original_port">Port asli</string>
-    <string name="open_pcap_file">Buka file PCAP…</string>
+    <string name="open_pcap_file">Buka file PCAP/Pcapng…</string>
     <string name="use_system_dns">Gunakan DNS sistem</string>
     <string name="decrypt_action">Dekripsi…</string>
     <string name="root_capture_pcapd_start_failure">Pencatatan gagal dijalankan. Pastikan Anda memberikan akses root ke PCAPdroid</string>
     <string name="qr_purchase_required">Beli token pembuka kunci untuk melanjutkan aktivasi melalui kode QR</string>
     <string name="connection_error">Kesalahan koneksi: %1$s</string>
-    <string name="invalid_pcap_file">File PCAP tidak valid</string>
+    <string name="invalid_pcap_file">Format file penangkapan tidak valid</string>
     <string name="invalid_license">Lisensi tidak valid</string>
     <string name="decryption_rules_help">Aturan-aturan ini menentukan koneksi mana yang akan didekripsi. Aturan berbasis host hanya berfungsi jika balasan DNS sebelumnya terlihat</string>
     <string name="proxy_host">Proxy host</string>
@@ -497,4 +493,43 @@
     <string name="headers">Header</string>
     <string name="body">Body</string>
     <string name="both">Keduanya</string>
+    <string name="malicious_connection_description">Suatu koneksi dari aplikasi “%1$s” memicu sebuah aturan deteksi malware (%2$s)</string>
+    <string name="dump_extensions_summary">Memperluas format pembuangan paket dengan metadata tambahan, seperti aplikasi yang mengirim/menerima paket yang sudah diberi</string>
+    <string name="malicious_connections_notice">Blacklist mungkin berisi positif palsu. Pastikan untuk memeriksa ulang alamat IP/reputasi domain secara online. Anda dapat mengecualikan positif palsu melalui whitelist malware</string>
+    <string name="dns_conn_info">DNS menerjemahkan nama domain menjadi alamat IP. Data sebenarnya biasanya dipertukarkan melalui koneksi HTTPS/TLS berikutnya</string>
+    <string name="errno_econnrefused_msg">Server menolak koneksi, yang mungkin mengindikasikan server yang terlalu sibuk atau tidak berfungsi</string>
+    <string name="errno_econnrefused">Koneksi ditolak</string>
+    <string name="errno_ehostunreach">Tidak ada rute ke host</string>
+    <string name="errno_ehostunreach_msg">Sistem tidak dapat menemukan rute ke host tujuan</string>
+    <string name="tls_conn_info">lalu lintas TLS/HTTPS dienkripsi. Untuk memeriksa lalu lintas ini, Anda perlu mendekripsinya. Cek <a href="%1$s">panduan pengguna</a> PCAPdroid untuk detailnya</string>
+    <string name="dump_extensions_how_to">Cara menampilkan ekstensi pembuangan PCAPdroid di Wireshark</string>
+    <string name="dump_extensions">Ekstensi PCAPdroid</string>
+    <string name="errno_enetdown">Jaringan mati</string>
+    <string name="update_available">Pembaruan Tersedia</string>
+    <string name="country_rules_warning">Untuk menggunakan aturan firewall berbasis negara, unduh database geolokasi dari pengaturan PCAPdroid, jika tidak, aturan berbasis negara akan menjadi tidak efektif</string>
+    <string name="ip_address_or_cidr">Alamat IP / CIDR</string>
+    <string name="errno_enetdown_msg">Antarmuka jaringan mati atau tidak dapat tersambung ke jaringan</string>
+    <string name="errno_econnaborted_msg">Sambungan terputus, biasanya karena peralihan jaringan</string>
+    <string name="errno_enetunreach">Jaringan tidak tercapai</string>
+    <string name="errno_enetunreach_msg">Sistem tidak dapat menemukan rute yang valid ke jaringan tujuan</string>
+    <string name="errno_enetreset">Reset jaringan</string>
+    <string name="errno_econnreset">Reset koneksi oleh rekan(peer)</string>
+    <string name="errno_econnreset_msg">Server tiba-tiba menutup koneksi, biasanya karena kerusakan atau pematian yang tidak pantas</string>
+    <string name="errno_etimedout">Waktu koneksi habis</string>
+    <string name="errno_etimedout_msg">Server terlalu lama merespons, kemungkinan karena penundaan jaringan atau server yang sibuk</string>
+    <string name="errno_epipe">Broken Pipe</string>
+    <string name="geo_db_missing">Database geolokasi tidak ada</string>
+    <string name="decrypt_pcap_file">Dekripsi file PCAP/Pcapng…</string>
+    <string name="keylog_read_error">Kesalahan pembacaan keylog SSL</string>
+    <string name="unsupported_pcap_file">Format file penangkapan tidak didukung</string>
+    <string name="bytes_threshold">Batas byte</string>
+    <string name="select_the_pcap_file">Pilih file PCAP/Pcapng</string>
+    <string name="select_the_keylog_file">Pilih file SSL keylog</string>
+    <string name="error_code_with_text">%1$s (kesalahan %2$d)</string>
+    <string name="errno_epipe_msg">Server tiba-tiba menutup koneksi saat transfer data</string>
+    <string name="errno_enetreset_msg">Sambungan jaringan direset oleh perangkat perantara (mis. router atau operator seluler)</string>
+    <string name="errno_econnaborted">Koneksi dibatalkan</string>
+    <string name="mitm_addon_update_available">Pembaruan addon mitm baru telah tersedia. Perbarui untuk mendapatkan perbaikan bug terbaru</string>
+    <string name="update_action">Perbarui</string>
+    <string name="cidr_val">CIDR: %1$s</string>
 </resources>

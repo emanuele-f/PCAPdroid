@@ -18,6 +18,9 @@
  */
 
 package com.emanuelef.remote_capture.activities.prefs;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -28,21 +31,31 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuProvider;
+import androidx.preference.PreferenceManager;
+
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.BaseActivity;
+import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.adapters.CtrlPermissionsAdapter;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
+import com.emanuelef.remote_capture.model.Prefs;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 
-public class EditCtrlPermissions extends BaseActivity {
+public class EditCtrlPermissions extends BaseActivity implements MenuProvider {
     private static final String TAG = "EditCtrlPermissions";
     private TextView mEmptyText;
     private CtrlPermissionsAdapter mAdapter;
     private ListView mListView;
     private CtrlPermissions mPermissions;
+    private MenuItem mShowApiKey;
     private final ArrayList<CtrlPermissions.Rule> mSelected = new ArrayList<>();
 
     @Override
@@ -51,9 +64,11 @@ public class EditCtrlPermissions extends BaseActivity {
 
         setTitle(R.string.control_permissions);
         setContentView(R.layout.simple_list_activity);
+        addMenuProvider(this);
 
         findViewById(R.id.simple_list).setFitsSystemWindows(true);
         mEmptyText = findViewById(R.id.list_empty);
+        mEmptyText.setText(R.string.no_permissions_set_info);
         mListView = findViewById(R.id.listview);
 
         mPermissions = PCAPdroid.getInstance().getCtrlPermissions();
@@ -126,7 +141,81 @@ public class EditCtrlPermissions extends BaseActivity {
         recheckListSize();
     }
 
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.ctrl_permissions_menu, menu);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mShowApiKey = menu.findItem(R.id.show_api_key);
+
+        if (Prefs.getApiKey(prefs).isEmpty())
+            mShowApiKey.setVisible(false);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.user_guide) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.API_DOCS_URL));
+            Utils.startActivity(this, browserIntent);
+            return true;
+        } else if (id == R.id.generate_api_key) {
+            generateApiKey(false);
+            return true;
+        } else if (id == R.id.show_api_key) {
+            showApiKey();
+            return true;
+        }
+
+        return false;
+    }
+
     private void recheckListSize() {
         mEmptyText.setVisibility((mAdapter.getCount() == 0) ? View.VISIBLE : View.GONE);
+    }
+
+    private void generateApiKey(boolean confirmOverwrite) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!confirmOverwrite && !Prefs.getApiKey(prefs).isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.warning)
+                    .setMessage(R.string.api_key_discard_confirm)
+                    .setPositiveButton(R.string.ok, (dialog, whichButton) -> generateApiKey(true))
+                    .setNegativeButton(R.string.cancel_action, (dialog, whichButton) -> {})
+                    .show();
+            return;
+        }
+
+        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        final int key_length = 32;
+        SecureRandom random = new SecureRandom();
+        StringBuilder apiKey = new StringBuilder(key_length);
+        for (int i = 0; i < key_length; i++) {
+            int index = random.nextInt(chars.length());
+            apiKey.append(chars.charAt(index));
+        }
+
+        prefs.edit()
+                .putString(Prefs.PREF_API_KEY, apiKey.toString())
+                .apply();
+
+        if (mShowApiKey != null)
+            mShowApiKey.setVisible(true);
+        showApiKey();
+    }
+
+    private void showApiKey() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String key = Prefs.getApiKey(prefs);
+        if (key.isEmpty())
+            return;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.api_key)
+                .setMessage(key)
+                .setPositiveButton(R.string.ok, (dialogInterface, i) -> {})
+                .setNeutralButton(R.string.copy_to_clipboard, (dialogInterface, i) ->
+                        Utils.copyToClipboard(this, key)).show();
     }
 }

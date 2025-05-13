@@ -23,20 +23,21 @@ import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.interfaces.PcapDumper;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Iterator;
 
-public class UDPDumper implements PcapDumper {
-    private static final String TAG = "UDPDumper";
+public class TCPDumper implements PcapDumper {
+    private static final String TAG = "TCPDumper";
     private final InetSocketAddress mServer;
     private final boolean mPcapngFormat;
     private boolean mSendHeader;
-    private DatagramSocket mSocket;
+    private Socket mSocket;
+    private DataOutputStream mDataOut;
 
-    public UDPDumper(InetSocketAddress server, boolean pcapngFormat) {
+    public TCPDumper(InetSocketAddress server, boolean pcapngFormat) {
         mServer = server;
         mSendHeader = true;
         mPcapngFormat = pcapngFormat;
@@ -44,23 +45,33 @@ public class UDPDumper implements PcapDumper {
 
     @Override
     public void startDumper() throws IOException {
-        mSocket = new DatagramSocket();
+        mSocket = new Socket();
+        boolean ok = false;
+
+        try {
+            mSocket.connect(mServer, 1000);
+            mDataOut = new DataOutputStream(mSocket.getOutputStream());
+            ok = true;
+        } finally {
+            if (!ok)
+                mSocket.close();
+        }
+
         CaptureService.requireInstance().protect(mSocket);
     }
 
     @Override
     public void stopDumper() throws IOException {
-        mSocket.close();
+        try {
+            mDataOut.close();
+        } finally {
+            mSocket.close();
+        }
     }
 
     @Override
     public String getBpf() {
-        return "not (host " + mServer.getAddress().getHostAddress() + " and udp port " + mServer.getPort() + ")";
-    }
-
-    private void sendDatagram(byte[] data, int offset, int len) throws IOException {
-        DatagramPacket request = new DatagramPacket(data, offset, len, mServer);
-        mSocket.send(request);
+        return "not (host " + mServer.getAddress().getHostAddress() + " and tcp port " + mServer.getPort() + ")";
     }
 
     @Override
@@ -69,7 +80,7 @@ public class UDPDumper implements PcapDumper {
             mSendHeader = false;
 
             byte[] hdr = CaptureService.getPcapHeader();
-            sendDatagram(hdr, 0, hdr.length);
+            mDataOut.write(hdr);
         }
 
         Iterator<Integer> it = Utils.iterPcapRecords(data, mPcapngFormat);
@@ -77,7 +88,7 @@ public class UDPDumper implements PcapDumper {
 
         while(it.hasNext()) {
             int rec_len = it.next();
-            sendDatagram(data, pos, rec_len);
+            mDataOut.write(data, pos, rec_len);
             pos += rec_len;
         }
     }

@@ -38,6 +38,7 @@ public class Prefs {
     public static final String DUMP_NONE = "none";
     public static final String DUMP_HTTP_SERVER = "http_server";
     public static final String DUMP_UDP_EXPORTER = "udp_exporter";
+    public static final String DUMP_TCP_EXPORTER = "tcp_exporter";
     public static final String DUMP_PCAP_FILE = "pcap_file";
     public static final String DEFAULT_DUMP_MODE = DUMP_NONE;
 
@@ -109,12 +110,14 @@ public class Prefs {
     public static final String PREF_PCAPNG_ENABLED = "pcapng_format";
     public static final String PREF_RESTART_ON_DISCONNECT = "restart_on_disconnect";
     public static final String PREF_IGNORED_MITM_VERSION = "ignored_mitm_version";
+    public static final String PREF_API_KEY = "api_key";
 
     public enum DumpMode {
         NONE,
         HTTP_SERVER,
         PCAP_FILE,
-        UDP_EXPORTER
+        UDP_EXPORTER,
+        TCP_EXPORTER
     }
 
     public enum IpMode {
@@ -140,6 +143,7 @@ public class Prefs {
             case DUMP_HTTP_SERVER:      return DumpMode.HTTP_SERVER;
             case DUMP_PCAP_FILE:        return DumpMode.PCAP_FILE;
             case DUMP_UDP_EXPORTER:     return DumpMode.UDP_EXPORTER;
+            case DUMP_TCP_EXPORTER:     return DumpMode.TCP_EXPORTER;
             default:                    return DumpMode.NONE;
         }
     }
@@ -235,6 +239,7 @@ public class Prefs {
     public static String getDnsServerV4(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V4, "1.1.1.1")); }
     public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
     public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
+    public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
 
     // Gets a StringSet from the prefs
     // The preference should either be a StringSet or a String

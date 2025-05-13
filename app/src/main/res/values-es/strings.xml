@@ -385,9 +385,7 @@
     <string name="app_intro_privacy_msg">La aplicación no emplea ninguna función de rastreo, analítica o de llamada a casa.
 \n
 \n¿Como puedo estar seguro\? Consulta la <a href="%1$s">política de privacidad</a> y el <a href="%2$s">código fuente</a></string>
-    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones y dominios específicos.
-\n
-\nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
+    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones y dominios específicos. \n \nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
     <string name="app_intro_malware_detection">Aumenta la seguridad de tu dispositivo con la característica de <a href="%1$s">detección de malware</a>
 \n
 \nUsando la última lista negra, puedes detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>

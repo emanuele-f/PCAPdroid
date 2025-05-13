@@ -217,7 +217,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            setupUdpExporterPrefs();
+            setupExporterPrefs();
             setupHttpServerPrefs();
             setupTrafficInspectionPrefs();
             setupCapturePrefs();
@@ -269,7 +269,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         }
 
         @SuppressWarnings("deprecation")
-        private void setupUdpExporterPrefs() {
+        private void setupExporterPrefs() {
             /* Collector IP validation */
             EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
             mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
@@ -494,14 +494,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mIpMode = requirePreference(Prefs.PREF_IP_MODE);
 
             Preference ctrlPerm = requirePreference("control_permissions");
-            if(!PCAPdroid.getInstance().getCtrlPermissions().hasRules())
-                ctrlPerm.setVisible(false);
-            else
-                ctrlPerm.setOnPreferenceClickListener(preference -> {
-                    Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
-                    startActivity(intent);
-                    return true;
-                });
+            ctrlPerm.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
+                startActivity(intent);
+                return true;
+            });
         }
 
         private void rootCaptureHideShow(boolean enabled) {

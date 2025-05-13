@@ -28,7 +28,7 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/udp_exporter" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/tcp_udp_exporter" app:iconSpaceReserved="false">
         <EditTextPreference
             app:key="collector_ip_address"
             app:title="@string/receiver_ip_address"
