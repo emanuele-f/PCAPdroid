@@ -2,7 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
-## [1.8.5] - 2025-03-25
+## [1.8.6] - 2025-05-13
+- Add TCP exporter dump mode (pcap-over-ip)
+- Allow PCAPdroid capture control without prompt via API key
+
+## [1.8.5] - 2025-04-25
 - Fix GeoIP db download with Arabic language
 
 ## [1.8.4] - 2025-03-23

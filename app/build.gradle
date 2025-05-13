@@ -8,8 +8,8 @@ android {
         minSdkVersion 21
         compileSdk 35
         targetSdk 35
-        versionCode 85
-        versionName "1.8.5"
+        versionCode 86
+        versionName "1.8.6"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
