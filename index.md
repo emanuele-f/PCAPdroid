@@ -12,6 +12,7 @@ Welcome to the PCAPdroid User Guide.
     - [2.2 HTTP Server](dump_modes#22-http-server)
     - [2.3 PCAP File](dump_modes#23-pcap-file)
     - [2.4 UDP Exporter](dump_modes#24-udp-exporter)
+    - [2.5 TCP Exporter](dump_modes#25-tcp-exporter-pcap-over-ip)
 - [3. TLS Decryption](tls_decryption)
     - [3.1 Introduction](tls_decryption#31-introduction)
     - [3.2 Initial setup](tls_decryption#32-initial-setup)
