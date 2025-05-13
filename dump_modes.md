@@ -27,7 +27,7 @@ After the capture is stopped, a dialog is displayed which offers the option to s
 
 This advanced mode is specifically designed to provide a real time analysis of the traffic. In this mode PCAPdroid encapsulates the PCAP records in an UDP stream, sent to a remote UDP collector. The collector IP and port can be configured in the PCAPdroid settings.
 
-**NOTE**: UDP is a unreliable transport protocol, which means that packets may be dropped or reordered, in particular over wifi, so this mode may produce a partial capture
+**NOTE**: UDP is a unreliable transport protocol, which means that packets may be dropped or reordered, in particular over wifi, so this mode may produce a partial capture. Prefer the "TCP Exporter" mode instead
 
 To use this mode, you either need a linux system or a Windows system with Wireshark.
 
@@ -77,3 +77,13 @@ You can capture packets on Windows in real-time via Wireshark and the "UDP liste
 You should now see the packets correctly decapsulated in Wireshark. If you see `127.0.0.1` as the destination IP and just a `Data` field without any dissection, double check that the plugins are correctly loaded.
 
 **NOTE**: when capturing via `udpdump`, decrypting PCAPNG is currently not supported. Use the PCAP file dump instead
+
+## 2.5 TCP Exporter (pcap-over-ip)
+
+Since v1.8.6, PCAPdroid supports sending traffic via TCP, which is also known as "pcap-over-ip". This is the suggested mode for real-time traffic analysis as it provides a reliable transport.
+
+Here is, for example, how to analyze traffic in real-time with Wireshark:
+
+```bash
+nc -lvp 1234 | wireshark -k -i -
+```
