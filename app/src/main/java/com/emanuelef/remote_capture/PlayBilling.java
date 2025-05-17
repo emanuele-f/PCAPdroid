@@ -430,6 +430,11 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     private void requestUnlockToken(String purchaseToken) {
+        if (mBillingClient == null) {
+            Log.e(TAG, "Billing disconnected, requesting an unlock token cannot proceed");
+            return;
+        }
+
         Log.i(TAG, "Requesting an unlock token...");
 
         try {
