@@ -756,6 +756,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void doStartCaptureService(String input_pcap_path) {
+        if (mCapHelper == null) {
+            Log.e(TAG, "Activity destroyed, capture cannot start");
+            return;
+        }
+
         appStateStarting();
 
         PCAPdroid.getInstance().setIsDecryptingPcap(mDecryptPcap);
