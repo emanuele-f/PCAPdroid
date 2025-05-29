@@ -564,4 +564,13 @@
     <string name="dump_extensions_how_to">Як зображати розширення дампа PCAPdroid у Wireshark</string>
     <string name="error_code_with_text">%1$s (помилка %2$d)</string>
     <string name="errno_enetreset_msg">Мережеве з\'єднання було скинуто пристроєм-посередником (наприклад, роутером або мобільним оператором)</string>
+    <string name="tcp_udp_exporter">Експортер TCP/UDP</string>
+    <string name="tcp_collector_info">Збирач TCP: %1$s:%2$d</string>
+    <string name="no_permissions_set_info">Дозволи не надано. Викличте PCAPdroid через StartActivityForResult для відображення запиту на отримання дозволів</string>
+    <string name="tcp_exporter_info">Надсилання PCAP до віддаленого TCP приймача (pcap-over-ip)</string>
+    <string name="tcp_exporter">Експортер TCP</string>
+    <string name="generate_api_key">Згенерувати API-ключ</string>
+    <string name="show_api_key">Показати API-ключ</string>
+    <string name="api_key">API-ключ</string>
+    <string name="api_key_discard_confirm">Ви дійсно хочете скасувати поточний API-ключ і згенерувати новий?</string>
 </resources>
