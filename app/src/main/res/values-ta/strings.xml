@@ -25,7 +25,7 @@
     <string name="no_dump">டம்ப் இல்லை</string>
     <string name="no_dump_info">போக்குவரத்து கொட்டப்படாது</string>
     <string name="http_server_info">PCAP பதிவிறக்கத்திற்கு HTTP சேவையகத்தைத் தொடங்கவும்</string>
-    <string name="udp_exporter_info">தொலைநிலை UDP ரிசீவருக்கு PCAP ஐ அனுப்புகிறது</string>
+    <string name="udp_exporter_info">தொலைநிலை UDP ரிசீவருக்கு PCAP ஐ அனுப்பவும்</string>
     <string name="http_server_port">HTTP சேவையக துறைமுகம்</string>
     <string name="receiver_ip_address">கலெக்டர் ஐபி முகவரி</string>
     <string name="receiver_port">கலெக்டர் துறைமுகம்</string>
@@ -62,7 +62,7 @@
     <string name="dns_server">டிஎன்எச் சேவையகம்</string>
     <string name="apps">பயன்பாடுகள்</string>
     <string name="pcap_file">PCAP கோப்பு</string>
-    <string name="pcap_file_info">சாதன சேமிப்பகத்தில் PCAP கோப்பை உருவாக்கவும்</string>
+    <string name="pcap_file_info">சாதன சேமிப்பகத்தில் PCAP/PCAPNG கோப்பை உருவாக்கவும்</string>
     <string name="cannot_write_file">கோப்பை எழுத முடியாது</string>
     <string name="share">பங்கு</string>
     <string name="delete">நீக்கு</string>
@@ -90,7 +90,7 @@
     <string name="lang_english">ஆங்கிலம்</string>
     <string name="system_default">கணினி இயல்புநிலை</string>
     <string name="no_activity_file_selection">கோப்பு தேர்வைக் கையாள எந்த பயன்பாடும் கிடைக்கவில்லை</string>
-    <string name="file_saved_with_name">கோப்பு \"%1$s \\ என சேமிக்கப்பட்டது</string>
+    <string name="file_saved_with_name">கோப்பு \"%1$s\" என சேமிக்கப்பட்டது</string>
     <string name="socks5_proxy">சாக்ச் 5</string>
     <string name="socks5_redirection">SOCKS5 திருப்பிவிடுதல்</string>
     <string name="socks5_summary">ஒரு சாக்ச் 5 ப்ராக்சிக்கு திருப்பிவிடுவதை உள்ளமைக்கவும்</string>
@@ -140,7 +140,7 @@
     <string name="capture_interface">இடைமுகத்தைப் பிடிக்கவும்</string>
     <string name="internet">இணையம்</string>
     <string name="all_interfaces">அனைத்து இடைமுகங்களும்</string>
-    <string name="capturing_from">\"%1$s இருந்து இலிருந்து பாக்கெட்டுகளைப் பிடித்தல்</string>
+    <string name="capturing_from">\"%1$s\" இலிருந்து பாக்கெட்டுகளை கைப்பற்றுதல்</string>
     <string name="edit_filter">வடிகட்டியைத் திருத்து</string>
     <string name="edit_list">பட்டியலைத் திருத்து</string>
     <string name="hidden_connections_rules">மறைக்கப்பட்ட இணைப்புகள் விதிகள்</string>
@@ -153,7 +153,7 @@
     <string name="malware_whitelist_rules">தீம்பொருள் அனுமதிப்பட்டியல் விதிகள்</string>
     <string name="feature_not_available">இந்த நற்பொருத்தம் தற்போது உங்கள் சாதனத்திற்கு கிடைக்கவில்லை</string>
     <string name="billing_connecting">Google Play க்கான இணைப்பு நடந்து வருகிறது, தயவுசெய்து சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்</string>
-    <string name="malware_whitelist_help">தீம்பொருள் கண்டறிதலைத் தடுக்க பயனர் வரையறுக்கப்பட்ட அனுமதிப்பட்டியலாளர். தீங்கிழைக்கும் தீங்கிழைக்கும் இணைப்புகளை தீம்பொருள் எனக் குறைக்கும் விதிகளை உருவாக்க நீண்ட அழுத்தமாக இருக்கும்</string>
+    <string name="malware_whitelist_help">கருப்பொருள் கண்டறிதலைத் தடுக்க பயனர் வரையறுக்கப்பட்ட அனுமதிப்பட்டியலாளர். தீங்கிழைக்கும் இணைப்புகளைக் கருப்பொருள் எனக் குறைக்கும் விதிகளை உருவாக்க நீண்ட அழுத்தமாக இருக்கும்</string>
     <string name="hidden_connections_help">இணைப்பு-பட்டியல் உள்ளீடுகளை மறைக்க விதிகளின் பட்டியல், எனவே நீங்கள் தொடர்புடையவற்றில் கவனம் செலுத்தலாம்</string>
     <string name="malicious_connection_filter">தீங்கிழைக்கும்</string>
     <string name="status_filter">நிலை: %1$s</string>
@@ -195,7 +195,7 @@
     <string name="update_now">இப்போது புதுப்பிக்கவும்</string>
     <string name="status_updating">புதுப்பித்தல்…</string>
     <string name="malware_detection_learn_more">தீம்பொருள் கண்டறிதல் அம்சத்தைப் பற்றி மேலும் அறிக</string>
-    <string name="private_dns_message_notice">தனியார் டிஎன்எச் டிஎன்எச் போக்குவரத்தை ஆய்வு செய்வதிலிருந்து பி.சி.ஏ.பி டிராய்டைத் தடுக்கிறது. நீங்கள் அதை ஆண்ட்ராய்டு பிணையம் அமைப்புகளிலிருந்து அணைக்கலாம்</string>
+    <string name="private_dns_message_notice">தனியார் டிஎன்எச் போக்குவரத்தை ஆய்வு செய்வதிலிருந்து பி.சி.ஏ.பி டிராய்டைத் தடுக்கிறது. நீங்கள் அதை ஆண்ட்ராய்டு பிணையம் அமைப்புகளிலிருந்து அணைக்கலாம்</string>
     <string name="private_dns_hinders_detection">தனியார் டி.என்.எச் கண்டறிதலைத் தடுக்கிறது</string>
     <string name="decryption_no_filter_warn">இணையத்துடனான உங்கள் தொடர்பை இழப்பதைத் தவிர்க்க TLS ஐ மறைகுறியாக்கும்போது இலக்கு பயன்பாட்டைத் தேர்ந்தெடுக்கவும்</string>
     <string name="block">தொகுதி…</string>
@@ -239,7 +239,7 @@
     <string name="export_action">ஏற்றுமதி</string>
     <string name="export_ellipsis">ஏற்றுமதி…</string>
     <string name="install_the_mitm_addon">PCAPDroid <a href="%1$s"> MITM addon </a> ஐ நிறுவவும்</string>
-    <string name="export_ca_certificate">PCAPDroid CA சான்றிதழை ஏற்றுமதி செய்து, பின்னர் ஆண்ட்ராய்டு \"குறியாக்க மற்றும் நற்சான்றிதழ்கள்\" அமைப்புகளைத் திறந்து அதை \"CA சான்றிதழ் அச் ஆக நிறுவவும் என்பதைத் தேர்வுசெய்க</string>
+    <string name="export_ca_certificate">PCAPDroid CA சான்றிதழை ஏற்றுமதி செய்து, பின்னர் ஆண்ட்ராய்டு \"குறியாக்க மற்றும் நற்சான்றிதழ்கள்\" அமைப்புகளைத் திறந்து அதை \"CA சான்றிதழ்\" ஆக நிறுவவும் என்பதைத் தேர்வுசெய்க</string>
     <string name="install_ca_certificate">\"VPN மற்றும் APPS\" ஐத் தேர்ந்தெடுத்து PCAPDroid CA சான்றிதழை நிறுவவும். ஆண்ட்ராய்டு உங்கள் பூட்டு திரை அல்லது கடவுச்சொல்லைக் கேட்கும்</string>
     <string name="checking_the_certificate">சான்றிதழை சரிபார்க்கிறது…</string>
     <string name="ca_cert_export_failed">CA சான்றிதழை ஏற்றுமதி செய்யும் போது பிழை ஏற்பட்டது\n\n பின்னணி சேவைகள் செயல்படுத்தலைக் கட்டுப்படுத்த உங்கள் சாதனம் ஆட்டோச்டார்ட் அல்லது ஒத்த மென்பொருளை செயல்படுத்தினால், <a href="%1$s"> வைட்லிச்ட் pcapdroid </a> ஐ உறுதிப்படுத்திக் கொள்ளுங்கள்</string>
@@ -282,7 +282,7 @@
     <string name="geolocation_summary">இணைப்பில்லாத தேடல்களைச் செய்வதன் மூலம் நாடு மற்றும் ஏ.எச்.என் தகவலைக் காட்டு</string>
     <string name="downloading">பதிவிறக்கம்…</string>
     <string name="download_in_progress">பதிவிறக்கம் முன்னேற்றம், தயவுசெய்து காத்திருங்கள்</string>
-    <string name="pcap_load_in_progress">PCAP கோப்பு ஏற்றுதல் செயலில் உள்ளது, தயவுசெய்து காத்திருங்கள்</string>
+    <string name="pcap_load_in_progress">கோப்பு ஏற்றுதல் முன்னேற்றத்தில் உள்ளது, தயவுசெய்து காத்திருங்கள்</string>
     <string name="download_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
     <string name="geo_db_not_found">தரவுத்தளம் கிடைக்கவில்லை. புவிஇருப்பிடம் முடக்கப்பட்டுள்ளது</string>
     <string name="database">தரவுத்தளம்</string>
@@ -330,9 +330,9 @@
     <string name="app_intro_geolocation_msg">தொலைநிலை சேவையகத்தின் நாட்டைத் தீர்மானிக்க பி.சி.ஏ.பி டிராய்டு உள்ளக தரவுத்தளத்தை வினவலாம்\n\n நீங்கள் முதலில் பயன்பாட்டு அமைப்புகளிலிருந்து புவிஇருப்பிட தரவுத்தளத்தை பதிவிறக்கம் செய்ய வேண்டும்</string>
     <string name="vpn_setup_msg">ரூட் இல்லாமல் பிணைய போக்குவரத்தை கைப்பற்ற பி.சி.ஏ.பி டிராய்டு ஒரு வி.பி.என் உருவகப்படுத்துகிறது.\n\n பிடிப்பைத் தொடங்க, அடுத்த திரையில் VPN கோரிக்கையை நீங்கள் ஏற்க வேண்டும்.\n\n <b> குறிப்பு: </b> தொடர, ஆண்ட்ராய்டு அமைப்புகளிலிருந்து எப்போதும் உள்ளமைக்கப்பட்ட VPN ஐ முடக்கு</string>
     <string name="app_intro_traffic_inspection">HTTP கோரிக்கைகள், பதில்கள் மற்றும் மூல தரவுகளை ஆய்வு செய்வது எளிதானது, உள்ளமைக்கப்பட்ட டிகோடர்களுக்கு நன்றி\n\n மறைகுறியாக்கப்பட்ட இணைப்பு கிடைத்ததா? மறைகுறியாக்கப்பட்ட தரவைப் பெற நீங்கள் <a href="%1$s"> TLS மறைகுறியாக்கம் </a> ஐ இயக்கலாம்</string>
-    <string name="app_intro_firewall_msg">ஒருங்கிணைந்த <a href="%1$s"> ஃபயர்வால் </a> உடன் தனிப்பட்ட பயன்பாடுகள் மற்றும் களங்களுக்கான இணைய அணுகலை நீங்கள் எளிதாக தடுக்கலாம்\n\n உங்கள் தனியுரிமையைப் பாதுகாக்க இறுதி கருவியைப் பெற உள்ளமைக்கப்பட்ட போக்குவரத்து தெரிவுநிலையுடன் இதை இணைக்கவும்</string>
-    <string name="app_intro_malware_detection">&lt;A href = \"%1$s\"&gt; தீம்பொருள் கண்டறிதல் &lt;/a&gt; அம்சத்துடன் உங்கள் சாதனத்தின் பாதுகாப்பை மேம்படுத்தவும்\n\n புதுப்பித்த தடுப்புப்பட்டியல்களைப் பயன்படுத்துவதன் மூலம், இது நிகழ்நேரத்தில் தீங்கிழைக்கும் இணைப்புகளைக் கண்டறிந்து, தடுக்கலாம் மற்றும் எச்சரிக்கலாம்</string>
-    <string name="app_intro_traffic_dump">பி.சி.ஏ.பி டிராய்டு &lt;a href = \"%1$s\"&gt; பல வழிகளை &lt;/a&gt; வழங்குகிறது\n\n &lt;A href = \"%2$s\"&gt; டிரெய்லர் விருப்பம் &lt;/a&gt; வழியாக, நீங்கள் பாக்கெட்டுகளில் பயன்பாட்டு பெயர்களைச் சேர்த்து அவற்றை வயர்சார்க்கில் காண்பிக்கலாம்</string>
+    <string name="app_intro_firewall_msg">ஒருங்கிணைந்த <a href="%1$s"> ஃபயர்வால் </a> மூலம் தனிப்பட்ட பயன்பாடுகள், களங்கள் மற்றும் நாடுகளுக்கான இணைய அணுகலை நீங்கள் எளிதாக தடுக்கலாம் \n\nஉங்கள் தனியுரிமையைப் பாதுகாக்க இறுதி கருவியைப் பெற உள்ளமைக்கப்பட்ட போக்குவரத்து தெரிவுநிலையுடன் இதை இணைக்கவும்</string>
+    <string name="app_intro_malware_detection"><a href="%1$s"> கருப்பொருள் கண்டறிதல் </a> அம்சத்துடன் உங்கள் சாதனத்தின் பாதுகாப்பை மேம்படுத்தவும்\n\n புதுப்பித்த தடுப்புப்பட்டியல்களைப் பயன்படுத்துவதன் மூலம், இது நிகழ்நேரத்தில் தீங்கிழைக்கும் இணைப்புகளைக் கண்டறிந்து, தடுக்கலாம் மற்றும் எச்சரிக்கலாம்</string>
+    <string name="app_intro_traffic_dump">பி.சி.ஏ.பி டிராய்டு <a href="%1$s"> பல வழிகளை </a> வழங்குகிறது \n\n<a href="%2$s"> pcapdroid நீட்டிப்பு விருப்பம் </a> வழியாக, நீங்கள் பாக்கெட்டுகளில் பயன்பாட்டு பெயர்களைச் சேர்த்து அவற்றை வயர்சார்க்கில் காண்பிக்கலாம்</string>
     <string name="permission_granted">%1$s இசைவு வழங்கப்பட்டது</string>
     <string name="permission_grant_fail">%1$s இசைவு வழங்க முடியாது</string>
     <string name="connection_not_found">கொடுக்கப்பட்ட இணைப்பைக் கண்டுபிடிக்க முடியவில்லை</string>
@@ -366,14 +366,14 @@
     <string name="warning">எச்சரிக்கை</string>
     <string name="paid_features_unlocked">கட்டண நற்பொருத்தங்கள் திறக்கப்பட்டன. ஓடியால் பிடிப்பை மறுதொடக்கம் செய்யுங்கள்</string>
     <string name="build_info">தகவலை உருவாக்குங்கள்</string>
-    <string name="tls_decryption_with_root_msg">ரூட் மூலம் டி.எல்.எச் மறைகுறியாக்கத்தை இயக்கும் திறன் ஒரு சோதனை அம்சமாகும். இது அறியப்பட்ட பிழைகளின் பட்டியல்:\n\n - pcapdroid இல், அசல் பயன்பாட்டிற்கு பதிலாக MITM- அடான் பயன்பாட்டிலிருந்து உருவாக்கப்பட்ட போக்குவரத்தை நீங்கள் காண்பீர்கள்\n - பயன்பாட்டு வடிகட்டி அமைக்கப்படும்போது, இலக்கு பயன்பாட்டிற்கு மட்டுமே மறைகுறியாக்கம் ஏற்படும், ஆனால் பி.சி.ஏ.பி டிராய்டு இன்னும் மற்ற பயன்பாடுகளின் போக்குவரத்தைக் காண்பிக்கும்\n - பிடிப்பு தொடங்கத் தவறினால், நீங்கள் உண்மையில் iptables கட்டளையை ரூட்டாக இயக்க முடியும் என்பதை உறுதிப்படுத்தவும்\n - இது ஆண்ட்ராய்டு 12 மற்றும் அதற்குப் பிறகு வேலை செய்யாது\n .</string>
+    <string name="tls_decryption_with_root_msg">ரூட் மூலம் டி.எல்.எச்மறைகுறியாக்கத்தை இயக்கும் திறன் ஒரு சோதனை அம்சமாகும். இது அறியப்பட்ட பிழைகளின் பட்டியல்:\n\n - pcapdroid இல், அசல் பயன்பாட்டிற்கு பதிலாக MITM- அடான் பயன்பாட்டிலிருந்து உருவாக்கப்பட்ட போக்குவரத்தை நீங்கள் காண்பீர்கள்\n - பயன்பாட்டு வடிகட்டி அமைக்கப்படும்போது, இலக்கு பயன்பாட்டிற்கு மட்டுமே மறைகுறியாக்கம் ஏற்படும், ஆனால் பி.சி.ஏ.பி டிராய்டு இன்னும் மற்ற பயன்பாடுகளின் போக்குவரத்தைக் காண்பிக்கும்\n - பிடிப்பு தொடங்கத் தவறினால், நீங்கள் உண்மையில் iptables கட்டளையை ரூட்டாக இயக்க முடியும் என்பதை உறுதிப்படுத்தவும்\n - இது ஆண்ட்ராய்டு 12 மற்றும் அதற்குப் பிறகு வேலை செய்யாது\n - ஒரு VPN செயலி இயங்கினால், நீங்கள் ஒரு குறிப்பிட்ட செயலியை மறைகுறியாக்கத்திற்காக இலக்காகக் கொள்ள வேண்டும் அல்லது PCAPdroid mitm addon ஐ VPN இலிருந்து விலக்க வேண்டும், இல்லையெனில் போக்குவரத்து ஒரு சுழற்சியில் செல்லும்</string>
     <string name="unlock_token_summary">பயன்பாட்டின் கூகிள் அல்லாத விளையாட்டு கட்டமைப்புகளில் கட்டண அம்சங்களைத் திறக்க பயன்படுத்தக்கூடிய ஒரு கிள்ளாக்கு (எ.கா. எஃப்-டிராய்டு/கிதுப்)</string>
     <string name="unlock_token_error">திறத்தல் கிள்ளாக்கை கோர முடியவில்லை [ %1$d]: %2$s</string>
-    <string name="access_paid_features_msg">கட்டண அம்சங்களை எவ்வாறு அணுகுவது என்பதை அறிய பயனர் கையேடு &lt;/a&gt; ஐ &lt;a href = \"%1$s\"&gt; ஐப் பாருங்கள்</string>
+    <string name="access_paid_features_msg">கட்டண அம்சங்களை எவ்வாறு அணுகுவது என்பதை அறிய <a href="%1$s">பயனர் கையேடு </a> ஐப் பாருங்கள்</string>
     <string name="license_service_unavailable">PCAPDroid உரிம பணி தற்போது கிடைக்கவில்லை. தயவுசெய்து சில நிமிடங்களில் மீண்டும் முயற்சிக்கவும்</string>
     <string name="requesting_unlock_token">திறத்தல் டோக்கனைக் கோருகிறது, தயவுசெய்து காத்திருங்கள்</string>
     <string name="show_action">காட்டு</string>
-    <string name="unlock_token_msg1">இது உங்கள் திறத்தல் கிள்ளாக்கு. உங்கள் உரிமக் குறியீடுகளை உருவாக்க &lt;/a href = \"%1$s\"&gt; உங்களுக்குத் தேவைப்படுவதால் அதைக் கவனியுங்கள் &lt;/a&gt;</string>
+    <string name="unlock_token_msg1">இது உங்கள் திறத்தல் கிள்ளாக்கு. <a href="%1$s">உங்கள் உரிமக் குறியீடுகளை</a> உருவாக்க உங்களுக்குத் தேவைப்படுவதால் அதைக் கவனியுங்கள்</string>
     <string name="paid_feature">கட்டண நற்பொருத்தம்</string>
     <string name="firewall_purchase_msg">இணைப்புகளைத் தடுக்கத் தொடங்க <i>%1$s </i> அம்சத்தை வாங்கவும்</string>
     <string name="mitm_skip_notice">எம்ஐடிஎம் சான்றிதழ் நிறுவப்பட்டதாகத் தெரியவில்லை. நீங்கள் தொடர்ந்தால், மறைகுறியாக்கம் தோல்வியடையக்கூடும்</string>
@@ -407,7 +407,7 @@
     <string name="external_storage_perm_required">வெளிப்புற சேமிப்பக இசைவு தேவை</string>
     <string name="many_rules_warning">நீங்கள் பல விதிகளை இறக்குமதி செய்ய முயற்சிக்கிறீர்கள், இது சில தொடர்புகளின் போது பயன்பாட்டை பதிலளிக்கவில்லை. நீங்கள் உண்மையில் தொடர விரும்புகிறீர்களா?</string>
     <string name="pcapng_format">Pcapng வடிவம்</string>
-    <string name="pcapng_format_summary">டி.எல்.எச் மறைகுறியாக்க ரகசியங்களை உட்பொதிக்க அனுமதிக்கும் பி.சி.ஏ.பி.என்.</string>
+    <string name="pcapng_format_summary">Pcapng டம்ப் வடிவத்தில் டம்ப் பாக்கெட்டுகள், இது மிகவும் நெகிழ்வானது மற்றும் TLS மறைகுறியாக்க ரகசியங்களை உட்பொதிக்க அனுமதிக்கிறது</string>
     <string name="total_bytes">மொத்த பைட்டுகள்</string>
     <string name="write_ext_storage_failed">வெளிப்புற சேமிப்பகத்திற்கு எழுதுதல் தோல்வியடைந்தது. விவரங்களுக்கு பயன்பாட்டு பதிவை சரிபார்க்கவும்</string>
     <string name="username">பயனர்பெயர்</string>
@@ -431,19 +431,19 @@
     <string name="dont_decrypt_action">மறைகுறியாக்க வேண்டாம்…</string>
     <string name="status_encrypted">குறியாக்கப்பட்டது</string>
     <string name="injected">செலுத்தப்பட்டது</string>
-    <string name="open_pcap_file">பி.சி.ஏ.பி கோப்பைத் திறக்கவும்…</string>
-    <string name="pcap_load_success">PCAP கோப்பு ஏற்றப்பட்டது</string>
-    <string name="invalid_pcap_file">தவறான PCAP கோப்பு</string>
+    <string name="open_pcap_file">PCAP/PCAPNG கோப்பைத் திறக்கவும்…</string>
+    <string name="pcap_load_success">கைப்பற்றப்பட்ட கோப்பு ஏற்றப்பட்டது</string>
+    <string name="invalid_pcap_file">தவறான பிடிப்பு கோப்பு வடிவம்</string>
     <string name="capture_interface_open_error">பிடிப்பு இடைமுகத்தைத் திறக்க முடியவில்லை</string>
-    <string name="unsupported_pcap_datalink">PCAP கோப்பில் ஆதரிக்கப்படாத டேட்டாலிங்க் உள்ளது</string>
-    <string name="pcap_file_not_exists">குறிப்பிட்ட PCAP கோப்பு இல்லை</string>
+    <string name="unsupported_pcap_datalink">கோப்பில் ஆதரிக்கப்படாத டேட்டாலிங்க் உள்ளது</string>
+    <string name="pcap_file_not_exists">குறிப்பிட்ட கோப்பு இல்லை</string>
     <string name="root_capture_start_failed">தொடக்க தோல்வி. சாதனம் மேகிசுடன் வேரூன்றியிருப்பதை உறுதிசெய்க</string>
     <string name="root_capture_pcapd_start_failure">தொடக்க தோல்வி. PCAPDroid க்கு ரூட் அணுகலை வழங்குவதை உறுதிசெய்க</string>
-    <string name="pcap_read_error">PCAP வாசிப்பு பிழை</string>
-    <string name="pcap_file_load_aborted">PCAP கோப்பு ஏற்றுதல் நிறுத்தப்பட்டது</string>
+    <string name="pcap_read_error">பிடிப்பு கோப்பைப் படிப்பதில் பிழை. விவரங்களுக்கு பதிவைச் சரிபார்க்கவும்</string>
+    <string name="pcap_file_load_aborted">கைப்பற்றப்பட்ட கோப்பு ஏற்றுதல் நிறுத்தப்பட்டது</string>
     <string name="host_resolution_failed">புரவலன் %1$s ஐ தீர்க்க முடியவில்லை</string>
-    <string name="pcapdroid_trailer_notice">\"%1$s\" க்கு பதிலாக உண்மையான பயன்பாடுகளைக் காட்ட, PCAP கோப்பை ஏற்றுமதி செய்வதற்கு முன் \"%2$s\" விருப்பத்தை இயக்க மறக்காதீர்கள்</string>
-    <string name="decryption_info_no_rule">இந்த இணைப்பு மறைகுறியாக்கப்படாது. அதை மறைகுறியாக்க ஒரு மறைகுறியாக்க விதியை உருவாக்கவும்</string>
+    <string name="pcapdroid_trailer_notice">\"%1$s\" க்கு பதிலாக உண்மையான பயன்பாடுகளைக் காட்ட, டம்பை உருவாக்குவதற்கு முன் \"%2$s\" விருப்பத்தை இயக்க மறக்காதீர்கள்</string>
+    <string name="decryption_info_no_rule">இந்த இணைப்பை மறைகுறியாக்க, இடது டிராயரில் இருந்து அல்லது இணைப்புகள் பட்டியலில் உள்ள சூழல் மெனுவிலிருந்து ஒரு மறைகுறியாக்க விதியை உருவாக்கவும்</string>
     <string name="tls_decryption_no_rules_notice">கட்டமைக்கப்பட்ட விதிகளுடன் பொருந்தக்கூடிய இணைப்புகளுக்கு மட்டுமே டி.எல்.எச் மறைகுறியாக்கம் பயன்படுத்தப்படுகிறது. நீங்கள் இப்போது மறைகுறியாக்க விதிகளை உருவாக்க விரும்புகிறீர்களா?</string>
     <string name="active_vpn_detected">செயலில் VPN கண்டறியப்பட்டது</string>
     <string name="redirected">திருப்பி விடப்பட்டது</string>
@@ -464,4 +464,49 @@
     <string name="vpn_reconnection">VPN மறுதொடக்கம்</string>
     <string name="vpn_reconnection_aborted">VPN இணைப்பு கைவிடப்பட்டது</string>
     <string name="waiting_for_vpn_disconnect">செயலில் உள்ள வி.பி.என் துண்டிக்க காத்திருக்கிறது…</string>
+    <string name="tcp_collector_info">TCP கலெக்டர்: %1$s: %2$d</string>
+    <string name="tcp_exporter">டி.சி.பி ஏற்றுமதியாளர்</string>
+    <string name="tcp_udp_exporter">TCP/UDP ஏற்றுமதியாளர்</string>
+    <string name="tcp_exporter_info">தொலைநிலை TCP ரிசீவருக்கு PCAP ஐ அனுப்பவும் (PCAP-OVER-IP)</string>
+    <string name="geo_db_missing">புவிஇருப்பிட தரவுத்தளம் இல்லை</string>
+    <string name="dump_extensions_how_to">வயர்சார்க்கில் பி.சி.ஏ.பி டிராய்டு டம்ப் நீட்டிப்புகளை எவ்வாறு காண்பிப்பது</string>
+    <string name="no_permissions_set_info">அனுமதிகள் எதுவும் அமைக்கப்படவில்லை. அனுமதிகள் வரியில் காட்ட StartactivityForresult வழியாக PCAPDROID ஐ அழைக்கவும்</string>
+    <string name="generate_api_key">பநிஇ விசையை உருவாக்குங்கள்</string>
+    <string name="show_api_key">பநிஇ விசையை காட்டு</string>
+    <string name="api_key">பநிஇ விசை</string>
+    <string name="api_key_discard_confirm">தற்போதைய பநிஇ விசையை நிராகரித்து புதிய ஒன்றை உருவாக்க விரும்புகிறீர்களா?</string>
+    <string name="country_rules_warning">நாட்டை அடிப்படையாகக் கொண்ட ஃபயர்வால் விதிகளைப் பயன்படுத்த, பி.சி.ஏ.பி டிராய்டு அமைப்புகளிலிருந்து புவிஇருப்பிட தரவுத்தளத்தைப் பதிவிறக்குங்கள், இல்லையெனில் நாட்டை அடிப்படையாகக் கொண்ட விதிகள் பயனற்றதாக இருக்கும்</string>
+    <string name="unsupported_pcap_file">ஆதரிக்கப்படாத பிடிப்பு கோப்பு வடிவம்</string>
+    <string name="decrypt_pcap_file">பிசிஏபி/பி.சி.ஏ.பி.என்.சி கோப்பை டிக்ரிப்ட் செய்யுங்கள்…</string>
+    <string name="errno_enetdown">பிணையம் கீழே உள்ளது</string>
+    <string name="errno_enetdown_msg">பிணைய இடைமுகம் குறைந்துவிட்டது அல்லது பிணையத்துடன் இணைக்க முடியவில்லை</string>
+    <string name="errno_enetunreach">பிணையம் அணுக முடியாதது</string>
+    <string name="errno_enetunreach_msg">இலக்கு நெட்வொர்க்கிற்கு சரியான வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
+    <string name="errno_enetreset">பிணையம் மீட்டமைப்பு</string>
+    <string name="errno_econnaborted">இணைப்பு கைவிடப்பட்டது</string>
+    <string name="errno_econnaborted_msg">பொதுவாக பிணைய மாற்றம் காரணமாக இணைப்பு நிறுத்தப்பட்டது</string>
+    <string name="errno_econnreset">இணைப்பு மீட்டமை பியர்</string>
+    <string name="errno_econnreset_msg">சேவையகம் திடீரென இணைப்பை மூடியது, பொதுவாக விபத்து அல்லது மோசமான பணிநிறுத்தம் காரணமாக</string>
+    <string name="errno_etimedout">இணைப்பு நேரம் முடிந்தது</string>
+    <string name="errno_econnrefused">இணைப்பு மறுத்துவிட்டது</string>
+    <string name="errno_econnrefused_msg">சேவையகம் இணைப்பை நிராகரித்தது, இது மிகவும் பிசியான அல்லது செயலிழந்த சேவையகத்தைக் குறிக்கலாம்</string>
+    <string name="errno_ehostunreach">ஓச்டுக்கு பாதை இல்லை</string>
+    <string name="errno_ehostunreach_msg">இலக்கு ஓச்டுக்கு ஒரு வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
+    <string name="tls_conn_info">TLS/HTTPS போக்குவரத்து குறியாக்கம் செய்யப்படுகிறது. இந்த போக்குவரத்தை ஆய்வு செய்ய, நீங்கள் அதை மறைகுறியாக்க வேண்டும். விவரங்களுக்கு pcapdroid <a href="%1$s"> பயனர் கையேடு </a> ஐப் பாருங்கள்</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions">Pcapdroid நீட்டிப்புகள்</string>
+    <string name="dump_extensions_summary">கொடுக்கப்பட்ட பாக்கெட்டை அனுப்பிய/பெற்ற பயன்பாடு போன்ற கூடுதல் மெட்டாடேட்டாவுடன் பாக்கெட் டம்ப் வடிவமைப்பை நீட்டிக்கவும்</string>
+    <string name="malicious_connection_description">பயன்பாட்டின் \"%1$s\" இன் இணைப்பு தீம்பொருள் கண்டறிதல் விதியைத் தூண்டியது (%2$s)</string>
+    <string name="malicious_connections_notice">தடுப்புப்பட்டியலில் தவறான நேர்மறைகள் இருக்கலாம். ஐபி முகவரி/டொமைன் நற்பெயரை ஆன்லைனில் இருமுறை சரிபார்க்கவும். தீம்பொருள் வைட்லிச்ட் வழியாக தவறான நேர்மறைகளை நீங்கள் விலக்கலாம்</string>
+    <string name="keylog_read_error">SSL KEYLOG READ பிழை</string>
+    <string name="bytes_threshold">பைட்டுகள் வாசல்</string>
+    <string name="select_the_pcap_file">PCAP/PCAPNG கோப்பைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="select_the_keylog_file">SSL கீலாக் கோப்பைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="error_code_with_text">%1$s (பிழை %2$d)</string>
+    <string name="errno_epipe">உடைந்த குழாய்</string>
+    <string name="errno_epipe_msg">தரவு பரிமாற்றத்தின் போது சேவையகம் எதிர்பாராத விதமாக இணைப்பை மூடியது</string>
+    <string name="errno_enetreset_msg">பிணைய இணைப்பு ஒரு இடைநிலை சாதனத்தால் மீட்டமைக்கப்பட்டது (எ.கா. திசைவி அல்லது மொபைல் கேரியர்)</string>
+    <string name="errno_etimedout_msg">பிணையம் தாமதங்கள் அல்லது பிசியான சேவையகம் காரணமாக சேவையகம் பதிலளிக்க அதிக நேரம் எடுத்தது</string>
+    <string name="dns_conn_info">டி.என்.எச் ஒரு டொமைன் பெயரை ஐபி முகவரியாக மொழிபெயர்க்கிறது. உண்மையான தரவு பொதுவாக அடுத்தடுத்த HTTPS/TLS இணைப்புகளில் பரிமாறப்படுகிறது</string>
+    <string name="ip_address_or_cidr">ஐபி முகவரி / சிஐடிஆர்</string>
 </resources>
