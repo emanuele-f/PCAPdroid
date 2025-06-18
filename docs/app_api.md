@@ -78,7 +78,7 @@ From the permission dialog the user can choose to permanently grant or deny the 
 
 Applications interfacing with PCAPdroid should use the `startActivityForResult` (or the equivalent `ActivityResultLauncher`) when calling its API, rather than `startActivity`. This ensures that the package name of the calling app can be retrieved via [getCallingPackage](https://developer.android.com/reference/android/app/Activity#getCallingPackage()).
 
-### API Key
+ API Key
 
 Since PCAPdroid 1.8.6, you can pass an `api_key` parameter in the Intent to authenticate the request without showing the permission prompt. This is useful, in particular, when invoking PCAPdroid from adb or a third-party app which does not support `startActivityForResult`.
 
