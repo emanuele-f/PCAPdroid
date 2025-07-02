@@ -522,7 +522,7 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
                 } else if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "imap")) {
                     data->alpn = NDPI_PROTOCOL_MAIL_IMAP;
                     data->update_type |= CONN_UPDATE_INFO;
-                } else if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "stmp")) {
+                } else if(strstr(data->ndpi_flow->protos.tls_quic.negotiated_alpn, "smtp")) {
                     data->alpn = NDPI_PROTOCOL_MAIL_SMTP;
                     data->update_type |= CONN_UPDATE_INFO;
                 } else {
