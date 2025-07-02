@@ -52,6 +52,7 @@ import com.android.billingclient.api.Purchase.PurchaseState;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsParams.Product;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
@@ -125,7 +126,12 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         };
     }
 
-    private void processPurchases(BillingResult billingResult, @Nullable List<Purchase> purchases) {
+    private static String billingResult2Str(BillingResult res) {
+        return res.getResponseCode() + "/" + res.getOnPurchasesUpdatedSubResponseCode() + " " + res.getDebugMessage();
+    }
+
+    // NOTE: processPurchases is called only with new purchases from onPurchasesUpdated (isFullList if false)
+    private void processPurchases(BillingResult billingResult, @Nullable List<Purchase> purchases, boolean isFullList) {
         if((billingResult.getResponseCode() == BillingResponseCode.OK) && (purchases != null)) {
             ArraySet<String> purchased = new ArraySet<>();
             boolean show_toast = true;
@@ -196,20 +202,24 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
                     if (mBillingClient != null)
                         mBillingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult1 ->
-                                Log.d(TAG, "acknowledgePurchase: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage()));
+                                Log.d(TAG, "acknowledgePurchase: " + billingResult2Str(billingResult1)));
                 }
             }
 
-            // Check for voided purchases (e.g. due to a refund)
-            for(String sku: ALL_SKUS) {
-                if(!purchased.contains(sku) && isPurchased(sku)) {
-                    Log.w(TAG, "Previously purchased SKU " + sku + " was voided");
+            if (isFullList) {
+                // Check for voided purchases (e.g. due to a refund)
+                for (String sku : ALL_SKUS) {
+                    // NOTE: the purchases array may contain only new items, e.g. when called via onPurchasesUpdated
+                    // so check seenSkus to prevent incorrect voids
+                    if (!purchased.contains(sku) && isPurchased(sku)) {
+                        Log.w(TAG, "Previously purchased SKU " + sku + " was voided");
 
-                    if(setPurchased(sku, false) && !mWaitingStart)
-                        mHandler.post(() -> {
-                            if(mListener != null)
-                                mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE);
-                        });
+                        if (setPurchased(sku, false) && !mWaitingStart)
+                            mHandler.post(() -> {
+                                if (mListener != null)
+                                    mListener.onSKUStateUpdate(sku, PurchaseState.UNSPECIFIED_STATE);
+                            });
+                    }
                 }
             }
         }
@@ -239,10 +249,11 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     @Override
-    public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
-        Log.d(TAG, "onProductDetailsResponse: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
+    public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull QueryProductDetailsResult queryProductDetailsResult) {
+        Log.d(TAG, "onProductDetailsResponse: " + billingResult2Str(billingResult));
 
         if(billingResult.getResponseCode() == BillingResponseCode.OK) {
+            List<ProductDetails> list = queryProductDetailsResult.getProductDetailsList();
             mAvailability.update(list, mPrefs);
             Log.d(TAG, "Num available SKUs: " + list.size());
 
@@ -255,8 +266,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
             mBillingClient.queryPurchasesAsync(
                     QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
                     (billingResult1, purchases) -> {
-                Log.d(TAG, "queryPurchasesAsync: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage());
-                processPurchases(billingResult1, purchases);
+                Log.d(TAG, "queryPurchasesAsync: " + billingResult2Str(billingResult1));
+                processPurchases(billingResult1, purchases, true);
             });
         } else
             onPurchasesError(billingResult);
@@ -264,7 +275,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     @Override
     public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-        Log.d(TAG, "onBillingSetupFinished: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
+        Log.d(TAG, "onBillingSetupFinished: " + billingResult2Str(billingResult));
 
         if(billingResult.getResponseCode() ==  BillingResponseCode.OK) {
             List<Product> productList = new ArrayList<>();
@@ -343,8 +354,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     @Override
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
-        Log.d(TAG, "onPurchasesUpdated: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
-        processPurchases(billingResult, purchases);
+        Log.d(TAG, "onPurchasesUpdated: " + billingResult2Str(billingResult));
+        processPurchases(billingResult, purchases, false);
     }
 
     /* For testing purposes */
@@ -356,7 +367,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         }
 
         mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(token).build(), (billingResult, s) ->
-                Log.d(TAG, "consumeAsync response: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage()));
+                Log.d(TAG, "consumeAsync response: " + billingResult2Str(billingResult))
+        );
     }
 
     private String sku2pref(String sku) {
@@ -448,7 +460,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         // will call onPurchasesUpdated when done
         mPendingNoticeShown = false;
         BillingResult res = mBillingClient.launchBillingFlow(activity, billingFlowParams);
-        Log.d(TAG, "BillingFlow result: " + res.getResponseCode() + " " + res.getDebugMessage());
+        Log.d(TAG, "BillingFlow result: " + billingResult2Str(res));
 
         return(res.getResponseCode() == BillingResponseCode.OK);
     }
@@ -508,7 +520,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
                 // Success, consume the purchase
                 mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(), (billingResult, s) -> {
-                        Log.d(TAG, "consumeAsync[unlockToken] response: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
+                        Log.d(TAG, "consumeAsync[unlockToken] response: " + billingResult2Str(billingResult));
+
                         if(billingResult.getResponseCode() == BillingResponseCode.OK) {
                             mHandler.post(() -> {
                                 if (mListener != null)

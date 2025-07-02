@@ -83,6 +83,7 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
             view = mLayoutInflater.inflate(R.layout.sku_item, parent, false);
 
         SKUItem item = getItem(position);
+        assert item != null;
         boolean purchased = mIab.isPurchased(item.sku);
 
         ((TextView)view.findViewById(R.id.label)).setText(item.label);
