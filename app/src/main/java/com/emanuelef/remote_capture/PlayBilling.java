@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -41,14 +41,18 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchaseState;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams.Product;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
 import java.io.BufferedOutputStream;
@@ -59,16 +63,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, SkuDetailsResponseListener {
+public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, ProductDetailsResponseListener {
     public static final String TAG = "PlayBilling";
     private static final String PREF_LAST_UNLOCK_TOKEN = "unlock_token";
     private static final String LICENSE_GEN_URL = "https://pcapdroid.org/getlicense";
     private final Handler mHandler;
-    private final ArrayMap<String, SkuDetails> mDetails;
+    private final ArrayMap<String, ProductDetails> mDetails;
     private final ArrayMap<String, String> mSkuToPurchToken;
     private BillingClient mBillingClient;
     private PurchaseReadyListener mListener;
@@ -112,12 +117,12 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     public static String purchstate2Str(int state) {
-        switch (state) {
-            case PurchaseState.PENDING: return "PENDING";
-            case PurchaseState.PURCHASED: return "PURCHASED";
-            case PurchaseState.UNSPECIFIED_STATE: return "UNSPECIFIED";
-        }
-        return "UNKNOWN";
+        return switch (state) {
+            case PurchaseState.PENDING -> "PENDING";
+            case PurchaseState.PURCHASED -> "PURCHASED";
+            case PurchaseState.UNSPECIFIED_STATE -> "UNSPECIFIED";
+            default -> "UNKNOWN";
+        };
     }
 
     private void processPurchases(BillingResult billingResult, @Nullable List<Purchase> purchases) {
@@ -129,7 +134,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
             for(Purchase purchase : purchases) {
                 boolean newPurchase = false;
 
-                for(String sku: purchase.getSkus()) {
+                for(String sku: purchase.getProducts()) {
                     Log.d(TAG, "\tPurchase: " + sku + " -> " + purchstate2Str(purchase.getPurchaseState()));
 
                     switch (purchase.getPurchaseState()) {
@@ -234,20 +239,22 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     @Override
-    public void onSkuDetailsResponse(@NonNull BillingResult billingResult, @Nullable List<SkuDetails> list) {
-        Log.d(TAG, "onSkuDetailsResponse: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
+    public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
+        Log.d(TAG, "onProductDetailsResponse: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
 
-        if((billingResult.getResponseCode() == BillingResponseCode.OK) && (list != null)) {
+        if(billingResult.getResponseCode() == BillingResponseCode.OK) {
             mAvailability.update(list, mPrefs);
             Log.d(TAG, "Num available SKUs: " + list.size());
 
             mDetails.clear();
-            for(SkuDetails sku: list) {
-                //Log.d(TAG, "Available: " + sku);
-                mDetails.put(sku.getSku(), sku);
+            for(ProductDetails product: list) {
+                //Log.d(TAG, "Available: " + product);
+                mDetails.put(product.getProductId(), product);
             }
 
-            mBillingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP, (billingResult1, purchases) -> {
+            mBillingClient.queryPurchasesAsync(
+                    QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
+                    (billingResult1, purchases) -> {
                 Log.d(TAG, "queryPurchasesAsync: " + billingResult1.getResponseCode() + " " + billingResult1.getDebugMessage());
                 processPurchases(billingResult1, purchases);
             });
@@ -260,11 +267,20 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         Log.d(TAG, "onBillingSetupFinished: " + billingResult.getResponseCode() + " " + billingResult.getDebugMessage());
 
         if(billingResult.getResponseCode() ==  BillingResponseCode.OK) {
-            SkuDetailsParams.Builder builder = SkuDetailsParams.newBuilder()
-                    .setType(BillingClient.SkuType.INAPP)
-                    .setSkusList(ALL_SKUS);
+            List<Product> productList = new ArrayList<>();
+            for (String sku: ALL_SKUS) {
+                productList.add(
+                        Product.newBuilder()
+                                .setProductId(sku)
+                                .setProductType(BillingClient.ProductType.INAPP)
+                                .build());
+            }
 
-            mBillingClient.querySkuDetailsAsync(builder.build(), this);
+            QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                    .setProductList(productList)
+                    .build();
+
+            mBillingClient.queryProductDetailsAsync(params, this);
         } else
             onPurchasesError(billingResult);
     }
@@ -285,7 +301,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     /*
-     * connectBilling -> onBillingSetupFinished -> querySkuDetailsAsync -> queryPurchasesAsync -> processPurchases
+     * connectBilling -> onBillingSetupFinished -> queryProductDetailsAsync -> queryPurchasesAsync -> processPurchases
      * Starts the connection to Google Play.
      * IMPORTANT: the client must call disconnectBilling to prevent leaks
      * */
@@ -301,7 +317,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
         mBillingClient = BillingClient.newBuilder(mContext)
                 .setListener(this)
-                .enablePendingPurchases()
+                .enablePendingPurchases(PendingPurchasesParams.newBuilder()
+                        .enableOneTimeProducts().build())
                 .build();
 
         // Will call onBillingSetupFinished when ready
@@ -399,8 +416,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     @Nullable
-    public SkuDetails getSkuDetails(String sku) {
-        return mDetails.get(sku);
+    public ProductDetails getProductDetails(String productId) {
+        return mDetails.get(productId);
     }
 
     public boolean purchase(Activity activity, String sku) {
@@ -409,7 +426,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
             return false;
         }
 
-        SkuDetails details = mDetails.get(sku);
+        ProductDetails details = mDetails.get(sku);
         if(details == null) {
             mHandler.post(() -> Utils.showToast(mContext, R.string.feature_not_available));
             return false;
@@ -417,8 +434,15 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
         Log.d(TAG, "Starting purchasing SKU " + sku);
 
+        List<ProductDetailsParams> productDetailsParamsList = new ArrayList<>();
+        productDetailsParamsList.add(
+                ProductDetailsParams.newBuilder()
+                        .setProductDetails(details)
+                        .build()
+        );
+
         BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(details)
+                .setProductDetailsParamsList(productDetailsParamsList)
                 .build();
 
         // will call onPurchasesUpdated when done

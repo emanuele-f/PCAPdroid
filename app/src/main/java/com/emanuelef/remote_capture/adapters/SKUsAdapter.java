@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
@@ -31,7 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.ProductDetails;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PlayBilling;
 import com.emanuelef.remote_capture.R;
@@ -125,16 +125,20 @@ public class SKUsAdapter extends ArrayAdapter<SKUsAdapter.SKUItem> {
         if(!mIab.isAvailable(sku))
             return;
 
-        SkuDetails sd = mIab.getSkuDetails(sku);
+        ProductDetails sd = mIab.getProductDetails(sku);
         if(sd == null)
             return;
 
-        Log.d(TAG, "SKU [" + sd.getSku() + "]: " + sd.getTitle() + " -> " + sd.getPrice() + " " + sd.getPriceCurrencyCode());
+        ProductDetails.OneTimePurchaseOfferDetails details = sd.getOneTimePurchaseOfferDetails();
+        if (details == null)
+            return;
+
+        Log.d(TAG, "SKU [" + sd.getProductId() + "]: " + sd.getTitle() + " -> " + details.getFormattedPrice());
 
         add(new SKUItem(sku,
                 mCtx.getString(title),
                 (descr > 0) ? mCtx.getString(descr) : "",
-                sd.getPrice(),
+                details.getFormattedPrice(),
                 docs_url));
     }
 

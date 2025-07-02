@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-25 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
 
 import android.content.SharedPreferences;
 
-import androidx.collection.ArraySet;
-
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.ProductDetails;
 import com.emanuelef.remote_capture.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -67,13 +65,13 @@ public class SkusAvailability implements Serializable {
         prefsEditor.apply();
     }
 
-    public boolean update(List<SkuDetails> details, SharedPreferences prefs) {
+    public boolean update(List<ProductDetails> details, SharedPreferences prefs) {
         boolean changed = false;
         HashSet<String> available = new HashSet<>();
 
         // Check new skus
-        for(SkuDetails detail: details) {
-            String sku = detail.getSku();
+        for(ProductDetails detail: details) {
+            String sku = detail.getProductId();
             available.add(sku);
 
             if(!mSkus.contains(sku)) {
