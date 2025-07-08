@@ -19,7 +19,7 @@
     <string name="status">Status</string>
     <string name="app">App</string>
     <string name="http_server">HTTP-Server</string>
-    <string name="no_dump">Kein Dump</string>
+    <string name="no_dump">Kein Mitschnitt</string>
     <string name="http_server_info">Starte einen HTTP-Server für den PCAP download</string>
     <string name="user_guide">Benutzerhandbuch</string>
     <string name="open_telegram_group">Telegram-Gruppe</string>
@@ -31,7 +31,7 @@
     <string name="stats">Statistiken</string>
     <string name="active_connections">Aktive Verbindungen</string>
     <string name="udp_exporter">UDP-Exporter</string>
-    <string name="udp_exporter_info">Sendet das PCAP zu einen entfernten UDP-Server</string>
+    <string name="udp_exporter_info">Sendet das PCAP zu einen remote UDP-Server</string>
     <string name="http_server_port">HTTP-Server-Port</string>
     <string name="no_dump_info">Verkehr wird nicht gedumpt</string>
     <string name="receiver_port">Empfänger-Port</string>
@@ -48,7 +48,7 @@
     <string name="dns_server">DNS-Server</string>
     <string name="apps">Apps</string>
     <string name="pcap_file">PCAP-Datei</string>
-    <string name="pcap_file_info">Erstellen einer PCAP/Pcapng-Datei im Gerätespeicher</string>
+    <string name="pcap_file_info">Erstelle eine PCAP/Pcapng-Datei im Gerätespeicher</string>
     <string name="cannot_write_file">Datei kann nicht geschrieben werden</string>
     <string name="share">Teilen</string>
     <string name="pcap_file_action">In der Datei \"%1$s\" gespeicherter Netzwerktraffic (%2$s)</string>
@@ -87,7 +87,7 @@
     <string name="rcvd_and_sent">%1$s empfangen — %2$s gesendet</string>
     <string name="collector_info">UDP-Kollektor: %1$s:%2$d</string>
     <string name="save_to_file">Speichern unter</string>
-    <string name="older_connections_notice">%1$d älter Verbindungen werden nicht angezeigt</string>
+    <string name="older_connections_notice">%1$d ältere Verbindungen werden nicht angezeigt</string>
     <string name="unknown_app">Unbekannt</string>
     <string name="error">Fehler</string>
     <string name="conn_status_unreachable">Unerreichbar</string>
@@ -523,4 +523,7 @@
     <string name="mitm_addon_update_available">Ein neues Update für das mitm AddOn ist verfügbar. Aktualisiere, um die aktuellsten Fehlerbehebungen zu installieren</string>
     <string name="update_action">Aktualisierung</string>
     <string name="ip_address_or_cidr">IP-Adresse / CIDR</string>
+    <string name="tcp_exporter">TCP-Exporter</string>
+    <string name="tcp_udp_exporter">TCP/UDP-Exporter</string>
+    <string name="tcp_exporter_info">Sendet das PCAP an einen remote TCP-Empfänger (pcap-über-ip)</string>
 </resources>
