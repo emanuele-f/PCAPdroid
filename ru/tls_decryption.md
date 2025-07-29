@@ -58,8 +58,8 @@ PCAPdroid can decrypt the TLS traffic and display the decrypted payload directly
 Если вы откроете дешифрованное соединение, вкладки "Содержимое" и "HTTP" отобразят дешифрованное содержимое.
 
 <p align="center">
-<img src="images/decryption-summary.png" width="250" />
-<img src="images/decryption-content.png" width="250" />
+<img src="images/decrypted-summary.png" width="250" />
+<img src="images/decrypted-content.png" width="250" />
 </p>
 
 Если запись дампа в PCAP включена, то по завершению захвата вы увидите запрос на сохранение `SSLKEYLOGFILE`, который вы можете загрузить в Wireshark [для дешифрования](https://wiki.wireshark.org/TLS#tls-decryption) PCAP файла. В качестве альтернативы, для упрощения процесса, можно использовать [формат дампа pcapng](paid_features#53-pcapng-format), в который `SSLKEYLOGFILE` встраивается напрямую.
