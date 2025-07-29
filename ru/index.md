@@ -1,5 +1,7 @@
 **Добро пожаловать в русскоязычное Руководство Пользователя PCAPdroid.**
 
+Последнее обновление: 29 июля 2025
+
 # Оглавление
 
 - [1. Знакомство](quick_start)
@@ -7,11 +9,12 @@
     - [1.2 Основы использования](quick_start#12-основы-использования)
     - [1.3 Фильтры](quick_start#13-фильтры)
     - [1.4 Анализ пакетов](quick_start#14-анализ-пакетов)
-- [2. Режимы дампирования траффика](dump_modes)
-    - [2.1 Никакой](dump_modes#21-никакой)
+- [2. Режимы дампирования трафика](dump_modes)
+    - [2.1 Без дампа](dump_modes#21-без-дампа)
     - [2.2 HTTP Сервер](dump_modes#22-http-сервер)
     - [2.3 PCAP-файл](dump_modes#23-pcap-файл)
-    - [2.4 Экспорт через UDP](dump_modes#24-экспорт-через-udp)
+    - [2.4 UDP Экспортер](dump_modes#24-udp-экспортер)
+    - [2.5 TCP Экспортер](dump_modes#25-tcp-экспортер-pcap-over-ip)
 - [3. Дешифрование TLS](tls_decryption)
     - [3.1 Введение](tls_decryption#31-введение)
     - [3.2 Начальная настройка](tls_decryption#32-начальная-настройка)
@@ -23,8 +26,8 @@
     - [4.1 DNS Сервер](advanced_features#41-dns-сервер)
     - [4.2 Поддержка DNS-over-HTTPS](advanced_features#42-поддержка-doh)
     - [4.3 Поддержка IPv6](advanced_features#43-поддержка-ipv6)
-    - [4.4 Захват траффика в Root-режиме](advanced_features#44-захват-траффика-с-правами-root)
-    - [4.5 PCAPdroid Trailer](advanced_features#45-pcapdroid-trailer)
+    - [4.4 Захват трафика в Root-режиме](advanced_features#44-захват-трафика-с-правами-root)
+    - [4.5 PCAPdroid Расширения](advanced_features#45-pcapdroid-расширения)
     - [4.6 Js Injector](advanced_features#46-js-injector)
     - [4.7 Tor](advanced_features#47-tor)
 - [5. Платные возможности](paid_features)
@@ -33,3 +36,4 @@
     - [5.3 Формат pcapng](paid_features#53-формат-pcapng)
 - [6. Ответы на частые вопросы (FAQ)](faq)
 - [7. Пожертвования](donate)
+- [8. Политика конфиденциальности](privacy)
