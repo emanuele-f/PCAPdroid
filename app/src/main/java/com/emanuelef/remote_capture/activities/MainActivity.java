@@ -206,6 +206,20 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
                 if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
                     mKeylogFile = null;
+                else{
+                    // Dump the sslkeylogfile to API-provided path for better automation
+                    String keylogDumpName = Prefs.getKeylogDumpName(mPrefs);
+                    if(!keylogDumpName.isBlank()){
+                        Uri dumpUri = Utils.getDownloadsUri(MainActivity.this, keylogDumpName);
+                        try(OutputStream out = getContentResolver().openOutputStream(dumpUri, "rwt")) {
+                            Utils.copy(mKeylogFile, out);
+                            Utils.showToast(this, R.string.save_ok);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Utils.showToastLong(this, R.string.export_failed);
+                        }
+                    }
+                }
 
                 Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 

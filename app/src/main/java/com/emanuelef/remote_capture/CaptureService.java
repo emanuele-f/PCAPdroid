@@ -283,10 +283,18 @@ public class CaptureService extends VpnService implements Runnable {
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
             Log.i(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
+
+            // reset KeylogDumpName in case capture was started manually
+            Prefs.setKeylogDumpName(mPrefs, "");
         } else {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
+
+            // Store the keylog_dump_name in the SharedPreferences
+            if(!settings.keylog_dump_name.isBlank()){
+                Prefs.setKeylogDumpName(mPrefs, settings.keylog_dump_name);
+            }
         }
 
         mIsAlwaysOnVPN |= isAlwaysOnVpnDetected();
