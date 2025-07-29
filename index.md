@@ -38,4 +38,4 @@ Welcome to the PCAPdroid User Guide.
 
 ## Other Languages
 
-- [Russian](ru/)
+- [Russian / Русский](ru/) (Last update: 29th of July, 2025)
