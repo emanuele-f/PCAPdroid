@@ -563,4 +563,5 @@
     <string name="errno_ehostunreach_msg">The system cannot find a route to the destination host</string>
     <string name="dns_conn_info">DNS translates a domain name into an IP address. The actual data is typically exchanged over subsequent HTTPS/TLS connections</string>
     <string name="tls_conn_info">TLS/HTTPS traffic is encrypted. To inspect this traffic, you need to decrypt it. Check out the PCAPdroid <a href='%1$s'>user guide</a> for details</string>
+    <string name="tls_decryption_not_supported_16KB">TLS decryption is currently unsupported on 16 KB devices</string>
 </resources>

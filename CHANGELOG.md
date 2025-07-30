@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.7] - 2025-07-24
+- Minor fixes
+- Update billing library (Play build)
+
 ## [1.8.6] - 2025-05-13
 - Add TCP exporter dump mode (pcap-over-ip)
 - Allow PCAPdroid capture control without prompt via API key
