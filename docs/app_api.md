@@ -129,6 +129,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | decryption_hosts         | string | 87  | vpn  | \[_Decryption Rules_\] hostnames to decrypt (comma separated list, if multiple)                  |
 | decryption_protocols     | string | 87  | vpn  | \[_Decryption Rules_\] protocols to decrypt (comma separated list, if multiple)                  |
 | decryption_countries     | string | 87  | vpn  | \[_Decryption Rules_\] countries to decrypt (comma separated list, if multiple)                  |
+| full_payload             | bool   | 87  |      | true to dump the full payload of the packets                                                     |
 
 \*: paid feature
 
