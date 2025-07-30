@@ -40,7 +40,6 @@ public class MitmAPI {
         public boolean transparentMode;         // true to use transparent proxy mode, false to use SOCKS5 proxy mode
         public boolean sslInsecure;             // true to disable upstream certificate check
         public boolean dumpMasterSecrets;       // true to enable the TLS master secrets dump messages (similar to SSLKEYLOG)
-        public boolean dumpKeylogToDownloads;   // true to dump the SSLKEYLOGFILE to the users downloads directory
         public boolean shortPayload;            // if true, only the initial portion of the payload will be sent
         public String proxyAuth;                // SOCKS5 proxy authentication, "user:pass"
         public String additionalOptions;        // provide additional options to mitmproxy
