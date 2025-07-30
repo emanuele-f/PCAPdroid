@@ -71,7 +71,6 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
-import com.emanuelef.remote_capture.model.Geomodel;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.PortMapping;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -283,11 +282,33 @@ public class CaptureService extends VpnService implements Runnable {
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
             mIsAlwaysOnVPN = (intent != null);
             Log.i(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
+
+            // reset DumpKeylogToDownloads in case capture was started manually
+            Prefs.setSslKeylogName(mPrefs, "");
         } else {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
+
+            // Store the dump_keylog_to_downloads in the SharedPreferences
+            Prefs.setSslKeylogName(mPrefs, settings.sslkeylog_name);
+            // load API-provided decryption_rules
+            if(settings.decryption_rules != null && !settings.decryption_rules.isEmpty()){
+                MatchList decryptionList = new MatchList(CaptureService.this, Prefs.PREF_DECRYPTION_LIST);
+                decryptionList.clear(false);
+                for(MatchList.RuleType tp : settings.decryption_rules.keySet()){
+                    switch (tp){
+                        case APP      -> settings.decryption_rules.get(MatchList.RuleType.APP).forEach((r) -> decryptionList.addApp(r));
+                        case IP       -> settings.decryption_rules.get(MatchList.RuleType.IP).forEach((r) -> decryptionList.addApp(r));
+                        case HOST     -> settings.decryption_rules.get(MatchList.RuleType.HOST).forEach((r) -> decryptionList.addApp(r));
+                        case PROTOCOL -> settings.decryption_rules.get(MatchList.RuleType.PROTOCOL).forEach((r) -> decryptionList.addApp(r));
+                        case COUNTRY  -> settings.decryption_rules.get(MatchList.RuleType.COUNTRY).forEach((r) -> decryptionList.addApp(r));
+                    }
+                }
+                decryptionList.save();
+            }
         }
+        Prefs.setApiCapture(mPrefs, mSettings.api_capture);
 
         mIsAlwaysOnVPN |= isAlwaysOnVpnDetected();
 
