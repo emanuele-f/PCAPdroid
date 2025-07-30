@@ -72,7 +72,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
     private final boolean mPcapngFormat;
-    private final boolean mDumpKeylogToDownloads;   // true to dump the SSLKEYLOGFILE to the users downloads directory
     private static final MutableLiveData<Status> proxyStatus = new MutableLiveData<>(Status.NOT_STARTED);
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
@@ -127,7 +126,6 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
         mPcapngFormat = settings.pcapng_format;
-        mDumpKeylogToDownloads = settings.dump_keylog_to_downloads;
 
         mConfig = new MitmAPI.MitmConfig();
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
@@ -145,18 +143,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.transparentMode = settings.root_capture;
 
         //noinspection ResultOfMethodCallIgnored
-        getKeylogFilePath(mContext, mDumpKeylogToDownloads).delete();
+        getKeylogFilePath(mContext).delete();
     }
 
-    public static File getKeylogFilePath(Context ctx, boolean toDownloads) {
-        String filename = "SSLKEYLOG.txt";
-        File file;
-        if(toDownloads){
-            file = new File(Utils.getDownloadsUri(ctx, filename).getPath());
-        }else{
-            file = new File(ctx.getCacheDir(), filename);
-        }
-        return file;
+    public static File getKeylogFilePath(Context ctx) {
+        return new File(ctx.getCacheDir(), "SSLKEYLOG.txt");
     }
 
     public boolean start() throws IOException {
@@ -406,7 +397,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(mKeylog == null)
                 mKeylog = new BufferedOutputStream(
                         mContext.getContentResolver().openOutputStream(
-                                Uri.fromFile(getKeylogFilePath(mContext, mDumpKeylogToDownloads)), "rwt"));
+                                Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
 
             mKeylog.write(master_secret);
             mKeylog.write(0xa);

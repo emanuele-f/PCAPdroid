@@ -284,14 +284,14 @@ public class CaptureService extends VpnService implements Runnable {
             Log.i(CaptureService.TAG, "Missing capture settings, using SharedPrefs");
 
             // reset DumpKeylogToDownloads in case capture was started manually
-            Prefs.setDumpKeylogToDownloads(mPrefs, false);
+            Prefs.setSslKeylogName(mPrefs, "");
         } else {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
 
             // Store the dump_keylog_to_downloads in the SharedPreferences
-            Prefs.setDumpKeylogToDownloads(mPrefs, settings.dump_keylog_to_downloads);
+            Prefs.setSslKeylogName(mPrefs, settings.sslkeylog_name);
             // load API-provided decryption_rules
             if(settings.decryption_rules != null && !settings.decryption_rules.isEmpty()){
                 MatchList decryptionList = new MatchList(CaptureService.this, Prefs.PREF_DECRYPTION_LIST);

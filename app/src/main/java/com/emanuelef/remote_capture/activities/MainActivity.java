@@ -203,7 +203,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (CaptureService.isServiceActive())
                     CaptureService.stopService();
 
-                mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this, Prefs.getDumpKeylogToDownloads(mPrefs));
+                mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
                 if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
                     mKeylogFile = null;
 
@@ -217,8 +217,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         // will export the keylogfile after saving/sharing pcap
                     } else if (mKeylogFile != null)
                         startExportSslkeylogfile();
-                }else if(!Prefs.getDumpKeylogToDownloads(mPrefs) && mKeylogFile != null){
-                    // if capture was started through API, but keylog is not dumped to Downloads, we delete it here
+                }else if(mKeylogFile != null){
+                    if(!Prefs.getSslKeylogName(mPrefs).isBlank()) {
+                        Uri uri = Utils.getDownloadsUri(MainActivity.this, Prefs.getSslKeylogName(mPrefs));
+                        try (OutputStream out = getContentResolver().openOutputStream(uri, "rwt")) {
+                            Utils.copy(mKeylogFile, out);
+                            Utils.showToast(this, R.string.save_ok);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Utils.showToastLong(this, R.string.export_failed);
+                        }
+                    }
+
+                    // if capture was started through API, we automatically delete the keylog here after optionally dumping it to provided file
                     mKeylogFile.delete();
                     mKeylogFile = null;
                 }
@@ -754,7 +765,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
             // the keylog file if exists
-            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this, Prefs.getDumpKeylogToDownloads(mPrefs));
+            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
             if(mKeylogFile.exists())
                 startExportSslkeylogfile();
         } else

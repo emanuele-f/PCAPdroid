@@ -38,7 +38,7 @@ public class CaptureSettings implements Serializable {
     public String capture_interface;
     public String pcap_uri = "";
     public String pcap_name = "";
-    public boolean dump_keylog_to_downloads = false;
+    public String sslkeylog_name = "";
     public boolean api_capture;
     public int snaplen = 0;
     public int max_pkts_per_flow = 0;
@@ -97,7 +97,7 @@ public class CaptureSettings implements Serializable {
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
-        dump_keylog_to_downloads = getBool(intent, Prefs.PREF_DUMP_KEYLOG_TO_DOWNLOADS, false);
+        sslkeylog_name = getString(intent, Prefs.PREF_SSLKEYLOG_NAME, "");
         parseDecryptionRulesFromIntent(intent);
         api_capture = true;
     }

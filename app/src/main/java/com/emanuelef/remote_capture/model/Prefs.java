@@ -111,7 +111,7 @@ public class Prefs {
     public static final String PREF_RESTART_ON_DISCONNECT = "restart_on_disconnect";
     public static final String PREF_IGNORED_MITM_VERSION = "ignored_mitm_version";
     public static final String PREF_API_KEY = "api_key";
-    public static final String PREF_DUMP_KEYLOG_TO_DOWNLOADS = "dump_keylog_to_downloads";
+    public static final String PREF_SSLKEYLOG_NAME = "sslkeylog_name";
     public static final String PREF_API_CAPTURE = "api_capture";  // defines if the capture was started through the API
 
     public enum DumpMode {
@@ -193,8 +193,8 @@ public class Prefs {
     public static void setPortMappingEnabled(SharedPreferences p, boolean enabled) {
         p.edit().putBoolean(PREF_PORT_MAPPING_ENABLED, enabled).apply();
     }
-    public static void setDumpKeylogToDownloads(SharedPreferences p, boolean dump) {
-        p.edit().putBoolean(PREF_DUMP_KEYLOG_TO_DOWNLOADS, dump).apply();
+    public static void setSslKeylogName(SharedPreferences p, String name) {
+        p.edit().putString(PREF_SSLKEYLOG_NAME, name).apply();
     }
     public static void setApiCapture(SharedPreferences p, boolean dump) {
         p.edit().putBoolean(PREF_API_CAPTURE, dump).apply();
@@ -248,7 +248,7 @@ public class Prefs {
     public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
     public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
-    public static boolean getDumpKeylogToDownloads(SharedPreferences p) { return(p.getBoolean(PREF_DUMP_KEYLOG_TO_DOWNLOADS, false)); }
+    public static String getSslKeylogName(SharedPreferences p) { return(p.getString(PREF_SSLKEYLOG_NAME, "")); }
     public static boolean getApiCapture(SharedPreferences p) { return(p.getBoolean(PREF_API_CAPTURE, false)); }
 
     // Gets a StringSet from the prefs
@@ -298,7 +298,7 @@ public class Prefs {
                 "\nIpMode: " + getIPMode(p) +
                 "\nDumpExtensions: " + isPcapdroidMetadataEnabled(p) +
                 "\nStartAtBoot: " + startAtBoot(p) +
-                "\nDumpKeylogToDownloads: " + getDumpKeylogToDownloads(p) +
+                "\nDumpKeylogToDownloads: " + getSslKeylogName(p) +
                 "\nApiCapture: " + getApiCapture(p);
     }
 }
