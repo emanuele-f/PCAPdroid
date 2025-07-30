@@ -293,6 +293,21 @@ public class CaptureService extends VpnService implements Runnable {
 
             // Store the dump_keylog_to_downloads in the SharedPreferences
             Prefs.setDumpKeylogToDownloads(mPrefs, settings.dump_keylog_to_downloads);
+            // load API-provided decryption_rules
+            if(settings.decryption_rules != null && !settings.decryption_rules.isEmpty()){
+                MatchList decryptionList = new MatchList(CaptureService.this, Prefs.PREF_DECRYPTION_LIST);
+                decryptionList.clear(false);
+                for(MatchList.RuleType tp : settings.decryption_rules.keySet()){
+                    switch (tp){
+                        case APP      -> settings.decryption_rules.get(MatchList.RuleType.APP).forEach((r) -> decryptionList.addApp(r));
+                        case IP       -> settings.decryption_rules.get(MatchList.RuleType.IP).forEach((r) -> decryptionList.addApp(r));
+                        case HOST     -> settings.decryption_rules.get(MatchList.RuleType.HOST).forEach((r) -> decryptionList.addApp(r));
+                        case PROTOCOL -> settings.decryption_rules.get(MatchList.RuleType.PROTOCOL).forEach((r) -> decryptionList.addApp(r));
+                        case COUNTRY  -> settings.decryption_rules.get(MatchList.RuleType.COUNTRY).forEach((r) -> decryptionList.addApp(r));
+                    }
+                }
+                decryptionList.save();
+            }
         }
         Prefs.setApiCapture(mPrefs, mSettings.api_capture);
 

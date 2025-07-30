@@ -223,7 +223,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
-                // do not show "PCAP saved" dialog and keylog export if capture was started through api
+                // do not show "PCAP saved" dialog and keylog export if capture was started through API
                 if(!Prefs.getApiCapture(mPrefs)) {
                     if ((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
                         showPcapActionDialog();
@@ -231,6 +231,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         // will export the keylogfile after saving/sharing pcap
                     } else if (mKeylogFile != null)
                         startExportSslkeylogfile();
+                }else if(!Prefs.getDumpKeylogToDownloads(mPrefs) && mKeylogFile != null){
+                    // if capture was started through API, but keylog is not dumped to Downloads, we delete it here
+                    mKeylogFile.delete();
+                    mKeylogFile = null;
                 }
                 appStateReady();
                 mWasStarted = false;

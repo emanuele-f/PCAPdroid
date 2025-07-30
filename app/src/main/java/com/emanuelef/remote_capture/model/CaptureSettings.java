@@ -10,6 +10,7 @@ import com.emanuelef.remote_capture.Billing;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,7 @@ import java.util.Set;
 public class CaptureSettings implements Serializable {
     public Prefs.DumpMode dump_mode;
     public HashSet<String> app_filter;
+    public HashMap<MatchList.RuleType, List<String>> decryption_rules;
     public String collector_address;
     public int collector_port;
     public int http_server_port;
@@ -65,6 +67,7 @@ public class CaptureSettings implements Serializable {
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
         pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
+        decryption_rules = null;
         api_capture = false;
     }
 
@@ -96,7 +99,41 @@ public class CaptureSettings implements Serializable {
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
         dump_keylog_to_downloads = getBool(intent, Prefs.PREF_DUMP_KEYLOG_TO_DOWNLOADS, false);
+        parseDecryptionRulesFromIntent(intent);
         api_capture = true;
+    }
+    private void parseDecryptionRulesFromIntent(Intent intent){
+        decryption_rules = new HashMap<>();
+        // APPs
+        List<String> decryption_apps = getStringList(intent, "decryption_apps");
+        for(var app : decryption_apps) {
+            if(!decryption_rules.containsKey(MatchList.RuleType.APP)) decryption_rules.put(MatchList.RuleType.APP, new ArrayList<>());
+            decryption_rules.get(MatchList.RuleType.APP).add(app);
+        }
+        // IPs
+        List<String> decryption_ips = getStringList(intent, "decryption_ips");
+        for(var ip : decryption_ips) {
+            if(!decryption_rules.containsKey(MatchList.RuleType.IP)) decryption_rules.put(MatchList.RuleType.IP, new ArrayList<>());
+            decryption_rules.get(MatchList.RuleType.IP).add(ip);
+        }
+        // HOSTS
+        List<String> decryption_hosts = getStringList(intent, "decryption_hosts");
+        for(var host : decryption_hosts) {
+            if(!decryption_rules.containsKey(MatchList.RuleType.HOST)) decryption_rules.put(MatchList.RuleType.HOST, new ArrayList<>());
+            decryption_rules.get(MatchList.RuleType.HOST).add(host);
+        }
+        // PROTOCOLS
+        List<String> decryption_protocols = getStringList(intent, "decryption_protocols");
+        for(var protocol : decryption_protocols) {
+            if(!decryption_rules.containsKey(MatchList.RuleType.PROTOCOL)) decryption_rules.put(MatchList.RuleType.PROTOCOL, new ArrayList<>());
+            decryption_rules.get(MatchList.RuleType.PROTOCOL).add(protocol);
+        }
+        // COUNTRIES
+        List<String> decryption_countries = getStringList(intent, "decryption_countries");
+        for(var country : decryption_countries) {
+            if(!decryption_rules.containsKey(MatchList.RuleType.COUNTRY)) decryption_rules.put(MatchList.RuleType.COUNTRY, new ArrayList<>());
+            decryption_rules.get(MatchList.RuleType.COUNTRY).add(country);
+        }
     }
 
     private static String getString(Intent intent, String key, String def_value) {
