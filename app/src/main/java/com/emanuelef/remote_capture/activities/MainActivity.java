@@ -203,7 +203,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 if (CaptureService.isServiceActive())
                     CaptureService.stopService();
 
-                mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+                mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this, Prefs.getDumpKeylogToDownloads(mPrefs));
                 if(!mKeylogFile.exists() || !CaptureService.isDecryptingTLS())
                     mKeylogFile = null;
                 else{
@@ -223,13 +223,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
-                if((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-                    showPcapActionDialog();
+                // do not show "PCAP saved" dialog and keylog export if capture was started through api
+                if(!Prefs.getApiCapture(mPrefs)) {
+                    if ((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                        showPcapActionDialog();
 
-                    // will export the keylogfile after saving/sharing pcap
-                } else if(mKeylogFile != null)
-                    startExportSslkeylogfile();
-
+                        // will export the keylogfile after saving/sharing pcap
+                    } else if (mKeylogFile != null)
+                        startExportSslkeylogfile();
+                }
                 appStateReady();
                 mWasStarted = false;
                 mStartPressed = false;
@@ -762,7 +764,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
             // the keylog file if exists
-            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
+            mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this, Prefs.getDumpKeylogToDownloads(mPrefs));
             if(mKeylogFile.exists())
                 startExportSslkeylogfile();
         } else

@@ -131,6 +131,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
         mConfig.proxyAuth = proxyAuth;
         mConfig.dumpMasterSecrets = (CaptureService.getDumpMode() != Prefs.DumpMode.NONE);
+        mConfig.dumpKeylogToDownloads = settings.dump_keylog_to_downloads;
         mConfig.additionalOptions = settings.mitmproxy_opts;
         mConfig.shortPayload = !settings.full_payload;
 
@@ -143,11 +144,18 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mConfig.transparentMode = settings.root_capture;
 
         //noinspection ResultOfMethodCallIgnored
-        getKeylogFilePath(mContext).delete();
+        getKeylogFilePath(mContext, settings.dump_keylog_to_downloads).delete();
     }
 
-    public static File getKeylogFilePath(Context ctx) {
-        return new File(ctx.getCacheDir(), "SSLKEYLOG.txt");
+    public static File getKeylogFilePath(Context ctx, boolean toDownloads) {
+        String filename = "SSLKEYLOG.txt";
+        File file;
+        if(toDownloads){
+            file = new File(Utils.getDownloadsUri(ctx, filename).getPath());
+        }else{
+            file = new File(ctx.getCacheDir(), filename);
+        }
+        return file;
     }
 
     public boolean start() throws IOException {
@@ -397,7 +405,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             if(mKeylog == null)
                 mKeylog = new BufferedOutputStream(
                         mContext.getContentResolver().openOutputStream(
-                                Uri.fromFile(getKeylogFilePath(mContext)), "rwt"));
+                                Uri.fromFile(getKeylogFilePath(mContext, mConfig.dumpKeylogToDownloads)), "rwt"));
 
             mKeylog.write(master_secret);
             mKeylog.write(0xa);
