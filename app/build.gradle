@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion "26.3.11579264"
+    ndkVersion "28.2.13676358"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
         compileSdk 35
         targetSdk 35
-        versionCode 86
-        versionName "1.8.6"
+        versionCode 88
+        versionName "1.8.7"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
@@ -100,14 +100,14 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.14.1"
 
 // AndroidX
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'androidx.fragment:fragment:1.8.6'
+    implementation 'androidx.fragment:fragment:1.8.8'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation "androidx.navigation:navigation-fragment:2.8.8"
-    implementation "androidx.navigation:navigation-ui:2.8.8"
+    implementation "androidx.navigation:navigation-fragment:2.9.2"
+    implementation "androidx.navigation:navigation-ui:2.9.2"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
 // Google
