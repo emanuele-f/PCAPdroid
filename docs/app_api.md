@@ -110,19 +110,19 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | root_capture            | bool   |     |      | true to capture packets in root mode, false to use the VPNService                                                                     |
 | pcapdroid_trailer       | bool   |     |      | (deprecated) alias for dump_extensions                                                                                                |
 | capture_interface       | string |     | root | @inet \| any \| ifname - network interface to use in root mode                                                                        |
-| snaplen                 | int    |  43 |      | max size in bytes for each individual packet in the PCAP dump                                                                         |
-| max_pkts_per_flow       | int    |  43 |      | only dump the first max_pkts_per_flow packets per flow                                                                                |
-| max_dump_size           | int    |  43 |      | max size in bytes for the PCAP dump                                                                                                   |
-| tls_decryption          | bool   |  49 | vpn  | true to enable the built-in TLS decryption                                                                                            |
-| auto_block_private_dns  | bool   |  51 | vpn  | true to detect and possibly block private DNS to inspect traffic                                                                      |
-| ip_mode                 | string |  56 | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both                                                                           |
-| mitmproxy_opts          | string |  62 |      | additional options to provide to mitmproxy in decryption mode                                                                         |
-| pcap_name               | string |  62 |      | write the PCAP to Download/PCAPdroid/*pcap_name* in pcap_file mode                                                                    |
-| pcapng_format           | bool   |  62 |      | true to use the PCAPNG dump format*                                                                                                   |
-| socks5_username         | string |  64 | vpn  | username for the optional SOCKS5 proxy authentication                                                                                 |
-| socks5_password         | string |  64 | vpn  | password for the optional SOCKS5 proxy authentication                                                                                 |
-| block_quic              | string |  73 | vpn  | never \| always \| to_decrypt (matching the decryption whitelist)                                                                     |
-| dump_extensions         | bool   |  79 |      | extend the packet dump format with additional metadata                                                                                |
+| snaplen                 | int    | 43  |      | max size in bytes for each individual packet in the PCAP dump                                                                         |
+| max_pkts_per_flow       | int    | 43  |      | only dump the first max_pkts_per_flow packets per flow                                                                                |
+| max_dump_size           | int    | 43  |      | max size in bytes for the PCAP dump                                                                                                   |
+| tls_decryption          | bool   | 49  | vpn  | true to enable the built-in TLS decryption                                                                                            |
+| auto_block_private_dns  | bool   | 51  | vpn  | true to detect and possibly block private DNS to inspect traffic                                                                      |
+| ip_mode                 | string | 56  | vpn  | which IP addresses to use for the VPN: ipv4 \| ipv6 \| both                                                                           |
+| mitmproxy_opts          | string | 62  |      | additional options to provide to mitmproxy in decryption mode                                                                         |
+| pcap_name               | string | 62  |      | write the PCAP to Download/PCAPdroid/*pcap_name* in pcap_file mode                                                                    |
+| pcapng_format           | bool   | 62  |      | true to use the PCAPNG dump format*                                                                                                   |
+| socks5_username         | string | 64  | vpn  | username for the optional SOCKS5 proxy authentication                                                                                 |
+| socks5_password         | string | 64  | vpn  | password for the optional SOCKS5 proxy authentication                                                                                 |
+| block_quic              | string | 73  | vpn  | never \| always \| to_decrypt (matching the decryption whitelist)                                                                     |
+| dump_extensions         | bool   | 79  |      | extend the packet dump format with additional metadata                                                                                |
 | sslkeylog_name          | bool   | 89  | vpn  | dump the SSLKEYLOGFILE to the /sdcard/Downloads/PCAPDroid directory with the given name. Duplicate names will have and index appended |
 | decryption_rules        | string | 89  | vpn  | provide decryption rules as json (e.g. [{"type":"APP","value":"com.example.app"},{"type":"IP","value":"1.1.1.1"}])                    |
 | full_payload            | bool   | 89  |      | true to dump the full payload of the packets                                                                                          |
