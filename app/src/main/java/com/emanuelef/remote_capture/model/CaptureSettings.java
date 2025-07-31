@@ -10,13 +10,14 @@ import com.emanuelef.remote_capture.Billing;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CaptureSettings implements Serializable {
     public Prefs.DumpMode dump_mode;
     public HashSet<String> app_filter;
+    public String decryption_rules_json = "";
     public String collector_address;
     public int collector_port;
     public int http_server_port;
@@ -37,6 +38,8 @@ public class CaptureSettings implements Serializable {
     public String capture_interface;
     public String pcap_uri = "";
     public String pcap_name = "";
+    public String sslkeylog_name = "";
+    public boolean api_capture;
     public int snaplen = 0;
     public int max_pkts_per_flow = 0;
     public int max_dump_size = 0;
@@ -63,6 +66,8 @@ public class CaptureSettings implements Serializable {
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
         pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
+        decryption_rules_json = null;
+        api_capture = false;
     }
 
     public CaptureSettings(Context ctx, Intent intent) {
@@ -87,11 +92,22 @@ public class CaptureSettings implements Serializable {
         max_pkts_per_flow = getInt(intent, Prefs.PREF_MAX_PKTS_PER_FLOW, 0);
         max_dump_size = getInt(intent, Prefs.PREF_MAX_DUMP_SIZE, 0);
         tls_decryption = getBool(intent, Prefs.PREF_TLS_DECRYPTION_KEY, false);
-        full_payload = false;
+        full_payload = getBool(intent, Prefs.PREF_FULL_PAYLOAD, false);;
         block_quic_mode = Prefs.getBlockQuicMode(getString(intent, "block_quic", Prefs.BLOCK_QUIC_MODE_DEFAULT));
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
+        sslkeylog_name = getString(intent, "sslkeylog_name", "");
+        getDecryptionRulesFromIntent(intent);
+        api_capture = true;
+    }
+    private void getDecryptionRulesFromIntent(Intent intent){
+        String rules = getString(intent, "decryption_rules", "");
+        if(rules.isBlank()) {
+            decryption_rules_json = "";
+            return;
+        }
+        decryption_rules_json = "{\"rules\":" + rules + "}";
     }
 
     private static String getString(Intent intent, String key, String def_value) {

@@ -71,7 +71,6 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
-import com.emanuelef.remote_capture.model.Geomodel;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.emanuelef.remote_capture.model.PortMapping;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -287,6 +286,12 @@ public class CaptureService extends VpnService implements Runnable {
             // Use the provided settings
             mSettings = settings;
             mIsAlwaysOnVPN = false;
+
+            if(!settings.decryption_rules_json.isBlank()) {
+                PCAPdroid.getInstance()
+                    .getDecryptionList()
+                    .fromJson(settings.decryption_rules_json);
+            }
         }
 
         mIsAlwaysOnVPN |= isAlwaysOnVpnDetected();
@@ -1136,6 +1141,10 @@ public class CaptureService extends VpnService implements Runnable {
         if(INSTANCE != null)
             ifname = INSTANCE.getIfname(ifidx);
         return (ifname != null) ? ifname : "";
+    }
+
+    public static CaptureSettings getCaptureSettings() {
+        return((INSTANCE != null) ? INSTANCE.mSettings : null);
     }
 
     // Inside the mCaptureThread
