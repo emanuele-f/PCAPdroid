@@ -123,7 +123,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | socks5_password         | string | 64  | vpn  | password for the optional SOCKS5 proxy authentication                                                                                 |
 | block_quic              | string | 73  | vpn  | never \| always \| to_decrypt (matching the decryption whitelist)                                                                     |
 | dump_extensions         | bool   | 79  |      | extend the packet dump format with additional metadata                                                                                |
-| sslkeylog_name          | bool   | 89  | vpn  | dump the SSLKEYLOGFILE to the /sdcard/Downloads/PCAPDroid directory with the given name. Duplicate names will have and index appended |
+| sslkeylog_name          | bool   | 89  | vpn  | dump the SSLKEYLOGFILE to the /sdcard/Downloads/PCAPDroid directory with the given name                                               |
 | decryption_rules        | string | 89  | vpn  | provide decryption rules as json (e.g. [{"type":"APP","value":"com.example.app"},{"type":"IP","value":"1.1.1.1"}])                    |
 | full_payload            | bool   | 89  |      | true to dump the full payload of the packets                                                                                          |
 

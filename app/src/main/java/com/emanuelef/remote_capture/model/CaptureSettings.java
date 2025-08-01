@@ -10,7 +10,6 @@ import com.emanuelef.remote_capture.Billing;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -66,7 +65,6 @@ public class CaptureSettings implements Serializable {
         auto_block_private_dns = Prefs.isPrivateDnsBlockingEnabled(prefs);
         mitmproxy_opts = Prefs.getMitmproxyOpts(prefs);
         pcapng_format = Prefs.isPcapngEnabled(ctx, prefs);
-        decryption_rules_json = null;
         api_capture = false;
     }
 
@@ -98,16 +96,16 @@ public class CaptureSettings implements Serializable {
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
         pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
         sslkeylog_name = getString(intent, "sslkeylog_name", "");
-        getDecryptionRulesFromIntent(intent);
+        decryption_rules_json = getDecryptionRulesFromIntent(intent);
         api_capture = true;
     }
-    private void getDecryptionRulesFromIntent(Intent intent){
+
+    private String getDecryptionRulesFromIntent(Intent intent){
         String rules = getString(intent, "decryption_rules", "");
-        if(rules.isBlank()) {
-            decryption_rules_json = "";
-            return;
-        }
-        decryption_rules_json = "{\"rules\":" + rules + "}";
+        if(rules.isBlank())
+            return "";
+
+        return "{\"rules\":" + rules + "}";
     }
 
     private static String getString(Intent intent, String key, String def_value) {
