@@ -428,6 +428,7 @@
     <string name="build_info">Build info</string>
     <string name="tls_decryption_with_root_msg">The ability to run TLS decryption with root is an experimental feature. This is a list of known bugs:\n\n
 - in PCAPdroid you will see the traffic as it was generated from the mitm-addon app in place of the original app\n
+- dump of the SSL keylog is not supported\n
 - when an app filter is set, decryption will only occur for the target app, but PCAPdroid will still show the other apps traffic\n
 - if the capture fails to start, ensure that you can actually run the iptables command as root (e.g. via termux)\n
 - this may not work on Android 12 and later\n
