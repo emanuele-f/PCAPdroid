@@ -440,13 +440,7 @@
     <string name="qr_license_confirm">Apakah Anda ingin membuat lisensi untuk perangkat \"%1$s\" menggunakan token pembuka kunci berikut ini\?</string>
     <string name="qr_info_text">Instal PCAPdroid dari Google Play dan pindai kode QR ini</string>
     <string name="injected">Disuntikkan</string>
-    <string name="tls_decryption_with_root_msg">Kemampuan untuk menjalankan dekripsi TLS dengan root adalah fitur eksperimental. Ini adalah daftar bug yang diketahui:
-\n
-\n - di PCAPdroid Anda akan melihat lalu lintas yang dihasilkan dari aplikasi mitm-addon sebagai pengganti aplikasi asli
-\n - ketika filter aplikasi ditetapkan, dekripsi hanya akan terjadi untuk aplikasi target, tetapi PCAPdroid masih akan menampilkan lalu lintas aplikasi lain
-\n - jika penangkapan gagal dimulai, pastikan bahwa Anda benar-benar dapat menjalankan perintah iptables sebagai root (mis. melalui termux)
-\n - ini mungkin tidak bekerja pada Android 12 dan yang lebih baru
-\n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
+    <string name="tls_decryption_with_root_msg">Kemampuan untuk menjalankan dekripsi TLS dengan root adalah fitur eksperimental. Ini adalah daftar bug yang diketahui: \n \n - di PCAPdroid Anda akan melihat lalu lintas yang dihasilkan dari aplikasi mitm-addon sebagai pengganti aplikasi asli \n - ketika filter aplikasi ditetapkan, dekripsi hanya akan terjadi untuk aplikasi target, tetapi PCAPdroid masih akan menampilkan lalu lintas aplikasi lain \n - jika penangkapan gagal dimulai, pastikan bahwa Anda benar-benar dapat menjalankan perintah iptables sebagai root (mis. melalui termux) \n - ini mungkin tidak bekerja pada Android 12 dan yang lebih baru \n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
     <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
     <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
     <string name="malware_whitelist_action">Daftar putih (malware)…</string>
