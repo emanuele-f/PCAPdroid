@@ -375,13 +375,7 @@
 \n
 \nCon la <a href="%2$s">opción de tráiler</a>, puedes añadir nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
     <string name="access_paid_features_msg">Consulta la <a href="%1$s">guía de usuario</a> para saber cómo acceder a las funciones de pago</string>
-    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos:
-\n
-\n - En PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original
-\n - Después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones
-\n - Si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux)
-\n - Es posible que esta función no funcione en Android 12 y superior
-\n - Si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
+    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos: \n \n - En PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original \n - Después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones \n - Si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux) \n - Es posible que esta función no funcione en Android 12 y superior \n - Si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
     <string name="app_intro_privacy_msg">La aplicación no emplea ninguna función de rastreo, analítica o de llamada a casa.
 \n
 \n¿Como puedo estar seguro\? Consulta la <a href="%1$s">política de privacidad</a> y el <a href="%2$s">código fuente</a></string>
