@@ -368,13 +368,7 @@
     <string name="unblock_for_n_minutes">Sblocca per %1$dm</string>
     <string name="paid_features_unlocked">Le funzioni a pagamento sono state sbloccate. Riavvia la cattura</string>
     <string name="build_info">Informazioni build</string>
-    <string name="tls_decryption_with_root_msg">La possibilità di eseguire la decrittazione TLS in modalità root è una funzione sperimentale. Ecco una lista di bug noti:
-\n
-\n- in PCAPdroid vedrai il traffico come se fosse generato dall\'addon di mitm invece che dall\'app originale
-\n- quando un filtro app è impostato, la decrittazione avverrà solo per tale app, tuttavia PCAPdroid mostrarà anche il traffico delle altre app
-\n- se la cattura non si avvia, controllare se sia possibile eseguire il comando iptables come root (es. tramite termux)
-\n- questa funzione potrebbe non funzionare in Android 12 e successivi
-\n- se un\'app di VPN è in esecuzione, assicurati di impostare un filtro app oppure di escludere l\'addon di mitm di PCAPdroid dalla VPN, altrimenti il traffico del dispostivio andrà in loop</string>
+    <string name="tls_decryption_with_root_msg">La possibilità di eseguire la decrittazione TLS in modalità root è una funzione sperimentale. Ecco una lista di bug noti: \n \n- in PCAPdroid vedrai il traffico come se fosse generato dall\'addon di mitm invece che dall\'app originale \n- la generazione dell\'SSL keylog non è supportata\n- quando un filtro app è impostato, la decrittazione avverrà solo per tale app, tuttavia PCAPdroid mostrarà anche il traffico delle altre app \n- se la cattura non si avvia, controllare se sia possibile eseguire il comando iptables come root (es. tramite termux) \n- questa funzione potrebbe non funzionare in Android 12 e successivi \n- se un\'app di VPN è in esecuzione, assicurati di impostare un filtro app oppure di escludere l\'addon di mitm di PCAPdroid dalla VPN, altrimenti il traffico del dispostivio andrà in loop</string>
     <string name="paid_feature">Funzione a pagamento</string>
     <string name="firewall_purchase_msg">Acquista la funzione di <i>%1$s</i> e inizia a bloccare le connessioni</string>
     <string name="unlock_token_summary">Un token che può essere usato per sbloccare le funzioni a pagamento in build diverse da Google-Play (e.s. F-Droid/Github)</string>
@@ -540,4 +534,7 @@
     <string name="show_api_key">Mostra chiave API</string>
     <string name="api_key">Chiave API</string>
     <string name="api_key_discard_confirm">Vuoi veramente scartare l\'attuale chiave API e generarne una nuova?</string>
+    <string name="tls_decryption_not_supported_16KB">La decrittazione TLS non è attualmente supportata su dispositivi a 16 KB</string>
+    <string name="filename_prefix">Prefisso nomi dei file</string>
+    <string name="filename_prefix_description">Imposta il prefisso usato per i file esportati da PCAPdroid, e.s. file PCAP</string>
 </resources>
