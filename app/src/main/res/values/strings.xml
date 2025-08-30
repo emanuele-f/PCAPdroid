@@ -565,4 +565,6 @@
     <string name="dns_conn_info">DNS translates a domain name into an IP address. The actual data is typically exchanged over subsequent HTTPS/TLS connections</string>
     <string name="tls_conn_info">TLS/HTTPS traffic is encrypted. To inspect this traffic, you need to decrypt it. Check out the PCAPdroid <a href='%1$s'>user guide</a> for details</string>
     <string name="tls_decryption_not_supported_16KB">TLS decryption is currently unsupported on 16 KB devices</string>
+    <string name="filename_prefix">Filename prefix</string>
+    <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
 </resources>

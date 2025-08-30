@@ -723,7 +723,9 @@ public class Utils {
     public static String getUniqueFileName(Context context, String ext) {
         Locale locale = getPrimaryLocale(context);
         final DateFormat fmt = new SimpleDateFormat("dd_MMM_HH_mm_ss", locale);
-        return  "PCAPdroid_" + fmt.format(new Date()) + "." + ext;
+
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+        return Prefs.getFilenamePrefix(p) + fmt.format(new Date()) + "." + ext;
     }
 
     public static String getUniquePcapFileName(Context context, boolean pcapng_format) {

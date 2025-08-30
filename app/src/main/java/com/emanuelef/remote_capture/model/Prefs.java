@@ -111,6 +111,7 @@ public class Prefs {
     public static final String PREF_RESTART_ON_DISCONNECT = "restart_on_disconnect";
     public static final String PREF_IGNORED_MITM_VERSION = "ignored_mitm_version";
     public static final String PREF_API_KEY = "api_key";
+    public static final String PREF_FILENAME_PREFIX = "filename_prefix";
 
     public enum DumpMode {
         NONE,
@@ -240,6 +241,7 @@ public class Prefs {
     public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
     public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
+    public static String getFilenamePrefix(SharedPreferences p)     { return(p.getString(PREF_FILENAME_PREFIX, "PCAPdroid_")); }
 
     // Gets a StringSet from the prefs
     // The preference should either be a StringSet or a String

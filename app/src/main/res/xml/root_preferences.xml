@@ -225,6 +225,13 @@
             app:defaultValue="ipv4"
             app:useSimpleSummaryProvider="true" />
 
+        <EditTextPreference
+            app:key="filename_prefix"
+            app:title="@string/filename_prefix"
+            app:summary="@string/filename_prefix_description"
+            app:defaultValue="PCAPdroid_"
+            app:iconSpaceReserved="false" />
+
         <Preference
             app:key="control_permissions"
             app:title="@string/control_permissions"
