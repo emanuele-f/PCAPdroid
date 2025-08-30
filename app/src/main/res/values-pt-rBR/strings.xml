@@ -371,13 +371,7 @@
     <string name="build_info">Detalhes da compilação</string>
     <string name="install_the_mitm_addon">Instalar a <a href="%1$s">extensão de mitm</a> do PCAPdroid</string>
     <string name="warning">Aviso</string>
-    <string name="tls_decryption_with_root_msg">A possibilidade de executar a decriptação do TLS via root ainda está em fase experimental. Abaixo vê uma lista de problemas conhecidos:
-\n
-\n - no PCAPdroid você verá o tráfego como ele foi gerado via extensão de mitm no lugar do app original
-\n - quando um filtro de aplicativos é definido, a decriptação só ocorrerá para o app alvo, mas o PCAPdroid ainda mostrará tráfego de outros aplicativos
-\n - se a captura não começou, certifique-se de que você pode realmente executou o comando de iptables como root (p.ex., via termux)
-\n - isto pode não funcionar no Android 12 e mais recentes
-\n - se um app da VPN estiver executado, você deve definir um app específico para decriptação ou definir uma exceção à extensão de mitm do PCAPdroid na VPN, caso contrário, o tráfego vai entrar em um loop</string>
+    <string name="tls_decryption_with_root_msg">A possibilidade de executar a decriptação do TLS via root ainda está em fase experimental. Abaixo vê uma lista de problemas conhecidos: \n \n - no PCAPdroid você verá o tráfego como ele foi gerado via extensão de mitm no lugar do app original \n - quando um filtro de aplicativos é definido, a decriptação só ocorrerá para o app alvo, mas o PCAPdroid ainda mostrará tráfego de outros aplicativos \n - se a captura não começou, certifique-se de que você pode realmente executou o comando de iptables como root (p.ex., via termux) \n - isto pode não funcionar no Android 12 e mais recentes \n - se um app da VPN estiver executado, você deve definir um app específico para decriptação ou definir uma exceção à extensão de mitm do PCAPdroid na VPN, caso contrário, o tráfego vai entrar em um loop</string>
     <string name="mitm_skip_notice">O certificado de mitm não parece estar instalado. Se continuar, o processo de decriptação pode falhar</string>
     <string name="mitm_wizard_description">Configurar o dispositivo para a decriptação do TLS</string>
     <string name="paid_feature">Funcionalidades não gratuitas</string>
