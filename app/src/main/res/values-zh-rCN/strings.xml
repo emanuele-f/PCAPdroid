@@ -376,7 +376,7 @@
     <string name="paid_features_unlocked">付费功能已解锁。 如果正在运行，请重启流量捕获</string>
     <string name="unblock_for_n_minutes">解封 %1$d 分钟</string>
     <string name="install_the_mitm_addon">安装 PCAPdroid <a href="%1$s">mitm 附加组件</a></string>
-    <string name="tls_decryption_with_root_msg">使用 root 权限运行 TLS 解密是一项实验性功能。 这是已知错误的列表：: \n \n - 在 PCAPdroid 中，流量看起来像是从 mitm-addon 应用生成的，而不是原始应用程序 \n - 设置应用过滤器后，只会对目标应用进行解密，但 PCAPdroid 仍会显示其他应用的流量 \n - 如果流量捕获无法启动，请确保你实际上可以以 root 身份运行 iptables 命令（例如，通过 termux） \n - 此功能可能不适用于 Android 12 及更高版本 \n - 如果 VPN 应用正在运行，你应该针对特定应用进行解密或从 VPN 中排除 PCAPdroid mitm 附加组件，否则流量将进入循环</string>
+    <string name="tls_decryption_with_root_msg">使用 root 权限运行 TLS 解密是一项实验性功能。 这是已知错误的列表：: \n \n - 在 PCAPdroid 中，流量看起来像是从 mitm-addon 应用生成的，而不是原始应用程\n - 不支持转储 SSL keylog\n - 设置应用过滤器后，只会对目标应用进行解密，但 PCAPdroid 仍会显示其他应用的流量 \n - 如果流量捕获无法启动，请确保你实际上可以以 root 身份运行 iptables 命令（例如，通过 termux） \n - 此功能可能不适用于 Android 12 及更高版本 \n - 如果 VPN 应用正在运行，你应该针对特定应用进行解密或从 VPN 中排除 PCAPdroid mitm 附加组件，否则流量将进入循环</string>
     <string name="unlock_token_summary">可用于解锁非 Google-Play 应用版本（例如 F-Droid/Github）中付费功能的令牌</string>
     <string name="unlock_token_error">无法请求解锁令牌 [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">查看 <a href="%1$s">用户指南</a>了解如何访问付费功能</string>
@@ -535,4 +535,7 @@
     <string name="api_key">API 密钥</string>
     <string name="api_key_discard_confirm">你真要丢弃当前 API 密钥并生成新的 API 密钥吗？</string>
     <string name="no_permissions_set_info">未设置权限。通过 StartActivityForResult 调用 PCAPdroid 来显示权限提示</string>
+    <string name="tls_decryption_not_supported_16KB">TLS 解密目前在 16 KB 设备上不受支持</string>
+    <string name="filename_prefix">文件名前缀</string>
+    <string name="filename_prefix_description">设置 PCAPdroid 导出的文件的前缀，比如 PCAP files</string>
 </resources>
