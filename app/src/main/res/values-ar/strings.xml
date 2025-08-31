@@ -204,7 +204,7 @@
     <string name="malware_detection_learn_more">تعرف المزيد حول ميزة الكشف عن البرامج الضارة</string>
     <string name="private_dns_message_notice">يمنع DNS الخاص PCAPdroid من فحص حركة مرور DNS. يمكنك إيقاف تشغيله من إعدادات شبكة Android</string>
     <string name="private_dns_hinders_detection">DNS الخاص يعيق الكشف</string>
-    <string name="decryption_no_filter_warn">حدد تطبيقًا مستهدفًا عند فك تشفير TLS لتجنب فقدان اتصالك بالإنترنت</string>
+    <string name="decryption_no_filter_warn">حدد تطبيقًا مستهدفًا عند فك تعمية TLS لتجنب فقدان اتصالك بالإنترنت</string>
     <string name="block">حظر…</string>
     <string name="blocked_pkts">محظور</string>
     <string name="validate">التحقق من صحة</string>
@@ -218,7 +218,7 @@
     <string name="invalid">غير صالح</string>
     <string name="no_intent_handler_found">لم يتم العثور على تطبيق لتنفيذ هذا الإجراء</string>
     <string name="buy_action">شِراء</string>
-    <string name="tls_decryption_summary">قم بفك تشفير حركة مرور SSL/TLS عن طريق إجراء mitm. قد يعمل هذا الآن مع بعض التطبيقات، راجع دليل المستخدم</string>
+    <string name="tls_decryption_summary">فك تعمية حركة مرور SSL/TLS عن طريق إجراء mitm. قد يعمل هذا الآن مع بعض التطبيقات، راجع دليل المستخدم</string>
     <string name="no_items_for_purchase">لا توجد عناصر متاحة للشراء</string>
     <string name="interface_filter">الواجهة: %1$s</string>
     <string name="network_interface">واجهة المُستخدم</string>
@@ -233,7 +233,7 @@
     <string name="close_nav_drawer">إغلاق الدرج</string>
     <string name="loading_apps">جارٍ تحميل التطبيقات…</string>
     <string name="capture_all_apps">إلتقاط حركة المرور لجميع التطبيقات</string>
-    <string name="tls_decryption">فك تشفير TLS</string>
+    <string name="tls_decryption">فك تعمية TLS</string>
     <string name="open_nav_drawer">فتح الدرج</string>
     <string name="save_ok">حٌفظت</string>
     <string name="mitm_start_failed">لا يمكن بدء خدمة mitm. حاول فتح تطبيق إضافة mitm يدويًا ثم أعد المحاولة</string>
@@ -251,7 +251,7 @@
     <string name="qr_code_expired">انتهت صلاحية رمز QR. قم بإنشاء رمز QR جديد ثم أعِد المحاولة</string>
     <string name="qr_info_text">قم بتثبيت PCAPdroid من Google Play وقم بمسح رمز QR هذا ضوئيًا</string>
     <string name="qr_purchase_required">قم بشراء رمز إلغاء القفل لمتابعة تنشيط رمز QR</string>
-    <string name="decryption_rules_help">تحدد هذه القواعد الاتصالات التي سيتم فك تشفيرها. تعمل القواعد المستندة إلى المضيف فقط في حالة رؤية رد DNS سابق</string>
+    <string name="decryption_rules_help">تحدد هذه القواعد الاتصالات التي سيتم فك تعميتها. تعمل القواعد المستندة إلى المضيف فقط في حالة رؤية رد DNS سابق</string>
     <string name="pcap_read_error">خطأ في قراءة ملف الالتقاط. تحقق من السجل للحصول على التفاصيل</string>
     <string name="license_error">خطأ في إنشاء الترخيص [%1$d]: %2$s</string>
     <string name="license_limit_reached">لقد وصلت إلى الحد الأقصى للتراخيص لرمز إلغاء القفل هذا. قم بشراء رمز مميز جديد لإنشاء المزيد من التراخيص</string>
@@ -259,10 +259,10 @@
     <string name="requesting_license">جارٍ طلب رمز الترخيص، يُرجى الأنتظار</string>
     <string name="license_activation_ok">إكتمل تفعيل الترخيص</string>
     <string name="mitm_addon_running">المُلحق Mitm قيد التشغيل</string>
-    <string name="decrypt_action">فك تشفير…</string>
-    <string name="dont_decrypt_action">لا تفك التشفير…</string>
-    <string name="decryption_rules">قواعد فك التشفير</string>
-    <string name="status_encrypted">مُشفرة</string>
+    <string name="decrypt_action">فك تعمية…</string>
+    <string name="dont_decrypt_action">لا تفك التعمية…</string>
+    <string name="decryption_rules">قواعد فك التعمية</string>
+    <string name="status_encrypted">مُعمّى</string>
     <string name="injected">حقن</string>
     <string name="open_pcap_file">افتح ملف Pcapng/PCAP…</string>
     <string name="pcap_load_success">ملف التقاط محمّل</string>
@@ -274,12 +274,12 @@
     <string name="pcap_file_load_aborted">تم إحباط تحميل الملف</string>
     <string name="host_resolution_failed">تعذر حل المضيف %1$s</string>
     <string name="pcapdroid_trailer_notice">لإظهار التطبيقات الفعلية بدلاً من \"%1$s\"، تأكد من تمكين الخيار \"%2$s\" قبل توليد التفريغ</string>
-    <string name="decryption_info_no_rule">لفك تشفير هذا الاتصال، أنشئ قاعدة فك التشفير من الدرج الأيسر أو من القائمة السياقية في قائمة الاتصالات</string>
+    <string name="decryption_info_no_rule">لفك تعمية هذا الاتصال، أنشئ قاعدة فك التعمية من الدرج الأيسر أو من القائمة السياقية في قائمة الاتصالات</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
     <string name="asn">ASN</string>
-    <string name="export_ca_certificate">قم بتصدير شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
+    <string name="export_ca_certificate">صدّر شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
     <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>
     <string name="checking_the_certificate">جارِ التحقق من الشهادة…</string>
     <string name="ca_cert_export_failed">حدث خطأ أثناء تصدير شهادة CA
@@ -293,9 +293,9 @@
     <string name="mitm_addon">المُلحق mitm</string>
     <string name="export_failed">فشل التصدير</string>
     <string name="overview">نظرة عامة</string>
-    <string name="not_encrypted">غير مُشفر</string>
+    <string name="not_encrypted">غير مُعمّى</string>
     <string name="request">طلب</string>
-    <string name="not_decryptable">غير قابل لفك التشفير</string>
+    <string name="not_decryptable">غير قابل لفك التعمية</string>
     <string name="response">إستجابة</string>
     <string name="string_http_request">طلب HTTP</string>
     <string name="string_http_response">إستجابة HTTP</string>
@@ -305,13 +305,13 @@
     <string name="payload">الحمولة</string>
     <string name="full_payload">حمولة كاملة</string>
     <string name="full_payload_summary">إظهار حمولة الاتصالات الكاملة (على سبيل المثال، طلب HTTP الكامل والاستجابة له). وهذا يتطلب الكثير من الذاكرة، لا تستخدمها على المدى الطويل</string>
-    <string name="decrypted">تم فك تشفيره</string>
+    <string name="decrypted">تم فك تعميتها</string>
     <string name="network_traffic">حركة المرور</string>
     <string name="display_as">عرض كـ…</string>
-    <string name="decryption">فك التشفير</string>
+    <string name="decryption">فك التعمية</string>
     <string name="connection_start_not_seen">لم يشاهد PCAPdroid بداية هذا الاتصال. قد تكون بعض المعلومات مفقودة</string>
     <string name="warn_no_app_data">لم يتم تبادل أي بيانات التطبيق</string>
-    <string name="decryption_filter">فك التشفير: %1$s</string>
+    <string name="decryption_filter">فك التعمية: %1$s</string>
     <string name="waiting_application_data">في انتظار البيانات</string>
     <string name="printable_text">نص قابل للطباعة</string>
     <string name="hexdump">تفريغ سداسي (Hexdump)</string>
@@ -347,10 +347,8 @@
     <string name="firewall_summary">منع الوصول إلى الإنترنت للتطبيقات، وتكوين القواعد لنطاقات وعناوين IP محددة. يعمل فقط مع الالتقاط غير الجذر</string>
     <string name="no_root_firewall">جدار الحماية بدون جذر</string>
     <string name="block_private_dns_summary">اكتشاف وربما حظر DNS الخاص لفحص حركة مرور DNS. يمكن أن يؤدي تعطيل هذا إلى إعاقة تحليل حركة المرور</string>
-    <string name="mitm_setup_wizard_intro">سيرشدك هذا المعالج خلال عملية تثبيت ملحق PCAPdroid mitm ومرجع التصديق، اللازمين لإجراء <a href="%1$s">فك تشفير TLS</a></string>
-    <string name="mitm_setup_wizard_done">PCAPdroid جاهز الآن لفك تشفير حركة مرور TLS
-\n
-\nراجع <a href="%1$s">دليل المستخدم</a> لمعرفة المزيد حول الإجراءات الأمنية التي قد تمنع فك التشفير وكيفية تجاوزها</string>
+    <string name="mitm_setup_wizard_intro">سيرشدك هذا المعالج خلال تثبيت الوظيفة الإضافية لـ PCAPdroid mitm وهيئة الشهادات، وهما ضروريان لإجراء <a href="%1$s">فك تشفير TLS</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid جاهز الآن لفك تعمية حركة مرور TLS \n \nراجع <a href="%1$s">دليل المستخدم</a> لمعرفة المزيد حول الإجراءات الأمنية التي قد تمنع فك التعمية وكيفية تجاوزها</string>
     <string name="app_intro_next_button">التالي</string>
     <string name="country_and_asn">البلد و ASN</string>
     <string name="app_intro_back_button">رجوع</string>
@@ -371,9 +369,7 @@
 \nلبدء الالتقاط، تحتاج إلى قبول طلب VPN في الشاشة التالية.
 \n
 \n<b>ملاحظة:</b> للمتابعة، قم بتعطيل أي VPN قيد التشغيل دائمًا من إعدادات Android</string>
-    <string name="app_intro_traffic_inspection">يعد فحص طلبات HTTP والاستجابات والبيانات الأولية أمرًا سهلاً، وذلك بفضل وحدات فك التشفير المدمجة
-\n
-\nحصلت على اتصال مشفر؟ يمكنك تمكين <a href="%1$s">فك تشفير TLS</a> للحصول على البيانات التي تم فك تشفيرها</string>
+    <string name="app_intro_traffic_inspection">يعد فحص طلبات HTTP والاستجابات والبيانات الأولية أمرًا سهلاً، وذلك بفضل وحدات فك التعمية المدمجة \n \nحصلت على اتصال مُعمّى؟ يمكنك تمكين <a href="%1$s">فك تعمية TLS</a> للحصول على البيانات التي تم فك تعميتها</string>
     <string name="app_intro_malware_detection">يمكنك تحسين أمان جهازك باستخدام ميزة <a href="%1$s">الكشف عن البرامج الضارة</a>
 \n
 \nوباستخدام قوائم سوداء محدثة، يمكنه اكتشاف الاتصالات الضارة وحظرها وتنبيهها في الوقت الفعلي</string>
@@ -413,8 +409,8 @@
     <string name="unlock_token_msg1">هذا هو رمز إلغاء القفل الخاص بك. لاحظ ذلك لأنك ستحتاج إليه <a href="%1$s">لإنشاء رموز الترخيص</a></string>
     <string name="firewall_purchase_msg">اشترِ مِيزة <i>%1$s</i> لبدء حظر الاتصالات</string>
     <string name="requesting_unlock_token">جارٍ طلب رمز إلغاء القفل، برجاء الانتظار</string>
-    <string name="mitm_skip_notice">يبدو أن شهادة mitm غير مثبتة. إذا قمت بالمتابعة، فقد تفشل عملية فك التشفير</string>
-    <string name="mitm_wizard_description">قم بتكوين الجهاز لفك تشفير TLS</string>
+    <string name="mitm_skip_notice">يبدو أن شهادة mitm غير مثبتة. إذا تابعت، فقد تفشل عملية فك التعمية</string>
+    <string name="mitm_wizard_description">قم بتكوين الجهاز لفك تعمية TLS</string>
     <string name="mitmproxy_opts">خيارات mitmproxy الإضافية</string>
     <string name="mitmproxy_opts_description">توفير خيارات إضافية لـ mitmproxy</string>
     <string name="mitm_addon_error">حدث خطأ أثناء بدء تشغيل الملحق mitm. تحقق من السجل للحصول على التفاصيل</string>
@@ -439,7 +435,7 @@
     <string name="block_private_dns">حظر DNS الخاص</string>
     <string name="low_memory">الذاكرة منخفضة</string>
     <string name="remote_server_warning">لأسباب أمنية، غير مسموح بإرسال حركة المرور إلى الخادم البعيد \"%1$s\"</string>
-    <string name="tls_decryption_with_root_msg">تعد القدرة على تشغيل فك تشفير TLS باستخدام الجذر ميزة تجريبية. هذه قائمة بالأخطاء المعروفة: \n \n- في PCAPdroid، ستشاهد حركة المرور كما تم إنشاؤها من تطبيق mitm-addon بدلاً من التطبيق الأصلي \n- عند تعيين مرشح التطبيق، سيتم فك التشفير فقط للتطبيق المستهدف، ولكن PCAPdroid سيظل يعرض حركة مرور التطبيقات الأخرى \n- إذا فشل بدء الالتقاط، فتأكد من أنه يمكنك بالفعل تشغيل أمر iptables كجذر (على سبيل المثال عبر termux) \n- قد لا يعمل هذا على نظام Android 12 والإصدارات الأحدث \n- إذا كان تطبيق VPN قيد التشغيل، فيجب عليك إما استهداف تطبيق معين لفك التشفير أو استبعاد ملحق PCAPdroid mitm من VPN، وإلا ستستمر حركة المرور في حلقة</string>
+    <string name="tls_decryption_with_root_msg">تعد القدرة على تشغيل فك تعمية TLS باستخدام الجذر ميزة تجريبية. هذه قائمة بالأخطاء المعروفة: \n \n- في PCAPdroid، ستشاهد حركة المرور كما تم إنشاؤها من تطبيق mitm-addon بدلاً من التطبيق الأصلي \n- لا يتم دعم تفريغ سجل مفتاح SSL\n- عند تعيين مرشح التطبيق، سيتم فك التعمية فقط للتطبيق المستهدف، ولكن PCAPdroid سيظل يعرض حركة مرور التطبيقات الأخرى \n- إذا فشل بدء الالتقاط، فتأكد من أنه يمكنك بالفعل تشغيل أمر iptables كجذر (على سبيل المثال عبر termux) \n- قد لا يعمل هذا على نظام Android 12 والإصدارات الأحدث \n- إذا كان تطبيق VPN قيد التشغيل، فيجب عليك إما استهداف تطبيق معين لفك التعمية أو استبعاد ملحق PCAPdroid mitm من VPN، وإلا ستستمر حركة المرور في حلقة</string>
     <string name="access_paid_features_msg">راجع <a href="%1$s">دليل المستخدم</a> للتعرف على كيفية الوصول إلى الميزات المدفوعة</string>
     <string name="paid_feature">مِيزة مدفوعة</string>
     <string name="firewall_whitelist_notice">في هذا الوضع، سيتم حظر جميع الاتصالات، ما لم يتم إدراجها يدويًا في القائمة البيضاء. قد تفوتك إشعارات الدفع بدون قائمة بيضاء مناسبة</string>
@@ -451,8 +447,8 @@
     <string name="ipv6_dns_server">خادم DNS IPv6</string>
     <string name="many_rules_warning">أنت تحاول استيراد العديد من القواعد، مما قد يجعل التطبيق لا يستجيب أثناء بعض التفاعلات. هل تريد حقا الاستمرار؟</string>
     <string name="pcapng_format">تنسيق Pcapng</string>
-    <string name="pcapng_format_summary">تفريغ الحزم بتنسيق تفريغ Pcapng، وهو أكثر مرونة ويسمح بتضمين أسرار فك تشفير TLS</string>
-    <string name="tls_decryption_no_rules_notice">يتم تطبيق فك تشفير TLS فقط على الاتصالات التي تطابق القواعد التي تم تكوينها. هل تريد إنشاء قواعد فك التشفير الآن؟</string>
+    <string name="pcapng_format_summary">تفريغ الحزم بتنسيق تفريغ Pcapng، وهو أكثر مرونة ويسمح بتضمين أسرار فك تعمية TLS</string>
+    <string name="tls_decryption_no_rules_notice">يتم تطبيق فك تعمية TLS فقط على الاتصالات التي تطابق القواعد التي تم تكوينها. هل تريد إنشاء قواعد فك التعمية الآن؟</string>
     <string name="active_vpn_detected">تم اكتشاف شبكة VPN نشطة</string>
     <string name="proto_and_port">%1$s ،%2$d</string>
     <string name="n_pkts">%1$s حِزم</string>
@@ -472,8 +468,8 @@
     <string name="mitm_doze_notice">قد يتداخل تحسين البطارية مع الملحق mitm</string>
     <string name="connection_redirected_port_map">حُوّل توجيه هذا الاتصال بسبب قاعدة تعيين المنفذ</string>
     <string name="never">أبداً</string>
-    <string name="for_connections_to_decrypt">فقط للاتصالات لفك التشفير</string>
-    <string name="decrypt_quic_notice">فك تشفير QUIC غير مدعوم حاليًا. كحل بديل، أوقِف الالتقاط وحدّد خيار حظر QUIC في إعدادات PCAPdroid</string>
+    <string name="for_connections_to_decrypt">فقط للاتصالات لفك التعمية</string>
+    <string name="decrypt_quic_notice">فك تعمية QUIC غير مدعوم حاليًا. كحل بديل، أوقِف الالتقاط وحدّد خيار حظر QUIC في إعدادات PCAPdroid</string>
     <string name="target_apps">استهدف التطبيقات</string>
     <string name="headers">الترويسات</string>
     <string name="both">كلاهما</string>
@@ -500,7 +496,7 @@
     <string name="geo_db_missing">قاعدة بيانات تحديد الموقع الجغرافي مفقود</string>
     <string name="country_rules_warning">لاستخدام قواعد جدار الحماية القائمة على الدول، نزّل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات PCAPdroid، وإلا ستكون القواعد القائمة على الدول غير فعالة</string>
     <string name="unsupported_pcap_file">تنسيق ملف التقاط غير مدعوم</string>
-    <string name="decrypt_pcap_file">فك تشفير Pcapng/PCAP…</string>
+    <string name="decrypt_pcap_file">فك تعمية Pcapng/PCAP…</string>
     <string name="keylog_read_error">خطأ قراءة SSL keylog</string>
     <string name="bytes_threshold">بايتات عتبة</string>
     <string name="select_the_keylog_file">حدد ملف Keylog SSL</string>
@@ -523,7 +519,7 @@
     <string name="errno_ehostunreach">لا طريق للاستضافة</string>
     <string name="errno_ehostunreach_msg">لا يمكن للنظام العثور على طريق إلى مضيف الوجهة</string>
     <string name="dns_conn_info">يترجم DNS اسم مجال إلى عنوان IP. عادةً ما يتم تبادل البيانات الفعلية عبر اتصالات HTTPS/TLS اللاحقة</string>
-    <string name="tls_conn_info">يتم تشفير حركة المرور TLS/HTTPS. لتفقد حركة المرور هذه، تحتاج إلى فك تشفيرها. تحقق من <a href="%1$s">دليل المستخدم</a> PCAPdroid لمزيد من التفاصيل</string>
+    <string name="tls_conn_info">يتم تعمية حركة المرور TLS/HTTPS. لتفقد حركة المرور هذه، تحتاج إلى فك تعميتها. تحقق من <a href="%1$s">دليل المستخدم</a> PCAPdroid لمزيد من التفاصيل</string>
     <string name="select_the_pcap_file">حدد ملف PCAP/Pcapng</string>
     <string name="errno_enetreset_msg">تمت إعادة ضبط اتصال الشبكة بواسطة جهاز وسيط (مثل جهاز التوجيه أو شركة الاتصالات المحمولة)</string>
     <string name="tcp_udp_exporter">مُصدّر TCP/UDP</string>
@@ -535,4 +531,7 @@
     <string name="show_api_key">أظهِر مفتاح API</string>
     <string name="api_key">مفتاح API</string>
     <string name="api_key_discard_confirm">هل تريد حقًا التخلص من مفتاح الـ API الحالي وتوليد مفتاح جديد؟</string>
+    <string name="tls_decryption_not_supported_16KB">فك تعمية TLS غير مدعوم حاليًا على الأجهزة ذات الذاكرة 16 كيلوبايت</string>
+    <string name="filename_prefix">بادئة اسم الملف</string>
+    <string name="filename_prefix_description">عيّن البادئة للملفات التي يصدرها PCAPdroid، مثل ملفات PCAP</string>
 </resources>
