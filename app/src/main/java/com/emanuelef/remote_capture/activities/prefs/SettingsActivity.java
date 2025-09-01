@@ -28,6 +28,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.Settings;
+import android.system.Os;
+import android.system.OsConstants;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.View;
@@ -379,6 +381,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mTlsDecryption.setOnPreferenceChangeListener((preference, newValue) -> {
                 boolean enabled = (boolean) newValue;
                 Context ctx = requireContext();
+
+                if (enabled && (Os.sysconf(OsConstants._SC_PAGE_SIZE) == 16384)) {
+                    Utils.showToastLong(ctx, R.string.tls_decryption_not_supported_16KB);
+                    return false;
+                }
 
                 if(!checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
                     return false;

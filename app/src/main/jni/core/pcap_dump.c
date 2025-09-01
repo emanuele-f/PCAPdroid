@@ -526,7 +526,7 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
             *(buffer++) = 0x00;
     }
 
-    *buffer = idb->total_length;
+    *(uint32_t*)buffer = idb->total_length;
     return true;
 }
 

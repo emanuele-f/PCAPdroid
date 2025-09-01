@@ -216,13 +216,43 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 Log.d(TAG, "sslkeylog? " + (mKeylogFile != null));
 
-                if((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
-                    showPcapActionDialog();
+                CaptureSettings settings = CaptureService.getCaptureSettings();
 
-                    // will export the keylogfile after saving/sharing pcap
-                } else if(mKeylogFile != null)
-                    startExportSslkeylogfile();
+                // do not show "PCAP saved" dialog and keylog export if capture was started through API
+                if((settings != null) && settings.api_capture) {
+                    if(mKeylogFile != null) {
+                        // save SSLKEYLOGFILE to Downloads directory
+                        if (!settings.sslkeylog_name.isBlank()) {
+                            Uri uri = Utils.getDownloadsUri(MainActivity.this, settings.sslkeylog_name);
+                            if (uri != null) {
+                                try (OutputStream out = getContentResolver().openOutputStream(uri, "rwt")) {
+                                    Utils.copy(mKeylogFile, out);
+                                    Utils.showToast(this, R.string.save_ok);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    Utils.showToastLong(this, R.string.export_failed);
+                                }
+                            } else
+                                Log.e(TAG, "Cannot export keylog to " + settings.sslkeylog_name);
+                        }
 
+                        // if capture was started through API, we automatically delete the keylog here after optionally dumping it to provided file
+                        //noinspection ResultOfMethodCallIgnored
+                        mKeylogFile.delete();
+                        mKeylogFile = null;
+                    }
+
+                    // reset the decryption list after API capture in case it was set
+                    if(!settings.decryption_rules_json.isBlank())
+                        PCAPdroid.getInstance().getDecryptionList().reload();
+                } else {
+                    if ((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                        showPcapActionDialog();
+
+                        // will export the keylogfile after saving/sharing pcap
+                    } else if (mKeylogFile != null)
+                        startExportSslkeylogfile();
+                }
                 appStateReady();
                 mWasStarted = false;
                 mStartPressed = false;

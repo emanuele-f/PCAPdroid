@@ -72,6 +72,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private final MitmAddon mAddon;
     private final MitmAPI.MitmConfig mConfig;
     private final boolean mPcapngFormat;
+    private final boolean mRootCapture;
     private static final MutableLiveData<Status> proxyStatus = new MutableLiveData<>(Status.NOT_STARTED);
     private ParcelFileDescriptor mSocketFd;
     private BufferedOutputStream mKeylog;
@@ -126,6 +127,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         mReg = CaptureService.requireConnsRegister();
         mAddon = new MitmAddon(mContext, this);
         mPcapngFormat = settings.pcapng_format;
+        mRootCapture = settings.root_capture;
 
         mConfig = new MitmAPI.MitmConfig();
         mConfig.proxyPort = TLS_DECRYPTION_PROXY_PORT;
@@ -391,6 +393,11 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     }
 
     private void logMasterSecret(byte[] master_secret) throws IOException {
+        // When decrypting as root, currently we capture the mitmproxy <-> internet
+        // traffic instead of the app <-> mitmproxy one. This makes the keylog useless
+        if (mRootCapture)
+            return;
+
         if(mPcapngFormat)
             CaptureService.dumpMasterSecret(master_secret);
         else {

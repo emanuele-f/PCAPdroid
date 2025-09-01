@@ -352,13 +352,7 @@
     <string name="warning">Ostrzeżenie</string>
     <string name="paid_features_unlocked">Płatne funkcje odblokowane. Uruchom ponownie przechwytywanie, jeśli jest uruchomione</string>
     <string name="build_info">Informacje o kompilacji</string>
-    <string name="tls_decryption_with_root_msg">Możliwość uruchomienia deszyfrowania TLS z uprawnieniami administratora jest funkcją eksperymentalną. Oto lista znanych błędów:\n\n
-- w PCAPdroid zobaczysz ruch wygenerowany z aplikacji mitm-addon zamiast oryginalnej aplikacji\n
-- gdy ustawiony jest filtr aplikacji, odszyfrowanie nastąpi tylko dla aplikacji docelowej, ale PCAPdroid nadal będzie wyświetlał ruch innych aplikacji\n
-- jeśli przechwytywanie się nie rozpocznie, upewnij się, że faktycznie możesz uruchomić polecenie iptables jako root (np. przez termux)\n
-– to może nie działać na Androidzie 12 i nowszych\n
-- jeśli aplikacja VPN jest uruchomiona, należy wybrać konkretną aplikację do odszyfrowania lub wykluczyć dodatek PCAPdroid mitm z VPN, w przeciwnym razie ruch będzie się zapętlał
-</string>
+    <string name="tls_decryption_with_root_msg">Możliwość uruchomienia deszyfrowania TLS z uprawnieniami administratora jest funkcją eksperymentalną. Oto lista znanych błędów:\n\n - w PCAPdroid zobaczysz ruch wygenerowany z aplikacji mitm-addon zamiast oryginalnej aplikacji\n - gdy ustawiony jest filtr aplikacji, odszyfrowanie nastąpi tylko dla aplikacji docelowej, ale PCAPdroid nadal będzie wyświetlał ruch innych aplikacji\n - jeśli przechwytywanie się nie rozpocznie, upewnij się, że faktycznie możesz uruchomić polecenie iptables jako root (np. przez termux)\n – to może nie działać na Androidzie 12 i nowszych\n - jeśli aplikacja VPN jest uruchomiona, należy wybrać konkretną aplikację do odszyfrowania lub wykluczyć dodatek PCAPdroid mitm z VPN, w przeciwnym razie ruch będzie się zapętlał</string>
     <string name="unlock_token_summary">Token, którego można użyć do odblokowania płatnych funkcji w kompilacjach aplikacji spoza Google Play (np. F-Droid/Github)</string>
     <string name="unlock_token_error">Nie można zażądać tokena odblokowującego [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">Zapoznaj się z <a href="%1$s">przewodnikiem użytkownika</a>, aby dowiedzieć się, jak uzyskać dostęp do płatnych funkcji</string>
