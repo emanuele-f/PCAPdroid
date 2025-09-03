@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.8.8] - 2025-09-03
+- Support 16 KB page size devices
+- Make PCAP/CSV file name prefix configurable
+- Fix possible invalid Pcapng block length with root
+- New API options: full_payload, keylog filename, decryption rules (credits: c4rl2s0n)
+
 ## [1.8.7] - 2025-07-24
 - Minor fixes
 - Update billing library (Play build)
