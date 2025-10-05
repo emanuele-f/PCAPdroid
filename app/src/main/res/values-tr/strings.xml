@@ -33,7 +33,7 @@
     <string name="udp_exporter">UDP aktarıcı</string>
     <string name="no_dump">Döküm yok</string>
     <string name="http_server_info">PCAP indirmesi için bir HTTP sunucusu başlat</string>
-    <string name="udp_exporter_info">PCAP dökümünü uzak bir UDP alıcısına gönderir</string>
+    <string name="udp_exporter_info">PCAP dökümünü uzak bir UDP alıcısına gönder</string>
     <string name="http_server_port">HTTP sunucusu bağlantı noktası</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="stats">İstatistikler</string>
@@ -298,7 +298,7 @@
 \nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir.
 \n
 \n<b>NOT:</b> Devam etmek için, Android ayarlarından yapılandırılmış her zaman açık VPN\'lerin tümünü devre dışı bırakın</string>
-    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz \n \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
+    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara, etki alanlarına ve ülkelere internet erişimini kolayca engelleyebilirsiniz \n \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
     <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar \n \n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
     <string name="mitm_setup_wizard_intro">Bu sihirbaz, <a href="%1$s">TLS şifre çözme</a> işlemini gerçekleştirmek için gerekli olan PCAPdroid ortadaki adam eklentisinin ve sertifika yetkilisinin kurulumunda size rehberlik edecektir</string>
     <string name="app_intro_back_button">Geri</string>
@@ -369,7 +369,7 @@
     <string name="warning">Uyarı</string>
     <string name="paid_features_unlocked">Ücretli özelliklerin kilidi açıldı. Çalışıyorsa yakalamayı yeniden başlatın</string>
     <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">ortadaki adam eklentisini</a> kurun</string>
-    <string name="tls_decryption_with_root_msg">TLS şifre çözme işlemini root ile çalıştırma yeteneği deneysel bir özelliktir. Bilinen hataların bir listesi şöyledir: \n \n - PCAPdroid\'de trafiği orijinal uygulama yerine ortadaki adam eklentisi uygulamasından oluşturulduğu şekilde göreceksiniz \n - bir uygulama filtresi ayarlandığında, şifre çözme yalnızca hedef uygulama için gerçekleşecektir, ancak PCAPdroid diğer uygulamaların trafiğini göstermeye devam edecektir \n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla) \n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir \n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
+    <string name="tls_decryption_with_root_msg">TLS şifre çözme işlemini root ile çalıştırma yeteneği deneysel bir özelliktir. Bilinen hataların bir listesi şöyledir: \n \n - PCAPdroid\'de trafiği orijinal uygulama yerine ortadaki adam eklentisi uygulamasından oluşturulduğu şekilde göreceksiniz \n - SSL keylog dökümü desteklenmez\n - bir uygulama filtresi ayarlandığında, şifre çözme yalnızca hedef uygulama için gerçekleşecektir, ancak PCAPdroid diğer uygulamaların trafiğini göstermeye devam edecektir \n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla) \n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir \n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
     <string name="unlock_token_summary">Uygulamanın Google-Play dışı sürümlerinde (örn. F-Droid/Github) ücretli özelliklerin kilidini açmak için kullanılabilecek bir belirteç</string>
     <string name="license_service_unavailable">PCAPdroid lisans hizmeti şu anda kullanılamıyor. Lütfen birkaç dakika içinde yeniden deneyin</string>
     <string name="access_paid_features_msg">Ücretli özelliklere nasıl erişeceğinizi öğrenmek için <a href="%1$s">kullanıcı kılavuzuna</a> göz atın</string>
@@ -523,4 +523,18 @@
     <string name="unsupported_pcap_file">Desteklenmeyen yakalama dosyası biçimi</string>
     <string name="decrypt_pcap_file">PCAP/Pcapng dosyasının şifresini çöz…</string>
     <string name="keylog_read_error">SSL keylog okuma hatası</string>
+    <string name="tcp_collector_info">TCP toplayıcı: %1$s:%2$d</string>
+    <string name="tcp_exporter">TCP dışa aktarıcı</string>
+    <string name="tcp_udp_exporter">TCP/UDP dışa aktarıcı</string>
+    <string name="tcp_exporter_info">PCAP dökümünü uzak bir TCP alıcısına gönder (pcap-over-ip)</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="no_permissions_set_info">İzin ayarlanmadı. İzin istemini görüntülemek için StartActivityForResult aracılığıyla PCAPdroid\'i başlatın</string>
+    <string name="generate_api_key">API anahtarı oluştur</string>
+    <string name="show_api_key">API anahtarını göster</string>
+    <string name="api_key">API anahtarı</string>
+    <string name="api_key_discard_confirm">Geçerli API anahtarını gerçekten silmek ve yeni bir tane oluşturmak istiyor musunuz?</string>
+    <string name="ip_address_or_cidr">IP adresi / CIDR</string>
+    <string name="tls_decryption_not_supported_16KB">TLS şifre çözme şu anda 16 KB aygıtlarda desteklenmiyor</string>
+    <string name="filename_prefix">Dosya adı ön eki</string>
+    <string name="filename_prefix_description">PCAPdroid tarafından dışa aktarılan dosyalar (örneğin PCAP dosyaları) için ön ek ayarlayın</string>
 </resources>
