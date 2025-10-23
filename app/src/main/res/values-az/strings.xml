@@ -29,7 +29,7 @@
     <string name="no_activity_file_selection">Fayl seçimi edəcək tətbiq tapılmadı</string>
     <string name="file_saved_with_name">Fayl %1$s olaraq yadda saxlanıldı</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="enable_socks5_proxy_summary">Bütün TCP bağlantıları SOCKS5 proksisinə yönləndir</string>
+    <string name="enable_socks5_proxy_summary">Bütün TCP bağlantılarını SOCKS5 proksisinə yönləndir</string>
     <string name="socks5_auth">SOCKS5 şəxsiyyət doğrulaması</string>
     <string name="socks5_auth_summary">İstifadəçi adı və şifrə ilə proksinin şəxsiyyəti təsdiq edin</string>
     <string name="proxy_host">Proksi hostu</string>
@@ -498,4 +498,8 @@
     <string name="errno_ehostunreach">Barındırıcıya marşrut yoxdur</string>
     <string name="errno_ehostunreach_msg">Sistem hədəf barındırıcıya marşrutu tapmadı</string>
     <string name="tls_conn_info">TLS/HTTPS trafiki şifrəlidir.Bu trafiki incələmək üçün,deşifrləməyə ehtiyacın var.Yoxla PCAPdroid <a href="%1$s">istifadəçi təlimatını</a> ətraflı üçün</string>
+    <string name="tcp_collector_info">TCP toplayıcısı: %1$s%2$d</string>
+    <string name="tcp_exporter">TCP ixracatçısı</string>
+    <string name="tcp_udp_exporter">TCP/UDP ixracatçısı</string>
+    <string name="tcp_exporter_info">PCAP məlumatını uzaq TCP qəbuledicisinə göndər (pcap-over-ip vasitəsilə)</string>
 </resources>
