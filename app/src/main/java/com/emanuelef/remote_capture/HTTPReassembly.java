@@ -33,6 +33,9 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.Inflater;
 import org.brotli.dec.BrotliInputStream;
 
+//import per tesi
+import serri.tesi.service.TrackerService;
+
 public class HTTPReassembly {
     private static final String TAG = "HTTPReassembly";
     private static final int MAX_HEADERS_SIZE = 1024;
@@ -50,6 +53,10 @@ public class HTTPReassembly {
     private boolean mInvalidHttp;
     private boolean mIsTx;
 
+    //tesi: aggiungo campi mancanti per salvare info
+    private String mMethod;
+    private String mHost;
+    //fine
     public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
         mListener = listener;
         mReassembleChunks = reassembleChunks;
@@ -73,6 +80,11 @@ public class HTTPReassembly {
         mHeadersSize = 0;
         mHeaders.clear();
         mBody.clear();
+
+        //tesi: gestione dei campi aggiunti nel reset
+        mMethod = null;
+        mHost = null;
+        //fine
 
         // Do not reset, these affects the whole connection
         //upgradeFound = false;
@@ -115,6 +127,7 @@ public class HTTPReassembly {
                         int second_space = line.indexOf(' ', first_space + 1);
 
                         if ((first_space > 0) && (second_space > 0)) {
+                            mMethod = line.substring(0, first_space); //tesi: aggiungo salvataggio del method
                             mPath = line.substring(first_space + 1, second_space);
 
                             int query_start = mPath.indexOf('?');
@@ -125,6 +138,7 @@ public class HTTPReassembly {
                         }
                     }
                 }
+                // qui sopra c'è estrazione path già normalizzato (no query string), che riutilizzo
 
                 while((line != null) && (line.length() > 0)) {
                     line = line.toLowerCase();
@@ -163,7 +177,13 @@ public class HTTPReassembly {
                     } else if(line.equals("transfer-encoding: chunked")) {
                         log_d("Detected chunked encoding");
                         mChunkedEncoding = true;
-                    }
+                    }else if (line.startsWith("host: ")) {//tesi:aggiunto parsing host
+                        //line e già .toLowerCase()
+                        //substring(6), dopo "host: "
+                        mHost = line.substring(6).trim();
+                        log_d("Host: " + mHost);
+                    }//fine
+
 
                     line = reader.readLine();
                 }
@@ -279,6 +299,22 @@ public class HTTPReassembly {
 
                 to_add.contentType = mContentType;
                 to_add.path = mPath;
+                //tesi: chiamo TrackerService.onHttpRequest()
+                if (mMethod != null) {
+                    TrackerService.onHttpRequest(
+                            // /* connectionId */ chunk.conn_id,
+                            mMethod,
+                            mHost,
+                            mPath
+                    );
+                }
+                //headers completi
+                //path definitivo
+                //una sola chiamata per request
+                //chunk già ricostruito
+
+                //fine
+
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
             }

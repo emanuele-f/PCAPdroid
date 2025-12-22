@@ -38,6 +38,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+//import del mio servizio
+import serri.tesi.service.TrackerService;
+import android.util.Log;
+
+
+
 /* A container for the connections. This is used to store active/closed connections until the capture
  * is stopped. Active connections are also kept in the native side.
  *
@@ -191,6 +197,23 @@ public class ConnectionsRegister {
                 conn.encrypted_payload = Utils.hasEncryptedPayload(app, conn);
 
             processConnectionStatus(conn, stats);
+
+            //Tesi: hook per tracciamento connessione
+            try {
+                TrackerService.onNewConnection(
+                        conn.getDstAddr() != null ? conn.getDstAddr().toString() : null,
+                        conn.dst_port,
+                        conn.sent_bytes + conn.rcvd_bytes,
+                        null, // dominio non disponibile a livello connessione
+                        null, // path non disponibile
+                        null, // lat
+                        null  // lon
+                );
+            } catch (Exception e) {
+                Log.e("ConnectionsRegister", "TrackerService.onNewConnection failed", e);
+            }
+            // fine integrazione tesi
+
 
             stats.numConnections++;
             stats.rcvdBytes += conn.rcvd_bytes;

@@ -99,6 +99,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+// importo classe del mio package
+import serri.tesi.service.TrackerService;
+
 public class CaptureService extends VpnService implements Runnable {
     private static final String TAG = "CaptureService";
     private static final String VpnSessionName = "PCAPdroid VPN";
@@ -209,6 +212,14 @@ public class CaptureService extends VpnService implements Runnable {
         mNativeGeolocation = new Geolocation(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
+
+        //INTEGRAZIONE TESI
+        // inizializza modulo del tracking, creando istanza del db SQLite
+        // predispone strutture necessarie a registrazione metadati
+        // recupera/genera id anonimo utente
+        TrackerService.init(this);
+        //prima di instance=this e super.onCreate()
+        //usa soloo context, può/deve essere chiamato prima possib.
 
         INSTANCE = this;
         super.onCreate();
