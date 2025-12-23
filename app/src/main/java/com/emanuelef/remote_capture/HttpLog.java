@@ -58,6 +58,12 @@ public class HttpLog {
             return proto + host;
         }
 
+        public boolean matches(String filter) {
+            filter = filter.toLowerCase();
+            return host.contains(filter) || path.contains(filter) ||
+                    ((reply != null) && reply.contentType.contains(filter));
+        }
+
         public String getUrl() {
             return String.format("%s%s%s", getProtoAndHost(), path, query);
         }

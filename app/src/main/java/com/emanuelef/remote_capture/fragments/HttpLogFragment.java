@@ -19,6 +19,7 @@
 
 package com.emanuelef.remote_capture.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,10 +32,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -46,9 +53,14 @@ import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
+import com.emanuelef.remote_capture.activities.HttpLogFilterActivity;
 import com.emanuelef.remote_capture.adapters.HttpLogAdapter;
+import com.emanuelef.remote_capture.model.HttpLogFilterDescriptor;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.Slider;
 
 public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "HttpLogFragment";
@@ -56,13 +68,20 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private HttpLogAdapter mAdapter;
     private EmptyRecyclerView mRecyclerView;
     private FloatingActionButton mFabDown;
+    private int mFabDownMargin = 0;
     private MenuItem mMenuItemSearch;
     private SearchView mSearchView;
     private Handler mHandler;
+    private ChipGroup mActiveFilter;
+    private Slider mSizeSlider;
+    private boolean mSizeSliderActive = false;
 
     private String mQueryToApply;
     private AppsResolver mApps;
     private boolean autoScroll;
+
+    private final ActivityResultLauncher<Intent> filterLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::filterResult);
 
     @Override
     public void onResume() {
@@ -72,6 +91,12 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         registerHttpListener();
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+
+        if (mAdapter != null) {
+            boolean visible = mAdapter.mFilter.minPayloadSize >= 1024;
+            mSizeSlider.setVisibility(visible ? View.VISIBLE : View.GONE);
+            mSizeSlider.setLabelBehavior(visible ? LabelFormatter.LABEL_VISIBLE : LabelFormatter.LABEL_GONE);
+        }
     }
 
     @Override
@@ -91,6 +116,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         if(mSearchView != null)
             outState.putString("search", mSearchView.getQuery().toString());
+        if(mAdapter != null)
+            outState.putSerializable("http_log_filter_desc", mAdapter.mFilter);
     }
 
     @Override
@@ -143,6 +170,41 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         mApps = new AppsResolver(requireContext());
 
         mEmptyText = view.findViewById(R.id.no_connections);
+        mSizeSlider = view.findViewById(R.id.size_slider);
+        mSizeSlider.setLabelFormatter(value -> Utils.formatBytes(((long) value) * 1024));
+        mSizeSlider.addOnChangeListener((slider, value, fromUser) -> {
+            if (mAdapter != null) {
+                mAdapter.mFilter.minPayloadSize = ((long) value) * 1024;
+                refreshFilteredRequests();
+            }
+        });
+        mSizeSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                mSizeSliderActive = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                if (slider.getValue() == 0) {
+                    slider.setVisibility(View.GONE);
+                    slider.setLabelBehavior(LabelFormatter.LABEL_GONE);
+                }
+
+                mSizeSliderActive = false;
+                recheckMaxPayloadSize();
+            }
+        });
+
+        mActiveFilter = view.findViewById(R.id.active_filter);
+        mActiveFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if(mAdapter != null) {
+                for(int checkedId: checkedIds)
+                    mAdapter.mFilter.clear(checkedId);
+                refreshFilteredRequests();
+            }
+        });
+
         mAdapter = new HttpLogAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -163,7 +225,32 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         autoScroll = true;
         showFabDown(false);
+
+        ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.linearlayout), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout());
+
+            v.setPadding(insets.left, insets.top, insets.right, 0);
+
+            // only consume the top inset
+            return windowInsets.inset(insets.left, insets.top, insets.right, 0);
+        });
+
         mFabDown.setOnClickListener(v -> scrollToBottom());
+        ViewCompat.setOnApplyWindowInsetsListener(mFabDown, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
+                    WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.ime());
+
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            if (mFabDownMargin == 0)
+                // save base margin from the layout
+                mFabDownMargin = mlp.bottomMargin;
+
+            mlp.bottomMargin = mFabDownMargin + insets.bottom;
+            v.setLayoutParams(mlp);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -177,7 +264,11 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
             if((search != null) && !search.isEmpty())
                 mQueryToApply = search;
+
+            if(savedInstanceState.containsKey("http_log_filter_desc"))
+                mAdapter.mFilter = Utils.getSerializable(savedInstanceState, "http_log_filter_desc", HttpLogFilterDescriptor.class);
         }
+        refreshActiveFilter();
 
         CaptureService.observeStatus(this, serviceStatus -> {
             if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
@@ -210,6 +301,15 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if(id == R.id.edit_filter) {
+            Intent intent = new Intent(requireContext(), HttpLogFilterActivity.class);
+            intent.putExtra(HttpLogFilterActivity.FILTER_DESCRIPTOR, mAdapter.mFilter);
+            filterLauncher.launch(intent);
+            return true;
+        }
+
         return false;
     }
 
@@ -296,5 +396,79 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         mRecyclerView.scrollToPosition(last_pos);
 
         showFabDown(false);
+    }
+
+    private void refreshActiveFilter() {
+        if(mAdapter == null)
+            return;
+
+        mActiveFilter.removeAllViews();
+        mAdapter.mFilter.toChips(getLayoutInflater(), mActiveFilter);
+
+        // minPayloadSize slider
+        long minSizeKB = mAdapter.mFilter.minPayloadSize / 1024;
+        boolean sliderVisible = false;
+        HttpLog httpLog = CaptureService.getHttpLog();
+
+        if ((httpLog != null) && (minSizeKB > 0)) {
+            long maxSizeKb = getMaxPayloadSize() / 1024;
+            maxSizeKb = Math.max(maxSizeKb, minSizeKB);
+
+            if (maxSizeKb >= 2) {
+                mSizeSlider.setValueTo(maxSizeKb);
+                mSizeSlider.setValue(minSizeKB);
+                sliderVisible = true;
+            }
+        }
+
+        if (sliderVisible && (mSizeSlider.getVisibility() != View.VISIBLE)) {
+            mSizeSlider.setVisibility(View.VISIBLE);
+            mSizeSlider.setLabelBehavior(LabelFormatter.LABEL_VISIBLE);
+        }
+    }
+
+    private long getMaxPayloadSize() {
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if (httpLog == null)
+            return 0;
+
+        long maxSize = 0;
+        synchronized (httpLog) {
+            for (int i = 0; i < httpLog.size(); i++) {
+                HttpLog.HttpRequest req = httpLog.getRequest(i);
+                if (req != null) {
+                    int totalSize = (req.reply != null) ? (req.bodyLength + req.reply.bodyLength) : req.bodyLength;
+                    if (totalSize > maxSize)
+                        maxSize = totalSize;
+                }
+            }
+        }
+        return maxSize;
+    }
+
+    private void recheckMaxPayloadSize() {
+        if ((mSizeSlider.getVisibility() == View.VISIBLE) && !mSizeSliderActive) {
+            long maxSizeKB = getMaxPayloadSize() / 1024;
+
+            if (maxSizeKB > mSizeSlider.getValueTo())
+                mSizeSlider.setValueTo(maxSizeKB);
+        }
+    }
+
+    private void refreshFilteredRequests() {
+        mAdapter.refreshFilteredItems();
+        refreshActiveFilter();
+        recheckScroll();
+    }
+
+    private void filterResult(final ActivityResult result) {
+        if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            HttpLogFilterDescriptor descriptor = Utils.getSerializableExtra(result.getData(), HttpLogFilterActivity.FILTER_DESCRIPTOR, HttpLogFilterDescriptor.class);
+            if(descriptor != null) {
+                mAdapter.mFilter = descriptor;
+                mAdapter.refreshFilteredItems();
+                refreshActiveFilter();
+            }
+        }
     }
 }

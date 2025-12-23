@@ -45,6 +45,8 @@
         </string>
     <string name="connections_csv_fields" translatable="false">IPProto,SrcIP,SrcPort,DstIp,DstPort,UID,App,PackageName,Proto,Status,Info,BytesSent,BytesRcvd,PktsSent,PktsRcvd,FirstSeen,LastSeen</string>
     <string name="unlock_token" translatable="false">Unlock token</string>
+    <string name="method_get" translatable="false">GET</string>
+    <string name="method_post" translatable="false">POST</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -271,6 +273,12 @@
     <string name="no_intent_handler_found">No app found to perform this action</string>
     <string name="network_interface">Interface</string>
     <string name="interface_filter">Interface: %1$s</string>
+    <string name="request_method">Request method</string>
+    <string name="content_type">Content type</string>
+    <string name="http_status">HTTP status</string>
+    <string name="payload_size_threshold">Payload size threshold</string>
+    <string name="method_filter">Method: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="loading">Loading…</string>
     <string name="purchased">Purchased</string>
     <string name="no_items_for_purchase">No items available for purchase</string>

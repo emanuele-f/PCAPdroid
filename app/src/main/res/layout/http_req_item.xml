@@ -116,7 +116,6 @@
             app:layout_constraintTop_toBottomOf="@id/method_and_path"
             android:ellipsize="end"
             android:singleLine="true"
-            android:layout_marginTop="4dp"
             tools:text="304 Not Modified"
             android:textSize="12sp" />
 

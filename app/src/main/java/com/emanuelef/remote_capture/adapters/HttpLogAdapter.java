@@ -42,7 +42,7 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.AppDescriptor;
-import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.HttpLogFilterDescriptor;
 
 import java.util.ArrayList;
 
@@ -60,6 +60,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
 
     private ArrayList<HttpRequest> mFilteredReqs;
     private String mSearch;
+    public HttpLogFilterDescriptor mFilter;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -130,6 +131,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         mListener = null;
         mFilteredReqs = null;
         mSearch = null;
+        mFilter = new HttpLogFilterDescriptor();
         setHasStableIds(true);
 
         refreshFilteredItems();
@@ -265,8 +267,9 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
     }
 
     private boolean matches(HttpRequest req) {
-        // TODO
-        return true;
+        boolean searchMatch = (mSearch == null) || req.matches(mSearch);
+        boolean filterMatch = !mFilter.isSet() || mFilter.matches(req);
+        return searchMatch && filterMatch;
     }
 
     public void setSearch(String text) {
@@ -283,6 +286,6 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
     }
 
     public boolean hasFilter() {
-        return (mSearch != null);
+        return (mSearch != null) || mFilter.isSet();
     }
 }

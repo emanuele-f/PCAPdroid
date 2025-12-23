@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- HTTP Log Filter IDs -->
+    <item name="http_method_filter" type="id"/>
+    <item name="http_content_type_filter" type="id"/>
+    <item name="http_status_filter" type="id"/>
+</resources>

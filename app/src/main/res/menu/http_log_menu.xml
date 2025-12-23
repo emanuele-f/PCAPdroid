@@ -13,4 +13,12 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always|collapseActionView"
         tools:ignore="AlwaysShowAction" />
+
+    <item
+        android:id="@+id/edit_filter"
+        android:title="@string/edit_filter"
+        android:icon="@drawable/ic_filter"
+        android:orderInCategory="20"
+        app:showAsAction="always">
+    </item>
 </menu>
