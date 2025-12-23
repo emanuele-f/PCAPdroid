@@ -47,6 +47,9 @@ public class HTTPReassembly {
     private final ReassemblyListener mListener;
     private final boolean mDumpPayload;
     private boolean mReassembleChunks;
+    private boolean mSwitchingProtocols = false;
+    private boolean mSwitchedProtocols = false;
+    private boolean mWebsocketUpgrade = false;
     private boolean mInvalidHttp;
     private PayloadChunk mFirstChunk;
 
@@ -204,9 +207,15 @@ public class HTTPReassembly {
                             mContentLength = Integer.parseInt(line.substring(16));
                             log_d("Content-Length: " + mContentLength);
                         } catch (NumberFormatException ignored) {}
-                    } else if(line.startsWith("upgrade: ")) {
+                    } else if(!chunk.is_sent && line.startsWith("upgrade: ")) {
                         log_d("Upgrade found, stop parsing");
+                        mSwitchingProtocols = true;
                         mReassembleChunks = false;
+
+                        if (line.startsWith("upgrade: websocket")) {
+                            log_d("Detected Websocket upgrade");
+                            mWebsocketUpgrade = true;
+                        }
                     } else if(line.equals("transfer-encoding: chunked")) {
                         log_d("Detected chunked encoding");
                         mChunkedEncoding = true;
@@ -339,11 +348,18 @@ public class HTTPReassembly {
                     to_add.httpPath = mFirstChunk.httpPath;
                     to_add.httpQuery = mFirstChunk.httpQuery;
                     to_add.httpBodyLength = mBodySize;
+
+                    // Fix the chunk type after upgrade when read from ushark
+                    if (mSwitchedProtocols && (to_add.type == PayloadChunk.ChunkType.HTTP))
+                        to_add.type = mWebsocketUpgrade ? PayloadChunk.ChunkType.WEBSOCKET : PayloadChunk.ChunkType.RAW;
                 }
 
                 mBodySize = 0;
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
+
+                if (mSwitchingProtocols)
+                    mSwitchedProtocols = true;
             }
 
             if((new_body_start > 0) && (chunk.payload.length > new_body_start)) {
