@@ -126,10 +126,7 @@ public class HTTPReassembly {
                 String line = reader.readLine();
 
                 if (is_first_line && (line != null)) {
-                    if (chunk.is_sent && (
-                            line.startsWith("GET ") || line.startsWith("POST ") ||
-                            line.startsWith("HEAD ") || line.startsWith("PUT "))
-                    ) {
+                    if (chunk.is_sent) {
                         int first_space = line.indexOf(' ');
                         int second_space = line.indexOf(' ', first_space + 1);
 
@@ -159,7 +156,7 @@ public class HTTPReassembly {
 
                             mFirstChunk.httpPath = path;
                         }
-                    } else if (!chunk.is_sent && line.startsWith("HTTP/")) {
+                    } else if (line.startsWith("HTTP/")) {
                         int first_space = line.indexOf(' ');
                         if (first_space > 0) {
                             try {
@@ -243,13 +240,6 @@ public class HTTPReassembly {
                     mHeaders.add(chunk);
                 body_start = payload.length;
             }
-        }
-
-        // If not Content-Length provided and not using chunked encoding, then we cannot determine
-        // chunks bounds, so disable reassembly
-        if(!mReadingHeaders && (mContentLength < 0) && (!mChunkedEncoding) && mReassembleChunks) {
-            log_d("Cannot determine bounds, disable reassembly");
-            mReassembleChunks = false;
         }
 
         // When mReassembleChunks is false, each chunk should be passed to the mListener
