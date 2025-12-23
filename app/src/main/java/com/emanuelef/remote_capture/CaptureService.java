@@ -253,6 +253,10 @@ public class CaptureService extends VpnService implements Runnable {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        // TESI DEBUG – dump DB su Logcat
+        serri.tesi.service.TrackerService.debugDump();
+        //// ===== TESI DEBUG – DA RIMUOVERE =====
+
         mStopping = false;
 
         // startForeground must always be called since the Service is being started with

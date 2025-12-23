@@ -95,6 +95,12 @@ import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//import per permessi gps (tesi)
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Billing mIab;
     private ViewPager2 mPager;
@@ -148,10 +154,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private final ActivityResultLauncher<Intent> keylogFileOpenLauncher =
             registerForActivityResult(new StartActivityForResult(), this::keylogFileOpenResult);
 
+    private static final int LOCATION_PERMISSION_REQUEST = 9001;//id per request dei permessi location
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
+
+        //tesi: richiamo metodo richiesta permessi location
+        ensureLocationPermission(); // importante
+
+        serri.tesi.service.LocationService.init(this);
+        serri.tesi.service.LocationService.start();
+        //fine
 
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
@@ -1149,4 +1166,30 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         // NOTE: keep in sync with run_libpcap
         return new File(getCacheDir() + "/sslkeylog.txt");
     }
+
+    //tesi: metodo x richiesta permessi
+    private void ensureLocationPermission() {
+        String[] perms = new String[] {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+
+        boolean missing = false;
+        for (String p : perms) {
+            if (ContextCompat.checkSelfPermission(this, p)
+                    != PackageManager.PERMISSION_GRANTED) {
+                missing = true;
+                break;
+            }
+        }
+
+        if (missing) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    perms,
+                    LOCATION_PERMISSION_REQUEST
+            );
+        }
+    }
+
 }

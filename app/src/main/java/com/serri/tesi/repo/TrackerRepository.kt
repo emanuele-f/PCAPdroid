@@ -41,4 +41,39 @@ class TrackerRepository(context: Context) {
 
         return db.insert("http_requests", null, values)
     }
+
+    //funzione per verificare db
+    fun debugDumpConnections(limit: Int = 10) {
+        val db = dbHelper.readableDatabase
+
+        val cursor = db.rawQuery(
+            """
+        SELECT id, ip, port, bytes, latitude, longitude, domain, path, timestamp
+        FROM connections
+        ORDER BY timestamp DESC
+        LIMIT ?
+        """,
+            arrayOf(limit.toString())
+        )
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(0)
+            val ip = cursor.getString(1)
+            val port = cursor.getInt(2)
+            val bytes = cursor.getLong(3)
+            val lat = if (cursor.isNull(4)) null else cursor.getDouble(4)
+            val lon = if (cursor.isNull(5)) null else cursor.getDouble(5)
+            val domain = cursor.getString(6)
+            val path = cursor.getString(7)
+            val ts = cursor.getLong(8)
+
+            android.util.Log.d(
+                "TESI_DB",
+                "ID=$id ip=$ip:$port bytes=$bytes lat=$lat lon=$lon domain=$domain path=$path ts=$ts"
+            )
+        }
+
+        cursor.close()
+    }
+
 }

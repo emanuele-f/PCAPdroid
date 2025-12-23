@@ -20,6 +20,13 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.hardware.wifi" android:required="false" />
 
+    <!--Tesi: Permessi per geolocalizzazione-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+
     <application
         android:name=".PCAPdroid"
         android:icon="@mipmap/ic_launcher"

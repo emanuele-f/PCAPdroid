@@ -128,4 +128,14 @@ dependencies {
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
     implementation 'com.github.AppIntro:AppIntro:6.2.0'
     implementation 'com.github.androidmads:QRGenerator:1.0.1'
+
+    // Google Play Services Location (x tesi)
+    implementation "com.google.android.gms:play-services-location:21.0.1"
+
+    // Coroutines (già dovresti averle)
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+
+    // Supporto per `await()` su Tasks
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3"
 }

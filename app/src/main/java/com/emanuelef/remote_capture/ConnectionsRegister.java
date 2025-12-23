@@ -200,6 +200,8 @@ public class ConnectionsRegister {
 
             //Tesi: hook per tracciamento connessione
             try {
+                //prima
+                /*
                 TrackerService.onNewConnection(
                         conn.getDstAddr() != null ? conn.getDstAddr().toString() : null,
                         conn.dst_port,
@@ -208,6 +210,15 @@ public class ConnectionsRegister {
                         null, // path non disponibile
                         null, // lat
                         null  // lon
+                );
+                */
+                 //dopo: con gps
+                TrackerService.logConnection(
+                        conn.getDstAddr() != null ? conn.getDstAddr().toString() : null,
+                        conn.dst_port,
+                        conn.sent_bytes + conn.rcvd_bytes,
+                        null, // dominio non disponibile a livello connessione
+                        null  // path non disponibile
                 );
             } catch (Exception e) {
                 Log.e("ConnectionsRegister", "TrackerService.onNewConnection failed", e);
