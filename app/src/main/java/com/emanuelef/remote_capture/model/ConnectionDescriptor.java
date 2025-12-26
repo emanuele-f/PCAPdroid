@@ -129,6 +129,10 @@ public class ConnectionDescriptor {
     public boolean alerted;
     public boolean block_accounted;
 
+    //Tesi: aggiunto flag per evitare log multipli, coerenza db
+    public boolean loggedFinal = false;
+
+
     // NOTE: invoked from JNI
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip, String _country,
                                 int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx,

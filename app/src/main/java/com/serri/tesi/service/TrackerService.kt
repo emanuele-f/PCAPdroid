@@ -8,6 +8,8 @@ import serri.tesi.model.ConnectionRecord
 import serri.tesi.model.HttpRequestRecord
 import serri.tesi.repo.TrackerRepository
 import java.util.UUID
+import serri.tesi.model.NetworkRequestRecord
+
 
 object TrackerService {
 
@@ -26,6 +28,8 @@ object TrackerService {
 
     /**
      * Registra una nuova connessione con GPS opzionale.
+     * NOTA FIX: registra connessione parziale e veniva chiamato nel punto sbagliato
+     * in ConnectionsRegister, nel punto di creazione e non chiusura: dati ancora non tutti accessibili
      */
     @JvmStatic
     fun logConnection(
@@ -101,4 +105,59 @@ object TrackerService {
     fun debugDump() {
         repository.debugDumpConnections(20)
     }
+
+    /**
+     * DEBUG – stampa su Logcat le ultime richieste HTTP salvate su SQLite
+     */
+    @JvmStatic
+    fun debugDumpHttp() {
+        repository.debugDumpHttpRequests(20)
+    }
+
+    //Metodo per log connessione versione completa
+    @JvmStatic
+    fun logFinalConnection(
+        appName: String?,
+        appUid: Int,
+        protocol: String,
+        domain: String?,
+        srcIp: String?,
+        srcPort: Int?,
+        dstIp: String?,
+        dstPort: Int,
+        bytesTx: Long,
+        bytesRx: Long,
+        packetsTx: Int,
+        packetsRx: Int,
+        startTs: Long,
+        endTs: Long,
+        durationMs: Long
+    ) {
+        val (lat, lon) = LocationService.getLastLocation()
+
+        val record = NetworkRequestRecord(
+            userUuid = userUuid,
+            appName = appName,
+            appUid = appUid,
+            protocol = protocol,
+            domain = domain,
+            srcIp = srcIp,
+            srcPort = srcPort,
+            dstIp = dstIp,
+            dstPort = dstPort,
+            bytesTx = bytesTx,
+            bytesRx = bytesRx,
+            packetsTx = packetsTx,
+            packetsRx = packetsRx,
+            startTs = startTs,
+            endTs = endTs,
+            durationMs = durationMs,
+            latitude = lat,
+            longitude = lon
+        )
+
+        repository.insertNetworkRequest(record)
+    }
+
+
 }

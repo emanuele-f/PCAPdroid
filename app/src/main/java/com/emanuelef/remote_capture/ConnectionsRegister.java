@@ -212,6 +212,8 @@ public class ConnectionsRegister {
                         null  // lon
                 );
                 */
+                /*
+
                  //dopo: con gps
                 TrackerService.logConnection(
                         conn.getDstAddr() != null ? conn.getDstAddr().toString() : null,
@@ -220,6 +222,9 @@ public class ConnectionsRegister {
                         null, // dominio non disponibile a livello connessione
                         null  // path non disponibile
                 );
+                FIX: devo loggare quando la connessione viene chiusa dentro connectionsUpdates()
+                newConnections intercetta solo nascita di conn. e i parametri non sono ancora disp.
+                */
             } catch (Exception e) {
                 Log.e("ConnectionsRegister", "TrackerService.onNewConnection failed", e);
             }
@@ -294,6 +299,48 @@ public class ConnectionsRegister {
                 //Log.d(TAG, "update " + update.incr_id + " -> " + update.update_type);
                 conn.processUpdate(update);
                 processConnectionStatus(conn, stats);
+
+                //HOOK TESI: log solo alla chiusura definitiva connessione
+                ConnectionDescriptor.Status status = conn.getStatus();
+
+                if (status != ConnectionDescriptor.Status.STATUS_ACTIVE &&
+                        !conn.loggedFinal) {  //se stato non attivo aggiungo flag
+
+                    conn.loggedFinal = true; // evita duplicati
+
+                    AppDescriptor app = mAppsResolver.getAppByUid(conn.uid, 0);
+
+                    String appName = app != null ? app.getName() : null;
+
+                    String dstIp = conn.getDstAddr() != null
+                            ? conn.getDstAddr().getHostAddress()
+                            : null;
+
+                    long startTs = conn.first_seen;
+                    long endTs = conn.last_seen;
+                    long duration = Math.max(0, endTs - startTs);
+
+                    TrackerService.logFinalConnection(
+                            appName,
+                            conn.uid,
+                            conn.l7proto != null && !conn.l7proto.isEmpty()
+                                    ? conn.l7proto
+                                    : "TCP",
+                            conn.info,            // sni/hostname
+                            null,
+                            null,
+                            dstIp,
+                            conn.dst_port,
+                            conn.sent_bytes,
+                            conn.rcvd_bytes,
+                            conn.sent_pkts,
+                            conn.rcvd_pkts,
+                            startTs,
+                            endTs,
+                            duration
+                    );
+                }
+                //Fine
 
                 changed_pos[k++] = (pos + mSize - first_pos) % mSize;
             }

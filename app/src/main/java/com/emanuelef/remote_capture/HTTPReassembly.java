@@ -56,6 +56,9 @@ public class HTTPReassembly {
     //tesi: aggiungo campi mancanti per salvare info
     private String mMethod;
     private String mHost;
+    //flag
+    private boolean mHttpRequestLogged;
+
     //fine
     public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
         mListener = listener;
@@ -84,6 +87,7 @@ public class HTTPReassembly {
         //tesi: gestione dei campi aggiunti nel reset
         mMethod = null;
         mHost = null;
+        mHttpRequestLogged = false;
         //fine
 
         // Do not reset, these affects the whole connection
@@ -110,6 +114,9 @@ public class HTTPReassembly {
         boolean chunked_complete = false;
         mIsTx = chunk.is_sent;
 
+        //debug per tesi
+        log_d("handleChunk isTx=" + mIsTx + " payloadLen=" + payload.length);
+
         if(mReadingHeaders) {
             // Reading the HTTP headers
             int headers_end = Utils.getEndOfHTTPHeaders(payload);
@@ -129,6 +136,7 @@ public class HTTPReassembly {
                         if ((first_space > 0) && (second_space > 0)) {
                             mMethod = line.substring(0, first_space); //tesi: aggiungo salvataggio del method
                             mPath = line.substring(first_space + 1, second_space);
+                            log_d("REQUEST LINE: " + mMethod + " " + mPath);//debug
 
                             int query_start = mPath.indexOf('?');
                             if (query_start >= 0)
@@ -138,7 +146,7 @@ public class HTTPReassembly {
                         }
                     }
                 }
-                // qui sopra c'è estrazione path già normalizzato (no query string), che riutilizzo
+                // Tesi:qui sopra c'è estrazione path già normalizzato (no query string), che riutilizzo
 
                 while((line != null) && (line.length() > 0)) {
                     line = line.toLowerCase();
@@ -182,8 +190,23 @@ public class HTTPReassembly {
                         //substring(6), dopo "host: "
                         mHost = line.substring(6).trim();
                         log_d("Host: " + mHost);
-                    }//fine
+                        //tesi: log HTTP request
+                        if (!mHttpRequestLogged && mIsTx && mMethod != null) {
+                            //debug
+                            log_d("TESI_HTTP_REQUEST "
+                                    + mMethod + " "
+                                    + mHost
+                                    + (mPath != null ? mPath : "/"));
 
+                            TrackerService.onHttpRequest(
+                                    mMethod,
+                                    mHost,
+                                    mPath != null ? mPath : "/"
+                            );
+                            mHttpRequestLogged = true;
+                        }
+                    }
+                    //fine
 
                     line = reader.readLine();
                 }
@@ -299,21 +322,6 @@ public class HTTPReassembly {
 
                 to_add.contentType = mContentType;
                 to_add.path = mPath;
-                //tesi: chiamo TrackerService.onHttpRequest()
-                if (mMethod != null) {
-                    TrackerService.onHttpRequest(
-                            // /* connectionId */ chunk.conn_id,
-                            mMethod,
-                            mHost,
-                            mPath
-                    );
-                }
-                //headers completi
-                //path definitivo
-                //una sola chiamata per request
-                //chunk già ricostruito
-
-                //fine
 
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
