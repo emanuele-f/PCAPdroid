@@ -103,8 +103,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             mHttpReq = null;
             mHttpRes = null;
 
-            mChunks.add(new AdapterChunk(mSingleChunk, 0));
-            notifyItemInserted(0);
+            if (mSingleChunk.payload.length > 0) {
+                mChunks.add(new AdapterChunk(mSingleChunk, 0));
+                notifyItemInserted(0);
+            }
         }
     }
 
@@ -123,7 +125,8 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         } else
             return req.conn.getHttpRequestChunk(req.firstChunkPos);
 
-        return null;
+        // return an empty chunk instead of null to activate the single-chunk mode
+        return new PayloadChunk(new byte[0], ChunkType.HTTP, true, 0);
     }
 
     public void setExportPayloadHandler(ExportPayloadHandler handler) {
