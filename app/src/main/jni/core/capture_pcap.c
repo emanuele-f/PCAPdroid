@@ -412,13 +412,25 @@ static void handle_tls_data(const unsigned char *plain_data, unsigned int data_l
         return;
 
     //log_w("<DATA> %s", plain_data);
-    g_plain_data.data = (unsigned char *) pd_realloc(g_plain_data.data, g_plain_data.data_len + data_len);
-    if (!g_plain_data.data) {
+    g_plain_data.data = (unsigned char *) pd_realloc(g_plain_data.data, g_plain_data.tot_length + data_len);
+    g_plain_data.lengths = (unsigned int *) pd_realloc(g_plain_data.lengths, (g_plain_data.n_items + 1) * sizeof(unsigned int));
+    if (!g_plain_data.data || !g_plain_data.lengths) {
         log_e("realloc(tls_data) failed[%d]: %s", errno, strerror(errno));
-        g_plain_data.data_len = 0;
+
+        if (g_plain_data.data)
+            pd_free(g_plain_data.data);
+        if (g_plain_data.lengths)
+            pd_free(g_plain_data.lengths);
+
+        g_plain_data.data = NULL;
+        g_plain_data.lengths = NULL;
+        g_plain_data.tot_length = 0;
+        g_plain_data.n_items = 0;
     } else {
-        memcpy(g_plain_data.data + g_plain_data.data_len, plain_data, data_len);
-        g_plain_data.data_len += data_len;
+        memcpy(g_plain_data.data + g_plain_data.tot_length, plain_data, data_len);
+        g_plain_data.lengths[g_plain_data.n_items] = data_len;
+        g_plain_data.tot_length += data_len;
+        g_plain_data.n_items++;
     }
 }
 
@@ -545,8 +557,8 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
     if (g_plain_data.data) {
         pd_free(g_plain_data.data);
-        g_plain_data.data = NULL;
-        g_plain_data.data_len = 0;
+        pd_free(g_plain_data.lengths);
+        memset(&g_plain_data, 0, sizeof(g_plain_data));
     }
 
     return true;

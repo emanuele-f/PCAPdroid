@@ -153,7 +153,9 @@ typedef struct {
 
 typedef struct {
     unsigned char *data;
-    unsigned int data_len;
+    unsigned int *lengths;
+    unsigned int tot_length;
+    unsigned int n_items;
 } plain_data_t;
 
 typedef struct pkt_context {
