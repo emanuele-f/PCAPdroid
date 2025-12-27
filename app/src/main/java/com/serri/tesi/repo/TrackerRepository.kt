@@ -142,4 +142,90 @@ class TrackerRepository(context: Context) {
 
         cursor.close()
     }
+
+    //aggiunto metodo per recupero batch non sincronizzato
+    //leggere tutte le connessioni non sincronizzate (synced=0)
+    fun getPendingNetworkRequests(limit: Int): List<NetworkRequestRecord> {
+        val db = dbHelper.readableDatabase
+        val results = mutableListOf<NetworkRequestRecord>()
+
+        val cursor = db.rawQuery(
+            """
+        SELECT 
+            id,
+            user_uuid,
+            app_name,
+            app_uid,
+            protocol,
+            domain,
+            src_ip,
+            src_port,
+            dst_ip,
+            dst_port,
+            bytes_tx,
+            bytes_rx,
+            packets_tx,
+            packets_rx,
+            start_ts,
+            end_ts,
+            duration_ms,
+            latitude,
+            longitude
+        FROM network_requests
+        WHERE synced = 0
+        ORDER BY id ASC
+        LIMIT ?
+        """.trimIndent(),
+            arrayOf(limit.toString())
+        )
+
+        while (cursor.moveToNext()) {
+            val record = NetworkRequestRecord(
+                id = cursor.getLong(0),
+                userUuid = cursor.getString(1),
+                appName = cursor.getString(2),
+                appUid = cursor.getInt(3),
+                protocol = cursor.getString(4),
+                domain = cursor.getString(5),
+                srcIp = cursor.getString(6),
+                srcPort = if (cursor.isNull(7)) null else cursor.getInt(7),
+                dstIp = cursor.getString(8),
+                dstPort = cursor.getInt(9),
+                bytesTx = cursor.getLong(10),
+                bytesRx = cursor.getLong(11),
+                packetsTx = cursor.getInt(12),
+                packetsRx = cursor.getInt(13),
+                startTs = cursor.getLong(14),
+                endTs = cursor.getLong(15),
+                durationMs = cursor.getLong(16),
+                latitude = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                longitude = if (cursor.isNull(18)) null else cursor.getDouble(18)
+            )
+
+            results.add(record)
+        }
+
+        cursor.close()
+        return results
+    }
+
+    //aggiunto metodo per segnare i dati inviati
+    fun markAsSynced(ids: List<Long>) {
+        if (ids.isEmpty()) return
+
+        val db = dbHelper.writableDatabase
+
+        val placeholders = ids.joinToString(",") { "?" }
+        val args = ids.map { it.toString() }.toTypedArray()
+
+        val query = """
+        UPDATE network_requests
+        SET synced = 1
+        WHERE id IN ($placeholders)
+    """.trimIndent()
+
+        db.execSQL(query, args)
+    }
+
+
 }

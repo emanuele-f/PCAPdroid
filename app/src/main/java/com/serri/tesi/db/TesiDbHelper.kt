@@ -35,11 +35,17 @@ class TesiDbHelper(context: Context) :
                 duration_ms INTEGER,
 
                 latitude REAL,
-                longitude REAL
+                longitude REAL,
+                
+                synced INTEGER DEFAULT 0
             )
         """.trimIndent())
     }
+    // nel db aggiunto synced per gestire sincro. con server
+    // se 0 = non sincronizzato
+    // se 1 = sincronizzato
 
+    //ricreazione completa del db on upgrade
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS network_requests")
         onCreate(db)
@@ -47,6 +53,6 @@ class TesiDbHelper(context: Context) :
 
     companion object {
         const val DB_NAME = "tesi.db"
-        const val DB_VERSION = 2
+        const val DB_VERSION = 3
     }
 }
