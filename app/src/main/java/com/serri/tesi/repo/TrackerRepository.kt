@@ -7,11 +7,21 @@ import serri.tesi.model.ConnectionRecord
 import serri.tesi.model.HttpRequestRecord
 import serri.tesi.model.NetworkRequestRecord
 
+/**
+ * Repository responsabile dell'accesso al db locale
+ *
+ * incapsula tutte le operazioni di persistenza
+ * relative alle connessioni intercettate, fornendo un'interfaccia
+ * semplice al resto dell'applicazione.
+ *
+ * implementa il pattern Repository, separando la logica
+ * di accesso ai dati dalla logica di business.
+ */
 class TrackerRepository(context: Context) {
 
-    private val dbHelper = TesiDbHelper(context)
+    private val dbHelper = TesiDbHelper(context) //richiama helper
 
-    // vecchio insert
+    // *vecchio insert a tab connections, con dati parziali (primo tentativo)*
     fun insertConnection(record: ConnectionRecord): Long {
         val db = dbHelper.writableDatabase
 
@@ -30,6 +40,7 @@ class TrackerRepository(context: Context) {
         return db.insert("connections", null, values)
     }
 
+    // *vecchio insert a tab http_request (inizialmente due tab separate)*
     fun insertHttpRequest(record: HttpRequestRecord): Long {
         val db = dbHelper.writableDatabase
 
@@ -44,7 +55,16 @@ class TrackerRepository(context: Context) {
         return db.insert("http_requests", null, values)
     }
 
-    // Nuovo metodo
+    // *Nuovo metodo*
+    /**
+     * Inserisce nel db una nuova riga nella tabella "network_requests"
+     * che rappresenta una connessione di rete conclusa.
+     *
+     * @param record oggetto che rappresenta una connessione aggregata,
+     *               costruita al termine della connessione stessa.
+     *
+     * @return ID del record inserito nel database.
+     */
     fun insertNetworkRequest(record: NetworkRequestRecord): Long {
         val db = dbHelper.writableDatabase
 
@@ -112,7 +132,7 @@ class TrackerRepository(context: Context) {
 
         cursor.close()
     }
-
+    //DEBUG
     //funzione per verificare db http request
     fun debugDumpHttpRequests(limit: Int = 10) {
         val db = dbHelper.readableDatabase
@@ -145,6 +165,14 @@ class TrackerRepository(context: Context) {
 
     //aggiunto metodo per recupero batch non sincronizzato
     //leggere tutte le connessioni non sincronizzate (synced=0)
+    /**
+     * Recupera batch di connessioni non ancora sincronizzate con il backend.
+     *
+     * I record vengono selezionati in base al campo `synced` e ordinati per ID,
+     * consentendo un invio incrementale dei dati.
+     *
+     * @param limit numero massimo di record da restituire.
+     */
     fun getPendingNetworkRequests(limit: Int): List<NetworkRequestRecord> {
         val db = dbHelper.readableDatabase
         val results = mutableListOf<NetworkRequestRecord>()
@@ -210,6 +238,12 @@ class TrackerRepository(context: Context) {
     }
 
     //aggiunto metodo per segnare i dati inviati
+    /**
+     * Marca come sincronizzati i record che sono stati inviati correttamente
+     * al backend remoto.
+     *
+     * @param ids lista degli identificativi dei record da aggiornare.
+     */
     fun markAsSynced(ids: List<Long>) {
         if (ids.isEmpty()) return
 

@@ -7,8 +7,23 @@ import serri.tesi.mapper.NetworkRequestMapper
 import serri.tesi.network.BackendClient
 import serri.tesi.repo.TrackerRepository
 
+/**
+ * Servizio responsabile di sincronizzazione dati con backend remoto.
+ *
+ * legge i record di rete non ancora sincronizzati dal database
+ * locale, li converte in DTO(Data Transfer Object) e li invia in modalità batch al server.
+ *
+ * In caso di esito positivo, i record vengono marcati come sincronizzati,
+ * garantendo consistenza ed evitando duplicati
+ */
 class SyncService(private val context: Context) {
 
+    /**
+     * Singola operazione di sincronizzazione.
+     *
+     * metodo recupera un batch di record non sincronizzati, li invia al backend
+     * remoto e, in caso di successo, aggiorna lo stato locale della cache.
+     */
     fun syncOnce() {
         val repo = TrackerRepository(context)
         val client = BackendClient("http://10.0.2.2:8080")

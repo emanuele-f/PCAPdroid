@@ -73,8 +73,33 @@
 
 ---
 
-## TODO successivi (fuori PCAPdroid core)
-- [ ] Anonimizzazione dati (IP, dominio, user UUID)
-- [ ] Invio batch dei dati a backend remoto
-- [ ] Analisi dei dati persistiti
-- [ ] Studio delle performance del database
+## Fase 5 - Cache locale e preparazione invio backend (Android)
+
+- [x] Esteso schema DB con stato di sincronizzazione (`synced`)
+- [x] Incrementata versione del database
+- [x] Aggiornato modello `NetworkRequestRecord` con `id` e `synced`
+- [x] Implementate query di batch:
+    - [x] Recupero record non sincronizzati (`synced = 0`)
+    - [x] Marcatura record sincronizzati (`markAsSynced`)
+- [x] Definiti DTO di invio (`NetworkRequestDto`)
+- [x] Definito wrapper batch (`BatchDto`)
+- [x] Implementato mapping DB → DTO
+- [x] Implementato client HTTP Android (OkHttp)
+- [x] Implementato servizio di sincronizzazione (`SyncService`)
+- [x] Definita politica di invio batch (non realtime)
+
+---
+
+## TODO successivi
+
+### Backend e privacy
+- [ ] Creazione backend REST (Node.js / Express)
+- [ ] Endpoint `POST /network_requests/batch`
+- [ ] Test end-to-end invio dati Android → backend
+- [ ] Implementazione anonimizzazione dati (IP, dominio, user UUID)
+- [ ] Applicazione anonimizzazione prima dell’invio remoto
+
+### Analisi e valutazione
+- [ ] Analisi dei dati persistiti (pattern di utilizzo)
+- [ ] Query di aggregazione (per app, dominio, protocollo)
+- [ ] Studio delle performance del database locale

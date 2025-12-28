@@ -1,5 +1,15 @@
 package serri.tesi.dto
-
+/**
+ * Data Transfer Object utilizzato per l'invio delle connessioni di rete
+ * al backend remoto.
+ *
+ * Definisce il formato dei dati serializzati in JSON e
+ * rappresenta comunicazione tra l'applicazione Android
+ * e il server.
+ *
+ * Il DTO è separato dal modello di persistenza per garantire
+ * flessibilità, sicurezza e disaccoppiamento architetturale.
+ */
 data class NetworkRequestDto(
     val user_uuid: String,
 

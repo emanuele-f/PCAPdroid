@@ -10,7 +10,16 @@ import serri.tesi.repo.TrackerRepository
 import java.util.UUID
 import serri.tesi.model.NetworkRequestRecord
 
-
+/**
+ * Servizio centrale di tracciamento delle connessioni di rete.
+ *
+ * punto di integrazione tra il sistema di intercettazione del traffico (PCAPdroid) e  livello di persistenza
+ * introdotto dalla tesi.
+ *
+ * Si occupa di raccogliere i dati finali delle connessioni,
+ * arricchirli con informazioni di contesto (GPS, applicazione di origine...)
+ * e delegare la persistenza al repository.
+ */
 object TrackerService {
 
     private lateinit var repository: TrackerRepository
@@ -18,6 +27,10 @@ object TrackerService {
 
     /**
      * Inizializza il repository e il servizio GPS.
+     *
+     * Crea repository x accesso a db locale,
+     * genera UUID anonimo per l'utente e inizializza il servizio
+     * di localizzazione.
      */
     @JvmStatic
     fun init(context: Context) {
@@ -26,6 +39,7 @@ object TrackerService {
         LocationService.init(context) // inizializza GPS
     }
 
+    //*metodo vecchio*
     /**
      * Registra una nuova connessione con GPS opzionale.
      * NOTA FIX: registra connessione parziale e veniva chiamato nel punto sbagliato
@@ -52,7 +66,7 @@ object TrackerService {
         )
     }
 
-
+    //*metodo vecchio*
     /**
      * Inserisce una nuova connessione nel database SQLite.
      */
@@ -115,6 +129,15 @@ object TrackerService {
     }
 
     //Metodo per log connessione versione completa
+    /**
+     * Registra una connessione di rete conclusa
+     *
+     * Viene invocato esclusivamente alla chiusura della
+     * connessione, quando tutte le metriche  risultano disponibili.
+     *
+     * I dati vengono incapsulati in NetworkRequestRecord e
+     * salvati nel db locale come parte della cache persistente.
+     */
     @JvmStatic
     fun logFinalConnection(
         appName: String?,
@@ -158,6 +181,4 @@ object TrackerService {
 
         repository.insertNetworkRequest(record)
     }
-
-
 }
