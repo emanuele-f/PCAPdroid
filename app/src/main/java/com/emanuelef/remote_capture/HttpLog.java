@@ -25,12 +25,17 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class HttpLog {
+    private static final String TAG = "HttpLog";
     private final ArrayList<HttpRequest> mHttpRequests = new ArrayList<>();
+    private final ArrayList<HttpRequest> mPendingHttpRequests = new ArrayList<>();
+    private final ArrayList<HttpReply> mPendingHttpReplies = new ArrayList<>();
     private Listener mListener;
+    private boolean mConnUpdateInProgress = false;
 
-    public static class HttpRequest {
+    public static class HttpRequest implements Comparable<HttpRequest> {
         public final ConnectionDescriptor conn;
         public final int firstChunkPos;
         public String method = "";
@@ -73,6 +78,11 @@ public class HttpLog {
         public String toString() {
             return "HTTP request: " + method + " " + getUrl();
         }
+
+        @Override
+        public int compareTo(HttpRequest o) {
+            return Long.compare(timestamp, o.timestamp);
+        }
     }
 
     public static class HttpReply {
@@ -107,7 +117,33 @@ public class HttpLog {
         mListener = listener;
     }
 
+    public synchronized void startConnectionsUpdates() {
+        Log.d(TAG, "startConnectionsUpdates");
+        mConnUpdateInProgress = true;
+    }
+
+    public synchronized void stopConnectionsUpdates() {
+        Log.d(TAG, "stopConnectionsUpdates");
+        mConnUpdateInProgress = false;
+
+        // sort requests by ascending timestamp, as the order may be wrong due to the connections update batching
+        Collections.sort(mPendingHttpRequests);
+
+        for (HttpRequest req: mPendingHttpRequests)
+            addHttpRequest(req);
+
+        for (HttpReply reply: mPendingHttpReplies)
+            addHttpReply(reply);
+    }
+
     public synchronized void addHttpRequest(HttpRequest req) {
+        if (mConnUpdateInProgress) {
+            // during the connections update, the sort order may be wrong due to batching
+            // so enqueue until the update is finished
+            mPendingHttpRequests.add(req);
+            return;
+        }
+
         req.idx = mHttpRequests.size();
         mHttpRequests.add(req);
 
@@ -117,6 +153,11 @@ public class HttpLog {
 
     public synchronized void addHttpReply(HttpReply reply) {
         assert (reply.request.reply == reply);
+
+        if (mConnUpdateInProgress) {
+            mPendingHttpReplies.add(reply);
+            return;
+        }
 
         if (mListener != null)
             // info from the HTTP reply is now available

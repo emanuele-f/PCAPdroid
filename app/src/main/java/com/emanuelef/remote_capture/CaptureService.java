@@ -96,6 +96,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -126,6 +127,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mDumperThread;
     private MitmReceiver mMitmReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
+    private AtomicInteger mNumUpdatesInProgress = new AtomicInteger();
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
     private String vpn_dns;
@@ -569,6 +571,7 @@ public class CaptureService extends VpnService implements Runnable {
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mFirewallWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
+        mNumUpdatesInProgress.set(0);
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
 
@@ -1244,6 +1247,12 @@ public class CaptureService extends VpnService implements Runnable {
                 if(conns_updates.length > 0)
                     conn_reg.connectionsUpdates(conns_updates);
             }
+
+            int val = mNumUpdatesInProgress.decrementAndGet();
+            assert(val >= 0);
+
+            if ((val == 0) && (mHttpLog != null))
+                mHttpLog.stopConnectionsUpdates();
         }
     }
 
@@ -1447,6 +1456,14 @@ public class CaptureService extends VpnService implements Runnable {
 
         Log.d(TAG, "Get uid local=" + local + " remote=" + remote);
         return cm.getConnectionOwnerUid(protocol, local, remote);
+    }
+
+    public void startConnectionsUpdate() {
+        int val = mNumUpdatesInProgress.incrementAndGet();
+        assert(val >= 0);
+
+        if ((val == 1) && (mHttpLog != null))
+            mHttpLog.startConnectionsUpdates();
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {

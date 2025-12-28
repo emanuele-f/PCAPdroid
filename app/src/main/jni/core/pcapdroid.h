@@ -332,6 +332,7 @@ typedef struct {
     jmethodID protect;
     jmethodID dumpPcapData;
     jmethodID stopPcapDump;
+    jmethodID startConnectionsUpdate;
     jmethodID updateConnections;
     jmethodID connInit;
     jmethodID connProcessUpdate;

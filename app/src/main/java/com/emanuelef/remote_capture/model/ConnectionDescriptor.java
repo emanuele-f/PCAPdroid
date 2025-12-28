@@ -159,6 +159,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
         internal_decrypt = false;
     }
 
+    // NOTE: invoked from either JNI (dumpNewConnection) or ConnectionsRegister
     public void processUpdate(ConnectionUpdate update) {
         // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
@@ -459,7 +460,6 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
             reply.responseStatus = chunk.httpResponseStatus;
             reply.contentType = chunk.httpContentType;
             reply.bodyLength = chunk.httpBodyLength;
-            request.timestamp = chunk.timestamp;
             request.reply = reply;
             httplog.addHttpReply(reply);
 

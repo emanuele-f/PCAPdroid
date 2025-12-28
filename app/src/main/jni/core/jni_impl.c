@@ -308,13 +308,16 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
         goto cleanup;
     }
 
+    // NOTE: updateConnections must be called after startConnectionsUpdate
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.startConnectionsUpdate);
+
     // New connections
     for(int i=0; i < pd->new_conns.cur_items; i++) {
         conn_and_tuple_t *conn = &pd->new_conns.items[i];
         conn->data->pending_notification = false;
 
         if(dumpNewConnection(pd, conn, new_conns, i) < 0)
-            goto cleanup;
+            goto send_and_cleanup;
     }
 
     //clock_t start = clock();
@@ -325,12 +328,13 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
         conn->data->pending_notification = false;
 
         if(dumpConnectionUpdate(pd, conn, conns_updates, i) < 0)
-            goto cleanup;
+            goto send_and_cleanup;
     }
 
     //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
     //log_d("avg cpu_time_used per update: %f sec", cpu_time_used / pd->conns_updates.cur_items);
 
+send_and_cleanup:
     /* Send the dump */
     (*env)->CallVoidMethod(env, pd->capture_service, mids.updateConnections, new_conns, conns_updates);
     jniCheckException(env);
@@ -543,6 +547,7 @@ static void init_jni(JNIEnv *env) {
     mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, cls.vpn_service, "dumpPcapData", "([B)V");
     mids.stopPcapDump = jniGetMethodID(env, cls.vpn_service, "stopPcapDump", "()V");
+    mids.startConnectionsUpdate = jniGetMethodID(env, cls.vpn_service, "startConnectionsUpdate", "()V");
     mids.updateConnections = jniGetMethodID(env, cls.vpn_service, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.sendStatsDump = jniGetMethodID(env, cls.vpn_service, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/CaptureStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, cls.vpn_service, "sendServiceStatus", "(Ljava/lang/String;)V");
