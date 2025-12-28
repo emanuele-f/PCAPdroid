@@ -316,7 +316,7 @@ public class HTTPReassembly {
                 if (mDumpPayload) {
                     // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
                     PayloadChunk headers = reassembleChunks(mHeaders);
-                    PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
+                    PayloadChunk body = !mBody.isEmpty() ? reassembleChunks(mBody) : null;
 
                     //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
 
@@ -350,8 +350,12 @@ public class HTTPReassembly {
                     to_add.httpBodyLength = mBodySize;
 
                     // Fix the chunk type after upgrade when read from ushark
-                    if (mSwitchedProtocols && (to_add.type == PayloadChunk.ChunkType.HTTP))
+                    if (mSwitchedProtocols && (to_add.type == PayloadChunk.ChunkType.HTTP)) {
                         to_add.type = mWebsocketUpgrade ? PayloadChunk.ChunkType.WEBSOCKET : PayloadChunk.ChunkType.RAW;
+
+                        // also update the original chunk, so that connection details tabs are correct
+                        chunk.type = to_add.type;
+                    }
                 }
 
                 mBodySize = 0;
