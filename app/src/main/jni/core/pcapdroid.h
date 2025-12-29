@@ -455,5 +455,6 @@ bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
+char* get_allocs_summary();
 
 #endif //__PCAPDROID_H__

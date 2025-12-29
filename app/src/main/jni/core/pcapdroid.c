@@ -796,7 +796,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
 
 static char allocs_buf[1024];
 
-static char* get_allocs_summary() {
+char* get_allocs_summary() {
     char b1[16], b2[16], b3[16], b4[16];
 
     snprintf(allocs_buf, sizeof(allocs_buf),
