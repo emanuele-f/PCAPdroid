@@ -327,7 +327,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         } else if(type == MsgType.JS_INJECTED) {
             conn.js_injected_scripts = new String(message, StandardCharsets.US_ASCII);
         } else
-            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
+            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp, 0));
     }
 
     private synchronized void addPendingMessage(PendingMessage pending) {

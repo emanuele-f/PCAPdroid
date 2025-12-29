@@ -588,8 +588,9 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 /* ******************************************************* */
 
 // dumps the payload and returns true if fully dumped, false if failed or truncated
-static bool dump_payload(pcapdroid_t *pd, pkt_context_t *pctx, const char *to_dump, int dump_size) {
-    pd_conn_t *data = pctx->data;
+static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id,
+                         const char *to_dump, int dump_size)
+{
     bool truncated = false;
 
     if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (dump_size > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
@@ -597,8 +598,8 @@ static bool dump_payload(pcapdroid_t *pd, pkt_context_t *pctx, const char *to_du
         truncated = true;
     }
 
-    if(pd->cb.dump_payload_chunk(pd, pctx, to_dump, dump_size))
-        data->has_payload[pctx->is_tx] = true;
+    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size))
+        conn->has_payload[is_tx] = true;
     else
         truncated = true;
 
@@ -630,17 +631,18 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
                 data->has_decrypted_data = true;
             }
 
-            unsigned int data_offset = 0;
             truncated = false;
 
             for (unsigned int i = 0; i < pctx->plain_data->n_items; i++) {
-                truncated |= !dump_payload(pd, pctx, (const char*) pctx->plain_data->data + data_offset,
-                             (int) pctx->plain_data->lengths[i]);
+                const plain_data_item_t *item =  &pctx->plain_data->items[i];
 
-                data_offset += pctx->plain_data->lengths[i];
+                // use the item is_tx and ms timestamp data, rather than the ones from pctx because
+                // http2.c may buffer http responses/resets so they may be processed with a different pctx
+                truncated |= !dump_payload(pd, pctx->data, item->is_tx, item->ms, item->stream_id,
+                                           (const char*) item->data, (int) item->data_length);
             }
         } else
-            truncated = !dump_payload(pd, pctx, pkt->l7, pkt->l7_len);
+            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len);
 
         updated = true;
     } else

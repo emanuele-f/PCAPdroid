@@ -126,7 +126,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             return req.conn.getHttpRequestChunk(req.firstChunkPos);
 
         // return an empty chunk instead of null to activate the single-chunk mode
-        return new PayloadChunk(new byte[0], ChunkType.HTTP, true, 0);
+        return new PayloadChunk(new byte[0], ChunkType.HTTP, true, 0, 0);
     }
 
     public void setExportPayloadHandler(ExportPayloadHandler handler) {

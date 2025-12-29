@@ -28,6 +28,7 @@ import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
 import com.emanuelef.remote_capture.HttpLog;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 
@@ -47,6 +48,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * or sets a previously null field to a non-null value.
  */
 public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
+    public static final String TAG = "ConnectionDescriptor";
+
     // sync with zdtun_conn_status_t
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
@@ -233,11 +236,11 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
 
         // will call onChunkReassembled
         if (chunk.is_sent) {
-            if (mFirstReqChunkPos == -1)
+            if ((mFirstReqChunkPos == -1) && !chunk.isHttp2Rst())
                 mFirstReqChunkPos = chunk_pos;
             mHttpReqReassembly.handleChunk(chunk);
         } else {
-            if (mFirstReplyChunkPos == -1)
+            if ((mFirstReplyChunkPos == -1) && !chunk.isHttp2Rst())
                 mFirstReplyChunkPos = chunk_pos;
             mHttpReplyReassembly.handleChunk(chunk);
         }
@@ -439,31 +442,62 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
         if (httplog == null)
             return;
 
-        if (chunk.is_sent) {
+        if (chunk.is_sent && !chunk.isHttp2Rst()) {
             HttpLog.HttpRequest request = new HttpLog.HttpRequest(this, mFirstReqChunkPos);
             request.host = !chunk.httpHost.isEmpty() ? chunk.httpHost : info;
             request.method = chunk.httpMethod;
             request.path = chunk.httpPath;
             request.query = chunk.httpQuery;
             request.bodyLength = chunk.httpBodyLength;
+            request.streamId = chunk.stream_id;
             request.timestamp = chunk.timestamp;
             httplog.addHttpRequest(request);
 
             mPendingRequests.add(request);
             mFirstReqChunkPos = -1;
-        } else if (!mPendingRequests.isEmpty()) {
-            // find the first un-replied request
-            HttpLog.HttpRequest request = mPendingRequests.remove(0);
+        } else {
+            // match the reply to the request
+            HttpLog.HttpRequest request = null;
 
-            HttpLog.HttpReply reply = new HttpLog.HttpReply(request, mFirstReplyChunkPos);
-            reply.responseCode = chunk.httpResponseCode;
-            reply.responseStatus = chunk.httpResponseStatus;
-            reply.contentType = chunk.httpContentType;
-            reply.bodyLength = chunk.httpBodyLength;
-            request.reply = reply;
-            httplog.addHttpReply(reply);
+            if (chunk.stream_id == 0) {
+                // if HTTP/1, then the request is the first in the list
+                if (!mPendingRequests.isEmpty())
+                    request = mPendingRequests.remove(0);
+            } else {
+                // if HTTP/2, use the stream ID for the matching
+                int idx = 0;
+                for (HttpLog.HttpRequest req: mPendingRequests) {
+                    if (req.streamId == chunk.stream_id)
+                        break;
 
-            mFirstReplyChunkPos = -1;
+                    idx++;
+                }
+
+                if (idx < mPendingRequests.size())
+                    request = mPendingRequests.remove(idx);
+            }
+
+            if (request != null) {
+                if (!chunk.isHttp2Rst()) {
+                    HttpLog.HttpReply reply = new HttpLog.HttpReply(request, mFirstReplyChunkPos);
+                    reply.responseCode = chunk.httpResponseCode;
+                    reply.responseStatus = chunk.httpResponseStatus;
+                    reply.contentType = chunk.httpContentType;
+                    reply.bodyLength = chunk.httpBodyLength;
+                    request.reply = reply;
+
+                    httplog.addHttpReply(reply);
+                    mFirstReplyChunkPos = -1;
+                } else {
+                    request.httpRst = true;
+                    Log.d(TAG, "Got RST: " + request.getUrl());
+                }
+            } else if (!chunk.is_sent) { // ignore HTTP requests with RST
+                if (chunk.isHttp2Rst())
+                    Log.w(TAG, "Unmatched HTTP RST (sent=" + chunk.is_sent + ", stream=" + chunk.stream_id + ")");
+                else
+                    Log.w(TAG, "Unmatched HTTP reply (sent=" + chunk.is_sent + ", stream=" + chunk.stream_id + ")");
+            }
         }
     }
 

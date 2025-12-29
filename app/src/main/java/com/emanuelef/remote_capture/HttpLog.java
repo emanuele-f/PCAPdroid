@@ -43,8 +43,10 @@ public class HttpLog {
         public String path = "";
         public String query = "";
         public HttpReply reply;
-        public int bodyLength;
-        public long timestamp;
+        public int bodyLength = 0;
+        public int streamId = 0;
+        public long timestamp = 0;
+        public boolean httpRst = false;
         private int idx = -1;
 
         public HttpRequest(ConnectionDescriptor conn, int firstChunkPos) {

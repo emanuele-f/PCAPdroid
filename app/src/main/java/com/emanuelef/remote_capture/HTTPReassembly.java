@@ -108,8 +108,15 @@ public class HTTPReassembly {
     /* The request/response tab shows reassembled HTTP chunks.
      * Reassembling chunks is requires when using a content-encoding like gzip since we can only
      * decode the data when we have the full chunk and we cannot determine data bounds.
+     *
      * When reading data via the MitmReceiver, mitmproxy already performs chunks reassembly and
-     * also handles HTTP/2 so that we only get the payload. */
+     * also handles HTTP/2 so that we only get the payload.
+     *
+     * Similarly, also ushark performs HTTP/2 request/reply reassembly, so we always get the whole
+     * HTTP headers and body in a single chunk. With ushark, though, HTTP/2 replies may arrive in
+     * a different order (due to HTTP/2 multiplexing). chunk.stream_id is used by ConnectionDescriptor
+     * to associate the reply to the correct request.
+     */
     public void handleChunk(PayloadChunk chunk) {
         int body_start = 0;
         byte[] payload = chunk.payload;
@@ -158,6 +165,8 @@ public class HTTPReassembly {
                             }
 
                             mFirstChunk.httpPath = path;
+
+                            //log_d(mFirstChunk.httpMethod + " " + mFirstChunk.httpPath);
                         }
                     } else if (line.startsWith("HTTP/")) {
                         int first_space = line.indexOf(' ');
@@ -255,6 +264,12 @@ public class HTTPReassembly {
         if(!mReassembleChunks)
             mReadingHeaders = false;
 
+        boolean httpRst = false;
+        if (mReadingHeaders && chunk.isHttp2Rst()) {
+            mReadingHeaders = false;
+            httpRst = true;
+        }
+
         if(!mReadingHeaders) {
             // Reading HTTP body
             int body_size = payload.length - body_start;
@@ -349,6 +364,11 @@ public class HTTPReassembly {
                     to_add.httpQuery = mFirstChunk.httpQuery;
                     to_add.httpBodyLength = mBodySize;
 
+                    if (httpRst)
+                        // this is necessary when mDumpPayload=false, to ensure that
+                        // the chunk is marked as HTTP RST
+                        to_add.setHttpRst();
+
                     // Fix the chunk type after upgrade when read from ushark
                     if (mSwitchedProtocols && (to_add.type == PayloadChunk.ChunkType.HTTP)) {
                         to_add.type = mWebsocketUpgrade ? PayloadChunk.ChunkType.WEBSOCKET : PayloadChunk.ChunkType.RAW;
@@ -359,6 +379,12 @@ public class HTTPReassembly {
                 }
 
                 mBodySize = 0;
+
+                if ((to_add.type == PayloadChunk.ChunkType.HTTP)) {
+                    Log.d(TAG, "Reassembled HTTP " +
+                            (to_add.isHttp2Rst() ? "RST" : (to_add.is_sent ? "request" : "response")));
+                }
+
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
 
