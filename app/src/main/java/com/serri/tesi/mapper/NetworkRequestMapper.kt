@@ -2,6 +2,8 @@ package serri.tesi.mapper
 
 import serri.tesi.dto.NetworkRequestDto
 import serri.tesi.model.NetworkRequestRecord
+import serri.tesi.privacy.HashUtils
+
 /**
  * Mapper responsabile di conversione tra modello persistenza
  * e modello comunicazione.
@@ -24,12 +26,15 @@ object NetworkRequestMapper {
      */
     fun toDto(record: NetworkRequestRecord): NetworkRequestDto {
         return NetworkRequestDto(
-            user_uuid = record.userUuid,
+            //user_uuid = record.userUuid,
+            user_uuid = HashUtils.sha256(record.userUuid), //user anonimizzato
             app_name = record.appName,
             app_uid = record.appUid,
             protocol = record.protocol,
-            domain = record.domain,
-            dst_ip = record.dstIp,
+            //domain = record.domain,
+            domain = record.domain?.let { HashUtils.sha256(it) }, //dominio anonim.
+            //dst_ip = record.dstIp,
+            dst_ip = record.dstIp?.let { HashUtils.sha256(it) },//destination ip anon. se presente
             dst_port = record.dstPort,
             bytes_tx = record.bytesTx,
             bytes_rx = record.bytesRx,

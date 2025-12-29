@@ -38,6 +38,11 @@ class SyncService(private val context: Context) {
         val dtos = pending.map { NetworkRequestMapper.toDto(it) }
         val batch = BatchDto(dtos)
 
+        // DEBUG anonimizzazione, da togliere*
+        dtos.forEach {
+            Log.d("TESI_PRIVACY", "DTO anonimizzato=$it")
+        }
+
         val success = client.sendBatch(batch)
 
         if (success) {
@@ -46,5 +51,6 @@ class SyncService(private val context: Context) {
         } else {
             Log.e("TESI_SYNC", "Sync failed")
         }
+
     }
 }
