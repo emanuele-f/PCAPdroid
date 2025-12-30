@@ -589,22 +589,29 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         AdapterChunk adapterChunk = new AdapterChunk(chunk, mChunks.size());
         int adapterPos = getItemCount();
         int insertPos = mChunks.size();
+        boolean is_http2_rst = chunk.isHttp2Rst();
 
         // Need to determine where to add the chunk. If HTTP request, always add it to the bottom.
-        // If HTTP reply, it should be added right after the first un-replied HTTP request
-        if(!chunk.is_sent && (mUnrepliedHttpReq != null)) {
+        // If HTTP reply/reset, it should be added right after the first un-replied HTTP request
+        if((!chunk.is_sent || is_http2_rst) && (mUnrepliedHttpReq != null)) {
             // HTTP reply to a matching request
             int reqPos = mChunks.indexOf(mUnrepliedHttpReq);
             assert(reqPos >= 0);
 
-            insertPos = reqPos + 1;
-            adapterPos = getAdapterPosition(mUnrepliedHttpReq) + mUnrepliedHttpReq.getNumPages();
-            Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, mUnrepliedHttpReq.incrId, insertPos));
+            if (!is_http2_rst) {
+                insertPos = reqPos + 1;
+                adapterPos = getAdapterPosition(mUnrepliedHttpReq) + mUnrepliedHttpReq.getNumPages();
+                Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, mUnrepliedHttpReq.incrId, insertPos));
+            } else
+                Log.d(TAG, String.format("chunk #%d reset of #%d", adapterChunk.incrId, mUnrepliedHttpReq.incrId));
+
             setNextUnrepliedRequest(reqPos);
-        } else if((chunk.is_sent) && (mUnrepliedHttpReq == null))
+        } else if(chunk.is_sent && !is_http2_rst && (mUnrepliedHttpReq == null))
             mUnrepliedHttpReq = adapterChunk;
 
-        mChunks.add(insertPos, adapterChunk);
-        notifyItemInserted(adapterPos);
+        if (!is_http2_rst) {
+            mChunks.add(insertPos, adapterChunk);
+            notifyItemInserted(adapterPos);
+        }
     }
 }
