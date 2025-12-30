@@ -43,8 +43,19 @@ object NetworkRequestMapper {
             start_ts = record.startTs,
             end_ts = record.endTs,
             duration_ms = record.durationMs,
-            latitude = record.latitude,
-            longitude = record.longitude
+            //latitude = record.latitude,
+            //longitude = record.longitude
+            latitude = record.latitude?.let { round(it, 2) }, //approssimo dati localizzazione, coordinate precise = dato altamente sensibile
+            longitude = record.longitude?.let { round(it, 2) }
+
         )
     }
+
+    //metodo per approssimare dati localizzazione (precisi=sensibili)
+    // in questo modo e geolocalizzazione approssimata, posizione precisa anonima
+    private fun round(value: Double, decimals: Int): Double {   //prende in input valore posizione, e restituisce approssimata
+        val factor = Math.pow(10.0, decimals.toDouble()) //calocla fattore per spostare virgola, per arrotondamento
+        return Math.round(value * factor) / factor // arrotonda a seconda del fattore calcolato, il valore della posizione (meno preciso)
+    }
+
 }

@@ -1,31 +1,34 @@
 package serri.tesi.service
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.os.Looper
-import com.google.android.gms.location.*
+import android.annotation.SuppressLint // annotazione x sopprimere warning del compilatore (permessi runtime)
+import android.content.Context // content necessario per inizializzare client di localizzazione
+import android.os.Looper //looper x associare callback al thread principale
+import com.google.android.gms.location.* //api google play services x geolocalizzazione
 
 /**
  * Servizio di supporto per geolocalizzazione
  *
  * Fornisce ultima posizione GPS nota del dispositivo
  *
- * Il servizio è progettato per operare
- * senza introdurre blocchi o dipendenze temporali nel tracciamento
- * delle connessioni di rete.
+ * Il servizio è progettato per operare senza introdurre blocchi o dipendenze temporali nel tracciamento delle connessioni di rete
  */
-object LocationService { //singleton
+object LocationService { //singleton globale
 
-    private lateinit var fusedClient: FusedLocationProviderClient
-    private var lastLat: Double? = null
-    private var lastLon: Double? = null
+    private lateinit var fusedClient: FusedLocationProviderClient //client fornito da google play services x ottenere posizione
+    private var lastLat: Double? = null // ultima lat nota (null se non disp)
+    private var lastLon: Double? = null //ultima lon nota (null se non disp)
 
+    //callback invocato automaticamente ad ogni aggiornamentoo gps
     private val callback = object : LocationCallback() {
+        //chiama metodo quando arriva una nuova posizione
         override fun onLocationResult(result: LocationResult) {
-            val loc = result.lastLocation ?: return
+            // loc ottiene ultima pos disponibile da result
+            val loc = result.lastLocation ?: return //se posizione è null, allora esce
+            // aggiorno i valori memorizzati
             lastLat = loc.latitude
             lastLon = loc.longitude
 
+            //log di debug x ricezione gps
             android.util.Log.d(
                 "LocationService",
                 "GPS FIX lat=$lastLat lon=$lastLon"
@@ -41,6 +44,7 @@ object LocationService { //singleton
      */
     @JvmStatic
     fun init(context: Context) {
+        // ottiene client di localizzazione associato a contesto
         fusedClient = LocationServices.getFusedLocationProviderClient(context)
     }
 
@@ -53,15 +57,18 @@ object LocationService { //singleton
     @JvmStatic
     @SuppressLint("MissingPermission")
     fun start() {
+        //costruzione richiesta di localizzazione:
+        // - alta accuratezza gps - aggiorna ogni 5 sec
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             5_000
         ).build()
 
+        //registra callback x ricevere aggiornamenti di pos
         fusedClient.requestLocationUpdates(
-            request,
-            callback,
-            Looper.getMainLooper()
+            request, //configurazione richiesta
+            callback, //callback chiamato ad ogni update
+            Looper.getMainLooper() // thread su cui eseguire callback
         )
     }
 
@@ -73,6 +80,6 @@ object LocationService { //singleton
      */
     @JvmStatic
     fun getLastLocation(): Pair<Double?, Double?> {
-        return Pair(lastLat, lastLon)
+        return Pair(lastLat, lastLon) //restituisce valori in coppia
     }
 }

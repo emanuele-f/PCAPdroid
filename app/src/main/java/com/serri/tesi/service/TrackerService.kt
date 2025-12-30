@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import serri.tesi.model.ConnectionRecord
 import serri.tesi.model.HttpRequestRecord
 import serri.tesi.repo.TrackerRepository
-import java.util.UUID
+import java.util.UUID // classe java x generazione id univoci
 import serri.tesi.model.NetworkRequestRecord
 
 /**
@@ -21,21 +21,19 @@ import serri.tesi.model.NetworkRequestRecord
  * e delegare la persistenza al repository.
  */
 object TrackerService {
-
-    private lateinit var repository: TrackerRepository
-    private lateinit var userUuid: String
+    //object kotlin = singleton globale, una sola istanza in tutta l'app
+    private lateinit var repository: TrackerRepository //repo x salvare e leggere dati da db locale
+    private lateinit var userUuid: String //uuid anonim. associato a user corrente
 
     /**
-     * Inizializza il repository e il servizio GPS.
-     *
-     * Crea repository x accesso a db locale,
-     * genera UUID anonimo per l'utente e inizializza il servizio
-     * di localizzazione.
+     * - inizializza repository x accesso a db locale
+     * - genera UUID anonimo per l'utente
+     * - inizializza il servizio di localizzazione.
      */
     @JvmStatic
     fun init(context: Context) {
-        repository = TrackerRepository(context.applicationContext)
-        userUuid = UUID.randomUUID().toString()
+        repository = TrackerRepository(context.applicationContext) // crea repo usando context dell'app
+        userUuid = UUID.randomUUID().toString() // genera uuid casuale
         LocationService.init(context) // inizializza GPS
     }
 
@@ -67,9 +65,7 @@ object TrackerService {
     }
 
     //*metodo vecchio*
-    /**
-     * Inserisce una nuova connessione nel database SQLite.
-     */
+    //Inserisce una nuova connessione nel database SQLite.
     @JvmStatic
     fun onNewConnection(
         ip: String?,
@@ -94,9 +90,8 @@ object TrackerService {
         return repository.insertConnection(record)
     }
 
-    /**
-     * Inserisce una nuova richiesta HTTP nel database SQLite.
-     */
+    //metodo vecchio*
+    //Inserisce una nuova richiesta HTTP nel database SQLite.
     @JvmStatic
     fun onHttpRequest(
         method: String,
@@ -112,23 +107,19 @@ object TrackerService {
         repository.insertHttpRequest(record)
     }
 
-    /**
-     * DEBUG – stampa su Logcat le ultime connessioni salvate su SQLite
-     */
+    // DEBUG, stampa su Logcat le ultime connessioni salvate su SQLite
     @JvmStatic
     fun debugDump() {
         repository.debugDumpConnections(20)
     }
 
-    /**
-     * DEBUG – stampa su Logcat le ultime richieste HTTP salvate su SQLite
-     */
+    //DEBUG, stampa su Logcat le ultime richieste HTTP salvate su SQLite
     @JvmStatic
     fun debugDumpHttp() {
         repository.debugDumpHttpRequests(20)
     }
 
-    //Metodo per log connessione versione completa
+    //Metodo FINALE per log connessione versione completa
     /**
      * Registra una connessione di rete conclusa
      *
@@ -156,8 +147,9 @@ object TrackerService {
         endTs: Long,
         durationMs: Long
     ) {
-        val (lat, lon) = LocationService.getLastLocation()
+        val (lat, lon) = LocationService.getLastLocation() //recupera ultima posizione disponibile
 
+        //costruzione record completo connessione
         val record = NetworkRequestRecord(
             userUuid = userUuid,
             appName = appName,
@@ -178,7 +170,7 @@ object TrackerService {
             latitude = lat,
             longitude = lon
         )
-
+        //salvataggio record in db tramite repository
         repository.insertNetworkRequest(record)
     }
 }
