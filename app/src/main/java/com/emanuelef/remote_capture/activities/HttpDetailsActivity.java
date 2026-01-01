@@ -102,7 +102,10 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         }
 
         @Override
-        public int getItemCount() {  return POS_COUNT;  }
+        public int getItemCount() {
+            // Only show response tab if there's a reply
+            return (mHttpReq.reply != null) ? POS_COUNT : 1;
+        }
 
         public int getPageTitle(final int pos) {
             switch (pos) {
