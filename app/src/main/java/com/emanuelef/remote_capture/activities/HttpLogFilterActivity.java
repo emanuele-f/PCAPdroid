@@ -20,7 +20,6 @@ package com.emanuelef.remote_capture.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +28,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.collection.ArraySet;
 import androidx.core.view.MenuProvider;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -41,7 +41,6 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.Slider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,7 +48,7 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
     public static final String FILTER_DESCRIPTOR = "http_log_filter";
     private static final String TAG = "HttpLogFilterActivity";
     private HttpLogFilterDescriptor mFilter;
-    private ArrayList<Pair<HttpLogFilterDescriptor.RequestMethod, Chip>> mMethodChips;
+    private ChipGroup mMethodGroup;
     private ChipGroup mContentTypeGroup;
     private ChipGroup mHttpStatusGroup;
     private Slider mPayloadSizeSlider;
@@ -76,18 +75,15 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
         if(mFilter == null)
             mFilter = new HttpLogFilterDescriptor();
 
+        mMethodGroup = findViewById(R.id.method_group);
         mContentTypeGroup = findViewById(R.id.content_type_group);
         mHttpStatusGroup = findViewById(R.id.http_status_group);
         mPayloadSizeSlider = findViewById(R.id.payload_size_slider);
 
-        mMethodChips = new ArrayList<>(Arrays.asList(
-                new Pair<>(HttpLogFilterDescriptor.RequestMethod.GET, findViewById(R.id.method_get)),
-                new Pair<>(HttpLogFilterDescriptor.RequestMethod.POST, findViewById(R.id.method_post))
-        ));
-
-        // Populate content types from captured data
+        // Populate filters from captured data
         HttpLog httpLog = CaptureService.getHttpLog();
         if(httpLog != null) {
+            ArraySet<String> methods = new ArraySet<>();
             Set<String> contentTypes = new HashSet<>();
             Set<Integer> httpStatuses = new HashSet<>();
             long maxPayloadSize = 0;
@@ -95,17 +91,37 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
             synchronized (httpLog) {
                 for (int i = 0; i < httpLog.size(); i++) {
                     HttpLog.HttpRequest req = httpLog.getRequest(i);
-                    if (req != null && req.reply != null) {
-                        if (req.reply.contentType != null && !req.reply.contentType.isEmpty())
-                            contentTypes.add(req.reply.contentType);
-                        if (req.reply.responseCode > 0)
-                            httpStatuses.add(req.reply.responseCode);
+                    if (req != null) {
+                        if (req.method != null && !req.method.isEmpty())
+                            methods.add(req.method.toUpperCase());
 
-                        int totalSize = req.bodyLength + req.reply.bodyLength;
-                        if (totalSize > maxPayloadSize)
-                            maxPayloadSize = totalSize;
+                        if (req.reply != null) {
+                            if (req.reply.contentType != null && !req.reply.contentType.isEmpty())
+                                contentTypes.add(req.reply.contentType);
+                            if (req.reply.responseCode > 0)
+                                httpStatuses.add(req.reply.responseCode);
+
+                            int totalSize = req.bodyLength + req.reply.bodyLength;
+                            if (totalSize > maxPayloadSize)
+                                maxPayloadSize = totalSize;
+                        }
                     }
                 }
+            }
+
+            // Create method chips
+            if (!methods.isEmpty()) {
+                LayoutInflater inflater = getLayoutInflater();
+                ArrayList<String> sortedMethods = new ArrayList<>(methods);
+                sortedMethods.sort(String::compareTo);
+
+                for (String method : sortedMethods) {
+                    Chip chip = (Chip) inflater.inflate(R.layout.choice_chip, mMethodGroup, false);
+                    chip.setText(method);
+                    mMethodGroup.addView(chip);
+                }
+                mMethodGroup.setVisibility(View.VISIBLE);
+                findViewById(R.id.method_label).setVisibility(View.VISIBLE);
             }
 
             // Create content-type chips
@@ -151,30 +167,22 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
         model2view();
     }
 
-    private <T> void setCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T curValue) {
-        for(Pair<T, Chip> mapping: chipMap) {
-            Chip chip = mapping.second;
-            chip.setChecked(mapping.first.equals(curValue));
-        }
-    }
-
-    private <T> T getCheckedChip(ArrayList<Pair<T, Chip>> chipMap, T defaultValue) {
-        for(Pair<T, Chip> mapping: chipMap) {
-            Chip chip = mapping.second;
-
-            if(chip.isChecked())
-                return mapping.first;
-        }
-
-        return defaultValue;
-    }
-
     private void model2view() {
-        setCheckedChip(mMethodChips, mFilter.method);
-
         long minSizeKB = mFilter.minPayloadSize / 1024;
         if (minSizeKB > 0)
             mPayloadSizeSlider.setValue(minSizeKB);
+
+        // Set method
+        if(mFilter.method != null) {
+            int num_chips = mMethodGroup.getChildCount();
+            for(int i=0; i<num_chips; i++) {
+                Chip chip = (Chip) mMethodGroup.getChildAt(i);
+                if(chip.getText().toString().equalsIgnoreCase(mFilter.method)) {
+                    chip.setChecked(true);
+                    break;
+                }
+            }
+        }
 
         // Set content type
         if(mFilter.contentType != null) {
@@ -202,11 +210,21 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
     }
 
     private void view2model() {
-        mFilter.method = getCheckedChip(mMethodChips, HttpLogFilterDescriptor.RequestMethod.INVALID);
         mFilter.minPayloadSize = ((long) mPayloadSizeSlider.getValue()) * 1024;
 
+        // Get method
+        int num_chips = mMethodGroup.getChildCount();
+        mFilter.method = null;
+        for(int i=0; i<num_chips; i++) {
+            Chip chip = (Chip) mMethodGroup.getChildAt(i);
+            if(chip.isChecked()) {
+                mFilter.method = chip.getText().toString();
+                break;
+            }
+        }
+
         // Get content type
-        int num_chips = mContentTypeGroup.getChildCount();
+        num_chips = mContentTypeGroup.getChildCount();
         mFilter.contentType = null;
         for(int i=0; i<num_chips; i++) {
             Chip chip = (Chip) mContentTypeGroup.getChildAt(i);

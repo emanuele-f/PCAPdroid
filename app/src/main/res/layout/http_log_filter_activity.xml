@@ -32,6 +32,7 @@
             android:layout_margin="15dp">
 
             <TextView
+                android:id="@+id/method_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/request_method"
@@ -39,27 +40,17 @@
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
                 android:labelFor="@id/method_group"
+                android:visibility="gone"
+                tools:visibility="visible"
                 android:layout_marginBottom="5dp"/>
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/method_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
                 app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/method_get"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/method_get"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/method_post"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/method_post"/>
             </com.google.android.material.chip.ChipGroup>
 
             <TextView

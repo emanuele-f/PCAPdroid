@@ -31,13 +31,7 @@ import com.google.android.material.chip.ChipGroup;
 import java.io.Serializable;
 
 public class HttpLogFilterDescriptor implements Serializable {
-    public enum RequestMethod {
-        INVALID,
-        GET,
-        POST
-    }
-
-    public RequestMethod method = RequestMethod.INVALID;
+    public String method = null;
     public String contentType = null;
     public Integer httpStatus = null;
     public long minPayloadSize = 0;
@@ -48,7 +42,7 @@ public class HttpLogFilterDescriptor implements Serializable {
     }
 
     public boolean isSet() {
-        return (method != RequestMethod.INVALID)
+        return (method != null)
                 || (contentType != null)
                 || (httpStatus != null)
                 || (minPayloadSize > 0);
@@ -56,11 +50,8 @@ public class HttpLogFilterDescriptor implements Serializable {
 
     public boolean matches(HttpLog.HttpRequest req) {
         // Method filter
-        if (method != RequestMethod.INVALID) {
-            String reqMethod = req.method.toUpperCase();
-            if (method == RequestMethod.GET && !reqMethod.equals("GET"))
-                return false;
-            if (method == RequestMethod.POST && !reqMethod.equals("POST"))
+        if (method != null) {
+            if (!req.method.equalsIgnoreCase(method))
                 return false;
         }
 
@@ -96,8 +87,8 @@ public class HttpLogFilterDescriptor implements Serializable {
     public void toChips(LayoutInflater inflater, ChipGroup group) {
         Context ctx = inflater.getContext();
 
-        if (method != RequestMethod.INVALID) {
-            String label = String.format(ctx.getString(R.string.method_filter), method.toString());
+        if (method != null) {
+            String label = String.format(ctx.getString(R.string.method_filter), method);
             addChip(inflater, group, R.id.http_method_filter, label);
         }
 
@@ -117,7 +108,7 @@ public class HttpLogFilterDescriptor implements Serializable {
     // clear one of the filters from toChips
     public void clear(int filter_id) {
         if (filter_id == R.id.http_method_filter)
-            method = RequestMethod.INVALID;
+            method = null;
         else if (filter_id == R.id.http_content_type_filter)
             contentType = null;
         else if (filter_id == R.id.http_status_filter)
@@ -125,7 +116,7 @@ public class HttpLogFilterDescriptor implements Serializable {
     }
 
     public void clear() {
-        method = RequestMethod.INVALID;
+        method = null;
         contentType = null;
         httpStatus = null;
         minPayloadSize = 0;
