@@ -67,8 +67,9 @@ public class HttpLog {
 
         public boolean matches(String filter) {
             filter = filter.toLowerCase();
-            return host.contains(filter) || path.contains(filter) ||
-                    ((reply != null) && reply.contentType.contains(filter));
+
+            return getUrl().toLowerCase().contains(filter) ||
+                    ((reply != null) && reply.contentType.toLowerCase().contains(filter));
         }
 
         public String getUrl() {

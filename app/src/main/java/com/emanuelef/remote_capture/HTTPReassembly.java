@@ -160,8 +160,8 @@ public class HTTPReassembly {
 
                             int query_start = path.indexOf('?');
                             if (query_start >= 0) {
-                                path = path.substring(0, query_start);
                                 mFirstChunk.httpQuery = path.substring(query_start);
+                                path = path.substring(0, query_start);
                             }
 
                             mFirstChunk.httpPath = path;

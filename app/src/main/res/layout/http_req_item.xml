@@ -78,9 +78,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/app_name_layout"
             app:layout_constraintEnd_toStartOf="@id/req_time"
+            android:paddingEnd="5dp"
             android:ellipsize="middle"
             android:singleLine="true"
-            tools:text="http://example.org" />
+            tools:text="http://example.org"
+            tools:ignore="RtlSymmetry" />
 
         <TextView
             android:id="@+id/method_and_path"
