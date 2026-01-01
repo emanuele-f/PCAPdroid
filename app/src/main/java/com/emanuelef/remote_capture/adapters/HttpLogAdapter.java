@@ -98,28 +98,39 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
             protoAndHost.setText(req.getProtoAndHost());
             contentType.setText((req.reply != null) ? req.reply.contentType : "");
             reqTime.setText(Utils.formatEpochShort(ctx, req.timestamp / 1000));
-            httpStatus.setText(((req.reply != null) && (req.reply.responseCode > 0)) ?
-                    String.format(Utils.getPrimaryLocale(ctx), "%d %s", req.reply.responseCode, req.reply.responseStatus) : "—");
+            httpStatus.setText(getResponseCodeText(ctx, req));
 
             int tot_length = (req.reply != null) ? (req.bodyLength + req.reply.bodyLength) : req.bodyLength;
             payloadSize.setText(Utils.formatBytes(tot_length));
-
-            if (req.reply != null) {
-                int code = req.reply.responseCode;
-                int color;
-
-                if((code >= 200) && (code <= 299))
-                    color = R.color.statusOpen;
-                else if((code >= 300) && (code <= 399))
-                    color = R.color.lightGray;
-                else if((code >= 400) && (code <= 599))
-                    color = R.color.statusError;
-                else
-                    color = R.color.colorTabText;
-
-                httpStatus.setTextColor(ContextCompat.getColor(ctx, color));
-            }
+            httpStatus.setTextColor(ContextCompat.getColor(ctx, getResponseCodeColor(req)));
         }
+    }
+
+    private static String getResponseCodeText(Context ctx, HttpRequest req) {
+        if ((req.reply != null) && (req.reply.responseCode > 0))
+            return String.format(Utils.getPrimaryLocale(ctx), "%d %s", req.reply.responseCode, req.reply.responseStatus);
+        else if (req.httpRst)
+            return "RST_STREAM";
+        else
+            return "—";
+    }
+
+    private static int getResponseCodeColor(HttpRequest req) {
+        int color = R.color.colorTabText;
+
+        if (req.reply != null) {
+            int code = req.reply.responseCode;
+
+            if((code >= 200) && (code <= 299))
+                color = R.color.statusOpen;
+            else if((code >= 300) && (code <= 399))
+                color = R.color.lightGray;
+            else if((code >= 400) && (code <= 599))
+                color = R.color.statusError;
+        } else if (req.httpRst)
+            color = R.color.statusError;
+
+        return color;
     }
 
     public HttpLogAdapter(Context context, AppsResolver resolver) {
