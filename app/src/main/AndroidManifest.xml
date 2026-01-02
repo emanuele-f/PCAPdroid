@@ -66,8 +66,6 @@
         <activity
             android:name=".activities.ConnectionsActivity" />
         <activity
-            android:name=".activities.HttpLogActivity" />
-        <activity
             android:name=".activities.HttpDetailsActivity" />
         <activity
             android:name=".activities.AppsActivity"

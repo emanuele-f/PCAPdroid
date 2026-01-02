@@ -575,8 +575,10 @@
     <string name="tls_decryption_not_supported_16KB">TLS decryption is currently unsupported on 16 KB devices</string>
     <string name="filename_prefix">Filename prefix</string>
     <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
-    <string name="http_log">HTTP log</string>
     <string name="no_requests">No requests</string>
     <string name="item_not_found">Could not find the specified item</string>
     <string name="http_details">HTTP details</string>
+    <string name="http_requests">HTTP requests</string>
+    <string name="switch_to_http">Show HTTP requests</string>
+    <string name="switch_to_connections">Show connections</string>
 </resources>

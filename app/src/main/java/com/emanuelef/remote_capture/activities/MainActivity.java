@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.fragments.DataViewContainerFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -355,10 +356,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mDrawer.closeDrawer(GravityCompat.START, true);
         else {
             if(mPager.getCurrentItem() == POS_CONNECTIONS) {
-                Fragment fragment = getFragment(ConnectionsFragment.class);
+                Fragment container = getFragmentAtPos(POS_CONNECTIONS);
 
-                if((fragment != null) && ((ConnectionsFragment)fragment).onBackPressed())
-                    return;
+                if((container != null) && (container instanceof DataViewContainerFragment)) {
+                    if(((DataViewContainerFragment)container).onBackPressed())
+                        return;
+                }
             }
 
             super.onBackPressed();
@@ -483,7 +486,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 case POS_STATUS:
                     return new StatusFragment();
                 case POS_CONNECTIONS:
-                    return new ConnectionsFragment();
+                    return new DataViewContainerFragment();
             }
         }
 
@@ -571,9 +574,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if(id == R.id.tls_decryption) {
             Intent intent = new Intent(MainActivity.this, EditListActivity.class);
             intent.putExtra(EditListActivity.LIST_TYPE_EXTRA, ListInfo.Type.DECRYPTION_LIST);
-            startActivity(intent);
-        } else if(id == R.id.http_log) {
-            Intent intent = new Intent(MainActivity.this, HttpLogActivity.class);
             startActivity(intent);
         } else if(id == R.id.firewall) {
             Intent intent = new Intent(MainActivity.this, FirewallActivity.class);

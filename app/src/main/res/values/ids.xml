@@ -4,4 +4,8 @@
     <item name="http_method_filter" type="id"/>
     <item name="http_content_type_filter" type="id"/>
     <item name="http_status_filter" type="id"/>
+
+    <!-- Data View Container Menu IDs -->
+    <item name="switch_to_http_log" type="id"/>
+    <item name="switch_to_connections" type="id"/>
 </resources>

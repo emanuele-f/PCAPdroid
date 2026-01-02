@@ -123,7 +123,9 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        if (!(getParentFragment() instanceof DataViewContainerFragment)) {
+            requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        }
         return inflater.inflate(R.layout.connections, container, false);
     }
 
