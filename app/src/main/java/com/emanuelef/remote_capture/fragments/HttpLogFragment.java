@@ -79,6 +79,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private String mQueryToApply;
     private AppsResolver mApps;
     private boolean autoScroll;
+    private boolean listenerSet;
 
     private final ActivityResultLauncher<Intent> filterLauncher =
             registerForActivityResult(new StartActivityForResult(), this::filterResult);
@@ -91,6 +92,10 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         registerHttpListener();
         mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+
+        // Check scroll state after adapter is populated, to show FAB if needed.
+        // Use post to ensure it executes after the RecyclerView has completed its layout
+        mRecyclerView.post(this::recheckScroll);
 
         if (mAdapter != null) {
             boolean visible = mAdapter.mFilter.minPayloadSize >= 1024;
@@ -130,28 +135,30 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     }
 
     private void registerHttpListener() {
-        HttpLog httpLog = CaptureService.getHttpLog();
+        if (!listenerSet) {
+            HttpLog httpLog = CaptureService.getHttpLog();
 
-        if (httpLog != null)
-            httpLog.setListener(this);
+            if (httpLog != null) {
+                httpLog.setListener(this);
+                listenerSet = true;
 
-        if (mAdapter != null) {
-            mAdapter.onHttpRequestsClear();
-            recheckScroll();
-            scrollToBottom();
+                // Sync adapter with data that arrived while listener was unregistered
+                // (similar to ConnectionsRegister.addListener() which calls connectionsChanges)
+                if (mAdapter != null) {
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
         }
     }
 
     private void unregisterHttpListener() {
-        HttpLog httpLog = CaptureService.getHttpLog();
+        if(listenerSet) {
+            HttpLog httpLog = CaptureService.getHttpLog();
 
-        if (httpLog != null)
-            httpLog.setListener(null);
+            if (httpLog != null)
+                httpLog.setListener(null);
 
-        if (mAdapter != null) {
-            mAdapter.onHttpRequestsClear();
-            recheckScroll();
-            scrollToBottom();
+            listenerSet = false;
         }
     }
 
@@ -226,6 +233,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         });
 
         autoScroll = true;
+        listenerSet = false;
         showFabDown(false);
 
         ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.linearlayout), (v, windowInsets) -> {
@@ -274,6 +282,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         CaptureService.observeStatus(this, serviceStatus -> {
             if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
+                // register the new http log listener
                 unregisterHttpListener();
                 registerHttpListener();
 
@@ -341,7 +350,6 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             if (mAdapter != null) {
                 mAdapter.onHttpRequestAdded(pos);
 
-                recheckScroll();
                 if (autoScroll)
                     scrollToBottom();
             }
@@ -374,11 +382,18 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         boolean is_scrolling = (first_visibile_pos != 0) || (!reached_bottom);
 
         if(is_scrolling) {
+            // Only update autoScroll flag if user is actively dragging (not programmatic scroll)
+            boolean isUserScroll = mRecyclerView.getScrollState() == RecyclerView.SCROLL_STATE_DRAGGING;
+
             if(reached_bottom) {
-                autoScroll = true;
+                if (isUserScroll)
+                    autoScroll = true;
+
                 showFabDown(false);
             } else {
-                autoScroll = false;
+                if (isUserScroll)
+                    autoScroll = false;
+
                 showFabDown(true);
             }
         } else
@@ -397,6 +412,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         int last_pos = mAdapter.getItemCount() - 1;
         mRecyclerView.scrollToPosition(last_pos);
 
+        // Re-enable autoscroll when scrolling to bottom (user intent)
+        autoScroll = true;
         showFabDown(false);
     }
 
