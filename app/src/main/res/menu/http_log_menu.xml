@@ -21,4 +21,11 @@
         android:orderInCategory="20"
         app:showAsAction="always">
     </item>
+
+    <item
+        android:id="@+id/save"
+        android:title="@string/save_to_file"
+        android:orderInCategory="30"
+        android:icon="@drawable/ic_save"
+        app:showAsAction="never" />
 </menu>

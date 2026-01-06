@@ -20,7 +20,9 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +33,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -50,6 +53,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HttpLog;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
@@ -62,6 +66,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "HttpLogFragment";
     private TextView mEmptyText;
@@ -70,11 +77,13 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private FloatingActionButton mFabDown;
     private int mFabDownMargin = 0;
     private MenuItem mMenuItemSearch;
+    private MenuItem mSave;
     private SearchView mSearchView;
     private Handler mHandler;
     private ChipGroup mActiveFilter;
     private Slider mSizeSlider;
     private boolean mSizeSliderActive = false;
+    private Uri mTxtFname;
 
     private String mQueryToApply;
     private AppsResolver mApps;
@@ -83,6 +92,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
     private final ActivityResultLauncher<Intent> filterLauncher =
             registerForActivityResult(new StartActivityForResult(), this::filterResult);
+    private final ActivityResultLauncher<Intent> txtFileLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::txtFileResult);
 
     @Override
     public void onResume() {
@@ -96,6 +107,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         // Check scroll state after adapter is populated, to show FAB if needed.
         // Use post to ensure it executes after the RecyclerView has completed its layout
         mRecyclerView.post(this::recheckScroll);
+
+        refreshMenuIcons();
 
         if (mAdapter != null) {
             boolean visible = mAdapter.mFilter.minPayloadSize >= 1024;
@@ -291,6 +304,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
                 mEmptyText.setText(R.string.no_requests);
                 mApps.clear();
             }
+
+            refreshMenuIcons();
         });
     }
 
@@ -298,6 +313,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.http_log_menu, menu);
 
+        mSave = menu.findItem(R.id.save);
         mMenuItemSearch = menu.findItem(R.id.search);
 
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
@@ -308,13 +324,18 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             mQueryToApply = null;
             setQuery(query);
         }
+
+        refreshMenuIcons();
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.edit_filter) {
+        if(id == R.id.save) {
+            openFileSelector();
+            return true;
+        } else if(id == R.id.edit_filter) {
             Intent intent = new Intent(requireContext(), HttpLogFilterActivity.class);
             intent.putExtra(HttpLogFilterActivity.FILTER_DESCRIPTOR, mAdapter.mFilter);
             filterLauncher.launch(intent);
@@ -488,6 +509,126 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
                 mAdapter.refreshFilteredItems();
                 refreshActiveFilter();
             }
+        }
+    }
+
+    private void refreshMenuIcons() {
+        if(mSave == null)
+            return;
+
+        boolean is_enabled = (CaptureService.getHttpLog() != null);
+
+        mMenuItemSearch.setVisible(is_enabled);
+        mSave.setEnabled(is_enabled);
+    }
+
+    public void openFileSelector() {
+        boolean noFileDialog = false;
+        String fname = Utils.getUniqueFileName(requireContext(), "txt");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
+
+        if(Utils.supportsFileDialog(requireContext(), intent)) {
+            try {
+                txtFileLauncher.launch(intent);
+            } catch (ActivityNotFoundException e) {
+                noFileDialog = true;
+            }
+        } else
+            noFileDialog = true;
+
+        if(noFileDialog) {
+            Log.d(TAG, "No app found to handle file selection");
+
+            Uri uri = Utils.getDownloadsUri(requireContext(), fname);
+
+            if(uri != null) {
+                mTxtFname = uri;
+                dumpHttpLog();
+            } else
+                Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
+        }
+    }
+
+    private void dumpHttpLog() {
+        if(mTxtFname == null)
+            return;
+
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if(httpLog == null)
+            return;
+
+        Log.d(TAG, "Writing HTTP log file: " + mTxtFname);
+        boolean error = true;
+
+        try {
+            OutputStream stream = requireActivity().getContentResolver().openOutputStream(mTxtFname, "rwt");
+
+            if(stream != null) {
+                synchronized (httpLog) {
+                    for(int i = 0; i < httpLog.size(); i++) {
+                        HttpLog.HttpRequest req = httpLog.getRequest(i);
+                        if(req == null)
+                            continue;
+
+                        StringBuilder sb = new StringBuilder();
+                        String requestText = req.conn.getHttpRequestChunk(req.firstChunkPos) != null ?
+                                req.conn.getHttpRequest() : "";
+
+                        sb.append("[").append(req.timestamp).append("]\n");
+                        if(!requestText.isEmpty()) {
+                            sb.append(requestText);
+                            if(!requestText.endsWith("\n"))
+                                sb.append("\n");
+                        }
+                        sb.append("\n");
+
+                        if(req.reply != null) {
+                            var replyChunk = req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
+                            if(replyChunk != null) {
+                                String replyText = req.conn.getHttpResponse();
+                                sb.append("[").append(replyChunk.timestamp).append("]\n");
+                                sb.append(replyText);
+                                if(!replyText.endsWith("\n"))
+                                    sb.append("\n");
+                                sb.append("\n");
+                            }
+                        }
+
+                        stream.write(sb.toString().getBytes());
+                    }
+                }
+
+                stream.close();
+
+                Utils.UriStat stat = Utils.getUriStat(requireContext(), mTxtFname);
+
+                if(stat != null) {
+                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                } else
+                    Utils.showToast(requireContext(), R.string.save_ok);
+
+                error = false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(error)
+            Utils.showToast(requireContext(), R.string.cannot_write_file);
+
+        mTxtFname = null;
+    }
+
+    private void txtFileResult(final ActivityResult result) {
+        if((result.getResultCode() == Activity.RESULT_OK) && (result.getData() != null)) {
+            mTxtFname = result.getData().getData();
+            dumpHttpLog();
+        } else {
+            mTxtFname = null;
         }
     }
 }
