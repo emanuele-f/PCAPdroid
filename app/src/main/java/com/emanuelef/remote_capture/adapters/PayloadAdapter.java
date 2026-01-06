@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
@@ -442,7 +442,12 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
             Locale locale = Utils.getPrimaryLocale(mContext);
             String formattedTstamp = (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp));
-            String formattedBytes = Utils.formatBytes(chunk.payload.length);
+
+            String formattedBytes;
+            if (mMode == ChunkType.HTTP)
+                formattedBytes = Utils.formatBytes(chunk.httpBodyLength);
+            else
+                formattedBytes = Utils.formatBytes(chunk.payload.length);
 
             if (mSingleChunk == null)
                 holder.header.setText(String.format(locale,

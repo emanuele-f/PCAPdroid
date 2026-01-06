@@ -93,8 +93,8 @@ public class HttpLog {
         public final int firstChunkPos;
         public String contentType;
         public String responseStatus;
-        public int responseCode;
-        public int bodyLength;
+        public int responseCode = 0;
+        public int bodyLength = 0;
 
         public HttpReply(@NonNull HttpRequest in_reply_to, int firstChunkPos) {
             request = in_reply_to;
