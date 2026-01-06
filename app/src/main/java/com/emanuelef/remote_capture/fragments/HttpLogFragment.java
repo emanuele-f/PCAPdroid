@@ -129,6 +129,19 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (hidden) {
+            clearFilters();
+        } else {
+            if (mRecyclerView != null) {
+                mRecyclerView.scrollToPosition(0);
+            }
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
@@ -629,6 +642,14 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             dumpHttpLog();
         } else {
             mTxtFname = null;
+        }
+    }
+
+    public void clearFilters() {
+        if(mAdapter != null) {
+            mAdapter.mFilter = new HttpLogFilterDescriptor();
+            mAdapter.refreshFilteredItems();
+            refreshActiveFilter();
         }
     }
 }

@@ -147,6 +147,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (hidden) {
+            clearFilters();
+        } else {
+            if (mRecyclerView != null) {
+                mRecyclerView.scrollToPosition(0);
+            }
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
@@ -1083,5 +1096,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
         return Utils.backHandleSearchview(mSearchView);
+    }
+
+    public void clearFilters() {
+        if(mAdapter != null) {
+            mAdapter.mFilter = new FilterDescriptor();
+            mAdapter.refreshFilteredConnections();
+            refreshActiveFilter();
+        }
     }
 }
