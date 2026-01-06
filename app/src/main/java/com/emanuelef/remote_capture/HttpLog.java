@@ -134,9 +134,11 @@ public class HttpLog {
 
         for (HttpRequest req: mPendingHttpRequests)
             addHttpRequest(req);
+        mPendingHttpRequests.clear();
 
         for (HttpReply reply: mPendingHttpReplies)
             addHttpReply(reply);
+        mPendingHttpReplies.clear();
     }
 
     public synchronized void addHttpRequest(HttpRequest req) {
