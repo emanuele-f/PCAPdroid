@@ -78,6 +78,11 @@ class TrackerRepository(context: Context) {
             put("protocol", record.protocol)
             put("domain", record.domain)
 
+            put("http_method", record.httpMethod)
+            put("http_path", record.httpPath)
+            put("http_host", record.httpHost)
+
+
             put("src_ip", record.srcIp)
             put("src_port", record.srcPort)
             put("dst_ip", record.dstIp)
@@ -194,6 +199,9 @@ class TrackerRepository(context: Context) {
             src_port,
             dst_ip,
             dst_port,
+            http_method,
+            http_path,
+            http_host,
             bytes_tx,
             bytes_rx,
             packets_tx,
@@ -224,15 +232,18 @@ class TrackerRepository(context: Context) {
                 srcPort = if (cursor.isNull(7)) null else cursor.getInt(7),
                 dstIp = cursor.getString(8),
                 dstPort = cursor.getInt(9),
-                bytesTx = cursor.getLong(10),
-                bytesRx = cursor.getLong(11),
-                packetsTx = cursor.getInt(12),
-                packetsRx = cursor.getInt(13),
-                startTs = cursor.getLong(14),
-                endTs = cursor.getLong(15),
-                durationMs = cursor.getLong(16),
-                latitude = if (cursor.isNull(17)) null else cursor.getDouble(17),
-                longitude = if (cursor.isNull(18)) null else cursor.getDouble(18)
+                httpMethod = cursor.getString(10),
+                httpPath   = cursor.getString(11),
+                httpHost   = cursor.getString(12),
+                bytesTx = cursor.getLong(13),
+                bytesRx = cursor.getLong(14),
+                packetsTx = cursor.getInt(15),
+                packetsRx = cursor.getInt(16),
+                startTs = cursor.getLong(17),
+                endTs = cursor.getLong(18),
+                durationMs = cursor.getLong(19),
+                latitude = if (cursor.isNull(20)) null else cursor.getDouble(20),
+                longitude = if (cursor.isNull(21)) null else cursor.getDouble(21)
             )
 
             results.add(record) //aggiunge record alla lista finale

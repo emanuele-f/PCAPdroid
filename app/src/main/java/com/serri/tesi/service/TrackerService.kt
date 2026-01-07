@@ -25,6 +25,10 @@ object TrackerService {
     private lateinit var repository: TrackerRepository //repo x salvare e leggere dati da db locale
     private lateinit var userUuid: String //uuid anonim. associato a user corrente
 
+    // cache temporanea aggiunta per url di http request
+    private var lastHttpRequest: HttpRequestRecord? = null
+
+
     /**
      * - inizializza repository x accesso a db locale
      * - genera UUID anonimo per l'utente
@@ -90,7 +94,7 @@ object TrackerService {
         return repository.insertConnection(record)
     }
 
-    //metodo vecchio*
+    //metodo vecchio* --> riutilizzato per aggiungere url
     //Inserisce una nuova richiesta HTTP nel database SQLite.
     @JvmStatic
     fun onHttpRequest(
@@ -98,14 +102,14 @@ object TrackerService {
         host: String?,
         path: String
     ) {
-        val record = HttpRequestRecord(
+        lastHttpRequest = HttpRequestRecord(
             method = method,
             host = host,
             path = path,
             timestamp = System.currentTimeMillis()
         )
-        repository.insertHttpRequest(record)
     }
+
 
     // DEBUG, stampa su Logcat le ultime connessioni salvate su SQLite
     @JvmStatic
@@ -149,6 +153,13 @@ object TrackerService {
     ) {
         val (lat, lon) = LocationService.getLastLocation() //recupera ultima posizione disponibile
 
+        // per url
+        val isHttp = protocol.equals("HTTP", ignoreCase = true)
+
+        val httpMethod = if (isHttp) lastHttpRequest?.method else null
+        val httpPath   = if (isHttp) lastHttpRequest?.path else null
+        val httpHost   = if (isHttp) lastHttpRequest?.host else null
+
         //costruzione record completo connessione
         val record = NetworkRequestRecord(
             userUuid = userUuid,
@@ -160,6 +171,12 @@ object TrackerService {
             srcPort = srcPort,
             dstIp = dstIp,
             dstPort = dstPort,
+
+            // url per http request
+            httpMethod = httpMethod,
+            httpPath = httpPath,
+            httpHost = httpHost,
+
             bytesTx = bytesTx,
             bytesRx = bytesRx,
             packetsTx = packetsTx,
@@ -170,6 +187,11 @@ object TrackerService {
             latitude = lat,
             longitude = lon
         )
+
+        //HTTP → campi valorizzati
+        //HTTPS → sempre null
+        lastHttpRequest = null
+
         //salvataggio record in db tramite repository
         repository.insertNetworkRequest(record)
     }

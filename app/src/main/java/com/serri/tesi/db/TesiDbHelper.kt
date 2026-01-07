@@ -38,6 +38,10 @@ class TesiDbHelper(context: Context) :
                 src_port INTEGER,
                 dst_ip TEXT,
                 dst_port INTEGER,
+                
+                http_method TEXT,
+                http_path TEXT,
+                http_host TEXT,
 
                 bytes_tx INTEGER,
                 bytes_rx INTEGER,
@@ -55,6 +59,7 @@ class TesiDbHelper(context: Context) :
             )
         """.trimIndent())
     }
+    // http only: method, path, host
     // nel db aggiunto synced per gestire sincro. con backend remoto
     // se 0 = non sincronizzato
     // se 1 = sincronizzato
@@ -68,6 +73,6 @@ class TesiDbHelper(context: Context) :
 
     companion object {
         const val DB_NAME = "tesi.db" // nome del db locale
-        const val DB_VERSION = 3 // versione dello schema db
+        const val DB_VERSION = 4 // versione dello schema db
     }
 }

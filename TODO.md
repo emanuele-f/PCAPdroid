@@ -39,15 +39,17 @@
 
 ---
 
-## Fase 2 - Integrazione con codice di tesi
+## Fase 2 - Integrazione con codice di tesi (Android)
 
 - [x] Creato package `serri.tesi`
-- [x] Implementato `TrackerService` per la gestione centralizzata del logging
+- [x] Implementato `TrackerService` come punto centrale di raccolta dati
 - [x] Implementato `TrackerRepository` per persistenza su SQLite
 - [x] Implementato `TesiDbHelper` con schema dedicato
-- [x] Definito nuovo modello dati `NetworkRequestRecord`
+- [x] Definito modello dati finale `NetworkRequestRecord`
     - [x] Ogni record rappresenta una connessione di rete conclusa
-    - [x] Include metadata di rete, app, durata, traffico e GPS
+    - [x] Include metadata di rete, applicazione, traffico, durata e GPS
+    - [x] Include parametri URL per HTTP (method, host, path)
+    - [x] Gestione limiti HTTPS (solo dominio/SNI)
 
 ---
 
@@ -58,22 +60,22 @@
 - [x] Logging effettuato solo a connessione conclusa (`STATUS_CLOSED`)
 - [x] Inserito flag di protezione per evitare duplicati (`loggedFinal`)
 - [x] Recupero informazioni finali da `ConnectionDescriptor`
-- [x] Recupero nome app tramite `AppsResolver`
+- [x] Recupero nome applicazione tramite `AppsResolver`
 - [x] Persistenza su database SQLite
 
 ---
 
-## Fase 4 - Verifica funzionamento
+## Fase 4 - Verifica funzionamento Android
 
 - [x] Verifica inserimento dati tramite Database Inspector
 - [x] Confermata persistenza di connessioni reali
 - [x] Verificata coerenza con traffico mostrato da UI PCAPdroid
 - [x] Confermata intercettazione di DNS, TLS, HTTPS, QUIC
-- [x] Confermata assenza di path HTTP su HTTPS (limite tecnico)
+- [x] Confermata assenza di path HTTP su HTTPS (limite tecnico documentato)
 
 ---
 
-## Fase 5 - Cache locale e preparazione invio backend (Android)
+## Fase 5 - Cache locale e sincronizzazione backend (Android)
 
 - [x] Esteso schema DB con stato di sincronizzazione (`synced`)
 - [x] Incrementata versione del database
@@ -81,7 +83,7 @@
 - [x] Implementate query di batch:
     - [x] Recupero record non sincronizzati (`synced = 0`)
     - [x] Marcatura record sincronizzati (`markAsSynced`)
-- [x] Definiti DTO di invio (`NetworkRequestDto`)
+- [x] Definiti DTO di rete (`NetworkRequestDto`)
 - [x] Definito wrapper batch (`BatchDto`)
 - [x] Implementato mapping DB → DTO
 - [x] Implementato client HTTP Android (OkHttp)
@@ -90,16 +92,53 @@
 
 ---
 
+## Fase 6 - Backend (NestJS + PostgreSQL + Prisma)
+
+- [x] Setup progetto backend NestJS
+- [x] Setup PostgreSQL tramite Docker
+- [x] Integrazione Prisma ORM
+- [x] Definito schema Prisma:
+    - [x] Modello `User` con ruoli (`USER`, `ADMIN`)
+    - [x] Modello `NetworkRequest` con dati anonimizzati
+- [x] Applicata migrazione iniziale del database
+- [x] Implementato `PrismaModule` e `PrismaService`
+
+---
+
+## Fase 7 - Autenticazione e autorizzazione (JWT)
+
+- [x] Implementato modulo `Auth`
+- [x] Implementato login con email/password
+- [x] Password hashate con bcrypt
+- [x] Generazione JWT con ruolo e userId
+- [x] Implementato `JwtAuthGuard`
+- [x] Test autenticazione via terminale (curl / Invoke-WebRequest)
+- [x] Implementato seed utenti (USER / ADMIN)
+- [x] Verificato accesso a endpoint protetti
+
+---
+
 ## TODO successivi
 
-### Backend e privacy
-- [ ] Creazione backend REST (Node.js / Express)
-- [ ] Endpoint `POST /network_requests/batch`
+### Backend – funzionalità GDPR e API core
+- [ ] Endpoint `POST /network-requests/batch`
 - [ ] Test end-to-end invio dati Android → backend
-- [ ] Implementazione anonimizzazione dati (IP, dominio, user UUID)
-- [ ] Applicazione anonimizzazione prima dell’invio remoto
+- [ ] Endpoint `GET /me/data`
+- [ ] Endpoint `GET /me/data/export` (CSV)
+- [ ] Endpoint `DELETE /me/data`
+- [ ] Endpoint CRUD amministratore su dati utenti
+- [ ] Applicazione anonimizzazione lato mobile e/o backend
+- [ ] Download dati utente in formato CSV (GDPR)
 
-### Analisi e valutazione
-- [ ] Analisi dei dati persistiti (pattern di utilizzo)
+### Frontend / UI
+- [ ] UI dedicata per esame LAM
+- [ ] Avviso al primo utilizzo (informativa privacy)
+- [ ] Login utente backend da mobile
+- [ ] Pulsante invio batch manuale
+- [ ] Pulsante download / delete dati
+
+### Estensioni e analisi
+- [ ] Analisi dei dati persistiti
 - [ ] Query di aggregazione (per app, dominio, protocollo)
-- [ ] Studio delle performance del database locale
+- [ ] Studio performance database
+- [ ] Integrazione PostGIS per geo-query (opzionale)
