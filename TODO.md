@@ -121,11 +121,11 @@
 ## TODO successivi
 
 ### Backend – funzionalità GDPR e API core
-- [ ] Endpoint `POST /network-requests/batch`
-- [ ] Test end-to-end invio dati Android → backend
-- [ ] Endpoint `GET /me/data`
-- [ ] Endpoint `GET /me/data/export` (CSV)
-- [ ] Endpoint `DELETE /me/data`
+- [x] Endpoint `POST /network-requests/batch`
+- [x] Test end-to-end invio dati Android → backend
+- [x] Endpoint `GET /me/data`
+- [x] Endpoint `GET /me/data/export` (CSV)
+- [x] Endpoint `DELETE /me/data`
 - [ ] Endpoint CRUD amministratore su dati utenti
 - [ ] Applicazione anonimizzazione lato mobile e/o backend
 - [ ] Download dati utente in formato CSV (GDPR)
