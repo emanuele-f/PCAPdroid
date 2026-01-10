@@ -23,8 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +31,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
-import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -45,19 +41,19 @@ import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
+import com.emanuelef.remote_capture.activities.MenuActionHandler;
 import com.emanuelef.remote_capture.activities.PayloadExportActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class HttpPayloadFragment extends Fragment implements MenuProvider {
+public class HttpPayloadFragment extends Fragment implements MenuActionHandler {
     private static final String TAG = "ConnectionPayload";
-    private PayloadExportActivity mActivity;
+    private HttpDetailsActivity mActivity;
     private HttpLog.HttpRequest mHttpReq;
     private PayloadAdapter mAdapter;
     private EmptyRecyclerView mRecyclerView;
-    private Menu mMenu;
-    private boolean mJustCreated;
     private boolean mShowAsPrintable;
 
     public static HttpPayloadFragment newInstance(int req_pos, boolean show_reply) {
@@ -73,7 +69,7 @@ public class HttpPayloadFragment extends Fragment implements MenuProvider {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        mActivity = (PayloadExportActivity) context;
+        mActivity = (HttpDetailsActivity) context;
 
         if (mAdapter != null)
             mAdapter.setExportPayloadHandler(mActivity);
@@ -91,7 +87,6 @@ public class HttpPayloadFragment extends Fragment implements MenuProvider {
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.connection_payload, container, false);
     }
 
@@ -130,8 +125,8 @@ public class HttpPayloadFragment extends Fragment implements MenuProvider {
         boolean show_reply = args.getBoolean("show_reply");
         mShowAsPrintable = true;
         mAdapter = new PayloadAdapter(requireContext(), mHttpReq, show_reply);
+        mAdapter.setDisplayAsPrintableText(true);
         mAdapter.setExportPayloadHandler(mActivity);
-        mJustCreated = true;
 
         // only set adapter after acknowledged (see setMenuVisibility below)
         if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
@@ -156,14 +151,15 @@ public class HttpPayloadFragment extends Fragment implements MenuProvider {
                     .setOnCancelListener((d) -> requireActivity().finish())
                     .setNegativeButton(R.string.cancel_action, (d, b) -> requireActivity().finish())
                     .setPositiveButton(R.string.show_data_action, (d, whichButton) -> {
-                        // show the data
                         mRecyclerView.setAdapter(mAdapter);
-
                         prefs.edit().putBoolean(Prefs.PREF_PAYLOAD_NOTICE_ACK, true).apply();
                     }).show();
 
             dialog.setCanceledOnTouchOutside(false);
         }
+
+        if(menuVisible && mActivity != null)
+            mActivity.updateMenuVisibility();
     }
 
     private boolean payloadNoticeAcknowledged(SharedPreferences prefs) {
@@ -171,50 +167,25 @@ public class HttpPayloadFragment extends Fragment implements MenuProvider {
     }
 
     @Override
-    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.connection_payload, menu);
-        mMenu = menu;
-        if(mJustCreated) {
-            mShowAsPrintable = true;
-            mAdapter.setDisplayAsPrintableText(true);
-            mJustCreated = false;
-        }
-        refreshDisplayMode();
-    }
-
-    @Override
-    public boolean onMenuItemSelected(@NonNull MenuItem item) {
+    public boolean handleMenuAction(MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.printable_text) {
             mShowAsPrintable = true;
             mAdapter.setDisplayAsPrintableText(true);
-            refreshDisplayMode();
+            mActivity.updateMenuVisibility();
             return true;
         } else if(id == R.id.hexdump) {
             mShowAsPrintable = false;
             mAdapter.setDisplayAsPrintableText(false);
-            refreshDisplayMode();
+            mActivity.updateMenuVisibility();
             return true;
         }
 
         return false;
     }
 
-    private void refreshDisplayMode() {
-        if(mMenu == null)
-            return;
-
-        MenuItem printableText = mMenu.findItem(R.id.printable_text);
-        MenuItem hexdump = mMenu.findItem(R.id.hexdump);
-
-        // important: the checked item must first be unchecked
-        if(mShowAsPrintable) {
-            hexdump.setChecked(false);
-            printableText.setChecked(true);
-        } else {
-            printableText.setChecked(false);
-            hexdump.setChecked(true);
-        }
+    public boolean isShowingAsPrintable() {
+        return mShowAsPrintable;
     }
 }

@@ -51,6 +51,9 @@ public class HttpDetailsActivity extends PayloadExportActivity {
     private int mReqPos;
     private ArrayList<Integer> mFilteredPositions;
     private int mFilteredIndex;
+    private MenuItem mMenuPrev;
+    private MenuItem mMenuNext;
+    private MenuItem mMenuDisplayAs;
 
     private static final int POS_REQUEST = 0;
     private static final int POS_REPLY = 1;
@@ -108,19 +111,32 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         new TabLayoutMediator(tabLayout, mPager, (tab, position) ->
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
+
+        mPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateMenuVisibility();
+            }
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.http_details_menu, menu);
+
+        mMenuPrev = menu.findItem(R.id.navigate_before);
+        mMenuNext = menu.findItem(R.id.navigate_next);
+        mMenuDisplayAs = menu.findItem(R.id.display_as);
+
+        updateNavigationButtons();
+        updateMenuVisibility();
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem prevItem = menu.findItem(R.id.navigate_before);
-        MenuItem nextItem = menu.findItem(R.id.navigate_next);
+    private void updateNavigationButtons() {
+        if(mMenuPrev == null || mMenuNext == null)
+            return;
 
         boolean hasPrev, hasNext;
 
@@ -136,19 +152,44 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             hasNext = mReqPos < httpLogSize - 1;
         }
 
-        if(prevItem != null) {
-            prevItem.setEnabled(hasPrev);
-            if(prevItem.getIcon() != null)
-                prevItem.getIcon().setAlpha(hasPrev ? 255 : 80);
-        }
+        mMenuPrev.setEnabled(hasPrev);
+        if(mMenuPrev.getIcon() != null)
+            mMenuPrev.getIcon().setAlpha(hasPrev ? 255 : 80);
 
-        if(nextItem != null) {
-            nextItem.setEnabled(hasNext);
-            if(nextItem.getIcon() != null)
-                nextItem.getIcon().setAlpha(hasNext ? 255 : 80);
-        }
+        mMenuNext.setEnabled(hasNext);
+        if(mMenuNext.getIcon() != null)
+            mMenuNext.getIcon().setAlpha(hasNext ? 255 : 80);
+    }
 
-        return super.onPrepareOptionsMenu(menu);
+    public void updateMenuVisibility() {
+        if(mMenuDisplayAs == null)
+            return;
+
+        // Display As menu is always visible for both tabs
+        mMenuDisplayAs.setVisible(true);
+
+        Fragment currentFragment = getCurrentFragment();
+        if(currentFragment instanceof HttpPayloadFragment) {
+            HttpPayloadFragment payloadFragment = (HttpPayloadFragment) currentFragment;
+            boolean showAsPrintable = payloadFragment.isShowingAsPrintable();
+
+            MenuItem printableText = mMenuDisplayAs.getSubMenu().findItem(R.id.printable_text);
+            MenuItem hexdump = mMenuDisplayAs.getSubMenu().findItem(R.id.hexdump);
+
+            if(showAsPrintable) {
+                hexdump.setChecked(false);
+                printableText.setChecked(true);
+            } else {
+                printableText.setChecked(false);
+                hexdump.setChecked(true);
+            }
+        }
+    }
+
+    private Fragment getCurrentFragment() {
+        int currentTab = mPager.getCurrentItem();
+        String tag = "f" + mPagerAdapter.getItemId(currentTab);
+        return getSupportFragmentManager().findFragmentByTag(tag);
     }
 
     @Override
@@ -161,6 +202,12 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         } else if(itemId == R.id.navigate_next) {
             navigateToNext();
             return true;
+        }
+
+        Fragment currentFragment = getCurrentFragment();
+        if(currentFragment instanceof MenuActionHandler) {
+            if(((MenuActionHandler) currentFragment).handleMenuAction(item))
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -226,7 +273,8 @@ public class HttpDetailsActivity extends PayloadExportActivity {
                     mPager.setCurrentItem(0, false);
                 }
 
-                invalidateOptionsMenu();
+                updateNavigationButtons();
+                updateMenuVisibility();
             } else {
                 Log.w(TAG, "HTTP request with position " + mReqPos + " not found");
             }

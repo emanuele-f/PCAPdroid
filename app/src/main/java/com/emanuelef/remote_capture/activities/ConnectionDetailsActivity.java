@@ -339,14 +339,12 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
         mMenuShare = menu.findItem(R.id.share);
         mMenuDisplayAs = menu.findItem(R.id.display_as);
 
-        Log.d(TAG, "onCreateOptionsMenu");
         updateNavigationButtons();
         updateMenuVisibility();
         return true;
     }
 
     private void updateNavigationButtons() {
-        Log.d(TAG, "updateNavigationButtons");
         if(mMenuPrev == null || mMenuNext == null)
             return;
 
