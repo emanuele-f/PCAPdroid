@@ -84,6 +84,7 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -270,6 +271,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
                 intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, item.incr_id);
+
+                if(mAdapter.hasFilter()) {
+                    ArrayList<Integer> filteredIds = mAdapter.getFilteredConnectionIds();
+                    if(filteredIds != null)
+                        intent.putIntegerArrayListExtra(ConnectionDetailsActivity.FILTERED_IDS_KEY, filteredIds);
+                }
+
                 startActivity(intent);
             }
         });

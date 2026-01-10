@@ -577,6 +577,7 @@
     <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
     <string name="no_requests">No requests</string>
     <string name="item_not_found">Could not find the specified item</string>
+    <string name="connection_number">Connection #%1$d</string>
     <string name="http_request_number">HTTP request #%1$d</string>
     <string name="http_requests">HTTP requests</string>
     <string name="switch_to_http">Show HTTP requests</string>

@@ -30,6 +30,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -50,18 +53,21 @@ import java.util.ArrayList;
 public class ConnectionDetailsActivity extends PayloadExportActivity implements ConnectionsListener {
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_ID_KEY = "conn_id";
+    public static final String FILTERED_IDS_KEY = "filtered_ids";
     private static final int MAX_CHUNKS_TO_CHECK = 10;
     private ConnectionDescriptor mConn;
     private ViewPager2 mPager;
     private StateAdapter mPagerAdapter;
     private Handler mHandler;
-    private int mConnPos;
     private int mCurChunks;
     private boolean mListenerSet;
     private boolean mHasPayload;
     private boolean mHasHttpTab;
     private boolean mHasWsTab;
     private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
+    private int mConnId;
+    private ArrayList<Integer> mFilteredIds;
+    private int mFilteredIndex;
 
     private static final int POS_OVERVIEW = 0;
     private static final int POS_WEBSOCKET = 1;
@@ -76,25 +82,40 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle(R.string.connection_details);
         displayBackAction();
         setContentView(R.layout.tabs_activity_fixed);
 
-        int incr_id = getIntent().getIntExtra(CONN_ID_KEY, -1);
-        if(incr_id != -1) {
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
-            if(reg != null)
-                mConn = reg.getConnById(incr_id);
+        mConnId = getIntent().getIntExtra(CONN_ID_KEY, -1);
+
+        mFilteredIds = getIntent().getIntegerArrayListExtra(FILTERED_IDS_KEY);
+        mFilteredIndex = -1;
+
+        if (mFilteredIds != null) {
+            for (int i = 0; i < mFilteredIds.size(); i++) {
+                if (mFilteredIds.get(i) == mConnId) {
+                    mFilteredIndex = i;
+                    break;
+                }
+            }
+            Log.d(TAG, "Using filtered navigation: " + mFilteredIds.size() + " items, index=" + mFilteredIndex);
         }
 
+        if(mConnId != -1) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+            if(reg != null) {
+                mConn = reg.getConnById(mConnId);
+                setTitle(String.format(getString(R.string.connection_number), mConnId + 1));
+            }
+        } else
+            setTitle(R.string.connection_details);
+
         if(mConn == null) {
-            Log.w(TAG, "Connection with ID " + incr_id + " not found");
+            Log.w(TAG, "Connection with ID " + mConnId + " not found");
             finish();
             return;
         }
 
         mHandler = new Handler(Looper.getMainLooper());
-        mConnPos = -1;
 
         mPager = findViewById(R.id.pager);
         Utils.fixViewPager2Insets(mPager);
@@ -104,7 +125,6 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     @Override
     public void onResume() {
         super.onResume();
-        mConnPos = -1;
 
         // Closed connections won't be updated
         if(mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
@@ -195,9 +215,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
         if((reg != null) && !mListenerSet) {
-            mConnPos = reg.getConnPositionById(mConn.incr_id);
-
-            if((mConnPos != -1) && (mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)) {
+            if(mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED) {
                 Log.d(TAG, "Adding connections listener");
                 reg.addListener(this);
                 mListenerSet = true;
@@ -218,8 +236,6 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
 
             mListenerSet = false;
         }
-
-        mConnPos = -1;
     }
 
     @Override
@@ -235,19 +251,14 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     public void connectionsUpdated(int[] positions) {
         ConnectionsRegister reg = CaptureService.getConnsRegister();
 
-        if((reg == null) || (mConnPos < 0))
+        if(reg == null)
             return;
 
         for(int pos : positions) {
-            if(pos == mConnPos) {
-                ConnectionDescriptor conn = reg.getConn(pos);
+            ConnectionDescriptor conn = reg.getConn(pos);
 
-                // Double check the incr_id
-                if((conn != null) && (conn.incr_id == mConn.incr_id))
-                    mHandler.post(this::dispatchConnUpdate);
-                else
-                    unregisterConnsListener();
-
+            if((conn != null) && (conn.incr_id == mConn.incr_id)) {
+                mHandler.post(this::dispatchConnUpdate);
                 break;
             }
         }
@@ -303,6 +314,140 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
 
         if(mConn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
             unregisterConnsListener();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.connection_details_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem prevItem = menu.findItem(R.id.navigate_before);
+        MenuItem nextItem = menu.findItem(R.id.navigate_next);
+
+        ArrayList<Integer> ids = (mFilteredIds != null) ? mFilteredIds : getAllConnectionIds();
+        boolean hasPrev = false;
+        boolean hasNext = false;
+
+        if(ids != null) {
+            int currentIndex = ids.indexOf(mConnId);
+            if(currentIndex >= 0) {
+                hasPrev = currentIndex > 0;
+                hasNext = currentIndex < ids.size() - 1;
+            }
+        }
+
+        if(prevItem != null) {
+            prevItem.setEnabled(hasPrev);
+            if(prevItem.getIcon() != null)
+                prevItem.getIcon().setAlpha(hasPrev ? 255 : 80);
+        }
+
+        if(nextItem != null) {
+            nextItem.setEnabled(hasNext);
+            if(nextItem.getIcon() != null)
+                nextItem.getIcon().setAlpha(hasNext ? 255 : 80);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if(itemId == R.id.navigate_before) {
+            navigateToPrevious();
+            return true;
+        } else if(itemId == R.id.navigate_next) {
+            navigateToNext();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void navigateToPrevious() {
+        ArrayList<Integer> ids = (mFilteredIds != null) ? mFilteredIds : getAllConnectionIds();
+        if(ids == null)
+            return;
+
+        int currentIndex = ids.indexOf(mConnId);
+        if(currentIndex > 0) {
+            mConnId = ids.get(currentIndex - 1);
+            if(mFilteredIds != null)
+                mFilteredIndex = currentIndex - 1;
+            loadConnection();
+        }
+    }
+
+    private void navigateToNext() {
+        ArrayList<Integer> ids = (mFilteredIds != null) ? mFilteredIds : getAllConnectionIds();
+        if(ids == null)
+            return;
+
+        int currentIndex = ids.indexOf(mConnId);
+        if(currentIndex >= 0 && currentIndex < ids.size() - 1) {
+            mConnId = ids.get(currentIndex + 1);
+            if(mFilteredIds != null)
+                mFilteredIndex = currentIndex + 1;
+            loadConnection();
+        }
+    }
+
+    private ArrayList<Integer> getAllConnectionIds() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg == null)
+            return null;
+
+        ArrayList<Integer> ids = new ArrayList<>();
+        synchronized (reg) {
+            for(int i = 0; i < reg.getConnCount(); i++) {
+                ConnectionDescriptor conn = reg.getConn(i);
+                if(conn != null)
+                    ids.add(conn.incr_id);
+            }
+        }
+        return ids;
+    }
+
+    private void loadConnection() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        if(reg != null) {
+            mConn = reg.getConnById(mConnId);
+
+            if(mConn != null) {
+                setTitle(String.format(getString(R.string.connection_number), mConnId + 1));
+
+                unregisterConnsListener();
+
+                int currentTab = mPager.getCurrentItem();
+
+                mHasPayload = false;
+                mHasHttpTab = false;
+                mHasWsTab = false;
+                mCurChunks = 0;
+
+                setupTabs();
+
+                int newItemCount = mPagerAdapter.getItemCount();
+                if (currentTab < newItemCount) {
+                    mPager.setCurrentItem(currentTab, false);
+                } else {
+                    mPager.setCurrentItem(0, false);
+                }
+
+                if(mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
+                    registerConnsListener();
+
+                invalidateOptionsMenu();
+            } else {
+                Log.w(TAG, "Connection with ID " + mConnId + " not found");
+            }
+        }
     }
 
     @Override

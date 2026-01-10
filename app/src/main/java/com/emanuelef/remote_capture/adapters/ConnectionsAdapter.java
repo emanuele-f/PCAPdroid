@@ -498,4 +498,15 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
 
         return builder.toString();
     }
+
+    public ArrayList<Integer> getFilteredConnectionIds() {
+        if (mFilteredConn == null)
+            return null;
+
+        ArrayList<Integer> ids = new ArrayList<>(mFilteredConn.size());
+        for (ConnectionDescriptor conn : mFilteredConn) {
+            ids.add(conn.incr_id);
+        }
+        return ids;
+    }
 }
