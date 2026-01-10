@@ -392,7 +392,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             builder.create().show();
         } else {
             List<String> choices = new ArrayList<>(Arrays.asList(
-                    mContext.getString(R.string.printable_text),
+                    mContext.getString(R.string.text),
                     mContext.getString(R.string.hexdump)
             ));
             if (is_export)

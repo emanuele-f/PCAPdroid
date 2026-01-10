@@ -23,8 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -44,14 +42,13 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
-import com.emanuelef.remote_capture.activities.MenuActionHandler;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener, MenuActionHandler {
+public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
     private static final String TAG = "ConnectionPayload";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
@@ -145,10 +142,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         });
 
         mCurChunks = mConn.getNumPayloadChunks();
-        if(mCurChunks > 0)
-            mShowAsPrintable = guessDisplayAsPrintable();
-        else
-            mShowAsPrintable = false;
+        mShowAsPrintable = true;
         mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
         mAdapter.setExportPayloadHandler(mActivity);
         mJustCreated = true;
@@ -199,30 +193,12 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         return prefs.getBoolean(Prefs.PREF_PAYLOAD_NOTICE_ACK, false);
     }
 
-    @Override
-    public boolean handleMenuAction(MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.printable_text) {
-            mShowAsPrintable = true;
-            mAdapter.setDisplayAsPrintableText(true);
-            mActivity.updateMenuVisibility();
-            return true;
-        } else if(id == R.id.hexdump) {
-            mShowAsPrintable = false;
-            mAdapter.setDisplayAsPrintableText(false);
-            mActivity.updateMenuVisibility();
-            return true;
-        }
-
-        return false;
+    public void setDisplayMode(boolean showAsPrintable) {
+        mShowAsPrintable = showAsPrintable;
+        mAdapter.setDisplayAsPrintableText(showAsPrintable);
     }
 
-    public boolean isShowingAsPrintable() {
-        return mShowAsPrintable;
-    }
-
-    private boolean guessDisplayAsPrintable() {
+    public boolean guessDisplayAsPrintable() {
         // try to determine the best mode based on the current payload
         if(mConn.getNumPayloadChunks() == 0)
             return mConn.l7proto.equals("HTTPS");
@@ -243,11 +219,8 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
 
     @Override
     public void connectionUpdated() {
-        if(mCurChunks == 0) {
-            mShowAsPrintable = guessDisplayAsPrintable();
-            mAdapter.setDisplayAsPrintableText(mShowAsPrintable);
-            if(mActivity != null)
-                mActivity.updateMenuVisibility();
+        if(mCurChunks == 0 && mActivity != null) {
+            mActivity.updateMenuVisibility();
         }
 
         if(mConn.getNumPayloadChunks() > mCurChunks) {

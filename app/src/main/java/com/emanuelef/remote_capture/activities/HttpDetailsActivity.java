@@ -54,6 +54,7 @@ public class HttpDetailsActivity extends PayloadExportActivity {
     private MenuItem mMenuPrev;
     private MenuItem mMenuNext;
     private MenuItem mMenuDisplayAs;
+    private Boolean mDisplayMode;
 
     private static final int POS_REQUEST = 0;
     private static final int POS_REPLY = 1;
@@ -165,23 +166,22 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         if(mMenuDisplayAs == null)
             return;
 
-        // Display As menu is always visible for both tabs
         mMenuDisplayAs.setVisible(true);
 
         Fragment currentFragment = getCurrentFragment();
         if(currentFragment instanceof HttpPayloadFragment) {
             HttpPayloadFragment payloadFragment = (HttpPayloadFragment) currentFragment;
-            boolean showAsPrintable = payloadFragment.isShowingAsPrintable();
 
-            MenuItem printableText = mMenuDisplayAs.getSubMenu().findItem(R.id.printable_text);
-            MenuItem hexdump = mMenuDisplayAs.getSubMenu().findItem(R.id.hexdump);
+            if(mDisplayMode == null) {
+                mDisplayMode = true;
+            }
 
-            if(showAsPrintable) {
-                hexdump.setChecked(false);
-                printableText.setChecked(true);
+            payloadFragment.setDisplayMode(mDisplayMode);
+
+            if(mDisplayMode) {
+                mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
             } else {
-                printableText.setChecked(false);
-                hexdump.setChecked(true);
+                mMenuDisplayAs.setTitle(R.string.display_as_text);
             }
         }
     }
@@ -202,12 +202,12 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         } else if(itemId == R.id.navigate_next) {
             navigateToNext();
             return true;
-        }
-
-        Fragment currentFragment = getCurrentFragment();
-        if(currentFragment instanceof MenuActionHandler) {
-            if(((MenuActionHandler) currentFragment).handleMenuAction(item))
-                return true;
+        } else if(itemId == R.id.display_as) {
+            if(mDisplayMode != null) {
+                mDisplayMode = !mDisplayMode;
+                updateMenuVisibility();
+            }
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -215,14 +215,12 @@ public class HttpDetailsActivity extends PayloadExportActivity {
 
     private void navigateToPrevious() {
         if (mFilteredPositions != null) {
-            // Navigate in filtered list
             if (mFilteredIndex > 0) {
                 mFilteredIndex--;
                 mReqPos = mFilteredPositions.get(mFilteredIndex);
                 loadHttpRequest();
             }
         } else {
-            // Navigate in unfiltered list
             if (mReqPos > 0) {
                 mReqPos--;
                 loadHttpRequest();
@@ -232,14 +230,12 @@ public class HttpDetailsActivity extends PayloadExportActivity {
 
     private void navigateToNext() {
         if (mFilteredPositions != null) {
-            // Navigate in filtered list
             if (mFilteredIndex < mFilteredPositions.size() - 1) {
                 mFilteredIndex++;
                 mReqPos = mFilteredPositions.get(mFilteredIndex);
                 loadHttpRequest();
             }
         } else {
-            // Navigate in unfiltered list
             HttpLog httpLog = CaptureService.getHttpLog();
             int httpLogSize = (httpLog != null) ? httpLog.getSize() : 0;
 
@@ -258,7 +254,6 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             if(mHttpReq != null) {
                 setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
 
-                // Save current tab position before recreating adapter
                 int currentTab = mPager.getCurrentItem();
 
                 setupTabs();

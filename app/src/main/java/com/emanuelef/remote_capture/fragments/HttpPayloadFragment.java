@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -42,13 +41,11 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
-import com.emanuelef.remote_capture.activities.MenuActionHandler;
-import com.emanuelef.remote_capture.activities.PayloadExportActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class HttpPayloadFragment extends Fragment implements MenuActionHandler {
+public class HttpPayloadFragment extends Fragment {
     private static final String TAG = "ConnectionPayload";
     private HttpDetailsActivity mActivity;
     private HttpLog.HttpRequest mHttpReq;
@@ -166,26 +163,8 @@ public class HttpPayloadFragment extends Fragment implements MenuActionHandler {
         return prefs.getBoolean(Prefs.PREF_PAYLOAD_NOTICE_ACK, false);
     }
 
-    @Override
-    public boolean handleMenuAction(MenuItem item) {
-        int id = item.getItemId();
-
-        if(id == R.id.printable_text) {
-            mShowAsPrintable = true;
-            mAdapter.setDisplayAsPrintableText(true);
-            mActivity.updateMenuVisibility();
-            return true;
-        } else if(id == R.id.hexdump) {
-            mShowAsPrintable = false;
-            mAdapter.setDisplayAsPrintableText(false);
-            mActivity.updateMenuVisibility();
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isShowingAsPrintable() {
-        return mShowAsPrintable;
+    public void setDisplayMode(boolean showAsPrintable) {
+        mShowAsPrintable = showAsPrintable;
+        mAdapter.setDisplayAsPrintableText(showAsPrintable);
     }
 }

@@ -73,6 +73,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     private MenuItem mMenuCopy;
     private MenuItem mMenuShare;
     private MenuItem mMenuDisplayAs;
+    private Boolean mDisplayMode;
 
     private static final int POS_OVERVIEW = 0;
     private static final int POS_WEBSOCKET = 1;
@@ -388,17 +389,17 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             Fragment currentFragment = getCurrentFragment();
             if(currentFragment instanceof ConnectionPayload) {
                 ConnectionPayload payloadFragment = (ConnectionPayload) currentFragment;
-                boolean showAsPrintable = payloadFragment.isShowingAsPrintable();
 
-                MenuItem printableText = mMenuDisplayAs.getSubMenu().findItem(R.id.printable_text);
-                MenuItem hexdump = mMenuDisplayAs.getSubMenu().findItem(R.id.hexdump);
+                if(mDisplayMode == null) {
+                    mDisplayMode = payloadFragment.guessDisplayAsPrintable();
+                }
 
-                if(showAsPrintable) {
-                    hexdump.setChecked(false);
-                    printableText.setChecked(true);
+                payloadFragment.setDisplayMode(mDisplayMode);
+
+                if(mDisplayMode) {
+                    mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
                 } else {
-                    printableText.setChecked(false);
-                    hexdump.setChecked(true);
+                    mMenuDisplayAs.setTitle(R.string.display_as_text);
                 }
             }
         }
@@ -414,12 +415,12 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
         } else if(itemId == R.id.navigate_next) {
             navigateToNext();
             return true;
-        }
-
-        Fragment currentFragment = getCurrentFragment();
-        if(currentFragment instanceof MenuActionHandler) {
-            if(((MenuActionHandler) currentFragment).handleMenuAction(item))
-                return true;
+        } else if(itemId == R.id.display_as) {
+            if(mDisplayMode != null) {
+                mDisplayMode = !mDisplayMode;
+                updateMenuVisibility();
+            }
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

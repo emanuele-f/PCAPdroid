@@ -37,20 +37,9 @@
     <!-- Menu items for ConnectionPayload fragment -->
     <item
         android:id="@+id/display_as"
-        android:title="@string/display_as"
+        android:title="@string/display_as_text"
         android:orderInCategory="50"
         android:icon="@drawable/ic_short_text"
         app:showAsAction="never"
-        android:visible="false">
-        <menu>
-            <group android:id="@+id/display_as_grp" android:checkableBehavior="single">
-                <item
-                    android:id="@+id/printable_text"
-                    android:title="@string/printable_text" />
-                <item
-                    android:id="@+id/hexdump"
-                    android:title="@string/hexdump" />
-            </group>
-        </menu>
-    </item>
+        android:visible="false" />
 </menu>
