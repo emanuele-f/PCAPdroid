@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 package com.emanuelef.remote_capture.activities;
 
@@ -52,6 +52,8 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
     private ChipGroup mContentTypeGroup;
     private ChipGroup mHttpStatusGroup;
     private Slider mPayloadSizeSlider;
+    private Chip mDecryptionErrorChip;
+    private Chip mDecryptionNoErrorChip;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,8 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
         mContentTypeGroup = findViewById(R.id.content_type_group);
         mHttpStatusGroup = findViewById(R.id.http_status_group);
         mPayloadSizeSlider = findViewById(R.id.payload_size_slider);
+        mDecryptionErrorChip = findViewById(R.id.decryption_error_chip);
+        mDecryptionNoErrorChip = findViewById(R.id.decryption_no_error_chip);
 
         // Populate filters from captured data
         HttpLog httpLog = CaptureService.getHttpLog();
@@ -87,6 +91,7 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
             Set<String> contentTypes = new HashSet<>();
             Set<Integer> httpStatuses = new HashSet<>();
             long maxPayloadSize = 0;
+            boolean hasDecryptionErrors = false;
 
             synchronized (httpLog) {
                 for (int i = 0; i < httpLog.size(); i++) {
@@ -105,6 +110,9 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
                             if (totalSize > maxPayloadSize)
                                 maxPayloadSize = totalSize;
                         }
+
+                        if (!req.decryptionError.isEmpty())
+                            hasDecryptionErrors = true;
                     }
                 }
             }
@@ -172,6 +180,15 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
         if (minSizeKB > 0)
             mPayloadSizeSlider.setValue(minSizeKB);
 
+        // Set decryption error filter
+        if (mFilter.decryptionError != null) {
+            if (mFilter.decryptionError) {
+                mDecryptionErrorChip.setChecked(true);
+            } else {
+                mDecryptionNoErrorChip.setChecked(true);
+            }
+        }
+
         // Set method
         if(mFilter.method != null) {
             int num_chips = mMethodGroup.getChildCount();
@@ -211,6 +228,15 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
 
     private void view2model() {
         mFilter.minPayloadSize = ((long) mPayloadSizeSlider.getValue()) * 1024;
+
+        // Get decryption error filter
+        if (mDecryptionErrorChip.isChecked()) {
+            mFilter.decryptionError = true;
+        } else if (mDecryptionNoErrorChip.isChecked()) {
+            mFilter.decryptionError = false;
+        } else {
+            mFilter.decryptionError = null;
+        }
 
         // Get method
         int num_chips = mMethodGroup.getChildCount();

@@ -322,6 +322,10 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
+
+            HttpLog httpLog = CaptureService.getHttpLog();
+            if (httpLog != null)
+                httpLog.addDecryptionError(conn, tstamp, conn.decryption_error);
         } else if(type == MsgType.DATA_TRUNCATED) {
             conn.setPayloadTruncatedByAddon();
         } else if(type == MsgType.JS_INJECTED) {

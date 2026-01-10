@@ -35,6 +35,7 @@ public class HttpLogFilterDescriptor implements Serializable {
     public String contentType = null;
     public Integer httpStatus = null;
     public long minPayloadSize = 0;
+    public Boolean decryptionError = null;
 
     public HttpLogFilterDescriptor() {
         clear();
@@ -45,7 +46,8 @@ public class HttpLogFilterDescriptor implements Serializable {
         return (method != null)
                 || (contentType != null)
                 || (httpStatus != null)
-                || (minPayloadSize > 0);
+                || (minPayloadSize > 0)
+                || (decryptionError != null);
     }
 
     public boolean matches(HttpLog.HttpRequest req) {
@@ -71,6 +73,15 @@ public class HttpLogFilterDescriptor implements Serializable {
         if (minPayloadSize > 0) {
             int totalSize = (req.reply != null) ? (req.bodyLength + req.reply.bodyLength) : req.bodyLength;
             if (totalSize < minPayloadSize)
+                return false;
+        }
+
+        // Decryption error filter
+        if (decryptionError != null) {
+            boolean hasError = !req.decryptionError.isEmpty();
+            if (decryptionError && !hasError)
+                return false;
+            if (!decryptionError && hasError)
                 return false;
         }
 
@@ -102,6 +113,12 @@ public class HttpLogFilterDescriptor implements Serializable {
             addChip(inflater, group, R.id.http_status_filter, label);
         }
 
+        if (decryptionError != null) {
+            String err = ctx.getString(decryptionError ? R.string.error : R.string.no_error);
+            String label = String.format(ctx.getString(R.string.decryption_filter), err);
+            addChip(inflater, group, R.id.decryption_status, label);
+        }
+
         group.setVisibility(group.getChildCount() > 0 ? View.VISIBLE : View.GONE);
     }
 
@@ -113,6 +130,8 @@ public class HttpLogFilterDescriptor implements Serializable {
             contentType = null;
         else if (filter_id == R.id.http_status_filter)
             httpStatus = null;
+        else if (filter_id == R.id.decryption_status)
+            decryptionError = null;
     }
 
     public void clear() {
@@ -120,5 +139,6 @@ public class HttpLogFilterDescriptor implements Serializable {
         contentType = null;
         httpStatus = null;
         minPayloadSize = 0;
+        decryptionError = null;
     }
 }

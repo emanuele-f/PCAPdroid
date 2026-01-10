@@ -26,6 +26,7 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 public class HttpLog {
     private static final String TAG = "HttpLog";
@@ -42,6 +43,7 @@ public class HttpLog {
         public String host = "";
         public String path = "";
         public String query = "";
+        public String decryptionError = "";
         public HttpReply reply;
         public int bodyLength = 0;
         public int streamId = 0;
@@ -59,10 +61,13 @@ public class HttpLog {
         }
 
         public String getProtoAndHost() {
+            // host is empty for addDecryptionError() requests
+            String hostOrDomain = !host.isEmpty() ? host :
+                    Objects.requireNonNullElse(conn.info, "");;
             String l7proto = conn.l7proto.toLowerCase();
             String proto = l7proto.startsWith("http") ? (l7proto + "://") : "";
 
-            return proto + host;
+            return proto + hostOrDomain;
         }
 
         public boolean matches(String filter) {
@@ -167,6 +172,13 @@ public class HttpLog {
         if (mListener != null)
             // info from the HTTP reply is now available
             mListener.onHttpRequestUpdated(reply.request.idx);
+    }
+
+    public synchronized void addDecryptionError(ConnectionDescriptor conn, long tstamp, String error) {
+        HttpRequest req = new HttpRequest(conn, 0);
+        req.timestamp = tstamp;
+        req.decryptionError = error;
+        addHttpRequest(req);
     }
 
     public synchronized void clear() {

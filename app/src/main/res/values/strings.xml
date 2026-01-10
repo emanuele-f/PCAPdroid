@@ -581,4 +581,6 @@
     <string name="http_requests">HTTP requests</string>
     <string name="switch_to_http">Show HTTP requests</string>
     <string name="switch_to_connections">Show connections</string>
+    <string name="decryption_error">Decryption error</string>
+    <string name="no_error">No error</string>
 </resources>

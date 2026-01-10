@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
@@ -98,11 +98,13 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
             protoAndHost.setText(req.getProtoAndHost());
             contentType.setText((req.reply != null) ? req.reply.contentType : "");
             reqTime.setText(Utils.formatEpochShort(ctx, req.timestamp / 1000));
-            httpStatus.setText(getResponseCodeText(ctx, req));
+            httpStatus.setText(req.decryptionError.isEmpty() ? getResponseCodeText(ctx, req) :
+                    ctx.getString(R.string.decryption_error));
 
             int tot_length = (req.reply != null) ? (req.bodyLength + req.reply.bodyLength) : req.bodyLength;
             payloadSize.setText(Utils.formatBytes(tot_length));
-            httpStatus.setTextColor(ContextCompat.getColor(ctx, getResponseCodeColor(req)));
+            httpStatus.setTextColor(ContextCompat.getColor(ctx, req.decryptionError.isEmpty() ?
+                    getResponseCodeColor(req) : R.color.statusError));
         }
     }
 

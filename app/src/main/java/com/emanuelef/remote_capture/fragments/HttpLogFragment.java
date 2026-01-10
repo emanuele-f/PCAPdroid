@@ -56,6 +56,7 @@ import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
 import com.emanuelef.remote_capture.activities.HttpLogFilterActivity;
 import com.emanuelef.remote_capture.adapters.HttpLogAdapter;
@@ -252,9 +253,15 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             HttpLog.HttpRequest item = mAdapter.getItem(pos);
 
             if(item != null) {
-                Intent intent = new Intent(requireContext(), HttpDetailsActivity.class);
-                intent.putExtra(HttpDetailsActivity.HTTP_REQ_POS_KEY, item.getPosition());
-                startActivity(intent);
+                if (item.decryptionError.isEmpty()) {
+                    Intent intent = new Intent(requireContext(), HttpDetailsActivity.class);
+                    intent.putExtra(HttpDetailsActivity.HTTP_REQ_POS_KEY, item.getPosition());
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
+                    intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, item.conn.incr_id);
+                    startActivity(intent);
+                }
             }
         });
 
