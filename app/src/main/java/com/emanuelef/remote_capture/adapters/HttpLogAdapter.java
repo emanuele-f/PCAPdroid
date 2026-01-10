@@ -156,7 +156,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
             return mFilteredReqs.size();
 
         HttpLog httpLog = CaptureService.getHttpLog();
-        return((httpLog != null) ? httpLog.size() : 0);
+        return((httpLog != null) ? httpLog.getSize() : 0);
     }
 
     @NonNull
@@ -198,7 +198,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         }
 
         HttpLog httpLog = CaptureService.getHttpLog();
-        if((httpLog == null) || (pos < 0) || (pos >= httpLog.size())) {
+        if((httpLog == null) || (pos < 0) || (pos >= httpLog.getSize())) {
             Log.w(TAG, "getItem: bad position: " + pos);
             return null;
         }
@@ -254,7 +254,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
 
         final HttpLog httpLog = CaptureService.getHttpLog();
         if(httpLog != null) {
-            Log.d(TAG, "refreshFilteredConn (" + httpLog.size() + ") unfiltered");
+            Log.d(TAG, "refreshFilteredConn (" + httpLog.getSize() + ") unfiltered");
 
             if (hasFilter()) {
                 int pos = 0;
@@ -262,7 +262,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
 
                 // Synchronize to improve performance of getConn
                 synchronized (httpLog) {
-                    for (int i = 0; i < httpLog.size(); i++) {
+                    for (int i = 0; i < httpLog.getSize(); i++) {
                         HttpRequest req = httpLog.getRequest(i);
 
                         if ((req != null) && matches(req)) {
@@ -300,5 +300,16 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
 
     public boolean hasFilter() {
         return (mSearch != null) || mFilter.isSet();
+    }
+
+    public ArrayList<Integer> getFilteredPositions() {
+        if (mFilteredReqs == null)
+            return null;
+
+        ArrayList<Integer> positions = new ArrayList<>(mFilteredReqs.size());
+        for (HttpRequest req : mFilteredReqs) {
+            positions.add(req.getPosition());
+        }
+        return positions;
     }
 }

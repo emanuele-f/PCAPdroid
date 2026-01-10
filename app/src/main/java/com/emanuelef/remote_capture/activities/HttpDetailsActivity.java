@@ -20,6 +20,9 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -36,12 +39,18 @@ import com.emanuelef.remote_capture.fragments.HttpPayloadFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.util.ArrayList;
+
 public class HttpDetailsActivity extends PayloadExportActivity {
     private static final String TAG = "HttpRequestDetailsActivity";
     public static final String HTTP_REQ_POS_KEY = "req_pos";
+    public static final String FILTERED_POSITIONS_KEY = "filtered_positions";
     private HttpLog.HttpRequest mHttpReq;
     private ViewPager2 mPager;
     private StateAdapter mPagerAdapter;
+    private int mReqPos;
+    private ArrayList<Integer> mFilteredPositions;
+    private int mFilteredIndex;
 
     private static final int POS_REQUEST = 0;
     private static final int POS_REPLY = 1;
@@ -50,19 +59,37 @@ public class HttpDetailsActivity extends PayloadExportActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.http_details);
         displayBackAction();
         setContentView(R.layout.tabs_activity_fixed);
 
-        int req_pos = getIntent().getIntExtra(HTTP_REQ_POS_KEY, -1);
-        if(req_pos != -1) {
-            HttpLog httpLog = CaptureService.getHttpLog();
-            if(httpLog != null)
-                mHttpReq = httpLog.getRequest(req_pos);
+        mReqPos = getIntent().getIntExtra(HTTP_REQ_POS_KEY, -1);
+
+        // Get filtered positions if provided
+        mFilteredPositions = getIntent().getIntegerArrayListExtra(FILTERED_POSITIONS_KEY);
+        mFilteredIndex = -1;
+
+        // Find the index of the current position in the filtered list
+        if (mFilteredPositions != null) {
+            for (int i = 0; i < mFilteredPositions.size(); i++) {
+                if (mFilteredPositions.get(i) == mReqPos) {
+                    mFilteredIndex = i;
+                    break;
+                }
+            }
+            Log.d(TAG, "Using filtered navigation: " + mFilteredPositions.size() + " items, index=" + mFilteredIndex);
         }
 
+        if(mReqPos != -1) {
+            setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
+
+            HttpLog httpLog = CaptureService.getHttpLog();
+            if(httpLog != null)
+                mHttpReq = httpLog.getRequest(mReqPos);
+        } else
+            setTitle(R.string.http_requests);
+
         if(mHttpReq == null) {
-            Log.w(TAG, "HTTP request with position " + req_pos + " not found");
+            Log.w(TAG, "HTTP request with position " + mReqPos + " not found");
             finish();
             return;
         }
@@ -81,6 +108,129 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         new TabLayoutMediator(tabLayout, mPager, (tab, position) ->
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.http_details_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem prevItem = menu.findItem(R.id.navigate_before);
+        MenuItem nextItem = menu.findItem(R.id.navigate_next);
+
+        boolean hasPrev, hasNext;
+
+        if (mFilteredPositions != null) {
+            // Using filtered navigation
+            hasPrev = mFilteredIndex > 0;
+            hasNext = mFilteredIndex < mFilteredPositions.size() - 1;
+        } else {
+            // Using unfiltered navigation
+            HttpLog httpLog = CaptureService.getHttpLog();
+            int httpLogSize = (httpLog != null) ? httpLog.getSize() : 0;
+            hasPrev = mReqPos > 0;
+            hasNext = mReqPos < httpLogSize - 1;
+        }
+
+        if(prevItem != null) {
+            prevItem.setEnabled(hasPrev);
+            if(prevItem.getIcon() != null)
+                prevItem.getIcon().setAlpha(hasPrev ? 255 : 80);
+        }
+
+        if(nextItem != null) {
+            nextItem.setEnabled(hasNext);
+            if(nextItem.getIcon() != null)
+                nextItem.getIcon().setAlpha(hasNext ? 255 : 80);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if(itemId == R.id.navigate_before) {
+            navigateToPrevious();
+            return true;
+        } else if(itemId == R.id.navigate_next) {
+            navigateToNext();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void navigateToPrevious() {
+        if (mFilteredPositions != null) {
+            // Navigate in filtered list
+            if (mFilteredIndex > 0) {
+                mFilteredIndex--;
+                mReqPos = mFilteredPositions.get(mFilteredIndex);
+                loadHttpRequest();
+            }
+        } else {
+            // Navigate in unfiltered list
+            if (mReqPos > 0) {
+                mReqPos--;
+                loadHttpRequest();
+            }
+        }
+    }
+
+    private void navigateToNext() {
+        if (mFilteredPositions != null) {
+            // Navigate in filtered list
+            if (mFilteredIndex < mFilteredPositions.size() - 1) {
+                mFilteredIndex++;
+                mReqPos = mFilteredPositions.get(mFilteredIndex);
+                loadHttpRequest();
+            }
+        } else {
+            // Navigate in unfiltered list
+            HttpLog httpLog = CaptureService.getHttpLog();
+            int httpLogSize = (httpLog != null) ? httpLog.getSize() : 0;
+
+            if (mReqPos < httpLogSize - 1) {
+                mReqPos++;
+                loadHttpRequest();
+            }
+        }
+    }
+
+    private void loadHttpRequest() {
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if(httpLog != null) {
+            mHttpReq = httpLog.getRequest(mReqPos);
+
+            if(mHttpReq != null) {
+                setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
+
+                // Save current tab position before recreating adapter
+                int currentTab = mPager.getCurrentItem();
+
+                setupTabs();
+
+                // Restore tab position if still valid for the new request
+                int newItemCount = mPagerAdapter.getItemCount();
+                if (currentTab < newItemCount) {
+                    // Tab is still valid, restore it
+                    mPager.setCurrentItem(currentTab, false);
+                } else {
+                    // Tab not available (e.g., no response), fall back to first tab
+                    mPager.setCurrentItem(0, false);
+                }
+
+                invalidateOptionsMenu();
+            } else {
+                Log.w(TAG, "HTTP request with position " + mReqPos + " not found");
+            }
+        }
     }
 
     private class StateAdapter extends FragmentStateAdapter {

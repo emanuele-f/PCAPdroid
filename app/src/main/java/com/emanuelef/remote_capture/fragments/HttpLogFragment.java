@@ -69,6 +69,7 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "HttpLogFragment";
@@ -256,6 +257,14 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
                 if (item.decryptionError.isEmpty()) {
                     Intent intent = new Intent(requireContext(), HttpDetailsActivity.class);
                     intent.putExtra(HttpDetailsActivity.HTTP_REQ_POS_KEY, item.getPosition());
+
+                    // Pass filtered positions for navigation
+                    if(mAdapter.hasFilter()) {
+                        ArrayList<Integer> filteredPositions = mAdapter.getFilteredPositions();
+                        if(filteredPositions != null)
+                            intent.putIntegerArrayListExtra(HttpDetailsActivity.FILTERED_POSITIONS_KEY, filteredPositions);
+                    }
+
                     startActivity(intent);
                 } else {
                     Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
@@ -494,7 +503,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         long maxSize = 0;
         synchronized (httpLog) {
-            for (int i = 0; i < httpLog.size(); i++) {
+            for (int i = 0; i < httpLog.getSize(); i++) {
                 HttpLog.HttpRequest req = httpLog.getRequest(i);
                 if (req != null) {
                     int totalSize = (req.reply != null) ? (req.bodyLength + req.reply.bodyLength) : req.bodyLength;
@@ -588,7 +597,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
             if(stream != null) {
                 synchronized (httpLog) {
-                    for(int i = 0; i < httpLog.size(); i++) {
+                    for(int i = 0; i < httpLog.getSize(); i++) {
                         HttpLog.HttpRequest req = httpLog.getRequest(i);
                         if(req == null)
                             continue;

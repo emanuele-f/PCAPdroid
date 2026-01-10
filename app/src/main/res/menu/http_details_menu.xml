@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/navigate_before"
+        android:title="@string/previous"
+        android:orderInCategory="10"
+        android:icon="@drawable/ic_navigate_before"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/navigate_next"
+        android:title="@string/next"
+        android:orderInCategory="20"
+        android:icon="@drawable/ic_navigate_next"
+        app:showAsAction="always" />
+</menu>

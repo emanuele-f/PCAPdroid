@@ -577,10 +577,12 @@
     <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
     <string name="no_requests">No requests</string>
     <string name="item_not_found">Could not find the specified item</string>
-    <string name="http_details">HTTP details</string>
+    <string name="http_request_number">HTTP request #%1$d</string>
     <string name="http_requests">HTTP requests</string>
     <string name="switch_to_http">Show HTTP requests</string>
     <string name="switch_to_connections">Show connections</string>
     <string name="decryption_error">Decryption error</string>
     <string name="no_error">No error</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
 </resources>

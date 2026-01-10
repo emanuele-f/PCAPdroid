@@ -194,7 +194,7 @@ public class HttpLog {
         return mHttpRequests.get(pos);
     }
 
-    public synchronized int size() {
+    public synchronized int getSize() {
         return mHttpRequests.size();
     }
 }

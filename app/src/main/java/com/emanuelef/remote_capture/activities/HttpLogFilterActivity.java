@@ -94,7 +94,7 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
             boolean hasDecryptionErrors = false;
 
             synchronized (httpLog) {
-                for (int i = 0; i < httpLog.size(); i++) {
+                for (int i = 0; i < httpLog.getSize(); i++) {
                     HttpLog.HttpRequest req = httpLog.getRequest(i);
                     if (req != null) {
                         if (req.method != null && !req.method.isEmpty())

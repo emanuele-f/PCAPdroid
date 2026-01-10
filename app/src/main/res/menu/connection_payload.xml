@@ -5,7 +5,7 @@
     <item
         android:title="@string/display_as"
         android:icon="@drawable/ic_short_text"
-        app:showAsAction="ifRoom">
+        app:showAsAction="never">
         <menu>
             <group android:id="@+id/display_as_grp" android:checkableBehavior="single">
                 <item
