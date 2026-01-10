@@ -68,6 +68,11 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     private int mConnId;
     private ArrayList<Integer> mFilteredIds;
     private int mFilteredIndex;
+    private MenuItem mMenuPrev;
+    private MenuItem mMenuNext;
+    private MenuItem mMenuCopy;
+    private MenuItem mMenuShare;
+    private MenuItem mMenuDisplayAs;
 
     private static final int POS_OVERVIEW = 0;
     private static final int POS_WEBSOCKET = 1;
@@ -148,6 +153,13 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();
 
+        mPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateMenuVisibility();
+            }
+        });
+
         mCurChunks = 0;
         recheckTabs();
     }
@@ -194,7 +206,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             }
         }
 
-        private int[] getVisibleTabsPositions() {
+        public int[] getVisibleTabsPositions() {
             int[] visible = new int[getItemCount()];
             int i = 0;
 
@@ -320,13 +332,23 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.connection_details_menu, menu);
+
+        mMenuPrev = menu.findItem(R.id.navigate_before);
+        mMenuNext = menu.findItem(R.id.navigate_next);
+        mMenuCopy = menu.findItem(R.id.copy_to_clipboard);
+        mMenuShare = menu.findItem(R.id.share);
+        mMenuDisplayAs = menu.findItem(R.id.display_as);
+
+        Log.d(TAG, "onCreateOptionsMenu");
+        updateNavigationButtons();
+        updateMenuVisibility();
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem prevItem = menu.findItem(R.id.navigate_before);
-        MenuItem nextItem = menu.findItem(R.id.navigate_next);
+    private void updateNavigationButtons() {
+        Log.d(TAG, "updateNavigationButtons");
+        if(mMenuPrev == null || mMenuNext == null)
+            return;
 
         ArrayList<Integer> ids = (mFilteredIds != null) ? mFilteredIds : getAllConnectionIds();
         boolean hasPrev = false;
@@ -340,19 +362,48 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             }
         }
 
-        if(prevItem != null) {
-            prevItem.setEnabled(hasPrev);
-            if(prevItem.getIcon() != null)
-                prevItem.getIcon().setAlpha(hasPrev ? 255 : 80);
-        }
+        mMenuPrev.setEnabled(hasPrev);
+        if(mMenuPrev.getIcon() != null)
+            mMenuPrev.getIcon().setAlpha(hasPrev ? 255 : 80);
 
-        if(nextItem != null) {
-            nextItem.setEnabled(hasNext);
-            if(nextItem.getIcon() != null)
-                nextItem.getIcon().setAlpha(hasNext ? 255 : 80);
-        }
+        mMenuNext.setEnabled(hasNext);
+        if(mMenuNext.getIcon() != null)
+            mMenuNext.getIcon().setAlpha(hasNext ? 255 : 80);
+    }
 
-        return super.onPrepareOptionsMenu(menu);
+    public void updateMenuVisibility() {
+        if(mMenuCopy == null || mMenuShare == null || mMenuDisplayAs == null)
+            return;
+
+        int currentTab = mPager.getCurrentItem();
+        int[] visibleTabs = mPagerAdapter.getVisibleTabsPositions();
+        int currentPos = (currentTab < visibleTabs.length) ? visibleTabs[currentTab] : POS_OVERVIEW;
+
+        boolean isOverview = (currentPos == POS_OVERVIEW);
+        mMenuCopy.setVisible(isOverview);
+        mMenuShare.setVisible(isOverview);
+
+        boolean isPayload = (currentPos == POS_WEBSOCKET || currentPos == POS_HTTP || currentPos == POS_RAW_PAYLOAD);
+        mMenuDisplayAs.setVisible(isPayload);
+
+        if(isPayload) {
+            Fragment currentFragment = getCurrentFragment();
+            if(currentFragment instanceof ConnectionPayload) {
+                ConnectionPayload payloadFragment = (ConnectionPayload) currentFragment;
+                boolean showAsPrintable = payloadFragment.isShowingAsPrintable();
+
+                MenuItem printableText = mMenuDisplayAs.getSubMenu().findItem(R.id.printable_text);
+                MenuItem hexdump = mMenuDisplayAs.getSubMenu().findItem(R.id.hexdump);
+
+                if(showAsPrintable) {
+                    hexdump.setChecked(false);
+                    printableText.setChecked(true);
+                } else {
+                    printableText.setChecked(false);
+                    hexdump.setChecked(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -367,7 +418,19 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             return true;
         }
 
+        Fragment currentFragment = getCurrentFragment();
+        if(currentFragment instanceof MenuActionHandler) {
+            if(((MenuActionHandler) currentFragment).handleMenuAction(item))
+                return true;
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private Fragment getCurrentFragment() {
+        int currentTab = mPager.getCurrentItem();
+        String tag = "f" + mPagerAdapter.getItemId(currentTab);
+        return getSupportFragmentManager().findFragmentByTag(tag);
     }
 
     private void navigateToPrevious() {
@@ -443,7 +506,8 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
                 if(mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
                     registerConnsListener();
 
-                invalidateOptionsMenu();
+                updateNavigationButtons();
+                updateMenuVisibility();
             } else {
                 Log.w(TAG, "Connection with ID " + mConnId + " not found");
             }
