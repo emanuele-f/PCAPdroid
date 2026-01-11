@@ -11,26 +11,31 @@ package serri.tesi.dto
  * flessibilità, sicurezza e disaccoppiamento architetturale.
  */
 data class NetworkRequestDto(
-    val user_uuid: String,
 
-    val app_name: String?,
-    val app_uid: Int,
+    // App che ha generato la connessione
+    val appName: String?,
+    val appUid: Int,
 
+    // Informazioni di rete (anonimizzate)
     val protocol: String,
-    val domain: String?,
+    val domainHash: String?,
+    val dstIpHash: String?,
+    val dstPort: Int?,
 
-    val dst_ip: String?,
-    val dst_port: Int?,
+    // Metriche di traffico
+    val bytesTx: Long,
+    val bytesRx: Long,
+    val packetsTx: Int,
+    val packetsRx: Int,
 
-    val bytes_tx: Long,
-    val bytes_rx: Long,
-    val packets_tx: Int,
-    val packets_rx: Int,
+    // Informazioni temporali
+    val startTs: Long,
+    val endTs: Long,
+    val durationMs: Long,
 
-    val start_ts: Long,
-    val end_ts: Long,
-    val duration_ms: Long,
-
+    // Geolocalizzazione approssimata
     val latitude: Double?,
     val longitude: Double?
 )
+//update dopo configurazione backend
+// rimosso user uuid, associazione utente–dato avviene SOLO lato backend tramite JWT

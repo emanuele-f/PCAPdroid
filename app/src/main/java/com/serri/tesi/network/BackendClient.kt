@@ -6,6 +6,8 @@ import okhttp3.OkHttpClient //client http x eseguire richieste di rete
 import okhttp3.Request // rappresenta richiesta http
 import okhttp3.RequestBody.Companion.toRequestBody //estensione x creare requestbody da stringa
 import serri.tesi.dto.BatchDto //dto che rappresenta batch da inviare a backend
+import serri.tesi.auth.SessionManager //permette a client http di accedere a token jwt salvato
+
 
 /**
  * Client HTTP responsabile della comunicazione con il backend remoto
@@ -14,11 +16,12 @@ import serri.tesi.dto.BatchDto //dto che rappresenta batch da inviare a backend
  * Isola i dettagli di trasporto dal resto dell'applicazione.
  */
 class BackendClient(
-    private val baseUrl: String //url base del backend
+    private val baseUrl: String, //url base del backend
+    private val sessionManager: SessionManager  //per accedere a token, non lo riceve direttamente, riferimento al gestore di sessione
 ) {
     // client utilizzabile per le richieste
     private val client = OkHttpClient()
-    //istanza gson x conversione oggetti in json
+    //istanza gson x conversione oggetti in json (serializzatore)
     private val gson = Gson()
 
     /**
@@ -31,9 +34,13 @@ class BackendClient(
         val json = gson.toJson(batch) //serializza oggetto batchdto in stringa Json
 
         // creazione body della richiesta, content-type Json
-        val body = json.toRequestBody(
+        val body = json.toRequestBody( //creazuine corpo request http (post json)
             "application/json; charset=utf-8".toMediaType()
         )
+
+        // Recupero token JWT salvato
+        val token = sessionManager.getToken()
+            ?: return false // se non c'è token, no sync
 
         //costruzione richiesta http
         // - endpoint /network_requests/batch
@@ -41,6 +48,7 @@ class BackendClient(
         // - body contenente dati da inviare (json)
         val request = Request.Builder()
             .url("$baseUrl/network_requests/batch")
+            .addHeader("Authorization", "Bearer $token") //aggiunge header jwt automaticamente
             .post(body)
             .build()
 

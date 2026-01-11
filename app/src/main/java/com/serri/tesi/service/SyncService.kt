@@ -6,6 +6,8 @@ import serri.tesi.dto.BatchDto //dto batch di richieste da inviare a backend
 import serri.tesi.mapper.NetworkRequestMapper //mapper converte modello richieste in dto, per la trasmissione
 import serri.tesi.network.BackendClient //client responsabile di comunicazione http con backend remoto
 import serri.tesi.repo.TrackerRepository //repo per accesso ai dati locali
+import serri.tesi.auth.SessionManager //per accedere a token jwt
+
 
 /**
  * Servizio responsabile di sincronizzazione dati con backend remoto.
@@ -25,19 +27,30 @@ class SyncService(private val context: Context) {
      * remoto e, in caso di successo, aggiorna lo stato locale della cache.
      */
     fun syncOnce() {
+        //accedere a db locale (cache SQLite)
         val repo = TrackerRepository(context) //crea istanza del repo x accedere a db locale
-        val client = BackendClient("http://10.0.2.2:8080") //crea client x comunicare con backend
+        // val client = BackendClient("http://10.0.2.2:8080") //crea client x comunicare con backend
+
+        //istanzia sessionmanager, x gestione sessione utente
+        val sessionManager = SessionManager(context) // consente di recuperare token jwt salvato e riutilizzarlo
+
+        //creazione client http (autenticato) per comunicazione con backend remoto
+        val client = BackendClient(
+            baseUrl = "http://10.0.2.2:3000", //indirizzo backend
+            sessionManager = sessionManager // sessionManager passato a client x inclusione autom. token nell'header Auth. di ogni richiesta
+        )
+        //10.0.2.2 permette all'emulatore Android di raggiungere il localhost della macchina host
 
         //recuperare da db connessioni non sinc.
         val pending = repo.getPendingNetworkRequests(30)
 
         //se non trova record da sincronuzzare, esce
         if (pending.isEmpty()) {
-            Log.d("TESI_SYNC", "No pending records")
+            Log.d("TESI_SYNC", "No records to sync")
             return
         }
 
-        //convertire ogni request record in un dto (x trasmissione)
+        //convertire ogni request record (locale) in un dto (x trasmissione)
         val dtos = pending.map { NetworkRequestMapper.toDto(it) }
         val batch = BatchDto(dtos) // incapsula lista di dto in oggetto BatchDto
 
@@ -57,3 +70,8 @@ class SyncService(private val context: Context) {
 
     }
 }
+
+// Il SyncService non gestisce l'autenticazione.
+// Utilizza il token JWT esclusivamente per identificare l'utente
+// durante l'invio dei dati; l'associazione avviene lato backend.
+

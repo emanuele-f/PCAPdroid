@@ -13,41 +13,44 @@ import serri.tesi.privacy.HashUtils
  * il backend remoto)
  *
  * Il mapper rappresenta il punto ideale per applicare politiche di
- * filtraggio, normalizzazione e anonimizzazione dei dati.
+ * normalizzazione e anonimizzazione dei dati.
  */
 
 object NetworkRequestMapper {
 
     /**
-     * Converte un record persistente in un Data Transfer Object.
+     * Converte un record persistente in un Data Transfer Object. Pronto per invio a backend remoto
      *
      * @param record = modello di persistenza che rappresenta connessione conclusa
      * @return DTO pronto per la serializzazione e l'invio al backend.
      */
     fun toDto(record: NetworkRequestRecord): NetworkRequestDto {
         return NetworkRequestDto(
-            //user_uuid = record.userUuid,
-            user_uuid = HashUtils.sha256(record.userUuid), //user anonimizzato
-            app_name = record.appName,
-            app_uid = record.appUid,
-            protocol = record.protocol,
-            //domain = record.domain,
-            domain = record.domain?.let { HashUtils.sha256(it) }, //dominio anonim.
-            //dst_ip = record.dstIp,
-            dst_ip = record.dstIp?.let { HashUtils.sha256(it) },//destination ip anon. se presente
-            dst_port = record.dstPort,
-            bytes_tx = record.bytesTx,
-            bytes_rx = record.bytesRx,
-            packets_tx = record.packetsTx,
-            packets_rx = record.packetsRx,
-            start_ts = record.startTs,
-            end_ts = record.endTs,
-            duration_ms = record.durationMs,
-            //latitude = record.latitude,
-            //longitude = record.longitude
-            latitude = record.latitude?.let { round(it, 2) }, //approssimo dati localizzazione, coordinate precise = dato altamente sensibile
-            longitude = record.longitude?.let { round(it, 2) }
+            appName = record.appName,
+            appUid = record.appUid,
 
+            protocol = record.protocol,
+
+            //domain = record.domain,
+            //dst_ip = record.dstIp,
+
+            // Anonimizzazione dati sensibili prima di invio
+            domainHash = record.domain?.let { HashUtils.sha256(it) },
+            dstIpHash = record.dstIp?.let { HashUtils.sha256(it) },
+            dstPort = record.dstPort,
+
+            bytesTx = record.bytesTx,
+            bytesRx = record.bytesRx,
+            packetsTx = record.packetsTx,
+            packetsRx = record.packetsRx,
+
+            startTs = record.startTs,
+            endTs = record.endTs,
+            durationMs = record.durationMs,
+
+            // Geolocalizzazione approssimata, coordinate precise = dato altamente sensibile
+            latitude = record.latitude?.let { round(it, 2) },
+            longitude = record.longitude?.let { round(it, 2) }
         )
     }
 

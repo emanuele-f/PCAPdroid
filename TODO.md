@@ -130,6 +130,16 @@
 - [ ] Applicazione anonimizzazione lato mobile e/o backend
 - [ ] Download dati utente in formato CSV (GDPR)
 
+### Integrazione Android ↔ Backend (JWT)
+- [x] Analisi flusso autenticazione e sincronizzazione
+- [x] Introduzione gestione sessione lato Android
+- [x] Implementata classe `SessionManager` (SharedPreferences)
+- [x] Collegato `BackendClient` al JWT tramite header Authorization
+- [x] Collegato `SyncService` al `SessionManager`
+- [x] Separazione chiara tra autenticazione e sincronizzazione
+- [ ] Implementazione login JWT reale da Android
+- [ ] Gestione errore token mancante o scaduto
+
 ### Frontend / UI
 - [ ] UI dedicata per esame LAM
 - [ ] Avviso al primo utilizzo (informativa privacy)
