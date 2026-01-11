@@ -65,7 +65,10 @@ public class HttpLog {
             String hostOrDomain = !host.isEmpty() ? host :
                     Objects.requireNonNullElse(conn.info, "");;
             String l7proto = conn.l7proto.toLowerCase();
-            String proto = l7proto.startsWith("http") ? (l7proto + "://") : "";
+            String proto = "";
+
+            if (l7proto.startsWith("http"))
+                proto = conn.isCleartext() ? "http://" : "https://";
 
             return proto + hostOrDomain;
         }
