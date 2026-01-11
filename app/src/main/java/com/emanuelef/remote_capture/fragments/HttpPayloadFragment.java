@@ -20,11 +20,15 @@
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,6 +44,7 @@ import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
 import com.emanuelef.remote_capture.model.Prefs;
@@ -125,9 +130,26 @@ public class HttpPayloadFragment extends Fragment {
         mAdapter.setDisplayAsPrintableText(true);
         mAdapter.setExportPayloadHandler(mActivity);
 
-        // only set adapter after acknowledged (see setMenuVisibility below)
-        if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
-            mRecyclerView.setAdapter(mAdapter);
+        if (mHttpReq.decryptionError.isEmpty()) {
+            // only set adapter after acknowledged (see setMenuVisibility below)
+            if (payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
+                mRecyclerView.setAdapter(mAdapter);
+        } else {
+            LinearLayout errorContainer = view.findViewById(R.id.decryption_error_container);
+            TextView urlView = view.findViewById(R.id.request_url);
+            TextView errorView = view.findViewById(R.id.decryption_error);
+            Button showConnectionBtn = view.findViewById(R.id.show_connection_btn);
+
+            urlView.setText(mHttpReq.getProtoAndHost());
+            errorView.setText(mHttpReq.decryptionError);
+            mRecyclerView.setEmptyView(errorContainer);
+
+            showConnectionBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
+                intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, mHttpReq.conn.incr_id);
+                startActivity(intent);
+            });
+        }
     }
 
     @Override

@@ -449,6 +449,7 @@
     <string name="license_service_unavailable">The PCAPdroid license service is currently unavailable. Please retry in some minutes</string>
     <string name="requesting_unlock_token">Requesting an unlock token, please wait</string>
     <string name="show_action">Show</string>
+    <string name="show_connection">Show connection</string>
     <string name="unlock_token_msg1">This is your unlock token. Note it down as you will need it <a href='%1$s'>to generate your license codes</a></string>
     <string name="paid_feature">Paid feature</string>
     <string name="firewall_purchase_msg">Buy the <i>%1$s</i> feature to start blocking connections</string>

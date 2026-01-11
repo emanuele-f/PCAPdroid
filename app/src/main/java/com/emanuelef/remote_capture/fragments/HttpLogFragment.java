@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -56,7 +56,6 @@ import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
 import com.emanuelef.remote_capture.activities.HttpLogFilterActivity;
 import com.emanuelef.remote_capture.adapters.HttpLogAdapter;
@@ -254,23 +253,17 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             HttpLog.HttpRequest item = mAdapter.getItem(pos);
 
             if(item != null) {
-                if (item.decryptionError.isEmpty()) {
-                    Intent intent = new Intent(requireContext(), HttpDetailsActivity.class);
-                    intent.putExtra(HttpDetailsActivity.HTTP_REQ_POS_KEY, item.getPosition());
+                Intent intent = new Intent(requireContext(), HttpDetailsActivity.class);
+                intent.putExtra(HttpDetailsActivity.HTTP_REQ_POS_KEY, item.getPosition());
 
-                    // Pass filtered positions for navigation
-                    if(mAdapter.hasFilter()) {
-                        ArrayList<Integer> filteredPositions = mAdapter.getFilteredPositions();
-                        if(filteredPositions != null)
-                            intent.putIntegerArrayListExtra(HttpDetailsActivity.FILTERED_POSITIONS_KEY, filteredPositions);
-                    }
-
-                    startActivity(intent);
-                } else {
-                    Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
-                    intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, item.conn.incr_id);
-                    startActivity(intent);
+                // Pass filtered positions for navigation
+                if(mAdapter.hasFilter()) {
+                    ArrayList<Integer> filteredPositions = mAdapter.getFilteredPositions();
+                    if(filteredPositions != null)
+                        intent.putIntegerArrayListExtra(HttpDetailsActivity.FILTERED_POSITIONS_KEY, filteredPositions);
                 }
+
+                startActivity(intent);
             }
         });
 
