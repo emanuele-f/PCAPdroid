@@ -201,7 +201,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
             assert(decryption_ignored || isNotDecryptable() || PCAPdroid.getInstance().isDecryptingPcap());
 
             synchronized (this) {
-                if (HTTPReassembly.TODO_ENABLED && (update.payload_chunks != null)) {
+                if ((CaptureService.getHttpLog() != null) && (update.payload_chunks != null)) {
                     int chunk_pos = payload_chunks.size();
 
                     for (PayloadChunk chunk: update.payload_chunks) {
@@ -224,8 +224,12 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
         }
     }
 
+    // See HttpLog
     private void logHttpChunk(PayloadChunk chunk, int chunk_pos) {
         assert (chunk.type == PayloadChunk.ChunkType.HTTP);
+
+        if (CaptureService.getHttpLog() == null)
+            return;
 
         if (mHttpReqReassembly == null) {
             // use a lightweight reassembly, without dumping the payload
@@ -371,7 +375,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     }
 
     public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
-        if (HTTPReassembly.TODO_ENABLED && (chunk.type == PayloadChunk.ChunkType.HTTP))
+        if (chunk.type == PayloadChunk.ChunkType.HTTP)
             logHttpChunk(chunk, payload_chunks.size());
 
         payload_chunks.add(chunk);

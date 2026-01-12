@@ -37,6 +37,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 
+import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.model.FilterDescriptor;
@@ -138,13 +139,15 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        if (mCurrentView == VIEW_CONNECTIONS && mConnectionsFragment != null) {
+        if ((mCurrentView == VIEW_CONNECTIONS) && (mConnectionsFragment != null)) {
             if (mConnectionsFragment instanceof ConnectionsFragment) {
                 ((ConnectionsFragment) mConnectionsFragment).onCreateMenu(menu, menuInflater);
             }
-            menu.add(Menu.NONE, R.id.switch_to_http_log, 25, R.string.switch_to_http)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-        } else if (mCurrentView == VIEW_HTTP_LOG && mHttpLogFragment != null) {
+
+            if (CaptureService.getHttpLog() != null)
+                menu.add(Menu.NONE, R.id.switch_to_http_log, 25, R.string.switch_to_http)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+        } else if ((mCurrentView == VIEW_HTTP_LOG) && (mHttpLogFragment != null)) {
             if (mHttpLogFragment instanceof HttpLogFragment) {
                 ((HttpLogFragment) mHttpLogFragment).onCreateMenu(menu, menuInflater);
             }

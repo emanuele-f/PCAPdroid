@@ -361,7 +361,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
-        mHttpLog = new HttpLog();
+        mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();

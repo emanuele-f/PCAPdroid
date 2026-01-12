@@ -53,8 +53,6 @@ public class HTTPReassembly {
     private boolean mInvalidHttp;
     private PayloadChunk mFirstChunk;
 
-    public static final boolean TODO_ENABLED = true;
-
     /**
      * @param reassembleChunks if false, all the chunks will be considered as RAW chunks
      * @param listener a listener for the reassembly
