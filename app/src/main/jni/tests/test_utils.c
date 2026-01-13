@@ -41,10 +41,10 @@ static void getNativeLibPath(struct pcapdroid *pd, const char *prog_name, char *
     if (strcmp(prog_name, "pcapd") == 0)
         snprintf(buf, bufsize, "../main/pcapd/libpcapd.so");
     else {
-      fprintf(stderr, "Unknown native library: %s", prog_name);
+        fprintf(stderr, "Unknown native library: %s", prog_name);
 
-      if (bufsize > 0)
-        buf[0] = '\0';
+        if (bufsize > 0)
+            buf[0] = '\0';
     }
 }
 

@@ -585,9 +585,6 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
         pcap_hdr.len = pcap_hdr.caplen = pkt.len;
         pcap_hdr.ts = hdr->ts;
 
-        // This disables the reporting of leaks inside libushark.
-        // The reporting is enabled again in the individual callbacks (e.g. handle_ushark_http2_request)
-        // to detect leaks in pcapdroid
         ushark_dissect(pd->pcap.usk,
                            (const unsigned char*) pkt.l3,
                            &pcap_hdr);
@@ -765,23 +762,6 @@ static reader_rv read_file(pcapdroid_t *pd, pd_reader_t *reader, pcapd_hdr_t* hd
 
 /* ******************************************************* */
 
-// Wrapper function for ushark initialization to allow LSAN suppression
-static void init_ushark_for_pcap(pcapdroid_t *pd, const char *keylog_path) {
-    if (ushark_init(pd)) {
-        pd->pcap.usk = ushark_new(PCAPD_DLT_RAW, "");
-
-        ushark_data_callbacks_t cbs = {
-                .on_http1_data = handle_ushark_http1_data,
-                .on_http2_request = handle_ushark_http2_request,
-                .on_http2_response = handle_ushark_http2_response,
-                .on_http2_reset = handle_ushark_http2_reset,
-        };
-        ushark_set_callbacks(pd->pcap.usk, &cbs);
-
-        ushark_set_pref("tls.keylog_file", keylog_path);
-    }
-}
-
 int run_pcap(pcapdroid_t *pd) {
     int sock = -1;
     pd_reader_t *reader = NULL;
@@ -801,7 +781,20 @@ int run_pcap(pcapdroid_t *pd) {
 
         if (access(keylog_path, F_OK) == 0) {
             log_i("Use ushark for TLS decryption");
-            init_ushark_for_pcap(pd, keylog_path);
+
+            if (ushark_init(pd)) {
+                pd->pcap.usk = ushark_new(PCAPD_DLT_RAW, "");
+
+                ushark_data_callbacks_t cbs = {
+                        .on_http1_data = handle_ushark_http1_data,
+                        .on_http2_request = handle_ushark_http2_request,
+                        .on_http2_response = handle_ushark_http2_response,
+                        .on_http2_reset = handle_ushark_http2_reset,
+                };
+                ushark_set_callbacks(pd->pcap.usk, &cbs);
+
+                ushark_set_pref("tls.keylog_file", keylog_path);
+            }
         }
     }
 

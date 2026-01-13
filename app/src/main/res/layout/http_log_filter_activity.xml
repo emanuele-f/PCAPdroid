@@ -85,6 +85,11 @@
                 tools:visibility="visible"
                 app:singleSelection="true">
             </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_method_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/content_type_label"
@@ -108,6 +113,11 @@
                 tools:visibility="visible"
                 app:singleSelection="true">
             </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_content_type_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/http_status_label"
@@ -131,6 +141,11 @@
                 tools:visibility="visible"
                 app:singleSelection="true">
             </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_status_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/payload_size_label"
