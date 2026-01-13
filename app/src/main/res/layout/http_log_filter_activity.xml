@@ -34,7 +34,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/decryption"
+                android:text="@string/status"
                 android:textStyle="bold"
                 android:textColor="@color/colorAccent"
                 android:textSize="18sp"
@@ -50,18 +50,18 @@
                 app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/decryption_error_chip"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/error"/>
-
-                <com.google.android.material.chip.Chip
                     android:id="@+id/decryption_no_error_chip"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/no_error"/>
+                    android:text="@string/ok"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/decryption_error_chip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/decryption_error"/>
             </com.google.android.material.chip.ChipGroup>
 
             <TextView

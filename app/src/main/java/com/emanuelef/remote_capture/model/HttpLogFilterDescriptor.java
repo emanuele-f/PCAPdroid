@@ -109,12 +109,12 @@ public class HttpLogFilterDescriptor implements Serializable {
         }
 
         if (httpStatus != null) {
-            String label = String.format(ctx.getString(R.string.status_filter), httpStatus);
+            String label = String.format(ctx.getString(R.string.status_filter), httpStatus.toString());
             addChip(inflater, group, R.id.http_status_filter, label);
         }
 
         if (decryptionError != null) {
-            String err = ctx.getString(decryptionError ? R.string.error : R.string.no_error);
+            String err = ctx.getString(decryptionError ? R.string.decryption_error : R.string.ok);
             String label = String.format(ctx.getString(R.string.decryption_filter), err);
             addChip(inflater, group, R.id.decryption_status, label);
         }

@@ -208,7 +208,7 @@
     <string name="malware_whitelist_help">User-defined whitelist to inhibit malware detection. Long-press malicious connections to create rules unmarking them as malware</string>
     <string name="hidden_connections_help">List of rules to hide connection-list entries so you can focus on relevant ones</string>
     <string name="malicious_connection_filter">Malicious</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP status: %1$s</string>
     <string name="not_hidden_filter">Not hidden</string>
     <string name="copy_action">Copy…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -335,7 +335,7 @@
     <string name="not_decryptable">Not decryptable</string>
     <string name="decrypted">Decrypted</string>
     <string name="decryption">Decryption</string>
-    <string name="decryption_filter">Decryption: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid has not seen the start of this connection. Some information may be missing</string>
     <string name="network_traffic">Traffic</string>
     <string name="warn_no_app_data">No application data has been exchanged</string>
@@ -585,7 +585,6 @@
     <string name="switch_to_http">Show HTTP requests</string>
     <string name="switch_to_connections">Show connections</string>
     <string name="decryption_error">Decryption error</string>
-    <string name="no_error">No error</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
 </resources>
