@@ -201,20 +201,20 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
             assert(decryption_ignored || isNotDecryptable() || PCAPdroid.getInstance().isDecryptingPcap());
 
             synchronized (this) {
-                if ((CaptureService.getHttpLog() != null) && (update.payload_chunks != null)) {
-                    int chunk_pos = payload_chunks.size();
-
-                    for (PayloadChunk chunk: update.payload_chunks) {
-                        if (chunk.type == PayloadChunk.ChunkType.HTTP)
-                            logHttpChunk(chunk, chunk_pos);
-
-                        chunk_pos++;
-                    }
-                }
-
                 // Some pending updates with payload may still be received after low memory has been
                 // triggered and payload disabled
                 if(!CaptureService.isLowMemory()) {
+                    if ((CaptureService.getHttpLog() != null) && (update.payload_chunks != null)) {
+                        int chunk_pos = payload_chunks.size();
+
+                        for (PayloadChunk chunk: update.payload_chunks) {
+                            if (chunk.type == PayloadChunk.ChunkType.HTTP)
+                                logHttpChunk(chunk, chunk_pos);
+
+                            chunk_pos++;
+                        }
+                    }
+
                     if(update.payload_chunks != null)
                         payload_chunks.addAll(update.payload_chunks);
                     payload_truncated = update.payload_truncated;
