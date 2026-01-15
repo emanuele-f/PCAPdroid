@@ -14,17 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -37,34 +40,29 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.CaptureService;
-import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
+import com.emanuelef.remote_capture.activities.HttpDetailsActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
-import com.emanuelef.remote_capture.model.ConnectionDescriptor;
-import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+public class HttpPayloadFragment extends Fragment {
     private static final String TAG = "ConnectionPayload";
-    private ConnectionDetailsActivity mActivity;
-    private ConnectionDescriptor mConn;
+    private HttpDetailsActivity mActivity;
+    private HttpLog.HttpRequest mHttpReq;
     private PayloadAdapter mAdapter;
-    private TextView mTruncatedWarning;
     private EmptyRecyclerView mRecyclerView;
-    private int mCurChunks;
-    private boolean mJustCreated;
     private boolean mShowAsPrintable;
-    private WindowInsetsCompat mInsets;
 
-    public static ConnectionPayload newInstance(PayloadChunk.ChunkType mode, int conn_id) {
-        ConnectionPayload fragment = new ConnectionPayload();
+    public static HttpPayloadFragment newInstance(int req_pos, boolean show_reply) {
+        HttpPayloadFragment fragment = new HttpPayloadFragment();
         Bundle args = new Bundle();
-        args.putSerializable("mode", mode);
-        args.putInt("conn_id", conn_id);
+        args.putSerializable("show_reply", show_reply);
+        args.putInt("req_pos", req_pos);
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,8 +70,8 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mActivity = (ConnectionDetailsActivity) context;
-        mActivity.addConnUpdateListener(this);
+
+        mActivity = (HttpDetailsActivity) context;
 
         if (mAdapter != null)
             mAdapter.setExportPayloadHandler(mActivity);
@@ -82,7 +80,6 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void onDetach() {
         super.onDetach();
-        mActivity.removeConnUpdateListener(this);
         mActivity = null;
 
         if (mAdapter != null)
@@ -98,15 +95,17 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
-        PayloadChunk.ChunkType mode;
         assert args != null;
-        ConnectionsRegister reg = CaptureService.requireConnsRegister();
-        mode = Utils.getSerializable(args, "mode", PayloadChunk.ChunkType.class);
-        assert(mode != null);
 
-        mConn = reg.getConnById(args.getInt("conn_id"));
-        if(mConn == null) {
-            Utils.showToast(requireContext(), R.string.connection_not_found);
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if (httpLog == null) {
+            mActivity.finish();
+            return;
+        }
+
+        mHttpReq = httpLog.getRequest(args.getInt("req_pos"));
+        if(mHttpReq == null) {
+            Utils.showToast(requireContext(), R.string.item_not_found);
             mActivity.finish();
             return;
         }
@@ -115,13 +114,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
         mRecyclerView.setLayoutManager(layoutMan);
 
-        mTruncatedWarning = view.findViewById(R.id.truncated_warning);
-        mTruncatedWarning.setText(String.format(getString(R.string.payload_truncated), getString(R.string.full_payload)));
-        if(mConn.isPayloadTruncated()) {
-            mTruncatedWarning.setVisibility(View.VISIBLE);
-        }
-
-        // Allow interactions with the last item
+        // Add window insets handling to prevent unwanted padding from propagated insets
         ViewCompat.setOnApplyWindowInsetsListener(mRecyclerView, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
                     WindowInsetsCompat.Type.displayCutout());
@@ -131,33 +124,32 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         });
         mRecyclerView.setClipToPadding(false);
 
-        ViewCompat.setOnApplyWindowInsetsListener(mTruncatedWarning, (v, windowInsets) -> {
-            if(mConn.isPayloadTruncated()) {
-                applyTruncatedWarningInsets(windowInsets);
-                return WindowInsetsCompat.CONSUMED;
-            } else {
-                mInsets = windowInsets;
-                return windowInsets;
-            }
-        });
-
-        mCurChunks = mConn.getNumPayloadChunks();
+        boolean show_reply = args.getBoolean("show_reply");
         mShowAsPrintable = true;
-        mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
+        mAdapter = new PayloadAdapter(requireContext(), mHttpReq, show_reply);
+        mAdapter.setDisplayAsPrintableText(true);
         mAdapter.setExportPayloadHandler(mActivity);
-        mJustCreated = true;
 
-        // only set adapter after acknowledged (see setMenuVisibility below)
-        if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
-            mRecyclerView.setAdapter(mAdapter);
-    }
+        if (mHttpReq.decryptionError.isEmpty()) {
+            // only set adapter after acknowledged (see setMenuVisibility below)
+            if (payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
+                mRecyclerView.setAdapter(mAdapter);
+        } else {
+            LinearLayout errorContainer = view.findViewById(R.id.decryption_error_container);
+            TextView urlView = view.findViewById(R.id.request_url);
+            TextView errorView = view.findViewById(R.id.decryption_error);
+            Button showConnectionBtn = view.findViewById(R.id.show_connection_btn);
 
-    private void applyTruncatedWarningInsets(WindowInsetsCompat windowInsets) {
-        Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
-                WindowInsetsCompat.Type.displayCutout());
-        ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) mTruncatedWarning.getLayoutParams();
-        mlp.bottomMargin = insets.bottom;
-        mTruncatedWarning.setLayoutParams(mlp);
+            urlView.setText(mHttpReq.getProtoAndHost());
+            errorView.setText(mHttpReq.decryptionError);
+            mRecyclerView.setEmptyView(errorContainer);
+
+            showConnectionBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
+                intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, mHttpReq.conn.incr_id);
+                startActivity(intent);
+            });
+        }
     }
 
     @Override
@@ -196,42 +188,5 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     public void setDisplayMode(boolean showAsPrintable) {
         mShowAsPrintable = showAsPrintable;
         mAdapter.setDisplayAsPrintableText(showAsPrintable);
-    }
-
-    public boolean guessDisplayAsPrintable() {
-        // try to determine the best mode based on the current payload
-        if(mConn.getNumPayloadChunks() == 0)
-            return mConn.l7proto.equals("HTTPS");
-
-        PayloadChunk firstChunk = mConn.getPayloadChunk(0);
-        if((firstChunk == null) || (firstChunk.type == PayloadChunk.ChunkType.HTTP))
-            return true;
-
-        // guess based on the actual data
-        int maxLen = Math.min(firstChunk.payload.length, 16);
-        for(int i=0; i<maxLen; i++) {
-            if(!Utils.isPrintable(firstChunk.payload[i]))
-                return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public void connectionUpdated() {
-        if(mCurChunks == 0 && mActivity != null) {
-            mActivity.updateMenuVisibility();
-        }
-
-        if(mConn.getNumPayloadChunks() > mCurChunks) {
-            mAdapter.handleChunksAdded(mConn.getNumPayloadChunks());
-            mCurChunks = mConn.getNumPayloadChunks();
-        }
-
-        if(mConn.isPayloadTruncated() && (mTruncatedWarning != null))
-            mTruncatedWarning.setVisibility(View.VISIBLE);
-
-            if (mInsets != null)
-                applyTruncatedWarningInsets(mInsets);
     }
 }

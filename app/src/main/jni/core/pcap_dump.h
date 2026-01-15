@@ -46,12 +46,16 @@
  */
 typedef struct pcap_dumper pcap_dumper_t;
 
+#ifndef lib_pcap_pcap_h
+
 // compatible with pcap.h
 struct pcap_pkthdr {
     struct timeval ts;
     uint32_t caplen;
     uint32_t len;
 };
+
+#endif
 
 /* ******************************************************* */
 

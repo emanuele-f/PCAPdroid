@@ -322,12 +322,16 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             // see ConnectionDescriptor.processUpdate
             if(conn.status == ConnectionDescriptor.CONN_STATUS_CLOSED)
                 conn.status = ConnectionDescriptor.CONN_STATUS_CLIENT_ERROR;
+
+            HttpLog httpLog = CaptureService.getHttpLog();
+            if (httpLog != null)
+                httpLog.addDecryptionError(conn, tstamp, conn.decryption_error);
         } else if(type == MsgType.DATA_TRUNCATED) {
             conn.setPayloadTruncatedByAddon();
         } else if(type == MsgType.JS_INJECTED) {
             conn.js_injected_scripts = new String(message, StandardCharsets.US_ASCII);
         } else
-            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp));
+            conn.addPayloadChunkMitm(new PayloadChunk(message, getChunkType(type), isSent(type), tstamp, 0));
     }
 
     private synchronized void addPendingMessage(PendingMessage pending) {

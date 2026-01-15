@@ -96,6 +96,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -126,6 +127,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mDumperThread;
     private MitmReceiver mMitmReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
+    private AtomicInteger mNumUpdatesInProgress = new AtomicInteger();
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
     private String vpn_dns;
@@ -135,6 +137,7 @@ public class CaptureService extends VpnService implements Runnable {
     private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
+    private HttpLog mHttpLog;
     private Uri mPcapUri;
     private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
@@ -358,6 +361,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
+        mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
@@ -567,6 +571,7 @@ public class CaptureService extends VpnService implements Runnable {
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mFirewallWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
+        mNumUpdatesInProgress.set(0);
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
 
@@ -1087,6 +1092,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
     }
 
+    public static @Nullable HttpLog getHttpLog() {
+        return((INSTANCE != null) ? INSTANCE.mHttpLog : null);
+    }
+
     public static @NonNull ConnectionsRegister requireConnsRegister() {
         ConnectionsRegister reg = getConnsRegister();
 
@@ -1238,6 +1247,12 @@ public class CaptureService extends VpnService implements Runnable {
                 if(conns_updates.length > 0)
                     conn_reg.connectionsUpdates(conns_updates);
             }
+
+            int val = mNumUpdatesInProgress.decrementAndGet();
+            assert(val >= 0);
+
+            if ((val == 0) && (mHttpLog != null))
+                mHttpLog.stopConnectionsUpdates();
         }
     }
 
@@ -1441,6 +1456,14 @@ public class CaptureService extends VpnService implements Runnable {
 
         Log.d(TAG, "Get uid local=" + local + " remote=" + remote);
         return cm.getConnectionOwnerUid(protocol, local, remote);
+    }
+
+    public void startConnectionsUpdate() {
+        int val = mNumUpdatesInProgress.incrementAndGet();
+        assert(val >= 0);
+
+        if ((val == 1) && (mHttpLog != null))
+            mHttpLog.startConnectionsUpdates();
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {

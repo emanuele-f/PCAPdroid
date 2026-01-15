@@ -16,6 +16,34 @@
         android:scrollbarStyle="outsideOverlay"
         android:fillViewport="true" />
 
+    <LinearLayout
+        android:id="@+id/decryption_error_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/request_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp" />
+
+        <TextView
+            android:id="@+id/decryption_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/danger"
+            android:paddingBottom="8dp" />
+
+        <Button
+            android:id="@+id/show_connection_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_connection" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/truncated_warning"
         android:text="@string/payload_truncated"

@@ -27,8 +27,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,9 +37,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
@@ -50,11 +46,12 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
+import com.emanuelef.remote_capture.activities.MenuActionHandler;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.haipq.android.flagkit.FlagImageView;
 
-public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener, MenuProvider {
+public class ConnectionOverview extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener, MenuActionHandler {
     private static final String TAG = "ConnectionOverview";
     private ConnectionDetailsActivity mActivity;
     private ConnectionDescriptor mConn;
@@ -103,7 +100,6 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         return inflater.inflate(R.layout.connection_overview, container, false);
     }
 
@@ -253,12 +249,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
     }
 
     @Override
-    public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
-        menuInflater.inflate(R.menu.copy_share_menu, menu);
-    }
-
-    @Override
-    public boolean onMenuItemSelected(@NonNull MenuItem item) {
+    public boolean handleMenuAction(MenuItem item) {
         int id = item.getItemId();
 
         if(id == R.id.copy_to_clipboard) {

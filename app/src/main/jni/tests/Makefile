@@ -6,7 +6,7 @@ clean:
 run_tests:
 	mkdir -p build/test
 	cd build/test && \
-		cmake -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-fsanitize=address,leak -DHAVE_GNU_STRERROR_R -fno-omit-frame-pointer -O1" ../.. && \
+		cmake -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-fsanitize=address,leak -DHAVE_GNU_STRERROR_R -fno-omit-frame-pointer -g -O0" ../.. && \
 		$(MAKE) run_tests
 
 fuzz:

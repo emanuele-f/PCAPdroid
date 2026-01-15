@@ -66,6 +66,8 @@
         <activity
             android:name=".activities.ConnectionsActivity" />
         <activity
+            android:name=".activities.HttpDetailsActivity" />
+        <activity
             android:name=".activities.AppsActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
@@ -107,6 +109,9 @@
             android:parentActivityName=".activities.EditFilterActivity" />
         <activity
             android:name=".activities.EditFilterActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".activities.HttpLogFilterActivity"
             android:launchMode="singleTop" />
         <activity
             android:name=".activities.MitmSetupWizard"

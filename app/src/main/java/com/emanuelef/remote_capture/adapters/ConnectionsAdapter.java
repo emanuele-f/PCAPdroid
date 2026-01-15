@@ -233,7 +233,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     public long getItemId(int pos) {
         ConnectionDescriptor conn = getItem(pos);
 
-        return ((conn != null) ? conn.incr_id : Utils.UID_UNKNOWN);
+        return ((conn != null) ? conn.incr_id : -1);
     }
 
     private boolean matches(ConnectionDescriptor conn) {
@@ -497,5 +497,16 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
 
         return builder.toString();
+    }
+
+    public ArrayList<Integer> getFilteredConnectionIds() {
+        if (mFilteredConn == null)
+            return null;
+
+        ArrayList<Integer> ids = new ArrayList<>(mFilteredConn.size());
+        for (ConnectionDescriptor conn : mFilteredConn) {
+            ids.add(conn.incr_id);
+        }
+        return ids;
     }
 }

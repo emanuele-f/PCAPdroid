@@ -13,7 +13,14 @@ ushark_t* ushark_new(int pcap_encap, const char *dfilter);
 void ushark_destroy(ushark_t *sk);
 void ushark_set_pref(const char *name, const char *val);
 
-typedef void (*ushark_tls_data_callback)(const unsigned char *plain_data, unsigned int data_len);
-void ushark_dissect_tls(ushark_t *sk, const unsigned char *buf, const struct pcap_pkthdr *hdr, ushark_tls_data_callback cb);
+typedef struct {
+    void (*on_http1_data)(uint32_t conversation_id, const unsigned char *plain_data, size_t data_len);
+    void (*on_http2_request)(uint32_t conversation_id, uint32_t stream_id, const unsigned char *plain_data, size_t data_len);
+    void (*on_http2_response)(uint32_t conversation_id, uint32_t stream_id, const unsigned char *plain_data, size_t data_len);
+    void (*on_http2_reset)(uint32_t conversation_id, uint32_t stream_id);
+} ushark_data_callbacks_t;
+void ushark_set_callbacks(ushark_t *sk, const ushark_data_callbacks_t *cbs);
+
+const char* ushark_dissect(ushark_t *sk, const unsigned char *buf, const struct pcap_pkthdr *hdr);
 
 #endif

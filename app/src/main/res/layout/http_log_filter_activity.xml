@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/app_bar_layout">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:background="@color/colorActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppBarOverlay"
+            app:popupTheme="@style/PopupOverlay" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_margin="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/decryption_error_group"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/decryption_error_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                tools:visibility="visible"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/decryption_no_error_chip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ok"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/decryption_error_chip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/decryption_error"/>
+            </com.google.android.material.chip.ChipGroup>
+
+            <TextView
+                android:id="@+id/method_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/request_method"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/method_group"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/method_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
+            </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_method_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/content_type_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/content_type"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/content_type_group"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/content_type_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
+            </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_content_type_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/http_status_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/http_status"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/http_status_group"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/http_status_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:singleSelection="true">
+            </com.google.android.material.chip.ChipGroup>
+            <View
+                android:id="@+id/http_status_filter"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/payload_size_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/payload_size_threshold"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="18sp"
+                android:labelFor="@id/payload_size_slider"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginBottom="5dp"/>
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/payload_size_slider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:thumbColor="@color/colorAccent"
+                app:trackColorActive="@color/colorAccent"
+                app:trackColorInactive="@color/colorAccentLight"
+                app:labelBehavior="visible"
+                android:valueFrom="0"
+                android:valueTo="1024"
+                android:stepSize="1"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:value="100"
+                tools:valueTo="1024"/>
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

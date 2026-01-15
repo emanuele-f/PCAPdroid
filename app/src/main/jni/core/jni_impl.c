@@ -308,13 +308,16 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
         goto cleanup;
     }
 
+    // NOTE: updateConnections must be called after startConnectionsUpdate
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.startConnectionsUpdate);
+
     // New connections
     for(int i=0; i < pd->new_conns.cur_items; i++) {
         conn_and_tuple_t *conn = &pd->new_conns.items[i];
         conn->data->pending_notification = false;
 
         if(dumpNewConnection(pd, conn, new_conns, i) < 0)
-            goto cleanup;
+            goto send_and_cleanup;
     }
 
     //clock_t start = clock();
@@ -325,12 +328,13 @@ static void sendConnectionsDump(pcapdroid_t *pd) {
         conn->data->pending_notification = false;
 
         if(dumpConnectionUpdate(pd, conn, conns_updates, i) < 0)
-            goto cleanup;
+            goto send_and_cleanup;
     }
 
     //double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
     //log_d("avg cpu_time_used per update: %f sec", cpu_time_used / pd->conns_updates.cur_items);
 
+send_and_cleanup:
     /* Send the dump */
     (*env)->CallVoidMethod(env, pd->capture_service, mids.updateConnections, new_conns, conns_updates);
     jniCheckException(env);
@@ -428,16 +432,16 @@ static void notifyBlacklistsLoaded(pcapdroid_t *pd, bl_status_arr_t *status_arr)
 
 /* ******************************************************* */
 
-static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size) {
+static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size) {
     JNIEnv *env = pd->env;
     bool rv = false;
 
-    if(pctx->data->payload_chunks == NULL) {
+    if(conn->payload_chunks == NULL) {
         // Directly allocating an ArrayList<bytes> rather than creating it afterwards saves us from a data copy.
         // However, this creates a local reference, which is retained until sendConnectionsDump is called.
         // NOTE: Android only allows up to 512 local references.
-        pctx->data->payload_chunks = (*env)->NewObject(env, cls.arraylist, mids.arraylistNew);
-        if((pctx->data->payload_chunks == NULL) || jniCheckException(env))
+        conn->payload_chunks = (*env)->NewObject(env, cls.arraylist, mids.arraylistNew);
+        if((conn->payload_chunks == NULL) || jniCheckException(env))
             return false;
     }
 
@@ -445,12 +449,13 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, const pkt_context_t *pctx, co
     if(jniCheckException(env))
         return false;
 
-    jobject chunk_type = (pctx->data->l7proto == NDPI_PROTOCOL_HTTP) ? enums.chunktype_http : enums.chunktype_raw;
+    jobject chunk_type = (conn->l7proto == NDPI_PROTOCOL_HTTP) ? enums.chunktype_http : enums.chunktype_raw;
 
-    jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, pctx->is_tx, pctx->ms);
+    jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, is_tx, ms, stream_id);
     if(chunk && !jniCheckException(env)) {
-        (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*) dump_data);
-        rv = (*env)->CallBooleanMethod(env, pctx->data->payload_chunks, mids.arraylistAdd, chunk);
+        if (dump_data) // can be NULL for RST reporting in HTTP/2
+            (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*) dump_data);
+        rv = (*env)->CallBooleanMethod(env, conn->payload_chunks, mids.arraylistAdd, chunk);
     }
 
     //log_d("Dump chunk [size=%d]: %d", rv, dump_size);
@@ -543,6 +548,7 @@ static void init_jni(JNIEnv *env) {
     mids.protect = jniGetMethodID(env, cls.vpn_service, "protect", "(I)Z");
     mids.dumpPcapData = jniGetMethodID(env, cls.vpn_service, "dumpPcapData", "([B)V");
     mids.stopPcapDump = jniGetMethodID(env, cls.vpn_service, "stopPcapDump", "()V");
+    mids.startConnectionsUpdate = jniGetMethodID(env, cls.vpn_service, "startConnectionsUpdate", "()V");
     mids.updateConnections = jniGetMethodID(env, cls.vpn_service, "updateConnections", "([Lcom/emanuelef/remote_capture/model/ConnectionDescriptor;[Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.sendStatsDump = jniGetMethodID(env, cls.vpn_service, "sendStatsDump", "(Lcom/emanuelef/remote_capture/model/CaptureStats;)V");
     mids.sendServiceStatus = jniGetMethodID(env, cls.vpn_service, "sendServiceStatus", "(Ljava/lang/String;)V");
@@ -562,7 +568,7 @@ static void init_jni(JNIEnv *env) {
     mids.listGet = jniGetMethodID(env, cls.list, "get", "(I)Ljava/lang/Object;");
     mids.arraylistNew = jniGetMethodID(env, cls.arraylist, "<init>", "()V");
     mids.arraylistAdd = jniGetMethodID(env, cls.arraylist, "add", "(Ljava/lang/Object;)Z");
-    mids.payloadChunkInit = jniGetMethodID(env, cls.payload_chunk, "<init>", "([BLcom/emanuelef/remote_capture/model/PayloadChunk$ChunkType;ZJ)V");
+    mids.payloadChunkInit = jniGetMethodID(env, cls.payload_chunk, "<init>", "([BLcom/emanuelef/remote_capture/model/PayloadChunk$ChunkType;ZJI)V");
 
     /* Fields */
     fields.bldescr_fname = jniFieldID(env, cls.blacklist_descriptor, "fname", "Ljava/lang/String;");

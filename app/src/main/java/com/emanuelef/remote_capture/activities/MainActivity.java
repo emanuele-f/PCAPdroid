@@ -70,6 +70,7 @@ import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
+import com.emanuelef.remote_capture.fragments.DataViewContainerFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -355,10 +356,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mDrawer.closeDrawer(GravityCompat.START, true);
         else {
             if(mPager.getCurrentItem() == POS_CONNECTIONS) {
-                Fragment fragment = getFragment(ConnectionsFragment.class);
+                Fragment container = getFragmentAtPos(POS_CONNECTIONS);
 
-                if((fragment != null) && ((ConnectionsFragment)fragment).onBackPressed())
-                    return;
+                if((container != null) && (container instanceof DataViewContainerFragment)) {
+                    if(((DataViewContainerFragment)container).onBackPressed())
+                        return;
+                }
             }
 
             super.onBackPressed();
@@ -483,7 +486,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 case POS_STATUS:
                     return new StatusFragment();
                 case POS_CONNECTIONS:
-                    return new ConnectionsFragment();
+                    return new DataViewContainerFragment();
             }
         }
 
@@ -508,6 +511,26 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
                 tab.setText(getString(stateAdapter.getPageTitle(position)))
         ).attach();
+
+        View switchButton = findViewById(R.id.tab_switch_button);
+        if (switchButton != null) {
+            switchButton.setOnClickListener(v -> {
+                if (mPager.getCurrentItem() != POS_CONNECTIONS) {
+                    // Switch to Connections tab first, then toggle after fragment is created
+                    mPager.setCurrentItem(POS_CONNECTIONS);
+                    mPager.post(this::toggleDataView);
+                } else {
+                    toggleDataView();
+                }
+            });
+        }
+    }
+
+    private void toggleDataView() {
+        Fragment container = getFragmentAtPos(POS_CONNECTIONS);
+        if (container instanceof DataViewContainerFragment) {
+            ((DataViewContainerFragment) container).toggleView();
+        }
     }
 
     @Override
@@ -622,6 +645,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateReady() {
         mState = AppState.ready;
         notifyAppState();
+        updateTabSwitchButton();
 
         if(mPcapLoadDialog != null)
             checkLoadedPcap();
@@ -635,6 +659,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateRunning() {
         mState = AppState.running;
         notifyAppState();
+        updateTabSwitchButton();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             checkVpnLockdownNotice();
@@ -653,6 +678,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void appStateStopping() {
         mState = AppState.stopping;
         notifyAppState();
+    }
+
+    private void updateTabSwitchButton() {
+        View switchButton = findViewById(R.id.tab_switch_button);
+        if (switchButton != null) {
+            boolean httpLogAvailable = (CaptureService.getHttpLog() != null);
+            switchButton.setVisibility(httpLogAvailable ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
     }
 
     private void checkDecryptionRulesNotice() {

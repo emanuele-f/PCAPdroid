@@ -84,6 +84,7 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -147,6 +148,19 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (hidden) {
+            clearFilters();
+        } else {
+            if (mRecyclerView != null) {
+                mRecyclerView.scrollToPosition(0);
+            }
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
@@ -159,7 +173,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        if (!(getParentFragment() instanceof DataViewContainerFragment)) {
+            requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        }
         return inflater.inflate(R.layout.connections, container, false);
     }
 
@@ -255,6 +271,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
                 intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, item.incr_id);
+
+                if(mAdapter.hasFilter()) {
+                    ArrayList<Integer> filteredIds = mAdapter.getFilteredConnectionIds();
+                    if(filteredIds != null)
+                        intent.putIntegerArrayListExtra(ConnectionDetailsActivity.FILTERED_IDS_KEY, filteredIds);
+                }
+
                 startActivity(intent);
             }
         });
@@ -291,7 +314,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            //public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
                 recheckScroll();
             }
         });
@@ -1082,5 +1104,13 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
         return Utils.backHandleSearchview(mSearchView);
+    }
+
+    public void clearFilters() {
+        if(mAdapter != null) {
+            mAdapter.mFilter = new FilterDescriptor();
+            mAdapter.refreshFilteredConnections();
+            refreshActiveFilter();
+        }
     }
 }
