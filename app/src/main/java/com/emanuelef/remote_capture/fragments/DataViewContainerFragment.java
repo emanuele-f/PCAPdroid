@@ -143,38 +143,24 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
             if (mConnectionsFragment instanceof ConnectionsFragment) {
                 ((ConnectionsFragment) mConnectionsFragment).onCreateMenu(menu, menuInflater);
             }
-
-            if (CaptureService.getHttpLog() != null)
-                menu.add(Menu.NONE, R.id.switch_to_http_log, 25, R.string.switch_to_http)
-                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         } else if ((mCurrentView == VIEW_HTTP_LOG) && (mHttpLogFragment != null)) {
             if (mHttpLogFragment instanceof HttpLogFragment) {
                 ((HttpLogFragment) mHttpLogFragment).onCreateMenu(menu, menuInflater);
             }
-            menu.add(Menu.NONE, R.id.switch_to_connections, 25, R.string.switch_to_connections)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
+
+        updateTabTitle();
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.switch_to_http_log) {
-            switchToView(VIEW_HTTP_LOG);
-            return true;
-        } else if (id == R.id.switch_to_connections) {
-            switchToView(VIEW_CONNECTIONS);
-            return true;
-        }
-
-        if (mCurrentView == VIEW_CONNECTIONS && mConnectionsFragment != null) {
+        if ((mCurrentView == VIEW_CONNECTIONS) && (mConnectionsFragment != null)) {
             if (mConnectionsFragment instanceof ConnectionsFragment) {
                 if (((ConnectionsFragment) mConnectionsFragment).onMenuItemSelected(item)) {
                     return true;
                 }
             }
-        } else if (mCurrentView == VIEW_HTTP_LOG && mHttpLogFragment != null) {
+        } else if ((mCurrentView == VIEW_HTTP_LOG) && (mHttpLogFragment != null)) {
             if (mHttpLogFragment instanceof HttpLogFragment) {
                 if (((HttpLogFragment) mHttpLogFragment).onMenuItemSelected(item)) {
                     return true;
@@ -183,6 +169,12 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
         }
 
         return false;
+    }
+
+    public void toggleView() {
+        int targetView = (mCurrentView == VIEW_CONNECTIONS) ?
+            VIEW_HTTP_LOG : VIEW_CONNECTIONS;
+        switchToView(targetView);
     }
 
     private void switchToView(int targetView) {
@@ -220,6 +212,13 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
                     R.string.connections_view : R.string.http_requests;
                 tab.setText(getString(titleRes));
             }
+        }
+
+        View switchButton = activity.findViewById(R.id.tab_switch_button);
+        if (switchButton != null) {
+            int contentDescRes = (mCurrentView == VIEW_CONNECTIONS) ?
+                R.string.switch_to_http : R.string.switch_to_connections;
+            switchButton.setContentDescription(getString(contentDescRes));
         }
     }
 
