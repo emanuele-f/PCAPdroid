@@ -88,7 +88,8 @@
 - [x] Implementato mapping DB → DTO
 - [x] Implementato client HTTP Android (OkHttp)
 - [x] Implementato servizio di sincronizzazione (`SyncService`)
-- [x] Definita politica di invio batch (non realtime)
+- [x] Definita politica di invio batch (manuale, non realtime)
+- [x] Gestione robusta errori di rete e autenticazione
 
 ---
 
@@ -118,37 +119,55 @@
 
 ---
 
-## TODO successivi
+## Fase 8 - GDPR e gestione dati utente (Backend)
 
-### Backend – funzionalità GDPR e API core
 - [x] Endpoint `POST /network-requests/batch`
 - [x] Test end-to-end invio dati Android → backend
-- [x] Endpoint `GET /me/data`
-- [x] Endpoint `GET /me/data/export` (CSV)
-- [x] Endpoint `DELETE /me/data`
-- [ ] Endpoint CRUD amministratore su dati utenti
-- [ ] Applicazione anonimizzazione lato mobile e/o backend
-- [ ] Download dati utente in formato CSV (GDPR)
+- [x] Endpoint `GET /network-requests/me/data`
+- [x] Endpoint `GET /network-requests/me/data/export` (CSV)
+- [x] Endpoint `DELETE /network-requests/me/data`
+- [x] Gestione BigInt → JSON per compatibilità API
+- [x] Verifica completa tramite Prisma Studio
 
-### Integrazione Android ↔ Backend (JWT)
-- [x] Analisi flusso autenticazione e sincronizzazione
-- [x] Introduzione gestione sessione lato Android
+---
+
+## Fase 9 - Integrazione Android ↔ Backend (JWT reale)
+
 - [x] Implementata classe `SessionManager` (SharedPreferences)
-- [x] Collegato `BackendClient` al JWT tramite header Authorization
-- [x] Collegato `SyncService` al `SessionManager`
-- [x] Separazione chiara tra autenticazione e sincronizzazione
-- [ ] Implementazione login JWT reale da Android
-- [ ] Gestione errore token mancante o scaduto
+- [x] Gestione login JWT reale da Android
+- [x] Separazione AuthClient / BackendClient
+- [x] Inclusione automatica JWT in header Authorization
+- [x] Gestione token mancante o scaduto (401 → logout)
+- [x] Blocco invio dati se utente non autenticato
+- [x] Gestione errori e assenza di crash
 
-### Frontend / UI
-- [ ] UI dedicata per esame LAM
-- [ ] Avviso al primo utilizzo (informativa privacy)
-- [ ] Login utente backend da mobile
-- [ ] Pulsante invio batch manuale
-- [ ] Pulsante download / delete dati
+---
 
-### Estensioni e analisi
-- [ ] Analisi dei dati persistiti
-- [ ] Query di aggregazione (per app, dominio, protocollo)
-- [ ] Studio performance database
-- [ ] Integrazione PostGIS per geo-query (opzionale)
+## Fase 10 - UI minima 
+
+- [x] Creata Activity dedicata alla tesi
+- [x] Login utente backend
+- [x] Avvio cattura PCAPdroid
+- [x] Pulsante invio batch manuale
+- [x] Pulsante export CSV
+- [x] Pulsante cancellazione dati GDPR
+- [x] Feedback utente tramite Toast / Log
+
+---
+
+## Fase 11 - Trasparenza e robustezza
+
+- [x] Warning al primo utilizzo (informativa privacy)
+- [x] Persistenza consenso tramite SharedPreferences
+- [x] Nessuna chiamata backend sul main thread
+- [x] Gestione completa degli errori di rete
+- [x] Applicazione stabile (no crash)
+
+---
+
+## Estensioni future (opzionali)
+
+- [ ] Endpoint CRUD amministratore
+- [ ] Analisi aggregata dei dati
+- [ ] Query per app / dominio / protocollo
+- [ ] Integrazione PostGIS per geo-query

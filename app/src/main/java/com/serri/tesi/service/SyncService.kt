@@ -18,6 +18,14 @@ import serri.tesi.auth.SessionManager //per accedere a token jwt
  * In caso di esito positivo, i record vengono marcati come sincronizzati,
  * garantendo consistenza ed evitando duplicati
  */
+
+// per mostrare risultato operazione
+enum class SyncResult {
+    NO_DATA,
+    SUCCESS,
+    ERROR
+}
+
 class SyncService(private val context: Context) {
 
     /**
@@ -26,13 +34,22 @@ class SyncService(private val context: Context) {
      * metodo recupera un batch di record non sincronizzati, li invia al backend
      * remoto e, in caso di successo, aggiorna lo stato locale della cache.
      */
-    fun syncOnce() {
+    fun syncOnce(): SyncResult {
         //accedere a db locale (cache SQLite)
         val repo = TrackerRepository(context) //crea istanza del repo x accedere a db locale
         // val client = BackendClient("http://10.0.2.2:8080") //crea client x comunicare con backend
 
         //istanzia sessionmanager, x gestione sessione utente
         val sessionManager = SessionManager(context) // consente di recuperare token jwt salvato e riutilizzarlo
+
+        //gestione robustezza sessioni
+        //punto in cui sync service parla con backend, nessun dato deve uscire se user non è autenticato
+
+        //se utente non loggato, sync annullato
+        if (!sessionManager.isLoggedIn()) {
+            Log.w("TESI_SYNC", "Utente non loggato: sync annullato")
+            return SyncResult.ERROR
+        }
 
         //creazione client http (autenticato) per comunicazione con backend remoto
         val client = BackendClient(
@@ -47,7 +64,7 @@ class SyncService(private val context: Context) {
         //se non trova record da sincronuzzare, esce
         if (pending.isEmpty()) {
             Log.d("TESI_SYNC", "No records to sync")
-            return
+            return SyncResult.NO_DATA
         }
 
         //convertire ogni request record (locale) in un dto (x trasmissione)
@@ -59,15 +76,17 @@ class SyncService(private val context: Context) {
             Log.d("TESI_PRIVACY", "DTO anonimizzato=$it")
         }
 
+        //Log.d("TESI_SYNC", "Calling sendBatch()")
         val success = client.sendBatch(batch) //invia batch al backend, true se successo
 
         if (success) { //se invio a buon fine
             repo.markAsSynced(pending.mapNotNull { it.id }) //estrae id dei record sinc
             Log.d("TESI_SYNC", "Synced ${pending.size} records")//synced=1 nel db locale
+            return SyncResult.SUCCESS
         } else {
             Log.e("TESI_SYNC", "Sync failed")
+            return SyncResult.ERROR
         }
-
     }
 }
 

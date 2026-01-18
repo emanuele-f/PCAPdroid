@@ -39,4 +39,15 @@ class SessionManager(context: Context) {
             .remove(KEY_JWT)
             .apply()
     }
+
+    // true se esiste un token salvato
+    fun isLoggedIn(): Boolean {
+        return getToken() != null
+    }
+
+    // logout = cancella token
+    fun logout() {
+        clearToken()
+    }
+
 }
