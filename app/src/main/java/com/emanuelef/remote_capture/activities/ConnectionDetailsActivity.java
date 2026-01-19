@@ -43,6 +43,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.fragments.ConnectionOverview;
 import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.interfaces.PayloadHostActivity;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.google.android.material.tabs.TabLayout;
@@ -50,7 +51,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 
-public class ConnectionDetailsActivity extends PayloadExportActivity implements ConnectionsListener {
+public class ConnectionDetailsActivity extends PayloadExportActivity implements ConnectionsListener, PayloadHostActivity {
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_ID_KEY = "conn_id";
     public static final String FILTERED_IDS_KEY = "filtered_ids";
@@ -64,7 +65,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     private boolean mHasPayload;
     private boolean mHasHttpTab;
     private boolean mHasWsTab;
-    private final ArrayList<ConnUpdateListener> mListeners = new ArrayList<>();
+    private final ArrayList<PayloadHostActivity.ConnUpdateListener> mListeners = new ArrayList<>();
     private int mConnId;
     private ArrayList<Integer> mFilteredIds;
     private int mFilteredIndex;
@@ -79,10 +80,6 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     private static final int POS_WEBSOCKET = 1;
     private static final int POS_HTTP = 2;
     private static final int POS_RAW_PAYLOAD = 3;
-
-    public interface ConnUpdateListener {
-        void connectionUpdated();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,16 +128,12 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     @Override
     public void onResume() {
         super.onResume();
-
-        // Closed connections won't be updated
-        if(mConn.status < ConnectionDescriptor.CONN_STATUS_CLOSED)
-            registerConnsListener();
+        registerConnsListener();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
         unregisterConnsListener();
     }
 
@@ -277,11 +270,13 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
         }
     }
 
-    public void addConnUpdateListener(ConnUpdateListener listener) {
+    @Override
+    public void addConnUpdateListener(PayloadHostActivity.ConnUpdateListener listener) {
         mListeners.add(listener);
     }
 
-    public void removeConnUpdateListener(ConnUpdateListener listener) {
+    @Override
+    public void removeConnUpdateListener(PayloadHostActivity.ConnUpdateListener listener) {
         mListeners.remove(listener);
     }
 
@@ -319,7 +314,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     }
 
     private void dispatchConnUpdate() {
-        for(ConnUpdateListener listener: mListeners)
+        for(PayloadHostActivity.ConnUpdateListener listener: mListeners)
             listener.connectionUpdated();
 
         if((mCurChunks < MAX_CHUNKS_TO_CHECK) && (mConn.getNumPayloadChunks() > mCurChunks))

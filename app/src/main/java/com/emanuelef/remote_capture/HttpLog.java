@@ -94,6 +94,10 @@ public class HttpLog {
         public int compareTo(HttpRequest o) {
             return Long.compare(timestamp, o.timestamp);
         }
+
+        public boolean hasWebsocketData() {
+            return conn.hasWebsocketData();
+        }
     }
 
     public static class HttpReply {

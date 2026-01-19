@@ -125,6 +125,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
     public boolean encrypted_payload; // actual payload is encrypted (e.g. telegram - see Utils.hasEncryptedPayload)
+    private boolean has_websocket_data;
     public String decryption_error;
     public String js_injected_scripts;
     public String country;
@@ -204,19 +205,25 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
                 // Some pending updates with payload may still be received after low memory has been
                 // triggered and payload disabled
                 if(!CaptureService.isLowMemory()) {
-                    if ((CaptureService.getHttpLog() != null) && (update.payload_chunks != null)) {
+                    if (update.payload_chunks != null) {
+                        boolean has_http_log = (CaptureService.getHttpLog() != null);
                         int chunk_pos = payload_chunks.size();
 
                         for (PayloadChunk chunk: update.payload_chunks) {
-                            if (chunk.type == PayloadChunk.ChunkType.HTTP)
+                            if (has_http_log && (chunk.type == PayloadChunk.ChunkType.HTTP))
                                 logHttpChunk(chunk, chunk_pos);
+
+                            // NOTE: logHttpChunk may change the chunk type
+                            // from HTTP to WEBSOCKET after detecting a websocket upgrade
+                            // so this condition should be checked separately
+                            if (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)
+                                has_websocket_data = true;
 
                             chunk_pos++;
                         }
-                    }
 
-                    if(update.payload_chunks != null)
                         payload_chunks.addAll(update.payload_chunks);
+                    }
                     payload_truncated = update.payload_truncated;
                     internal_decrypt = update.payload_decrypted;
                 }
@@ -361,6 +368,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
 
     public boolean isPayloadTruncated() { return payload_truncated; }
     public boolean isPortMappingApplied() { return port_mapping_applied; }
+    public boolean hasWebsocketData() { return has_websocket_data; }
 
     public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt) && !PCAPdroid.getInstance().isDecryptingPcap(); }
     public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (mitm_decrypt || internal_decrypt) && (getNumPayloadChunks() > 0); }
@@ -377,6 +385,8 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
         if (chunk.type == PayloadChunk.ChunkType.HTTP)
             logHttpChunk(chunk, payload_chunks.size());
+        else if (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)
+            has_websocket_data = true;
 
         payload_chunks.add(chunk);
         payload_length += chunk.payload.length;

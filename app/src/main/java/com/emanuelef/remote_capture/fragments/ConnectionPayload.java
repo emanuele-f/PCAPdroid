@@ -41,16 +41,16 @@ import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
-import com.emanuelef.remote_capture.activities.ConnectionDetailsActivity;
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
+import com.emanuelef.remote_capture.interfaces.PayloadHostActivity;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.views.EmptyRecyclerView;
 
-public class ConnectionPayload extends Fragment implements ConnectionDetailsActivity.ConnUpdateListener {
+public class ConnectionPayload extends Fragment implements PayloadHostActivity.ConnUpdateListener {
     private static final String TAG = "ConnectionPayload";
-    private ConnectionDetailsActivity mActivity;
+    private PayloadHostActivity mActivity;
     private ConnectionDescriptor mConn;
     private PayloadAdapter mAdapter;
     private TextView mTruncatedWarning;
@@ -72,7 +72,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mActivity = (ConnectionDetailsActivity) context;
+        mActivity = (PayloadHostActivity) context;
         mActivity.addConnUpdateListener(this);
 
         if (mAdapter != null)
@@ -107,7 +107,7 @@ public class ConnectionPayload extends Fragment implements ConnectionDetailsActi
         mConn = reg.getConnById(args.getInt("conn_id"));
         if(mConn == null) {
             Utils.showToast(requireContext(), R.string.connection_not_found);
-            mActivity.finish();
+            requireActivity().finish();
             return;
         }
 

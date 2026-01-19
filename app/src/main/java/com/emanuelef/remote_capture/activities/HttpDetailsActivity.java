@@ -20,6 +20,8 @@
 package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,17 +33,23 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 import com.emanuelef.remote_capture.fragments.HttpPayloadFragment;
+import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
+import com.emanuelef.remote_capture.interfaces.PayloadHostActivity;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
+import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 
-public class HttpDetailsActivity extends PayloadExportActivity {
+public class HttpDetailsActivity extends PayloadExportActivity implements ConnectionsListener, PayloadHostActivity {
     private static final String TAG = "HttpRequestDetailsActivity";
     public static final String HTTP_REQ_POS_KEY = "req_pos";
     public static final String FILTERED_POSITIONS_KEY = "filtered_positions";
@@ -58,7 +66,11 @@ public class HttpDetailsActivity extends PayloadExportActivity {
 
     private static final int POS_REQUEST = 0;
     private static final int POS_REPLY = 1;
-    private static final int POS_COUNT = 2;
+    private static final int POS_WEBSOCKET = 2;
+    private boolean mHasWebsocket = false;
+    private final ArrayList<PayloadHostActivity.ConnUpdateListener> mListeners = new ArrayList<>();
+    private Handler mHandler;
+    private boolean mListenerSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +110,26 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             return;
         }
 
+        // Check if this HTTP request has associated websocket data
+        mHasWebsocket = mHttpReq.hasWebsocketData();
+
+        mHandler = new Handler(Looper.getMainLooper());
+
         mPager = findViewById(R.id.pager);
         Utils.fixViewPager2Insets(mPager);
         setupTabs();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerConnsListener();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterConnsListener();
     }
 
     private void setupTabs() {
@@ -162,6 +191,7 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             mMenuNext.getIcon().setAlpha(hasNext ? 255 : 80);
     }
 
+    @Override
     public void updateMenuVisibility() {
         if(mMenuDisplayAs == null)
             return;
@@ -169,12 +199,9 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         mMenuDisplayAs.setVisible(true);
 
         Fragment currentFragment = getCurrentFragment();
-        if(currentFragment instanceof HttpPayloadFragment) {
-            HttpPayloadFragment payloadFragment = (HttpPayloadFragment) currentFragment;
-
-            if(mDisplayMode == null) {
+        if(currentFragment instanceof HttpPayloadFragment payloadFragment) {
+            if(mDisplayMode == null)
                 mDisplayMode = true;
-            }
 
             payloadFragment.setDisplayMode(mDisplayMode);
 
@@ -183,6 +210,16 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             } else {
                 mMenuDisplayAs.setTitle(R.string.display_as_text);
             }
+        } else if(currentFragment instanceof ConnectionPayload wsFragment) {
+            if(mDisplayMode == null)
+                mDisplayMode = true;
+
+            wsFragment.setDisplayMode(mDisplayMode);
+
+            if(mDisplayMode)
+                mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
+            else
+                mMenuDisplayAs.setTitle(R.string.display_as_text);
         }
     }
 
@@ -254,6 +291,9 @@ public class HttpDetailsActivity extends PayloadExportActivity {
             if(mHttpReq != null) {
                 setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
 
+                // Check if this HTTP request has associated websocket data
+                mHasWebsocket = mHttpReq.hasWebsocketData();
+
                 int currentTab = mPager.getCurrentItem();
 
                 setupTabs();
@@ -276,18 +316,98 @@ public class HttpDetailsActivity extends PayloadExportActivity {
         }
     }
 
+    private void registerConnsListener() {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if((reg != null) && !mListenerSet) {
+            if(mHttpReq.conn.status < ConnectionDescriptor.CONN_STATUS_CLOSED) {
+                Log.d(TAG, "Adding connections listener");
+                reg.addListener(this);
+                mListenerSet = true;
+            }
+        }
+
+        dispatchConnUpdate();
+    }
+
+    private void unregisterConnsListener() {
+        if(mListenerSet) {
+            ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+            if(reg != null) {
+                Log.d(TAG, "Removing connections listener");
+                reg.removeListener(this);
+            }
+
+            mListenerSet = false;
+        }
+    }
+
+    @Override
+    public void connectionsChanges(int num_connections) {}
+
+    @Override
+    public void connectionsAdded(int start, ConnectionDescriptor[] conns) {}
+
+    @Override
+    public void connectionsRemoved(int start, ConnectionDescriptor[] conns) {}
+
+    @Override
+    public void connectionsUpdated(int[] positions) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+
+        if((reg == null) || (mHttpReq == null))
+            return;
+
+        for(int pos : positions) {
+            ConnectionDescriptor conn = reg.getConn(pos);
+
+            if((conn != null) && (conn.incr_id == mHttpReq.conn.incr_id)) {
+                mHandler.post(this::dispatchConnUpdate);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void addConnUpdateListener(PayloadHostActivity.ConnUpdateListener listener) {
+        mListeners.add(listener);
+    }
+
+    @Override
+    public void removeConnUpdateListener(PayloadHostActivity.ConnUpdateListener listener) {
+        mListeners.remove(listener);
+    }
+
+    private void dispatchConnUpdate() {
+        for(PayloadHostActivity.ConnUpdateListener listener: mListeners)
+            listener.connectionUpdated();
+
+        // Check if websocket tab needs to be added
+        if(!mHasWebsocket && (mHttpReq != null) && mHttpReq.hasWebsocketData()) {
+            mHasWebsocket = true;
+            mPagerAdapter.notifyDataSetChanged();
+        }
+
+        if((mHttpReq != null) && (mHttpReq.conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED))
+            unregisterConnsListener();
+    }
+
     private class StateAdapter extends FragmentStateAdapter {
         StateAdapter(final FragmentActivity fa) { super(fa); }
 
         @NonNull
         @Override
-        public Fragment createFragment(int pos) {
+        public Fragment createFragment(int position) {
             //Log.d(TAG, "createFragment");
             int req_pos = mHttpReq.getPosition();
+            int pos = getVisibleTabsPositions()[position];
 
             switch (pos) {
                 case POS_REPLY:
                     return HttpPayloadFragment.newInstance(req_pos, true);
+                case POS_WEBSOCKET:
+                    return ConnectionPayload.newInstance(PayloadChunk.ChunkType.WEBSOCKET, mHttpReq.conn.incr_id);
                 case POS_REQUEST:
                 default:
                     return HttpPayloadFragment.newInstance(req_pos, false);
@@ -296,17 +416,42 @@ public class HttpDetailsActivity extends PayloadExportActivity {
 
         @Override
         public int getItemCount() {
-            // Only show response tab if there's a reply
-            return (mHttpReq.reply != null) ? POS_COUNT : 1;
+            // Request tab is always shown
+            // Reply tab shown if there's a reply
+            // Websocket tab shown if there's websocket data
+            int count = 1;  // Request tab
+            if (mHttpReq.reply != null)
+                count++;    // Reply tab
+            if (mHasWebsocket)
+                count++;    // Websocket tab
+            return count;
         }
 
-        public int getPageTitle(final int pos) {
+        public int getPageTitle(final int position) {
+            int pos = getVisibleTabsPositions()[position];
+
             switch (pos) {
                 case POS_REPLY:
                     return R.string.response;
+                case POS_WEBSOCKET:
+                    return R.string.websocket;
                 default:
                     return R.string.request;
             }
+        }
+
+        public int[] getVisibleTabsPositions() {
+            int[] visible = new int[getItemCount()];
+            int i = 0;
+
+            visible[i++] = POS_REQUEST;
+
+            if (mHttpReq.reply != null)
+                visible[i++] = POS_REPLY;
+            if (mHasWebsocket)
+                visible[i] = POS_WEBSOCKET;
+
+            return visible;
         }
     }
 }
