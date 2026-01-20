@@ -34,7 +34,7 @@ class BackendClient(
     fun sendBatch(batch: BatchDto): Boolean {
         //Log.d("TESI_SYNC", "Entered sendBatch()")
 
-        //try catch per evitare crash
+        //try catch per evitare crash/intercettare eccezzioni di rete
         // intercetta backend spento, rete assente, timeout, errori okHttp
         return try {
             val json = gson.toJson(batch) //serializza oggetto batchdto in stringa Json
@@ -87,23 +87,26 @@ class BackendClient(
     //metodo per download dati utente
     //endpoint GET /me/data/export (gdpr portabilità)
     fun downloadCsv(): ByteArray? {
-        return try {
-            val token = sessionManager.getToken() ?: return null
+        return try { //protrgge operazioni download da eccezioni di rete o i/o
+            val token = sessionManager.getToken() ?: return null //recupera token altrimenti blocca op.
             Log.d("TESI_CSV", "Token = $token")
 
+            //avvio costruzione richiesta http
             val request = Request.Builder()
-                .url("$baseUrl/network-requests/me/data/export")
-                .addHeader("Authorization", "Bearer $token")
-                .get()
-                .build()
+                .url("$baseUrl/network-requests/me/data/export") //endpoint
+                .addHeader("Authorization", "Bearer $token") //inserisce token per autorizzare accesso ai dati
+                .get() //imposta metodo per download
+                .build() //costruisce richiesta
 
+            //esegue richiesta + rilascio risorse
             client.newCall(request).execute().use { response ->
                 Log.d("TESI_CSV", "HTTP code = ${response.code}")
-                val bytes = response.body?.bytes()
+                val bytes = response.body?.bytes() //legge body risposta (array di byte, file csv)
                 Log.d("TESI_CSV", "Bytes null = ${bytes == null}")
+                Log.d("TESI_CSV", "Bytes size = ${bytes?.size}")
 
-                if (!response.isSuccessful) return null
-                bytes
+                if (!response.isSuccessful) return null //se errore backend annulla op.
+                bytes //restituisce dati binari del csw
             }
         } catch (e: Exception) {
             Log.e("TESI_CSV", "Exception", e)
@@ -114,15 +117,17 @@ class BackendClient(
     //metodo per eliminazione dati utente
     //endpoint DELETE /me/data (gdpr oblio)
     fun deleteMyData(): Boolean {
-        return try {
-            val token = sessionManager.getToken() ?: return false
+        return try {//blocco sicuro per operazione cancellazione dati
+            val token = sessionManager.getToken() ?: return false //recupera token
 
+            //costruzione richiesta http
             val request = Request.Builder()
-                .url("$baseUrl/network-requests/me/data")
+                .url("$baseUrl/network-requests/me/data")//endpoint
                 .addHeader("Authorization", "Bearer $token")
                 .delete()
                 .build()
 
+            //esecuzione richiesta
             client.newCall(request).execute().use { response ->
                 response.isSuccessful
             }

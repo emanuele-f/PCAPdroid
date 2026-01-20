@@ -19,7 +19,7 @@ import serri.tesi.auth.SessionManager //per accedere a token jwt
  * garantendo consistenza ed evitando duplicati
  */
 
-// per mostrare risultato operazione
+// per mostrare risultato operazione invio dati backend
 enum class SyncResult {
     NO_DATA,
     SUCCESS,
