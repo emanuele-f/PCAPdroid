@@ -9,34 +9,23 @@
         android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="?attr/actionBarSize">
+        android:paddingTop="?attr/actionBarSize"
+        android:gravity="center">
 
+        <TextView
+            android:id="@+id/mainTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Cattura dati"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/openPcapdroidButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Apri PCAPdroid / Avvia cattura" />
-
-        <EditText
-            android:id="@+id/emailInput"
-            android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/passwordInput"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/loginButton"
-            android:text="Login"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <View
             android:layout_width="match_parent"

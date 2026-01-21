@@ -7,6 +7,7 @@ import serri.tesi.mapper.NetworkRequestMapper //mapper converte modello richiest
 import serri.tesi.network.BackendClient //client responsabile di comunicazione http con backend remoto
 import serri.tesi.repo.TrackerRepository //repo per accesso ai dati locali
 import serri.tesi.auth.SessionManager //per accedere a token jwt
+import serri.tesi.config.BackendConfig //url backend
 
 
 /**
@@ -53,7 +54,7 @@ class SyncService(private val context: Context) {
 
         //creazione client http (autenticato) per comunicazione con backend remoto
         val client = BackendClient(
-            baseUrl = "http://10.0.2.2:3000", //indirizzo backend
+            baseUrl = BackendConfig.getBaseUrl(), //indirizzo backend
             sessionManager = sessionManager // sessionManager passato a client x inclusione autom. token nell'header Auth. di ogni richiesta
         )
         //10.0.2.2 permette all'emulatore Android di raggiungere il localhost della macchina host

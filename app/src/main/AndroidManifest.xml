@@ -51,7 +51,8 @@
         <!-- Activity per tesi -->
         <activity
             android:name="serri.tesi.ui.TesiEntryActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/TesiTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -61,13 +62,16 @@
 
         <activity
             android:name="serri.tesi.ui.TesiLoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/TesiTheme"/>
 
         <activity
             android:name="serri.tesi.ui.MainActivity"
-            android:exported="true"></activity>
-
+            android:exported="true"
+            android:theme="@style/TesiTheme">
+        </activity>
         <!-- fine -->
+
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"

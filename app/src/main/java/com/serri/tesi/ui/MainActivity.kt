@@ -2,10 +2,9 @@ package serri.tesi.ui //Package contenente classi di interfaccia utente
 
 import android.os.Bundle // usato per passare lo stato dell’Activity
 
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
 //Componenti UI di base Android
+import android.widget.Button
+import android.widget.Toast
 
 import androidx.appcompat.app.AppCompatActivity //Classe base per Activity compatibili con AppCompat
 import com.emanuelef.remote_capture.R // Risorse grafiche/layout generate automaticamente
@@ -13,18 +12,18 @@ import serri.tesi.auth.SessionManager //Classe che gestisce la sessione utente (
 import serri.tesi.service.SyncService //Servizio che si occupa della sincronizzazione con il backend
 import android.content.Intent // Intent x navigazione tra Activity
 import com.emanuelef.remote_capture.activities.MainActivity as PcapMainActivity // per evitare conflitto di nome con questa MainActivity
-import kotlin.concurrent.thread //Utility Kotlin per eseguire codice su thread separato
-import serri.tesi.network.AuthClient // Client HTTP per autenticazione (login)
 import android.os.Environment // Accesso a directory standard del filesystem Android
 
+// Classi Java per gestione file e scrittura binaria
 import java.io.File
 import java.io.FileOutputStream
-// Classi Java per gestione file e scrittura binaria
 
 import serri.tesi.network.BackendClient //Client HTTP per comunicazione col backend (sync, export, delete)
 import androidx.appcompat.app.AlertDialog //Dialog per conferme utente
 import serri.tesi.service.SyncResult // Enum che rappresenta l’esito della sincronizzazione
 import android.util.Log //Utility per logging su Logcat
+import serri.tesi.config.BackendConfig
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,46 +49,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent) // Avvia PCAPdroid
         }
 
-        // Campi di input per credenziali utente
-        val emailInput = findViewById<EditText>(R.id.emailInput)
-        val passwordInput = findViewById<EditText>(R.id.passwordInput)
-
         // Pulsanti principali dell’interfaccia
-        val loginButton = findViewById<Button>(R.id.loginButton)
         val syncButton = findViewById<Button>(R.id.syncButton)
         val exportButton = findViewById<Button>(R.id.exportButton)
         val deleteButton = findViewById<Button>(R.id.deleteButton)
-
-        // Login
-        loginButton.setOnClickListener {
-
-            val email = emailInput.text.toString().trim() // Legge email e rimuove spazi inutili
-            val password = passwordInput.text.toString() // Legge la password così com’è
-
-            // Validazione lato client
-            if (email.isBlank() || password.isBlank()) {
-                Toast.makeText(this, "Email e password obbligatorie", Toast.LENGTH_SHORT).show()
-
-                return@setOnClickListener // Interrompe il click handler
-            }
-
-            //Avvia thread separato per evitare operazioni di rete sul main thread
-            thread {
-                val authClient = AuthClient("http://10.0.2.2:3000") // Client HTTP x autenticazione (backend locale emulatore)
-
-                val token = authClient.login(email, password) //Effettua richiesta di login e riceve JWT (o null)
-
-                // Torna su thread UI per aggiornare l’interfaccia
-                runOnUiThread {
-                    if (token != null) {
-                        sessionManager.saveToken(token) // Salva il token in modo persistente
-                        Toast.makeText(this, "Login effettuato", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "Login fallito", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
 
         // SYNC DATI
         syncButton.setOnClickListener {
@@ -132,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             Thread {
                 // Client backend con autenticazione JWT
                 val client = BackendClient(
-                    baseUrl = "http://10.0.2.2:3000",
+                    baseUrl = BackendConfig.getBaseUrl(),
                     sessionManager = sessionManager
                 )
 
@@ -189,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
                     Thread {
                         val client = BackendClient(
-                            baseUrl = "http://10.0.2.2:3000",
+                            baseUrl = BackendConfig.getBaseUrl(),
                             sessionManager = sessionManager
                         )
 

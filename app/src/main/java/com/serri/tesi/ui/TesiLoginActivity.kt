@@ -12,6 +12,7 @@ import kotlin.concurrent.thread //utility x eseguire operazioni su thread separa
 import serri.tesi.auth.SessionManager //gestore della sessione utente (salvataggio token jwt)
 import serri.tesi.network.AuthClient //client http per autenticazione verso backend
 import com.emanuelef.remote_capture.R //risorse grafiche/layout app
+import serri.tesi.config.BackendConfig
 
 /**
  * Activity responsabile di autenticazione utente.
@@ -50,7 +51,10 @@ class TesiLoginActivity : AppCompatActivity() {
 
             //Avvia thread separato per evitare operazioni di rete sul main thread
             thread {
-                val authClient = AuthClient("http://10.0.2.2:3000") //Client http, comunica con backend
+                val authClient = AuthClient(
+                    BackendConfig.getBaseUrl()
+                ) //Client http, comunica con backend
+
                 //invia credenziali e riceve token jwt/null
                 val token = authClient.login(email, password)
 
