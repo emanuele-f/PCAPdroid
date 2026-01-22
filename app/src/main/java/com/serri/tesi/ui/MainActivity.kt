@@ -1,10 +1,11 @@
-package serri.tesi.ui //Package contenente classi di interfaccia utente
+package serri.tesi.ui
 
 import android.os.Bundle // usato per passare lo stato dell’Activity
 
 //Componenti UI di base Android
 import android.widget.Button
 import android.widget.Toast
+import android.widget.TextView
 
 import androidx.appcompat.app.AppCompatActivity //Classe base per Activity compatibili con AppCompat
 import com.emanuelef.remote_capture.R // Risorse grafiche/layout generate automaticamente
@@ -22,14 +23,15 @@ import serri.tesi.network.BackendClient //Client HTTP per comunicazione col back
 import androidx.appcompat.app.AlertDialog //Dialog per conferme utente
 import serri.tesi.service.SyncResult // Enum che rappresenta l’esito della sincronizzazione
 import android.util.Log //Utility per logging su Logcat
-import serri.tesi.config.BackendConfig
+import serri.tesi.config.BackendConfig //x configurazione
+
 
 
 
 class MainActivity : AppCompatActivity() {
-    // Activity principale dell’applicazione
 
     private lateinit var sessionManager: SessionManager //Gestisce lo stato di autenticazione e il token JWT
+    private lateinit var captureStatusText: TextView // Elemento UI per visualizzare lo stato della cattura
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,10 +51,31 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent) // Avvia PCAPdroid
         }
 
-        // Pulsanti principali dell’interfaccia
+        // button per operazioni
         val syncButton = findViewById<Button>(R.id.syncButton)
         val exportButton = findViewById<Button>(R.id.exportButton)
         val deleteButton = findViewById<Button>(R.id.deleteButton)
+        // elementi gestione cattura dati
+        val startCaptureButton = findViewById<Button>(R.id.startCaptureButton)
+        val stopCaptureButton = findViewById<Button>(R.id.stopCaptureButton)
+        captureStatusText = findViewById(R.id.captureStatusText)
+
+        // start cattura dati
+        startCaptureButton.setOnClickListener {
+            // avvio delegato a PCAPdroid
+            val intent = Intent(this, PcapMainActivity::class.java)
+            startActivity(intent)
+
+            Toast.makeText(this, "Richiesta avvio cattura", Toast.LENGTH_SHORT).show()
+        }
+
+        //stop cattura dati
+        stopCaptureButton.setOnClickListener {
+            val intent = Intent(this, PcapMainActivity::class.java)
+            startActivity(intent)
+
+            Toast.makeText(this, "Richiesta stop cattura", Toast.LENGTH_SHORT).show()
+        }
 
         // SYNC DATI
         syncButton.setOnClickListener {
@@ -172,6 +195,7 @@ class MainActivity : AppCompatActivity() {
 
                 .show()
         }
+        updateCaptureStatus() // Aggiorna lo stato della cattura
     }
 
     //AVVISO PRIMO AVVIO
@@ -199,4 +223,36 @@ class MainActivity : AppCompatActivity() {
 
             .show()
     }
+
+    // al ritorno alla schermata, richiama metodo per aggiornare stato
+    override fun onResume() {
+        super.onResume()
+        updateCaptureStatus()
+    }
+
+
+    // metodo per aggiornare lo stato della cattura
+    private fun updateCaptureStatus() {
+        if (isVpnActive()) {
+            captureStatusText.text = "Stato cattura: ATTIVA"
+        } else {
+            captureStatusText.text = "Stato cattura: FERMA"
+        }
+    }
+
+    // metodo per verificare se la cattura è attiva/disattiva
+    private fun isVpnActive(): Boolean {
+        val connectivityManager =
+            getSystemService(CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+
+        val networks = connectivityManager.allNetworks
+        for (network in networks) {
+            val caps = connectivityManager.getNetworkCapabilities(network)
+            if (caps != null && caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)) {
+                return true
+            }
+        }
+        return false
+    }
+
 }

@@ -21,6 +21,26 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/captureStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stato cattura: FERMA"
+            android:textStyle="bold"
+            android:padding="16dp" />
+
+        <Button
+            android:id="@+id/startCaptureButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Avvia cattura" />
+
+        <Button
+            android:id="@+id/stopCaptureButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ferma cattura" />
+
         <Button
             android:id="@+id/openPcapdroidButton"
             android:layout_width="match_parent"
