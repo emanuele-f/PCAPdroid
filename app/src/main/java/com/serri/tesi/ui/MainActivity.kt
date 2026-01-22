@@ -26,11 +26,28 @@ import android.util.Log //Utility per logging su Logcat
 import serri.tesi.config.BackendConfig //x configurazione
 import serri.tesi.repo.TrackerRepository // x eliminazione dati locali
 
+//Permessi Android
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
+
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager //Gestisce lo stato di autenticazione e il token JWT
     private lateinit var captureStatusText: TextView // Elemento UI per visualizzare lo stato della cattura
+
+    // variabili bottoni avvio/femra cattura, globali
+    private lateinit var startCaptureButton: Button
+    private lateinit var stopCaptureButton: Button
+
+    // campi per info generali
+    private lateinit var infoConnectionsText: TextView
+    private lateinit var infoLastSyncText: TextView
+    private lateinit var infoSyncStatusText: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,23 +59,22 @@ class MainActivity : AppCompatActivity() {
 
         sessionManager = SessionManager(this) // Inizializza gestore sessione usando il Context dell’Activity
 
-        val openPcapButton = findViewById<Button>(R.id.openPcapdroidButton) // Recupera pulsante per aprire PCAPdroid
-
-        //apre l’Activity di PCAPdroid
-        openPcapButton.setOnClickListener {
-            val intent = Intent(this, PcapMainActivity::class.java) // Intent esplicito verso l’Activity di PCAPdroid
-            startActivity(intent) // Avvia PCAPdroid
-        }
-
+        //assegnazione variabili --> elementi ui
         // button per operazioni
         val openDataButton = findViewById<Button>(R.id.openDataButton)
         val syncButton = findViewById<Button>(R.id.syncButton)
         val exportButton = findViewById<Button>(R.id.exportButton)
         val deleteButton = findViewById<Button>(R.id.deleteButton)
         // elementi gestione cattura dati
-        val startCaptureButton = findViewById<Button>(R.id.startCaptureButton)
-        val stopCaptureButton = findViewById<Button>(R.id.stopCaptureButton)
+        startCaptureButton = findViewById<Button>(R.id.startCaptureButton)
+        stopCaptureButton = findViewById<Button>(R.id.stopCaptureButton)
         captureStatusText = findViewById(R.id.captureStatusText)
+
+        //info generali
+        infoConnectionsText = findViewById(R.id.infoConnectionsText)
+        infoLastSyncText = findViewById(R.id.infoLastSyncText)
+        infoSyncStatusText = findViewById(R.id.infoSyncStatusText)
+
 
         // start cattura dati
         startCaptureButton.setOnClickListener {
@@ -102,8 +118,15 @@ class MainActivity : AppCompatActivity() {
                         SyncResult.NO_DATA ->
                             Toast.makeText(this, "Nessun dato nuovo da inviare", Toast.LENGTH_SHORT).show()
 
-                        SyncResult.SUCCESS ->
+                        SyncResult.SUCCESS -> {
+                            val prefs = getSharedPreferences("tesi_prefs", MODE_PRIVATE)
+                            prefs.edit()
+                                .putLong("last_sync_ts", System.currentTimeMillis())
+                                .apply()
+
                             Toast.makeText(this, "Dati sincronizzati correttamente", Toast.LENGTH_SHORT).show()
+                            updateInfoPanel()
+                        }
 
                         SyncResult.ERROR ->
                             Toast.makeText(this, "Errore durante la sincronizzazione", Toast.LENGTH_SHORT).show()
@@ -173,9 +196,7 @@ class MainActivity : AppCompatActivity() {
             AlertDialog.Builder(this) //Dialog di conferma operazione
 
                 .setTitle("Cancella dati")
-                .setMessage(
-                    "Questa operazione cancellerà definitivamente tutti i dati associati al tuo account.\n\nVuoi continuare?"
-                )
+                .setMessage( "Questa operazione cancellerà definitivamente tutti i dati associati al tuo account.\n\nVuoi continuare?" )
 
                 .setPositiveButton("Sì, cancella") { _, _ ->
 
@@ -191,6 +212,13 @@ class MainActivity : AppCompatActivity() {
                             if (success) {
                                 TrackerRepository(this).clearAllNetworkRequests() // Cancella dati locali
                                 Toast.makeText(this, "Operazione di cancellazione completata", Toast.LENGTH_LONG).show()
+                                val prefs = getSharedPreferences("tesi_prefs", MODE_PRIVATE)
+                                prefs.edit()
+                                    .remove("last_sync_ts")
+                                    .apply()
+
+                                updateInfoPanel()
+
                             } else {
                                 Toast.makeText(this, "Errore durante la cancellazione", Toast.LENGTH_SHORT).show()
                             }
@@ -203,6 +231,7 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
         updateCaptureStatus() // Aggiorna lo stato della cattura
+        updateInfoPanel() //aggirona info generali
     }
 
     //AVVISO PRIMO AVVIO
@@ -217,14 +246,19 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Avviso importante")
             .setMessage(
-                "Questa applicazione intercetta il traffico di rete del dispositivo...\n\n" +
-                        "I dati sensibili vengono anonimizzati prima dell'invio al server."
+                "Questa applicazione intercetta il traffico di rete del dispositivo " +
+                        "per analizzare le connessioni effettuate dalle applicazioni.\n\n" +
+                        "I dati raccolti vengono anonimizzati e possono includere una " +
+                        "posizione geografica approssimata.\n\n" +
+                        "Le informazioni vengono inviate a un server remoto esclusivamente " +
+                        "per fini di analisi e per migliorare user-experience."
             )
             .setPositiveButton("Ho capito") { _, _ ->
                 prefs.edit()
                     .putBoolean("warning_shown", true) // Segna il warning come mostrato
-
                     .apply()
+
+                requestLocationPermissionIfNeeded()
             }
             .setCancelable(false) //Impedisce chiusura senza consenso
 
@@ -234,16 +268,23 @@ class MainActivity : AppCompatActivity() {
     // al ritorno alla schermata, richiama metodo per aggiornare stato
     override fun onResume() {
         super.onResume()
+        updateInfoPanel()
         updateCaptureStatus()
     }
 
 
     // metodo per aggiornare lo stato della cattura
     private fun updateCaptureStatus() {
-        if (isVpnActive()) {
+        val active = isVpnActive()
+
+        if (active) {
             captureStatusText.text = "Stato cattura: ATTIVA"
+            startCaptureButton.isEnabled = false
+            stopCaptureButton.isEnabled = true
         } else {
             captureStatusText.text = "Stato cattura: FERMA"
+            startCaptureButton.isEnabled = true
+            stopCaptureButton.isEnabled = false
         }
     }
 
@@ -261,5 +302,46 @@ class MainActivity : AppCompatActivity() {
         }
         return false
     }
+
+    //metodo per aggiornare info panel
+    private fun updateInfoPanel() {
+        val repo = TrackerRepository(this)
+
+        val count = repo.getLastNetworkRequests(1000).size
+        infoConnectionsText.text = "Connessioni raccolte: $count"
+
+        val prefs = getSharedPreferences("tesi_prefs", MODE_PRIVATE)
+        val lastSync = prefs.getLong("last_sync_ts", 0L)
+
+        if (lastSync == 0L) {
+            infoLastSyncText.text = "Ultimo sync: -"
+        } else {
+            val sdf = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+            infoLastSyncText.text = "Ultimo sync: ${sdf.format(java.util.Date(lastSync))}"
+        }
+
+        infoSyncStatusText.text = "Stato sync: OK"
+    }
+
+    //richiesta permessi location
+    private fun requestLocationPermissionIfNeeded() {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!fineGranted) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                1001
+            )
+        }
+    }
+
+
 
 }
