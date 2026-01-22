@@ -42,6 +42,12 @@
             android:text="Ferma cattura" />
 
         <Button
+            android:id="@+id/openDataButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Visualizza dati raccolti" />
+
+        <Button
             android:id="@+id/openPcapdroidButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

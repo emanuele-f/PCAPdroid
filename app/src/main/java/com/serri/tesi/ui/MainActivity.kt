@@ -24,8 +24,7 @@ import androidx.appcompat.app.AlertDialog //Dialog per conferme utente
 import serri.tesi.service.SyncResult // Enum che rappresenta l’esito della sincronizzazione
 import android.util.Log //Utility per logging su Logcat
 import serri.tesi.config.BackendConfig //x configurazione
-
-
+import serri.tesi.repo.TrackerRepository // x eliminazione dati locali
 
 
 class MainActivity : AppCompatActivity() {
@@ -52,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // button per operazioni
+        val openDataButton = findViewById<Button>(R.id.openDataButton)
         val syncButton = findViewById<Button>(R.id.syncButton)
         val exportButton = findViewById<Button>(R.id.exportButton)
         val deleteButton = findViewById<Button>(R.id.deleteButton)
@@ -75,6 +75,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
 
             Toast.makeText(this, "Richiesta stop cattura", Toast.LENGTH_SHORT).show()
+        }
+
+        // VISUALIZZA DATI
+        openDataButton.setOnClickListener {
+            val intent = Intent(this, TesiDataActivity::class.java)
+            startActivity(intent)
         }
 
         // SYNC DATI
@@ -183,6 +189,7 @@ class MainActivity : AppCompatActivity() {
 
                         runOnUiThread {
                             if (success) {
+                                TrackerRepository(this).clearAllNetworkRequests() // Cancella dati locali
                                 Toast.makeText(this, "Operazione di cancellazione completata", Toast.LENGTH_LONG).show()
                             } else {
                                 Toast.makeText(this, "Errore durante la cancellazione", Toast.LENGTH_SHORT).show()

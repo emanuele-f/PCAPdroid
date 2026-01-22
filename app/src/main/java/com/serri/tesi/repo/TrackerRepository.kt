@@ -253,6 +253,83 @@ class TrackerRepository(context: Context) {
         return results  //ritorna il batch di record non sinc
     }
 
+    /**
+     * Recupera le ultime connessioni di rete dal database locale
+     * per visualizzazione lato UI.
+     *
+     * @param limit numero massimo di record
+     */
+    fun getLastNetworkRequests(limit: Int): List<NetworkRequestRecord> {
+        val db = dbHelper.readableDatabase
+        val results = mutableListOf<NetworkRequestRecord>()
+
+        val cursor = db.rawQuery(
+            """
+        SELECT 
+            id,
+            user_uuid,
+            app_name,
+            app_uid,
+            protocol,
+            domain,
+            src_ip,
+            src_port,
+            dst_ip,
+            dst_port,
+            http_method,
+            http_path,
+            http_host,
+            bytes_tx,
+            bytes_rx,
+            packets_tx,
+            packets_rx,
+            start_ts,
+            end_ts,
+            duration_ms,
+            latitude,
+            longitude,
+            synced
+        FROM network_requests
+        ORDER BY end_ts DESC
+        LIMIT ?
+        """.trimIndent(),
+            arrayOf(limit.toString())
+        )
+
+        while (cursor.moveToNext()) {
+            val record = NetworkRequestRecord(
+                id = cursor.getLong(0),
+                userUuid = cursor.getString(1),
+                appName = cursor.getString(2),
+                appUid = cursor.getInt(3),
+                protocol = cursor.getString(4),
+                domain = cursor.getString(5),
+                srcIp = cursor.getString(6),
+                srcPort = if (cursor.isNull(7)) null else cursor.getInt(7),
+                dstIp = cursor.getString(8),
+                dstPort = if (cursor.isNull(9)) null else cursor.getInt(9),
+                httpMethod = cursor.getString(10),
+                httpPath = cursor.getString(11),
+                httpHost = cursor.getString(12),
+                bytesTx = cursor.getLong(13),
+                bytesRx = cursor.getLong(14),
+                packetsTx = cursor.getInt(15),
+                packetsRx = cursor.getInt(16),
+                startTs = cursor.getLong(17),
+                endTs = cursor.getLong(18),
+                durationMs = cursor.getLong(19),
+                latitude = if (cursor.isNull(20)) null else cursor.getDouble(20),
+                longitude = if (cursor.isNull(21)) null else cursor.getDouble(21),
+                synced = cursor.getInt(22)
+            )
+
+            results.add(record)
+        }
+
+        cursor.close()
+        return results
+    }
+
     //aggiunto metodo per segnare i dati inviati
     /**
      * Marca come sincronizzati i record che sono stati inviati correttamente
@@ -277,5 +354,12 @@ class TrackerRepository(context: Context) {
     """.trimIndent()
 
         db.execSQL(query, args) //esegue update
+    }
+
+    // elimina tutte le righe dalla tabella network_requests
+    // es: se utente decide di eliminare dati
+    fun clearAllNetworkRequests() {
+        val db = dbHelper.writableDatabase
+        db.execSQL("DELETE FROM network_requests")
     }
 }

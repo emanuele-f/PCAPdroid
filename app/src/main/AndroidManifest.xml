@@ -59,17 +59,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="serri.tesi.ui.TesiLoginActivity"
             android:exported="false"
-            android:theme="@style/TesiTheme"/>
-
+            android:theme="@style/TesiTheme" />
         <activity
             android:name="serri.tesi.ui.MainActivity"
             android:exported="true"
-            android:theme="@style/TesiTheme">
-        </activity>
+            android:theme="@style/TesiTheme"></activity>
+        <activity
+            android:name="serri.tesi.ui.TesiDataActivity"
+            android:exported="false"
+            android:theme="@style/TesiTheme" />
         <!-- fine -->
 
         <activity
