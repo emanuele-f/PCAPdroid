@@ -1,0 +1,2 @@
+id,userId,protocol,domainHash,dstIpHash,dstPort,bytesTx,bytesRx,packetsTx,packetsRx,startTs,endTs,durationMs,latitude,longitude,createdAt
+"094465dd-e026-4f51-9970-ad0f34e1eb61","6df8354e-5aba-474b-b08a-647b63492844","HTTPS","hash_google_com","hash_8_8_8_8","443","1234","5678","10","12","1700000000000","1700000001234","1234","45.4642","9.19","Mon Jan 12 2026 12:12:29 GMT+0100 (Ora standard dell’Europa centrale)"
