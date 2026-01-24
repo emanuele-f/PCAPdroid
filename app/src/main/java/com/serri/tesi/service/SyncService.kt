@@ -43,12 +43,15 @@ class SyncService(private val context: Context) {
         //istanzia sessionmanager, x gestione sessione utente
         val sessionManager = SessionManager(context) // consente di recuperare token jwt salvato e riutilizzarlo
 
+        saveSyncState("SYNCING")//statto sincronizzazione, caso generale: prova sincronizzazione con backend, (salva stato)
+
         //gestione robustezza sessioni
         //punto in cui sync service parla con backend, nessun dato deve uscire se user non è autenticato
 
         //se utente non loggato, sync annullato
         if (!sessionManager.isLoggedIn()) {
             Log.w("TESI_SYNC", "Utente non loggato: sync annullato")
+            saveSyncState("ERROR") //salva errore sync in stato
             return SyncResult.ERROR
         }
 
@@ -64,7 +67,8 @@ class SyncService(private val context: Context) {
 
         //se non trova record da sincronuzzare, esce
         if (pending.isEmpty()) {
-            Log.d("TESI_SYNC", "No records to sync")
+            Log.d("TESI_SYNC", "No record da sincronizzare")
+            saveSyncState("IDLE")//salva stato, IDLE = tutto sinc, nulla da fare
             return SyncResult.NO_DATA
         }
 
@@ -81,13 +85,25 @@ class SyncService(private val context: Context) {
         val success = client.sendBatch(batch) //invia batch al backend, true se successo
 
         if (success) { //se invio a buon fine
-            repo.markAsSynced(pending.mapNotNull { it.id }) //estrae id dei record sinc
-            Log.d("TESI_SYNC", "Synced ${pending.size} records")//synced=1 nel db locale
+            repo.markAsSynced(pending.mapNotNull { it.id }) //estrae id dei record sinc, synced=1 nel db locale
+            Log.d("TESI_SYNC", "Synced ${pending.size} records")
+
+            saveSyncState("SUCCESS") //salva stato
             return SyncResult.SUCCESS
         } else {
-            Log.e("TESI_SYNC", "Sync failed")
+            Log.e("TESI_SYNC", "Sync fallito")
+            saveSyncState("ERROR") //salva stato
             return SyncResult.ERROR
         }
+    }
+
+    //metodo x salvare stato della sincronizzazione e mostrarlo in info panel (mainactivity)
+    private fun saveSyncState(state: String) {
+        val prefs = context.getSharedPreferences("tesi_prefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("last_sync_state", state)
+            .putLong("last_sync_ts", System.currentTimeMillis())
+            .apply()
     }
 }
 

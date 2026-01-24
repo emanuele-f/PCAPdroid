@@ -1,5 +1,6 @@
 package serri.tesi.ui
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,10 +29,24 @@ class NetworkDataAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = data[position]
 
-        // Dominio se disponibile, altrimenti IP destinazione
-        holder.hostText.text = item.domain
-            ?: item.dstIp
-                    ?: "Destinazione sconosciuta"
+        // Dominio se disponibile, ip altrimenti o dest sconosciuta
+        val destination = when {
+            !item.domain.isNullOrBlank() -> item.domain
+            !item.dstIp.isNullOrBlank() -> "IP: ${item.dstIp}"
+            else -> "Destinazione sconosciuta"
+        }
+        //gestione colore del campo da mostrare
+        if (!item.domain.isNullOrBlank()) {
+            holder.hostText.setTextColor(Color.BLACK)
+            holder.hostText.textSize = 15f
+        } else {
+            holder.hostText.setTextColor(Color.GRAY)
+            holder.hostText.textSize = 13f
+        }
+
+
+        holder.hostText.text = destination
+
 
         holder.appText.text =
             "${item.appName ?: "App sconosciuta"} • ${item.protocol}"

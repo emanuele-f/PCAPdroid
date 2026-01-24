@@ -13,6 +13,18 @@
         android:textSize="18sp"
         android:padding="16dp"/>
 
+    <TextView
+        android:id="@+id/dataCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connessioni mostrate: 0"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:paddingHorizontal="16dp"
+        android:textColor="#555555" />
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dataRecyclerView"
         android:layout_width="match_parent"

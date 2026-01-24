@@ -62,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         //assegnazione variabili --> elementi ui
         // button per operazioni
         val openDataButton = findViewById<Button>(R.id.openDataButton)
-        val syncButton = findViewById<Button>(R.id.syncButton)
         val exportButton = findViewById<Button>(R.id.exportButton)
         val deleteButton = findViewById<Button>(R.id.deleteButton)
         // elementi gestione cattura dati
@@ -97,42 +96,6 @@ class MainActivity : AppCompatActivity() {
         openDataButton.setOnClickListener {
             val intent = Intent(this, TesiDataActivity::class.java)
             startActivity(intent)
-        }
-
-        // SYNC DATI
-        syncButton.setOnClickListener {
-
-            // Verifica presenza token valido
-            if (!sessionManager.isLoggedIn()) {
-                Toast.makeText(this, "Devi fare login", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            //thread separato per sync con backend
-            Thread {
-                val result = SyncService(this).syncOnce() //Esegue sincronizzazione
-
-                runOnUiThread { // Aggiorna UI in base all’esito
-
-                    when (result) {
-                        SyncResult.NO_DATA ->
-                            Toast.makeText(this, "Nessun dato nuovo da inviare", Toast.LENGTH_SHORT).show()
-
-                        SyncResult.SUCCESS -> {
-                            val prefs = getSharedPreferences("tesi_prefs", MODE_PRIVATE)
-                            prefs.edit()
-                                .putLong("last_sync_ts", System.currentTimeMillis())
-                                .apply()
-
-                            Toast.makeText(this, "Dati sincronizzati correttamente", Toast.LENGTH_SHORT).show()
-                            updateInfoPanel()
-                        }
-
-                        SyncResult.ERROR ->
-                            Toast.makeText(this, "Errore durante la sincronizzazione", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }.start()
         }
 
         //EXPORT CSV
@@ -279,10 +242,16 @@ class MainActivity : AppCompatActivity() {
 
         if (active) {
             captureStatusText.text = "Stato cattura: ATTIVA"
+            captureStatusText.setTextColor(
+                ContextCompat.getColor(this, android.R.color.holo_green_dark)
+            )
             startCaptureButton.isEnabled = false
             stopCaptureButton.isEnabled = true
         } else {
             captureStatusText.text = "Stato cattura: FERMA"
+            captureStatusText.setTextColor(
+                ContextCompat.getColor(this, android.R.color.holo_red_dark)
+            )
             startCaptureButton.isEnabled = true
             stopCaptureButton.isEnabled = false
         }
@@ -311,17 +280,36 @@ class MainActivity : AppCompatActivity() {
         infoConnectionsText.text = "Connessioni raccolte: $count"
 
         val prefs = getSharedPreferences("tesi_prefs", MODE_PRIVATE)
-        val lastSync = prefs.getLong("last_sync_ts", 0L)
 
+        val lastSync = prefs.getLong("last_sync_ts", 0L)
+        val syncState = prefs.getString("last_sync_state", "IDLE")
+        val pending = repo.countPendingNetworkRequests()
+
+        // ultimo sync
         if (lastSync == 0L) {
             infoLastSyncText.text = "Ultimo sync: -"
         } else {
             val sdf = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
-            infoLastSyncText.text = "Ultimo sync: ${sdf.format(java.util.Date(lastSync))}"
+            infoLastSyncText.text =
+                "Ultimo sync: ${sdf.format(java.util.Date(lastSync))}"
         }
 
-        infoSyncStatusText.text = "Stato sync: OK"
+        // stato sync
+        infoSyncStatusText.text = when {
+            syncState == "SYNCING" ->
+                "Stato sync: sincronizzazione in corso…"
+
+            syncState == "ERROR" ->
+                "Stato sync: errore di connessione"
+
+            pending > 0 ->
+                "Stato sync: $pending dati in attesa"
+
+            else ->
+                "Stato sync: sincronizzato"
+        }
     }
+
 
     //richiesta permessi location
     private fun requestLocationPermissionIfNeeded() {
@@ -341,7 +329,4 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
-
-
-
 }

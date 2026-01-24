@@ -6,6 +6,9 @@ import serri.tesi.db.TesiDbHelper //helper sqlite, gestisce creazione e versiona
 import serri.tesi.model.ConnectionRecord //modello dati per connessioni (versione iniziale)
 import serri.tesi.model.HttpRequestRecord //modello dati per richieste http (vers iniziale)
 import serri.tesi.model.NetworkRequestRecord //modello dati principale che rappresenta connessione
+import serri.tesi.service.SyncService //per sincronizzazione con backend auto
+
+
 
 /**
  * Repository responsabile dell'accesso al db locale
@@ -17,7 +20,8 @@ import serri.tesi.model.NetworkRequestRecord //modello dati principale che rappr
  * implementa il pattern Repository, separando la logica
  * di accesso ai dati dalla logica di business.
  */
-class TrackerRepository(context: Context) {
+class TrackerRepository(private val context: Context) {
+    //serve context dopo per chiamare SyncService(context)
 
     private val dbHelper = TesiDbHelper(context) //istanza di helper sqlite, x ottenere db leggibile/scrivibile
 
@@ -101,7 +105,26 @@ class TrackerRepository(context: Context) {
             put("longitude", record.longitude)
         }
         //inserimento record nella tabella + return id generato
-        return db.insert("network_requests", null, values)
+        //return db.insert("network_requests", null, values)
+
+        //update: sync automatico ogni 30 record
+        val id = db.insert("network_requests", null, values)
+
+        // auto-sync: controllo soglia
+        val pendingCount = countPendingNetworkRequests()
+
+        if (pendingCount >= 30 && pendingCount % 30 == 0) {
+            android.util.Log.d(
+                "TESI_SYNC",
+                "Auto-sync triggered: $pendingCount pending records"
+            )
+
+            // avvio sync automatico
+            Thread {
+                SyncService(context).syncOnce()
+            }.start()
+        }
+        return id
     }
 
     //DEBUG
@@ -354,6 +377,19 @@ class TrackerRepository(context: Context) {
     """.trimIndent()
 
         db.execSQL(query, args) //esegue update
+    }
+
+    //metodo per contare i record non sincronizzati
+    fun countPendingNetworkRequests(): Int {
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM network_requests WHERE synced = 0",
+            null
+        )
+        cursor.moveToFirst()
+        val count = cursor.getInt(0)
+        cursor.close()
+        return count
     }
 
     // elimina tutte le righe dalla tabella network_requests

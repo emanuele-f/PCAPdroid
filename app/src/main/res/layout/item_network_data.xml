@@ -2,30 +2,46 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="14dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- DESTINAZIONE -->
     <TextView
         android:id="@+id/hostText"
         android:textStyle="bold"
         android:textSize="16sp"
+        android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <!-- APP + PROTOCOLLO -->
     <TextView
         android:id="@+id/appText"
-        android:textColor="#666666"
+        android:layout_marginTop="2dp"
+        android:textSize="13sp"
+        android:textColor="@android:color/darker_gray"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <!-- SPAZIO VISIVO -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"/>
+
+    <!-- METRICHE -->
     <TextView
         android:id="@+id/bytesText"
+        android:textStyle="bold"
+        android:textSize="14sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/durationText"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 </LinearLayout>

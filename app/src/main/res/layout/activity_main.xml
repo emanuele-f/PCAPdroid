@@ -21,6 +21,7 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
+
         <TextView
             android:id="@+id/captureStatusText"
             android:layout_width="wrap_content"
@@ -54,24 +55,39 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/infoConnectionsText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Connessioni raccolte: -"
-            android:layout_marginTop="12dp"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp">
 
-        <TextView
-            android:id="@+id/infoLastSyncText"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ultimo sync: -"/>
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/infoSyncStatusText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stato sync: -"/>
+            <TextView
+                android:id="@+id/infoConnectionsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connessioni raccolte: -"
+                android:layout_marginTop="12dp"/>
+
+            <TextView
+                android:id="@+id/infoLastSyncText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ultimo sync: -"/>
+
+            <TextView
+                android:id="@+id/infoSyncStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stato sync: -"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/openDataButton"
@@ -82,12 +98,6 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="24dp" />
-
-        <Button
-            android:id="@+id/syncButton"
-            android:text="Invia dati"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/exportButton"

@@ -1,6 +1,7 @@
 package serri.tesi.ui
 
 import android.os.Bundle
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -12,10 +13,14 @@ import serri.tesi.repo.TrackerRepository
 class TesiDataActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView // Recycler per visualizzare dati
+    private lateinit var dataCountText: TextView // Elemento UI per visualizzare il numero di dati mostrati
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tesi_data)
+
+        dataCountText = findViewById(R.id.dataCountText)
 
         recyclerView = findViewById<RecyclerView>(R.id.dataRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -38,6 +43,8 @@ class TesiDataActivity : AppCompatActivity() {
         val repo = TrackerRepository(this)
         val data = repo.getLastNetworkRequests(100)
         (recyclerView.adapter as NetworkDataAdapter).updateData(data)
+
+        dataCountText.text = "Connessioni mostrate: ${data.size}"
     }
 
 }
