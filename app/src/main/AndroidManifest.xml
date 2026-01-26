@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.emanuelef.remote_capture">
+    package="com.emanuelef.remote_capture"
+    tools:ignore="MissingLeanbackLauncher">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -66,13 +67,15 @@
         <activity
             android:name="serri.tesi.ui.MainActivity"
             android:exported="true"
-            android:theme="@style/TesiTheme"></activity>
+            android:theme="@style/TesiTheme" />
         <activity
             android:name="serri.tesi.ui.TesiDataActivity"
             android:exported="false"
             android:theme="@style/TesiTheme" />
-        <!-- fine -->
-
+        <activity
+            android:name="serri.tesi.ui.TesiAnalysisActivity"
+            android:exported="false"
+            android:theme="@style/TesiTheme"/><!-- fine -->
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"

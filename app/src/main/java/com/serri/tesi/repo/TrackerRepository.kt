@@ -242,7 +242,7 @@ class TrackerRepository(private val context: Context) {
             arrayOf(limit.toString())
         )
 
-        //converte ogni rifa del cursor in un oggetto NetworkRequestRecord
+        //converte ogni riga del cursor in un oggetto NetworkRequestRecord
         while (cursor.moveToNext()) {
             val record = NetworkRequestRecord(
                 id = cursor.getLong(0),
@@ -398,4 +398,98 @@ class TrackerRepository(private val context: Context) {
         val db = dbHelper.writableDatabase
         db.execSQL("DELETE FROM network_requests")
     }
+
+    //metodo per raggruppare dati da mostrare in grafico per byte
+    //aggregazionelato db riduce carico su ui
+    fun getBytesGroupedByProtocol(): Map<String, Long> {
+        val db = dbHelper.readableDatabase
+        val result = mutableMapOf<String, Long>()
+
+        val cursor = db.rawQuery(
+            """
+        SELECT protocol, SUM(bytes_tx + bytes_rx) as total_bytes
+        FROM network_requests
+        GROUP BY protocol
+        """.trimIndent(),
+            null
+        )
+
+        while (cursor.moveToNext()) {
+            val protocol = cursor.getString(0) ?: "UNKNOWN"
+            val bytes = cursor.getLong(1)
+            result[protocol] = bytes
+        }
+
+        cursor.close()
+        return result
+    }
+
+    //metodo per grafico app con maggiore scambio byte
+    //prende le app con più byte scambiati nelle connessioni
+    //Coalesce evita celle vuote + prendo 5 app
+    fun getTopAppsByBytes(limit: Int = 5): Map<String, Long> {
+        val db = dbHelper.readableDatabase
+        val result = LinkedHashMap<String, Long>()
+
+        val cursor = db.rawQuery(
+            """
+        SELECT 
+            COALESCE(app_name, 'App sconosciuta') as app,
+            SUM(bytes_tx + bytes_rx) as total_bytes
+        FROM network_requests
+        GROUP BY app
+        ORDER BY total_bytes DESC
+        LIMIT ?
+        """.trimIndent(),
+            arrayOf(limit.toString())
+        )
+
+        while (cursor.moveToNext()) {
+            val app = cursor.getString(0)
+            val bytes = cursor.getLong(1)
+            result[app] = bytes
+        }
+
+        cursor.close()
+        return result
+    }
+
+    //metodo per grafico durata connessione
+    //prende le connessioni in base alla durata
+    fun getConnectionDurationHistogram(): Map<String, Int> {
+        val db = dbHelper.readableDatabase
+        val result = linkedMapOf(
+            "< 100 ms" to 0,
+            "100–500 ms" to 0,
+            "500 ms – 1 s" to 0,
+            "1–5 s" to 0,
+            "> 5 s" to 0
+        )
+
+        val cursor = db.rawQuery(
+            """
+        SELECT duration_ms
+        FROM network_requests
+        """.trimIndent(),
+            null
+        )
+
+        while (cursor.moveToNext()) {
+            val d = cursor.getLong(0)
+
+            when {
+                d < 100 -> result["< 100 ms"] = result["< 100 ms"]!! + 1
+                d < 500 -> result["100–500 ms"] = result["100–500 ms"]!! + 1
+                d < 1000 -> result["500 ms – 1 s"] = result["500 ms – 1 s"]!! + 1
+                d < 5000 -> result["1–5 s"] = result["1–5 s"]!! + 1
+                else -> result["> 5 s"] = result["> 5 s"]!! + 1
+            }
+        }
+
+        cursor.close()
+        return result
+    }
+
+
+
 }

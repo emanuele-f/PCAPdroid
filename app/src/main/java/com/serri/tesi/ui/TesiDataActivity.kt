@@ -1,6 +1,8 @@
 package serri.tesi.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +26,13 @@ class TesiDataActivity : AppCompatActivity() {
 
         recyclerView = findViewById<RecyclerView>(R.id.dataRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val analysisButton = findViewById<ImageButton>(R.id.openAnalysisButton)
+
+        analysisButton.setOnClickListener {
+            val intent = Intent(this, TesiAnalysisActivity::class.java)
+            startActivity(intent)
+        }
 
         recyclerView.addItemDecoration(
             DividerItemDecoration(this, DividerItemDecoration.VERTICAL)

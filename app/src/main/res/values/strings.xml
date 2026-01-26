@@ -567,4 +567,6 @@
     <string name="tls_decryption_not_supported_16KB">TLS decryption is currently unsupported on 16 KB devices</string>
     <string name="filename_prefix">Filename prefix</string>
     <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
