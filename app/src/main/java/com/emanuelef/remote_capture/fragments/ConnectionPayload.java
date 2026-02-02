@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -56,7 +56,6 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
     private TextView mTruncatedWarning;
     private EmptyRecyclerView mRecyclerView;
     private int mCurChunks;
-    private boolean mJustCreated;
     private boolean mShowAsPrintable;
     private WindowInsetsCompat mInsets;
 
@@ -145,7 +144,6 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
         mShowAsPrintable = true;
         mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
         mAdapter.setExportPayloadHandler(mActivity);
-        mJustCreated = true;
 
         // only set adapter after acknowledged (see setMenuVisibility below)
         if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))

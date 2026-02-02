@@ -56,7 +56,6 @@ public class HttpPayloadFragment extends Fragment {
     private HttpLog.HttpRequest mHttpReq;
     private PayloadAdapter mAdapter;
     private EmptyRecyclerView mRecyclerView;
-    private boolean mShowAsPrintable;
 
     public static HttpPayloadFragment newInstance(int req_pos, boolean show_reply) {
         HttpPayloadFragment fragment = new HttpPayloadFragment();
@@ -125,7 +124,6 @@ public class HttpPayloadFragment extends Fragment {
         mRecyclerView.setClipToPadding(false);
 
         boolean show_reply = args.getBoolean("show_reply");
-        mShowAsPrintable = true;
         mAdapter = new PayloadAdapter(requireContext(), mHttpReq, show_reply);
         mAdapter.setDisplayAsPrintableText(true);
         mAdapter.setExportPayloadHandler(mActivity);
@@ -186,7 +184,6 @@ public class HttpPayloadFragment extends Fragment {
     }
 
     public void setDisplayMode(boolean showAsPrintable) {
-        mShowAsPrintable = showAsPrintable;
         mAdapter.setDisplayAsPrintableText(showAsPrintable);
     }
 }
