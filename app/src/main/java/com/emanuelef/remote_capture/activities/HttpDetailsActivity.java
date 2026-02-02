@@ -19,6 +19,9 @@
 
 package com.emanuelef.remote_capture.activities;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,6 +29,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.activity.result.ActivityResult;
+import androidx.appcompat.app.AlertDialog;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -34,6 +41,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
+import com.emanuelef.remote_capture.HarWriter;
 import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
@@ -47,7 +55,11 @@ import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HttpDetailsActivity extends PayloadExportActivity implements ConnectionsListener, PayloadHostActivity {
     private static final String TAG = "HttpRequestDetailsActivity";
@@ -63,6 +75,11 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
     private MenuItem mMenuNext;
     private MenuItem mMenuDisplayAs;
     private Boolean mDisplayMode;
+    private Uri mHarFname;
+    private AlertDialog mAlertDialog;
+
+    private final ActivityResultLauncher<Intent> harFileLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::harFileResult);
 
     private static final int POS_REQUEST = 0;
     private static final int POS_REPLY = 1;
@@ -130,6 +147,14 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
     public void onPause() {
         super.onPause();
         unregisterConnsListener();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mAlertDialog != null)
+            mAlertDialog.dismiss();
+
+        super.onDestroy();
     }
 
     private void setupTabs() {
@@ -205,11 +230,10 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
             payloadFragment.setDisplayMode(mDisplayMode);
 
-            if(mDisplayMode) {
+            if(mDisplayMode)
                 mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
-            } else {
+            else
                 mMenuDisplayAs.setTitle(R.string.display_as_text);
-            }
         } else if(currentFragment instanceof ConnectionPayload wsFragment) {
             if(mDisplayMode == null)
                 mDisplayMode = true;
@@ -244,6 +268,9 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
                 mDisplayMode = !mDisplayMode;
                 updateMenuVisibility();
             }
+            return true;
+        } else if(itemId == R.id.save_as_har) {
+            openHarFileSelector();
             return true;
         }
 
@@ -391,6 +418,120 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
         if((mHttpReq != null) && (mHttpReq.conn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED))
             unregisterConnsListener();
+    }
+
+    private void openHarFileSelector() {
+        if (mHttpReq == null)
+            return;
+
+        boolean noFileDialog = false;
+        String fname = Utils.getExportFileName(this, "har");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
+
+        if(Utils.supportsFileDialog(this, intent)) {
+            try {
+                harFileLauncher.launch(intent);
+            } catch (ActivityNotFoundException e) {
+                noFileDialog = true;
+            }
+        } else
+            noFileDialog = true;
+
+        if(noFileDialog) {
+            Log.d(TAG, "No app found to handle file selection");
+
+            Uri uri = Utils.getDownloadsUri(this, fname);
+
+            if(uri != null) {
+                mHarFname = uri;
+                exportHar();
+            } else
+                Utils.showToastLong(this, R.string.no_activity_file_selection);
+        }
+    }
+
+    private void exportHar() {
+        if(mHarFname == null || mHttpReq == null)
+            return;
+
+        Log.d(TAG, "Writing HAR file: " + mHarFname);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] cancelled = {false};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.exporting);
+        builder.setMessage(R.string.export_in_progress);
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            Log.i(TAG, "Abort HAR export");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
+
+        mAlertDialog.setOnCancelListener(dialog -> {
+            Log.i(TAG, "Abort HAR export (back button)");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
+
+        final Uri harFname = mHarFname;
+        final HttpLog.HttpRequest httpReq = mHttpReq;
+        mHarFname = null;
+
+        executor.execute(() -> {
+            boolean success = false;
+
+            try {
+                OutputStream stream = getContentResolver().openOutputStream(harFname, "rwt");
+
+                if(stream != null) {
+                    HarWriter writer = new HarWriter(HttpDetailsActivity.this, httpReq);
+                    writer.write(stream);
+                    stream.close();
+                    success = true;
+                }
+            } catch (IOException e) {
+                if(!cancelled[0])
+                    e.printStackTrace();
+            }
+
+            if(cancelled[0])
+                return;
+
+            final boolean result = success;
+            final Utils.UriStat stat = result ? Utils.getUriStat(HttpDetailsActivity.this, harFname) : null;
+
+            handler.post(() -> {
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
+
+                if(result) {
+                    if(stat != null)
+                        Utils.showToast(HttpDetailsActivity.this, R.string.file_saved_with_name, stat.name);
+                    else
+                        Utils.showToast(HttpDetailsActivity.this, R.string.save_ok);
+                } else
+                    Utils.showToast(HttpDetailsActivity.this, R.string.cannot_write_file);
+            });
+        });
+    }
+
+    private void harFileResult(final ActivityResult result) {
+        if((result.getResultCode() == RESULT_OK) && (result.getData() != null)) {
+            mHarFname = result.getData().getData();
+            exportHar();
+        } else {
+            mHarFname = null;
+        }
     }
 
     private class StateAdapter extends FragmentStateAdapter {

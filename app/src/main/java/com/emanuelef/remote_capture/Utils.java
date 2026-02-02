@@ -142,6 +142,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -152,6 +153,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -331,13 +333,42 @@ public class Utils {
         String rv = fmt.format(new Date(millis));
 
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
-            // convert RFC 822 (+0100) -> ISO 8601 timezone (+01:00)
+            // convert RFC 822 (+0100 or -0500) -> ISO 8601 timezone (+01:00 or -05:00)
             int l = rv.length();
-            if ((l > 5) && (rv.charAt(l - 5) == '+'))
+            if ((l > 5) && ((rv.charAt(l - 5) == '+') || (rv.charAt(l - 5) == '-')))
                 rv = rv.substring(0, l - 2) + ":" + rv.substring(l - 2);
         }
 
         return rv;
+    }
+
+    public static String httpDateToIso8601(String httpDate) {
+        if (httpDate == null)
+            return null;
+
+        String[] patterns = {
+            "EEE, dd-MMM-yyyy HH:mm:ss zzz",  // Fri, 05-Feb-2027 15:30:34 GMT
+            "EEE, dd MMM yyyy HH:mm:ss zzz",  // RFC 1123: Fri, 05 Feb 2027 15:30:34 GMT
+            "EEEE, dd-MMM-yy HH:mm:ss zzz",   // RFC 850: Friday, 05-Feb-27 15:30:34 GMT
+            "EEE MMM d HH:mm:ss yyyy"         // ANSI C asctime: Fri Feb  5 15:30:34 2027
+        };
+
+        Date date = null;
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat(pattern, Locale.US);
+                parser.setTimeZone(TimeZone.getTimeZone("GMT"));
+                date = parser.parse(httpDate);
+                break;
+            } catch (ParseException ignored) {}
+        }
+
+        if (date == null)
+            return null;
+
+        SimpleDateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        iso8601.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return iso8601.format(date);
     }
 
     public static String formatEpochMillis(Context context, long millis) {
@@ -730,6 +761,16 @@ public class Utils {
 
     public static String getUniquePcapFileName(Context context, boolean pcapng_format) {
         return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
+    }
+
+    // Returns the export filename with the given extension.
+    // If a PCAP file was loaded by the user, uses that filename as base.
+    // Otherwise, generates a unique filename based on date/time.
+    public static String getExportFileName(Context context, String ext) {
+        String loadedBasename = PCAPdroid.getInstance().getLoadedPcapBasename();
+        if (loadedBasename != null)
+            return loadedBasename + "." + ext;
+        return getUniqueFileName(context, ext);
     }
 
     public static @Nullable BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {

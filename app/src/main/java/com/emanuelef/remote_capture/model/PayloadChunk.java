@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -37,6 +37,7 @@ public class PayloadChunk implements Serializable {
     public String httpPath = "";
     public String httpQuery = "";
     public String httpContentType = "";
+    public String httpVersion = "";
     public int httpBodyLength = 0;
     private boolean mHttpRst = false;
 

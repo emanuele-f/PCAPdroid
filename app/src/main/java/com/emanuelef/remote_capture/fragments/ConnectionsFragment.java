@@ -1041,7 +1041,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     public void openFileSelector() {
         boolean noFileDialog = false;
-        String fname = Utils.getUniqueFileName(requireContext(), "csv");
+        String fname = Utils.getExportFileName(requireContext(), "csv");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");

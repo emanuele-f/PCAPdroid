@@ -24,9 +24,15 @@
 
     <item
         android:id="@+id/save"
-        android:title="@string/save_to_file"
+        android:title="@string/save_as_text"
         android:orderInCategory="30"
         android:icon="@drawable/ic_save"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/save_as_har"
+        android:title="@string/save_as_har"
+        android:orderInCategory="31"
         app:showAsAction="never" />
 
     <item

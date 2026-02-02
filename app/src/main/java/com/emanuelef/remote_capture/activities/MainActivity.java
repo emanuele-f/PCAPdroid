@@ -826,6 +826,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         appStateStarting();
 
+        // Clear loaded basename if this is a new capture (not from loaded file)
+        if (input_pcap_path == null)
+            PCAPdroid.getInstance().setLoadedPcapBasename(null);
+
         PCAPdroid.getInstance().setIsDecryptingPcap(mDecryptPcap);
         mDecryptPcap = false;
 
@@ -1069,6 +1073,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void startOpenPcap(Uri pcap_uri, Uri keylog_uri) {
+        // Extract and store the base filename (without extension)
+        Utils.UriStat stat = Utils.getUriStat(this, pcap_uri);
+        if (stat != null && stat.name != null) {
+            String name = stat.name;
+            int dotIndex = name.lastIndexOf('.');
+            String basename = (dotIndex > 0) ? name.substring(0, dotIndex) : name;
+            PCAPdroid.getInstance().setLoadedPcapBasename(basename);
+        } else {
+            PCAPdroid.getInstance().setLoadedPcapBasename(null);
+        }
+
         mPcapExecutor = Executors.newSingleThreadExecutor();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

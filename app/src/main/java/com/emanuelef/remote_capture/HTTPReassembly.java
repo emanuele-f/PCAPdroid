@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -163,6 +163,7 @@ public class HTTPReassembly {
 
                         if ((first_space > 0) && (second_space > 0)) {
                             mFirstChunk.httpMethod = line.substring(0, first_space).toUpperCase();
+                            mFirstChunk.httpVersion = line.substring(second_space + 1);
                             String path = line.substring(first_space + 1, second_space);
 
                             if (!path.startsWith("/")) {
@@ -192,6 +193,8 @@ public class HTTPReassembly {
                     } else if (line.startsWith("HTTP/")) {
                         int first_space = line.indexOf(' ');
                         if (first_space > 0) {
+                            mFirstChunk.httpVersion = line.substring(0, first_space);
+
                             try {
                                 // NOTE: the response status may be missing when the response is reconstructed by the ushark HTTP2 reassembly
                                 int second_space = line.indexOf(' ', first_space + 1);
@@ -212,6 +215,7 @@ public class HTTPReassembly {
 
                     if(line.startsWith("content-encoding: ")) {
                         String contentEncoding = line.substring(18);
+
                         log_d("Content-Encoding: " + contentEncoding);
 
                         switch (contentEncoding) {
@@ -356,7 +360,6 @@ public class HTTPReassembly {
 
                     //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
 
-                    // Decode body
                     if ((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
                         decodeBody(body);
 
@@ -382,6 +385,7 @@ public class HTTPReassembly {
                     to_add.httpHost = mFirstChunk.httpHost;
                     to_add.httpPath = mFirstChunk.httpPath;
                     to_add.httpQuery = mFirstChunk.httpQuery;
+                    to_add.httpVersion = mFirstChunk.httpVersion;
                     to_add.httpBodyLength = mBodySize;
 
                     if (httpRst)

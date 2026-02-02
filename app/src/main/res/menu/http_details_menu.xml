@@ -24,4 +24,10 @@
         android:icon="@drawable/ic_short_text"
         app:showAsAction="never"
         android:visible="false" />
+
+    <item
+        android:id="@+id/save_as_har"
+        android:title="@string/save_as_har"
+        android:orderInCategory="40"
+        app:showAsAction="never" />
 </menu>

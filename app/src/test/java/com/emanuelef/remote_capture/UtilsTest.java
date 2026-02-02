@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 public class UtilsTest {
     @Test
@@ -45,5 +46,39 @@ public class UtilsTest {
         assertTrue(Utils.subnetContains("2001:0db8:85a3::8a2e:0370:7334", 64, "2001:0db8:85a3::8a2e:0370:0001"));
 
         assertFalse(Utils.subnetContains("2001:0db8:85a3::8a2e:0370:7334", 120, "2001:0db8:85a3::8a2e:0370:0001"));
+    }
+
+    @Test
+    public void testTimezoneConversionLogic() {
+        // Test the RFC 822 -> ISO 8601 timezone conversion logic used in formatMillisIso8601
+        // This simulates what the code does on Android < N
+
+        // Test positive timezone (was already working)
+        String positiveInput = "2026-01-16T17:15:15.123+0100";
+        String positiveExpected = "2026-01-16T17:15:15.123+01:00";
+        assertEquals(positiveExpected, convertTimezone(positiveInput));
+
+        // Test negative timezone (was broken before the fix)
+        String negativeInput = "2026-01-16T10:15:15.123-0500";
+        String negativeExpected = "2026-01-16T10:15:15.123-05:00";
+        assertEquals(negativeExpected, convertTimezone(negativeInput));
+
+        // Test UTC (edge case with +0000)
+        String utcInput = "2026-01-16T15:15:15.123+0000";
+        String utcExpected = "2026-01-16T15:15:15.123+00:00";
+        assertEquals(utcExpected, convertTimezone(utcInput));
+
+        // Test negative offset at international date line
+        String idlInput = "2026-01-16T03:15:15.123-1200";
+        String idlExpected = "2026-01-16T03:15:15.123-12:00";
+        assertEquals(idlExpected, convertTimezone(idlInput));
+    }
+
+    // Helper that replicates the conversion logic from Utils.formatMillisIso8601
+    private String convertTimezone(String rv) {
+        int l = rv.length();
+        if ((l > 5) && ((rv.charAt(l - 5) == '+') || (rv.charAt(l - 5) == '-')))
+            rv = rv.substring(0, l - 2) + ":" + rv.substring(l - 2);
+        return rv;
     }
 }

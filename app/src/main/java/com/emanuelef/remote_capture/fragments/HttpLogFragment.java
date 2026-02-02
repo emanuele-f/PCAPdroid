@@ -40,6 +40,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
@@ -52,6 +53,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.HarWriter;
 import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
@@ -69,6 +71,8 @@ import com.google.android.material.slider.Slider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "HttpLogFragment";
@@ -79,12 +83,15 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private int mFabDownMargin = 0;
     private MenuItem mMenuItemSearch;
     private MenuItem mSave;
+    private MenuItem mSaveAsHar;
     private SearchView mSearchView;
     private Handler mHandler;
     private ChipGroup mActiveFilter;
     private Slider mSizeSlider;
     private boolean mSizeSliderActive = false;
     private Uri mTxtFname;
+    private Uri mHarFname;
+    private AlertDialog mAlertDialog;
 
     private String mQueryToApply;
     private AppsResolver mApps;
@@ -95,6 +102,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             registerForActivityResult(new StartActivityForResult(), this::filterResult);
     private final ActivityResultLauncher<Intent> txtFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::txtFileResult);
+    private final ActivityResultLauncher<Intent> harFileLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::harFileResult);
 
     @Override
     public void onResume() {
@@ -127,6 +136,14 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         if(mSearchView != null)
             mQueryToApply = mSearchView.getQuery().toString();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if(mAlertDialog != null)
+            mAlertDialog.dismiss();
+
+        super.onDestroyView();
     }
 
     @Override
@@ -336,6 +353,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         menuInflater.inflate(R.menu.http_log_menu, menu);
 
         mSave = menu.findItem(R.id.save);
+        mSaveAsHar = menu.findItem(R.id.save_as_har);
         mMenuItemSearch = menu.findItem(R.id.search);
 
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
@@ -356,6 +374,9 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         if(id == R.id.save) {
             openFileSelector();
+            return true;
+        } else if(id == R.id.save_as_har) {
+            openHarFileSelector();
             return true;
         } else if(id == R.id.edit_filter) {
             Intent intent = new Intent(requireContext(), HttpLogFilterActivity.class);
@@ -542,11 +563,13 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         mMenuItemSearch.setVisible(is_enabled);
         mSave.setEnabled(is_enabled);
+        if(mSaveAsHar != null)
+            mSaveAsHar.setEnabled(is_enabled);
     }
 
     public void openFileSelector() {
         boolean noFileDialog = false;
-        String fname = Utils.getUniqueFileName(requireContext(), "txt");
+        String fname = Utils.getExportFileName(requireContext(), "txt");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
@@ -651,6 +674,121 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             dumpHttpLog();
         } else {
             mTxtFname = null;
+        }
+    }
+
+    public void openHarFileSelector() {
+        boolean noFileDialog = false;
+        String fname = Utils.getExportFileName(requireContext(), "har");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, fname);
+
+        if(Utils.supportsFileDialog(requireContext(), intent)) {
+            try {
+                harFileLauncher.launch(intent);
+            } catch (ActivityNotFoundException e) {
+                noFileDialog = true;
+            }
+        } else
+            noFileDialog = true;
+
+        if(noFileDialog) {
+            Log.d(TAG, "No app found to handle file selection");
+
+            Uri uri = Utils.getDownloadsUri(requireContext(), fname);
+
+            if(uri != null) {
+                mHarFname = uri;
+                exportHttpLogHar();
+            } else
+                Utils.showToastLong(requireContext(), R.string.no_activity_file_selection);
+        }
+    }
+
+    private void exportHttpLogHar() {
+        if(mHarFname == null)
+            return;
+
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if(httpLog == null)
+            return;
+
+        Log.d(TAG, "Writing HAR file: " + mHarFname);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] cancelled = {false};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.exporting);
+        builder.setMessage(R.string.export_in_progress);
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            Log.i(TAG, "Abort HAR export");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
+
+        mAlertDialog.setOnCancelListener(dialog -> {
+            Log.i(TAG, "Abort HAR export (back button)");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
+
+        final Uri harFname = mHarFname;
+        mHarFname = null;
+
+        executor.execute(() -> {
+            boolean success = false;
+
+            try {
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(harFname, "rwt");
+
+                if(stream != null) {
+                    HarWriter writer = new HarWriter(requireContext(), httpLog);
+                    writer.write(stream);
+                    stream.close();
+                    success = true;
+                }
+            } catch (IOException e) {
+                if(!cancelled[0])
+                    e.printStackTrace();
+            }
+
+            if(cancelled[0])
+                return;
+
+            final boolean result = success;
+            final Utils.UriStat stat = result ? Utils.getUriStat(requireContext(), harFname) : null;
+
+            handler.post(() -> {
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
+
+                if(result) {
+                    if(stat != null) {
+                        String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                    } else
+                        Utils.showToast(requireContext(), R.string.save_ok);
+                } else
+                    Utils.showToast(requireContext(), R.string.cannot_write_file);
+            });
+        });
+    }
+
+    private void harFileResult(final ActivityResult result) {
+        if((result.getResultCode() == Activity.RESULT_OK) && (result.getData() != null)) {
+            mHarFname = result.getData().getData();
+            exportHttpLogHar();
+        } else {
+            mHarFname = null;
         }
     }
 
