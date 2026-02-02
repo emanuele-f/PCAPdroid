@@ -40,6 +40,11 @@ public class PayloadChunk implements Serializable {
     public int httpBodyLength = 0;
     private boolean mHttpRst = false;
 
+    // WebSocketDecoder data (when loading PCAP file)
+    public int wsOpcode = -1;           // -1 = raw/undecoded, else opcode value
+    public boolean wsIsFinal = true;    // FIN bit
+    public boolean wsWasFragmented = false;  // True if reassembled from fragments
+
     // Serializable need in ConnectionPayload fragment
     public enum ChunkType implements Serializable {
         RAW,

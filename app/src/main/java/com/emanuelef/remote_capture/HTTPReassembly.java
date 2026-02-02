@@ -48,10 +48,10 @@ public class HTTPReassembly {
     private final boolean mDumpPayload;
     private boolean mReassembleChunks;
     private boolean mSwitchingProtocols = false;
-    private boolean mSwitchedProtocols = false;
     private boolean mWebsocketUpgrade = false;
     private boolean mInvalidHttp;
     private PayloadChunk mFirstChunk;
+    private WebSocketDecoder mWebSocketDecoder;
 
     /**
      * @param reassembleChunks if false, all the chunks will be considered as RAW chunks
@@ -116,6 +116,29 @@ public class HTTPReassembly {
      * to associate the reply to the correct request.
      */
     public void handleChunk(PayloadChunk chunk) {
+        if (mSwitchingProtocols) {
+            if (mWebsocketUpgrade) {
+                chunk.type = PayloadChunk.ChunkType.WEBSOCKET;
+
+                if (mDumpPayload) {
+                    // when reading from ushark, pass all the Websocket data to the decoder
+                    if (mWebSocketDecoder == null) {
+                        // Initialize decoder - all future chunks will be routed through it
+                        // Filter out control frames (ping/pong/close) as they're not relevant for payload display
+                        mWebSocketDecoder = new WebSocketDecoder(decoded -> {
+                            if (!WebSocketDecoder.isControlOpcode(decoded.wsOpcode))
+                                mListener.onChunkReassembled(decoded);
+                        });
+                    }
+
+                    mWebSocketDecoder.handleChunk(chunk);
+                }
+            }
+
+            // protocols switched, not HTTP anymore
+            return;
+        }
+
         int body_start = 0;
         byte[] payload = chunk.payload;
         boolean chunked_complete = false;
@@ -183,7 +206,7 @@ public class HTTPReassembly {
                     }
                 }
 
-                while((line != null) && (line.length() > 0)) {
+                while((line != null) && (!line.isEmpty())) {
                     line = line.toLowerCase();
                     //log_d("[HEADER] " + line);
 
@@ -214,13 +237,13 @@ public class HTTPReassembly {
                             mContentLength = Integer.parseInt(line.substring(16));
                             log_d("Content-Length: " + mContentLength);
                         } catch (NumberFormatException ignored) {}
-                    } else if(!chunk.is_sent && line.startsWith("upgrade: ")) {
+                    } else if(line.startsWith("upgrade: ")) {
                         log_d("Upgrade found, stop parsing");
                         mSwitchingProtocols = true;
                         mReassembleChunks = false;
 
                         if (line.startsWith("upgrade: websocket")) {
-                            log_d("Detected Websocket upgrade");
+                            log_d("websocket upgrade");
                             mWebsocketUpgrade = true;
                         }
                     } else if(line.equals("transfer-encoding: chunked")) {
@@ -346,9 +369,8 @@ public class HTTPReassembly {
                         to_add = body.withPayload(reassembly);
                     } else
                         to_add = headers;
-                } else {
+                } else
                     to_add = mFirstChunk;
-                }
 
                 if (mInvalidHttp)
                     to_add.type = PayloadChunk.ChunkType.RAW;
@@ -366,14 +388,6 @@ public class HTTPReassembly {
                         // this is necessary when mDumpPayload=false, to ensure that
                         // the chunk is marked as HTTP RST
                         to_add.setHttpRst();
-
-                    // Fix the chunk type after upgrade when read from ushark
-                    if (mSwitchedProtocols && (to_add.type == PayloadChunk.ChunkType.HTTP)) {
-                        to_add.type = mWebsocketUpgrade ? PayloadChunk.ChunkType.WEBSOCKET : PayloadChunk.ChunkType.RAW;
-
-                        // also update the original chunk, so that connection details tabs are correct
-                        chunk.type = to_add.type;
-                    }
                 }
 
                 mBodySize = 0;
@@ -385,14 +399,10 @@ public class HTTPReassembly {
 
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
-
-                if (mSwitchingProtocols)
-                    mSwitchedProtocols = true;
             }
 
             if((new_body_start > 0) && (chunk.payload.length > new_body_start)) {
                 // Part of this chunk should be processed as a new chunk
-                log_d("Continue from " + new_body_start);
                 handleChunk(chunk.subchunk(new_body_start, chunk.payload.length - new_body_start));
             }
         }

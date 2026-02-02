@@ -544,17 +544,23 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
     public void handleChunksAdded(int tot_chunks) {
         int items_count = -1;
+        boolean readingFromPcap = CaptureService.isReadingFromPcapFile();
 
-        for(int i = mHandledChunks; i<tot_chunks; i++) {
+        for(int i = mHandledChunks; i < tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
             if(chunk == null)
                 continue;
 
+            // when reading from pcap, websocket data must be extracted from HTTP chunks
+            boolean websocketFromHttp = readingFromPcap &&
+                    (mMode == ChunkType.WEBSOCKET) &&
+                    (chunk.type != ChunkType.RAW);
+
             // Exclude unrelated chunks
-            if((mMode != ChunkType.RAW) && (mMode != chunk.type))
+            if((mMode != ChunkType.RAW) && (mMode != chunk.type) && !websocketFromHttp)
                 continue;
 
-            if(mMode == ChunkType.HTTP) {
+            if((mMode == ChunkType.HTTP) || websocketFromHttp) {
                 // will call onChunkReassembled
                 if(chunk.is_sent)
                     mHttpReq.handleChunk(chunk);
@@ -591,6 +597,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     @SuppressLint("DefaultLocale")
     @Override
     public void onChunkReassembled(PayloadChunk chunk) {
+        if((mMode != ChunkType.RAW) && (mMode != chunk.type))
+            // unrelated chunk (mainly for HTTP data before Websocket)
+            return;
+
         AdapterChunk adapterChunk = new AdapterChunk(chunk, mChunks.size());
         int adapterPos = getItemCount();
         int insertPos = mChunks.size();
