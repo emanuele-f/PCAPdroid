@@ -70,6 +70,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Locale;
 
 public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback,
         FragmentManager.OnBackStackChangedListener,
@@ -432,14 +433,31 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                     return true;
                 });
             } else {
-                // Fallback selector for older Android versions
+                // Populate supported languages dynamically from locales_config.xml
+                String[] supportedLocales = Utils.getSupportedLocales(requireContext());
+                String[] entryValues = new String[supportedLocales.length + 1];
+                CharSequence[] entryLabels = new CharSequence[supportedLocales.length + 1];
+
+                entryValues[0] = "system";
+                entryLabels[0] = getString(R.string.system_default);
+
+                for (int i = 0; i < supportedLocales.length; i++) {
+                    Locale locale = Locale.forLanguageTag(supportedLocales[i]);
+                    entryValues[i + 1] = supportedLocales[i];
+                    String name = locale.getDisplayName(locale);
+                    entryLabels[i + 1] = name.substring(0, 1).toUpperCase(locale) + name.substring(1);
+                }
+
+                appLang.setEntries(entryLabels);
+                appLang.setEntryValues(entryValues);
+
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
                 if (SettingsActivity.ACTION_LANG_RESTART.equals(requireActivity().getIntent().getAction()))
                     scrollToPreference(appLang);
 
                 // Current locale applied via BaseActivity.attachBaseContext
                 appLang.setOnPreferenceChangeListener((preference, newValue) -> {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-
                     if (prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, newValue.toString()).commit()) {
                         // Restart the activity to apply the language change
                         Intent intent = new Intent(requireContext(), SettingsActivity.class);

@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.LocaleManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -41,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -59,7 +59,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.LocaleList;
 import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -109,6 +108,8 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.tabs.TabLayout;
+
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -386,28 +387,40 @@ public class Utils {
     public static Configuration getLocalizedConfig(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Configuration config = context.getResources().getConfiguration();
+        String appLocale = Prefs.getAppLocale(prefs);
 
         // On Android 33+, app language is configured from the system settings
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (Prefs.useEnglishLanguage(prefs)) {
-                Log.i(TAG, "Migrate from in-app language picker to system picker");
-                prefs.edit().remove(Prefs.PREF_APP_LANGUAGE).apply();
-
-                context.getSystemService(LocaleManager.class)
-                        .setApplicationLocales(new LocaleList(Locale.forLanguageTag("en-US")));
-            }
-
-            return config;
-        }
-
-        if(!Prefs.useEnglishLanguage(prefs))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             return config;
 
-        Locale locale = new Locale("en");
+        if (appLocale == null)
+            return config;
+
+        Locale locale = Locale.forLanguageTag(appLocale);
         Locale.setDefault(locale);
         config.setLocale(locale);
 
         return config;
+    }
+
+    public static String[] getSupportedLocales(Context context) {
+        ArrayList<String> locales = new ArrayList<>();
+        try {
+            XmlResourceParser parser = context.getResources().getXml(R.xml.locales_config);
+            int eventType;
+            while ((eventType = parser.next()) != XmlPullParser.END_DOCUMENT) {
+                if ((eventType == XmlPullParser.START_TAG) && "locale".equals(parser.getName())) {
+                    String name = parser.getAttributeValue(
+                            "http://schemas.android.com/apk/res/android", "name");
+                    if (name != null)
+                        locales.add(name);
+                }
+            }
+            parser.close();
+        } catch (Exception e) {
+            Log.e(TAG, "getSupportedLocales: " + e.getMessage());
+        }
+        return locales.toArray(new String[0]);
     }
 
     public static String proto2str(int proto) {

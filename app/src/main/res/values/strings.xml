@@ -134,7 +134,6 @@
     <string name="conn_status_unreachable">Unreachable</string>
     <string name="other_prefs">Other</string>
     <string name="app_language">App language</string>
-    <string name="lang_english">English</string>
     <string name="system_default">System default</string>
     <string name="no_activity_file_selection">No app found to handle file selection</string>
     <string name="file_saved_with_name">File saved as \"%1$s\"</string>
