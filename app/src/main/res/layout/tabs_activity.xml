@@ -48,6 +48,7 @@
                 android:layout_gravity="center_vertical"
                 android:padding="8dp"
                 android:src="@drawable/ic_swap_horiz"
+                android:tint="@color/colorTabTextSelected"
                 android:background="@drawable/tab_switch_button_background"
                 android:contentDescription="@string/switch_to_http"
                 android:visibility="gone"

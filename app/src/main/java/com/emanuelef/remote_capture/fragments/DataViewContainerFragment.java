@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -218,7 +219,9 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
         if (switchButton != null) {
             int contentDescRes = (mCurrentView == VIEW_CONNECTIONS) ?
                 R.string.switch_to_http : R.string.switch_to_connections;
-            switchButton.setContentDescription(getString(contentDescRes));
+            String desc = getString(contentDescRes);
+            switchButton.setContentDescription(desc);
+            TooltipCompat.setTooltipText(switchButton, desc);
         }
     }
 
