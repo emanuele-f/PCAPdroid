@@ -105,7 +105,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | http_server_port        | int    |     |      | the HTTP server port in http_server mode                                                                                              |
 | pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode (overrides pcap_name)                                                                     |
 | socks5_enabled          | bool   |     | vpn  | true to redirect the TCP connections to a SOCKS5 proxy                                                                                |
-| socks5_proxy_ip_address | string |     | vpn  | the SOCKS5 proxy IP address                                                                                                           |
+| socks5_proxy_ip_address | string |     | vpn  | (deprecated) the SOCKS5 proxy IP address. Alias for socks5_proxy_host since version 90                                                |
 | socks5_proxy_port       | int    |     | vpn  | the SOCKS5 proxy port                                                                                                                 |
 | root_capture            | bool   |     |      | true to capture packets in root mode, false to use the VPNService                                                                     |
 | pcapdroid_trailer       | bool   |     |      | (deprecated) alias for dump_extensions                                                                                                |
@@ -126,13 +126,14 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | sslkeylog_name          | bool   | 89  | vpn  | dump the SSLKEYLOGFILE to the /sdcard/Downloads/PCAPDroid directory with the given name                                               |
 | decryption_rules        | string | 89  | vpn  | provide decryption rules as json (e.g. [{"type":"APP","value":"com.example.app"},{"type":"IP","value":"1.1.1.1"}])                    |
 | full_payload            | bool   | 89  |      | true to dump the full payload of the packets                                                                                          |
+| socks5_proxy_host       | string | 90  | vpn  | the SOCKS5 proxy IP address or hostname                                                                                               |
 
 \*: paid feature
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 The `Mode` column indicates if the option applies to any mode or only to the VPN or root mode.
 
-*NOTE*: for security reasons, since version 1.5.3 you cannot specify a remote server IP address in `collector_ip_address` or in `socks5_proxy_ip_address`. If you really want to do this, you should first set such a remote IP address via the PCAPdroid gui and only then invoke the API.
+*NOTE*: for security reasons, since version 1.5.3 you cannot specify a remote server address in `collector_ip_address` or in `socks5_proxy_ip_address`/`socks5_proxy_host`. If you really want to do this, you should first set such a remote address via the PCAPdroid gui and only then invoke the API.
 
 *NOTE*: since version 1.6.0, the `pcap_uri` behavior is changed as described in the `Dumping PCAP to file` section below
 

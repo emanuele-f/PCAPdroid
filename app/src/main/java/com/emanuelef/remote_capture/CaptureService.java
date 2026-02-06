@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -143,6 +143,7 @@ public class CaptureService extends VpnService implements Runnable {
     private NotificationCompat.Builder mStatusBuilder;
     private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
+    private Network mUnderlyingNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver mNativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
     private Geolocation mNativeGeolocation;   // only native
@@ -338,6 +339,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
+            mUnderlyingNetwork = net;
 
             if(net != null) {
                 handleLinkProperties(cm.getLinkProperties(net));
@@ -1156,10 +1158,39 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.mSettings : null);
     }
 
+    // Resolve hostnames that the native code needs as IPs.
+    // Uses the underlying (non-VPN) network to avoid routing through the VPN tunnel.
+    private boolean resolveHosts() {
+        if(!mSocks5Enabled || mSettings.tls_decryption || mSocks5Address.isEmpty())
+            return true;
+
+        if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || (mUnderlyingNetwork == null))
+            return true;
+
+        try {
+            InetAddress resolved = mUnderlyingNetwork.getByName(mSocks5Address);
+            String ip = resolved.getHostAddress();
+            if(!ip.equals(mSocks5Address)) {
+                Log.i(TAG, "Resolved SOCKS5 proxy: " + mSocks5Address + " -> " + ip);
+                mSocks5Address = ip;
+            }
+            return true;
+        } catch (UnknownHostException e) {
+            Log.e(TAG, "Could not resolve SOCKS5 proxy: " + mSocks5Address);
+            mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, mSocks5Address));
+            return false;
+        }
+    }
+
     // Inside the mCaptureThread
     @Override
     public void run() {
-        if(mSettings.root_capture || mSettings.readFromPcap()) {
+        boolean hostResolved = resolveHosts();
+        mUnderlyingNetwork = null;
+
+        if(!hostResolved) {
+            // fall through to cleanup
+        } else if(mSettings.root_capture || mSettings.readFromPcap()) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
             if(mSettings.root_capture && (checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED)) {
                 boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);

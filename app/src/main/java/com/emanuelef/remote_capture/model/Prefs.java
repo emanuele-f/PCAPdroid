@@ -63,6 +63,7 @@ public class Prefs {
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
+    public static final String PREF_SOCKS5_PROXY_HOST_KEY = "socks5_proxy_host";
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
     public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
     public static final String PREF_MALWARE_DETECTION = "malware_detection";

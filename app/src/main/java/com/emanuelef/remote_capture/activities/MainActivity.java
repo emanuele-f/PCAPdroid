@@ -180,7 +180,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initAppState();
         checkPermissions();
 
-        mCapHelper = new CaptureHelper(this, true);
+        mCapHelper = new CaptureHelper(this);
         mCapHelper.setListener(success -> {
             if(!success) {
                 Log.w(TAG, "Capture start failed");

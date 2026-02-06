@@ -75,7 +75,8 @@ public class CaptureSettings implements Serializable {
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
         http_server_port = getInt(intent, Prefs.PREF_HTTP_SERVER_PORT, 8080);
         socks5_enabled = getBool(intent, Prefs.PREF_SOCKS5_ENABLED_KEY, false);
-        socks5_proxy_address = getString(intent, Prefs.PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0");
+        socks5_proxy_address = getString(intent, Prefs.PREF_SOCKS5_PROXY_HOST_KEY,
+                getString(intent, Prefs.PREF_SOCKS5_PROXY_IP_KEY, "0.0.0.0"));
         socks5_proxy_port = getInt(intent, Prefs.PREF_SOCKS5_PROXY_PORT_KEY, 8080);
         socks5_username = getString(intent, Prefs.PREF_SOCKS5_USERNAME_KEY, "");
         socks5_password = getString(intent, Prefs.PREF_SOCKS5_PASSWORD_KEY, "");
