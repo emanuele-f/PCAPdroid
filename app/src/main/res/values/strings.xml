@@ -473,7 +473,7 @@
     <string name="redirect_to">Redirect to:</string>
     <string name="original_port">Original port</string>
     <string name="required">required</string>
-    <string name="destination_ip">Destination IP address</string>
+    <string name="destination_host">Destination host</string>
     <string name="destination_port">Destination port</string>
     <string name="port_mapping_exists">Port mapping already defined</string>
     <string name="items_delete_confirm">Delete the selected items?</string>

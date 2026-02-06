@@ -324,7 +324,6 @@
     <string name="redirect_to">Weiterleiten zu:</string>
     <string name="original_port">Ursprünglicher Port</string>
     <string name="required">Erforderlich</string>
-    <string name="destination_ip">Ziel-IP-Adresse</string>
     <string name="destination_port">Ziel-Port</string>
     <string name="port_mapping_exists">Port-Zuordnung bereits definiert</string>
     <string name="items_delete_confirm">Ausgewählte Elemente löschen\?</string>

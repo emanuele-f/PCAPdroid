@@ -415,7 +415,6 @@
     <string name="redirect_to">重定向到：</string>
     <string name="destination_port">目标端口</string>
     <string name="reset_stats_confirm">你真想重置这些统计数据吗？</string>
-    <string name="destination_ip">目标 IP</string>
     <string name="port_mapping_exists">已定义端口映射</string>
     <string name="ipv6_dns_server">IPv6 DNS 服务器</string>
     <string name="pcapng_format">PCAPNG 格式</string>

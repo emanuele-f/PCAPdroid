@@ -56,7 +56,7 @@ public class PortMappingAdapter extends ArrayAdapter<PortMap> {
             convertView = mLayoutInflater.inflate(R.layout.port_mapping_item, parent, false);
 
         PortMap mapping = getItem(position);
-        String redirect_to = getContext().getString(R.string.ip_and_port, mapping.redirect_ip, mapping.redirect_port);
+        String redirect_to = getContext().getString(R.string.ip_and_port, mapping.redirect_host, mapping.redirect_port);
 
         ((TextView)convertView.findViewById(R.id.orig_port)).setText(Integer.toString(mapping.orig_port));
         ((TextView)convertView.findViewById(R.id.proto)).setText(Utils.proto2str(mapping.ipproto));

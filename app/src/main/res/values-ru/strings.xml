@@ -396,7 +396,6 @@
     <string name="redirect_to">Перенаправлять на:</string>
     <string name="add_action">Добавить</string>
     <string name="items_delete_confirm">Удалить выбранные элементы\?</string>
-    <string name="destination_ip">IP адрес назначения</string>
     <string name="destination_port">Порт назначения</string>
     <string name="port_mapping_summary">Настройте правила сопоставления портов для перенаправления соединений на другие хосты или порты</string>
     <string name="original_port">Изначальный порт</string>

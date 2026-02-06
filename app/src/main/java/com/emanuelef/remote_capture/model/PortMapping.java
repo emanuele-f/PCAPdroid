@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -24,13 +25,14 @@ public class PortMapping {
         public final int ipproto;
         public final int orig_port;
         public final int redirect_port;
-        public final String redirect_ip;
+        @SerializedName("redirect_ip") // keep for backward compatibility
+        public final String redirect_host;
 
         public PortMap(int proto, int port, int r_port, String r_host) {
             ipproto = proto;
             orig_port = port;
             redirect_port = r_port;
-            redirect_ip = r_host;
+            redirect_host = r_host;
         }
 
         @Override
@@ -39,12 +41,12 @@ public class PortMapping {
             if (o == null || getClass() != o.getClass()) return false;
             PortMap portMap = (PortMap) o;
             return ipproto == portMap.ipproto && orig_port == portMap.orig_port &&
-                    redirect_port == portMap.redirect_port && redirect_ip.equals(portMap.redirect_ip);
+                    redirect_port == portMap.redirect_port && redirect_host.equals(portMap.redirect_host);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(ipproto, orig_port, redirect_port, redirect_ip);
+            return Objects.hash(ipproto, orig_port, redirect_port, redirect_host);
         }
     }
 

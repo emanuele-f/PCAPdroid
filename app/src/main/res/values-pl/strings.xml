@@ -379,7 +379,6 @@
     <string name="redirect_to">Przekieruj do:</string>
     <string name="original_port">Oryginalny port</string>
     <string name="required">wymagany</string>
-    <string name="destination_ip">Docelowy adres IP</string>
     <string name="destination_port">Port docelowy</string>
     <string name="port_mapping_exists">Mapowanie portów jest już zdefiniowane</string>
     <string name="items_delete_confirm">Usunąć wybrane elementy?</string>

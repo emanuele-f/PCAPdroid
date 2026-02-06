@@ -156,7 +156,6 @@
     <string name="redirect_to">Перенаправити до:</string>
     <string name="original_port">Оригінальний порт</string>
     <string name="required">обов’язково</string>
-    <string name="destination_ip">IP адреса призначення</string>
     <string name="destination_port">Порт призначення</string>
     <string name="port_mapping_exists">Мапування порту вже визначене</string>
     <string name="items_delete_confirm">Видалити вибрані елементи\?</string>

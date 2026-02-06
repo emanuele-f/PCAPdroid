@@ -406,7 +406,6 @@
     <string name="qr_code_expired">Kode QR kedaluwarsa. Buat kode QR baru dan coba lagi</string>
     <string name="license_limit_reached">Anda telah mencapai batas lisensi untuk token buka kunci ini. Beli token baru untuk membuat lebih banyak lisensi</string>
     <string name="socks5_auth_summary">Autentikasi ke proxy melalui nama pengguna dan kata sandi</string>
-    <string name="destination_ip">Alamat IP tujuan</string>
     <string name="mitm_addon_error">Kesalahan saat memulai addon mitm. Periksa log untuk detailnya</string>
     <string name="username">Nama pengguna (username)</string>
     <string name="total_bytes">Total bytes</string>

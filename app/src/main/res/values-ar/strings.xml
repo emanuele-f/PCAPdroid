@@ -424,7 +424,6 @@
     <string name="original_port">المنفذ الأصلي</string>
     <string name="required">مطلوب</string>
     <string name="use_system_dns_summary">استخدم خوادم DNS الخاصة بالنظام إن أمكن</string>
-    <string name="destination_ip">عنوان IP الوجهة</string>
     <string name="rule_exists">القاعدة محددة بالفعل</string>
     <string name="dns_servers">خوادم DNS</string>
     <string name="dns_servers_summary">قم بتكوين خوادم DNS لاستخدامها أثناء الالتقاط</string>

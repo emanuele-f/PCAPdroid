@@ -330,7 +330,6 @@
     <string name="firewall_whitelist_notice">Bu modda, əllə ağ siyahıya salınmadığı müddətcə bütün bağlantılar bloklanacaq. Uyğun bir ağ siyahı olmadan bildirişləri görməyə bilərsiniz</string>
     <string name="original_port">Orijinal (əsas) port</string>
     <string name="required">gərəkli</string>
-    <string name="destination_ip">Hədəf İP adresi</string>
     <string name="destination_port">Hədəf port</string>
     <string name="port_mapping_exists">Port yönləndirmə artıq təyin edilib</string>
     <string name="add_to_fw_whitelist">Təhlükəsizlik divarı ağ siyahısına əlavə et</string>

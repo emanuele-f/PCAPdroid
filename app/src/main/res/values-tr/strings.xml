@@ -409,7 +409,6 @@
     <string name="external_storage_perm_required">Harici depolama izni gerekli</string>
     <string name="many_rules_warning">Çok sayıda kuralı içe aktarmaya çalışıyorsunuz, bu da bazı etkileşimler sırasında uygulamanın yanıt vermemesine neden olabilir. Gerçekten devam etmek istiyor musunuz\?</string>
     <string name="pcapng_format">Pcapng biçimi</string>
-    <string name="destination_ip">Hedef IP adresi</string>
     <string name="add_action">Ekle</string>
     <string name="dns_servers_summary">Yakalama sırasında kullanılacak DNS sunucularını yapılandırın</string>
     <string name="use_system_dns">Sistem DNS\'sini kullan</string>

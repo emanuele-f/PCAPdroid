@@ -393,7 +393,6 @@
     <string name="redirect_to">இதை திருப்பி விடுங்கள்:</string>
     <string name="original_port">அசல் துறைமுகம்</string>
     <string name="required">தேவை</string>
-    <string name="destination_ip">இலக்கு ஐபி முகவரி</string>
     <string name="destination_port">இலக்கு துறைமுகம்</string>
     <string name="port_mapping_exists">துறைமுகம் மேப்பிங் ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
     <string name="items_delete_confirm">தேர்ந்தெடுக்கப்பட்ட பொருட்களை நீக்கவா?</string>

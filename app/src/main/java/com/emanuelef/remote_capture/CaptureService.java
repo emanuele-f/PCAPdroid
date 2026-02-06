@@ -546,14 +546,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
 
-            if(Prefs.isPortMappingEnabled(mPrefs)) {
-                PortMapping portMap = new PortMapping(this);
-                Iterator<PortMapping.PortMap> it = portMap.iter();
-                while (it.hasNext()) {
-                    PortMapping.PortMap mapping = it.next();
-                    addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, mapping.redirect_ip);
-                }
-            }
+            // Port mappings are loaded in resolveHosts() to allow domain resolution
 
             try {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
@@ -1158,28 +1151,58 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.mSettings : null);
     }
 
+    private String resolveHost(String host) {
+        if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || (mUnderlyingNetwork == null))
+            return null;
+
+        try {
+            return mUnderlyingNetwork.getByName(host).getHostAddress();
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
+
     // Resolve hostnames that the native code needs as IPs.
     // Uses the underlying (non-VPN) network to avoid routing through the VPN tunnel.
     private boolean resolveHosts() {
-        if(!mSocks5Enabled || mSettings.tls_decryption || mSocks5Address.isEmpty())
-            return true;
-
-        if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || (mUnderlyingNetwork == null))
-            return true;
-
-        try {
-            InetAddress resolved = mUnderlyingNetwork.getByName(mSocks5Address);
-            String ip = resolved.getHostAddress();
-            if(!ip.equals(mSocks5Address)) {
-                Log.i(TAG, "Resolved SOCKS5 proxy: " + mSocks5Address + " -> " + ip);
-                mSocks5Address = ip;
+        if(mSocks5Enabled && !mSettings.tls_decryption && !mSocks5Address.isEmpty()
+                && !Utils.validateIpAddress(mSocks5Address))
+        {
+            String resolved = resolveHost(mSocks5Address);
+            if(resolved == null) {
+                Log.e(TAG, "Could not resolve SOCKS5 proxy: " + mSocks5Address);
+                mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, mSocks5Address));
+                return false;
             }
-            return true;
-        } catch (UnknownHostException e) {
-            Log.e(TAG, "Could not resolve SOCKS5 proxy: " + mSocks5Address);
-            mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, mSocks5Address));
-            return false;
+            Log.i(TAG, "Resolved SOCKS5 proxy: " + mSocks5Address + " -> " + resolved);
+            mSocks5Address = resolved;
         }
+
+        if(Prefs.isPortMappingEnabled(mPrefs)) {
+            PortMapping portMap = new PortMapping(this);
+            Iterator<PortMapping.PortMap> it = portMap.iter();
+
+            while(it.hasNext()) {
+                PortMapping.PortMap mapping = it.next();
+                String ip = mapping.redirect_host;
+
+                if(!Utils.validateIpAddress(ip)) {
+                    String resolved = resolveHost(ip);
+                    if(resolved == null) {
+                        Log.e(TAG, "Could not resolve port mapping host: " + ip);
+                        final String failedHost = ip;
+                        mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, failedHost));
+                        return false;
+                    }
+                    Log.i(TAG, "Resolved port mapping host: " + ip + " -> " + resolved);
+                    ip = resolved;
+                }
+
+                addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, ip);
+            }
+        }
+
+        return true;
     }
 
     // Inside the mCaptureThread
