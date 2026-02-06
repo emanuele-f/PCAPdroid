@@ -21,8 +21,10 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArraySet;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,10 +61,14 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
     private final Drawable mUnknownIcon;
     private int mUnfilteredItemsCount;
     private View.OnClickListener mListener;
+    private View.OnLongClickListener mSelectionLongClickListener;
     private final AppsResolver mAppsResolver;
     private final Context mContext;
     private ConnectionDescriptor mSelectedItem;
     private int mNumRemovedItems;
+    private final ArraySet<Integer> mSelectedItems = new ArraySet<>();
+    private final int mSelectedColor;
+    private final int mSelectableBackground;
 
     // maps a connection ID to a position in mFilteredConn. Positions are shifted by mNumRemovedItems
     // to provide an always increasing position even when items are removed. The correct unshifted
@@ -188,6 +195,12 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         mIdToFilteredPos = new SparseIntArray();
         mMask = PCAPdroid.getInstance().getVisualizationMask();
         mSearch = null;
+        TypedArray a = context.obtainStyledAttributes(new int[]{android.R.attr.colorControlHighlight});
+        mSelectedColor = a.getColor(0, 0x40808080);
+        a.recycle();
+        TypedValue tv = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true);
+        mSelectableBackground = tv.resourceId;
         setHasStableIds(true);
     }
 
@@ -210,6 +223,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         ViewHolder holder = new ViewHolder(view);
 
         view.setOnLongClickListener(v -> {
+            if((mSelectionLongClickListener != null) && mSelectionLongClickListener.onLongClick(v))
+                return true;
+
             // see registerForContextMenu
             mSelectedItem = getItem(holder.getAbsoluteAdapterPosition());
             return false;
@@ -227,6 +243,11 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
 
         holder.bindConn(mContext, conn, mAppsResolver, mUnknownIcon);
+
+        if(mSelectedItems.contains(conn.incr_id))
+            holder.itemView.setBackgroundColor(mSelectedColor);
+        else
+            holder.itemView.setBackgroundResource(mSelectableBackground);
     }
 
     @Override
@@ -316,6 +337,8 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         for(ConnectionDescriptor conn: conns) {
             if(conn == null)
                 continue;
+
+            mSelectedItems.remove(conn.incr_id);
 
             int pos = getFilteredItemPos(conn.incr_id);
             if(pos != -1) {
@@ -449,7 +472,7 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         return (mSearch != null) || mFilter.isSet();
     }
 
-    public String dumpConnectionsCsv() {
+    public String dumpConnectionsCsv(boolean selectedOnly) {
         StringBuilder builder = new StringBuilder();
         AppsResolver resolver = new AppsResolver(mContext);
         boolean malwareDetection = Prefs.isMalwareDetectionEnabled(mContext, PreferenceManager.getDefaultSharedPreferences(mContext));
@@ -460,11 +483,10 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
             builder.append(",Malicious");
         builder.append("\n");
 
-        // Contents
-        for(int i=0; i<getItemCount(); i++) {
+        for(int i = 0; i < getItemCount(); i++) {
             ConnectionDescriptor conn = getItem(i);
 
-            if(conn != null) {
+            if((conn != null) && (!selectedOnly || mSelectedItems.contains(conn.incr_id))) {
                 AppDescriptor app = resolver.getAppByUid(conn.uid, 0);
 
                 builder.append(conn.ipproto);                               builder.append(",");
@@ -497,6 +519,49 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         }
 
         return builder.toString();
+    }
+
+    public void toggleSelection(int position) {
+        ConnectionDescriptor conn = getItem(position);
+        if(conn == null)
+            return;
+
+        if(!mSelectedItems.remove(conn.incr_id))
+            mSelectedItems.add(conn.incr_id);
+        notifyItemChanged(position);
+    }
+
+    public void selectItem(int position) {
+        ConnectionDescriptor conn = getItem(position);
+        if(conn == null)
+            return;
+
+        mSelectedItems.add(conn.incr_id);
+        notifyItemChanged(position);
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void clearSelection() {
+        mSelectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedCount() {
+        return mSelectedItems.size();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void selectAll() {
+        for(int i = 0; i < getItemCount(); i++) {
+            ConnectionDescriptor conn = getItem(i);
+            if(conn != null)
+                mSelectedItems.add(conn.incr_id);
+        }
+        notifyDataSetChanged();
+    }
+
+    public void setSelectionLongClickListener(View.OnLongClickListener listener) {
+        mSelectionLongClickListener = listener;
     }
 
     public ArrayList<Integer> getFilteredConnectionIds() {

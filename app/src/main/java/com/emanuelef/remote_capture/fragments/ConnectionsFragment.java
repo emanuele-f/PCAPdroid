@@ -44,6 +44,8 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
@@ -112,6 +114,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private String mQueryToApply;
     private String mUnblockCidr;
     private String mDecRemoveCidr;
+    private ActionMode mActionMode;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
@@ -152,6 +155,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         super.onHiddenChanged(hidden);
 
         if (hidden) {
+            if(mActionMode != null)
+                mActionMode.finish();
             clearFilters();
         } else {
             if (mRecyclerView != null) {
@@ -266,6 +271,12 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
+
+            if(mActionMode != null) {
+                toggleSelection(pos);
+                return;
+            }
+
             ConnectionDescriptor item = mAdapter.getItem(pos);
 
             if(item != null) {
@@ -280,6 +291,15 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
                 startActivity(intent);
             }
+        });
+
+        mAdapter.setSelectionLongClickListener(v -> {
+            if(mActionMode != null) {
+                int pos = mRecyclerView.getChildLayoutPosition(v);
+                toggleSelection(pos);
+                return true;
+            }
+            return false;
         });
 
         autoScroll = true;
@@ -646,7 +666,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         int id = item.getItemId();
 
-        if(id == R.id.hide_app) {
+        if(id == R.id.select_connection) {
+            startSelectionMode(conn);
+            return true;
+        } else if(id == R.id.hide_app) {
             mAdapter.mMask.addApp(conn.uid);
             mask_changed = true;
         } else if(id == R.id.hide_host) {
@@ -1005,7 +1028,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void dumpCsv() {
-        String dump = mAdapter.dumpConnectionsCsv();
+        String dump = mAdapter.dumpConnectionsCsv(mActionMode != null);
 
         if(mCsvFname != null) {
             Log.d(TAG, "Writing CSV file: " + mCsvFname);
@@ -1037,6 +1060,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         mCsvFname = null;
+
+        if(mActionMode != null)
+            mActionMode.finish();
     }
 
     public void openFileSelector() {
@@ -1103,8 +1129,84 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
+        if(mActionMode != null) {
+            mActionMode.finish();
+            return true;
+        }
         return Utils.backHandleSearchview(mSearchView);
     }
+
+    private void startSelectionMode(ConnectionDescriptor conn) {
+        if(mActionMode != null)
+            return;
+
+        mActionMode = ((AppCompatActivity) requireActivity()).startSupportActionMode(mActionModeCallback);
+
+        // find position of the connection and select it
+        for(int i = 0; i < mAdapter.getItemCount(); i++) {
+            ConnectionDescriptor c = mAdapter.getItem(i);
+            if((c != null) && (c.incr_id == conn.incr_id)) {
+                mAdapter.selectItem(i);
+                break;
+            }
+        }
+
+        updateActionModeTitle();
+    }
+
+    private void toggleSelection(int pos) {
+        mAdapter.toggleSelection(pos);
+
+        if(mAdapter.getSelectedCount() == 0) {
+            if(mActionMode != null)
+                mActionMode.finish();
+        } else
+            updateActionModeTitle();
+    }
+
+    private void updateActionModeTitle() {
+        if(mActionMode != null)
+            mActionMode.setTitle(getString(R.string.n_selected, mAdapter.getSelectedCount()));
+    }
+
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.connections_cab, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int id = item.getItemId();
+
+            if(id == R.id.select_all) {
+                if(mAdapter.getSelectedCount() == mAdapter.getItemCount())
+                    mode.finish();
+                else {
+                    mAdapter.selectAll();
+                    updateActionModeTitle();
+                }
+                return true;
+            } else if(id == R.id.save) {
+                openFileSelector();
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mAdapter.clearSelection();
+            mActionMode = null;
+        }
+    };
 
     public void clearFilters() {
         if(mAdapter != null) {

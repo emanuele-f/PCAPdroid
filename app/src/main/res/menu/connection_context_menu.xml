@@ -4,6 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item
+        android:id="@+id/select_connection"
+        android:title="@string/select"
+        android:orderInCategory="0" />
+
+    <item
         android:title="@string/hide">
         <menu>
             <item

@@ -160,6 +160,7 @@
     <string name="protocol_val">Protocol: %1$s</string>
     <string name="malware_whitelist_action">Whitelist (malware)…</string>
     <string name="hide">Hide…</string>
+    <string name="select">Select</string>
     <string name="n_selected">%1$d selected</string>
     <string name="select_all">Select all</string>
     <string name="app_details">App details</string>
