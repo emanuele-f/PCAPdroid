@@ -43,6 +43,8 @@ import android.util.Base64;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -119,11 +121,21 @@ public class HarWriterTest {
         }
     }
 
+    private List<HttpLog.HttpRequest> getHttpLogRequests(HttpLog log) {
+        List<HttpLog.HttpRequest> requests = new ArrayList<>();
+        for (int i = 0; i < log.getSize(); i++) {
+            HttpLog.HttpRequest req = log.getRequest(i);
+            if (req != null)
+                requests.add(req);
+        }
+        return requests;
+    }
+
     /**
      * Write HAR to string using HarWriter
      */
     private String writeHarToString() throws IOException {
-        HarWriter writer = new HarWriter(context, httpLog);
+        HarWriter writer = new HarWriter(context, getHttpLogRequests(httpLog));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         writer.write(out);
         return out.toString(StandardCharsets.UTF_8.name());
@@ -1065,7 +1077,7 @@ public class HarWriterTest {
             httpLog.addHttpRequest(httpReq);
             httpLog.addHttpReply(httpReply);
 
-            HarWriter writer = new HarWriter(context, httpLog);
+            HarWriter writer = new HarWriter(context, getHttpLogRequests(httpLog));
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             writer.write(out);
             String harJson = out.toString(StandardCharsets.UTF_8.name());
@@ -1950,7 +1962,7 @@ public class HarWriterTest {
             httpLog.addHttpRequest(httpReq);
             httpLog.addHttpReply(httpReply);
 
-            HarWriter writer = new HarWriter(context, httpLog);
+            HarWriter writer = new HarWriter(context, getHttpLogRequests(httpLog));
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             writer.write(out);
             String harJson = out.toString(StandardCharsets.UTF_8.name());

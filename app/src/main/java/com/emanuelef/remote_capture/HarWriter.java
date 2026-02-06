@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,19 +43,16 @@ import java.util.List;
 public class HarWriter {
     private static final String TAG = "HarWriter";
     private final Context mContext;
-    private final HttpLog mHttpLog;
-    private final HttpLog.HttpRequest mSingleRequest;
+    private final List<HttpLog.HttpRequest> mRequests;
 
-    public HarWriter(Context context, HttpLog httpLog) {
+    public HarWriter(Context context, List<HttpLog.HttpRequest> requests) {
         mContext = context;
-        mHttpLog = httpLog;
-        mSingleRequest = null;
+        mRequests = requests;
     }
 
     public HarWriter(Context context, HttpLog.HttpRequest request) {
         mContext = context;
-        mHttpLog = null;
-        mSingleRequest = request;
+        mRequests = Collections.singletonList(request);
     }
 
     public void write(OutputStream out) throws IOException {
@@ -93,31 +91,19 @@ public class HarWriter {
     private void writeEntries(JsonWriter writer) throws IOException {
         writer.beginArray();
 
-        if (mSingleRequest != null) {
+        for (int i = 0; i < mRequests.size(); i++) {
+            if (Thread.interrupted())
+                throw new InterruptedIOException("Export cancelled");
+
+            HttpLog.HttpRequest req = mRequests.get(i);
+            if (req == null)
+                continue;
+
             try {
-                writeEntry(writer, mSingleRequest);
+                writeEntry(writer, req);
             } catch (Exception e) {
-                Log.w(TAG, "Failed to serialize single entry: " + e.getMessage());
+                Log.w(TAG, "Failed to serialize entry " + i + ": " + e.getMessage());
                 e.printStackTrace();
-            }
-        } else if (mHttpLog != null) {
-            int size = mHttpLog.getSize();
-
-            // NOTE: don't synchronize on the HTTP log, to avoid blocking the UI
-            for (int i = 0; i < size; i++) {
-                if (Thread.interrupted())
-                    throw new InterruptedIOException("Export cancelled");
-
-                HttpLog.HttpRequest req = mHttpLog.getRequest(i);
-                if (req == null)
-                    continue;
-
-                try {
-                    writeEntry(writer, req);
-                } catch (Exception e) {
-                    Log.w(TAG, "Failed to serialize entry " + i + ": " + e.getMessage());
-                    e.printStackTrace();
-                }
             }
         }
 

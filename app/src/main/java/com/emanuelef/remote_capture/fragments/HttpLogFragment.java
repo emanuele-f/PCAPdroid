@@ -70,6 +70,7 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -605,10 +606,6 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         if(mTxtFname == null)
             return;
 
-        HttpLog httpLog = CaptureService.getHttpLog();
-        if(httpLog == null)
-            return;
-
         Log.d(TAG, "Writing HTTP log file: " + mTxtFname);
         boolean error = true;
 
@@ -616,38 +613,37 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             OutputStream stream = requireActivity().getContentResolver().openOutputStream(mTxtFname, "rwt");
 
             if(stream != null) {
-                synchronized (httpLog) {
-                    for(int i = 0; i < httpLog.getSize(); i++) {
-                        HttpLog.HttpRequest req = httpLog.getRequest(i);
-                        if(req == null)
-                            continue;
+                for(int i = 0; i < mAdapter.getItemCount(); i++) {
+                    HttpLog.HttpRequest req = mAdapter.getItem(i);
+                    if(req == null)
+                        continue;
 
-                        StringBuilder sb = new StringBuilder();
-                        String requestText = req.conn.getHttpRequestChunk(req.firstChunkPos) != null ?
-                                req.conn.getHttpRequest() : "";
+                    StringBuilder sb = new StringBuilder();
+                    var reqChunk = req.conn.getHttpRequestChunk(req.firstChunkPos);
+                    String requestText = (reqChunk != null) ?
+                            new String(reqChunk.payload, StandardCharsets.UTF_8) : "";
 
-                        sb.append("[").append(req.timestamp).append("]\n");
-                        if(!requestText.isEmpty()) {
-                            sb.append(requestText);
-                            if(!requestText.endsWith("\n"))
-                                sb.append("\n");
-                        }
-                        sb.append("\n");
-
-                        if(req.reply != null) {
-                            var replyChunk = req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
-                            if(replyChunk != null) {
-                                String replyText = req.conn.getHttpResponse();
-                                sb.append("[").append(replyChunk.timestamp).append("]\n");
-                                sb.append(replyText);
-                                if(!replyText.endsWith("\n"))
-                                    sb.append("\n");
-                                sb.append("\n");
-                            }
-                        }
-
-                        stream.write(sb.toString().getBytes());
+                    sb.append("[").append(req.timestamp).append("]\n");
+                    if(!requestText.isEmpty()) {
+                        sb.append(requestText);
+                        if(!requestText.endsWith("\n"))
+                            sb.append("\n");
                     }
+                    sb.append("\n");
+
+                    if(req.reply != null) {
+                        var replyChunk = req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
+                        if(replyChunk != null) {
+                            String replyText = new String(replyChunk.payload, StandardCharsets.UTF_8);
+                            sb.append("[").append(replyChunk.timestamp).append("]\n");
+                            sb.append(replyText);
+                            if(!replyText.endsWith("\n"))
+                                sb.append("\n");
+                            sb.append("\n");
+                        }
+                    }
+
+                    stream.write(sb.toString().getBytes(StandardCharsets.UTF_8));
                 }
 
                 stream.close();
@@ -715,11 +711,15 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         if(mHarFname == null)
             return;
 
-        HttpLog httpLog = CaptureService.getHttpLog();
-        if(httpLog == null)
-            return;
-
         Log.d(TAG, "Writing HAR file: " + mHarFname);
+
+        // Snapshot the visible (filtered) requests on the UI thread
+        ArrayList<HttpLog.HttpRequest> requests = new ArrayList<>();
+        for(int i = 0; i < mAdapter.getItemCount(); i++) {
+            HttpLog.HttpRequest req = mAdapter.getItem(i);
+            if(req != null)
+                requests.add(req);
+        }
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -755,7 +755,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
                 OutputStream stream = requireActivity().getContentResolver().openOutputStream(harFname, "rwt");
 
                 if(stream != null) {
-                    HarWriter writer = new HarWriter(requireContext(), httpLog);
+                    HarWriter writer = new HarWriter(requireContext(), requests);
                     writer.write(stream);
                     stream.close();
                     success = true;
