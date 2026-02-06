@@ -233,11 +233,25 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         if (mFilteredReqs == null) {
             if ((pos >= 0) && (pos < getItemCount()))
                 notifyItemChanged(pos);
-        } else {
-            // check if this item is matched
-            int filtered_pos = mIdToFilteredPos.get(pos, -1);
-            if (filtered_pos != -1)
-                notifyItemChanged(filtered_pos);
+            return;
+        }
+
+        int filtered_pos = mIdToFilteredPos.get(pos, -1);
+        if (filtered_pos != -1) {
+            notifyItemChanged(filtered_pos);
+            return;
+        }
+
+        HttpLog httpLog = CaptureService.getHttpLog();
+        if (httpLog == null)
+            return;
+
+        HttpRequest req = httpLog.getRequest(pos);
+        if ((req != null) && matches(req)) {
+            int new_pos = mFilteredReqs.size();
+            mIdToFilteredPos.put(pos, new_pos);
+            mFilteredReqs.add(req);
+            notifyItemInserted(new_pos);
         }
     }
 

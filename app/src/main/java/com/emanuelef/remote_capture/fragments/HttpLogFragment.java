@@ -423,8 +423,12 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     @Override
     public void onHttpRequestUpdated(int pos) {
         Utils.runOnUi(() -> {
-            if (mAdapter != null)
+            if (mAdapter != null) {
                 mAdapter.onHttpRequestUpdated(pos);
+
+                if (autoScroll)
+                    scrollToBottom();
+            }
         }, mHandler);
     }
 
