@@ -633,68 +633,111 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         boolean selectionActive = (mActionMode != null);
         Log.d(TAG, "Writing HTTP log file: " + mTxtFname);
-        boolean error = true;
 
-        try {
-            OutputStream stream = requireActivity().getContentResolver().openOutputStream(mTxtFname, "rwt");
-
-            if(stream != null) {
-                for(int i = 0; i < mAdapter.getItemCount(); i++) {
-                    HttpLog.HttpRequest req = mAdapter.getItem(i);
-                    if((req == null) || (selectionActive && !mAdapter.isSelected(req)))
-                        continue;
-
-                    StringBuilder sb = new StringBuilder();
-                    var reqChunk = req.conn.getHttpRequestChunk(req.firstChunkPos);
-                    String requestText = (reqChunk != null) ?
-                            new String(reqChunk.payload, StandardCharsets.UTF_8) : "";
-
-                    sb.append("[").append(req.timestamp).append("]\n");
-                    if(!requestText.isEmpty()) {
-                        sb.append(requestText);
-                        if(!requestText.endsWith("\n"))
-                            sb.append("\n");
-                    }
-                    sb.append("\n");
-
-                    if(req.reply != null) {
-                        var replyChunk = req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
-                        if(replyChunk != null) {
-                            String replyText = new String(replyChunk.payload, StandardCharsets.UTF_8);
-                            sb.append("[").append(replyChunk.timestamp).append("]\n");
-                            sb.append(replyText);
-                            if(!replyText.endsWith("\n"))
-                                sb.append("\n");
-                            sb.append("\n");
-                        }
-                    }
-
-                    stream.write(sb.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                stream.close();
-
-                Utils.UriStat stat = Utils.getUriStat(requireContext(), mTxtFname);
-
-                if(stat != null) {
-                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
-                } else
-                    Utils.showToast(requireContext(), R.string.save_ok);
-
-                error = false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        ArrayList<HttpLog.HttpRequest> requests = new ArrayList<>();
+        for(int i = 0; i < mAdapter.getItemCount(); i++) {
+            HttpLog.HttpRequest req = mAdapter.getItem(i);
+            if((req != null) && (!selectionActive || mAdapter.isSelected(req)))
+                requests.add(req);
         }
 
-        if(error)
-            Utils.showToast(requireContext(), R.string.cannot_write_file);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] cancelled = {false};
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.exporting);
+        builder.setMessage(R.string.export_in_progress);
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            Log.i(TAG, "Abort TXT export");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
+
+        mAlertDialog.setOnCancelListener(dialog -> {
+            Log.i(TAG, "Abort TXT export (back button)");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
+
+        final Uri txtFname = mTxtFname;
         mTxtFname = null;
 
-        if(mActionMode != null)
-            mActionMode.finish();
+        executor.execute(() -> {
+            boolean success = false;
+
+            try {
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(txtFname, "rwt");
+
+                if(stream != null) {
+                    for(HttpLog.HttpRequest req : requests) {
+                        if(Thread.interrupted())
+                            break;
+
+                        StringBuilder sb = new StringBuilder();
+                        var reqChunk = req.conn.getHttpRequestChunk(req.firstChunkPos);
+                        String requestText = (reqChunk != null) ?
+                                new String(reqChunk.payload, StandardCharsets.UTF_8) : "";
+
+                        sb.append("[").append(req.timestamp).append("]\n");
+                        if(!requestText.isEmpty()) {
+                            sb.append(requestText);
+                            if(!requestText.endsWith("\n"))
+                                sb.append("\n");
+                        }
+                        sb.append("\n");
+
+                        if(req.reply != null) {
+                            var replyChunk = req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
+                            if(replyChunk != null) {
+                                String replyText = new String(replyChunk.payload, StandardCharsets.UTF_8);
+                                sb.append("[").append(replyChunk.timestamp).append("]\n");
+                                sb.append(replyText);
+                                if(!replyText.endsWith("\n"))
+                                    sb.append("\n");
+                                sb.append("\n");
+                            }
+                        }
+
+                        stream.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    stream.close();
+                    success = true;
+                }
+            } catch (IOException e) {
+                if(!cancelled[0])
+                    e.printStackTrace();
+            }
+
+            if(cancelled[0])
+                return;
+
+            final boolean result = success;
+            final Utils.UriStat stat = result ? Utils.getUriStat(requireContext(), txtFname) : null;
+
+            handler.post(() -> {
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
+
+                if(result) {
+                    if(stat != null) {
+                        String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                    } else
+                        Utils.showToast(requireContext(), R.string.save_ok);
+                } else
+                    Utils.showToast(requireContext(), R.string.cannot_write_file);
+
+                if(mActionMode != null)
+                    mActionMode.finish();
+            });
+        });
     }
 
     private void txtFileResult(final ActivityResult result) {

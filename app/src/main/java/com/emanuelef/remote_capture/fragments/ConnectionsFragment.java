@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -86,7 +86,10 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -115,6 +118,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private String mUnblockCidr;
     private String mDecRemoveCidr;
     private ActionMode mActionMode;
+    private AlertDialog mAlertDialog;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
@@ -148,6 +152,14 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         if(mSearchView != null)
             mQueryToApply = mSearchView.getQuery().toString();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if(mAlertDialog != null)
+            mAlertDialog.dismiss();
+
+        super.onDestroyView();
     }
 
     @Override
@@ -1028,41 +1040,78 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void dumpCsv() {
+        if(mCsvFname == null)
+            return;
+
+        Log.d(TAG, "Writing CSV file: " + mCsvFname);
         String dump = mAdapter.dumpConnectionsCsv(mActionMode != null);
 
-        if(mCsvFname != null) {
-            Log.d(TAG, "Writing CSV file: " + mCsvFname);
-            boolean error = true;
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] cancelled = {false};
 
-            try {
-                OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname, "rwt");
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.exporting);
+        builder.setMessage(R.string.export_in_progress);
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            Log.i(TAG, "Abort CSV export");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
 
-                if(stream != null) {
-                    stream.write(dump.getBytes());
-                    stream.close();
-                }
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
 
-                Utils.UriStat stat = Utils.getUriStat(requireContext(), mCsvFname);
+        mAlertDialog.setOnCancelListener(dialog -> {
+            Log.i(TAG, "Abort CSV export (back button)");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
 
-                if(stat != null) {
-                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
-                } else
-                    Utils.showToast(requireContext(), R.string.save_ok);
-
-                error = false;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if(error)
-                Utils.showToast(requireContext(), R.string.cannot_write_file);
-        }
-
+        final Uri csvFname = mCsvFname;
         mCsvFname = null;
 
-        if(mActionMode != null)
-            mActionMode.finish();
+        executor.execute(() -> {
+            boolean success = false;
+
+            try {
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(csvFname, "rwt");
+
+                if(stream != null) {
+                    stream.write(dump.getBytes(StandardCharsets.UTF_8));
+                    stream.close();
+                    success = true;
+                }
+            } catch (IOException e) {
+                if(!cancelled[0])
+                    e.printStackTrace();
+            }
+
+            if(cancelled[0])
+                return;
+
+            final boolean result = success;
+            final Utils.UriStat stat = result ? Utils.getUriStat(requireContext(), csvFname) : null;
+
+            handler.post(() -> {
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
+
+                if(result) {
+                    if(stat != null) {
+                        String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                    } else
+                        Utils.showToast(requireContext(), R.string.save_ok);
+                } else
+                    Utils.showToast(requireContext(), R.string.cannot_write_file);
+
+                if(mActionMode != null)
+                    mActionMode.finish();
+            });
+        });
     }
 
     public void openFileSelector() {
