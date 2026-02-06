@@ -21,8 +21,10 @@ package com.emanuelef.remote_capture.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,9 +54,13 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
     private final LayoutInflater mLayoutInflater;
     private final Drawable mUnknownIcon;
     private View.OnClickListener mListener;
+    private View.OnLongClickListener mLongClickListener;
     private final AppsResolver mAppsResolver;
     private final Context mContext;
     private HttpRequest mSelectedItem;
+    private final ArraySet<Integer> mSelectedItems = new ArraySet<>();
+    private final int mSelectedColor;
+    private final int mSelectableBackground;
 
     // maps a positions from HttpLog to mFilteredReqs.
     private final SparseIntArray mIdToFilteredPos;
@@ -145,6 +152,12 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         mFilteredReqs = null;
         mSearch = null;
         mFilter = new HttpLogFilterDescriptor();
+        TypedArray a = context.obtainStyledAttributes(new int[]{android.R.attr.colorControlHighlight});
+        mSelectedColor = a.getColor(0, 0x40808080);
+        a.recycle();
+        TypedValue tv = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true);
+        mSelectableBackground = tv.resourceId;
         setHasStableIds(true);
 
         refreshFilteredItems();
@@ -163,9 +176,16 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.http_req_item, parent, false);
+        view.setLongClickable(true);
 
         if(mListener != null)
             view.setOnClickListener(mListener);
+
+        view.setOnLongClickListener(v -> {
+            if(mLongClickListener != null)
+                return mLongClickListener.onLongClick(v);
+            return false;
+        });
 
         return new ViewHolder(view);
     }
@@ -179,6 +199,11 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         }
 
         holder.bindItem(item, mContext, mAppsResolver, mUnknownIcon);
+
+        if(mSelectedItems.contains(item.getPosition()))
+            holder.itemView.setBackgroundColor(mSelectedColor);
+        else
+            holder.itemView.setBackgroundResource(mSelectableBackground);
     }
 
     @Override
@@ -258,6 +283,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
     @Override
     public void onHttpRequestsClear() {
         mSelectedItem = null;
+        mSelectedItems.clear();
         refreshFilteredItems();
     }
 
@@ -325,5 +351,52 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
             positions.add(req.getPosition());
         }
         return positions;
+    }
+
+    public void setLongClickListener(View.OnLongClickListener listener) {
+        mLongClickListener = listener;
+    }
+
+    public void toggleSelection(int position) {
+        HttpRequest req = getItem(position);
+        if(req == null)
+            return;
+
+        if(!mSelectedItems.remove(req.getPosition()))
+            mSelectedItems.add(req.getPosition());
+        notifyItemChanged(position);
+    }
+
+    public void selectItem(int position) {
+        HttpRequest req = getItem(position);
+        if(req == null)
+            return;
+
+        mSelectedItems.add(req.getPosition());
+        notifyItemChanged(position);
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void clearSelection() {
+        mSelectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedCount() {
+        return mSelectedItems.size();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void selectAll() {
+        for(int i = 0; i < getItemCount(); i++) {
+            HttpRequest req = getItem(i);
+            if(req != null)
+                mSelectedItems.add(req.getPosition());
+        }
+        notifyDataSetChanged();
+    }
+
+    public boolean isSelected(HttpRequest req) {
+        return mSelectedItems.contains(req.getPosition());
     }
 }

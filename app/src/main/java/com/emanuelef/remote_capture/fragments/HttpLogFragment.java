@@ -41,6 +41,8 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
@@ -98,6 +100,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private AppsResolver mApps;
     private boolean autoScroll;
     private boolean listenerSet;
+    private ActionMode mActionMode;
 
     private final ActivityResultLauncher<Intent> filterLauncher =
             registerForActivityResult(new StartActivityForResult(), this::filterResult);
@@ -152,6 +155,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         super.onHiddenChanged(hidden);
 
         if (hidden) {
+            if(mActionMode != null)
+                mActionMode.finish();
             clearFilters();
         } else {
             if (mRecyclerView != null) {
@@ -268,6 +273,12 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
+
+            if(mActionMode != null) {
+                toggleSelection(pos);
+                return;
+            }
+
             HttpLog.HttpRequest item = mAdapter.getItem(pos);
 
             if(item != null) {
@@ -283,6 +294,16 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
                 startActivity(intent);
             }
+        });
+
+        mAdapter.setLongClickListener(v -> {
+            int pos = mRecyclerView.getChildLayoutPosition(v);
+            if(mActionMode != null) {
+                toggleSelection(pos);
+                return true;
+            }
+            startSelectionMode(pos);
+            return true;
         });
 
         autoScroll = true;
@@ -406,6 +427,10 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
     // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
+        if(mActionMode != null) {
+            mActionMode.finish();
+            return true;
+        }
         return Utils.backHandleSearchview(mSearchView);
     }
 
@@ -606,6 +631,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         if(mTxtFname == null)
             return;
 
+        boolean selectionActive = (mActionMode != null);
         Log.d(TAG, "Writing HTTP log file: " + mTxtFname);
         boolean error = true;
 
@@ -615,7 +641,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             if(stream != null) {
                 for(int i = 0; i < mAdapter.getItemCount(); i++) {
                     HttpLog.HttpRequest req = mAdapter.getItem(i);
-                    if(req == null)
+                    if((req == null) || (selectionActive && !mAdapter.isSelected(req)))
                         continue;
 
                     StringBuilder sb = new StringBuilder();
@@ -666,6 +692,9 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             Utils.showToast(requireContext(), R.string.cannot_write_file);
 
         mTxtFname = null;
+
+        if(mActionMode != null)
+            mActionMode.finish();
     }
 
     private void txtFileResult(final ActivityResult result) {
@@ -711,13 +740,14 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         if(mHarFname == null)
             return;
 
+        boolean selectionActive = (mActionMode != null);
         Log.d(TAG, "Writing HAR file: " + mHarFname);
 
         // Snapshot the visible (filtered) requests on the UI thread
         ArrayList<HttpLog.HttpRequest> requests = new ArrayList<>();
         for(int i = 0; i < mAdapter.getItemCount(); i++) {
             HttpLog.HttpRequest req = mAdapter.getItem(i);
-            if(req != null)
+            if((req != null) && (!selectionActive || mAdapter.isSelected(req)))
                 requests.add(req);
         }
 
@@ -783,6 +813,9 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
                         Utils.showToast(requireContext(), R.string.save_ok);
                 } else
                     Utils.showToast(requireContext(), R.string.cannot_write_file);
+
+                if(mActionMode != null)
+                    mActionMode.finish();
             });
         });
     }
@@ -795,6 +828,72 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
             mHarFname = null;
         }
     }
+
+    private void startSelectionMode(int position) {
+        if(mActionMode != null)
+            return;
+
+        mActionMode = ((AppCompatActivity) requireActivity()).startSupportActionMode(mActionModeCallback);
+        mAdapter.selectItem(position);
+        updateActionModeTitle();
+    }
+
+    private void toggleSelection(int pos) {
+        mAdapter.toggleSelection(pos);
+
+        if(mAdapter.getSelectedCount() == 0) {
+            if(mActionMode != null)
+                mActionMode.finish();
+        } else
+            updateActionModeTitle();
+    }
+
+    private void updateActionModeTitle() {
+        if(mActionMode != null)
+            mActionMode.setTitle(getString(R.string.n_selected, mAdapter.getSelectedCount()));
+    }
+
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.http_log_cab, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int id = item.getItemId();
+
+            if(id == R.id.select_all) {
+                if(mAdapter.getSelectedCount() == mAdapter.getItemCount())
+                    mode.finish();
+                else {
+                    mAdapter.selectAll();
+                    updateActionModeTitle();
+                }
+                return true;
+            } else if(id == R.id.save) {
+                openFileSelector();
+                return true;
+            } else if(id == R.id.save_as_har) {
+                openHarFileSelector();
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mAdapter.clearSelection();
+            mActionMode = null;
+        }
+    };
 
     public void clearFilters() {
         if(mAdapter != null) {
