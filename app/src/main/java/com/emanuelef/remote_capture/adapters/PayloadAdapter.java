@@ -65,7 +65,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final Context mContext;
     private final ChunkType mMode;
     private int mHandledChunks;
-    private AdapterChunk mUnrepliedHttpReq = null;
+    private final ArrayList<AdapterChunk> mUnrepliedHttpReqs = new ArrayList<>();
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
@@ -579,19 +579,22 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mHandledChunks = tot_chunks;
     }
 
-    private void setNextUnrepliedRequest(int prevChunkIdx) {
-        // Possibly find next un-replied HTTP request
-        for(int i=prevChunkIdx + 1; i<mChunks.size(); i++) {
-            AdapterChunk cur = mChunks.get(i);
+    private AdapterChunk findMatchingRequest(PayloadChunk chunk) {
+        if (mUnrepliedHttpReqs.isEmpty())
+            return null;
 
-            if(cur.mChunk.is_sent) {
-                mUnrepliedHttpReq = cur;
-                return;
+        if (chunk.stream_id == 0) {
+            // HTTP/1: FIFO matching
+            return mUnrepliedHttpReqs.get(0);
+        } else {
+            // HTTP/2: match by stream ID
+            for (AdapterChunk req : mUnrepliedHttpReqs) {
+                if (req.mChunk.stream_id == chunk.stream_id)
+                    return req;
             }
         }
 
-        // no unreplied found
-        mUnrepliedHttpReq = null;
+        return null;
     }
 
     @SuppressLint("DefaultLocale")
@@ -607,22 +610,25 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         boolean is_http2_rst = chunk.isHttp2Rst();
 
         // Need to determine where to add the chunk. If HTTP request, always add it to the bottom.
-        // If HTTP reply/reset, it should be added right after the first un-replied HTTP request
-        if((!chunk.is_sent || is_http2_rst) && (mUnrepliedHttpReq != null)) {
-            // HTTP reply to a matching request
-            int reqPos = mChunks.indexOf(mUnrepliedHttpReq);
-            assert(reqPos >= 0);
+        // If HTTP reply/reset, it should be added right after the matching un-replied HTTP request
+        if(!chunk.is_sent || is_http2_rst) {
+            AdapterChunk matchedReq = findMatchingRequest(chunk);
 
-            if (!is_http2_rst) {
-                insertPos = reqPos + 1;
-                adapterPos = getAdapterPosition(mUnrepliedHttpReq) + mUnrepliedHttpReq.getNumPages();
-                Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, mUnrepliedHttpReq.incrId, insertPos));
-            } else
-                Log.d(TAG, String.format("chunk #%d reset of #%d", adapterChunk.incrId, mUnrepliedHttpReq.incrId));
+            if (matchedReq != null) {
+                int reqPos = mChunks.indexOf(matchedReq);
+                assert(reqPos >= 0);
 
-            setNextUnrepliedRequest(reqPos);
-        } else if(chunk.is_sent && !is_http2_rst && (mUnrepliedHttpReq == null))
-            mUnrepliedHttpReq = adapterChunk;
+                if (!is_http2_rst) {
+                    insertPos = reqPos + 1;
+                    adapterPos = getAdapterPosition(matchedReq) + matchedReq.getNumPages();
+                    Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, matchedReq.incrId, insertPos));
+                } else
+                    Log.d(TAG, String.format("chunk #%d reset of #%d", adapterChunk.incrId, matchedReq.incrId));
+
+                mUnrepliedHttpReqs.remove(matchedReq);
+            }
+        } else if(!is_http2_rst)
+            mUnrepliedHttpReqs.add(adapterChunk);
 
         if (!is_http2_rst) {
             mChunks.add(insertPos, adapterChunk);
