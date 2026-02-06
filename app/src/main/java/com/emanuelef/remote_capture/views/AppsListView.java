@@ -21,9 +21,6 @@ package com.emanuelef.remote_capture.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.Filter;
-import android.widget.Filterable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -34,10 +31,11 @@ import com.emanuelef.remote_capture.model.AppDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppsListView extends EmptyRecyclerView implements SearchView.OnQueryTextListener, Filterable {
+public class AppsListView extends EmptyRecyclerView implements SearchView.OnQueryTextListener {
     private List<AppDescriptor> mAllApps;
     private AppsAdapter mAdapter;
     private String mLastFilter;
+    private boolean mShowSystemApps;
 
     public AppsListView(@NonNull Context context) {
         super(context);
@@ -61,42 +59,6 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
     }
 
     @Override
-    public Filter getFilter() {
-        return new Filter() {
-
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                String charString = constraint.toString().toLowerCase();
-                List<AppDescriptor> appsFiltered;
-
-                if(charString.isEmpty())
-                    appsFiltered = mAllApps;
-                else {
-                    appsFiltered = new ArrayList<>();
-
-                    for(AppDescriptor app : mAllApps) {
-                        if(app.getPackageName().toLowerCase().contains(charString)
-                                || app.getName().toLowerCase().contains(charString)) {
-                            appsFiltered.add(app);
-                        }
-                    }
-                }
-
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = appsFiltered;
-                return filterResults;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                List<AppDescriptor> appsFiltered = (List<AppDescriptor>) results.values;
-                mAdapter.setApps(appsFiltered);
-            }
-        };
-    }
-
-    @Override
     public boolean onQueryTextSubmit(String query) {
         return true;
     }
@@ -104,7 +66,8 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
     @Override
     public boolean onQueryTextChange(String newText) {
         mLastFilter = newText;
-        getFilter().filter(newText);
+        if(mAllApps != null)
+            mAdapter.setApps(getFilteredApps());
         return true;
     }
 
@@ -112,17 +75,40 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
         void onSelectedApp(AppDescriptor app);
     }
 
+    private List<AppDescriptor> getFilteredApps() {
+        String filter = (mLastFilter != null) ? mLastFilter.toLowerCase() : "";
+
+        if(filter.isEmpty() && mShowSystemApps)
+            return mAllApps;
+
+        List<AppDescriptor> filtered = new ArrayList<>();
+        for(AppDescriptor app : mAllApps) {
+            if(!mShowSystemApps && app.isSystem())
+                continue;
+            if(!filter.isEmpty()
+                    && !app.getPackageName().toLowerCase().contains(filter)
+                    && !app.getName().toLowerCase().contains(filter))
+                continue;
+            filtered.add(app);
+        }
+        return filtered;
+    }
+
     public void setApps(List<AppDescriptor> installedApps) {
         mAllApps = installedApps;
+        List<AppDescriptor> apps = getFilteredApps();
 
         if(mAdapter == null) {
-            mAdapter = new AppsAdapter(getContext(), mAllApps);
+            mAdapter = new AppsAdapter(getContext(), apps);
             setAdapter(mAdapter);
         } else
-            mAdapter.setApps(mAllApps);
+            mAdapter.setApps(apps);
+    }
 
-        if(mLastFilter != null)
-            getFilter().filter(mLastFilter);
+    public void setShowSystemApps(boolean show) {
+        mShowSystemApps = show;
+        if(mAllApps != null)
+            mAdapter.setApps(getFilteredApps());
     }
 
     public void setSelectedAppListener(final OnSelectedAppListener listener) {

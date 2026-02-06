@@ -9,4 +9,10 @@
         android:icon="@drawable/ic_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/show_system_apps"
+        android:title="@string/show_system_apps"
+        android:checkable="true"
+        app:showAsAction="never" />
 </menu>
