@@ -144,7 +144,7 @@
     <string name="capture_interface">Aufnahmeschnittstelle</string>
     <string name="malware_whitelist_rules">Regeln für Malware-Positivliste</string>
     <string name="malicious_connection_filter">Bösartig</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP-Status: %1$s</string>
     <string name="not_hidden_filter">Nicht versteckt</string>
     <string name="copy_action">Kopieren…</string>
     <string name="url_val">URL: %1$s</string>
@@ -255,7 +255,7 @@
     <string name="not_decryptable">Nicht entschlüsselbar</string>
     <string name="decrypted">Entschlüsselt</string>
     <string name="decryption">Entschlüsselung</string>
-    <string name="decryption_filter">Entschlüsselung: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid hat den Beginn dieser Verbindung nicht gesehen. Einige Informationen fehlen möglicherweise</string>
     <string name="warn_no_app_data">Es wurden keine Anwendungsdaten ausgetauscht</string>
     <string name="waiting_application_data">Wartende Daten</string>
@@ -526,4 +526,24 @@
     <string name="tcp_exporter">TCP-Exporter</string>
     <string name="tcp_udp_exporter">TCP/UDP-Exporter</string>
     <string name="tcp_exporter_info">Sendet das PCAP an einen remote TCP-Empfänger (pcap-über-ip)</string>
+    <string name="generate_api_key">API-Schlüssel generieren</string>
+    <string name="show_api_key">API-Schlüssel anzeigen</string>
+    <string name="api_key">API-Schlüssel</string>
+    <string name="save_as_text">Als Text speichern</string>
+    <string name="save_as_har">Als HAR speichern</string>
+    <string name="tcp_collector_info">TCP-Kollektor: %1$s:%2$d</string>
+    <string name="select">Auswählen</string>
+    <string name="content_type">Inhaltstyp</string>
+    <string name="http_status">HTTP-Status</string>
+    <string name="method_filter">Methode: %1$s</string>
+    <string name="text">Text</string>
+    <string name="display_as_text">Als Text anzeigen</string>
+    <string name="exporting">Wird exportiert…</string>
+    <string name="show_connection">Verbindung anzeigen</string>
+    <string name="show_system_apps">System-Apps anzeigen</string>
+    <string name="destination_host">Ziel-Host</string>
+    <string name="filename_prefix">Dateinamenpräfix</string>
+    <string name="connection_number">Verbindung #%1$d</string>
+    <string name="switch_to_connections">Verbindungen anzeigen</string>
+    <string name="decryption_error">Entschlüsselungsfehler</string>
 </resources>
