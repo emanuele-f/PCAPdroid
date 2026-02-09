@@ -225,6 +225,85 @@ public class PayloadAdapterTest {
         assertSame(req, getChunkPayload(0));
     }
 
+    // ========== JSON pretty-printing ==========
+
+    @Test
+    public void testJsonBodyIsPrettyPrinted() {
+        String headers = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
+        String raw = headers + "{\"name\":\"test\",\"value\":42}";
+        String result = PayloadAdapter.formatHttpPayload(raw, "application/json");
+
+        String expected = headers + "{\n  \"name\": \"test\",\n  \"value\": 42\n}";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testPostJsonBodyIsPrettyPrinted() {
+        String headers = "POST /api/data HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\n\r\n";
+        String raw = headers + "{\"name\":\"test\",\"value\":42}";
+        String result = PayloadAdapter.formatHttpPayload(raw, "application/json");
+
+        String expected = headers + "{\n  \"name\": \"test\",\n  \"value\": 42\n}";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testJsonArrayIsPrettyPrinted() {
+        String headers = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
+        String raw = headers + "[{\"id\":1},{\"id\":2}]";
+        String result = PayloadAdapter.formatHttpPayload(raw, "application/json");
+
+        String expected = headers + "[\n  {\n    \"id\": 1\n  },\n  {\n    \"id\": 2\n  }\n]";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testNonJsonContentTypeIsUnchanged() {
+        String headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+        String raw = headers + "{\"name\":\"test\"}";
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, "text/html"));
+    }
+
+    @Test
+    public void testNullContentTypeIsUnchanged() {
+        String headers = "HTTP/1.1 200 OK\r\n\r\n";
+        String raw = headers + "{\"name\":\"test\"}";
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, null));
+    }
+
+    @Test
+    public void testInvalidJsonFallsBackToRaw() {
+        String headers = "HTTP/1.1 200 OK\r\n\r\n";
+        String raw = headers + "{\"name\":\"test\", truncated";
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, "application/json"));
+    }
+
+    @Test
+    public void testHeadersOnlyIsUnchanged() {
+        String raw = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, "application/json"));
+    }
+
+    @Test
+    public void testLargePayloadIsNotFormatted() {
+        String headers = "HTTP/1.1 200 OK\r\n\r\n";
+        StringBuilder sb = new StringBuilder(headers);
+        sb.append("{\"data\":\"");
+        for (int i = 0; i < PayloadAdapter.MAX_JSON_FORMAT_SIZE; i++)
+            sb.append('x');
+        sb.append("\"}");
+
+        String raw = sb.toString();
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, "application/json"));
+    }
+
+    @Test
+    public void testNonJsonBodyIsUnchanged() {
+        String headers = "HTTP/1.1 200 OK\r\n\r\n";
+        String raw = headers + "plain text body, not json";
+        assertEquals(raw, PayloadAdapter.formatHttpPayload(raw, "application/json"));
+    }
+
     @Test
     public void testHttp2InterleavedRequestsAndReplies() {
         PayloadChunk req1 = makeHttpRequest(1);

@@ -44,6 +44,11 @@ import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.button.MaterialButton;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -133,6 +138,31 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mExportHandler = handler;
     }
 
+    static final int MAX_JSON_FORMAT_SIZE = 1024 * 1024;
+
+    private static final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+
+    static String formatHttpPayload(String text, String contentType) {
+        if ((contentType == null) || !contentType.equals("application/json"))
+            return text;
+        if (text.length() > MAX_JSON_FORMAT_SIZE)
+            return text;
+
+        int sep = text.indexOf("\r\n\r\n");
+        if ((sep < 0) || (sep + 4 >= text.length()))
+            return text;
+
+        String headers = text.substring(0, sep + 4);
+        String body = text.substring(sep + 4);
+
+        try {
+            String pretty = prettyGson.toJson(JsonParser.parseString(body));
+            return headers + pretty;
+        } catch (JsonSyntaxException e) {
+            return text;
+        }
+    }
+
     private class AdapterChunk {
         private final PayloadChunk mChunk;
         private String mTheText;
@@ -173,7 +203,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         @CheckResult
         private String makeText() {
-            return makeText(mShowAsPrintable, mIsExpanded);
+            String text = makeText(mShowAsPrintable, mIsExpanded);
+            if (mShowAsPrintable && (mMode == ChunkType.HTTP))
+                text = formatHttpPayload(text, mChunk.httpContentType);
+            return text;
         }
 
         void expand() {
