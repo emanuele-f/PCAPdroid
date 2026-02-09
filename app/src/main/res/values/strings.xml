@@ -21,6 +21,7 @@
         - CustomActivityOnCrash: <a href='https://github.com/Ereza/CustomActivityOnCrash/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Gson: <a href='https://github.com/google/gson/blob/master/LICENSE'>Apache-2.0</a>\n\n
         - Brotli decoder: <a href='https://github.com/google/brotli/blob/master/LICENSE'>MIT</a>\n\n
+        - zstd-jni: <a href='https://github.com/luben/zstd-jni/blob/master/LICENSE'>BSD-2-Clause</a>\n\n
         - mitmproxy: <a href='https://github.com/mitmproxy/mitmproxy/blob/main/LICENSE'>MIT</a>\n\n
         - Chaquopy: <a href='https://github.com/chaquo/chaquopy/blob/master/LICENSE.txt'>MIT</a>\n\n
         - MaxMind DB Reader: <a href='https://github.com/maxmind/MaxMind-DB-Reader-java/blob/main/LICENSE'>Apache-2.0</a>\n\n

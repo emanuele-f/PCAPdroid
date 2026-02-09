@@ -153,6 +153,38 @@ public class HTTPReassemblyTest {
     }
 
     @Test
+    public void testZstdContentEncoding() {
+        HTTPReassembly ra = newReassembly();
+
+        // real zstd-compressed response from jsonplaceholder.typicode.com
+        byte[] compressed = new byte[] {
+            0x28, (byte)0xb5, 0x2f, (byte)0xfd, 0x00, 0x58, 0x25, 0x02,
+            0x00, 0x42, 0x44, 0x0e, 0x14, (byte)0xa0, (byte)0xb5, 0x39,
+            0x47, 0x20, (byte)0xb9, (byte)0xab, 0x33, 0x47, (byte)0xd7, 0x49,
+            (byte)0xf0, (byte)0xf6, (byte)0xbd, (byte)0xdd, 0x14, 0x12, 0x55, (byte)0xc2,
+            0x60, 0x01, (byte)0xe2, 0x65, (byte)0x86, 0x60, 0x29, (byte)0xf2,
+            0x6d, (byte)0x86, 0x2a, 0x4e, (byte)0x95, 0x7f, (byte)0x86, 0x3f,
+            (byte)0xc3, 0x75, 0x3f, 0x36, (byte)0xa3, (byte)0xb2, (byte)0xd4, (byte)0xf6,
+            (byte)0xf4, 0x54, (byte)0x92, 0x04, 0x02, 0x4b, (byte)0xd1, 0x70,
+            0x78, 0x5d, 0x49, 0x02, 0x08, 0x02, 0x00, 0x3c,
+            0x25, 0x5c, 0x6f, (byte)0x85, 0x09
+        };
+
+        String headers = "HTTP/1.1 200 OK\r\nContent-Encoding: zstd\r\nContent-Length: "
+                + compressed.length + "\r\n\r\n";
+        byte[] headersBytes = headers.getBytes();
+        byte[] full = new byte[headersBytes.length + compressed.length];
+        System.arraycopy(headersBytes, 0, full, 0, headersBytes.length);
+        System.arraycopy(compressed, 0, full, headersBytes.length, compressed.length);
+
+        ra.handleChunk(new PayloadChunk(full, PayloadChunk.ChunkType.HTTP, false, 0, 0));
+
+        assertEquals(1, reassembled.size());
+        String payload = new String(reassembled.get(0).payload);
+        assertTrue(payload.contains("delectus aut autem"));
+    }
+
+    @Test
     public void testWebSocketUpgrade() {
         HTTPReassembly ra = newReassembly();
         ra.handleChunk(makeChunk("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n\r\n", false));

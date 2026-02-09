@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.Inflater;
 import org.brotli.dec.BrotliInputStream;
+import com.github.luben.zstd.ZstdInputStream;
 
 public class HTTPReassembly {
     private static final String TAG = "HTTPReassembly";
@@ -74,6 +75,7 @@ public class HTTPReassembly {
         GZIP,
         DEFLATE,
         BROTLI,
+        ZSTD,
     }
 
     private boolean isTx() {
@@ -229,6 +231,9 @@ public class HTTPReassembly {
                             case "br":
                                 // test with google.com
                                 mContentEncoding = ContentEncoding.BROTLI;
+                                break;
+                            case "zstd":
+                                mContentEncoding = ContentEncoding.ZSTD;
                                 break;
                         }
                     } else if(line.startsWith("content-type: ")) {
@@ -427,6 +432,9 @@ public class HTTPReassembly {
                     break;
                 case BROTLI:
                     inputStream = new BrotliInputStream(bis);
+                    break;
+                case ZSTD:
+                    inputStream = new ZstdInputStream(bis);
                     break;
             }
 
