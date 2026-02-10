@@ -39,6 +39,12 @@
     <string name="firewall">Фаєрвол</string>
     <string name="network_interface">Інтерфейс</string>
     <string name="interface_filter">Інтерфейс: %1$s</string>
+    <string name="request_method">Метод запиту</string>
+    <string name="content_type">Тип вмісту</string>
+    <string name="http_status">HTTP статус</string>
+    <string name="payload_size_threshold">Поріг розміру корисного навантаження</string>
+    <string name="method_filter">Метод: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="loading">Вантаження…</string>
     <string name="billing_failure">Не вдалося під\'єднатися до Google Play. Будь ласка, спробуйте пізніше</string>
     <string name="learn_more">Дізнатися більше</string>
@@ -55,9 +61,12 @@
     <string name="decrypted">Дешифровано</string>
     <string name="decryption">Дешифрування</string>
     <string name="waiting_application_data">Очікування даних</string>
+    <string name="text">Текст</string>
     <string name="display_as">Показати як…</string>
     <string name="printable_text">Текст для друку</string>
     <string name="hexdump">Hex дамп</string>
+    <string name="display_as_text">Відобразити як текст</string>
+    <string name="display_as_hexdump">Відобразити як hexdump</string>
     <string name="geolocation_summary">Показати країну та ASN інформацію, виконавши офлайн пошуки</string>
     <string name="geo_db_not_found">Базу даних не знайдена. Геолокацію вимкнено</string>
     <string name="database">База даних</string>
@@ -137,6 +146,8 @@
     <string name="license_service_unavailable">Служба ліцензування PCAPdroid зараз недоступна. Будь ласка, повторіть спробу через кілька хвилин</string>
     <string name="requesting_unlock_token">Запит токена розблокування, зачекайте, будь ласка</string>
     <string name="show_action">Показати</string>
+    <string name="show_connection">Показати з\'єднання</string>
+    <string name="show_system_apps">Показати системні додатки</string>
     <string name="unlock_token_msg1">Це ваш токен розблокування. Занотуйте його, оскільки він вам знадобиться <a href="%1$s">для генерування ваших кодів ліцензії</a></string>
     <string name="paid_feature">Платна функція</string>
     <string name="firewall_purchase_msg">Купіть функцію <i>%1$s</i>, щоб розпочати блокування з\'єднання</string>
@@ -156,6 +167,7 @@
     <string name="redirect_to">Перенаправити до:</string>
     <string name="original_port">Оригінальний порт</string>
     <string name="required">обов’язково</string>
+    <string name="destination_host">Хост призначення</string>
     <string name="destination_port">Порт призначення</string>
     <string name="port_mapping_exists">Мапування порту вже визначене</string>
     <string name="items_delete_confirm">Видалити вибрані елементи\?</string>
@@ -207,6 +219,7 @@
     <string name="stop_button">Зупинити</string>
     <string name="title_activity_settings">Налаштування</string>
     <string name="collector_info">Збирач UDP: %1$s:%2$d</string>
+    <string name="tcp_collector_info">TCP колектор: %1$s:%2$d</string>
     <string name="http_server_status">HTTP сервер: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s отримано — %2$s відправлено</string>
     <string name="query">Запит</string>
@@ -224,10 +237,13 @@
     <string name="duration">Тривалість</string>
     <string name="http_server">HTTP сервер</string>
     <string name="udp_exporter">Експортер UDP</string>
+    <string name="tcp_exporter">TCP експортер</string>
+    <string name="tcp_udp_exporter">TCP/UDP експортер</string>
     <string name="no_dump">Без дампу</string>
     <string name="no_dump_info">Трафік не вивантажуватиметься</string>
     <string name="http_server_info">Запустити HTTP сервер для завантаження PCAP</string>
     <string name="udp_exporter_info">Надсилання PCAP до віддаленого UDP приймача</string>
+    <string name="tcp_exporter_info">Надіслати PCAP на віддалений TCP приймач (pcap-over-ip)</string>
     <string name="http_server_port">Порт HTTP сервера</string>
     <string name="receiver_ip_address">IP адреса для збору</string>
     <string name="receiver_port">Порт для збору</string>
@@ -292,6 +308,7 @@
     <string name="app_val">Додаток: %1$s</string>
     <string name="malware_whitelist_action">Білий список (зловмисне ПЗ)…</string>
     <string name="hide">Приховати…</string>
+    <string name="select">Вибрати</string>
     <string name="n_selected">%1$d вибрано</string>
     <string name="app_details">Подробиці додатку</string>
     <string name="package_name">Ім\'я пакету</string>
@@ -340,6 +357,11 @@
     <string name="forever">Назавжди</string>
     <string name="control_permissions_summary">Виберіть, яким програмам дозволено керувати захопленням PCAPdroid</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">Дозволи не встановлені. Викличте PCAPdroid через StartActivityForResult, щоб показати запит дозволів</string>
+    <string name="generate_api_key">Згенерувати API ключ</string>
+    <string name="show_api_key">Показати API ключ</string>
+    <string name="api_key">API ключ</string>
+    <string name="api_key_discard_confirm">Ви дійсно хочете відкинути поточний API ключ і згенерувати новий?</string>
     <string name="country">Країна</string>
     <string name="send_report">Надіслати звіт</string>
     <string name="start_at_boot">Запускати при завантаженні</string>
@@ -415,6 +437,8 @@
     <string name="download_in_progress">Триває завантаження, зачекайте, будь ласка</string>
     <string name="pcap_load_in_progress">Триває вантаження файлу захоплення, будь ласка, зачекайте</string>
     <string name="download_failed">Не вдалося завантажити</string>
+    <string name="exporting">Експорт…</string>
+    <string name="export_in_progress">Експорт виконується, зачекайте</string>
     <string name="built_on">Створено: %1$s</string>
     <string name="geo_db_download">Торкніться, щоб завантажити останню базу даних. Нові бази даних доступні щомісячно</string>
     <string name="size_x">Розмір: %1$s</string>
@@ -495,6 +519,21 @@
     <string name="errno_econnrefused">Відмовлено у підключенні</string>
     <string name="errno_econnrefused_msg">Сервер відхилив з\'єднання, що може свідчити про надмірну зайнятість або несправність сервера</string>
     <string name="tls_conn_info">Трафік TLS/HTTPS зашифрований. Щоб оглядати цей трафік, необхідно його дешифрувати. Детальніше в <a href="%1$s">посібнику користувача</a> PCAPdroid</string>
+    <string name="tls_decryption_not_supported_16KB">Дешифрування TLS наразі не підтримується на пристроях з 16 КБ сторінками</string>
+    <string name="filename_prefix">Префікс імені файлу</string>
+    <string name="filename_prefix_description">Встановити префікс для файлів, експортованих PCAPdroid, наприклад файлів PCAP</string>
+    <string name="no_requests">Немає запитів</string>
+    <string name="item_not_found">Не вдалося знайти вказаний елемент</string>
+    <string name="connection_number">З\'єднання #%1$d</string>
+    <string name="http_request_number">HTTP запит #%1$d</string>
+    <string name="http_requests">HTTP запити</string>
+    <string name="switch_to_http">Показати HTTP запити</string>
+    <string name="switch_to_connections">Показати з\'єднання</string>
+    <string name="decryption_error">Помилка дешифрування</string>
+    <string name="previous">Назад</string>
+    <string name="next">Далі</string>
+    <string name="save_as_text">Зберегти як текст</string>
+    <string name="save_as_har">Зберегти як HAR</string>
     <string name="select_the_keylog_file">Вибрати файл журналу ключів SSL</string>
     <string name="errno_enetdown_msg">Мережевий інтерфейс не працює або неможливо підключитися до мережі</string>
     <string name="malicious_connection_description">З\'єднання з додатка \"%1$s\" викликало правило виявлення зловмисного ПЗ (%2$s)</string>

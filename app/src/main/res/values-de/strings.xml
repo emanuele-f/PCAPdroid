@@ -67,6 +67,7 @@
     <string name="hidden_connections_help">Liste der Regeln zum Ausblenden von Verbindungslisteneinträgen, um sich auf relevante fokussieren zu können</string>
     <string name="control_permissions">Berechtigungssteuerung</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">Keine Berechtigungen festgelegt. Rufen Sie PCAPdroid über StartActivityForResult auf, um die Berechtigungsabfrage anzuzeigen</string>
     <string name="status_outdated">Veraltet</string>
     <string name="status_not_loaded">Nicht geladen</string>
     <string name="connections_checked">Geprüfte Verbindungen</string>
@@ -188,6 +189,7 @@
     <string name="no_intent_handler_found">Keine App zum Ausführen dieser Aktion gefunden</string>
     <string name="network_interface">Schnittstelle</string>
     <string name="interface_filter">Schnittstelle: %1$s</string>
+    <string name="request_method">Anfragemethode</string>
     <string name="loading">Wird geladen…</string>
     <string name="purchased">Gekauft</string>
     <string name="no_items_for_purchase">Keine Artikel zum Kauf verfügbar</string>
@@ -517,6 +519,7 @@
     <string name="errno_ehostunreach_msg">Das System kann keine Route zum Ziel-Host finden</string>
     <string name="dns_conn_info">DNS übersetzt einen Domainnamen in eine IP-Adresse. Die tatsächlichen Daten werden typischerweise über nachfolgende HTTPS/TLS-Verbindungen ausgetauscht</string>
     <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">user Anleitung</a> für Details</string>
+    <string name="tls_decryption_not_supported_16KB">TLS-Entschlüsselung wird auf 16-KB-Geräten derzeit nicht unterstützt</string>
     <string name="dump_extensions_summary">Erweitern Sie das Paket-Dump-Format mit zusätzlichen Metadaten, wie die App, die ein bestimmtes Paket gesendet / empfangen</string>
     <string name="unsupported_pcap_file">Ununterstütztes Erfassungsdateiformat</string>
     <string name="decrypt_pcap_file">PCAP/Pcapng Datei entschlüsseln…</string>
@@ -529,21 +532,34 @@
     <string name="generate_api_key">API-Schlüssel generieren</string>
     <string name="show_api_key">API-Schlüssel anzeigen</string>
     <string name="api_key">API-Schlüssel</string>
+    <string name="api_key_discard_confirm">Möchten Sie den aktuellen API-Schlüssel wirklich verwerfen und einen neuen generieren?</string>
     <string name="save_as_text">Als Text speichern</string>
     <string name="save_as_har">Als HAR speichern</string>
     <string name="tcp_collector_info">TCP-Kollektor: %1$s:%2$d</string>
     <string name="select">Auswählen</string>
     <string name="content_type">Inhaltstyp</string>
     <string name="http_status">HTTP-Status</string>
+    <string name="payload_size_threshold">Schwellenwert für Nutzlastgröße</string>
     <string name="method_filter">Methode: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="text">Text</string>
     <string name="display_as_text">Als Text anzeigen</string>
+    <string name="display_as_hexdump">Als Hexdump anzeigen</string>
     <string name="exporting">Wird exportiert…</string>
+    <string name="export_in_progress">Export wird durchgeführt, bitte warten</string>
     <string name="show_connection">Verbindung anzeigen</string>
     <string name="show_system_apps">System-Apps anzeigen</string>
     <string name="destination_host">Ziel-Host</string>
     <string name="filename_prefix">Dateinamenpräfix</string>
+    <string name="filename_prefix_description">Legt das Präfix für die von PCAPdroid exportierten Dateien fest, z.B. PCAP-Dateien</string>
+    <string name="no_requests">Keine Anfragen</string>
+    <string name="item_not_found">Das angegebene Element wurde nicht gefunden</string>
     <string name="connection_number">Verbindung #%1$d</string>
+    <string name="http_request_number">HTTP-Anfrage #%1$d</string>
+    <string name="http_requests">HTTP-Anfragen</string>
+    <string name="switch_to_http">HTTP-Anfragen anzeigen</string>
     <string name="switch_to_connections">Verbindungen anzeigen</string>
     <string name="decryption_error">Entschlüsselungsfehler</string>
+    <string name="previous">Zurück</string>
+    <string name="next">Weiter</string>
 </resources>

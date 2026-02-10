@@ -112,6 +112,7 @@
     <string name="protocol_val">நெறிமுறை: %1$s</string>
     <string name="malware_whitelist_action">அனுமதிப்பட்டியல் (தீம்பொருள்)…</string>
     <string name="hide">மறை…</string>
+    <string name="select">தேர்வு</string>
     <string name="n_selected">%1$d தேர்ந்தெடுக்கப்பட்டது</string>
     <string name="select_all">அனைத்தையும் தெரிவுசெய்</string>
     <string name="app_details">பயன்பாட்டு விவரங்கள்</string>
@@ -214,6 +215,12 @@
     <string name="no_intent_handler_found">இந்த செயலைச் செய்ய எந்த பயன்பாடும் கிடைக்கவில்லை</string>
     <string name="network_interface">இடைமுகம்</string>
     <string name="interface_filter">இடைமுகம்: %1$s</string>
+    <string name="request_method">கோரிக்கை முறை</string>
+    <string name="content_type">உள்ளடக்க வகை</string>
+    <string name="http_status">HTTP நிலை</string>
+    <string name="payload_size_threshold">பேலோட் அளவு வரம்பு</string>
+    <string name="method_filter">முறை: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="loading">ஏற்றுகிறது…</string>
     <string name="purchased">வாங்கப்பட்டது</string>
     <string name="no_items_for_purchase">வாங்குவதற்கு எந்த பொருட்களும் கிடைக்கவில்லை</string>
@@ -275,15 +282,20 @@
     <string name="network_traffic">போக்குவரத்து</string>
     <string name="warn_no_app_data">பயன்பாட்டு தரவு எதுவும் பரிமாறப்படவில்லை</string>
     <string name="waiting_application_data">காத்திருக்கும் தரவு</string>
+    <string name="text">உரை</string>
     <string name="display_as">காட்சி…</string>
     <string name="printable_text">அச்சிடக்கூடிய உரை</string>
     <string name="hexdump">ஃச் டம்ப்</string>
+    <string name="display_as_text">உரையாக காட்டு</string>
+    <string name="display_as_hexdump">ஹெக்ஸ்டம்ப்பாகக் காட்டு</string>
     <string name="geolocation">உலகம் நீக்கம்</string>
     <string name="geolocation_summary">இணைப்பில்லாத தேடல்களைச் செய்வதன் மூலம் நாடு மற்றும் ஏ.எச்.என் தகவலைக் காட்டு</string>
     <string name="downloading">பதிவிறக்கம்…</string>
     <string name="download_in_progress">பதிவிறக்கம் முன்னேற்றம், தயவுசெய்து காத்திருங்கள்</string>
     <string name="pcap_load_in_progress">கோப்பு ஏற்றுதல் முன்னேற்றத்தில் உள்ளது, தயவுசெய்து காத்திருங்கள்</string>
     <string name="download_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
+    <string name="exporting">ஏற்றுமதி செய்கிறது…</string>
+    <string name="export_in_progress">ஏற்றுமதி நடைபெறுகிறது, காத்திருக்கவும்</string>
     <string name="geo_db_not_found">தரவுத்தளம் கிடைக்கவில்லை. புவிஇருப்பிடம் முடக்கப்பட்டுள்ளது</string>
     <string name="database">தரவுத்தளம்</string>
     <string name="built_on">கட்டப்பட்டது: %1$s</string>
@@ -373,6 +385,8 @@
     <string name="license_service_unavailable">PCAPDroid உரிம பணி தற்போது கிடைக்கவில்லை. தயவுசெய்து சில நிமிடங்களில் மீண்டும் முயற்சிக்கவும்</string>
     <string name="requesting_unlock_token">திறத்தல் டோக்கனைக் கோருகிறது, தயவுசெய்து காத்திருங்கள்</string>
     <string name="show_action">காட்டு</string>
+    <string name="show_connection">இணைப்பைக் காட்டு</string>
+    <string name="show_system_apps">கணினி பயன்பாடுகளைக் காட்டு</string>
     <string name="unlock_token_msg1">இது உங்கள் திறத்தல் கிள்ளாக்கு. <a href="%1$s">உங்கள் உரிமக் குறியீடுகளை</a> உருவாக்க உங்களுக்குத் தேவைப்படுவதால் அதைக் கவனியுங்கள்</string>
     <string name="paid_feature">கட்டண நற்பொருத்தம்</string>
     <string name="firewall_purchase_msg">இணைப்புகளைத் தடுக்கத் தொடங்க <i>%1$s </i> அம்சத்தை வாங்கவும்</string>
@@ -393,6 +407,7 @@
     <string name="redirect_to">இதை திருப்பி விடுங்கள்:</string>
     <string name="original_port">அசல் துறைமுகம்</string>
     <string name="required">தேவை</string>
+    <string name="destination_host">இலக்கு புரவலன்</string>
     <string name="destination_port">இலக்கு துறைமுகம்</string>
     <string name="port_mapping_exists">துறைமுகம் மேப்பிங் ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
     <string name="items_delete_confirm">தேர்ந்தெடுக்கப்பட்ட பொருட்களை நீக்கவா?</string>
@@ -493,6 +508,21 @@
     <string name="errno_ehostunreach">ஓச்டுக்கு பாதை இல்லை</string>
     <string name="errno_ehostunreach_msg">இலக்கு ஓச்டுக்கு ஒரு வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
     <string name="tls_conn_info">TLS/HTTPS போக்குவரத்து குறியாக்கம் செய்யப்படுகிறது. இந்த போக்குவரத்தை ஆய்வு செய்ய, நீங்கள் அதை மறைகுறியாக்க வேண்டும். விவரங்களுக்கு pcapdroid <a href="%1$s"> பயனர் கையேடு </a> ஐப் பாருங்கள்</string>
+    <string name="tls_decryption_not_supported_16KB">16 KB சாதனங்களில் TLS மறைகுறியீடு தற்போது ஆதரிக்கப்படவில்லை</string>
+    <string name="filename_prefix">கோப்புப்பெயர் முன்னொட்டு</string>
+    <string name="filename_prefix_description">PCAPdroid ஏற்றுமதி செய்யும் கோப்புகளுக்கான முன்னொட்டை அமைக்கவும், எ.கா. PCAP கோப்புகள்</string>
+    <string name="no_requests">கோரிக்கைகள் இல்லை</string>
+    <string name="item_not_found">குறிப்பிட்ட உருப்படியைக் கண்டறிய இயலவில்லை</string>
+    <string name="connection_number">இணைப்பு #%1$d</string>
+    <string name="http_request_number">HTTP கோரிக்கை #%1$d</string>
+    <string name="http_requests">HTTP கோரிக்கைகள்</string>
+    <string name="switch_to_http">HTTP கோரிக்கைகளைக் காட்டு</string>
+    <string name="switch_to_connections">இணைப்புகளைக் காட்டு</string>
+    <string name="decryption_error">மறைகுறியீட்டு பிழை</string>
+    <string name="previous">முந்தைய</string>
+    <string name="next">அடுத்து</string>
+    <string name="save_as_text">உரையாக சேமி</string>
+    <string name="save_as_har">HAR ஆக சேமி</string>
     <string name="cidr_val">CIDR: %1$s</string>
     <string name="dump_extensions">Pcapdroid நீட்டிப்புகள்</string>
     <string name="dump_extensions_summary">கொடுக்கப்பட்ட பாக்கெட்டை அனுப்பிய/பெற்ற பயன்பாடு போன்ற கூடுதல் மெட்டாடேட்டாவுடன் பாக்கெட் டம்ப் வடிவமைப்பை நீட்டிக்கவும்</string>
