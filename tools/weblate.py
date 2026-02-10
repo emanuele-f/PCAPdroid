@@ -89,6 +89,26 @@ def has_staged_changes():
 def locale_exists_on_disk(locale):
     return os.path.isdir(os.path.join(STRINGS_BASE, f"values-{locale}"))
 
+def count_strings(content, translatable_only=False):
+    """Count <string name= entries in an Android strings XML."""
+    if translatable_only:
+        return len(re.findall(r'<string name="[^"]*"(?![^>]*translatable="false")', content))
+    return len(re.findall(r'<string name="', content))
+
+def translation_pct(locale):
+    """Return translation percentage string for a locale on weblate/master."""
+    en_path = f"{STRINGS_BASE}/values/strings.xml"
+    path = locale_path(locale)
+    en_content = git("show", f"{REMOTE}/master:{en_path}").stdout
+    locale_result = git("show", f"{REMOTE}/master:{path}", check=False)
+    if locale_result.returncode != 0:
+        return "0%"
+    total = count_strings(en_content, translatable_only=True)
+    if total == 0:
+        return "0%"
+    translated = count_strings(locale_result.stdout)
+    return f"{100 * translated // total}%"
+
 def working_tree_clean():
     return git("diff", "--quiet", "--", STRINGS_BASE, check=False).returncode == 0 and \
            git("diff", "--cached", "--quiet", "--", STRINGS_BASE, check=False).returncode == 0
@@ -171,14 +191,15 @@ def cmd_status():
     supported = get_supported_locales()
 
     for locale in supported:
+        pct = translation_pct(locale)
         last = status.get(locale)
         if last:
             pending = get_pending_commits(locale, last)
             translation = [c for c in pending if not is_on_master(c)]
             if translation:
-                print(f"  {locale}: {len(translation)} pending translation commit(s)")
+                print(f"  {locale} ({pct}): {len(translation)} pending translation commit(s)")
             else:
-                print(f"  {locale}: up-to-date")
+                print(f"  {locale} ({pct}): up-to-date")
         else:
             pending = get_pending_commits(locale, None)
             if not pending:
@@ -187,10 +208,10 @@ def cmd_status():
             if not translation:
                 continue
             if locale_exists_on_disk(locale):
-                print(f"  {locale}: NOT TRACKED (exists on disk, "
+                print(f"  {locale} ({pct}): NOT TRACKED (exists on disk, "
                       f"{len(translation)} commit(s) — add to status file)")
             else:
-                print(f"  {locale}: NEW ({len(translation)} commit(s))")
+                print(f"  {locale} ({pct}): NEW ({len(translation)} commit(s))")
 
 def update_locale(locale, status):
     last = status.get(locale)
