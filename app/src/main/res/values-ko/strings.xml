@@ -57,7 +57,7 @@
     <string name="dns_server">DNS 서버</string>
     <string name="apps">앱</string>
     <string name="pcap_file_info">기기의 저장공간에 PCAP 파일을 생성합니다</string>
-    <string name="pcap_file">PCAP 파밍</string>
+    <string name="pcap_file">PCAP 파일</string>
     <string name="ok">확인</string>
     <string name="capture_running">캡처 하는중</string>
     <string name="copy_to_clipboard">복사</string>

@@ -42,7 +42,7 @@
     <string name="dropped_connections">கைவிடப்பட்ட இணைப்புகள்</string>
     <string name="conn_status_active">செயலில்</string>
     <string name="security">பாதுகாப்பு</string>
-    <string name="app_unblocked">%1$s பயன்பாடு தடைசெய்யப்பட்டுள்ளது</string>
+    <string name="app_unblocked">%1$s பயன்பாடு தடை நீக்கப்பட்டது</string>
     <string name="sort_by">வரிசைப்படுத்தவும்</string>
     <string name="invalid_license">தவறான உரிமம்</string>
     <string name="mitm_doze_notice">பேட்டரி உகப்பாக்கம் MITM துணை நிரலில் தலையிடக்கூடும்</string>
@@ -199,7 +199,7 @@
     <string name="private_dns_hinders_detection">தனியார் டி.என்.எச் கண்டறிதலைத் தடுக்கிறது</string>
     <string name="decryption_no_filter_warn">இணையத்துடனான உங்கள் தொடர்பை இழப்பதைத் தவிர்க்க TLS ஐ மறைகுறியாக்கும்போது இலக்கு பயன்பாட்டைத் தேர்ந்தெடுக்கவும்</string>
     <string name="block">தொகுதி…</string>
-    <string name="unblock">தடை செய்யுங்கள்…</string>
+    <string name="unblock">தடை நீக்கு…</string>
     <string name="firewall">ஃபயர்வால்</string>
     <string name="firewall_rules">ஃபயர்வால் விதிகள்</string>
     <string name="blocked_pkts">தடுக்கப்பட்டது</string>
@@ -309,7 +309,7 @@
     <string name="firewall_is_enabled">ஃபயர்வால் இயக்கப்பட்டது</string>
     <string name="app_info">பயன்பாட்டு செய்தி</string>
     <string name="action_block">தொகுதி</string>
-    <string name="action_unblock">தடை</string>
+    <string name="action_unblock">தடை நீக்கு</string>
     <string name="netd_block_missed">இந்த இணைப்பு NETD ஆல் தொடங்கப்பட்டது, எனவே அதைத் தடுக்க முடியவில்லை</string>
     <string name="firewall_summary">பயன்பாடுகளுக்கான இணைய அணுகலைத் தடு, குறிப்பிட்ட களங்கள் மற்றும் ஐபி முகவரிகளுக்கான விதிகளை உள்ளமைக்கவும். ரூட் அல்லாத பிடிப்புடன் மட்டுமே வேலை செய்கிறது</string>
     <string name="no_root_firewall">ரூட் ஃபயர்வால் இல்லை</string>
@@ -352,9 +352,9 @@
     <string name="vpn_exemptions_summary">VPN இணைப்பிலிருந்து சில பயன்பாடுகளுக்கு விலக்கு. அவர்களின் போக்குவரத்து கண்காணிக்கப்படாது</string>
     <string name="no_matches_found">போட்டிகள் இல்லை</string>
     <string name="cleartext_connection">தெளிவான டெக்ச்ட்</string>
-    <string name="unblock_permanently">நிரந்தரமாக தடை செய்யுங்கள்</string>
-    <string name="unblock_for_n_hours">%1$dh க்கு தடை செய்யுங்கள்</string>
-    <string name="unblock_for_n_minutes">%1$dm க்கு தடை செய்யுங்கள்</string>
+    <string name="unblock_permanently">நிரந்தரமாக தடை நீக்கு</string>
+    <string name="unblock_for_n_hours">%1$dh க்கு தடை நீக்கு</string>
+    <string name="unblock_for_n_minutes">%1$dm க்கு தடை நீக்கு</string>
     <string name="block_new_apps">புதிதாக நிறுவப்பட்ட பயன்பாடுகளைத் தடுக்கவும்</string>
     <string name="app_blocked">பயன்பாடு தடுக்கப்பட்டது</string>
     <string name="app_blocked_info">%1$s பயன்பாடு ஃபயர்வால் தடுக்கப்பட்டுள்ளது</string>

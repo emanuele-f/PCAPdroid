@@ -221,7 +221,7 @@
     <string name="tls_decryption_summary">فك تعمية حركة مرور SSL/TLS عن طريق إجراء mitm. قد يعمل هذا الآن مع بعض التطبيقات، راجع دليل المستخدم</string>
     <string name="no_items_for_purchase">لا توجد عناصر متاحة للشراء</string>
     <string name="interface_filter">الواجهة: %1$s</string>
-    <string name="network_interface">واجهة المُستخدم</string>
+    <string name="network_interface">واجهة الشبكة</string>
     <string name="loading">تحميل…</string>
     <string name="purchased">تّم شِراؤها</string>
     <string name="billing_failure">تعذر الاتصال بـ Google Play. يرجى إعادة المحاولة بعد فترة</string>
@@ -401,7 +401,7 @@
     <string name="payload_scams_notice">قد يحتوي هذا العرض على معلومات حساسة، مثل كلمات المرور ورموز الوصول المميزة.
 \n
 \nلا تقم أبدًا بإعطاء هذه المعلومات لأي شخص، فقد تكون محاولة احتيال</string>
-    <string name="paid_features_unlocked">الميزات المدفوعة مُقفلة. أعد تشغيل الالتقاط في حالة التشغيل</string>
+    <string name="paid_features_unlocked">تم فتح الميزات المدفوعة. أعد تشغيل الالتقاط في حالة التشغيل</string>
     <string name="build_info">معلومات البناء</string>
     <string name="unlock_token_error">تعذر طلب رمز إلغاء القفل [%1$d]: %2$s</string>
     <string name="unlock_token_summary">رمز مميز يمكن استخدامه لفتح الميزات المدفوعة في إصدارات التطبيق غير التابعة لـ Google Play (مثل F-Droid/Github)</string>

@@ -380,7 +380,7 @@
     <string name="show_action">Mostrar</string>
     <string name="unlock_token_msg1">Este é seu token de desbloqueio. Anote-o, porque será preciso <a href="%1$s">para gerar seus códigos de licença</a></string>
     <string name="app_log">Log</string>
-    <string name="no_data">Exibido na visualização de log quando os logs estão vazios</string>
+    <string name="no_data">Sem dados</string>
     <string name="socks5_auth_summary">Faça a autenticação para o proxy via nome de usuário e senha</string>
     <string name="socks5_auth">Autenticação SOCKS5</string>
     <string name="ipv6_bytes_percentage">Porcentagem de bytes IPv6</string>
@@ -390,8 +390,8 @@
     <string name="proxy_host">Endereço da Proxy</string>
     <string name="ipv6_bytes_sent">Bytes IPv6 enviados</string>
     <string name="ipv6_bytes_rcvd">Bytes IPv6 recebidos</string>
-    <string name="tcp_collector_info">deve ser consistente com o \"coletor UDP\" %1$s, %2$d</string>
-    <string name="tcp_exporter">deve ser consistente com o \"exportador UDP\"</string>
+    <string name="tcp_collector_info">Coletor TCP: %1$s:%2$d</string>
+    <string name="tcp_exporter">Exportador TCP</string>
     <string name="tcp_udp_exporter">Exportador TCP/UDP</string>
     <string name="tcp_exporter_info">Enviar o PCAP para um receptor TCP remoto (pcap-over-ip)</string>
     <string name="cidr_val">CIDR: %1$s</string>

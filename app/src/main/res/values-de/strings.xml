@@ -96,7 +96,7 @@
     <string name="lang_english">Englisch</string>
     <string name="system_default">Systemvorgabe</string>
     <string name="file_saved_with_name">Datei als \"%1$s\" gespeichert</string>
-    <string name="get_app">Kapiert:</string>
+    <string name="get_app">Herunterladen:</string>
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
     <string name="proxy_port">Proxy-Port</string>
@@ -158,7 +158,7 @@
     <string name="send_report">Bericht senden</string>
     <string name="start_at_boot">Beim Booten starten</string>
     <string name="malware_status_ok">Kein schädlicher Datenverkehr erkannt</string>
-    <string name="malware_status_detected">Keine schädlichen Verbindungen erkannt</string>
+    <string name="malware_status_detected">Schädliche Verbindungen erkannt</string>
     <string name="status_uptodate">Auf dem neusten Stand</string>
     <string name="blacklist_type">Typ: %1$s</string>
     <string name="n_rules">%1$s Regeln</string>
