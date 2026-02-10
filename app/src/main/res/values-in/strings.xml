@@ -320,7 +320,9 @@
     <string name="app_intro_traffic_inspection">Memeriksa permintaan HTTP, respons, dan data mentah menjadi mudah, berkat dekoder bawaan
 \n
 \nPunya koneksi terenkripsi\? Anda dapat mengaktifkan <a href="%1$s">dekripsi TLS</a> untuk mendapatkan data yang didekripsi</string>
-    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain \n \nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
+    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain
+\n
+\nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
     <string name="app_intro_malware_detection">Tingkatkan keamanan perangkat Anda dengan fitur <a href="%1$s">deteksi malware</a>
 \n
 \nDengan menggunakan daftar hitam terbaru, ini dapat mendeteksi, memblokir, dan memperingatkan koneksi berbahaya secara waktu nyata</string>
