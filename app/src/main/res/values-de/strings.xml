@@ -518,7 +518,7 @@
     <string name="errno_ehostunreach">Keine Route zum Host</string>
     <string name="errno_ehostunreach_msg">Das System kann keine Route zum Ziel-Host finden</string>
     <string name="dns_conn_info">DNS übersetzt einen Domainnamen in eine IP-Adresse. Die tatsächlichen Daten werden typischerweise über nachfolgende HTTPS/TLS-Verbindungen ausgetauscht</string>
-    <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">user Anleitung</a> für Details</string>
+    <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">Benutzeranleitung</a> für Details</string>
     <string name="tls_decryption_not_supported_16KB">TLS-Entschlüsselung wird auf 16-KB-Geräten derzeit nicht unterstützt</string>
     <string name="dump_extensions_summary">Erweitern Sie das Paket-Dump-Format mit zusätzlichen Metadaten, wie die App, die ein bestimmtes Paket gesendet / empfangen</string>
     <string name="unsupported_pcap_file">Ununterstütztes Erfassungsdateiformat</string>

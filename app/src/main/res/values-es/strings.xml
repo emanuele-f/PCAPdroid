@@ -341,7 +341,7 @@
     <string name="download_failed">Descarga fallida</string>
     <string name="exporting">Exportando…</string>
     <string name="export_in_progress">Exportación en curso, por favor espere</string>
-    <string name="geo_db_not_found">Base de datos no encontrada. La geolocalización está deshabilitado</string>
+    <string name="geo_db_not_found">Base de datos no encontrada. La geolocalización está deshabilitada</string>
     <string name="geo_db_missing">Base de datos de geolocalización no encontrada</string>
     <string name="country_rules_warning">Para usar reglas de cortafuegos basadas en países, descargue la base de datos de geolocalización desde los ajustes de PCAPdroid, de lo contrario las reglas basadas en países no tendrán efecto</string>
     <string name="database">Base de datos</string>

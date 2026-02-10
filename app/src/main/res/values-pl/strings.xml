@@ -20,13 +20,13 @@
     <string name="source">Źródło</string>
     <string name="destination">Cel</string>
     <string name="packets">Pakiety</string>
-    <string name="duration">Kierunek</string>
+    <string name="duration">Czas trwania</string>
     <string name="http_server">HTTP serwer</string>
     <string name="udp_exporter">Eksport UDP</string>
     <string name="tcp_exporter">Eksport TCP</string>
     <string name="tcp_udp_exporter">Eksport TCP/UDP</string>
-    <string name="no_dump">Bez wstrzymania</string>
-    <string name="no_dump_info">Ruch nie zostanie wstrzymany</string>
+    <string name="no_dump">Bez zrzutu</string>
+    <string name="no_dump_info">Ruch nie będzie zrzucany</string>
     <string name="http_server_info">Uruchom serwer HTTP do pobierania PCAP</string>
     <string name="udp_exporter_info">Wysyła PCAP do zdalnego odbiornika UDP</string>
     <string name="tcp_exporter_info">Wysyłaj PCAP do zdalnego odbiornika TCP (pcap-over-ip)</string>

@@ -26,9 +26,9 @@
     <string name="no_dump_info">போக்குவரத்து கொட்டப்படாது</string>
     <string name="http_server_info">PCAP பதிவிறக்கத்திற்கு HTTP சேவையகத்தைத் தொடங்கவும்</string>
     <string name="udp_exporter_info">தொலைநிலை UDP ரிசீவருக்கு PCAP ஐ அனுப்பவும்</string>
-    <string name="http_server_port">HTTP சேவையக துறைமுகம்</string>
+    <string name="http_server_port">HTTP சேவையக போர்ட்</string>
     <string name="receiver_ip_address">கலெக்டர் ஐபி முகவரி</string>
-    <string name="receiver_port">கலெக்டர் துறைமுகம்</string>
+    <string name="receiver_port">கலெக்டர் போர்ட்</string>
     <string name="traffic_dump">போக்குவரத்து டம்ப்</string>
     <string name="user_guide">பயனர் வழிகாட்டி</string>
     <string name="open_telegram_group">தந்தி குழு</string>
@@ -99,7 +99,7 @@
     <string name="socks5_auth">SOCKS5 ஏற்பு</string>
     <string name="socks5_auth_summary">பயனர்பெயர் மற்றும் கடவுச்சொல் வழியாக ப்ராக்சிக்கு அங்கீகரிக்கவும்</string>
     <string name="proxy_host">பதிலாள் புரவலன்</string>
-    <string name="proxy_port">பதிலாள் துறைமுகம்</string>
+    <string name="proxy_port">பதிலாள் போர்ட்</string>
     <string name="root_capture">வேராகப் பிடிக்கவும்</string>
     <string name="root_capture_summary">பிற VPN பயன்பாடுகளுடன் இயங்க PCAPDroid ஐ அனுமதிக்கிறது</string>
     <string name="donate">நன்கொடை</string>
@@ -288,7 +288,7 @@
     <string name="hexdump">ஃச் டம்ப்</string>
     <string name="display_as_text">உரையாக காட்டு</string>
     <string name="display_as_hexdump">ஹெக்ஸ்டம்ப்பாகக் காட்டு</string>
-    <string name="geolocation">உலகம் நீக்கம்</string>
+    <string name="geolocation">புவிஇருப்பிடம்</string>
     <string name="geolocation_summary">இணைப்பில்லாத தேடல்களைச் செய்வதன் மூலம் நாடு மற்றும் ஏ.எச்.என் தகவலைக் காட்டு</string>
     <string name="downloading">பதிவிறக்கம்…</string>
     <string name="download_in_progress">பதிவிறக்கம் முன்னேற்றம், தயவுசெய்து காத்திருங்கள்</string>
@@ -401,15 +401,15 @@
     <string name="add_to_fw_whitelist">ஃபயர்வால் அனுமதிப்பட்டியலில் சேர்க்கவும்</string>
     <string name="remove_from_fw_whitelist">ஃபயர்வால் அனுமதிப்பட்டியிலிருந்து அகற்றவும்</string>
     <string name="reset_stats_confirm">இந்த புள்ளிவிவரங்களை மீட்டமைக்க விரும்புகிறீர்களா?</string>
-    <string name="port_mapping">துறைமுகம் மேப்பிங்</string>
-    <string name="port_mapping_summary">வேறு புரவலன் அல்லது துறைமுகத்திற்கு இணைப்புகளை திருப்பிவிட துறைமுகம் மேப்பிங் விதிகளை உள்ளமைக்கவும்</string>
+    <string name="port_mapping">போர்ட் மேப்பிங்</string>
+    <string name="port_mapping_summary">வேறு புரவலன் அல்லது போர்ட்டிற்கு இணைப்புகளை திருப்பிவிட போர்ட் மேப்பிங் விதிகளை உள்ளமைக்கவும்</string>
     <string name="add_action">கூட்டு</string>
     <string name="redirect_to">இதை திருப்பி விடுங்கள்:</string>
-    <string name="original_port">அசல் துறைமுகம்</string>
+    <string name="original_port">அசல் போர்ட்</string>
     <string name="required">தேவை</string>
     <string name="destination_host">இலக்கு புரவலன்</string>
-    <string name="destination_port">இலக்கு துறைமுகம்</string>
-    <string name="port_mapping_exists">துறைமுகம் மேப்பிங் ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
+    <string name="destination_port">இலக்கு போர்ட்</string>
+    <string name="port_mapping_exists">போர்ட் மேப்பிங் ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
     <string name="items_delete_confirm">தேர்ந்தெடுக்கப்பட்ட பொருட்களை நீக்கவா?</string>
     <string name="ip_address">ஐபி முகவரி</string>
     <string name="rule_exists">விதி ஏற்கனவே வரையறுக்கப்பட்டுள்ளது</string>
@@ -462,7 +462,7 @@
     <string name="tls_decryption_no_rules_notice">கட்டமைக்கப்பட்ட விதிகளுடன் பொருந்தக்கூடிய இணைப்புகளுக்கு மட்டுமே டி.எல்.எச் மறைகுறியாக்கம் பயன்படுத்தப்படுகிறது. நீங்கள் இப்போது மறைகுறியாக்க விதிகளை உருவாக்க விரும்புகிறீர்களா?</string>
     <string name="active_vpn_detected">செயலில் VPN கண்டறியப்பட்டது</string>
     <string name="redirected">திருப்பி விடப்பட்டது</string>
-    <string name="connection_redirected_port_map">துறைமுகம் மேப்பிங் விதி காரணமாக இந்த இணைப்பு திருப்பி விடப்பட்டுள்ளது</string>
+    <string name="connection_redirected_port_map">போர்ட் மேப்பிங் விதி காரணமாக இந்த இணைப்பு திருப்பி விடப்பட்டுள்ளது</string>
     <string name="dnscrypt_how_to">PCAPDroid உடன் DOH / DNSCRYPT ஐ எவ்வாறு பயன்படுத்துவது</string>
     <string name="never">ஒருபோதும்</string>
     <string name="always">எப்போதும்</string>
@@ -505,8 +505,8 @@
     <string name="errno_etimedout">இணைப்பு நேரம் முடிந்தது</string>
     <string name="errno_econnrefused">இணைப்பு மறுத்துவிட்டது</string>
     <string name="errno_econnrefused_msg">சேவையகம் இணைப்பை நிராகரித்தது, இது மிகவும் பிசியான அல்லது செயலிழந்த சேவையகத்தைக் குறிக்கலாம்</string>
-    <string name="errno_ehostunreach">ஓச்டுக்கு பாதை இல்லை</string>
-    <string name="errno_ehostunreach_msg">இலக்கு ஓச்டுக்கு ஒரு வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
+    <string name="errno_ehostunreach">புரவலனுக்கு பாதை இல்லை</string>
+    <string name="errno_ehostunreach_msg">இலக்கு புரவலனுக்கு ஒரு வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
     <string name="tls_conn_info">TLS/HTTPS போக்குவரத்து குறியாக்கம் செய்யப்படுகிறது. இந்த போக்குவரத்தை ஆய்வு செய்ய, நீங்கள் அதை மறைகுறியாக்க வேண்டும். விவரங்களுக்கு pcapdroid <a href="%1$s"> பயனர் கையேடு </a> ஐப் பாருங்கள்</string>
     <string name="tls_decryption_not_supported_16KB">16 KB சாதனங்களில் TLS மறைகுறியீடு தற்போது ஆதரிக்கப்படவில்லை</string>
     <string name="filename_prefix">கோப்புப்பெயர் முன்னொட்டு</string>
