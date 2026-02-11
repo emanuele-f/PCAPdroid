@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Inacessível</string>
     <string name="other_prefs">Outro</string>
     <string name="app_language">Idioma do app</string>
-    <string name="lang_english">Inglês</string>
     <string name="system_default">Padrão do Sistema</string>
     <string name="no_activity_file_selection">Não foi encontrado nenhum app de seleção de arquivos</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -256,7 +255,6 @@
     <string name="export_failed">Exportação falhou</string>
     <string name="string_http_request">Solicitação HTTP</string>
     <string name="websocket">WebSocket</string>
-    <string name="printable_text">Texto para impressão</string>
     <string name="welcome_to_pcapdroid">Bem-vindo ao PCAPdroid</string>
     <string name="app_intro_welcome_msg">PCAPdroid é um aplicativo que respeita sua privacidade e permite rastrear e analisar as conexões feitas pelos apps no seu dispositivo
 \n
@@ -288,7 +286,6 @@
     <string name="network_traffic">Tráfego</string>
     <string name="warn_no_app_data">Nenhum dado do app foi intercambiado</string>
     <string name="waiting_application_data">Aguardando dados</string>
-    <string name="display_as">Mostrar como…</string>
     <string name="hexdump">Hexdump</string>
     <string name="geolocation">Geolocalização</string>
     <string name="downloading">Baixando…</string>
@@ -429,7 +426,6 @@
     <string name="redirect_to">Redirecionar para:</string>
     <string name="original_port">Porta original</string>
     <string name="required">Requerido</string>
-    <string name="destination_ip">Endereço IP de destino</string>
     <string name="destination_port">Porta de destino</string>
     <string name="port_mapping_exists">Mapeamento de portas já definido</string>
     <string name="items_delete_confirm">Deletar os itens selecionados?</string>
@@ -536,4 +532,31 @@
     <string name="tls_decryption_not_supported_16KB">A descriptografia TLS não é suportada atualmente em dispositivos de 16 KB</string>
     <string name="filename_prefix">Prefixo do nome do arquivo</string>
     <string name="filename_prefix_description">Defina o prefixo para os arquivos exportados pelo PCAPdroid, por exemplo, arquivos PCAP</string>
+    <string name="select">Selecionar</string>
+    <string name="request_method">Método da solicitação</string>
+    <string name="content_type">Tipo de conteúdo</string>
+    <string name="http_status">Status HTTP</string>
+    <string name="payload_size_threshold">Limite de tamanho do payload</string>
+    <string name="method_filter">Método: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="text">Texto</string>
+    <string name="display_as_text">Mostrar como texto</string>
+    <string name="display_as_hexdump">Mostrar como hexdump</string>
+    <string name="exporting">Exportando…</string>
+    <string name="export_in_progress">Exportação em execução, por favor aguarde</string>
+    <string name="show_connection">Mostrar conexão</string>
+    <string name="show_system_apps">Mostrar apps do sistema</string>
+    <string name="destination_host">Host de destino</string>
+    <string name="no_requests">Nenhuma solicitação</string>
+    <string name="item_not_found">Não foi possível encontrar o item especificado</string>
+    <string name="connection_number">Conexão #%1$d</string>
+    <string name="http_request_number">Solicitação HTTP #%1$d</string>
+    <string name="http_requests">Solicitações HTTP</string>
+    <string name="switch_to_http">Mostrar solicitações HTTP</string>
+    <string name="switch_to_connections">Mostrar conexões</string>
+    <string name="decryption_error">Erro de descriptografia</string>
+    <string name="previous">Anterior</string>
+    <string name="next">Próximo</string>
+    <string name="save_as_text">Salvar como texto</string>
+    <string name="save_as_har">Salvar como HAR</string>
 </resources>
