@@ -113,7 +113,6 @@
     <string name="other_prefs">آخر</string>
     <string name="system_default">النظام الافتراضي</string>
     <string name="conn_status_unreachable">لا يمكن الوصول إليه</string>
-    <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
     <string name="file_saved_with_name">تم حفظ الملف باسم \"%1$s\"</string>
     <string name="socks5_redirection">إعادة توجيه SOCKS5</string>
@@ -307,13 +306,11 @@
     <string name="full_payload_summary">إظهار حمولة الاتصالات الكاملة (على سبيل المثال، طلب HTTP الكامل والاستجابة له). وهذا يتطلب الكثير من الذاكرة، لا تستخدمها على المدى الطويل</string>
     <string name="decrypted">تم فك تعميتها</string>
     <string name="network_traffic">حركة المرور</string>
-    <string name="display_as">عرض كـ…</string>
     <string name="decryption">فك التعمية</string>
     <string name="connection_start_not_seen">لم يشاهد PCAPdroid بداية هذا الاتصال. قد تكون بعض المعلومات مفقودة</string>
     <string name="warn_no_app_data">لم يتم تبادل أي بيانات التطبيق</string>
     <string name="decryption_filter">الحالة: %1$s</string>
     <string name="waiting_application_data">في انتظار البيانات</string>
-    <string name="printable_text">نص قابل للطباعة</string>
     <string name="hexdump">تفريغ سداسي (Hexdump)</string>
     <string name="geolocation">تحديد الموقع الجغرافي</string>
     <string name="geolocation_summary">قم بعرض معلومات البلد ورقم ASN من خلال إجراء عمليات بحث في وضع عدم الاتصال</string>

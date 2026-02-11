@@ -94,7 +94,6 @@
     <string name="conn_status_unreachable">Unerreichbar</string>
     <string name="other_prefs">Andere</string>
     <string name="app_language">App-Sprache</string>
-    <string name="lang_english">Englisch</string>
     <string name="system_default">Systemvorgabe</string>
     <string name="file_saved_with_name">Datei als \"%1$s\" gespeichert</string>
     <string name="get_app">Herunterladen:</string>
@@ -372,8 +371,6 @@
     <string name="full_payload">Volle Nutzlast</string>
     <string name="geolocation">Standort</string>
     <string name="geolocation_summary">Zeigen Sie Länder- und ASN-Informationen an, indem Sie Offline-Suchen durchführen</string>
-    <string name="display_as">Darstellen als…</string>
-    <string name="printable_text">Druckbarer Text</string>
     <string name="hexdump">Hexdump</string>
     <string name="geo_db_not_found">Datenbank nicht gefunden. Geolokalisierung ist deaktiviert</string>
     <string name="database">Datenbank</string>

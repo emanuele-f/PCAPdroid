@@ -81,7 +81,6 @@
     <string name="conn_status_unreachable">不可达</string>
     <string name="other_prefs">其他</string>
     <string name="app_language">程序语言</string>
-    <string name="lang_english">英语</string>
     <string name="system_default">系统默认</string>
     <string name="no_activity_file_selection">没有找到应用来处理选中的文件</string>
     <string name="socks5_proxy">启用 SOCKS5 代理</string>
@@ -248,8 +247,6 @@
     <string name="network_traffic">流量</string>
     <string name="warn_no_app_data">尚未交换应用数据</string>
     <string name="waiting_application_data">等待数据</string>
-    <string name="display_as">显示为…</string>
-    <string name="printable_text">可打印文本</string>
     <string name="hexdump">十六进制转储</string>
     <string name="geolocation_summary">执行离线查询显示国家和 ASN 信息</string>
     <string name="download_in_progress">正在下载，请等待</string>

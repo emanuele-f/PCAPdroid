@@ -187,7 +187,6 @@
     <string name="duration">Durasi</string>
     <string name="udp_exporter_info">Kirim PCAP ke penerima UDP jarak jauh</string>
     <string name="vpn_setup_failed">Tidak dapat mengatur VPN. Pastikan VPN Selalu Aktif dinonaktifkan</string>
-    <string name="lang_english">Inggris</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
     <string name="receiver_ip_address">Alamat IP kolektor</string>
@@ -243,8 +242,6 @@
     <string name="decrypted">Didekripsi</string>
     <string name="waiting_application_data">Menunggu data</string>
     <string name="text">Teks</string>
-    <string name="display_as">Tampilkan sebagai…</string>
-    <string name="printable_text">Teks yang dapat diprint</string>
     <string name="downloading">Mengunduh…</string>
     <string name="download_in_progress">Unduhan sedang berlangsung, harap tunggu</string>
     <string name="geo_db_download">Ketuk untuk mengunduh database terbaru. Database baru tersedia setiap bulan</string>

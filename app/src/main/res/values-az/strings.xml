@@ -105,7 +105,6 @@
     <string name="unknown_app">Bilinməyən</string>
     <string name="conn_status_unreachable">Əlçatan deyil</string>
     <string name="error">Xəta</string>
-    <string name="lang_english">İngilis dili</string>
     <string name="socks5_summary">SOCKS5 proksisinə yönləndirməyi konfiqurasiya et</string>
     <string name="socks5_redirection">SOCKS5 yönləndirməsi</string>
     <string name="socks5_info">SOCKS5 proksi: %1$s:%2$d</string>
@@ -285,8 +284,6 @@
     <string name="warn_no_app_data">Heç bir tətbiq məlumatları alınıb göndərilmədi</string>
     <string name="waiting_application_data">Məlumatlar gözlənilir</string>
     <string name="text">Mətn</string>
-    <string name="display_as">Bu şəkildə göstər…</string>
-    <string name="printable_text">Çap edilə bilən mətn</string>
     <string name="hexdump">Heksdempinq (hexdump)</string>
     <string name="display_as_text">Mətn kimi göstər</string>
     <string name="display_as_hexdump">Hexdump kimi göstər</string>

@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Non raggiungibile</string>
     <string name="other_prefs">Altro</string>
     <string name="app_language">Lingua</string>
-    <string name="lang_english">Inglese</string>
     <string name="system_default">Predefinita del sistema</string>
     <string name="no_activity_file_selection">App di selezione file mancante</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -229,8 +228,6 @@
     <string name="network_traffic">Traffico</string>
     <string name="warn_no_app_data">Non è stato scambiato alcun dato applicativo</string>
     <string name="waiting_application_data">In attesa di dati</string>
-    <string name="display_as">Mostra come…</string>
-    <string name="printable_text">Testo stampabile</string>
     <string name="hexdump">In esadecimale</string>
     <string name="geolocation">Geolocalizzazione</string>
     <string name="geolocation_summary">Mostra informazioni quali nazione e ASN tramite ricerche in un database locale</string>

@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Недоступен</string>
     <string name="other_prefs">Другое</string>
     <string name="app_language">Язык приложения</string>
-    <string name="lang_english">Английский</string>
     <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
@@ -234,10 +233,8 @@
     <string name="full_payload">Показывать полное содержимое</string>
     <string name="network_traffic">Трафик</string>
     <string name="warn_no_app_data">Обмена прикладными данными не было</string>
-    <string name="display_as">Отобразить как…</string>
     <string name="geolocation">Геолокация</string>
     <string name="download_in_progress">Скачивание еще продолжается, пожалуйста подождите</string>
-    <string name="printable_text">Текстовые данные</string>
     <string name="hexdump">HEX формат</string>
     <string name="download_failed">Скачивание не удалось</string>
     <string name="size_x">Размер: %1$s</string>

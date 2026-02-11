@@ -4,7 +4,6 @@
     <string name="stop_button">Detener</string>
     <string name="title_activity_settings">Ajustes</string>
     <string name="collector_info">Colector UDP: %1$s:%2$d</string>
-    <string name="tcp_collector_info">Recopilador TCP: %1$s:%2$d</string>
     <string name="http_server_status">Servidor HTTP: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s recibidos — %2$s enviados</string>
     <string name="query">Query</string>
@@ -23,13 +22,10 @@
     <string name="duration">Duración</string>
     <string name="http_server">Servidor HTTP</string>
     <string name="udp_exporter">Exportador UDP</string>
-    <string name="tcp_exporter">Exportador TCP</string>
-    <string name="tcp_udp_exporter">Exportador TCP/UDP</string>
     <string name="no_dump">Sin volcado</string>
     <string name="no_dump_info">El tráfico no será volcado</string>
     <string name="http_server_info">Inicia el servidor HTTP para la descarga de PCAP</string>
     <string name="udp_exporter_info">Envía el PCAP al colector remoto UDP</string>
-    <string name="tcp_exporter_info">Envía el PCAP a un receptor TCP remoto (pcap-over-ip)</string>
     <string name="http_server_port">Puerto del servidor HTTP</string>
     <string name="receiver_ip_address">Dirección IP del colector</string>
     <string name="receiver_port">Puerto del colector</string>
@@ -88,7 +84,6 @@
     <string name="search">Buscar…</string>
     <string name="app_val">App: %1$s</string>
     <string name="ip_address_val">Dirección IP: %1$s</string>
-    <string name="cidr_val">CIDR: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocolo: %1$s</string>
     <string name="hide">Ocultar…</string>
@@ -110,9 +105,7 @@
     <string name="unknown_app_info">\"Desconocido\" marca las conexiones cuya aplicación no se pudo determinar</string>
     <string name="packets_dropped">Paquetes perdidos</string>
     <string name="capture_prefs">Captura</string>
-    <string name="dump_extensions">Extensiones de PCAPdroid</string>
     <string name="dump_extensions_summary">Extiende el formato de volcado de paquetes con metadatos adicionales, como la aplicación que envió/recibió un paquete determinado</string>
-    <string name="dump_extensions_how_to">Cómo mostrar las extensiones de volcado de PCAPdroid en Wireshark</string>
     <string name="pending_transaction">Por favor, completa tu transacción para canjear esta función</string>
     <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.
 \nRecházala si no estás seguro</string>
@@ -150,10 +143,6 @@
     <string name="control_permissions_summary">Comprueba qué aplicaciones pueden controlar la captura de PCAPdroid</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
     <string name="no_permissions_set_info">No se han establecido permisos. Invoque PCAPdroid mediante StartActivityForResult para mostrar el diálogo de permisos</string>
-    <string name="generate_api_key">Generar clave API</string>
-    <string name="show_api_key">Mostrar clave API</string>
-    <string name="api_key">Clave API</string>
-    <string name="api_key_discard_confirm">¿Realmente desea descartar la clave API actual y generar una nueva?</string>
     <string name="country">País</string>
     <string name="asn">ASN</string>
     <string name="country_val">País: %1$s</string>
@@ -435,7 +424,6 @@
     <string name="port_mapping_exists">Mapeo de puertos ya definido</string>
     <string name="items_delete_confirm">¿Borrar los elementos seleccionados\?</string>
     <string name="ip_address">Dirección IP</string>
-    <string name="ip_address_or_cidr">Dirección IP / CIDR</string>
     <string name="rule_exists">Norma ya definida</string>
     <string name="dns_servers">Servidores DNS</string>
     <string name="dns_servers_summary">Configurar los servidores DNS a utilizar durante la captura</string>
@@ -521,14 +509,12 @@
     <string name="bytes_threshold">Umbral de bytes</string>
     <string name="select_the_pcap_file">Seleccione el archivo PCAP/Pcapng</string>
     <string name="select_the_keylog_file">Seleccione el archivo de registro de claves SSL</string>
-    <string name="error_code_with_text">%1$s (error %2$d)</string>
     <string name="errno_epipe">Tubería rota</string>
     <string name="errno_epipe_msg">El servidor cerró la conexión inesperadamente durante la transferencia de datos</string>
     <string name="errno_enetdown">Red caída</string>
     <string name="errno_enetdown_msg">La interfaz de red está caída o no puede conectarse a la red</string>
     <string name="errno_enetunreach">Red inaccesible</string>
     <string name="errno_enetunreach_msg">El sistema no puede encontrar una ruta válida hacia la red de destino</string>
-    <string name="errno_enetreset">Reinicio de red</string>
     <string name="errno_enetreset_msg">La conexión de red fue reiniciada por un dispositivo intermediario (p. ej. enrutador u operador móvil)</string>
     <string name="errno_econnaborted">Conexión cancelada</string>
     <string name="errno_econnaborted_msg">La conexión fue cancelada, normalmente debido a un cambio de red</string>
@@ -536,7 +522,6 @@
     <string name="errno_econnreset_msg">El servidor cerró la conexión abruptamente, normalmente debido a un fallo o un cierre no controlado</string>
     <string name="errno_etimedout">Tiempo de conexión agotado</string>
     <string name="errno_etimedout_msg">El servidor tardó demasiado en responder, probablemente debido a retrasos en la red o un servidor ocupado</string>
-    <string name="errno_econnrefused">Conexión rechazada</string>
     <string name="errno_econnrefused_msg">El servidor rechazó la conexión, lo que puede indicar un servidor demasiado ocupado o con fallos</string>
     <string name="errno_ehostunreach">Sin ruta al host</string>
     <string name="errno_ehostunreach_msg">El sistema no puede encontrar una ruta hacia el host de destino</string>
@@ -576,7 +561,6 @@
     <string name="show_api_key">Mostrar clave API</string>
     <string name="api_key">Clave API</string>
     <string name="ip_address_or_cidr">Dirección IP / CIDR</string>
-    <string name="errno_enetdown">La red está caída</string>
     <string name="errno_enetreset">Restablecer red</string>
     <string name="errno_econnrefused">Conexión rechazada</string>
     <string name="error_code_with_text">%1$s (error %2$d)</string>

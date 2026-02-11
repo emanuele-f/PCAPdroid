@@ -87,7 +87,6 @@
     <string name="conn_status_unreachable">அணுக முடியாதது</string>
     <string name="other_prefs">மற்றொன்று</string>
     <string name="app_language">பயன்பாட்டு மொழி</string>
-    <string name="lang_english">ஆங்கிலம்</string>
     <string name="system_default">கணினி இயல்புநிலை</string>
     <string name="no_activity_file_selection">கோப்பு தேர்வைக் கையாள எந்த பயன்பாடும் கிடைக்கவில்லை</string>
     <string name="file_saved_with_name">கோப்பு \"%1$s\" என சேமிக்கப்பட்டது</string>
@@ -283,8 +282,6 @@
     <string name="warn_no_app_data">பயன்பாட்டு தரவு எதுவும் பரிமாறப்படவில்லை</string>
     <string name="waiting_application_data">காத்திருக்கும் தரவு</string>
     <string name="text">உரை</string>
-    <string name="display_as">காட்சி…</string>
-    <string name="printable_text">அச்சிடக்கூடிய உரை</string>
     <string name="hexdump">ஃச் டம்ப்</string>
     <string name="display_as_text">உரையாக காட்டு</string>
     <string name="display_as_hexdump">ஹெக்ஸ்டம்ப்பாகக் காட்டு</string>

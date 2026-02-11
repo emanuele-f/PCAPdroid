@@ -8,7 +8,6 @@
     <string name="no_apps">Без додатків</string>
     <string name="dns_queries">Запитів DNS</string>
     <string name="notification_msg">%1$s захоплено, %2$s з\'єднань</string>
-    <string name="lang_english">Англійська</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="ip_address_val">IP адреса: %1$s</string>
     <string name="host_val">Хост: %1$s</string>
@@ -62,8 +61,6 @@
     <string name="decryption">Дешифрування</string>
     <string name="waiting_application_data">Очікування даних</string>
     <string name="text">Текст</string>
-    <string name="display_as">Показати як…</string>
-    <string name="printable_text">Текст для друку</string>
     <string name="hexdump">Hex дамп</string>
     <string name="display_as_text">Відобразити як текст</string>
     <string name="display_as_hexdump">Відобразити як hexdump</string>
@@ -219,7 +216,6 @@
     <string name="stop_button">Зупинити</string>
     <string name="title_activity_settings">Налаштування</string>
     <string name="collector_info">Збирач UDP: %1$s:%2$d</string>
-    <string name="tcp_collector_info">TCP колектор: %1$s:%2$d</string>
     <string name="http_server_status">HTTP сервер: http://%1$s:%2$d</string>
     <string name="rcvd_and_sent">%1$s отримано — %2$s відправлено</string>
     <string name="query">Запит</string>
@@ -237,13 +233,10 @@
     <string name="duration">Тривалість</string>
     <string name="http_server">HTTP сервер</string>
     <string name="udp_exporter">Експортер UDP</string>
-    <string name="tcp_exporter">TCP експортер</string>
-    <string name="tcp_udp_exporter">TCP/UDP експортер</string>
     <string name="no_dump">Без дампу</string>
     <string name="no_dump_info">Трафік не вивантажуватиметься</string>
     <string name="http_server_info">Запустити HTTP сервер для завантаження PCAP</string>
     <string name="udp_exporter_info">Надсилання PCAP до віддаленого UDP приймача</string>
-    <string name="tcp_exporter_info">Надіслати PCAP на віддалений TCP приймач (pcap-over-ip)</string>
     <string name="http_server_port">Порт HTTP сервера</string>
     <string name="receiver_ip_address">IP адреса для збору</string>
     <string name="receiver_port">Порт для збору</string>
@@ -357,11 +350,6 @@
     <string name="forever">Назавжди</string>
     <string name="control_permissions_summary">Виберіть, яким програмам дозволено керувати захопленням PCAPdroid</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
-    <string name="no_permissions_set_info">Дозволи не встановлені. Викличте PCAPdroid через StartActivityForResult, щоб показати запит дозволів</string>
-    <string name="generate_api_key">Згенерувати API ключ</string>
-    <string name="show_api_key">Показати API ключ</string>
-    <string name="api_key">API ключ</string>
-    <string name="api_key_discard_confirm">Ви дійсно хочете відкинути поточний API ключ і згенерувати новий?</string>
     <string name="country">Країна</string>
     <string name="send_report">Надіслати звіт</string>
     <string name="start_at_boot">Запускати при завантаженні</string>
