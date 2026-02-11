@@ -150,7 +150,7 @@
     <string name="malware_whitelist_help">Biała lista zdefiniowana przez użytkownika w celu zablokowania wykrywania złośliwego oprogramowania. Długo naciskaj złośliwe połączenia, aby utworzyć reguły usuwające ich oznaczenie jako złośliwego oprogramowania</string>
     <string name="hidden_connections_help">Lista reguł ukrywania wpisów na liście połączeń, dzięki czemu możesz skupić się na odpowiednich</string>
     <string name="malicious_connection_filter">Złośliwe połączenia</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP Status: %1$s</string>
     <string name="not_hidden_filter">Nieukryte</string>
     <string name="copy_action">Kopiowanie…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -266,7 +266,7 @@
     <string name="not_decryptable">Nie do odszyfrowania</string>
     <string name="decrypted">Odszyfrowane</string>
     <string name="decryption">Deszyfrowanie</string>
-    <string name="decryption_filter">Deszyfrowanie: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid nie widział początku tego połączenia. Może brakować niektórych informacji</string>
     <string name="network_traffic">Ruch</string>
     <string name="warn_no_app_data">Żadne dane aplikacji nie zostały wymienione</string>
@@ -366,7 +366,7 @@
     <string name="warning">Ostrzeżenie</string>
     <string name="paid_features_unlocked">Płatne funkcje odblokowane. Uruchom ponownie przechwytywanie, jeśli jest uruchomione</string>
     <string name="build_info">Informacje o kompilacji</string>
-    <string name="tls_decryption_with_root_msg">Możliwość uruchomienia deszyfrowania TLS z uprawnieniami administratora jest funkcją eksperymentalną. Oto lista znanych błędów:\n\n - w PCAPdroid zobaczysz ruch wygenerowany z aplikacji mitm-addon zamiast oryginalnej aplikacji\n - gdy ustawiony jest filtr aplikacji, odszyfrowanie nastąpi tylko dla aplikacji docelowej, ale PCAPdroid nadal będzie wyświetlał ruch innych aplikacji\n - jeśli przechwytywanie się nie rozpocznie, upewnij się, że faktycznie możesz uruchomić polecenie iptables jako root (np. przez termux)\n – to może nie działać na Androidzie 12 i nowszych\n - jeśli aplikacja VPN jest uruchomiona, należy wybrać konkretną aplikację do odszyfrowania lub wykluczyć dodatek PCAPdroid mitm z VPN, w przeciwnym razie ruch będzie się zapętlał</string>
+    <string name="tls_decryption_with_root_msg">Możliwość uruchomienia deszyfrowania TLS z uprawnieniami administratora jest funkcją eksperymentalną. Oto lista znanych błędów:\n\n - w PCAPdroid zobaczysz ruch wygenerowany z aplikacji mitm-addon zamiast oryginalnej aplikacji\n - zrzut SSL keylog nie jest obsługiwany \n - gdy ustawiony jest filtr aplikacji, odszyfrowanie nastąpi tylko dla aplikacji docelowej, ale PCAPdroid nadal będzie wyświetlał ruch innych aplikacji\n - jeśli przechwytywanie się nie rozpocznie, upewnij się, że faktycznie możesz uruchomić polecenie iptables jako root (np. przez termux)\n – to może nie działać na Androidzie 12 i nowszych\n - jeśli aplikacja VPN jest uruchomiona, należy wybrać konkretną aplikację do odszyfrowania lub wykluczyć dodatek PCAPdroid mitm z VPN, w przeciwnym razie ruch będzie się zapętlał</string>
     <string name="unlock_token_summary">Token, którego można użyć do odblokowania płatnych funkcji w kompilacjach aplikacji spoza Google Play (np. F-Droid/Github)</string>
     <string name="unlock_token_error">Nie można zażądać tokena odblokowującego [%1$d]: %2$s</string>
     <string name="access_paid_features_msg">Zapoznaj się z <a href="%1$s">przewodnikiem użytkownika</a>, aby dowiedzieć się, jak uzyskać dostęp do płatnych funkcji</string>
@@ -468,7 +468,7 @@
     <string name="errno_ehostunreach">Brak trasy do hosta</string>
     <string name="errno_ehostunreach_msg">System nie może znaleźć trasy do hosta docelowego</string>
     <string name="dns_conn_info">DNS tłumaczy nazwę domeny na adres IP. Właściwe dane są zazwyczaj wymieniane przez kolejne połączenia HTTPS/TLS</string>
-    <string name="tls_conn_info">Ruch TLS/HTTPS jest zaszyfrowany. Aby zbadać ten ruch, musisz go odszyfrować. Sprawdź <a href='%1$s'>podręcznik użytkownika</a> PCAPdroid, aby uzyskać szczegóły</string>
+    <string name="tls_conn_info">Ruch TLS/HTTPS jest zaszyfrowany. Aby zbadać ten ruch, musisz go odszyfrować. Sprawdź <a href="%1$s">podręcznik użytkownika</a> PCAPdroid, aby uzyskać szczegóły</string>
     <string name="tls_decryption_not_supported_16KB">Deszyfrowanie TLS nie jest obecnie obsługiwane na urządzeniach 16 KB</string>
     <string name="filename_prefix">Prefiks nazwy pliku</string>
     <string name="filename_prefix_description">Ustaw prefiks plików eksportowanych przez PCAPdroid, np. plików PCAP</string>

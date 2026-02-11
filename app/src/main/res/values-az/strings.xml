@@ -168,7 +168,7 @@
     <string name="http">HTTP</string>
     <string name="full_payload_summary">Tam bağlantı yükünü göstər (məsələn, tam HTTP istəyi və cavabı). Bunun üçün çox yaddaş lazımdır, uzun müddət istifadə etməyin</string>
     <string name="decryption">Deşifrə</string>
-    <string name="decryption_filter">Deşifrə: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="cert_reinstall_required">CA sertifikatını quraşdırmaq mümkün olmadı, Ortadakı Adam Hücumunu quraşdırma menyusunu işə salın</string>
     <string name="update_available">Yeniləmə mövcuddur</string>
     <string name="ip_mode">VPN İP adresləri</string>
@@ -239,7 +239,7 @@
     <string name="malware_whitelist_rules">Zərərli fayl, tətbiqlərin ağ siyahı qaydaları</string>
     <string name="feature_not_available">Bu xüsusiyyət hal-hazırda sizin cihazınızda əlçatan deyil</string>
     <string name="billing_connecting">Google Play bağlantısı davam edir, zəhmət olmasa, bir az sonra yenidən cəhd edin</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP status: %1$s</string>
     <string name="not_hidden_filter">Gizli deyil</string>
     <string name="show_me">Göstər</string>
     <string name="hint">İpucu</string>
@@ -480,9 +480,9 @@
     <string name="decryption_info_no_rule">Bu bağlantını deşifrələməkçün, sol çəkməcədə ya da bağlantı siyahısındakı mətn əsaslı menyudan deşifrələmə qaydası yaradın.</string>
     <string name="vpn_setup_msg">PCAPdroid, şəbəkə trafikini root olmadan izləmək üçün VPN kimi davranır.\n\nİzləməni başlatmaq üçün bir sonrakı ekranda VPN istəyini qebul etməlisiniz.\n\n<b>QEYD:</b> Davam etmək üçün Andoid parametrlərindən konfiqurasiya edilmiş hər zaman açıq VPN-ləri dekativ edin</string>
     <string name="app_intro_traffic_inspection">Daxili dekoderlər sayəsində HTTP istəkərini, cavabları və xam məlumatları yoxlamaq asandır\n\nŞifrəli bağlantınız varmı? Deşifrələnmiş məlumatları əldə etmək üçün <a href="%1$s">TLS deşifrələməsini</a> aktiv edə bilərsiniz</string>
-    <string name="app_intro_firewall_msg">Daxili <a href="%1$s">təhlükəsizlik divarı</a> ilə fərdi tətbiqlərə və domenlərə internet çıxışını asanlıqla bloklaya bilərsiniz\n\nBunu daxili trafik monitorinqi funksiyası ilə birləşdirərək gizliliyinizi qorumaq üçün çox yaxşı bir alət əldə edin</string>
+    <string name="app_intro_firewall_msg">Daxili <a href="%1$s">təhlükəsizlik divarı</a> ilə fərdi tətbiqlərə, domenlərə və ölkələrə internet çıxışını asanlıqla bloklaya bilərsiniz\n\nBunu daxili trafik monitorinqi funksiyası ilə birləşdirərək gizliliyinizi qorumaq üçün çox yaxşı bir alət əldə edin</string>
     <string name="app_intro_traffic_dump">PCAPdroid, daha çox analiz üçün trafiki standart PCAP formatında yığmaq üçün <a href="%1$s">müxtəlif seçimlər, üsullar</a> təqdim edir\n\n<a href="%2$s">treyler seçimi</a> ilə siz paketlərə tətbiq adlarını əlavə edə və onları Wirshark-da göstərə bilərsiniz</string>
-    <string name="tls_decryption_with_root_msg">TLS deşifrələməsini root-la işlətmə funksiyası eksperimental xüsusiyyətdir. Məlum olan xətaların siyahısı:\n\n- PCAPdroid-də trafiki orijinal tətbiq yerinə ortadakı adam hücumu əlavəsi tətbiqindən hazırlanmış şəkildə görəcəksiniz\n- tətbiq filteri təyin olunduğunda deşifrələmə sadəcə hədəf tətbiq üçün keçərli olacaqdır, lakin PCAPdroid hələ də digər tətbiqlərin trafikini göstərəcəkdir\n- əgər izləməni başlatmaq uğursuz olduqda iptables əmrini həqiqətən root olaraq işə saldığınızdan əmin olun (məs. termux ilə)\n- bu, android 12 və sonrakı versiyalarda işləməyə bilər\n- əgər VPN tətbiqi işləmirsə, deşifrələmə üçün xüsusi bir tətbiq seçməlisiniz və ya VPN-dən PCAPdroid ortadakı adam hücumu əlavəsini istisna etməlisiniz, əks halda trafik sonsuz döngəyə girəcəkdir.</string>
+    <string name="tls_decryption_with_root_msg">TLS deşifrələməsini root-la işlətmə funksiyası eksperimental xüsusiyyətdir. Məlum olan xətaların siyahısı:\n\n- PCAPdroid-də trafiki orijinal tətbiq yerinə ortadakı adam hücumu əlavəsi tətbiqindən hazırlanmış şəkildə görəcəksiniz\n- SSL açar günlüyünün dempinqi dəstəklənmir\n- tətbiq filteri təyin olunduğunda deşifrələmə sadəcə hədəf tətbiq üçün keçərli olacaqdır, lakin PCAPdroid hələ də digər tətbiqlərin trafikini göstərəcəkdir\n- əgər izləməni başlatmaq uğursuz olduqda iptables əmrini həqiqətən root olaraq işə saldığınızdan əmin olun (məs. termux ilə)\n- bu, android 12 və sonrakı versiyalarda işləməyə bilər\n- əgər VPN tətbiqi işləmirsə, deşifrələmə üçün xüsusi bir tətbiq seçməlisiniz və ya VPN-dən PCAPdroid ortadakı adam hücumu əlavəsini istisna etməlisiniz, əks halda trafik sonsuz döngəyə girəcəkdir.</string>
     <string name="malicious_connections_notice">Qara siyahılarda müsbət yalnışlar olabilir.İki dəfə basmaqla İP adres/yer adı bilinirliyindən əmin olun. Zərərli tətbiq ağ siyahısı ilə,müsbət yalnışları kənar tutabilərsiz.</string>
     <string name="dump_extensions">PCAPdroid əlavələri</string>
     <string name="dump_extensions_how_to">PCAPdroid məlumat yığını uzantılarını Wiresharkda necə görüntülənir</string>

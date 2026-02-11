@@ -131,7 +131,7 @@
     <string name="feature_not_available">Esta función no está disponible actualmente para tu dispositivo</string>
     <string name="billing_connecting">La conexión con Google Play está en curso, por favor reintenta más tarde</string>
     <string name="malicious_connection_filter">Malicioso</string>
-    <string name="status_filter">Estado: %1$s</string>
+    <string name="status_filter">Estado HTTP: %1$s</string>
     <string name="not_hidden_filter">No oculto</string>
     <string name="copy_action">Copiar…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -325,7 +325,7 @@
     <string name="full_payload_summary">Muestra el payload de conexiones completo (por ejemplo, la petición HTTP y respuesta completa). Requiere mucha memoria, no lo uses por mucho tiempo</string>
     <string name="decrypted">Descifrado</string>
     <string name="decryption">Descifrado</string>
-    <string name="decryption_filter">Descifrado: %1$s</string>
+    <string name="decryption_filter">Estado: %1$s</string>
     <string name="download_in_progress">Descarga en progreso, por favor espera</string>
     <string name="download_failed">Descarga fallida</string>
     <string name="exporting">Exportando…</string>
@@ -391,15 +391,13 @@
     <string name="app_intro_traffic_inspection">La inspección de peticiones HTTP, respuestas y datos sin procesar es muy sencilla gracias a los decodificadores integrados
 \n
 \n¿Tienes una conexión cifrada\? Puedes habilitar el <a href="%1$s">descifrado TLS</a> para ver los datos descifrados</string>
-    <string name="app_intro_traffic_dump">PCAPdroid tiene <a href="%1$s">varios métodos</a> para volcar el tráfico en formato PCAP y realizar análisis posteriores
-\n
-\nCon la <a href="%2$s">opción de tráiler</a>, puedes añadir nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid tiene <a href="%1$s">varios métodos</a> para volcar el tráfico en formato PCAP y realizar análisis posteriores \n \nCon la <a href="%2$s">opción de extensiones de PCAPdroid</a>, puedes añadir nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
     <string name="access_paid_features_msg">Consulta la <a href="%1$s">guía de usuario</a> para saber cómo acceder a las funciones de pago</string>
-    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos: \n \n - En PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original \n - Después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones \n - Si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux) \n - Es posible que esta función no funcione en Android 12 y superior \n - Si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
+    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos: \n \n - en PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original \n - el volcado del registro de claves SSL no es compatible \n - después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones \n - si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux) \n - es posible que esta función no funcione en Android 12 y superior \n - si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
     <string name="app_intro_privacy_msg">La aplicación no emplea ninguna función de rastreo, analítica o de llamada a casa.
 \n
 \n¿Como puedo estar seguro\? Consulta la <a href="%1$s">política de privacidad</a> y el <a href="%2$s">código fuente</a></string>
-    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones y dominios específicos. \n \nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
+    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones, dominios y países específicos. \n \nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
     <string name="app_intro_malware_detection">Aumenta la seguridad de tu dispositivo con la característica de <a href="%1$s">detección de malware</a>
 \n
 \nUsando la última lista negra, puedes detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>
@@ -434,7 +432,7 @@
     <string name="external_storage_perm_required">El permiso al almacenamiento externo es necesario</string>
     <string name="many_rules_warning">Estás intentando importar muchas reglas, lo que podría hacer que la aplicación no respondiera durante algunas interacciones. ¿De verdad quieres continuar\?</string>
     <string name="pcapng_format">Formato Pcapng</string>
-    <string name="pcapng_format_summary">Volcar paquetes en formato pcapng, lo que permite incrustar contraseñas de descifrado TLS</string>
+    <string name="pcapng_format_summary">Volcar paquetes en formato Ocapng, que es más flexible y permite incrustar secretos de descifrado TLS</string>
     <string name="no_data">Sin datos</string>
     <string name="app_log">Registro</string>
     <string name="firewall_whitelist_notice">En este modo se bloquearán todas las conexiones, a menos que se incluyan manualmente en una lista blanca. Puedes perder notificaciones push sin una lista blanca adecuada</string>
@@ -472,17 +470,17 @@
     <string name="capture_interface_open_error">No se ha podido abrir la interfaz de captura</string>
     <string name="pcap_file_not_exists">El archivo especificado no existe</string>
     <string name="open_pcap_file">Abrir archivo PCAP/Pcapng…</string>
-    <string name="pcap_load_success">Se ha cargado el archivo PCAP</string>
+    <string name="pcap_load_success">Archivo de captura cargado</string>
     <string name="unsupported_pcap_file">Formato de archivo de captura no compatible</string>
     <string name="decrypt_pcap_file">Descifrar archivo PCAP/Pcapng…</string>
-    <string name="invalid_pcap_file">Fichero PCAP no válido</string>
+    <string name="invalid_pcap_file">Formato de archivo de captura no válido</string>
     <string name="root_capture_start_failed">Fallo del inicio de captura. Asegúrate de que el dispositivo está rooteado con Magisk</string>
-    <string name="pcap_read_error">Error de lectura del PCAP</string>
+    <string name="pcap_read_error">Error al leer el archivo de captura. Comprueba el registro para más detalles</string>
     <string name="unsupported_pcap_datalink">El archivo tiene un enlace de datos no compatible</string>
-    <string name="pcap_file_load_aborted">Carga del fichero PCAP abortada</string>
+    <string name="pcap_file_load_aborted">Carga del archivo de captura cancelada</string>
     <string name="host_resolution_failed">No se pudo resolver host %1$s</string>
-    <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones actuales en lugar de \"%1$s\", asegúrate de activar la opción \"%2$s\" antes de exportar el archivo PCAP</string>
-    <string name="decryption_info_no_rule">Esta conexión no se descifrará. Crea una regla de descifrado para descifrarla</string>
+    <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones reales en lugar de \"%1$s\", asegúrate de habilitar la opción \"%2$s\" antes de generar el volcado</string>
+    <string name="decryption_info_no_rule">Para descifrar esta conexión, crea una regla de descifrado desde el panel lateral izquierdo o desde el menú contextual en la lista de Conexiones</string>
     <string name="tls_decryption_no_rules_notice">El descifrado TLS sólo se aplica a las conexiones que coinciden con las reglas configuradas. ¿Deseas crear las reglas de descifrado ahora\?</string>
     <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
     <string name="pcap_load_in_progress">Carga del archivo de captura en proceso, por favor espera</string>
@@ -526,7 +524,7 @@
     <string name="errno_ehostunreach">Sin ruta al host</string>
     <string name="errno_ehostunreach_msg">El sistema no puede encontrar una ruta hacia el host de destino</string>
     <string name="dns_conn_info">DNS traduce un nombre de dominio a una dirección IP. Los datos reales se intercambian normalmente a través de conexiones HTTPS/TLS posteriores</string>
-    <string name="tls_conn_info">El tráfico TLS/HTTPS está cifrado. Para inspeccionar este tráfico, necesita descifrarlo. Consulte la <a href='%1$s'>guía de usuario</a> de PCAPdroid para más detalles</string>
+    <string name="tls_conn_info">El tráfico TLS/HTTPS está cifrado. Para inspeccionar este tráfico, necesita descifrarlo. Consulte la <a href="%1$s">guía de usuario</a> de PCAPdroid para más detalles</string>
     <string name="tls_decryption_not_supported_16KB">El descifrado TLS no es compatible actualmente en dispositivos de 16 KB</string>
     <string name="filename_prefix">Prefijo de nombre de archivo</string>
     <string name="filename_prefix_description">Establece el prefijo para los archivos exportados por PCAPdroid, p. ej. archivos PCAP</string>
@@ -564,4 +562,6 @@
     <string name="errno_enetreset">Restablecer red</string>
     <string name="errno_econnrefused">Conexión rechazada</string>
     <string name="error_code_with_text">%1$s (error %2$d)</string>
+    <string name="api_key_discard_confirm">¿Realmente desea descartar la clave API actual y generar una nueva?</string>
+    <string name="keylog_read_error">Error de lectura del registro de claves SSL</string>
 </resources>
