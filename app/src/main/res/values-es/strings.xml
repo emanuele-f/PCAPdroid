@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Inalcanzable</string>
     <string name="other_prefs">Otros</string>
     <string name="app_language">Idioma de la app</string>
-    <string name="lang_english">Inglés</string>
     <string name="system_default">Predeterminado del sistema</string>
     <string name="no_activity_file_selection">No se encontró una app como administrador de archivos</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -261,7 +260,6 @@
     <string name="warning">Advertencia</string>
     <string name="paid_features_unlocked">Funciones de pago desbloqueadas. Reinicia la captura si se está ejecutando</string>
     <string name="payload_truncated">La carga útil está truncada. Para mostrarla completa, detén la captura y activa \"%1$s\" desde los ajustes de PCAPdroid</string>
-    <string name="display_as">Mostrar como…</string>
     <string name="privacy_first">La privacidad es lo primero</string>
     <string name="permission_granted">El permiso %1$s fue concedido</string>
     <string name="rx_direction">RX</string>
@@ -288,7 +286,6 @@
     <string name="warn_no_app_data">No se han intercambiado datos</string>
     <string name="waiting_application_data">Esperando datos</string>
     <string name="text">Texto</string>
-    <string name="printable_text">Texto mostrable</string>
     <string name="hexdump">Hexadécimal</string>
     <string name="display_as_text">Mostrar como texto</string>
     <string name="display_as_hexdump">Mostrar como volcado hexadecimal</string>

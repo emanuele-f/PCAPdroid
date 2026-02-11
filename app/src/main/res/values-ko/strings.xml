@@ -75,7 +75,6 @@
     <string name="error">에러</string>
     <string name="conn_status_unreachable">도달할 수 없음</string>
     <string name="app_language">앱 언어</string>
-    <string name="lang_english">English</string>
     <string name="no_activity_file_selection">선택한 파일을 처리할 수 있는 앱을 찾을 수 없습니다</string>
     <string name="socks5_proxy">SOCKS5</string>
     <string name="system_default">시스템</string>

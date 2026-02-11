@@ -116,7 +116,6 @@
     <string name="deny">Nekt</string>
     <string name="country">Land</string>
     <string name="other_prefs">Annet</string>
-    <string name="lang_english">Engelsk</string>
     <string name="system_default">System</string>
     <string name="socks5_proxy">Skru på SOCKS5-mellomtjener</string>
     <string name="blacklists">Svartelister</string>
@@ -303,8 +302,6 @@
     <string name="http">HTTP</string>
     <string name="not_decryptable">Ikke dekrypterbar</string>
     <string name="rx_direction">RX</string>
-    <string name="display_as">Vis som …</string>
-    <string name="printable_text">Utskrivbar tekst</string>
     <string name="hexdump">Heksadesimal dump</string>
     <string name="geolocation">Geoposisjon</string>
     <string name="geolocation_summary">Vis land og ASN-info ved å utføre frakoblet oppslag</string>
