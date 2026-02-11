@@ -180,7 +180,7 @@
     <string name="capture_all_apps">Capturar tráfego de todos os apps</string>
     <string name="save_ok">Salvo</string>
     <string name="malicious_connection_filter">Malicioso</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP Status: %1$s</string>
     <string name="file_saved_with_name">Arquivo salvo como \"%1$s\"</string>
     <string name="enable_socks5_proxy_summary">Redirecionar todas as conexões TCP para o proxy SOCKS5 especificado</string>
     <string name="malware_detection_summary">Detectar as conexões com hosts maliciosos conhecidos via lista de proibidos de terceiros</string>
@@ -281,7 +281,7 @@
     <string name="not_decryptable">Não decodificável</string>
     <string name="decrypted">Descriptografado</string>
     <string name="decryption">Decriptação</string>
-    <string name="decryption_filter">Decriptação: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">O PCAPdroid ainda não examinou o início desta conexão. Algumas informações podem estar faltando</string>
     <string name="network_traffic">Tráfego</string>
     <string name="warn_no_app_data">Nenhum dado do app foi intercambiado</string>
