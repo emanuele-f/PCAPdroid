@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">到達不能</string>
     <string name="other_prefs">その他</string>
     <string name="app_language">アプリの言語</string>
-    <string name="lang_english">英語</string>
     <string name="system_default">システム標準</string>
     <string name="no_activity_file_selection">ファイル選択を処理するアプリが見つかりません</string>
     <string name="file_saved_with_name">「%1$s」としてファイルを保存しました</string>

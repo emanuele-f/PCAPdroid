@@ -51,7 +51,6 @@
     <string name="conn_status_unreachable">Injoignable</string>
     <string name="other_prefs">Autre</string>
     <string name="app_language">Langue</string>
-    <string name="lang_english">anglais</string>
     <string name="system_default">Paramètre par défaut du système</string>
     <string name="no_activity_file_selection">Aucune application trouvée pour gérer la sélection des fichiers</string>
     <string name="file_saved_with_name">Fichier enregistré sous le nom de « %1$s »</string>
@@ -232,9 +231,7 @@
     <string name="decryption_filter">Décryptage : %1$s</string>
     <string name="network_traffic">Trafic</string>
     <string name="warn_no_app_data">Aucune donnée de l\'app n\'a été echangée</string>
-    <string name="display_as">Afficher comme…</string>
     <string name="hexdump">En hexadécimal</string>
-    <string name="printable_text">En texte à imprimer</string>
     <string name="geolocation">Géolocalisation</string>
     <string name="downloading">Téléchargement…</string>
     <string name="database">Base de données</string>
