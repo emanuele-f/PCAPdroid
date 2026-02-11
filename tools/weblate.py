@@ -109,6 +109,12 @@ def translation_pct(locale):
     translated = count_strings(locale_result.stdout)
     return f"{100 * translated // total}%"
 
+def locale_in_sync(locale):
+    """True if the locale file is identical on weblate/master and HEAD."""
+    path = locale_path(locale)
+    return git("diff", "--quiet", f"{REMOTE}/master", "HEAD", "--", path,
+               check=False).returncode == 0
+
 def working_tree_clean():
     return git("diff", "--quiet", "--", STRINGS_BASE, check=False).returncode == 0 and \
            git("diff", "--cached", "--quiet", "--", STRINGS_BASE, check=False).returncode == 0
@@ -196,7 +202,7 @@ def cmd_status():
         if last:
             pending = get_pending_commits(locale, last)
             translation = [c for c in pending if not is_on_master(c)]
-            if translation:
+            if translation and not locale_in_sync(locale):
                 print(f"  {locale} ({pct}): {len(translation)} pending translation commit(s)")
             else:
                 print(f"  {locale} ({pct}): up-to-date")
@@ -205,7 +211,7 @@ def cmd_status():
             if not pending:
                 continue
             translation = [c for c in pending if not is_on_master(c)]
-            if not translation:
+            if (not translation) or locale_in_sync(locale):
                 continue
             if locale_exists_on_disk(locale):
                 print(f"  {locale} ({pct}): NOT TRACKED (exists on disk, "
@@ -231,7 +237,15 @@ def update_locale(locale, status):
     skipped = len(all_pending) - len(pending)
 
     if not pending:
-        print(f"  {locale}: {skipped} commit(s) already in master, nothing to do")
+        print(f"  {locale}: {skipped} commit(s) already in master, bumping status")
+        status[locale] = all_pending[-1]
+        save_status(status)
+        return
+
+    if locale_in_sync(locale):
+        print(f"  {locale}: already in sync, bumping status")
+        status[locale] = pending[-1]
+        save_status(status)
         return
 
     extra = f" ({skipped} already in master)" if skipped else ""
@@ -264,6 +278,9 @@ def update_locale(locale, status):
     # range for the next run stays on the weblate lineage
     status[locale] = pending[-1]
     save_status(status)
+    git("add", STATUS_FILE)
+    if has_staged_changes():
+        git("commit", "--amend", "--no-edit")
     print(f"  {locale}: done")
 
 def cmd_update(target_locale=None):
