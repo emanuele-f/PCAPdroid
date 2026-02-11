@@ -28,4 +28,8 @@
         android:orderInCategory="30"
         android:icon="@drawable/ic_save"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/switch_to_http_log"
+        android:visible="false" />
 </menu>

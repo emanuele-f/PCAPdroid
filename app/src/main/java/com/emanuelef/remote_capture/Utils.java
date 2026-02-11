@@ -22,7 +22,6 @@ package com.emanuelef.remote_capture;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.LocaleManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.UiModeManager;
@@ -41,6 +40,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -59,7 +59,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.LocaleList;
 import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -110,6 +109,8 @@ import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.tabs.TabLayout;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -142,6 +143,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -152,6 +154,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -331,13 +334,42 @@ public class Utils {
         String rv = fmt.format(new Date(millis));
 
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.N) {
-            // convert RFC 822 (+0100) -> ISO 8601 timezone (+01:00)
+            // convert RFC 822 (+0100 or -0500) -> ISO 8601 timezone (+01:00 or -05:00)
             int l = rv.length();
-            if ((l > 5) && (rv.charAt(l - 5) == '+'))
+            if ((l > 5) && ((rv.charAt(l - 5) == '+') || (rv.charAt(l - 5) == '-')))
                 rv = rv.substring(0, l - 2) + ":" + rv.substring(l - 2);
         }
 
         return rv;
+    }
+
+    public static String httpDateToIso8601(String httpDate) {
+        if (httpDate == null)
+            return null;
+
+        String[] patterns = {
+            "EEE, dd-MMM-yyyy HH:mm:ss zzz",  // Fri, 05-Feb-2027 15:30:34 GMT
+            "EEE, dd MMM yyyy HH:mm:ss zzz",  // RFC 1123: Fri, 05 Feb 2027 15:30:34 GMT
+            "EEEE, dd-MMM-yy HH:mm:ss zzz",   // RFC 850: Friday, 05-Feb-27 15:30:34 GMT
+            "EEE MMM d HH:mm:ss yyyy"         // ANSI C asctime: Fri Feb  5 15:30:34 2027
+        };
+
+        Date date = null;
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat(pattern, Locale.US);
+                parser.setTimeZone(TimeZone.getTimeZone("GMT"));
+                date = parser.parse(httpDate);
+                break;
+            } catch (ParseException ignored) {}
+        }
+
+        if (date == null)
+            return null;
+
+        SimpleDateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        iso8601.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return iso8601.format(date);
     }
 
     public static String formatEpochMillis(Context context, long millis) {
@@ -355,28 +387,40 @@ public class Utils {
     public static Configuration getLocalizedConfig(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Configuration config = context.getResources().getConfiguration();
+        String appLocale = Prefs.getAppLocale(prefs);
 
         // On Android 33+, app language is configured from the system settings
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (Prefs.useEnglishLanguage(prefs)) {
-                Log.i(TAG, "Migrate from in-app language picker to system picker");
-                prefs.edit().remove(Prefs.PREF_APP_LANGUAGE).apply();
-
-                context.getSystemService(LocaleManager.class)
-                        .setApplicationLocales(new LocaleList(Locale.forLanguageTag("en-US")));
-            }
-
-            return config;
-        }
-
-        if(!Prefs.useEnglishLanguage(prefs))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             return config;
 
-        Locale locale = new Locale("en");
+        if (appLocale == null)
+            return config;
+
+        Locale locale = Locale.forLanguageTag(appLocale);
         Locale.setDefault(locale);
         config.setLocale(locale);
 
         return config;
+    }
+
+    public static String[] getSupportedLocales(Context context) {
+        ArrayList<String> locales = new ArrayList<>();
+        try {
+            XmlResourceParser parser = context.getResources().getXml(R.xml.locales_config);
+            int eventType;
+            while ((eventType = parser.next()) != XmlPullParser.END_DOCUMENT) {
+                if ((eventType == XmlPullParser.START_TAG) && "locale".equals(parser.getName())) {
+                    String name = parser.getAttributeValue(
+                            "http://schemas.android.com/apk/res/android", "name");
+                    if (name != null)
+                        locales.add(name);
+                }
+            }
+            parser.close();
+        } catch (Exception e) {
+            Log.e(TAG, "getSupportedLocales: " + e.getMessage());
+        }
+        return locales.toArray(new String[0]);
     }
 
     public static String proto2str(int proto) {
@@ -730,6 +774,16 @@ public class Utils {
 
     public static String getUniquePcapFileName(Context context, boolean pcapng_format) {
         return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
+    }
+
+    // Returns the export filename with the given extension.
+    // If a PCAP file was loaded by the user, uses that filename as base.
+    // Otherwise, generates a unique filename based on date/time.
+    public static String getExportFileName(Context context, String ext) {
+        String loadedBasename = PCAPdroid.getInstance().getLoadedPcapBasename();
+        if (loadedBasename != null)
+            return loadedBasename + "." + ext;
+        return getUniqueFileName(context, ext);
     }
 
     public static @Nullable BitmapDrawable scaleDrawable(Resources res, Drawable drawable, int new_x, int new_y) {

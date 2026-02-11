@@ -197,8 +197,6 @@
         <DropDownPreference
             app:key="app_language"
             app:title="@string/app_language"
-            android:entries="@array/app_languages_labels"
-            android:entryValues="@array/app_languages"
             app:iconSpaceReserved="false"
             app:defaultValue="system"
             app:useSimpleSummaryProvider="true"/>

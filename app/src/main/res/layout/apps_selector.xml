@@ -13,6 +13,14 @@
         app:iconifiedByDefault="false"
         app:queryHint="@string/search_apps"/>
 
+    <CheckBox
+        android:id="@+id/show_system_apps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="@string/show_system_apps" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

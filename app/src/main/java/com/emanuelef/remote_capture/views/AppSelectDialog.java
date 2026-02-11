@@ -22,6 +22,7 @@ package com.emanuelef.remote_capture.views;
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -42,6 +43,7 @@ import java.util.List;
 
 public class AppSelectDialog implements AppsLoadListener {
     private static final String TAG = "AppSelectDialog";
+    private static boolean sShowSystemApps;
     private AppsListView mOpenAppsList;
     private TextView mEmptyAppsView;
     private Dialog mDialog;
@@ -121,6 +123,14 @@ public class AppSelectDialog implements AppsLoadListener {
         apps.setApps(new ArrayList<>());
         apps.setEmptyView(emptyText);
         searchView.setOnQueryTextListener(apps);
+
+        CheckBox showSystemApps = dialogLayout.findViewById(R.id.show_system_apps);
+        showSystemApps.setChecked(sShowSystemApps);
+        apps.setShowSystemApps(sShowSystemApps);
+        showSystemApps.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sShowSystemApps = isChecked;
+            apps.setShowSystemApps(isChecked);
+        });
 
         AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(mActivity);
         builder.setTitle(mTitleRes);

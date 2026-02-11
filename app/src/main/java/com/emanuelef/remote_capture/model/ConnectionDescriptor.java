@@ -27,6 +27,8 @@ import androidx.annotation.Nullable;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.HttpLog;
+import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 
@@ -34,6 +36,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
 /* Holds the information about a single connection.
@@ -44,7 +47,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * thread. However this does not create concurrency problems as the update only increments counters
  * or sets a previously null field to a non-null value.
  */
-public class ConnectionDescriptor {
+public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
+    public static final String TAG = "ConnectionDescriptor";
+
     // sync with zdtun_conn_status_t
     public static final int CONN_STATUS_NEW = 0,
         CONN_STATUS_CONNECTING = 1,
@@ -120,6 +125,7 @@ public class ConnectionDescriptor {
     private boolean payload_truncated;
     private boolean encrypted_l7;     // application layer is encrypted (e.g. TLS)
     public boolean encrypted_payload; // actual payload is encrypted (e.g. telegram - see Utils.hasEncryptedPayload)
+    private boolean has_websocket_data;
     public String decryption_error;
     public String js_injected_scripts;
     public String country;
@@ -128,6 +134,11 @@ public class ConnectionDescriptor {
     /* Internal */
     public boolean alerted;
     public boolean block_accounted;
+    private HTTPReassembly mHttpReqReassembly;
+    private HTTPReassembly mHttpReplyReassembly;
+    private int mFirstReqChunkPos = -1;
+    private int mFirstReplyChunkPos = -1;
+    private LinkedList<HttpLog.HttpRequest> mPendingRequests;
 
     // NOTE: invoked from JNI
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip, String _country,
@@ -152,6 +163,7 @@ public class ConnectionDescriptor {
         internal_decrypt = false;
     }
 
+    // NOTE: invoked from either JNI (dumpNewConnection) or ConnectionsRegister
     public void processUpdate(ConnectionUpdate update) {
         // The "update_type" is used to limit the amount of data sent via the JNI
         if((update.update_type & ConnectionUpdate.UPDATE_STATS) != 0) {
@@ -189,16 +201,59 @@ public class ConnectionDescriptor {
             // Payload for decryptable connections should be received via the MitmReceiver
             assert(decryption_ignored || isNotDecryptable() || PCAPdroid.getInstance().isDecryptingPcap());
 
-            // Some pending updates with payload may still be received after low memory has been
-            // triggered and payload disabled
-            if(!CaptureService.isLowMemory()) {
-                synchronized (this) {
-                    if(update.payload_chunks != null)
+            synchronized (this) {
+                // Some pending updates with payload may still be received after low memory has been
+                // triggered and payload disabled
+                if(!CaptureService.isLowMemory()) {
+                    if (update.payload_chunks != null) {
+                        boolean has_http_log = (CaptureService.getHttpLog() != null);
+                        int chunk_pos = payload_chunks.size();
+
+                        for (PayloadChunk chunk: update.payload_chunks) {
+                            if (has_http_log && (chunk.type == PayloadChunk.ChunkType.HTTP))
+                                logHttpChunk(chunk, chunk_pos);
+
+                            // NOTE: logHttpChunk may change the chunk type
+                            // from HTTP to WEBSOCKET after detecting a websocket upgrade
+                            // so this condition should be checked separately
+                            if (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)
+                                has_websocket_data = true;
+
+                            chunk_pos++;
+                        }
+
                         payload_chunks.addAll(update.payload_chunks);
+                    }
                     payload_truncated = update.payload_truncated;
                     internal_decrypt = update.payload_decrypted;
                 }
             }
+        }
+    }
+
+    // See HttpLog
+    private void logHttpChunk(PayloadChunk chunk, int chunk_pos) {
+        assert (chunk.type == PayloadChunk.ChunkType.HTTP);
+
+        if (CaptureService.getHttpLog() == null)
+            return;
+
+        if (mHttpReqReassembly == null) {
+            // use a lightweight reassembly, without dumping the payload
+            mHttpReqReassembly = new HTTPReassembly(true, this, false);
+            mHttpReplyReassembly = new HTTPReassembly(true, this, false);
+            mPendingRequests = new LinkedList<>();
+        }
+
+        // will call onChunkReassembled
+        if (chunk.is_sent) {
+            if ((mFirstReqChunkPos == -1) && !chunk.isHttp2Rst())
+                mFirstReqChunkPos = chunk_pos;
+            mHttpReqReassembly.handleChunk(chunk);
+        } else {
+            if ((mFirstReplyChunkPos == -1) && !chunk.isHttp2Rst())
+                mFirstReplyChunkPos = chunk_pos;
+            mHttpReplyReassembly.handleChunk(chunk);
         }
     }
 
@@ -313,6 +368,7 @@ public class ConnectionDescriptor {
 
     public boolean isPayloadTruncated() { return payload_truncated; }
     public boolean isPortMappingApplied() { return port_mapping_applied; }
+    public boolean hasWebsocketData() { return has_websocket_data; }
 
     public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt) && !PCAPdroid.getInstance().isDecryptingPcap(); }
     public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (mitm_decrypt || internal_decrypt) && (getNumPayloadChunks() > 0); }
@@ -327,6 +383,11 @@ public class ConnectionDescriptor {
     }
 
     public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
+        if (chunk.type == PayloadChunk.ChunkType.HTTP)
+            logHttpChunk(chunk, payload_chunks.size());
+        else if (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)
+            has_websocket_data = true;
+
         payload_chunks.add(chunk);
         payload_length += chunk.payload.length;
     }
@@ -346,19 +407,21 @@ public class ConnectionDescriptor {
     public boolean hasHttpRequest() { return hasHttp(true); }
     public boolean hasHttpResponse() { return hasHttp(false); }
 
-    private synchronized String getHttp(boolean is_sent) {
-        if(getNumPayloadChunks() == 0)
-            return "";
+    private synchronized PayloadChunk getHttpChunks(boolean is_sent, int firstChunkPos) {
+        if((getNumPayloadChunks() == 0) || (firstChunkPos < 0))
+            return null;
 
-        // Need to wrap the String to set it from the lambda
-        final AtomicReference<String> rv = new AtomicReference<>();
-
-        HTTPReassembly reassembly = new HTTPReassembly(CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL,
-                chunk -> rv.set(new String(chunk.payload, StandardCharsets.UTF_8))
+        // Need to wrap the chunk to set it from the lambda
+        final AtomicReference<PayloadChunk> rv = new AtomicReference<>();
+        HTTPReassembly reassembly = new HTTPReassembly(
+                CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL,
+                rv::set
         );
 
         // Possibly reassemble/decode the request
-        for(PayloadChunk chunk: payload_chunks) {
+        for (int i = firstChunkPos; i < payload_chunks.size(); i++) {
+            PayloadChunk chunk = payload_chunks.get(i);
+
             if(chunk.is_sent == is_sent)
                 reassembly.handleChunk(chunk);
 
@@ -369,8 +432,88 @@ public class ConnectionDescriptor {
 
         return rv.get();
     }
-    public String getHttpRequest() { return getHttp(true); }
-    public String getHttpResponse() { return getHttp(false); }
+
+    private String getHttpAsString(boolean is_sent) {
+        PayloadChunk reassembled = getHttpChunks(is_sent, 0);
+        if (reassembled == null)
+            return "";
+
+        return new String(reassembled.payload, StandardCharsets.UTF_8);
+    }
+
+    public String getHttpRequest() { return getHttpAsString(true); }
+    public String getHttpResponse() { return getHttpAsString(false); }
+
+    public PayloadChunk getHttpRequestChunk(int firstChunkPos) { return getHttpChunks(true, firstChunkPos); }
+    public PayloadChunk getHttpResponseChunk(int firstChunkPos) { return getHttpChunks(false, firstChunkPos); }
+
+    @Override
+    public void onChunkReassembled(PayloadChunk chunk) {
+        if (chunk.type != PayloadChunk.ChunkType.HTTP)
+            return;
+
+        HttpLog httplog = CaptureService.getHttpLog();
+        if (httplog == null)
+            return;
+
+        if (chunk.is_sent && !chunk.isHttp2Rst()) {
+            HttpLog.HttpRequest request = new HttpLog.HttpRequest(this, mFirstReqChunkPos);
+            request.host = !chunk.httpHost.isEmpty() ? chunk.httpHost : info;
+            request.method = chunk.httpMethod;
+            request.path = chunk.httpPath;
+            request.query = chunk.httpQuery;
+            request.bodyLength = chunk.httpBodyLength;
+            request.streamId = chunk.stream_id;
+            request.timestamp = chunk.timestamp;
+            httplog.addHttpRequest(request);
+
+            mPendingRequests.add(request);
+            mFirstReqChunkPos = -1;
+        } else {
+            // match the reply to the request
+            HttpLog.HttpRequest request = null;
+
+            if (chunk.stream_id == 0) {
+                // if HTTP/1, then the request is the first in the list
+                if (!mPendingRequests.isEmpty())
+                    request = mPendingRequests.remove(0);
+            } else {
+                // if HTTP/2, use the stream ID for the matching
+                int idx = 0;
+                for (HttpLog.HttpRequest req: mPendingRequests) {
+                    if (req.streamId == chunk.stream_id)
+                        break;
+
+                    idx++;
+                }
+
+                if (idx < mPendingRequests.size())
+                    request = mPendingRequests.remove(idx);
+            }
+
+            if (request != null) {
+                if (!chunk.isHttp2Rst()) {
+                    HttpLog.HttpReply reply = new HttpLog.HttpReply(request, mFirstReplyChunkPos);
+                    reply.responseCode = chunk.httpResponseCode;
+                    reply.responseStatus = chunk.httpResponseStatus;
+                    reply.contentType = chunk.httpContentType;
+                    reply.bodyLength = chunk.httpBodyLength;
+                    request.reply = reply;
+
+                    httplog.addHttpReply(reply);
+                    mFirstReplyChunkPos = -1;
+                } else {
+                    request.httpRst = true;
+                    Log.d(TAG, "Got RST: " + request.getUrl());
+                }
+            } else if (!chunk.is_sent) { // ignore HTTP requests with RST
+                if (chunk.isHttp2Rst())
+                    Log.w(TAG, "Unmatched HTTP RST (sent=" + chunk.is_sent + ", stream=" + chunk.stream_id + ")");
+                else
+                    Log.w(TAG, "Unmatched HTTP reply (sent=" + chunk.is_sent + ", stream=" + chunk.stream_id + ")");
+            }
+        }
+    }
 
     public boolean hasSeenStart() {
         if((ipproto != 6 /* TCP */) || !CaptureService.isCapturingAsRoot())

@@ -587,6 +587,27 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 /* ******************************************************* */
 
+// dumps the payload and returns true if fully dumped, false if failed or truncated
+static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id,
+                         const char *to_dump, int dump_size)
+{
+    bool truncated = false;
+
+    if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (dump_size > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
+        dump_size = MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE;
+        truncated = true;
+    }
+
+    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size))
+        conn->has_payload[is_tx] = true;
+    else
+        truncated = true;
+
+    return !truncated;
+}
+
+/* ******************************************************* */
+
 static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
     const zdtun_pkt_t *pkt = pctx->pkt;
     pd_conn_t *data = pctx->data;
@@ -601,35 +622,29 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
         return;
 
     if((pd->payload_mode != PAYLOAD_MODE_MINIMAL) || !data->has_payload[pctx->is_tx]) {
-        const char *to_dump;
-        int dump_size;
-
         if (pctx->plain_data) {
             // if there is plaintext (decrypted) data, dump it instead of the encrypted data
-            to_dump = (const char*) pctx->plain_data->data;
-            dump_size = pctx->plain_data->data_len;
-
             if (!data->has_decrypted_data) {
                 // existing chunks are encrypted, so drop them
                 if (pd->cb.clear_payload_chunks)
                     pd->cb.clear_payload_chunks(pd, pctx);
                 data->has_decrypted_data = true;
             }
-        } else {
-            to_dump = pkt->l7;
-            dump_size = pkt->l7_len;
-        }
 
-        if((pd->payload_mode == PAYLOAD_MODE_MINIMAL) && (dump_size > MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE)) {
-            dump_size = MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE;
-            truncated = true;
-        }
+            truncated = false;
 
-        if(pd->cb.dump_payload_chunk(pd, pctx, to_dump, dump_size)) {
-            data->has_payload[pctx->is_tx] = true;
-            updated = true;
+            for (unsigned int i = 0; i < pctx->plain_data->n_items; i++) {
+                const plain_data_item_t *item =  &pctx->plain_data->items[i];
+
+                // use the item is_tx and ms timestamp data, rather than the ones from pctx because
+                // http2.c may buffer http responses/resets so they may be processed with a different pctx
+                truncated |= !dump_payload(pd, pctx->data, item->is_tx, item->ms, item->stream_id,
+                                           (const char*) item->data, (int) item->data_length);
+            }
         } else
-            truncated = true;
+            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len);
+
+        updated = true;
     } else
         truncated = true;
 
@@ -781,7 +796,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
 
 static char allocs_buf[1024];
 
-static char* get_allocs_summary() {
+char* get_allocs_summary() {
     char b1[16], b2[16], b3[16], b4[16];
 
     snprintf(allocs_buf, sizeof(allocs_buf),

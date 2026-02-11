@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HTTPReassembly;
+import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -42,6 +43,11 @@ import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.emanuelef.remote_capture.model.PayloadChunk.ChunkType;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.google.android.material.button.MaterialButton;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -64,11 +70,12 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
     private final Context mContext;
     private final ChunkType mMode;
     private int mHandledChunks;
-    private AdapterChunk mUnrepliedHttpReq = null;
+    private final ArrayList<AdapterChunk> mUnrepliedHttpReqs = new ArrayList<>();
     private final ArrayList<AdapterChunk> mChunks = new ArrayList<>();
     private final HTTPReassembly mHttpReq;
     private final HTTPReassembly mHttpRes;
     private final boolean mSupportsFileDialog;
+    private final PayloadChunk mSingleChunk;
     private boolean mShowAsPrintable;
     private ExportPayloadHandler mExportHandler;
 
@@ -77,26 +84,83 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         void exportPayload(byte[] payload, String contentType, String fname);
     }
 
-    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode, boolean showAsPrintable) {
+    /* if singleChunk is set, this adapter will only show that chunk */
+    private PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode,
+                          boolean showAsPrintable, PayloadChunk singleChunk) {
         mLayoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mConn = conn;
         mContext = context;
         mMode = mode;
         mShowAsPrintable = showAsPrintable;
         mSupportsFileDialog = Utils.supportsFileDialog(context);
+        mSingleChunk = singleChunk;
 
-        // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
-        boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
+        if (mSingleChunk == null) {
+            // Note: in minimal mode, only the first chunk is captured, so don't reassemble them
+            boolean reassemble = (CaptureService.getCurPayloadMode() == Prefs.PayloadMode.FULL);
 
-        // each direction must have its separate reassembly
-        mHttpReq = new HTTPReassembly(reassemble, this);
-        mHttpRes = new HTTPReassembly(reassemble, this);
+            // each direction must have its separate reassembly
+            mHttpReq = new HTTPReassembly(reassemble, this);
+            mHttpRes = new HTTPReassembly(reassemble, this);
 
-        handleChunksAdded(mConn.getNumPayloadChunks());
+            handleChunksAdded(mConn.getNumPayloadChunks());
+        } else {
+            mHttpReq = null;
+            mHttpRes = null;
+
+            if (mSingleChunk.payload.length > 0) {
+                mChunks.add(new AdapterChunk(mSingleChunk, 0));
+                notifyItemInserted(0);
+            }
+        }
+    }
+
+    public PayloadAdapter(Context context, ConnectionDescriptor conn, ChunkType mode,  boolean showAsPrintable) {
+        this(context, conn, mode, showAsPrintable, null);
+    }
+
+    public PayloadAdapter(Context context, HttpLog.HttpRequest req, boolean show_reply) {
+        this(context, req.conn, ChunkType.HTTP, true, getChunk(req, show_reply));
+    }
+
+    private static PayloadChunk getChunk(HttpLog.HttpRequest req, boolean show_reply) {
+        if (show_reply) {
+            if (req.reply != null)
+                return req.conn.getHttpResponseChunk(req.reply.firstChunkPos);
+        } else
+            return req.conn.getHttpRequestChunk(req.firstChunkPos);
+
+        // return an empty chunk instead of null to activate the single-chunk mode
+        return new PayloadChunk(new byte[0], ChunkType.HTTP, true, 0, 0);
     }
 
     public void setExportPayloadHandler(ExportPayloadHandler handler) {
         mExportHandler = handler;
+    }
+
+    static final int MAX_JSON_FORMAT_SIZE = 1024 * 1024;
+
+    private static final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+
+    static String formatHttpPayload(String text, String contentType) {
+        if ((contentType == null) || !contentType.equals("application/json"))
+            return text;
+        if (text.length() > MAX_JSON_FORMAT_SIZE)
+            return text;
+
+        int sep = text.indexOf("\r\n\r\n");
+        if ((sep < 0) || (sep + 4 >= text.length()))
+            return text;
+
+        String headers = text.substring(0, sep + 4);
+        String body = text.substring(sep + 4);
+
+        try {
+            String pretty = prettyGson.toJson(JsonParser.parseString(body));
+            return headers + pretty;
+        } catch (JsonSyntaxException e) {
+            return text;
+        }
     }
 
     private class AdapterChunk {
@@ -139,7 +203,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
         @CheckResult
         private String makeText() {
-            return makeText(mShowAsPrintable, mIsExpanded);
+            String text = makeText(mShowAsPrintable, mIsExpanded);
+            if (mShowAsPrintable && (mMode == ChunkType.HTTP))
+                text = formatHttpPayload(text, mChunk.httpContentType);
+            return text;
         }
 
         void expand() {
@@ -277,19 +344,19 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         if(mMode == ChunkType.HTTP) {
             String payload = chunk.getExpandedText(true);
             int crlf_pos = payload.indexOf("\r\n\r\n");
-            String content_type = ((chunk.mChunk.contentType != null) && (!chunk.mChunk.contentType.isEmpty())) ?
-                    chunk.mChunk.contentType : "text/plain";
+            String content_type = ((chunk.mChunk.httpContentType != null) && (!chunk.mChunk.httpContentType.isEmpty())) ?
+                    chunk.mChunk.httpContentType : "text/plain";
 
             Log.d(TAG, "Export body content type: " + content_type);
 
             String fname = "";
-            if (chunk.mChunk.is_sent && (chunk.mChunk.path != null))
-                fname = chunk.mChunk.path;
+            if (chunk.mChunk.is_sent && (chunk.mChunk.httpPath != null))
+                fname = chunk.mChunk.httpPath;
             else if (payload_pos > 0) {
                 // Try to match the HTTP request, to determine the file name
                 AdapterChunk req_chunk = getItem(payload_pos - 1).adaptChunk;
-                if (req_chunk.mChunk.is_sent && (req_chunk.mChunk.path != null))
-                    fname = req_chunk.mChunk.path;
+                if (req_chunk.mChunk.is_sent && (req_chunk.mChunk.httpPath != null))
+                    fname = req_chunk.mChunk.httpPath;
             }
 
             if (!fname.isEmpty()) {
@@ -358,7 +425,7 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             builder.create().show();
         } else {
             List<String> choices = new ArrayList<>(Arrays.asList(
-                    mContext.getString(R.string.printable_text),
+                    mContext.getString(R.string.text),
                     mContext.getString(R.string.hexdump)
             ));
             if (is_export)
@@ -407,11 +474,23 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             holder.headerLine.setVisibility(View.VISIBLE);
 
             Locale locale = Utils.getPrimaryLocale(mContext);
-            holder.header.setText(String.format(locale,
-                    "#%d [%s] %s — %s", page.adaptChunk.incrId + 1,
-                    getHeaderTag(chunk),
-                    (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp)),
-                    Utils.formatBytes(chunk.payload.length)));
+            String formattedTstamp = (new SimpleDateFormat("HH:mm:ss.SSS", locale)).format(new Date(chunk.timestamp));
+
+            String formattedBytes;
+            if (mMode == ChunkType.HTTP)
+                formattedBytes = Utils.formatBytes(chunk.httpBodyLength);
+            else
+                formattedBytes = Utils.formatBytes(chunk.payload.length);
+
+            if (mSingleChunk == null)
+                holder.header.setText(String.format(locale,
+                        "#%d [%s] %s — %s", page.adaptChunk.incrId + 1,
+                        getHeaderTag(chunk),
+                        formattedTstamp, formattedBytes));
+            else
+                holder.header.setText(String.format(locale,
+                        "%s — %s",
+                        formattedTstamp, formattedBytes));
         } else
             holder.headerLine.setVisibility(View.GONE);
 
@@ -498,17 +577,23 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
 
     public void handleChunksAdded(int tot_chunks) {
         int items_count = -1;
+        boolean readingFromPcap = CaptureService.isReadingFromPcapFile();
 
-        for(int i = mHandledChunks; i<tot_chunks; i++) {
+        for(int i = mHandledChunks; i < tot_chunks; i++) {
             PayloadChunk chunk = mConn.getPayloadChunk(i);
             if(chunk == null)
                 continue;
 
+            // when reading from pcap, websocket data must be extracted from HTTP chunks
+            boolean websocketFromHttp = readingFromPcap &&
+                    (mMode == ChunkType.WEBSOCKET) &&
+                    (chunk.type != ChunkType.RAW);
+
             // Exclude unrelated chunks
-            if((mMode != ChunkType.RAW) && (mMode != chunk.type))
+            if((mMode != ChunkType.RAW) && (mMode != chunk.type) && !websocketFromHttp)
                 continue;
 
-            if(mMode == ChunkType.HTTP) {
+            if((mMode == ChunkType.HTTP) || websocketFromHttp) {
                 // will call onChunkReassembled
                 if(chunk.is_sent)
                     mHttpReq.handleChunk(chunk);
@@ -527,42 +612,60 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
         mHandledChunks = tot_chunks;
     }
 
-    private void setNextUnrepliedRequest(int prevChunkIdx) {
-        // Possibly find next un-replied HTTP request
-        for(int i=prevChunkIdx + 1; i<mChunks.size(); i++) {
-            AdapterChunk cur = mChunks.get(i);
+    private AdapterChunk findMatchingRequest(PayloadChunk chunk) {
+        if (mUnrepliedHttpReqs.isEmpty())
+            return null;
 
-            if(cur.mChunk.is_sent) {
-                mUnrepliedHttpReq = cur;
-                return;
+        if (chunk.stream_id == 0) {
+            // HTTP/1: FIFO matching
+            return mUnrepliedHttpReqs.get(0);
+        } else {
+            // HTTP/2: match by stream ID
+            for (AdapterChunk req : mUnrepliedHttpReqs) {
+                if (req.mChunk.stream_id == chunk.stream_id)
+                    return req;
             }
         }
 
-        // no unreplied found
-        mUnrepliedHttpReq = null;
+        return null;
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void onChunkReassembled(PayloadChunk chunk) {
+        if((mMode != ChunkType.RAW) && (mMode != chunk.type))
+            // unrelated chunk (mainly for HTTP data before Websocket)
+            return;
+
         AdapterChunk adapterChunk = new AdapterChunk(chunk, mChunks.size());
         int adapterPos = getItemCount();
         int insertPos = mChunks.size();
+        boolean is_http2_rst = chunk.isHttp2Rst();
 
         // Need to determine where to add the chunk. If HTTP request, always add it to the bottom.
-        // If HTTP reply, it should be added right after the first un-replied HTTP request
-        if(!chunk.is_sent && (mUnrepliedHttpReq != null)) {
-            // HTTP reply to a matching request
-            int reqPos = mChunks.indexOf(mUnrepliedHttpReq);
-            assert(reqPos >= 0);
+        // If HTTP reply/reset, it should be added right after the matching un-replied HTTP request
+        if(!chunk.is_sent || is_http2_rst) {
+            AdapterChunk matchedReq = findMatchingRequest(chunk);
 
-            insertPos = reqPos + 1;
-            adapterPos = getAdapterPosition(mUnrepliedHttpReq) + mUnrepliedHttpReq.getNumPages();
-            Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, mUnrepliedHttpReq.incrId, insertPos));
-            setNextUnrepliedRequest(reqPos);
-        } else if((chunk.is_sent) && (mUnrepliedHttpReq == null))
-            mUnrepliedHttpReq = adapterChunk;
+            if (matchedReq != null) {
+                int reqPos = mChunks.indexOf(matchedReq);
+                assert(reqPos >= 0);
 
-        mChunks.add(insertPos, adapterChunk);
-        notifyItemInserted(adapterPos);
+                if (!is_http2_rst) {
+                    insertPos = reqPos + 1;
+                    adapterPos = getAdapterPosition(matchedReq) + matchedReq.getNumPages();
+                    Log.d(TAG, String.format("chunk #%d reply of #%d at %d", adapterChunk.incrId, matchedReq.incrId, insertPos));
+                } else
+                    Log.d(TAG, String.format("chunk #%d reset of #%d", adapterChunk.incrId, matchedReq.incrId));
+
+                mUnrepliedHttpReqs.remove(matchedReq);
+            }
+        } else if(!is_http2_rst)
+            mUnrepliedHttpReqs.add(adapterChunk);
+
+        if (!is_http2_rst) {
+            mChunks.add(insertPos, adapterChunk);
+            notifyItemInserted(adapterPos);
+        }
     }
 }

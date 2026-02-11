@@ -23,9 +23,9 @@
     <string name="http_server">HTTP сервер</string>
     <string name="udp_exporter">UDP экспортёр</string>
     <string name="no_dump">Без дампа</string>
-    <string name="no_dump_info">Траффик не будет записан</string>
+    <string name="no_dump_info">Поток данных не будет записан</string>
     <string name="http_server_info">Запустить HTTP сервер для скачивания PCAP</string>
-    <string name="udp_exporter_info">Отправляет PCAP на удалённый UDP приёмник</string>
+    <string name="udp_exporter_info">Отправить PCAP на удалённый UDP приёмник</string>
     <string name="http_server_port">Порт HTTP сервера</string>
     <string name="receiver_ip_address">IP адрес сборщика</string>
     <string name="receiver_port">Порт сборщика</string>
@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Недоступен</string>
     <string name="other_prefs">Другое</string>
     <string name="app_language">Язык приложения</string>
-    <string name="lang_english">Английский</string>
     <string name="system_default">Как в системе</string>
     <string name="no_activity_file_selection">Программа для взаимодействия с данным файлом не обнаружена</string>
     <string name="socks5_proxy">Включить SOCKS5 прокси</string>
@@ -128,7 +127,7 @@
     <string name="feature_not_available">Эта возможность на текущий момент недоступна для вашего устройства</string>
     <string name="billing_connecting">Подключение к Google Play в процессе, пожалуйста попробуйте еще раз позже</string>
     <string name="malicious_connection_filter">Вредоносные</string>
-    <string name="status_filter">Статус: %1$s</string>
+    <string name="status_filter">HTTP статус: %1$s</string>
     <string name="not_hidden_filter">Не скрыты</string>
     <string name="copy_action">Копировать…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -145,7 +144,7 @@
     <string name="send_report">Отправить отчет</string>
     <string name="start_at_boot">Захват после загрузки устройства</string>
     <string name="malware_status_ok">Вредоносного трафика не обнаружено</string>
-    <string name="malware_status_detected">Вредоносный траффик обнаружен</string>
+    <string name="malware_status_detected">Обнаружен вредоносный поток данных</string>
     <string name="whitelist">Белый список</string>
     <string name="blacklists">Черный список</string>
     <string name="status_outdated">Устарел</string>
@@ -193,24 +192,24 @@
     <string name="disconnect_vpn_confirm">Продолжение приведёт к отключению от активного VPN</string>
     <string name="copied">Скопировано</string>
     <string name="capture_not_running_status">Захват не производится</string>
-    <string name="start_capture_first">Сначала запустите захват траффика</string>
+    <string name="start_capture_first">Сначала запустите захват потока данных</string>
     <string name="open_nav_drawer">Открыть боковое меню</string>
     <string name="close_nav_drawer">Закрыть боковое меню</string>
     <string name="root_capture_summary">Позволяет PCAPdroid работать вместе с другими VPN приложениями</string>
     <string name="start_at_boot_summary">Автозапуск захвата после загрузки</string>
     <string name="can_use_purchased_feature">Теперь вы можете пользоваться приобретенными возможностями</string>
-    <string name="capture_all_apps">Захватывать траффик всех приложений</string>
+    <string name="capture_all_apps">Захватывать поток данных всех приложений</string>
     <string name="hidden_connections_help">Список правил для скрытия элементов из списка соединений, чтобы сфокусироваться только на нужном</string>
     <string name="enable_socks5_proxy_summary">Перенаправляет все TCP соединения на SOCKS5 прокси</string>
     <string name="malware_whitelist_help">Определенный пользователем белый список для подавления обнаружения вредоносов. Удерживайте вредоносное соединение, чтобы создать правило согласно которому данное соединение не будет считаться вредоносным</string>
     <string name="decryption_no_filter_warn">При дешифровании TLS выберите целевое приложение, чтобы избежать потери соединения с интернетом</string>
-    <string name="traffic_dump">Дамп траффика</string>
+    <string name="traffic_dump">Запись потока данных</string>
     <string name="phone_app">Телефон</string>
     <string name="phone_app_info">Службы телефонии</string>
     <string name="unblock">Разблокировать…</string>
     <string name="tls_decryption">Дешифрование TLS</string>
-    <string name="tls_decryption_summary">Дешифрование SSL/TLS траффика посредством mitm. Это может работать с некоторыми приложениями, ознакомьтесь с руководством пользователя</string>
-    <string name="traffic_inspection">Просмотр траффика</string>
+    <string name="tls_decryption_summary">Расшифровка SSL/TLS потока данных посредством MITM (Man-in-the-middle, \"человек по середине\"). Это может работать с некоторыми приложениями, ознакомьтесь с руководством пользователя</string>
+    <string name="traffic_inspection">Просмотр потока данных</string>
     <string name="mitm_setup_wizard">Мастер настройки mitm</string>
     <string name="install_action">Установить</string>
     <string name="export_action">Экспорт</string>
@@ -225,7 +224,7 @@
     <string name="websocket">Веб-сокет</string>
     <string name="http">HTTP</string>
     <string name="payload">Содержимое</string>
-    <string name="decryption_filter">Дешифрование: %1$s</string>
+    <string name="decryption_filter">Статус: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid не обнаружил начало этого соединения. Некоторая информация может быть потеряна</string>
     <string name="full_payload_summary">Отображать полное содержимое соединений (например полные HTTP запросы и ответы). Это требует много памяти, не используйте при продолжительных захватах</string>
     <string name="tx_direction">TX</string>
@@ -234,10 +233,8 @@
     <string name="full_payload">Показывать полное содержимое</string>
     <string name="network_traffic">Трафик</string>
     <string name="warn_no_app_data">Обмена прикладными данными не было</string>
-    <string name="display_as">Отобразить как…</string>
     <string name="geolocation">Геолокация</string>
     <string name="download_in_progress">Скачивание еще продолжается, пожалуйста подождите</string>
-    <string name="printable_text">Текстовые данные</string>
     <string name="hexdump">HEX формат</string>
     <string name="download_failed">Скачивание не удалось</string>
     <string name="size_x">Размер: %1$s</string>
@@ -288,7 +285,7 @@
     <string name="welcome_to_pcapdroid">Добро пожаловать в PCAPdroid</string>
     <string name="privacy_first">Конфиденциальность превыше всего</string>
     <string name="country_and_asn">Страна и ASN</string>
-    <string name="app_intro_traffic_dump">PCAPdroid предоставляет <a href="%1$s">несколько способов</a> получить дамп траффика в формате PCAP для дальнейшего анализа\n\nС помощью <a href="%2$s">опции расширений PCAPdroid</a>, вы можете добавить в дамп названия приложений, чтобы отобразить их в Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid предоставляет <a href="%1$s">несколько способов</a> получить запись потока данных в формате PCAP для дальнейшего анализа\n\nС помощью <a href="%2$s">опции расширений PCAPdroid</a>, вы можете добавить в дамп названия приложений, чтобы отобразить их в Wireshark</string>
     <string name="app_intro_privacy_msg">Это приложение не содержит трекеры и аналитику, не собирает данные без вашего согласия.
 \n
 \nКак в этом убедиться\? Ознакомьтесь с <a href="%1$s">политикой конфиденциальности</a> и <a href="%2$s">исходным кодом</a></string>
@@ -302,19 +299,11 @@
     <string name="mitm_setup_wizard_intro">Этот мастер настройки проведет вас через установку дополнения PCAPdroid mitm и корневого сертификата, которые необходимы для проведения <a href="%1$s">дешифрования TLS</a></string>
     <string name="app_intro_next_button">Далее</string>
     <string name="app_intro_skip_button">Пропустить</string>
-    <string name="block_private_dns_summary">Обнаруживать и по возможности блокировать использование приватных DNS, чтобы инспектировать DNS траффик. Отключение этой опции может затруднить анализ траффика</string>
-    <string name="mitm_setup_wizard_done">PCAPdroid теперь готов к дешифрованию TLS траффика
-\n
-\nОзнакомьтесь с <a href="%1$s">руководством пользователя</a> чтобы узнать больше о мерах безопасности, которые могут предотвратить дешифрование и как преодолеть их</string>
-    <string name="app_intro_welcome_msg">PCAPdroid это ориентированное на конфиденциальность приложение, которое позволяет вам отслеживать и анализировать соединения, производимые приложениями с вашего устройства
-\n
-\nБолее того, приложение позволяет вам экспортировать дамп траффика в виде PCAP, извлекать метаданные и многое другое!</string>
-    <string name="vpn_setup_msg">PCAPdroid симулирует VPN чтобы захватывать весь траффик устройства без необходимости в root.
-\n
-\nЧтобы начать захват, вам необходимо принять запрос на включение VPN на следующем экране
-\n
-\n<b>ПРИМЕЧАНИЕ:</b> чтобы продолжить, отключите любой настроенный Постоянный VPN из настроек Android</string>
-    <string name="app_intro_firewall_msg">Со встроенным <a href="%1$s">файрволом</a> вы можете легко заблокировать доступ в интернет отдельным приложениям и доменам \n \nСкомбинируйте это со встроенной возможностью просматривать траффик и получите идеальный инструмент для защиты своей конфиденциальности</string>
+    <string name="block_private_dns_summary">Обнаруживать и по возможности блокировать использование приватных DNS, чтобы инспектировать поток данных DNS. Отключение этой опции может затруднить анализ потока данных</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid теперь готов к расшифровыванию TLS потока данных\n\nОзнакомьтесь с <a href="%1$s">руководством пользователя</a> чтобы узнать больше о мерах безопасности, которые могут предотвратить расшифровыванию и как преодолеть их</string>
+    <string name="app_intro_welcome_msg">PCAPdroid это ориентированное на конфиденциальность приложение, которое позволяет вам отслеживать и анализировать соединения, производимые приложениями с вашего устройства\n \nБолее того, приложение позволяет вам экспортировать запись потока данных в виде PCAP, извлекать метаданные и многое другое!</string>
+    <string name="vpn_setup_msg">PCAPdroid симулирует VPN чтобы захватывать весь потока данных устройства без необходимости в суперпользователя root.\n\nЧтобы начать захват, вам необходимо принять запрос на включение VPN на следующем экране\n\n<b>ПРИМЕЧАНИЕ:</b> чтобы продолжить, отключите любой настроенный Постоянный VPN из настроек Android</string>
+    <string name="app_intro_firewall_msg">Со встроенным <a href="%1$s">файрволом</a> вы можете легко заблокировать доступ в интернет отдельным приложениям, доменам, странам\n\nСкомбинируйте это со встроенной возможностью просматривать поток данных и получите идеальный инструмент для защиты своей конфиденциальности</string>
     <string name="app_intro_malware_detection">Повысьте безопасность своего устройства с функцией <a href="%1$s">обнаружения вредоносных соединений</a>
 \n
 \nИспользуя актуальные черные списки, эта функция может обнаруживать, блокировать и уведомлять о вредоносных соединениях в реальном времени</string>
@@ -343,7 +332,7 @@
     <string name="ip_both">IPv4 и IPv6</string>
     <string name="memory_usage">Использование памяти</string>
     <string name="cleartext_connection">Незашифрованно</string>
-    <string name="vpn_exemptions_summary">Исключение некоторых приложений из VPN соединения. Их траффик не будет просматриваться</string>
+    <string name="vpn_exemptions_summary">Исключение некоторых приложений из VPN соединения. Их поток данных не будет просматриваться</string>
     <string name="vpn_exemptions">VPN исключения</string>
     <string name="notifications_notice">Приложение использует уведомления для оповещения в случае аномальных событий. Предоставьте ему разрешение на отправку уведомлений на следующем экране</string>
     <string name="cancel_action">Отмена</string>
@@ -368,7 +357,7 @@
     <string name="app_unblocked">Приложение %1$s было разблокировано</string>
     <string name="unblock_for_n_minutes">Разблокировать на %1$d мин</string>
     <string name="paid_features_unlocked">Платные функции разблокированы. Перезапустите захват пакетов, если он запущен</string>
-    <string name="tls_decryption_with_root_msg">Возможность запускать TLS дешифрование с использованием root является экспериментальной функцией. Cписок известных ошибок: \n \n - в PCAPdroid вы можете видеть трафик так, будто он был сгенерирован в приложении mitm-дополнением вместо оригинального приложения \n - когда в приложении установлен фильтр, дешифрование будет происходить только для целевого приложения, но PCAPdroid всё равно будет показывать трафик других приложений \n - если захват пакетов не может начаться, убедитесь, что вы можете запускать команду iptables от имени суперпользователя (например через termux) \n - функция может не работать на Android 12 и выше \n - если VPN приложение запущено, вы должны, либо указать целевое приложение для дешифрования, либо исключить PCAPdroid mitm-дополнение из VPN, иначе трафик будет закольцован</string>
+    <string name="tls_decryption_with_root_msg">Возможность запускать TLS дешифрование с использованием root является экспериментальной функцией. Cписок известных ошибок: \n \n - в PCAPdroid вы можете видеть трафик так, будто он был сгенерирован в приложении mitm-дополнением вместо оригинального приложения \n - дамп SSL keylog не поддерживается\n - когда в приложении установлен фильтр, дешифрование будет происходить только для целевого приложения, но PCAPdroid всё равно будет показывать трафик других приложений \n - если захват пакетов не может начаться, убедитесь, что вы можете запускать команду iptables от имени суперпользователя (например через termux) \n - функция может не работать на Android 12 и выше \n - если VPN приложение запущено, вы должны, либо указать целевое приложение для дешифрования, либо исключить PCAPdroid mitm-дополнение из VPN, иначе трафик будет закольцован</string>
     <string name="paid_feature">Платная функция</string>
     <string name="unlock_token_summary">Токен, который может использоваться для разблокировки платных возможностей в версиях приложения не из Google Play (Github/F-Droid)</string>
     <string name="access_paid_features_msg">Ознакомьтесь <a href="%1$s">с инструкцией</a>, чтобы узнать, как получить доступ к платным функциям</string>
@@ -396,7 +385,6 @@
     <string name="redirect_to">Перенаправлять на:</string>
     <string name="add_action">Добавить</string>
     <string name="items_delete_confirm">Удалить выбранные элементы\?</string>
-    <string name="destination_ip">IP адрес назначения</string>
     <string name="destination_port">Порт назначения</string>
     <string name="port_mapping_summary">Настройте правила сопоставления портов для перенаправления соединений на другие хосты или порты</string>
     <string name="original_port">Изначальный порт</string>
@@ -525,4 +513,43 @@
     <string name="tls_conn_info">TLS/HTTPS трафик зашифрован. Чтобы изучать этот трафик, вам необходимо его дешифровать. Загляните в <a href="%1$s">Руководство пользователя</a> PCAPdroid за деталями</string>
     <string name="dns_conn_info">DNS преобразовывает доменное имя в IP адрес. Фактический обмен данными, как правило, идет через последующие HTTPS/TLS соединения</string>
     <string name="dump_extensions">Расширения PCAPdroid</string>
+    <string name="tcp_exporter_info">Отправить этот PCAP на удалённый TCP приёмник (pcap-over-ip)</string>
+    <string name="no_permissions_set_info">Никаких разрешений не установлено. Вызовите PCAPdroid через StartActivityForResult чтобы увидеть запрос разрешений</string>
+    <string name="api_key_discard_confirm">Вы действительно хотите сбросить текущий ключ API и создать новый?</string>
+    <string name="tcp_collector_info">TCP сборщик: %1$s:%2$d</string>
+    <string name="tcp_exporter">TCP экспортер</string>
+    <string name="tcp_udp_exporter">TCP/UDP экспортёр</string>
+    <string name="generate_api_key">Сгенерировать ключ API</string>
+    <string name="show_api_key">Показать ключ API</string>
+    <string name="api_key">Ключ API</string>
+    <string name="select">Выбрать</string>
+    <string name="request_method">Метод запроса</string>
+    <string name="http_status">HTTP статус</string>
+    <string name="method_filter">Метод: %1$s</string>
+    <string name="text">Текст</string>
+    <string name="display_as_text">Отобразить как текст</string>
+    <string name="display_as_hexdump">Отобразить как hex-дамп</string>
+    <string name="switch_to_http">Показать HTTP запросы</string>
+    <string name="switch_to_connections">Показать соединения</string>
+    <string name="no_requests">Нет запросов</string>
+    <string name="save_as_text">Сохранить как текст</string>
+    <string name="save_as_har">Сохранить как HAR</string>
+    <string name="show_system_apps">Показывать системные приложения</string>
+    <string name="filename_prefix">Префикс имени файла</string>
+    <string name="filename_prefix_description">Настройка префикса для файлов, экспортируемых PCAPdroid, например PCAP файлы</string>
+    <string name="connection_number">Соединение #%1$d</string>
+    <string name="http_request_number">HTTP запрос #%1$d</string>
+    <string name="decryption_error">Ошибка дешифрования</string>
+    <string name="http_requests">HTTP запросы</string>
+    <string name="show_connection">Показать соединение</string>
+    <string name="exporting">Экспортируется…</string>
+    <string name="export_in_progress">Выполняется экспорт, пожалуйста подождите</string>
+    <string name="destination_host">Хост назначения</string>
+    <string name="payload_size_threshold">Пороговый размер содержимого</string>
+    <string name="previous">Предыдущий</string>
+    <string name="next">Следующий</string>
+    <string name="content_type">Content type</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="tls_decryption_not_supported_16KB">Дешифрование TLS на текущий момент не поддерживается на устройствах со страницей памяти 16КБ</string>
+    <string name="item_not_found">Не удалось найти указанный элемент</string>
 </resources>

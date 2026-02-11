@@ -22,15 +22,6 @@
         <item>@string/tcp_exporter_info</item>
     </string-array>
 
-    <string-array name="app_languages">
-        <item>system</item>
-        <item>english</item>
-    </string-array>
-    <string-array name="app_languages_labels">
-        <item>@string/system_default</item>
-        <item>@string/lang_english</item>
-    </string-array>
-
     <string-array name="ip_mode">
         <item>ipv4</item>
         <item>ipv6</item>

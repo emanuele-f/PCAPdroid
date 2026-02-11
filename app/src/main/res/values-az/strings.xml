@@ -29,7 +29,7 @@
     <string name="no_activity_file_selection">Fayl seçimi edəcək tətbiq tapılmadı</string>
     <string name="file_saved_with_name">Fayl %1$s olaraq yadda saxlanıldı</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="enable_socks5_proxy_summary">Bütün TCP bağlantıları SOCKS5 proksisinə yönləndir</string>
+    <string name="enable_socks5_proxy_summary">Bütün TCP bağlantılarını SOCKS5 proksisinə yönləndir</string>
     <string name="socks5_auth">SOCKS5 şəxsiyyət doğrulaması</string>
     <string name="socks5_auth_summary">İstifadəçi adı və şifrə ilə proksinin şəxsiyyəti təsdiq edin</string>
     <string name="proxy_host">Proksi hostu</string>
@@ -105,7 +105,6 @@
     <string name="unknown_app">Bilinməyən</string>
     <string name="conn_status_unreachable">Əlçatan deyil</string>
     <string name="error">Xəta</string>
-    <string name="lang_english">İngilis dili</string>
     <string name="socks5_summary">SOCKS5 proksisinə yönləndirməyi konfiqurasiya et</string>
     <string name="socks5_redirection">SOCKS5 yönləndirməsi</string>
     <string name="socks5_info">SOCKS5 proksi: %1$s:%2$d</string>
@@ -113,9 +112,11 @@
     <string name="app_val">Tətbiq: %1$s</string>
     <string name="search">Axtar…</string>
     <string name="ip_address_val">İP adresi: %1$s</string>
+    <string name="cidr_val">CIDR: %1$s</string>
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protokol: %1$s</string>
     <string name="hide">Gizlət…</string>
+    <string name="select">Seç</string>
     <string name="package_name">Paket adı</string>
     <string name="n_selected">%1$d seçildi</string>
     <string name="uid">UİD</string>
@@ -138,6 +139,12 @@
     <string name="network_interface">İnterfeys</string>
     <string name="purchased">Alındı</string>
     <string name="interface_filter">İnterfeys: %1$s</string>
+    <string name="request_method">Sorğu metodu</string>
+    <string name="content_type">Məzmun növü</string>
+    <string name="http_status">HTTP statusu</string>
+    <string name="payload_size_threshold">Faydalı yük ölçüsü həddi</string>
+    <string name="method_filter">Metod: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="no_items_for_purchase">Alınacaq bir şey yoxdur</string>
     <string name="billing_failure">Google Play-ə bağlanmaq mümkün olmadı. Zəhmət olmasa, bir az sonra yenidən cəhd edin</string>
     <string name="buy_action">Al</string>
@@ -161,7 +168,7 @@
     <string name="http">HTTP</string>
     <string name="full_payload_summary">Tam bağlantı yükünü göstər (məsələn, tam HTTP istəyi və cavabı). Bunun üçün çox yaddaş lazımdır, uzun müddət istifadə etməyin</string>
     <string name="decryption">Deşifrə</string>
-    <string name="decryption_filter">Deşifrə: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="cert_reinstall_required">CA sertifikatını quraşdırmaq mümkün olmadı, Ortadakı Adam Hücumunu quraşdırma menyusunu işə salın</string>
     <string name="update_available">Yeniləmə mövcuddur</string>
     <string name="ip_mode">VPN İP adresləri</string>
@@ -232,7 +239,7 @@
     <string name="malware_whitelist_rules">Zərərli fayl, tətbiqlərin ağ siyahı qaydaları</string>
     <string name="feature_not_available">Bu xüsusiyyət hal-hazırda sizin cihazınızda əlçatan deyil</string>
     <string name="billing_connecting">Google Play bağlantısı davam edir, zəhmət olmasa, bir az sonra yenidən cəhd edin</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP status: %1$s</string>
     <string name="not_hidden_filter">Gizli deyil</string>
     <string name="show_me">Göstər</string>
     <string name="hint">İpucu</string>
@@ -240,6 +247,11 @@
     <string name="forever">Həmişəlik</string>
     <string name="control_permissions">Kontrol icazələri</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">Heç bir icazə təyin edilməyib. İcazə sorğusunu göstərmək üçün PCAPdroid-i StartActivityForResult vasitəsilə çağırın</string>
+    <string name="generate_api_key">API açarı yarat</string>
+    <string name="show_api_key">API açarını göstər</string>
+    <string name="api_key">API açarı</string>
+    <string name="api_key_discard_confirm">Həqiqətən cari API açarını silmək və yenisini yaratmaq istəyirsiniz?</string>
     <string name="country_val">Ölkə: %1$s</string>
     <string name="send_report">Hesabat göndər</string>
     <string name="start_at_boot">Sistem yüklənəndə (boot) başla</string>
@@ -271,14 +283,17 @@
     <string name="rx_direction">Al (RX)</string>
     <string name="warn_no_app_data">Heç bir tətbiq məlumatları alınıb göndərilmədi</string>
     <string name="waiting_application_data">Məlumatlar gözlənilir</string>
-    <string name="display_as">Bu şəkildə göstər…</string>
-    <string name="printable_text">Çap edilə bilən mətn</string>
+    <string name="text">Mətn</string>
     <string name="hexdump">Heksdempinq (hexdump)</string>
+    <string name="display_as_text">Mətn kimi göstər</string>
+    <string name="display_as_hexdump">Hexdump kimi göstər</string>
     <string name="geolocation">Bölgə</string>
     <string name="geolocation_summary">Oflayn axtarışlar edərək ölkə və ASN məlumatlarını göstər</string>
     <string name="download_in_progress">Yükləmə davam edir, zəhmət olmasa, gözləyin</string>
     <string name="pcap_load_in_progress">PCAP faylının yüklənməsi davam edir, zəhmət olmasa gözləyin</string>
     <string name="download_failed">Yükləmə uğursuz oldu</string>
+    <string name="exporting">İxrac edilir…</string>
+    <string name="export_in_progress">İxrac davam edir, lütfən gözləyin</string>
     <string name="database">Məlumat bazası</string>
     <string name="built_on">Yaradıldı: %1$s</string>
     <string name="download">Yüklə</string>
@@ -321,6 +336,8 @@
     <string name="license_service_unavailable">PCAPdroid lisenziya xidməti hal-hazırda əlçatan deyil. Zəhmət olmasa, bir neçə dəqiqə sonra yenidən cəhd edin</string>
     <string name="requesting_unlock_token">Kilidaçma jetonu istənilir, zəhmət olmasa, gözləyin</string>
     <string name="show_action">Göstər</string>
+    <string name="show_connection">Əlaqəni göstər</string>
+    <string name="show_system_apps">Sistem tətbiqlərini göstər</string>
     <string name="paid_feature">Ödənişli xüsusiyyət</string>
     <string name="firewall_purchase_msg">Bağlantıları bloklamağa başlamaq üçün <i>%1$s</i> xüsusiyyətini alın</string>
     <string name="mitm_wizard_description">TLS deşifrələməsi üçün cihazınızı konfiqurasiya edin</string>
@@ -330,7 +347,7 @@
     <string name="firewall_whitelist_notice">Bu modda, əllə ağ siyahıya salınmadığı müddətcə bütün bağlantılar bloklanacaq. Uyğun bir ağ siyahı olmadan bildirişləri görməyə bilərsiniz</string>
     <string name="original_port">Orijinal (əsas) port</string>
     <string name="required">gərəkli</string>
-    <string name="destination_ip">Hədəf İP adresi</string>
+    <string name="destination_host">Hədəf host</string>
     <string name="destination_port">Hədəf port</string>
     <string name="port_mapping_exists">Port yönləndirmə artıq təyin edilib</string>
     <string name="add_to_fw_whitelist">Təhlükəsizlik divarı ağ siyahısına əlavə et</string>
@@ -427,6 +444,7 @@
     <string name="ipv4_dns_server">İPv4 DNS serveri</string>
     <string name="items_delete_confirm">Seçilmişlər silinsinmi?</string>
     <string name="ip_address">İP adresi</string>
+    <string name="ip_address_or_cidr">İP adresi / CIDR</string>
     <string name="external_storage_perm_required">Xarici yaddaş qurğusuna giriş icazəsi lazımdır</string>
     <string name="many_rules_warning">Çox sayda qaydaları idxal etməyə çalışırsınız, nəticədə bəzi prosseslər zamanı tətbiqin fəaliyyətində problemlər yarana bilər. Həqiqətən davam etmək istəyirsinizmi?</string>
     <string name="username">İstifadəçi adı</string>
@@ -462,9 +480,9 @@
     <string name="decryption_info_no_rule">Bu bağlantını deşifrələməkçün, sol çəkməcədə ya da bağlantı siyahısındakı mətn əsaslı menyudan deşifrələmə qaydası yaradın.</string>
     <string name="vpn_setup_msg">PCAPdroid, şəbəkə trafikini root olmadan izləmək üçün VPN kimi davranır.\n\nİzləməni başlatmaq üçün bir sonrakı ekranda VPN istəyini qebul etməlisiniz.\n\n<b>QEYD:</b> Davam etmək üçün Andoid parametrlərindən konfiqurasiya edilmiş hər zaman açıq VPN-ləri dekativ edin</string>
     <string name="app_intro_traffic_inspection">Daxili dekoderlər sayəsində HTTP istəkərini, cavabları və xam məlumatları yoxlamaq asandır\n\nŞifrəli bağlantınız varmı? Deşifrələnmiş məlumatları əldə etmək üçün <a href="%1$s">TLS deşifrələməsini</a> aktiv edə bilərsiniz</string>
-    <string name="app_intro_firewall_msg">Daxili <a href="%1$s">təhlükəsizlik divarı</a> ilə fərdi tətbiqlərə və domenlərə internet çıxışını asanlıqla bloklaya bilərsiniz\n\nBunu daxili trafik monitorinqi funksiyası ilə birləşdirərək gizliliyinizi qorumaq üçün çox yaxşı bir alət əldə edin</string>
+    <string name="app_intro_firewall_msg">Daxili <a href="%1$s">təhlükəsizlik divarı</a> ilə fərdi tətbiqlərə, domenlərə və ölkələrə internet çıxışını asanlıqla bloklaya bilərsiniz\n\nBunu daxili trafik monitorinqi funksiyası ilə birləşdirərək gizliliyinizi qorumaq üçün çox yaxşı bir alət əldə edin</string>
     <string name="app_intro_traffic_dump">PCAPdroid, daha çox analiz üçün trafiki standart PCAP formatında yığmaq üçün <a href="%1$s">müxtəlif seçimlər, üsullar</a> təqdim edir\n\n<a href="%2$s">treyler seçimi</a> ilə siz paketlərə tətbiq adlarını əlavə edə və onları Wirshark-da göstərə bilərsiniz</string>
-    <string name="tls_decryption_with_root_msg">TLS deşifrələməsini root-la işlətmə funksiyası eksperimental xüsusiyyətdir. Məlum olan xətaların siyahısı:\n\n- PCAPdroid-də trafiki orijinal tətbiq yerinə ortadakı adam hücumu əlavəsi tətbiqindən hazırlanmış şəkildə görəcəksiniz\n- tətbiq filteri təyin olunduğunda deşifrələmə sadəcə hədəf tətbiq üçün keçərli olacaqdır, lakin PCAPdroid hələ də digər tətbiqlərin trafikini göstərəcəkdir\n- əgər izləməni başlatmaq uğursuz olduqda iptables əmrini həqiqətən root olaraq işə saldığınızdan əmin olun (məs. termux ilə)\n- bu, android 12 və sonrakı versiyalarda işləməyə bilər\n- əgər VPN tətbiqi işləmirsə, deşifrələmə üçün xüsusi bir tətbiq seçməlisiniz və ya VPN-dən PCAPdroid ortadakı adam hücumu əlavəsini istisna etməlisiniz, əks halda trafik sonsuz döngəyə girəcəkdir.</string>
+    <string name="tls_decryption_with_root_msg">TLS deşifrələməsini root-la işlətmə funksiyası eksperimental xüsusiyyətdir. Məlum olan xətaların siyahısı:\n\n- PCAPdroid-də trafiki orijinal tətbiq yerinə ortadakı adam hücumu əlavəsi tətbiqindən hazırlanmış şəkildə görəcəksiniz\n- SSL açar günlüyünün dempinqi dəstəklənmir\n- tətbiq filteri təyin olunduğunda deşifrələmə sadəcə hədəf tətbiq üçün keçərli olacaqdır, lakin PCAPdroid hələ də digər tətbiqlərin trafikini göstərəcəkdir\n- əgər izləməni başlatmaq uğursuz olduqda iptables əmrini həqiqətən root olaraq işə saldığınızdan əmin olun (məs. termux ilə)\n- bu, android 12 və sonrakı versiyalarda işləməyə bilər\n- əgər VPN tətbiqi işləmirsə, deşifrələmə üçün xüsusi bir tətbiq seçməlisiniz və ya VPN-dən PCAPdroid ortadakı adam hücumu əlavəsini istisna etməlisiniz, əks halda trafik sonsuz döngəyə girəcəkdir.</string>
     <string name="malicious_connections_notice">Qara siyahılarda müsbət yalnışlar olabilir.İki dəfə basmaqla İP adres/yer adı bilinirliyindən əmin olun. Zərərli tətbiq ağ siyahısı ilə,müsbət yalnışları kənar tutabilərsiz.</string>
     <string name="dump_extensions">PCAPdroid əlavələri</string>
     <string name="dump_extensions_how_to">PCAPdroid məlumat yığını uzantılarını Wiresharkda necə görüntülənir</string>
@@ -499,4 +517,23 @@
     <string name="errno_ehostunreach">Barındırıcıya marşrut yoxdur</string>
     <string name="errno_ehostunreach_msg">Sistem hədəf barındırıcıya marşrutu tapmadı</string>
     <string name="tls_conn_info">TLS/HTTPS trafiki şifrəlidir.Bu trafiki incələmək üçün,deşifrləməyə ehtiyacın var.Yoxla PCAPdroid <a href="%1$s">istifadəçi təlimatını</a> ətraflı üçün</string>
+    <string name="tls_decryption_not_supported_16KB">TLS deşifrələməsi hazırda 16 KB cihazlarda dəstəklənmir</string>
+    <string name="filename_prefix">Fayl adı prefiksi</string>
+    <string name="filename_prefix_description">PCAPdroid tərəfindən ixrac edilən fayllar üçün prefiks təyin edin, məs. PCAP faylları</string>
+    <string name="no_requests">Sorğu yoxdur</string>
+    <string name="item_not_found">Göstərilən element tapılmadı</string>
+    <string name="connection_number">Əlaqə #%1$d</string>
+    <string name="http_request_number">HTTP sorğu #%1$d</string>
+    <string name="http_requests">HTTP sorğuları</string>
+    <string name="switch_to_http">HTTP sorğularını göstər</string>
+    <string name="switch_to_connections">Əlaqələri göstər</string>
+    <string name="decryption_error">Deşifrə xətası</string>
+    <string name="previous">Əvvəlki</string>
+    <string name="next">Növbəti</string>
+    <string name="save_as_text">Mətn olaraq saxla</string>
+    <string name="save_as_har">HAR olaraq saxla</string>
+    <string name="tcp_collector_info">TCP toplayıcısı: %1$s%2$d</string>
+    <string name="tcp_exporter">TCP ixracatçısı</string>
+    <string name="tcp_udp_exporter">TCP/UDP ixracatçısı</string>
+    <string name="tcp_exporter_info">PCAP məlumatını uzaq TCP qəbuledicisinə göndər (pcap-over-ip vasitəsilə)</string>
 </resources>

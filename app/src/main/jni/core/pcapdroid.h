@@ -153,7 +153,15 @@ typedef struct {
 
 typedef struct {
     unsigned char *data;
-    unsigned int data_len;
+    unsigned int data_length;
+    uint64_t ms;
+    uint32_t stream_id;
+    bool is_tx;
+} plain_data_item_t;
+
+typedef struct {
+    plain_data_item_t *items;
+    unsigned int n_items;
 } plain_data_t;
 
 typedef struct pkt_context {
@@ -182,7 +190,7 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
-    bool (*dump_payload_chunk)(struct pcapdroid *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
 } pd_callbacks_t;
 
@@ -212,6 +220,7 @@ typedef struct pcapdroid {
     jint mitm_addon_uid;
     bool vpn_capture;
     bool pcap_file_capture;
+    const char *keylog_path_override;  // For tests: override sslkeylog.txt location
     payload_mode_t payload_mode;
 
     // stats
@@ -330,6 +339,7 @@ typedef struct {
     jmethodID protect;
     jmethodID dumpPcapData;
     jmethodID stopPcapDump;
+    jmethodID startConnectionsUpdate;
     jmethodID updateConnections;
     jmethodID connInit;
     jmethodID connProcessUpdate;
@@ -445,5 +455,6 @@ bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
 void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
+char* get_allocs_summary();
 
 #endif //__PCAPDROID_H__

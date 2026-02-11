@@ -51,7 +51,7 @@
     <string name="dns_server">Servidor DNS</string>
     <string name="apps">Apps</string>
     <string name="pcap_file">Archivo PCAP</string>
-    <string name="pcap_file_info">Crea un archivo PCAP en el almacenamiento de dispositivo</string>
+    <string name="pcap_file_info">Crea un archivo PCAP/Pcapng en el almacenamiento del dispositivo</string>
     <string name="cannot_write_file">No se puede escribir el archivo</string>
     <string name="share">Compartir</string>
     <string name="delete">Borrar</string>
@@ -87,6 +87,7 @@
     <string name="host_val">Host: %1$s</string>
     <string name="protocol_val">Protocolo: %1$s</string>
     <string name="hide">Ocultar…</string>
+    <string name="select">Seleccionar</string>
     <string name="n_selected">%1$d seleccionados</string>
     <string name="select_all">Seleccionar todo</string>
     <string name="app_details">Detalles de la app</string>
@@ -104,6 +105,7 @@
     <string name="unknown_app_info">\"Desconocido\" marca las conexiones cuya aplicación no se pudo determinar</string>
     <string name="packets_dropped">Paquetes perdidos</string>
     <string name="capture_prefs">Captura</string>
+    <string name="dump_extensions_summary">Extiende el formato de volcado de paquetes con metadatos adicionales, como la aplicación que envió/recibió un paquete determinado</string>
     <string name="pending_transaction">Por favor, completa tu transacción para canjear esta función</string>
     <string name="ctrl_consent">Una aplicación quiere capturar el tráfico de tu dispositivo.
 \nRecházala si no estás seguro</string>
@@ -129,7 +131,7 @@
     <string name="feature_not_available">Esta función no está disponible actualmente para tu dispositivo</string>
     <string name="billing_connecting">La conexión con Google Play está en curso, por favor reintenta más tarde</string>
     <string name="malicious_connection_filter">Malicioso</string>
-    <string name="status_filter">Estado: %1$s</string>
+    <string name="status_filter">Estado HTTP: %1$s</string>
     <string name="not_hidden_filter">No oculto</string>
     <string name="copy_action">Copiar…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -140,6 +142,7 @@
     <string name="control_permissions">Permisos de control</string>
     <string name="control_permissions_summary">Comprueba qué aplicaciones pueden controlar la captura de PCAPdroid</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">No se han establecido permisos. Invoque PCAPdroid mediante StartActivityForResult para mostrar el diálogo de permisos</string>
     <string name="country">País</string>
     <string name="asn">ASN</string>
     <string name="country_val">País: %1$s</string>
@@ -158,6 +161,8 @@
     <string name="n_rules">Reglas %1$s</string>
     <string name="last_update_val">Última actualización: %1$s</string>
     <string name="malicious_connections">Conexiones maliciosas</string>
+    <string name="malicious_connection_description">Una conexión de la aplicación "%1$s" activó una regla de detección de malware (%2$s)</string>
+    <string name="malicious_connections_notice">Las listas negras pueden contener falsos positivos. Asegúrese de verificar la reputación de la dirección IP/dominio en línea. Puede excluir los falsos positivos a través de la lista blanca de malware</string>
     <string name="updated_blacklists">Lista negra actualizada</string>
     <string name="connections_checked">Conexiones revisadas</string>
     <string name="last_blacklists_update">Última actualización</string>
@@ -180,6 +185,12 @@
     <string name="copied">Copiado</string>
     <string name="network_interface">Interfaz</string>
     <string name="interface_filter">Interfaz: %1$s</string>
+    <string name="request_method">Método de solicitud</string>
+    <string name="content_type">Tipo de contenido</string>
+    <string name="http_status">Estado HTTP</string>
+    <string name="payload_size_threshold">Umbral de tamaño de contenido</string>
+    <string name="method_filter">Método: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="buy_action">Comprar</string>
     <string name="can_use_purchased_feature">Ahora puedes utilizar la función comprada</string>
     <string name="save_ok">Guardado</string>
@@ -276,8 +287,11 @@
     <string name="network_traffic">Tráfico</string>
     <string name="warn_no_app_data">No se han intercambiado datos</string>
     <string name="waiting_application_data">Esperando datos</string>
+    <string name="text">Texto</string>
     <string name="printable_text">Texto mostrable</string>
     <string name="hexdump">Hexadécimal</string>
+    <string name="display_as_text">Mostrar como texto</string>
+    <string name="display_as_hexdump">Mostrar como volcado hexadecimal</string>
     <string name="geolocation">Geolocalización</string>
     <string name="downloading">Descargando…</string>
     <string name="built_on">Montada en: %1$s</string>
@@ -311,10 +325,14 @@
     <string name="full_payload_summary">Muestra el payload de conexiones completo (por ejemplo, la petición HTTP y respuesta completa). Requiere mucha memoria, no lo uses por mucho tiempo</string>
     <string name="decrypted">Descifrado</string>
     <string name="decryption">Descifrado</string>
-    <string name="decryption_filter">Descifrado: %1$s</string>
+    <string name="decryption_filter">Estado: %1$s</string>
     <string name="download_in_progress">Descarga en progreso, por favor espera</string>
     <string name="download_failed">Descarga fallida</string>
-    <string name="geo_db_not_found">Base de datos no encontrada. La geolocalización está deshabilitado</string>
+    <string name="exporting">Exportando…</string>
+    <string name="export_in_progress">Exportación en curso, por favor espere</string>
+    <string name="geo_db_not_found">Base de datos no encontrada. La geolocalización está deshabilitada</string>
+    <string name="geo_db_missing">Base de datos de geolocalización no encontrada</string>
+    <string name="country_rules_warning">Para usar reglas de cortafuegos basadas en países, descargue la base de datos de geolocalización desde los ajustes de PCAPdroid, de lo contrario las reglas basadas en países no tendrán efecto</string>
     <string name="database">Base de datos</string>
     <string name="no_root_firewall">Cortafuegos sin root</string>
     <string name="app_info">Información de la aplicación</string>
@@ -363,6 +381,8 @@
     <string name="license_service_unavailable">El servicio de licencias de PCAPdroid no está disponible ahora mismo. Vuelve a intentarlo en unos minutos</string>
     <string name="requesting_unlock_token">Solicitando token de desbloqueo, por favor espera</string>
     <string name="show_action">Mostrar</string>
+    <string name="show_connection">Mostrar conexión</string>
+    <string name="show_system_apps">Mostrar aplicaciones del sistema</string>
     <string name="unlock_token_msg1">Este es tu token de desbloqueo. Guárdalo, lo necesitarás para generar tus códigos de licencia <a href="%1$s"/></string>
     <string name="heap_usage">Uso del montón</string>
     <string name="vpn_lockdown_notice">Para evitar que las aplicaciones accedan a Internet cuando PCAPdroid no se está ejecutando (por ejemplo, después de reiniciar), puede configurar PCAPdroid como una VPN siempre activa en modo de bloqueo.
@@ -371,15 +391,13 @@
     <string name="app_intro_traffic_inspection">La inspección de peticiones HTTP, respuestas y datos sin procesar es muy sencilla gracias a los decodificadores integrados
 \n
 \n¿Tienes una conexión cifrada\? Puedes habilitar el <a href="%1$s">descifrado TLS</a> para ver los datos descifrados</string>
-    <string name="app_intro_traffic_dump">PCAPdroid tiene <a href="%1$s">varios métodos</a> para volcar el tráfico en formato PCAP y realizar análisis posteriores
-\n
-\nCon la <a href="%2$s">opción de tráiler</a>, puedes añadir nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
+    <string name="app_intro_traffic_dump">PCAPdroid tiene <a href="%1$s">varios métodos</a> para volcar el tráfico en formato PCAP y realizar análisis posteriores \n \nCon la <a href="%2$s">opción de extensiones de PCAPdroid</a>, puedes añadir nombres de aplicaciones a los paquetes y verlos en Wireshark</string>
     <string name="access_paid_features_msg">Consulta la <a href="%1$s">guía de usuario</a> para saber cómo acceder a las funciones de pago</string>
-    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos: \n \n - En PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original \n - Después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones \n - Si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux) \n - Es posible que esta función no funcione en Android 12 y superior \n - Si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
+    <string name="tls_decryption_with_root_msg">Ejecutar el descifrado TLS con privilegios de root es una función experimental. Aquí hay una lista de errores conocidos: \n \n - en PCAPdroid, parece que el tráfico se genera desde la aplicación mitm-addon en lugar de la aplicación original \n - el volcado del registro de claves SSL no es compatible \n - después de configurar un filtro de aplicaciones, solo se descifrará la aplicación de destino, pero PCAPdroid aún mostrará el tráfico de otras aplicaciones \n - si la captura de tráfico no se inicia, asegúrese de que puede ejecutar los comandos de iptables como root (por ejemplo, a través de termux) \n - es posible que esta función no funcione en Android 12 y superior \n - si la aplicación VPN se está ejecutando, debe descifrar la aplicación específica o excluir el complemento PCAPdroid mitm de la VPN; de lo contrario, el tráfico entrará en bucle</string>
     <string name="app_intro_privacy_msg">La aplicación no emplea ninguna función de rastreo, analítica o de llamada a casa.
 \n
 \n¿Como puedo estar seguro\? Consulta la <a href="%1$s">política de privacidad</a> y el <a href="%2$s">código fuente</a></string>
-    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones y dominios específicos. \n \nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
+    <string name="app_intro_firewall_msg">Con el <a href="%1$s">Cortafuegos</a> integrado, puedes bloquear fácilmente el acceso a Internet para aplicaciones, dominios y países específicos. \n \nCombina esto con la vista de tráfico incorporada y tendrás la herramienta perfecta para proteger tu privacidad</string>
     <string name="app_intro_malware_detection">Aumenta la seguridad de tu dispositivo con la característica de <a href="%1$s">detección de malware</a>
 \n
 \nUsando la última lista negra, puedes detectar, bloquear y advertir de conexiones peligrosas en tiempo real</string>
@@ -399,7 +417,7 @@
     <string name="redirect_to">Redirigir a:</string>
     <string name="original_port">Puerto de origen</string>
     <string name="required">obligatorio</string>
-    <string name="destination_ip">Dirección IP de destino</string>
+    <string name="destination_host">Host de destino</string>
     <string name="destination_port">Puerto de destino</string>
     <string name="port_mapping_exists">Mapeo de puertos ya definido</string>
     <string name="items_delete_confirm">¿Borrar los elementos seleccionados\?</string>
@@ -414,7 +432,7 @@
     <string name="external_storage_perm_required">El permiso al almacenamiento externo es necesario</string>
     <string name="many_rules_warning">Estás intentando importar muchas reglas, lo que podría hacer que la aplicación no respondiera durante algunas interacciones. ¿De verdad quieres continuar\?</string>
     <string name="pcapng_format">Formato Pcapng</string>
-    <string name="pcapng_format_summary">Volcar paquetes en formato pcapng, lo que permite incrustar contraseñas de descifrado TLS</string>
+    <string name="pcapng_format_summary">Volcar paquetes en formato Ocapng, que es más flexible y permite incrustar secretos de descifrado TLS</string>
     <string name="no_data">Sin datos</string>
     <string name="app_log">Registro</string>
     <string name="firewall_whitelist_notice">En este modo se bloquearán todas las conexiones, a menos que se incluyan manualmente en una lista blanca. Puedes perder notificaciones push sin una lista blanca adecuada</string>
@@ -450,20 +468,22 @@
     <string name="proxy_host">Host del proxy</string>
     <string name="copy_error">No se ha podido escribir el archivo</string>
     <string name="capture_interface_open_error">No se ha podido abrir la interfaz de captura</string>
-    <string name="pcap_file_not_exists">El archivo PCAP especificado no existe</string>
-    <string name="open_pcap_file">Abrir el archivo PCAP…</string>
-    <string name="pcap_load_success">Se ha cargado el archivo PCAP</string>
-    <string name="invalid_pcap_file">Fichero PCAP no válido</string>
+    <string name="pcap_file_not_exists">El archivo especificado no existe</string>
+    <string name="open_pcap_file">Abrir archivo PCAP/Pcapng…</string>
+    <string name="pcap_load_success">Archivo de captura cargado</string>
+    <string name="unsupported_pcap_file">Formato de archivo de captura no compatible</string>
+    <string name="decrypt_pcap_file">Descifrar archivo PCAP/Pcapng…</string>
+    <string name="invalid_pcap_file">Formato de archivo de captura no válido</string>
     <string name="root_capture_start_failed">Fallo del inicio de captura. Asegúrate de que el dispositivo está rooteado con Magisk</string>
-    <string name="pcap_read_error">Error de lectura del PCAP</string>
-    <string name="unsupported_pcap_datalink">El archivo PCAP tiene un enlace de datos no compatible</string>
-    <string name="pcap_file_load_aborted">Carga del fichero PCAP abortada</string>
+    <string name="pcap_read_error">Error al leer el archivo de captura. Comprueba el registro para más detalles</string>
+    <string name="unsupported_pcap_datalink">El archivo tiene un enlace de datos no compatible</string>
+    <string name="pcap_file_load_aborted">Carga del archivo de captura cancelada</string>
     <string name="host_resolution_failed">No se pudo resolver host %1$s</string>
-    <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones actuales en lugar de \"%1$s\", asegúrate de activar la opción \"%2$s\" antes de exportar el archivo PCAP</string>
-    <string name="decryption_info_no_rule">Esta conexión no se descifrará. Crea una regla de descifrado para descifrarla</string>
+    <string name="pcapdroid_trailer_notice">Para mostrar las aplicaciones reales en lugar de \"%1$s\", asegúrate de habilitar la opción \"%2$s\" antes de generar el volcado</string>
+    <string name="decryption_info_no_rule">Para descifrar esta conexión, crea una regla de descifrado desde el panel lateral izquierdo o desde el menú contextual en la lista de Conexiones</string>
     <string name="tls_decryption_no_rules_notice">El descifrado TLS sólo se aplica a las conexiones que coinciden con las reglas configuradas. ¿Deseas crear las reglas de descifrado ahora\?</string>
     <string name="active_vpn_detected">Se ha detectado una VPN activa</string>
-    <string name="pcap_load_in_progress">Carga del fichero PCAP en curso, por favor espera</string>
+    <string name="pcap_load_in_progress">Carga del archivo de captura en proceso, por favor espera</string>
     <string name="root_capture_pcapd_start_failure">Fallo al realizar la captura. Asegúrate de conceder acceso root a PCAPdroid</string>
     <string name="mitm_doze_notice">La optimización de la batería puede interferir con el addon mitm</string>
     <string name="redirected">redirigido</string>
@@ -484,6 +504,42 @@
     <string name="vpn_reconnection">Reconectar a la VPN</string>
     <string name="vpn_reconnection_aborted">Reconexión a la VPN abortada</string>
     <string name="waiting_for_vpn_disconnect">Esperando a que la VPN activa se desconecte…</string>
+    <string name="bytes_threshold">Umbral de bytes</string>
+    <string name="select_the_pcap_file">Seleccione el archivo PCAP/Pcapng</string>
+    <string name="select_the_keylog_file">Seleccione el archivo de registro de claves SSL</string>
+    <string name="errno_epipe">Tubería rota</string>
+    <string name="errno_epipe_msg">El servidor cerró la conexión inesperadamente durante la transferencia de datos</string>
+    <string name="errno_enetdown">Red caída</string>
+    <string name="errno_enetdown_msg">La interfaz de red está caída o no puede conectarse a la red</string>
+    <string name="errno_enetunreach">Red inaccesible</string>
+    <string name="errno_enetunreach_msg">El sistema no puede encontrar una ruta válida hacia la red de destino</string>
+    <string name="errno_enetreset_msg">La conexión de red fue reiniciada por un dispositivo intermediario (p. ej. enrutador u operador móvil)</string>
+    <string name="errno_econnaborted">Conexión cancelada</string>
+    <string name="errno_econnaborted_msg">La conexión fue cancelada, normalmente debido a un cambio de red</string>
+    <string name="errno_econnreset">Conexión reiniciada por el servidor</string>
+    <string name="errno_econnreset_msg">El servidor cerró la conexión abruptamente, normalmente debido a un fallo o un cierre no controlado</string>
+    <string name="errno_etimedout">Tiempo de conexión agotado</string>
+    <string name="errno_etimedout_msg">El servidor tardó demasiado en responder, probablemente debido a retrasos en la red o un servidor ocupado</string>
+    <string name="errno_econnrefused_msg">El servidor rechazó la conexión, lo que puede indicar un servidor demasiado ocupado o con fallos</string>
+    <string name="errno_ehostunreach">Sin ruta al host</string>
+    <string name="errno_ehostunreach_msg">El sistema no puede encontrar una ruta hacia el host de destino</string>
+    <string name="dns_conn_info">DNS traduce un nombre de dominio a una dirección IP. Los datos reales se intercambian normalmente a través de conexiones HTTPS/TLS posteriores</string>
+    <string name="tls_conn_info">El tráfico TLS/HTTPS está cifrado. Para inspeccionar este tráfico, necesita descifrarlo. Consulte la <a href="%1$s">guía de usuario</a> de PCAPdroid para más detalles</string>
+    <string name="tls_decryption_not_supported_16KB">El descifrado TLS no es compatible actualmente en dispositivos de 16 KB</string>
+    <string name="filename_prefix">Prefijo de nombre de archivo</string>
+    <string name="filename_prefix_description">Establece el prefijo para los archivos exportados por PCAPdroid, p. ej. archivos PCAP</string>
+    <string name="no_requests">Sin solicitudes</string>
+    <string name="item_not_found">No se pudo encontrar el elemento especificado</string>
+    <string name="connection_number">Conexión #%1$d</string>
+    <string name="http_request_number">Solicitud HTTP #%1$d</string>
+    <string name="http_requests">Solicitudes HTTP</string>
+    <string name="switch_to_http">Mostrar solicitudes HTTP</string>
+    <string name="switch_to_connections">Mostrar conexiones</string>
+    <string name="decryption_error">Error de descifrado</string>
+    <string name="previous">Anterior</string>
+    <string name="next">Siguiente</string>
+    <string name="save_as_text">Guardar como texto</string>
+    <string name="save_as_har">Guardar como HAR</string>
     <string name="restart_on_disconnection">Reiniciar al desconectarse</string>
     <string name="restart_on_disconnection_summary">Reiniciar automáticamente la captura después de ser detenido por otras aplicaciones VPN</string>
     <string name="ipv6_bytes_rcvd">Bytes IPv6 recibidos</string>
@@ -492,4 +548,20 @@
     <string name="update_available">Actualización disponible</string>
     <string name="mitm_addon_update_available">Hay una nueva actualización del complemento MITM disponible. Actualiza para obtener las últimas correcciones de errores</string>
     <string name="update_action">Actualizar</string>
+    <string name="tcp_collector_info">Colector TCP: %1$s:%2$d</string>
+    <string name="tcp_exporter">Exportador TCP</string>
+    <string name="tcp_udp_exporter">Exportador TCP/UDP</string>
+    <string name="tcp_exporter_info">Envía el PCAP a un receptor TCP remoto (pcap-sobre-ip)</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="dump_extensions">Extensiones de PCAPdroid</string>
+    <string name="dump_extensions_how_to">Cómo mostrar las extensiones de volcado PCAPdroid en Wireshark</string>
+    <string name="generate_api_key">Generar clave API</string>
+    <string name="show_api_key">Mostrar clave API</string>
+    <string name="api_key">Clave API</string>
+    <string name="ip_address_or_cidr">Dirección IP / CIDR</string>
+    <string name="errno_enetreset">Restablecer red</string>
+    <string name="errno_econnrefused">Conexión rechazada</string>
+    <string name="error_code_with_text">%1$s (error %2$d)</string>
+    <string name="api_key_discard_confirm">¿Realmente desea descartar la clave API actual y generar una nueva?</string>
+    <string name="keylog_read_error">Error de lectura del registro de claves SSL</string>
 </resources>

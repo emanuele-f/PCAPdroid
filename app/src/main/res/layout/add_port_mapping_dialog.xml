@@ -44,12 +44,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:hint="@string/destination_ip"
+            android:hint="@string/destination_host"
             android:theme="@style/Theme.TextInputLayoutOutlined"
             style="@style/TextInputLayoutOutlined" >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/redirect_ip"
+                android:id="@+id/redirect_host"
                 android:inputType="text"
                 android:imeOptions="actionNext"
                 android:layout_width="match_parent"

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -96,6 +96,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -126,6 +127,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Thread mDumperThread;
     private MitmReceiver mMitmReceiver;
     private final LinkedBlockingDeque<Pair<ConnectionDescriptor[], ConnectionUpdate[]>> mPendingUpdates = new LinkedBlockingDeque<>(32);
+    private AtomicInteger mNumUpdatesInProgress = new AtomicInteger();
     private LinkedBlockingDeque<byte[]> mDumpQueue;
     private String vpn_ipv4;
     private String vpn_dns;
@@ -135,11 +137,13 @@ public class CaptureService extends VpnService implements Runnable {
     private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
+    private HttpLog mHttpLog;
     private Uri mPcapUri;
     private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
     private NotificationCompat.Builder mMalwareBuilder;
     private long mMonitoredNetwork;
+    private Network mUnderlyingNetwork;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private AppsResolver mNativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
     private Geolocation mNativeGeolocation;   // only native
@@ -335,6 +339,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
+            mUnderlyingNetwork = net;
 
             if(net != null) {
                 handleLinkProperties(cm.getLinkProperties(net));
@@ -358,6 +363,7 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
+        mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
@@ -540,14 +546,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             }
 
-            if(Prefs.isPortMappingEnabled(mPrefs)) {
-                PortMapping portMap = new PortMapping(this);
-                Iterator<PortMapping.PortMap> it = portMap.iter();
-                while (it.hasNext()) {
-                    PortMapping.PortMap mapping = it.next();
-                    addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, mapping.redirect_ip);
-                }
-            }
+            // Port mappings are loaded in resolveHosts() to allow domain resolution
 
             try {
                 mParcelFileDescriptor = builder.setSession(CaptureService.VpnSessionName).establish();
@@ -567,6 +566,7 @@ public class CaptureService extends VpnService implements Runnable {
         mBlocklist = PCAPdroid.getInstance().getBlocklist();
         mFirewallWhitelist = PCAPdroid.getInstance().getFirewallWhitelist();
 
+        mNumUpdatesInProgress.set(0);
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
 
@@ -1087,6 +1087,10 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.conn_reg : null);
     }
 
+    public static @Nullable HttpLog getHttpLog() {
+        return((INSTANCE != null) ? INSTANCE.mHttpLog : null);
+    }
+
     public static @NonNull ConnectionsRegister requireConnsRegister() {
         ConnectionsRegister reg = getConnsRegister();
 
@@ -1147,10 +1151,69 @@ public class CaptureService extends VpnService implements Runnable {
         return((INSTANCE != null) ? INSTANCE.mSettings : null);
     }
 
+    private String resolveHost(String host) {
+        if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || (mUnderlyingNetwork == null))
+            return null;
+
+        try {
+            return mUnderlyingNetwork.getByName(host).getHostAddress();
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
+
+    // Resolve hostnames that the native code needs as IPs.
+    // Uses the underlying (non-VPN) network to avoid routing through the VPN tunnel.
+    private boolean resolveHosts() {
+        if(mSocks5Enabled && !mSettings.tls_decryption && !mSocks5Address.isEmpty()
+                && !Utils.validateIpAddress(mSocks5Address))
+        {
+            String resolved = resolveHost(mSocks5Address);
+            if(resolved == null) {
+                Log.e(TAG, "Could not resolve SOCKS5 proxy: " + mSocks5Address);
+                mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, mSocks5Address));
+                return false;
+            }
+            Log.i(TAG, "Resolved SOCKS5 proxy: " + mSocks5Address + " -> " + resolved);
+            mSocks5Address = resolved;
+        }
+
+        if(Prefs.isPortMappingEnabled(mPrefs)) {
+            PortMapping portMap = new PortMapping(this);
+            Iterator<PortMapping.PortMap> it = portMap.iter();
+
+            while(it.hasNext()) {
+                PortMapping.PortMap mapping = it.next();
+                String ip = mapping.redirect_host;
+
+                if(!Utils.validateIpAddress(ip)) {
+                    String resolved = resolveHost(ip);
+                    if(resolved == null) {
+                        Log.e(TAG, "Could not resolve port mapping host: " + ip);
+                        final String failedHost = ip;
+                        mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, failedHost));
+                        return false;
+                    }
+                    Log.i(TAG, "Resolved port mapping host: " + ip + " -> " + resolved);
+                    ip = resolved;
+                }
+
+                addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, ip);
+            }
+        }
+
+        return true;
+    }
+
     // Inside the mCaptureThread
     @Override
     public void run() {
-        if(mSettings.root_capture || mSettings.readFromPcap()) {
+        boolean hostResolved = resolveHosts();
+        mUnderlyingNetwork = null;
+
+        if(!hostResolved) {
+            // fall through to cleanup
+        } else if(mSettings.root_capture || mSettings.readFromPcap()) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles
             if(mSettings.root_capture && (checkCallingOrSelfPermission(Utils.INTERACT_ACROSS_USERS) != PackageManager.PERMISSION_GRANTED)) {
                 boolean success = Utils.rootGrantPermission(this, Utils.INTERACT_ACROSS_USERS);
@@ -1238,6 +1301,12 @@ public class CaptureService extends VpnService implements Runnable {
                 if(conns_updates.length > 0)
                     conn_reg.connectionsUpdates(conns_updates);
             }
+
+            int val = mNumUpdatesInProgress.decrementAndGet();
+            assert(val >= 0);
+
+            if ((val == 0) && (mHttpLog != null))
+                mHttpLog.stopConnectionsUpdates();
         }
     }
 
@@ -1441,6 +1510,14 @@ public class CaptureService extends VpnService implements Runnable {
 
         Log.d(TAG, "Get uid local=" + local + " remote=" + remote);
         return cm.getConnectionOwnerUid(protocol, local, remote);
+    }
+
+    public void startConnectionsUpdate() {
+        int val = mNumUpdatesInProgress.incrementAndGet();
+        assert(val >= 0);
+
+        if ((val == 1) && (mHttpLog != null))
+            mHttpLog.startConnectionsUpdates();
     }
 
     public void updateConnections(ConnectionDescriptor[] new_conns, ConnectionUpdate[] conns_updates) {

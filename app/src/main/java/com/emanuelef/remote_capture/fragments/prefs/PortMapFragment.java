@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments.prefs;
@@ -183,7 +183,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
         protoField.setText(protocols[0]);
         protoField.setAdapter(adapter);
 
-        ((TextInputEditText) view.findViewById(R.id.redirect_ip)).setText("127.0.0.1");
+        ((TextInputEditText) view.findViewById(R.id.redirect_host)).setText("127.0.0.1");
 
         AlertDialog dialog = new AlertDialog.Builder(ctx)
                 .setView(view)
@@ -215,11 +215,11 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
     private PortMap validateAddDialog(View view) {
         TextInputEditText origPortField = (TextInputEditText) view.findViewById(R.id.orig_port);
-        TextInputEditText redirectIpField = (TextInputEditText) view.findViewById(R.id.redirect_ip);
+        TextInputEditText redirectHostField = (TextInputEditText) view.findViewById(R.id.redirect_host);
         TextInputEditText redirectPortField = (TextInputEditText) view.findViewById(R.id.redirect_port);
 
         String origPort = Objects.requireNonNull(origPortField.getText()).toString();
-        String redirectIp = Objects.requireNonNull(redirectIpField.getText()).toString();
+        String redirectHost = Objects.requireNonNull(redirectHostField.getText()).toString();
         String redirectPort = Objects.requireNonNull(redirectPortField.getText()).toString();
         String proto = ((AutoCompleteTextView) view.findViewById(R.id.proto)).getText().toString();
 
@@ -232,12 +232,12 @@ public class PortMapFragment extends Fragment implements MenuProvider {
             return null;
         }
 
-        if(redirectIp.isEmpty()) {
-            redirectIpField.setError(getString(R.string.required));
+        if(redirectHost.isEmpty()) {
+            redirectHostField.setError(getString(R.string.required));
             return null;
         }
-        if(!Utils.validateIpAddress(redirectIp)) {
-            redirectIpField.setError(getString(R.string.invalid));
+        if(!Utils.validateIpAddress(redirectHost) && !Utils.validateHost(redirectHost)) {
+            redirectHostField.setError(getString(R.string.invalid));
             return null;
         }
 
@@ -252,7 +252,7 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
         return new PortMap(
                 proto.equals("TCP") ? 6 : 17, Integer.parseInt(origPort),
-                Integer.parseInt(redirectPort), redirectIp);
+                Integer.parseInt(redirectPort), redirectHost);
     }
 
     private void confirmDelete(ActionMode mode) {

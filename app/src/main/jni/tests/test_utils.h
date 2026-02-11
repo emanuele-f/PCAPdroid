@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #ifndef __TEST_UTILS_H__
@@ -52,7 +52,7 @@ void assert_pcap_header(pcap_hdr_t *hdr);
 u_char* next_pcap_record(pcap_rec_t *rec);
 
 // Callbacks
-bool dump_cb_payload_chunk(pcapdroid_t *pd, const pkt_context_t *pctx, const char *dump_data, int dump_size);
+bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
 
 conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip, uint16_t dst_port, const char *info);
 

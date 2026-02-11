@@ -2,6 +2,7 @@
 <resources>
     <string name="private_dns_hinders_detection">DNS Pribadi menghalangi deteksi</string>
     <string name="hide">Sembunyikan…</string>
+    <string name="select">Pilih</string>
     <string name="app_details">Detail aplikasi</string>
     <string name="n_selected">%1$d dipilih</string>
     <string name="package_name">Nama paket</string>
@@ -129,7 +130,7 @@
     <string name="malware_whitelist_rules">Aturan daftar putih malware</string>
     <string name="feature_not_available">Saat ini fitur tidak tersedia untuk perangkat Anda</string>
     <string name="billing_connecting">Koneksi ke Google Play sedang berlangsung, silakan coba beberapa saat lagi</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP Status: %1$s</string>
     <string name="show_me">Tunjukkan</string>
     <string name="hint">Petunjuk</string>
     <string name="control_permissions">Izin kontrol</string>
@@ -158,6 +159,12 @@
     <string name="valid">Sah</string>
     <string name="network_interface">Interface</string>
     <string name="interface_filter">Interface: %1$s</string>
+    <string name="request_method">Metode permintaan</string>
+    <string name="content_type">Tipe konten</string>
+    <string name="http_status">Status HTTP</string>
+    <string name="payload_size_threshold">Ambang batas ukuran muatan</string>
+    <string name="method_filter">Metode: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="loading">Memuat…</string>
     <string name="purchased">Dibeli</string>
     <string name="no_items_for_purchase">Tidak ada item yang tersedia untuk dibeli</string>
@@ -178,9 +185,8 @@
     <string name="connections_view">Koneksi</string>
     <string name="packets">Paket</string>
     <string name="duration">Durasi</string>
-    <string name="udp_exporter_info">Mengirim PCAP ke penerima UDP jarak jauh</string>
+    <string name="udp_exporter_info">Kirim PCAP ke penerima UDP jarak jauh</string>
     <string name="vpn_setup_failed">Tidak dapat mengatur VPN. Pastikan VPN Selalu Aktif dinonaktifkan</string>
-    <string name="lang_english">Inggris</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
     <string name="receiver_ip_address">Alamat IP kolektor</string>
@@ -206,10 +212,14 @@
     <string name="root_capture_summary">Mengizinkan PCAPdroid menangkap koneksi VPN aplikasi lain yang sedang berjalan</string>
     <string name="network_traffic">Lalu lintas</string>
     <string name="warn_no_app_data">Tidak ada data aplikasi yang dipertukarkan</string>
-    <string name="hexdump">Hexdump</string>
+    <string name="hexdump">Timbunan kode heksadesimal</string>
+    <string name="display_as_text">Tampilkan sebagai teks</string>
+    <string name="display_as_hexdump">Tampilkan sebagai hexdump</string>
     <string name="geolocation">Geolokasi</string>
     <string name="geolocation_summary">Tampilkan info negara dan ASN dengan melakukan pencarian offline</string>
     <string name="download_failed">Gagal mengunduh</string>
+    <string name="exporting">Mengekspor…</string>
+    <string name="export_in_progress">Ekspor sedang berlangsung, harap tunggu</string>
     <string name="database">Basis data</string>
     <string name="size_x">Ukuran: %1$s</string>
     <string name="geo_db_delete">Ketuk untuk menghapus basis data dan menghemat ruang</string>
@@ -227,12 +237,11 @@
     <string name="connection_blocked">Koneksi ini telah diblokir oleh PCAPdroid</string>
     <string name="import_action">Impor</string>
     <string name="action_unblock">Buka blokir</string>
-    <string name="decryption_filter">Dekripsi: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid belum melihat awal dari koneksi ini. Beberapa informasi mungkin hilang</string>
     <string name="decrypted">Didekripsi</string>
     <string name="waiting_application_data">Menunggu data</string>
-    <string name="display_as">Tampilkan sebagai…</string>
-    <string name="printable_text">Teks yang dapat diprint</string>
+    <string name="text">Teks</string>
     <string name="downloading">Mengunduh…</string>
     <string name="download_in_progress">Unduhan sedang berlangsung, harap tunggu</string>
     <string name="geo_db_download">Ketuk untuk mengunduh database terbaru. Database baru tersedia setiap bulan</string>
@@ -320,7 +329,7 @@
     <string name="app_intro_traffic_inspection">Memeriksa permintaan HTTP, respons, dan data mentah menjadi mudah, berkat dekoder bawaan
 \n
 \nPunya koneksi terenkripsi\? Anda dapat mengaktifkan <a href="%1$s">dekripsi TLS</a> untuk mendapatkan data yang didekripsi</string>
-    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi dan domain \n \nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi</string>
+    <string name="app_intro_firewall_msg">Dengan <a href="%1$s">Firewall</a> terintegrasi, Anda dapat dengan mudah memblokir akses Internet ke masing-masing aplikasi, domain dan negara.\n\nGabungkan ini dengan visibilitas lalu lintas bawaan untuk mendapatkan alat utama untuk melindungi privasi Anda</string>
     <string name="app_intro_malware_detection">Tingkatkan keamanan perangkat Anda dengan fitur <a href="%1$s">deteksi malware</a>
 \n
 \nDengan menggunakan daftar hitam terbaru, ini dapat mendeteksi, memblokir, dan memperingatkan koneksi berbahaya secara waktu nyata</string>
@@ -362,6 +371,8 @@
     <string name="license_service_unavailable">Layanan lisensi PCAPdroid saat ini tidak tersedia. Silakan coba lagi dalam beberapa menit</string>
     <string name="requesting_unlock_token">Meminta sebuah unlock token, tunggu sebentar</string>
     <string name="show_action">Lihat</string>
+    <string name="show_connection">Lihat koneksi</string>
+    <string name="show_system_apps">Lihat aplikasi sistem</string>
     <string name="unlock_token_msg1">Ini adalah token pembuka kunci Anda. Catat karena Anda akan memerlukannya <a href="%1$s">untuk membuat kode lisensi</a></string>
     <string name="show_only_cleartext">Bersihkan koneksi teks</string>
     <string name="allowed_connection_filter">Di Izinkan</string>
@@ -374,7 +385,7 @@
 \nApakah Anda ingin membuka pengaturan VPN sekarang\?</string>
     <string name="vpn_exemptions_summary">Mengecualikan beberapa aplikasi dari koneksi VPN. Lalu lintas mereka tidak akan dipantau</string>
     <string name="unblock_for_n_hours">Buka blokir untuk %1$djam</string>
-    <string name="remote_server_warning">Untuk alasan keamanan, pengiriman lalu lintas ke server jarak jauh \"%1$s\" tidak diperbolehkan\"</string>
+    <string name="remote_server_warning">Untuk alasan keamanan, pengiriman lalu lintas ke server jarak jauh \"%1$s\" tidak diperbolehkan</string>
     <string name="warning">Peringatan</string>
     <string name="firewall_purchase_msg">Beli fitur <i>%1$s</i> untuk mulai memblokir koneksi</string>
     <string name="paid_features_unlocked">Fitur berbayar tidak terkunci. Mulai ulang penangkapan jika berjalan</string>
@@ -399,14 +410,13 @@
     <string name="ip_address">Alamat IP</string>
     <string name="remove_from_fw_whitelist">Hapus dari daftar putih firewall</string>
     <string name="unsupported_pcap_datalink">File tersebut memiliki datalink yang tidak didukung</string>
-    <string name="rule_exists">Aturan yang sudah ditetapkan</string>
+    <string name="rule_exists">Aturan telah ditetapkan</string>
     <string name="use_system_dns_summary">Gunakan server DNS sistem jika memungkinkan</string>
     <string name="license_error">Kesalahan pembuatan lisensi [%1$d]: %2$s</string>
     <string name="activate_via_qr_code">Aktivasi melalui kode QR</string>
     <string name="qr_code_expired">Kode QR kedaluwarsa. Buat kode QR baru dan coba lagi</string>
     <string name="license_limit_reached">Anda telah mencapai batas lisensi untuk token buka kunci ini. Beli token baru untuk membuat lebih banyak lisensi</string>
     <string name="socks5_auth_summary">Autentikasi ke proxy melalui nama pengguna dan kata sandi</string>
-    <string name="destination_ip">Alamat IP tujuan</string>
     <string name="mitm_addon_error">Kesalahan saat memulai addon mitm. Periksa log untuk detailnya</string>
     <string name="username">Nama pengguna (username)</string>
     <string name="total_bytes">Total bytes</string>
@@ -431,6 +441,7 @@
     <string name="pcap_load_in_progress">Pemuatan file PCAP sedang berlangsung, harap tunggu</string>
     <string name="app_log">Riwayat</string>
     <string name="required">dibutuhkan</string>
+    <string name="destination_host">Host tujuan</string>
     <string name="pcapng_format">format Pcapng</string>
     <string name="ipv6_dns_server">Server DNS IPv6</string>
     <string name="port_mapping">Pemetaan port</string>
@@ -440,20 +451,14 @@
     <string name="no_data">Tidak ada data</string>
     <string name="qr_license_confirm">Apakah Anda ingin membuat lisensi untuk perangkat \"%1$s\" menggunakan token pembuka kunci berikut ini\?</string>
     <string name="qr_info_text">Instal PCAPdroid dari Google Play dan pindai kode QR ini</string>
-    <string name="injected">Injected</string>
-    <string name="tls_decryption_with_root_msg">Kemampuan untuk menjalankan dekripsi TLS dengan root adalah fitur eksperimental. Ini adalah daftar bug yang diketahui:
-\n
-\n - di PCAPdroid Anda akan melihat lalu lintas yang dihasilkan dari aplikasi mitm-addon sebagai pengganti aplikasi asli
-\n - ketika filter aplikasi ditetapkan, dekripsi hanya akan terjadi untuk aplikasi target, tetapi PCAPdroid masih akan menampilkan lalu lintas aplikasi lain
-\n - jika penangkapan gagal dimulai, pastikan bahwa Anda benar-benar dapat menjalankan perintah iptables sebagai root (mis. melalui termux)
-\n - ini mungkin tidak bekerja pada Android 12 dan yang lebih baru
-\n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
+    <string name="injected">Disuntikkan</string>
+    <string name="tls_decryption_with_root_msg">Kemampuan untuk menjalankan dekripsi TLS dengan root adalah fitur eksperimental. Ini adalah daftar bug yang diketahui: \n \n - di PCAPdroid Anda akan melihat lalu lintas yang dihasilkan dari aplikasi mitm-addon sebagai pengganti aplikasi asli \n - ump keylog SSL tidak didukung\n - ketika filter aplikasi ditetapkan, dekripsi hanya akan terjadi untuk aplikasi target, tetapi PCAPdroid masih akan menampilkan lalu lintas aplikasi lain \n - jika penangkapan gagal dimulai, pastikan bahwa Anda benar-benar dapat menjalankan perintah iptables sebagai root (mis. melalui termux) \n - ini mungkin tidak bekerja pada Android 12 dan yang lebih baru \n - jika aplikasi VPN sedang berjalan, Anda harus menargetkan aplikasi tertentu untuk dekripsi atau mengecualikan addon mitm PCAPdroid dari VPN, jika tidak, lalu lintas akan berputar-putar</string>
     <string name="requesting_license">Meminta kode lisensi, harap tunggu</string>
     <string name="mitm_addon_running">Addon mitm sedang berjalan</string>
     <string name="malware_whitelist_action">Daftar putih (malware)…</string>
     <string name="pcapdroid_trailer_notice">Untuk menampilkan aplikasi yang sebenarnya selain \"%1$s\", pastikan untuk mengaktifkan opsi \"%2$s\" sebelum membuat dump</string>
     <string name="mitm_addon_starting">Addon Mitm sudah dijalankan…</string>
-    <string name="original_port">Port asli</string>
+    <string name="original_port">Porta asli</string>
     <string name="open_pcap_file">Buka file PCAP/Pcapng…</string>
     <string name="use_system_dns">Gunakan DNS sistem</string>
     <string name="decrypt_action">Dekripsi…</string>
@@ -464,10 +469,10 @@
     <string name="invalid_license">Lisensi tidak valid</string>
     <string name="decryption_rules_help">Aturan-aturan ini menentukan koneksi mana yang akan didekripsi. Aturan berbasis host hanya berfungsi jika balasan DNS sebelumnya terlihat</string>
     <string name="proxy_host">Proxy host</string>
-    <string name="port_mapping_exists">Pemetaan port telah ditentukan</string>
+    <string name="port_mapping_exists">Pemetaan porta telah ditentukan</string>
     <string name="whitelist_mode">Mode daftar putih</string>
     <string name="mitmproxy_opts">Opsi mitmproxy tambahan</string>
-    <string name="destination_port">Port tujuan</string>
+    <string name="destination_port">Porta tujuan</string>
     <string name="capture_interface_open_error">Tidak dapat membuka antarmuka pencatatan</string>
     <string name="raw_bytes">Byte mentah</string>
     <string name="dnscrypt_how_to">Cara penggunaan DoH / DNSCrypt dengan PCAPdroid</string>
@@ -491,7 +496,7 @@
     <string name="redirected">dialihkan</string>
     <string name="for_connections_to_decrypt">Hanya untuk koneksi yang akan didekripsi</string>
     <string name="headers">Header</string>
-    <string name="body">Body</string>
+    <string name="body">Tubuh</string>
     <string name="both">Keduanya</string>
     <string name="malicious_connection_description">Suatu koneksi dari aplikasi “%1$s” memicu sebuah aturan deteksi malware (%2$s)</string>
     <string name="dump_extensions_summary">Memperluas format pembuangan paket dengan metadata tambahan, seperti aplikasi yang mengirim/menerima paket yang sudah diberi</string>
@@ -502,6 +507,21 @@
     <string name="errno_ehostunreach">Tidak ada rute ke host</string>
     <string name="errno_ehostunreach_msg">Sistem tidak dapat menemukan rute ke host tujuan</string>
     <string name="tls_conn_info">lalu lintas TLS/HTTPS dienkripsi. Untuk memeriksa lalu lintas ini, Anda perlu mendekripsinya. Cek <a href="%1$s">panduan pengguna</a> PCAPdroid untuk detailnya</string>
+    <string name="tls_decryption_not_supported_16KB">Dekripsi TLS saat ini tidak didukung pada perangkat 16 KB</string>
+    <string name="filename_prefix">Awalan nama file</string>
+    <string name="filename_prefix_description">Atur awalan untuk file yang diekspor oleh PCAPdroid, mis. file PCAP</string>
+    <string name="no_requests">Tidak ada permintaan</string>
+    <string name="item_not_found">Item yang ditentukan tidak ditemukan</string>
+    <string name="connection_number">Koneksi #%1$d</string>
+    <string name="http_request_number">Permintaan HTTP #%1$d</string>
+    <string name="http_requests">Permintaan HTTP</string>
+    <string name="switch_to_http">Lihat permintaan HTTP</string>
+    <string name="switch_to_connections">Lihat koneksi</string>
+    <string name="decryption_error">Kesalahan dekripsi</string>
+    <string name="previous">Sebelumnya</string>
+    <string name="next">Berikutnya</string>
+    <string name="save_as_text">Simpan sebagai teks</string>
+    <string name="save_as_har">Simpan sebagai HAR</string>
     <string name="dump_extensions_how_to">Cara menampilkan ekstensi pembuangan PCAPdroid di Wireshark</string>
     <string name="dump_extensions">Ekstensi PCAPdroid</string>
     <string name="errno_enetdown">Jaringan mati</string>
@@ -532,4 +552,13 @@
     <string name="mitm_addon_update_available">Pembaruan addon mitm baru telah tersedia. Perbarui untuk mendapatkan perbaikan bug terbaru</string>
     <string name="update_action">Perbarui</string>
     <string name="cidr_val">CIDR: %1$s</string>
+    <string name="tcp_collector_info">Kolektor TCP: %1$s:%2$d</string>
+    <string name="tcp_exporter">Eksportir TCP</string>
+    <string name="tcp_udp_exporter">Eksportir TCP/UDP</string>
+    <string name="tcp_exporter_info">Kirim PCAP ke penerima TCP jarak jauh (pcap-over-ip)</string>
+    <string name="generate_api_key">Hasilkan kunci API</string>
+    <string name="show_api_key">Tampilkan kunci API</string>
+    <string name="api_key">Kunci API</string>
+    <string name="api_key_discard_confirm">Apakah Anda benar-benar ingin membuang kunci API saat ini dan membuat yang baru?</string>
+    <string name="no_permissions_set_info">Tidak ada izin yang ditetapkan. Panggil PCAPdroid melalui StartActivityForResult untuk menampilkan permintaan izin</string>
 </resources>

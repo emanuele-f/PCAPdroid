@@ -55,6 +55,7 @@ extern void (*logcallback)(int lvl, const char *msg);
 #define log_e(...) log_android(ANDROID_LOG_ERROR, __VA_ARGS__)
 #define log_f(...) log_android(ANDROID_LOG_FATAL, __VA_ARGS__)
 
+void set_log_level(int lvl);
 void log_android(int lvl, const char *fmt, ...);
 ssize_t xwrite(int fd, const void *buf, size_t count);
 ssize_t xread(int fd, void *buf, size_t count);

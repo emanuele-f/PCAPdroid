@@ -33,7 +33,7 @@
     <string name="udp_exporter">UDP aktarıcı</string>
     <string name="no_dump">Döküm yok</string>
     <string name="http_server_info">PCAP indirmesi için bir HTTP sunucusu başlat</string>
-    <string name="udp_exporter_info">PCAP dökümünü uzak bir UDP alıcısına gönderir</string>
+    <string name="udp_exporter_info">PCAP dökümünü uzak bir UDP alıcısına gönder</string>
     <string name="http_server_port">HTTP sunucusu bağlantı noktası</string>
     <string name="user_guide">Kullanıcı rehberi</string>
     <string name="stats">İstatistikler</string>
@@ -58,7 +58,6 @@
     <string name="unknown_app">Bilinmeyen</string>
     <string name="other_prefs">Diğer</string>
     <string name="app_language">Uygulama dili</string>
-    <string name="lang_english">İngilizce</string>
     <string name="root_capture_summary">PCAPdroid\'in diğer VPN uygulamalarıyla çalışmasına izin verir</string>
     <string name="donate">Bağış yap</string>
     <string name="search">Ara…</string>
@@ -93,7 +92,7 @@
     <string name="feature_not_available">Bu özellik şu anda aygıtınız için kullanılabilir değil</string>
     <string name="hidden_connections_help">İlgili olanlara odaklanabilmeniz için bağlantı listesi girdilerini gizlemek için kurallar listesi</string>
     <string name="malicious_connection_filter">Kötü amaçlı</string>
-    <string name="status_filter">Durum: %1$s</string>
+    <string name="status_filter">HTTP durumu: %1$s</string>
     <string name="not_hidden_filter">Gizli değil</string>
     <string name="copy_action">Kopyala…</string>
     <string name="url_val">URL: %1$s</string>
@@ -230,8 +229,6 @@
     <string name="connection_start_not_seen">PCAPdroid bu bağlantının başlangıcını görmedi. Bazı bilgiler eksik olabilir</string>
     <string name="warn_no_app_data">Hiçbir uygulama verisi alınıp gönderilmedi</string>
     <string name="waiting_application_data">Veri bekleniyor</string>
-    <string name="display_as">Şu şekilde görüntüle…</string>
-    <string name="printable_text">Yazdırılabilir metin</string>
     <string name="hexdump">Onaltılık sayı dökümü</string>
     <string name="geolocation">Coğrafi konum</string>
     <string name="geolocation_summary">Çevrim dışı aramalar yaparak ülke ve ASN bilgilerini göster</string>
@@ -260,7 +257,7 @@
     <string name="string_http_request">HTTP isteği</string>
     <string name="string_http_response">HTTP yanıtı</string>
     <string name="websocket">WebSocket</string>
-    <string name="decryption_filter">Şifre çözme: %1$s</string>
+    <string name="decryption_filter">Durum: %1$s</string>
     <string name="download_in_progress">İndirme devam ediyor, lütfen bekleyin</string>
     <string name="import_failed">İçe aktarılamadı</string>
     <string name="rules_merge_msg">Var olan kurallar korunsun mu\?</string>
@@ -298,7 +295,7 @@
 \nYakalamayı başlatmak için, bir sonraki ekranda VPN isteğini kabul etmeniz gerekir.
 \n
 \n<b>NOT:</b> Devam etmek için, Android ayarlarından yapılandırılmış her zaman açık VPN\'lerin tümünü devre dışı bırakın</string>
-    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara ve etki alanlarına internet erişimini kolayca engelleyebilirsiniz \n \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
+    <string name="app_intro_firewall_msg">Tümleşik <a href="%1$s">güvenlik duvarı</a> ile tek tek uygulamalara, etki alanlarına ve ülkelere internet erişimini kolayca engelleyebilirsiniz \n \nBunu yerleşik trafik görünürlüğü ile birleştirerek gizliliğinizi korumak için en iyi aracı elde edin</string>
     <string name="app_intro_traffic_dump">PCAPdroid, daha fazla inceleme için trafiği standart PCAP biçiminde dökmek için <a href="%1$s">birden fazla seçenek</a> sunar \n \n<a href="%2$s">İzleme seçeneği</a> aracılığıyla paketlere uygulama adları ekleyebilir ve bunları Wireshark\'ta görüntüleyebilirsiniz</string>
     <string name="mitm_setup_wizard_intro">Bu sihirbaz, <a href="%1$s">TLS şifre çözme</a> işlemini gerçekleştirmek için gerekli olan PCAPdroid ortadaki adam eklentisinin ve sertifika yetkilisinin kurulumunda size rehberlik edecektir</string>
     <string name="app_intro_back_button">Geri</string>
@@ -369,7 +366,7 @@
     <string name="warning">Uyarı</string>
     <string name="paid_features_unlocked">Ücretli özelliklerin kilidi açıldı. Çalışıyorsa yakalamayı yeniden başlatın</string>
     <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">ortadaki adam eklentisini</a> kurun</string>
-    <string name="tls_decryption_with_root_msg">TLS şifre çözme işlemini root ile çalıştırma yeteneği deneysel bir özelliktir. Bilinen hataların bir listesi şöyledir: \n \n - PCAPdroid\'de trafiği orijinal uygulama yerine ortadaki adam eklentisi uygulamasından oluşturulduğu şekilde göreceksiniz \n - bir uygulama filtresi ayarlandığında, şifre çözme yalnızca hedef uygulama için gerçekleşecektir, ancak PCAPdroid diğer uygulamaların trafiğini göstermeye devam edecektir \n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla) \n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir \n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
+    <string name="tls_decryption_with_root_msg">TLS şifre çözme işlemini root ile çalıştırma yeteneği deneysel bir özelliktir. Bilinen hataların bir listesi şöyledir: \n \n - PCAPdroid\'de trafiği orijinal uygulama yerine ortadaki adam eklentisi uygulamasından oluşturulduğu şekilde göreceksiniz \n - SSL keylog dökümü desteklenmez\n - bir uygulama filtresi ayarlandığında, şifre çözme yalnızca hedef uygulama için gerçekleşecektir, ancak PCAPdroid diğer uygulamaların trafiğini göstermeye devam edecektir \n - yakalama başlatılamazsa, iptables komutunu gerçekten root olarak çalıştırabildiğinizden emin olun (örneğin termux aracılığıyla) \n - bu, Android 12 ve sonraki sürümlerde çalışmayabilir \n - Bir VPN uygulaması çalışıyorsa, şifre çözme için belirli bir uygulamayı hedeflemeli veya PCAPdroid ortadaki adam eklentisini VPN\'den hariç tutmalısınız, aksi takdirde trafik bir döngüye girecektir</string>
     <string name="unlock_token_summary">Uygulamanın Google-Play dışı sürümlerinde (örn. F-Droid/Github) ücretli özelliklerin kilidini açmak için kullanılabilecek bir belirteç</string>
     <string name="license_service_unavailable">PCAPdroid lisans hizmeti şu anda kullanılamıyor. Lütfen birkaç dakika içinde yeniden deneyin</string>
     <string name="access_paid_features_msg">Ücretli özelliklere nasıl erişeceğinizi öğrenmek için <a href="%1$s">kullanıcı kılavuzuna</a> göz atın</string>
@@ -409,7 +406,6 @@
     <string name="external_storage_perm_required">Harici depolama izni gerekli</string>
     <string name="many_rules_warning">Çok sayıda kuralı içe aktarmaya çalışıyorsunuz, bu da bazı etkileşimler sırasında uygulamanın yanıt vermemesine neden olabilir. Gerçekten devam etmek istiyor musunuz\?</string>
     <string name="pcapng_format">Pcapng biçimi</string>
-    <string name="destination_ip">Hedef IP adresi</string>
     <string name="add_action">Ekle</string>
     <string name="dns_servers_summary">Yakalama sırasında kullanılacak DNS sunucularını yapılandırın</string>
     <string name="use_system_dns">Sistem DNS\'sini kullan</string>
@@ -524,4 +520,45 @@
     <string name="unsupported_pcap_file">Desteklenmeyen yakalama dosyası biçimi</string>
     <string name="decrypt_pcap_file">PCAP/Pcapng dosyasının şifresini çöz…</string>
     <string name="keylog_read_error">SSL keylog okuma hatası</string>
+    <string name="tcp_collector_info">TCP toplayıcı: %1$s:%2$d</string>
+    <string name="tcp_exporter">TCP dışa aktarıcı</string>
+    <string name="tcp_udp_exporter">TCP/UDP dışa aktarıcı</string>
+    <string name="tcp_exporter_info">PCAP dökümünü uzak bir TCP alıcısına gönder (pcap-over-ip)</string>
+    <string name="cidr_val">CIDR: %1$s</string>
+    <string name="no_permissions_set_info">İzin ayarlanmadı. İzin istemini görüntülemek için StartActivityForResult aracılığıyla PCAPdroid\'i başlatın</string>
+    <string name="generate_api_key">API anahtarı oluştur</string>
+    <string name="show_api_key">API anahtarını göster</string>
+    <string name="api_key">API anahtarı</string>
+    <string name="api_key_discard_confirm">Geçerli API anahtarını gerçekten silmek ve yeni bir tane oluşturmak istiyor musunuz?</string>
+    <string name="ip_address_or_cidr">IP adresi / CIDR</string>
+    <string name="tls_decryption_not_supported_16KB">TLS şifre çözme şu anda 16 KB aygıtlarda desteklenmiyor</string>
+    <string name="filename_prefix">Dosya adı ön eki</string>
+    <string name="filename_prefix_description">PCAPdroid tarafından dışa aktarılan dosyalar (örneğin PCAP dosyaları) için ön ek ayarlayın</string>
+    <string name="select">Seç</string>
+    <string name="request_method">İstek yöntemi</string>
+    <string name="content_type">İçerik türü</string>
+    <string name="http_status">HTTP durumu</string>
+    <string name="payload_size_threshold">Yük boyutu eşiği</string>
+    <string name="method_filter">Yöntem: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="text">Metin</string>
+    <string name="display_as_text">Metin olarak görüntüle</string>
+    <string name="display_as_hexdump">Onaltılık döküm olarak görüntüle</string>
+    <string name="exporting">Dışa aktarılıyor…</string>
+    <string name="export_in_progress">Dışa aktarma devam ediyor, lütfen bekleyin</string>
+    <string name="show_connection">Bağlantıyı göster</string>
+    <string name="show_system_apps">Sistem uygulamalarını göster</string>
+    <string name="destination_host">Hedef ana makine</string>
+    <string name="no_requests">İstek yok</string>
+    <string name="item_not_found">Belirtilen öge bulunamadı</string>
+    <string name="connection_number">Bağlantı #%1$d</string>
+    <string name="http_request_number">HTTP isteği #%1$d</string>
+    <string name="http_requests">HTTP istekleri</string>
+    <string name="switch_to_http">HTTP isteklerini göster</string>
+    <string name="switch_to_connections">Bağlantıları göster</string>
+    <string name="decryption_error">Şifre çözme hatası</string>
+    <string name="previous">Önceki</string>
+    <string name="next">Sonraki</string>
+    <string name="save_as_text">Metin olarak kaydet</string>
+    <string name="save_as_har">HAR olarak kaydet</string>
 </resources>

@@ -74,7 +74,6 @@
     <string name="conn_status_unreachable">Non raggiungibile</string>
     <string name="other_prefs">Altro</string>
     <string name="app_language">Lingua</string>
-    <string name="lang_english">Inglese</string>
     <string name="system_default">Predefinita del sistema</string>
     <string name="no_activity_file_selection">App di selezione file mancante</string>
     <string name="socks5_proxy">SOCKS5</string>
@@ -129,7 +128,7 @@
     <string name="feature_not_available">Questa funzione non è attualmente disponibile per il tuo dispositivo</string>
     <string name="billing_connecting">La connessione a Google Play è in corso, riprovare tra poco</string>
     <string name="malicious_connection_filter">Malevola</string>
-    <string name="status_filter">Stato: %1$s</string>
+    <string name="status_filter">Stato HTTP: %1$s</string>
     <string name="not_hidden_filter">Non nascosta</string>
     <string name="copy_action">Copia…</string>
     <string name="url_val">"URL: %1$s"</string>
@@ -229,8 +228,6 @@
     <string name="network_traffic">Traffico</string>
     <string name="warn_no_app_data">Non è stato scambiato alcun dato applicativo</string>
     <string name="waiting_application_data">In attesa di dati</string>
-    <string name="display_as">Mostra come…</string>
-    <string name="printable_text">Testo stampabile</string>
     <string name="hexdump">In esadecimale</string>
     <string name="geolocation">Geolocalizzazione</string>
     <string name="geolocation_summary">Mostra informazioni quali nazione e ASN tramite ricerche in un database locale</string>
@@ -255,7 +252,7 @@
     <string name="websocket">WebSocket</string>
     <string name="rx_direction">RX</string>
     <string name="decrypted">Decifrata</string>
-    <string name="decryption_filter">Decrittazione: %1$s</string>
+    <string name="decryption_filter">Stato: %1$s</string>
     <string name="download">Scarica</string>
     <string name="app_info">Informazioni app</string>
     <string name="action_block">Blocca</string>
@@ -399,7 +396,6 @@
     <string name="redirect_to">Redireziona a:</string>
     <string name="original_port">Porta originale</string>
     <string name="required">richiesto</string>
-    <string name="destination_ip">Indirizzo IP di destinazione</string>
     <string name="destination_port">Porta di destinazione</string>
     <string name="port_mapping_exists">Regola di port mapping già definita</string>
     <string name="items_delete_confirm">Eliminare gli elementi selezionati\?</string>
@@ -537,4 +533,31 @@
     <string name="tls_decryption_not_supported_16KB">La decrittazione TLS non è attualmente supportata su dispositivi a 16 KB</string>
     <string name="filename_prefix">Prefisso nomi dei file</string>
     <string name="filename_prefix_description">Imposta il prefisso usato per i file esportati da PCAPdroid, e.s. file PCAP</string>
+    <string name="select">Seleziona</string>
+    <string name="request_method">Metodo della richiesta</string>
+    <string name="content_type">Content type</string>
+    <string name="http_status">Status HTTP</string>
+    <string name="method_filter">Metodo: %1$s</string>
+    <string name="text">Testo</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="display_as_text">Mostra come testo</string>
+    <string name="payload_size_threshold">Soglia dimensione payload</string>
+    <string name="display_as_hexdump">Mostra come hexdump</string>
+    <string name="export_in_progress">Esportazione in corso, attendere</string>
+    <string name="exporting">Esportando…</string>
+    <string name="show_connection">Mostra la connessione</string>
+    <string name="show_system_apps">Mostra app di sistema</string>
+    <string name="item_not_found">Impossibile trovare l\'elemento specificato</string>
+    <string name="no_requests">Nessuna richiesta</string>
+    <string name="destination_host">Host di destinazione</string>
+    <string name="connection_number">Connessione #%1$d</string>
+    <string name="switch_to_connections">Mostra le connessioni</string>
+    <string name="decryption_error">Errore di decrittazione</string>
+    <string name="http_request_number">Richiesta HTTP #%1$d</string>
+    <string name="http_requests">Richieste HTTP</string>
+    <string name="switch_to_http">Mostra le richieste HTTP</string>
+    <string name="save_as_har">Salva come HAR</string>
+    <string name="previous">Precedente</string>
+    <string name="next">Successivo</string>
+    <string name="save_as_text">Salva come testo</string>
 </resources>

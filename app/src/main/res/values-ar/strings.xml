@@ -113,7 +113,6 @@
     <string name="other_prefs">آخر</string>
     <string name="system_default">النظام الافتراضي</string>
     <string name="conn_status_unreachable">لا يمكن الوصول إليه</string>
-    <string name="lang_english">الإنجليزية</string>
     <string name="no_activity_file_selection">لم يتم العثور على تطبيق للتعامل مع الملف المُختار</string>
     <string name="file_saved_with_name">تم حفظ الملف باسم \"%1$s\"</string>
     <string name="socks5_redirection">إعادة توجيه SOCKS5</string>
@@ -170,7 +169,7 @@
     <string name="malware_whitelist_help">القائمة البيضاء المعرفة من قبل المستخدم لمنع اكتشاف البرامج الضارة. اضغط لفترة طويلة على الاتصالات الضارة لإنشاء قواعد لإلغاء تحديدها كبرامج ضارة</string>
     <string name="hidden_connections_help">قائمة القواعد لإخفاء إدخالات قائمة الاتصال حتى تتمكن من التركيز على الإدخالات ذات الصلة</string>
     <string name="not_hidden_filter">غير مخفي</string>
-    <string name="status_filter">الحالة: %1$s</string>
+    <string name="status_filter">حالة HTTP: %1$s</string>
     <string name="show_me">أرِني</string>
     <string name="control_permissions">تحكم في الأذونات</string>
     <string name="country_val">البلد: %1$s</string>
@@ -221,7 +220,7 @@
     <string name="tls_decryption_summary">فك تعمية حركة مرور SSL/TLS عن طريق إجراء mitm. قد يعمل هذا الآن مع بعض التطبيقات، راجع دليل المستخدم</string>
     <string name="no_items_for_purchase">لا توجد عناصر متاحة للشراء</string>
     <string name="interface_filter">الواجهة: %1$s</string>
-    <string name="network_interface">واجهة المُستخدم</string>
+    <string name="network_interface">واجهة الشبكة</string>
     <string name="loading">تحميل…</string>
     <string name="purchased">تّم شِراؤها</string>
     <string name="billing_failure">تعذر الاتصال بـ Google Play. يرجى إعادة المحاولة بعد فترة</string>
@@ -307,13 +306,11 @@
     <string name="full_payload_summary">إظهار حمولة الاتصالات الكاملة (على سبيل المثال، طلب HTTP الكامل والاستجابة له). وهذا يتطلب الكثير من الذاكرة، لا تستخدمها على المدى الطويل</string>
     <string name="decrypted">تم فك تعميتها</string>
     <string name="network_traffic">حركة المرور</string>
-    <string name="display_as">عرض كـ…</string>
     <string name="decryption">فك التعمية</string>
     <string name="connection_start_not_seen">لم يشاهد PCAPdroid بداية هذا الاتصال. قد تكون بعض المعلومات مفقودة</string>
     <string name="warn_no_app_data">لم يتم تبادل أي بيانات التطبيق</string>
-    <string name="decryption_filter">فك التعمية: %1$s</string>
+    <string name="decryption_filter">الحالة: %1$s</string>
     <string name="waiting_application_data">في انتظار البيانات</string>
-    <string name="printable_text">نص قابل للطباعة</string>
     <string name="hexdump">تفريغ سداسي (Hexdump)</string>
     <string name="geolocation">تحديد الموقع الجغرافي</string>
     <string name="geolocation_summary">قم بعرض معلومات البلد ورقم ASN من خلال إجراء عمليات بحث في وضع عدم الاتصال</string>
@@ -401,7 +398,7 @@
     <string name="payload_scams_notice">قد يحتوي هذا العرض على معلومات حساسة، مثل كلمات المرور ورموز الوصول المميزة.
 \n
 \nلا تقم أبدًا بإعطاء هذه المعلومات لأي شخص، فقد تكون محاولة احتيال</string>
-    <string name="paid_features_unlocked">الميزات المدفوعة مُقفلة. أعد تشغيل الالتقاط في حالة التشغيل</string>
+    <string name="paid_features_unlocked">تم فتح الميزات المدفوعة. أعد تشغيل الالتقاط في حالة التشغيل</string>
     <string name="build_info">معلومات البناء</string>
     <string name="unlock_token_error">تعذر طلب رمز إلغاء القفل [%1$d]: %2$s</string>
     <string name="unlock_token_summary">رمز مميز يمكن استخدامه لفتح الميزات المدفوعة في إصدارات التطبيق غير التابعة لـ Google Play (مثل F-Droid/Github)</string>
@@ -424,7 +421,6 @@
     <string name="original_port">المنفذ الأصلي</string>
     <string name="required">مطلوب</string>
     <string name="use_system_dns_summary">استخدم خوادم DNS الخاصة بالنظام إن أمكن</string>
-    <string name="destination_ip">عنوان IP الوجهة</string>
     <string name="rule_exists">القاعدة محددة بالفعل</string>
     <string name="dns_servers">خوادم DNS</string>
     <string name="dns_servers_summary">قم بتكوين خوادم DNS لاستخدامها أثناء الالتقاط</string>
@@ -534,4 +530,31 @@
     <string name="tls_decryption_not_supported_16KB">فك تعمية TLS غير مدعوم حاليًا على الأجهزة ذات الذاكرة 16 كيلوبايت</string>
     <string name="filename_prefix">بادئة اسم الملف</string>
     <string name="filename_prefix_description">عيّن البادئة للملفات التي يصدرها PCAPdroid، مثل ملفات PCAP</string>
+    <string name="select">حدِّد</string>
+    <string name="request_method">طريقة الطلب</string>
+    <string name="content_type">نوع المحتوى</string>
+    <string name="http_status">حالة HTTP</string>
+    <string name="payload_size_threshold">عتبة حجم الحمولة</string>
+    <string name="method_filter">طريقة: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="text">نص</string>
+    <string name="display_as_text">اعرض كنص</string>
+    <string name="display_as_hexdump">اعرض ك hexdump</string>
+    <string name="exporting">يصدِّر…</string>
+    <string name="export_in_progress">جارِ التصدير، يُرجى الانتظار</string>
+    <string name="show_connection">أظهر الاتصال</string>
+    <string name="show_system_apps">أظهر تطبيقات النظام</string>
+    <string name="destination_host">مضيف الوجهة</string>
+    <string name="no_requests">لا طلبات</string>
+    <string name="item_not_found">تعذر العثور على العنصر المحدد</string>
+    <string name="connection_number">اتصال %1$d</string>
+    <string name="http_request_number">طلب HTTP رقم %1$d</string>
+    <string name="http_requests">طلبات HTTP</string>
+    <string name="switch_to_http">أظهر طلبات HTTP</string>
+    <string name="switch_to_connections">أظهر الاتصالات</string>
+    <string name="decryption_error">خطأ في فك التعمية</string>
+    <string name="previous">السابق</string>
+    <string name="next">التالي</string>
+    <string name="save_as_text">احفظ كنص</string>
+    <string name="save_as_har">حفظ ك HAR</string>
 </resources>

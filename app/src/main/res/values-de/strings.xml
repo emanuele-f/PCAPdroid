@@ -19,7 +19,7 @@
     <string name="status">Status</string>
     <string name="app">App</string>
     <string name="http_server">HTTP-Server</string>
-    <string name="no_dump">Kein Dump</string>
+    <string name="no_dump">Kein Mitschnitt</string>
     <string name="http_server_info">Starte einen HTTP-Server für den PCAP download</string>
     <string name="user_guide">Benutzerhandbuch</string>
     <string name="open_telegram_group">Telegram-Gruppe</string>
@@ -31,7 +31,7 @@
     <string name="stats">Statistiken</string>
     <string name="active_connections">Aktive Verbindungen</string>
     <string name="udp_exporter">UDP-Exporter</string>
-    <string name="udp_exporter_info">Sendet das PCAP zu einen entfernten UDP-Server</string>
+    <string name="udp_exporter_info">Sendet das PCAP zu einen remote UDP-Server</string>
     <string name="http_server_port">HTTP-Server-Port</string>
     <string name="no_dump_info">Verkehr wird nicht gedumpt</string>
     <string name="receiver_port">Empfänger-Port</string>
@@ -48,7 +48,7 @@
     <string name="dns_server">DNS-Server</string>
     <string name="apps">Apps</string>
     <string name="pcap_file">PCAP-Datei</string>
-    <string name="pcap_file_info">Erstellen einer PCAP/Pcapng-Datei im Gerätespeicher</string>
+    <string name="pcap_file_info">Erstelle eine PCAP/Pcapng-Datei im Gerätespeicher</string>
     <string name="cannot_write_file">Datei kann nicht geschrieben werden</string>
     <string name="share">Teilen</string>
     <string name="pcap_file_action">In der Datei \"%1$s\" gespeicherter Netzwerktraffic (%2$s)</string>
@@ -67,6 +67,7 @@
     <string name="hidden_connections_help">Liste der Regeln zum Ausblenden von Verbindungslisteneinträgen, um sich auf relevante fokussieren zu können</string>
     <string name="control_permissions">Berechtigungssteuerung</string>
     <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="no_permissions_set_info">Keine Berechtigungen festgelegt. Rufen Sie PCAPdroid über StartActivityForResult auf, um die Berechtigungsabfrage anzuzeigen</string>
     <string name="status_outdated">Veraltet</string>
     <string name="status_not_loaded">Nicht geladen</string>
     <string name="connections_checked">Geprüfte Verbindungen</string>
@@ -87,16 +88,15 @@
     <string name="rcvd_and_sent">%1$s empfangen — %2$s gesendet</string>
     <string name="collector_info">UDP-Kollektor: %1$s:%2$d</string>
     <string name="save_to_file">Speichern unter</string>
-    <string name="older_connections_notice">%1$d älter Verbindungen werden nicht angezeigt</string>
+    <string name="older_connections_notice">%1$d ältere Verbindungen werden nicht angezeigt</string>
     <string name="unknown_app">Unbekannt</string>
     <string name="error">Fehler</string>
     <string name="conn_status_unreachable">Unerreichbar</string>
     <string name="other_prefs">Andere</string>
     <string name="app_language">App-Sprache</string>
-    <string name="lang_english">Englisch</string>
     <string name="system_default">Systemvorgabe</string>
     <string name="file_saved_with_name">Datei als \"%1$s\" gespeichert</string>
-    <string name="get_app">Kapiert:</string>
+    <string name="get_app">Herunterladen:</string>
     <string name="no_activity_file_selection">Keine App für die Dateiauswahl gefunden</string>
     <string name="about_text">PCAPdroid ist ein Open-Source-Netzwerkaufnahme- und Überwachungswerkzeug, das ohne Root-Rechte funktioniert</string>
     <string name="proxy_port">Proxy-Port</string>
@@ -144,7 +144,7 @@
     <string name="capture_interface">Aufnahmeschnittstelle</string>
     <string name="malware_whitelist_rules">Regeln für Malware-Positivliste</string>
     <string name="malicious_connection_filter">Bösartig</string>
-    <string name="status_filter">Status: %1$s</string>
+    <string name="status_filter">HTTP-Status: %1$s</string>
     <string name="not_hidden_filter">Nicht versteckt</string>
     <string name="copy_action">Kopieren…</string>
     <string name="url_val">URL: %1$s</string>
@@ -158,7 +158,7 @@
     <string name="send_report">Bericht senden</string>
     <string name="start_at_boot">Beim Booten starten</string>
     <string name="malware_status_ok">Kein schädlicher Datenverkehr erkannt</string>
-    <string name="malware_status_detected">Keine schädlichen Verbindungen erkannt</string>
+    <string name="malware_status_detected">Schädliche Verbindungen erkannt</string>
     <string name="status_uptodate">Auf dem neusten Stand</string>
     <string name="blacklist_type">Typ: %1$s</string>
     <string name="n_rules">%1$s Regeln</string>
@@ -188,6 +188,7 @@
     <string name="no_intent_handler_found">Keine App zum Ausführen dieser Aktion gefunden</string>
     <string name="network_interface">Schnittstelle</string>
     <string name="interface_filter">Schnittstelle: %1$s</string>
+    <string name="request_method">Anfragemethode</string>
     <string name="loading">Wird geladen…</string>
     <string name="purchased">Gekauft</string>
     <string name="no_items_for_purchase">Keine Artikel zum Kauf verfügbar</string>
@@ -216,7 +217,7 @@
     <string name="connections_blocked">Gesperrte Verbindungen</string>
     <string name="block_private_dns">Privates DNS sperren</string>
     <string name="firewall_summary">Sperre den Internetzugang für Apps, konfiguriere Regeln für bestimmte Domänen und IP-Adressen. Funktioniert nur mit der Nicht-Root-Erfassung</string>
-    <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps und Domains sperren \n \nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
+    <string name="app_intro_firewall_msg">Mit der integrierten <a href="%1$s">Firewall</a> kannst du ganz einfach den Internetzugang zu einzelnen Apps, Domains und Ländern sperren\n \nKombiniere dies mit der integrierten Sichtbarkeit des Datenverkehrs, um das ultimative Tool zum Schutz deiner Privatsphäre zu erhalten</string>
     <string name="app_intro_malware_detection">Verbessere die Sicherheit deines Geräts mit der Funktion <a href="%1$s">Malware-Erkennung</a>
 \n
 \nDurch die Verwendung aktueller Blacklists kann es bösartige Verbindungen in Echtzeit erkennen, blockieren und warnen</string>
@@ -255,7 +256,7 @@
     <string name="not_decryptable">Nicht entschlüsselbar</string>
     <string name="decrypted">Entschlüsselt</string>
     <string name="decryption">Entschlüsselung</string>
-    <string name="decryption_filter">Entschlüsselung: %1$s</string>
+    <string name="decryption_filter">Status: %1$s</string>
     <string name="connection_start_not_seen">PCAPdroid hat den Beginn dieser Verbindung nicht gesehen. Einige Informationen fehlen möglicherweise</string>
     <string name="warn_no_app_data">Es wurden keine Anwendungsdaten ausgetauscht</string>
     <string name="waiting_application_data">Wartende Daten</string>
@@ -324,7 +325,6 @@
     <string name="redirect_to">Weiterleiten zu:</string>
     <string name="original_port">Ursprünglicher Port</string>
     <string name="required">Erforderlich</string>
-    <string name="destination_ip">Ziel-IP-Adresse</string>
     <string name="destination_port">Ziel-Port</string>
     <string name="port_mapping_exists">Port-Zuordnung bereits definiert</string>
     <string name="items_delete_confirm">Ausgewählte Elemente löschen\?</string>
@@ -371,8 +371,6 @@
     <string name="full_payload">Volle Nutzlast</string>
     <string name="geolocation">Standort</string>
     <string name="geolocation_summary">Zeigen Sie Länder- und ASN-Informationen an, indem Sie Offline-Suchen durchführen</string>
-    <string name="display_as">Darstellen als…</string>
-    <string name="printable_text">Druckbarer Text</string>
     <string name="hexdump">Hexdump</string>
     <string name="geo_db_not_found">Datenbank nicht gefunden. Geolokalisierung ist deaktiviert</string>
     <string name="database">Datenbank</string>
@@ -399,7 +397,7 @@
 \n
 \n<b>ANMERKUNG:</b> um fortzufahren deaktivieren Sie bitte alle Always-on VPNs in den Android Einstellungen</string>
     <string name="app_intro_traffic_dump">PCAPdroid bietet <a href="%1$s">mehrere Möglichkeiten</a>, den Datenverkehr zur weiteren Analyse in das Standard-PCAP-Format zu übertragen\n\nMit der <a href="%2$s">PCAPdroid-Erweiterungen Option</a> können Sie den Paketen App-Namen hinzufügen und sie in Wireshark anzeigen lassen</string>
-    <string name="tls_decryption_with_root_msg">Die Möglichkeit, die TLS-Entschlüsselung mit root auszuführen, ist eine experimentelle Funktion. Dies ist eine Liste von bekannten Fehlern: \n \n - in PCAPdroid wird der Datenverkehr so angezeigt, wie er von der mitm-addon-App anstelle der ursprünglichen App generiert wurde \n - wenn ein App-Filter gesetzt ist, wird nur die Ziel-App entschlüsselt, aber PCAPdroid zeigt weiterhin den Datenverkehr der anderen Apps an \n - wenn die Erfassung nicht startet, stellen Sie sicher, dass Sie den iptables-Befehl als root ausführen können (z. B. über termux). \n - dies funktioniert möglicherweise nicht unter Android 12 und später \n - wenn eine VPN-App läuft, sollten Sie entweder eine bestimmte App für die Entschlüsselung auswählen oder das PCAPdroid mitm Addon vom VPN ausschließen, da der Datenverkehr sonst in einer Schleife läuft</string>
+    <string name="tls_decryption_with_root_msg">Die Möglichkeit, die TLS-Entschlüsselung mit root auszuführen, ist eine experimentelle Funktion. Dies ist eine Liste von bekannten Fehlern: \n \n - in PCAPdroid wird der Datenverkehr so angezeigt, wie er von der mitm-addon-App anstelle der ursprünglichen App generiert wurde \n - der Dump des SSL-Keylogs wird nicht unterstützt \n - wenn ein App-Filter gesetzt ist, wird nur die Ziel-App entschlüsselt, aber PCAPdroid zeigt weiterhin den Datenverkehr der anderen Apps an \n - wenn die Erfassung nicht startet, stellen Sie sicher, dass Sie den iptables-Befehl als root ausführen können (z. B. über termux). \n - dies funktioniert möglicherweise nicht unter Android 12 und später \n - wenn eine VPN-App läuft, sollten Sie entweder eine bestimmte App für die Entschlüsselung auswählen oder das PCAPdroid mitm Addon vom VPN ausschließen, da der Datenverkehr sonst in einer Schleife läuft</string>
     <string name="vpn_lockdown_notice">Um zu verhindern, dass Apps auf das Internet zugreifen, wenn PCAPdroid nicht läuft (z.B. nach einem Neustart), können Sie PCAPdroid als Always-On-VPN im Lockdown-Modus einstellen.
 \n
 \nMöchten Sie jetzt die VPN-Einstellungen öffnen\?</string>
@@ -517,11 +515,48 @@
     <string name="errno_ehostunreach">Keine Route zum Host</string>
     <string name="errno_ehostunreach_msg">Das System kann keine Route zum Ziel-Host finden</string>
     <string name="dns_conn_info">DNS übersetzt einen Domainnamen in eine IP-Adresse. Die tatsächlichen Daten werden typischerweise über nachfolgende HTTPS/TLS-Verbindungen ausgetauscht</string>
-    <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">user Anleitung</a> für Details</string>
+    <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">Benutzeranleitung</a> für Details</string>
+    <string name="tls_decryption_not_supported_16KB">TLS-Entschlüsselung wird auf 16-KB-Geräten derzeit nicht unterstützt</string>
     <string name="dump_extensions_summary">Erweitern Sie das Paket-Dump-Format mit zusätzlichen Metadaten, wie die App, die ein bestimmtes Paket gesendet / empfangen</string>
     <string name="unsupported_pcap_file">Ununterstütztes Erfassungsdateiformat</string>
     <string name="decrypt_pcap_file">PCAP/Pcapng Datei entschlüsseln…</string>
     <string name="mitm_addon_update_available">Ein neues Update für das mitm AddOn ist verfügbar. Aktualisiere, um die aktuellsten Fehlerbehebungen zu installieren</string>
     <string name="update_action">Aktualisierung</string>
     <string name="ip_address_or_cidr">IP-Adresse / CIDR</string>
+    <string name="tcp_exporter">TCP-Exporter</string>
+    <string name="tcp_udp_exporter">TCP/UDP-Exporter</string>
+    <string name="tcp_exporter_info">Sendet das PCAP an einen remote TCP-Empfänger (pcap-über-ip)</string>
+    <string name="generate_api_key">API-Schlüssel generieren</string>
+    <string name="show_api_key">API-Schlüssel anzeigen</string>
+    <string name="api_key">API-Schlüssel</string>
+    <string name="api_key_discard_confirm">Möchten Sie den aktuellen API-Schlüssel wirklich verwerfen und einen neuen generieren?</string>
+    <string name="save_as_text">Als Text speichern</string>
+    <string name="save_as_har">Als HAR speichern</string>
+    <string name="tcp_collector_info">TCP-Kollektor: %1$s:%2$d</string>
+    <string name="select">Auswählen</string>
+    <string name="content_type">Inhaltstyp</string>
+    <string name="http_status">HTTP-Status</string>
+    <string name="payload_size_threshold">Schwellenwert für Nutzlastgröße</string>
+    <string name="method_filter">Methode: %1$s</string>
+    <string name="content_type_filter">Content-Type: %1$s</string>
+    <string name="text">Text</string>
+    <string name="display_as_text">Als Text anzeigen</string>
+    <string name="display_as_hexdump">Als Hexdump anzeigen</string>
+    <string name="exporting">Wird exportiert…</string>
+    <string name="export_in_progress">Export wird durchgeführt, bitte warten</string>
+    <string name="show_connection">Verbindung anzeigen</string>
+    <string name="show_system_apps">System-Apps anzeigen</string>
+    <string name="destination_host">Ziel-Host</string>
+    <string name="filename_prefix">Dateinamenpräfix</string>
+    <string name="filename_prefix_description">Legt das Präfix für die von PCAPdroid exportierten Dateien fest, z.B. PCAP-Dateien</string>
+    <string name="no_requests">Keine Anfragen</string>
+    <string name="item_not_found">Das angegebene Element wurde nicht gefunden</string>
+    <string name="connection_number">Verbindung #%1$d</string>
+    <string name="http_request_number">HTTP-Anfrage #%1$d</string>
+    <string name="http_requests">HTTP-Anfragen</string>
+    <string name="switch_to_http">HTTP-Anfragen anzeigen</string>
+    <string name="switch_to_connections">Verbindungen anzeigen</string>
+    <string name="decryption_error">Entschlüsselungsfehler</string>
+    <string name="previous">Zurück</string>
+    <string name="next">Weiter</string>
 </resources>

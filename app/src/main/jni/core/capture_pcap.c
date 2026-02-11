@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-25 - Emanuele Faranda
+ * Copyright 2021-26 - Emanuele Faranda
  */
 
 #include <sys/un.h>
@@ -406,21 +406,77 @@ static int get_ip_offset(int linktype) {
 /* ******************************************************* */
 
 static plain_data_t g_plain_data = {};
+static pkt_context_t *g_cur_ctx = NULL;
 
-static void handle_tls_data(const unsigned char *plain_data, unsigned int data_len) {
-    if (data_len == 0)
-        return;
+static void handle_http_data(bool is_tx, uint64_t ms, uint32_t stream_id, const unsigned char *plain_data, unsigned int data_len) {
+    // NOTE: (plain_data == NULL) / (data_len == 0) signals HTTP/2 resets
 
-    //log_w("<DATA> %s", plain_data);
-    g_plain_data.data = (unsigned char *) pd_realloc(g_plain_data.data, g_plain_data.data_len + data_len);
-    if (!g_plain_data.data) {
+    // allocate the data first, as a failure in this allocation is easier to handle now rather
+    // than after a plain_data_item_t allocation
+    unsigned char *new_item_data_buf = NULL;
+    if (plain_data) {
+        new_item_data_buf = pd_malloc(data_len);
+        if (!new_item_data_buf) {
+            log_e("alloc(http_data) failed[%d]: %s", errno, strerror(errno));
+            return;
+        }
+    }
+
+    plain_data_item_t* new_items = (plain_data_item_t*) pd_realloc(g_plain_data.items, (g_plain_data.n_items + 1) * sizeof(plain_data_item_t));
+    if (!new_items) {
         log_e("realloc(tls_data) failed[%d]: %s", errno, strerror(errno));
-        g_plain_data.data_len = 0;
-    } else {
-        memcpy(g_plain_data.data + g_plain_data.data_len, plain_data, data_len);
-        g_plain_data.data_len += data_len;
+
+        if (new_item_data_buf)
+            pd_free(new_item_data_buf);
+        return;
+    }
+
+    g_plain_data.items = new_items;
+    plain_data_item_t *item = &g_plain_data.items[g_plain_data.n_items++];
+
+    memset(item, 0, sizeof(plain_data_item_t));
+    item->ms = ms;
+    item->is_tx = is_tx;
+    item->stream_id = stream_id;
+
+    if (new_item_data_buf) {
+        memcpy(new_item_data_buf, plain_data, data_len);
+
+        item->data = new_item_data_buf;
+        item->data_length = data_len;
     }
 }
+
+static void handle_ushark_http1_data(uint32_t conv_id, const unsigned char *plain_data, size_t data_len) {
+    if (!g_cur_ctx)
+        return;
+
+    // HTTP/1 is sequential, use 0 as the stream ID
+    handle_http_data(g_cur_ctx->is_tx, g_cur_ctx->ms, 0, plain_data, data_len);
+}
+
+static void handle_ushark_http2_request(uint32_t conv_id, uint32_t stream_id, const unsigned char *plain_data, size_t data_len) {
+    if (!g_cur_ctx)
+        return;
+
+    handle_http_data(g_cur_ctx->is_tx, g_cur_ctx->ms, stream_id, plain_data, data_len);
+}
+
+static void handle_ushark_http2_response(uint32_t conv_id, uint32_t stream_id, const unsigned char *plain_data, size_t data_len) {
+    if (!g_cur_ctx)
+        return;
+
+    handle_http_data(g_cur_ctx->is_tx, g_cur_ctx->ms, stream_id, plain_data, data_len);
+}
+
+static void handle_ushark_http2_reset(uint32_t conv_id, uint32_t stream_id) {
+    if (!g_cur_ctx)
+        return;
+
+    handle_http_data(g_cur_ctx->is_tx, g_cur_ctx->ms, stream_id, NULL, 0);
+}
+
+/* ******************************************************* */
 
 /* Returns true if packet is valid. If false is returned, the pkt must still be dumped, so a call to
  * pd_dump_packet is required. */
@@ -522,17 +578,18 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
     struct timeval tv = hdr->ts;
     pkt_context_t pinfo;
     pd_init_pkt_context(&pinfo, &pkt, is_tx, &conn_tuple, conn->data, &tv);
+    g_cur_ctx = &pinfo;
 
     if (pd->pcap.usk && (pkt.len > 0)) {
         struct pcap_pkthdr pcap_hdr;
         pcap_hdr.len = pcap_hdr.caplen = pkt.len;
         pcap_hdr.ts = hdr->ts;
 
-        ushark_dissect_tls(pd->pcap.usk,
+        ushark_dissect(pd->pcap.usk,
                            (const unsigned char*) pkt.l3,
-                           &pcap_hdr, handle_tls_data);
+                           &pcap_hdr);
 
-        if (g_plain_data.data)
+        if (g_plain_data.n_items > 0)
             pinfo.plain_data = &g_plain_data;
     }
 
@@ -543,11 +600,14 @@ static bool handle_packet(pcapdroid_t *pd, pcapd_hdr_t *hdr, const char *buffer,
 
     pd_account_stats(pd, &pinfo);
 
-    if (g_plain_data.data) {
-        pd_free(g_plain_data.data);
-        g_plain_data.data = NULL;
-        g_plain_data.data_len = 0;
+    if (g_plain_data.items) {
+        for (size_t i = 0; i < g_plain_data.n_items; i++)
+            pd_free(g_plain_data.items[i].data);
+
+        pd_free(g_plain_data.items);
+        memset(&g_plain_data, 0, sizeof(g_plain_data));
     }
+    g_cur_ctx = NULL;
 
     return true;
 }
@@ -714,13 +774,25 @@ int run_pcap(pcapdroid_t *pd) {
 
     if (pd->pcap_file_capture) {
         // check if the SSL keylog exists
-        const char *keylog_path = get_cache_path(pd, "sslkeylog.txt");
+        // Use override path if provided (for tests), otherwise use default location
+        const char *keylog_path = pd->keylog_path_override
+                                   ? pd->keylog_path_override
+                                   : get_cache_path(pd, "sslkeylog.txt");
 
         if (access(keylog_path, F_OK) == 0) {
             log_i("Use ushark for TLS decryption");
 
             if (ushark_init(pd)) {
                 pd->pcap.usk = ushark_new(PCAPD_DLT_RAW, "");
+
+                ushark_data_callbacks_t cbs = {
+                        .on_http1_data = handle_ushark_http1_data,
+                        .on_http2_request = handle_ushark_http2_request,
+                        .on_http2_response = handle_ushark_http2_response,
+                        .on_http2_reset = handle_ushark_http2_reset,
+                };
+                ushark_set_callbacks(pd->pcap.usk, &cbs);
+
                 ushark_set_pref("tls.keylog_file", keylog_path);
             }
         }

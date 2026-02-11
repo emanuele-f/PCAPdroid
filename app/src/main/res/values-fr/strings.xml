@@ -362,7 +362,6 @@
     <string name="pcapng_format">Format Pcapng</string>
     <string name="ip_address">Adresse IP</string>
     <string name="reset_stats_confirm">Voulez-vous réellement remettre les statistiques à zéro ?</string>
-    <string name="destination_ip">Adresse IP de destination</string>
     <string name="pcapng_format_summary">Exporter les paquets au format Pcapng, qui est plus flexible et permet d\'intégrer des secrets de déchiffrement TLS</string>
     <string name="connection_error">Erreur de connexion: %1$s</string>
     <string name="qr_purchase_required">Achetez un jeton de déverrouillage pour poursuivre l’activation via le QR code</string>

@@ -63,6 +63,7 @@ public class Prefs {
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
+    public static final String PREF_SOCKS5_PROXY_HOST_KEY = "socks5_proxy_host";
     public static final String PREF_SOCKS5_PROXY_PORT_KEY = "socks5_proxy_port";
     public static final String PREF_CAPTURE_INTERFACE = "capture_interface";
     public static final String PREF_MALWARE_DETECTION = "malware_detection";
@@ -208,7 +209,12 @@ public class Prefs {
     public static Set<String> getAppFilter(SharedPreferences p)     { return(getStringSet(p, PREF_APP_FILTER)); }
     public static IpMode getIPMode(SharedPreferences p)          { return(getIPMode(p.getString(PREF_IP_MODE, IP_MODE_DEFAULT))); }
     public static BlockQuicMode getBlockQuicMode(SharedPreferences p) { return(getBlockQuicMode(p.getString(PREF_BLOCK_QUIC, BLOCK_QUIC_MODE_DEFAULT))); }
-    public static boolean useEnglishLanguage(SharedPreferences p){ return("english".equals(p.getString(PREF_APP_LANGUAGE, "system")));}
+    public static String getAppLocale(SharedPreferences p) {
+        String lang = p.getString(PREF_APP_LANGUAGE, "system");
+        if ("system".equals(lang))
+            return null;
+        return lang;
+    }
     public static boolean isRootCaptureEnabled(SharedPreferences p) { return(Utils.isRootAvailable() && p.getBoolean(PREF_ROOT_CAPTURE, false)); }
     public static boolean isPcapdroidMetadataEnabled(SharedPreferences p) { return(p.getBoolean(PREF_DUMP_EXTENSIONS, false)); }
     public static String getCaptureInterface(SharedPreferences p) { return(p.getString(PREF_CAPTURE_INTERFACE, "@inet")); }

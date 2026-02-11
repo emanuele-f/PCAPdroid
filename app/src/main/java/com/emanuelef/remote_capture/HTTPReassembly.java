@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.Inflater;
 import org.brotli.dec.BrotliInputStream;
+import com.github.luben.zstd.ZstdInputStream;
 
 public class HTTPReassembly {
     private static final String TAG = "HTTPReassembly";
@@ -39,21 +40,34 @@ public class HTTPReassembly {
     private boolean mReadingHeaders;
     private boolean mChunkedEncoding;
     private ContentEncoding mContentEncoding;
-    private String mContentType;
-    private String mPath;
     private int mContentLength;
     private int mHeadersSize;
+    private int mBodySize;
     private final ArrayList<PayloadChunk> mHeaders = new ArrayList<>();
     private final ArrayList<PayloadChunk> mBody = new ArrayList<>();
     private final ReassemblyListener mListener;
+    private final boolean mDumpPayload;
     private boolean mReassembleChunks;
+    private boolean mSwitchingProtocols = false;
+    private boolean mWebsocketUpgrade = false;
     private boolean mInvalidHttp;
-    private boolean mIsTx;
+    private PayloadChunk mFirstChunk;
+    private WebSocketDecoder mWebSocketDecoder;
 
-    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
+    /**
+     * @param reassembleChunks if false, all the chunks will be considered as RAW chunks
+     * @param listener a listener for the reassembly
+     * @param dumpPayload if false, PayloadChunk notified via onChunkReassembled will have no payload
+     */
+    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener, boolean dumpPayload) {
         mListener = listener;
         mReassembleChunks = reassembleChunks;
+        mDumpPayload = dumpPayload;
         reset();
+    }
+
+    public HTTPReassembly(boolean reassembleChunks, ReassemblyListener listener) {
+        this(reassembleChunks, listener, true);
     }
 
     private enum ContentEncoding {
@@ -61,6 +75,11 @@ public class HTTPReassembly {
         GZIP,
         DEFLATE,
         BROTLI,
+        ZSTD,
+    }
+
+    private boolean isTx() {
+        return (mFirstChunk != null) && mFirstChunk.is_sent;
     }
 
     private void reset() {
@@ -68,8 +87,7 @@ public class HTTPReassembly {
         mContentEncoding = ContentEncoding.UNKNOWN;
         mChunkedEncoding = false;
         mContentLength = -1;
-        mContentType = null;
-        mPath = null;
+        mFirstChunk = null;
         mHeadersSize = 0;
         mHeaders.clear();
         mBody.clear();
@@ -84,19 +102,51 @@ public class HTTPReassembly {
     }
 
     private void log_d(String msg) {
-        Log.d(TAG + "(" + (mIsTx ? "TX" : "RX") + ")", msg);
+        Log.d(TAG + "(" + (isTx() ? "TX" : "RX") + ")", msg);
     }
 
     /* The request/response tab shows reassembled HTTP chunks.
      * Reassembling chunks is requires when using a content-encoding like gzip since we can only
      * decode the data when we have the full chunk and we cannot determine data bounds.
+     *
      * When reading data via the MitmReceiver, mitmproxy already performs chunks reassembly and
-     * also handles HTTP/2 so that we only get the payload. */
+     * also handles HTTP/2 so that we only get the payload.
+     *
+     * Similarly, also ushark performs HTTP/2 request/reply reassembly, so we always get the whole
+     * HTTP headers and body in a single chunk. With ushark, though, HTTP/2 replies may arrive in
+     * a different order (due to HTTP/2 multiplexing). chunk.stream_id is used by ConnectionDescriptor
+     * to associate the reply to the correct request.
+     */
     public void handleChunk(PayloadChunk chunk) {
+        if (mSwitchingProtocols) {
+            if (mWebsocketUpgrade) {
+                chunk.type = PayloadChunk.ChunkType.WEBSOCKET;
+
+                if (mDumpPayload) {
+                    // when reading from ushark, pass all the Websocket data to the decoder
+                    if (mWebSocketDecoder == null) {
+                        // Initialize decoder - all future chunks will be routed through it
+                        // Filter out control frames (ping/pong/close) as they're not relevant for payload display
+                        mWebSocketDecoder = new WebSocketDecoder(decoded -> {
+                            if (!WebSocketDecoder.isControlOpcode(decoded.wsOpcode))
+                                mListener.onChunkReassembled(decoded);
+                        });
+                    }
+
+                    mWebSocketDecoder.handleChunk(chunk);
+                }
+            }
+
+            // protocols switched, not HTTP anymore
+            return;
+        }
+
         int body_start = 0;
         byte[] payload = chunk.payload;
         boolean chunked_complete = false;
-        mIsTx = chunk.is_sent;
+
+        if (mFirstChunk == null)
+            mFirstChunk = chunk.withPayload(null);
 
         if(mReadingHeaders) {
             // Reading the HTTP headers
@@ -109,29 +159,65 @@ public class HTTPReassembly {
                 String line = reader.readLine();
 
                 if (is_first_line && (line != null)) {
-                    if (line.startsWith("GET ") || line.startsWith("POST ")
-                            || line.startsWith("HEAD ") || line.startsWith("PUT ")) {
+                    if (chunk.is_sent) {
                         int first_space = line.indexOf(' ');
                         int second_space = line.indexOf(' ', first_space + 1);
 
                         if ((first_space > 0) && (second_space > 0)) {
-                            mPath = line.substring(first_space + 1, second_space);
+                            mFirstChunk.httpMethod = line.substring(0, first_space).toUpperCase();
+                            mFirstChunk.httpVersion = line.substring(second_space + 1);
+                            String path = line.substring(first_space + 1, second_space);
 
-                            int query_start = mPath.indexOf('?');
-                            if (query_start >= 0)
-                                mPath = mPath.substring(0, query_start);
+                            if (!path.startsWith("/")) {
+                                // it may include the protocol and host
+                                int proto_sep = path.indexOf("://");
 
-                            log_d("Path: " + mPath);
+                                if (proto_sep > 0)
+                                    path = path.substring(proto_sep + 3);
+
+                                int slash = path.indexOf('/');
+                                if (slash > 0) {
+                                    mFirstChunk.httpHost = path.substring(0, slash);
+                                    path = path.substring(slash);
+                                }
+                            }
+
+                            int query_start = path.indexOf('?');
+                            if (query_start >= 0) {
+                                mFirstChunk.httpQuery = path.substring(query_start);
+                                path = path.substring(0, query_start);
+                            }
+
+                            mFirstChunk.httpPath = path;
+
+                            //log_d(mFirstChunk.httpMethod + " " + mFirstChunk.httpPath);
+                        }
+                    } else if (line.startsWith("HTTP/")) {
+                        int first_space = line.indexOf(' ');
+                        if (first_space > 0) {
+                            mFirstChunk.httpVersion = line.substring(0, first_space);
+
+                            try {
+                                // NOTE: the response status may be missing when the response is reconstructed by the ushark HTTP2 reassembly
+                                int second_space = line.indexOf(' ', first_space + 1);
+
+                                mFirstChunk.httpResponseCode = Integer.parseInt(line.substring(first_space + 1,
+                                        (second_space > 0) ? second_space : line.length()));
+
+                                if (second_space > 0)
+                                    mFirstChunk.httpResponseStatus = line.substring(second_space + 1);
+                            } catch (NumberFormatException ignored) {}
                         }
                     }
                 }
 
-                while((line != null) && (line.length() > 0)) {
+                while((line != null) && (!line.isEmpty())) {
                     line = line.toLowerCase();
                     //log_d("[HEADER] " + line);
 
                     if(line.startsWith("content-encoding: ")) {
                         String contentEncoding = line.substring(18);
+
                         log_d("Content-Encoding: " + contentEncoding);
 
                         switch (contentEncoding) {
@@ -146,12 +232,15 @@ public class HTTPReassembly {
                                 // test with google.com
                                 mContentEncoding = ContentEncoding.BROTLI;
                                 break;
+                            case "zstd":
+                                mContentEncoding = ContentEncoding.ZSTD;
+                                break;
                         }
                     } else if(line.startsWith("content-type: ")) {
                         int endIdx = line.indexOf(";");
-                        mContentType = line.substring(14, (endIdx > 0) ? endIdx : line.length());
+                        mFirstChunk.httpContentType = line.substring(14, (endIdx > 0) ? endIdx : line.length());
 
-                        log_d("Content-Type: " + mContentType);
+                        log_d("Content-Type: " + mFirstChunk.httpContentType);
                     } else if(line.startsWith("content-length: ")) {
                         try {
                             mContentLength = Integer.parseInt(line.substring(16));
@@ -159,10 +248,19 @@ public class HTTPReassembly {
                         } catch (NumberFormatException ignored) {}
                     } else if(line.startsWith("upgrade: ")) {
                         log_d("Upgrade found, stop parsing");
+                        mSwitchingProtocols = true;
                         mReassembleChunks = false;
+
+                        if (line.startsWith("upgrade: websocket")) {
+                            log_d("websocket upgrade");
+                            mWebsocketUpgrade = true;
+                        }
                     } else if(line.equals("transfer-encoding: chunked")) {
                         log_d("Detected chunked encoding");
                         mChunkedEncoding = true;
+                    } else if(line.startsWith("host: ")) {
+                        log_d("Detected HTTP host");
+                        mFirstChunk.httpHost = line.substring(6);
                     }
 
                     line = reader.readLine();
@@ -172,7 +270,9 @@ public class HTTPReassembly {
             if(headers_end > 0) {
                 mReadingHeaders = false;
                 body_start = headers_end;
-                mHeaders.add(chunk.subchunk(0, body_start));
+
+                if (mDumpPayload)
+                    mHeaders.add(chunk.subchunk(0, body_start));
             } else {
                 if(mHeadersSize > MAX_HEADERS_SIZE) {
                     log_d("Assuming not HTTP");
@@ -184,21 +284,21 @@ public class HTTPReassembly {
                 }
 
                 // Headers span all the packet
-                mHeaders.add(chunk);
+                if (mDumpPayload)
+                    mHeaders.add(chunk);
                 body_start = payload.length;
             }
-        }
-
-        // If not Content-Length provided and not using chunked encoding, then we cannot determine
-        // chunks bounds, so disable reassembly
-        if(!mReadingHeaders && (mContentLength < 0) && (!mChunkedEncoding) && mReassembleChunks) {
-            log_d("Cannot determine bounds, disable reassembly");
-            mReassembleChunks = false;
         }
 
         // When mReassembleChunks is false, each chunk should be passed to the mListener
         if(!mReassembleChunks)
             mReadingHeaders = false;
+
+        boolean httpRst = false;
+        if (mReadingHeaders && chunk.isHttp2Rst()) {
+            mReadingHeaders = false;
+            httpRst = true;
+        }
 
         if(!mReadingHeaders) {
             // Reading HTTP body
@@ -241,10 +341,14 @@ public class HTTPReassembly {
                     }
                 }
 
-                if((body_start == 0) && (body_size == chunk.payload.length))
-                    mBody.add(chunk);
-                else
-                    mBody.add(chunk.subchunk(body_start, body_size));
+                if (mDumpPayload) {
+                    if ((body_start == 0) && (body_size == chunk.payload.length))
+                        mBody.add(chunk);
+                    else
+                        mBody.add(chunk.subchunk(body_start, body_size));
+                }
+
+                mBodySize += body_size;
             }
 
             if(chunked_complete || !mReassembleChunks)
@@ -252,40 +356,62 @@ public class HTTPReassembly {
 
             if(((mContentLength <= 0) || !mReassembleChunks)
                     && !mChunkedEncoding) {
-                // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
-                PayloadChunk headers = reassembleChunks(mHeaders);
-                PayloadChunk body = mBody.size() > 0 ? reassembleChunks(mBody) : null;
-
-                //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
-
-                // Decode body
-                if((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
-                    decodeBody(body);
-
                 PayloadChunk to_add;
 
-                if(body != null) {
-                    // Reassemble headers and body into a single chunk
-                    byte[] reassembly = new byte[headers.payload.length + body.payload.length];
-                    System.arraycopy(headers.payload, 0, reassembly, 0, headers.payload.length);
-                    System.arraycopy(body.payload, 0, reassembly, headers.payload.length, body.payload.length);
+                if (mDumpPayload) {
+                    // Reassemble the chunks (NOTE: gzip is applied only after all the chunks are collected)
+                    PayloadChunk headers = reassembleChunks(mHeaders);
+                    PayloadChunk body = !mBody.isEmpty() ? reassembleChunks(mBody) : null;
 
-                    to_add = body.withPayload(reassembly);
+                    //log_d("mContentLength=" + mContentLength + ", mReassembleChunks=" + mReassembleChunks + ", mChunkedEncoding=" + mChunkedEncoding);
+
+                    if ((body != null) && (mContentEncoding != ContentEncoding.UNKNOWN))
+                        decodeBody(body);
+
+                    if (body != null) {
+                        // Reassemble headers and body into a single chunk
+                        byte[] reassembly = new byte[headers.payload.length + body.payload.length];
+                        System.arraycopy(headers.payload, 0, reassembly, 0, headers.payload.length);
+                        System.arraycopy(body.payload, 0, reassembly, headers.payload.length, body.payload.length);
+
+                        to_add = body.withPayload(reassembly);
+                    } else
+                        to_add = headers;
                 } else
-                    to_add = headers;
+                    to_add = mFirstChunk;
 
-                if(mInvalidHttp)
+                if (mInvalidHttp)
                     to_add.type = PayloadChunk.ChunkType.RAW;
+                else {
+                    to_add.httpContentType = mFirstChunk.httpContentType;
+                    to_add.httpResponseCode = mFirstChunk.httpResponseCode;
+                    to_add.httpResponseStatus = mFirstChunk.httpResponseStatus;
+                    to_add.httpMethod = mFirstChunk.httpMethod;
+                    to_add.httpHost = mFirstChunk.httpHost;
+                    to_add.httpPath = mFirstChunk.httpPath;
+                    to_add.httpQuery = mFirstChunk.httpQuery;
+                    to_add.httpVersion = mFirstChunk.httpVersion;
+                    to_add.httpBodyLength = mBodySize;
 
-                to_add.contentType = mContentType;
-                to_add.path = mPath;
+                    if (httpRst)
+                        // this is necessary when mDumpPayload=false, to ensure that
+                        // the chunk is marked as HTTP RST
+                        to_add.setHttpRst();
+                }
+
+                mBodySize = 0;
+
+                if ((to_add.type == PayloadChunk.ChunkType.HTTP)) {
+                    Log.d(TAG, "Reassembled HTTP " +
+                            (to_add.isHttp2Rst() ? "RST" : (to_add.is_sent ? "request" : "response")));
+                }
+
                 mListener.onChunkReassembled(to_add);
                 reset(); // mReadingHeaders = true
             }
 
             if((new_body_start > 0) && (chunk.payload.length > new_body_start)) {
                 // Part of this chunk should be processed as a new chunk
-                log_d("Continue from " + new_body_start);
                 handleChunk(chunk.subchunk(new_body_start, chunk.payload.length - new_body_start));
             }
         }
@@ -306,6 +432,9 @@ public class HTTPReassembly {
                     break;
                 case BROTLI:
                     inputStream = new BrotliInputStream(bis);
+                    break;
+                case ZSTD:
+                    inputStream = new ZstdInputStream(bis);
                     break;
             }
 

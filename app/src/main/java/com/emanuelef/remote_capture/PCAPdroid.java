@@ -62,6 +62,7 @@ public class PCAPdroid extends Application {
     private Context mLocalizedContext;
     private boolean mIsDecryptingPcap = false;
     private boolean mIsUsharkAvailable = false;
+    private String mLoadedPcapBasename = null;
     private static WeakReference<PCAPdroid> mInstance;
     protected static boolean isUnderTest = false;
 
@@ -251,5 +252,13 @@ public class PCAPdroid extends Application {
 
     public boolean isUsharkAvailable() {
         return mIsUsharkAvailable;
+    }
+
+    public void setLoadedPcapBasename(String basename) {
+        mLoadedPcapBasename = basename;
+    }
+
+    public String getLoadedPcapBasename() {
+        return mLoadedPcapBasename;
     }
 }

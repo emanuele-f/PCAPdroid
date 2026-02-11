@@ -53,6 +53,7 @@ import kotlin.NotImplementedError;
 public abstract class AppsToggles extends Fragment implements AppsLoadListener,
         AppsTogglesAdapter.AppToggleListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "AppsToggles";
+    private static boolean sShowSystemApps;
     private AppsTogglesAdapter mAdapter;
     private SearchView mSearchView;
     private TextView mEmptyText;
@@ -84,6 +85,8 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
                 mQueryToApply = filter;
         }
 
+        mAdapter.setShowSystemApps(sShowSystemApps);
+
         Log.d(TAG, "mQueryToApply: " + mQueryToApply);
 
         (new AppsLoader((AppCompatActivity) requireActivity()))
@@ -110,10 +113,20 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
             Log.d(TAG, "Initial filter: " + mQueryToApply);
             Utils.setSearchQuery(mSearchView, searchItem, mQueryToApply);
         }
+
+        MenuItem systemAppsItem = menu.findItem(R.id.show_system_apps);
+        if(systemAppsItem != null)
+            systemAppsItem.setChecked(sShowSystemApps);
     }
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        if(menuItem.getItemId() == R.id.show_system_apps) {
+            sShowSystemApps = !sShowSystemApps;
+            menuItem.setChecked(sShowSystemApps);
+            mAdapter.setShowSystemApps(sShowSystemApps);
+            return true;
+        }
         return false;
     }
 

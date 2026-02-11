@@ -25,8 +25,6 @@ import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 
 public class ConnectionsActivity extends BaseActivity {
-    private static final String TAG = "ConnectionsActivity";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

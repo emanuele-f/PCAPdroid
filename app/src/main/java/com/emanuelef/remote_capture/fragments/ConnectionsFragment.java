@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -44,6 +44,8 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
@@ -85,6 +87,10 @@ import com.google.android.material.slider.Slider;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ConnectionsFragment extends Fragment implements ConnectionsListener, MenuProvider, SearchView.OnQueryTextListener {
     private static final String TAG = "ConnectionsFragment";
@@ -112,6 +118,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private String mQueryToApply;
     private String mUnblockCidr;
     private String mDecRemoveCidr;
+    private ActionMode mActionMode;
+    private AlertDialog mAlertDialog;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
@@ -148,6 +156,29 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     @Override
+    public void onDestroyView() {
+        if(mAlertDialog != null)
+            mAlertDialog.dismiss();
+
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if (hidden) {
+            if(mActionMode != null)
+                mActionMode.finish();
+            clearFilters();
+        } else {
+            if (mRecyclerView != null) {
+                mRecyclerView.scrollToPosition(0);
+            }
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
@@ -160,7 +191,9 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        if (!(getParentFragment() instanceof DataViewContainerFragment)) {
+            requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        }
         return inflater.inflate(R.layout.connections, container, false);
     }
 
@@ -251,13 +284,35 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mAdapter.setClickListener(v -> {
             int pos = mRecyclerView.getChildLayoutPosition(v);
+
+            if(mActionMode != null) {
+                toggleSelection(pos);
+                return;
+            }
+
             ConnectionDescriptor item = mAdapter.getItem(pos);
 
             if(item != null) {
                 Intent intent = new Intent(requireContext(), ConnectionDetailsActivity.class);
                 intent.putExtra(ConnectionDetailsActivity.CONN_ID_KEY, item.incr_id);
+
+                if(mAdapter.hasFilter()) {
+                    ArrayList<Integer> filteredIds = mAdapter.getFilteredConnectionIds();
+                    if(filteredIds != null)
+                        intent.putIntegerArrayListExtra(ConnectionDetailsActivity.FILTERED_IDS_KEY, filteredIds);
+                }
+
                 startActivity(intent);
             }
+        });
+
+        mAdapter.setSelectionLongClickListener(v -> {
+            if(mActionMode != null) {
+                int pos = mRecyclerView.getChildLayoutPosition(v);
+                toggleSelection(pos);
+                return true;
+            }
+            return false;
         });
 
         autoScroll = true;
@@ -292,7 +347,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            //public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int state) {
                 recheckScroll();
             }
         });
@@ -625,7 +679,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         int id = item.getItemId();
 
-        if(id == R.id.hide_app) {
+        if(id == R.id.select_connection) {
+            startSelectionMode(conn);
+            return true;
+        } else if(id == R.id.hide_app) {
             mAdapter.mMask.addApp(conn.uid);
             mask_changed = true;
         } else if(id == R.id.hide_host) {
@@ -986,43 +1043,83 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     }
 
     private void dumpCsv() {
-        String dump = mAdapter.dumpConnectionsCsv();
+        if(mCsvFname == null)
+            return;
 
-        if(mCsvFname != null) {
-            Log.d(TAG, "Writing CSV file: " + mCsvFname);
-            boolean error = true;
+        Log.d(TAG, "Writing CSV file: " + mCsvFname);
+        String dump = mAdapter.dumpConnectionsCsv(mActionMode != null);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] cancelled = {false};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.exporting);
+        builder.setMessage(R.string.export_in_progress);
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            Log.i(TAG, "Abort CSV export");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+
+        mAlertDialog = builder.create();
+        mAlertDialog.setCanceledOnTouchOutside(false);
+        mAlertDialog.show();
+
+        mAlertDialog.setOnCancelListener(dialog -> {
+            Log.i(TAG, "Abort CSV export (back button)");
+            cancelled[0] = true;
+            executor.shutdownNow();
+        });
+        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
+
+        final Uri csvFname = mCsvFname;
+        mCsvFname = null;
+
+        executor.execute(() -> {
+            boolean success = false;
 
             try {
-                OutputStream stream = requireActivity().getContentResolver().openOutputStream(mCsvFname, "rwt");
+                OutputStream stream = requireActivity().getContentResolver().openOutputStream(csvFname, "rwt");
 
                 if(stream != null) {
-                    stream.write(dump.getBytes());
+                    stream.write(dump.getBytes(StandardCharsets.UTF_8));
                     stream.close();
+                    success = true;
                 }
-
-                Utils.UriStat stat = Utils.getUriStat(requireContext(), mCsvFname);
-
-                if(stat != null) {
-                    String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
-                } else
-                    Utils.showToast(requireContext(), R.string.save_ok);
-
-                error = false;
             } catch (IOException e) {
-                e.printStackTrace();
+                if(!cancelled[0])
+                    e.printStackTrace();
             }
 
-            if(error)
-                Utils.showToast(requireContext(), R.string.cannot_write_file);
-        }
+            if(cancelled[0])
+                return;
 
-        mCsvFname = null;
+            final boolean result = success;
+            final Utils.UriStat stat = result ? Utils.getUriStat(requireContext(), csvFname) : null;
+
+            handler.post(() -> {
+                if(mAlertDialog != null)
+                    mAlertDialog.dismiss();
+
+                if(result) {
+                    if(stat != null) {
+                        String msg = String.format(getString(R.string.file_saved_with_name), stat.name);
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                    } else
+                        Utils.showToast(requireContext(), R.string.save_ok);
+                } else
+                    Utils.showToast(requireContext(), R.string.cannot_write_file);
+
+                if(mActionMode != null)
+                    mActionMode.finish();
+            });
+        });
     }
 
     public void openFileSelector() {
         boolean noFileDialog = false;
-        String fname = Utils.getUniqueFileName(requireContext(), "csv");
+        String fname = Utils.getExportFileName(requireContext(), "csv");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
@@ -1084,6 +1181,90 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
     // NOTE: dispatched from activity, returns true if handled
     public boolean onBackPressed() {
+        if(mActionMode != null) {
+            mActionMode.finish();
+            return true;
+        }
         return Utils.backHandleSearchview(mSearchView);
+    }
+
+    private void startSelectionMode(ConnectionDescriptor conn) {
+        if(mActionMode != null)
+            return;
+
+        mActionMode = ((AppCompatActivity) requireActivity()).startSupportActionMode(mActionModeCallback);
+
+        // find position of the connection and select it
+        for(int i = 0; i < mAdapter.getItemCount(); i++) {
+            ConnectionDescriptor c = mAdapter.getItem(i);
+            if((c != null) && (c.incr_id == conn.incr_id)) {
+                mAdapter.selectItem(i);
+                break;
+            }
+        }
+
+        updateActionModeTitle();
+    }
+
+    private void toggleSelection(int pos) {
+        mAdapter.toggleSelection(pos);
+
+        if(mAdapter.getSelectedCount() == 0) {
+            if(mActionMode != null)
+                mActionMode.finish();
+        } else
+            updateActionModeTitle();
+    }
+
+    private void updateActionModeTitle() {
+        if(mActionMode != null)
+            mActionMode.setTitle(getString(R.string.n_selected, mAdapter.getSelectedCount()));
+    }
+
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.connections_cab, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int id = item.getItemId();
+
+            if(id == R.id.select_all) {
+                if(mAdapter.getSelectedCount() == mAdapter.getItemCount())
+                    mode.finish();
+                else {
+                    mAdapter.selectAll();
+                    updateActionModeTitle();
+                }
+                return true;
+            } else if(id == R.id.save) {
+                openFileSelector();
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mAdapter.clearSelection();
+            mActionMode = null;
+        }
+    };
+
+    public void clearFilters() {
+        if(mAdapter != null) {
+            mAdapter.mFilter = new FilterDescriptor();
+            mAdapter.refreshFilteredConnections();
+            refreshActiveFilter();
+        }
     }
 }
