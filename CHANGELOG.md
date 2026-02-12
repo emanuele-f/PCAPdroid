@@ -2,6 +2,22 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.9.0] - 2026-02-12
+- New HTTP requests view
+- Export HTTP data in the HAR format
+- Add Portuguese (BR) translation
+- Support the zstd compression
+- Fix HTTP/2 handling (possible mismatch of requests and replies)
+- Fix WebSocket data loading from PCAP file
+- Fix buffer overruns and leaks when decrypting PCAP files
+- New language selector on Android 12 and below
+- Select and export individual connections
+- Pretty-print JSON in HTTP data
+- Support using domain names in port mapping
+- Add toggle to show system apps
+- Export data in background threads to avoid UI hangs
+- Fix ushark crash on x86_64 when decrypting PCAP files (F-Droid only)
+
 ## [1.8.8] - 2025-09-03
 - Support 16 KB page size devices
 - Make PCAP/CSV file name prefix configurable

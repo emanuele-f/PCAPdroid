@@ -168,7 +168,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             finish();
             return;
         } else {
-            if (appver < 79)
+            if (appver < 90)
                 showWhatsNew();
 
             Prefs.refreshAppVersion(mPrefs);
@@ -359,12 +359,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         new AlertDialog.Builder(this)
                 .setTitle(R.string.whats_new)
                 .setMessage(
-                        "- Android 15 support with edge-to-edge UI\n" +
-                        (PCAPdroid.getInstance().isUsharkAvailable() ?
-                                "- Decrypt PCAP/Pcapng files (Wireshark integration)\n" : "") +
-                        "- New firewall rules: block by country and by CIDR\n" +
-                        "- Add support for PCAPdroid extensions in Pcapng\n" +
-                        "- Reduced RAM usage of malware blacklists\n"
+                        "- New HTTP requests view\n" +
+                        "- Export HTTP data in the HAR format\n" +
+                        "- Add Portuguese (BR) translation\n" +
+                        "- Support the zstd compression\n" +
+                        "- Pretty-print JSON in HTTP data\n" +
+                        "- Fix HTTP/2 and WebSocket handling\n"
                 )
                 .setNeutralButton(R.string.ok, (dialogInterface, i) -> {})
                 .show();
