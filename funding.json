@@ -1,0 +1,99 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.1.0",
+  "entity": {
+    "type": "individual",
+    "role": "owner",
+    "name": "Emanuele Faranda",
+    "email": "black.silver@hotmail.it",
+    "description": "Independent developer of open-source network security and traffic analysis tools.",
+    "webpageUrl": {
+      "url": "https://emanuele-f.github.io/PCAPdroid",
+      "wellKnown": "https://emanuele-f.github.io/.well-known/funding-manifest-urls"
+    }
+  },
+  "projects": [
+    {
+      "guid": "pcapdroid",
+      "name": "PCAPdroid",
+      "description": "No-root network monitor, firewall and PCAP dumper for Android. Enables users to track, analyze, and block app connections while exporting network traffic captures in the PCAP format.",
+      "webpageUrl": {
+        "url": "https://emanuele-f.github.io/PCAPdroid",
+        "wellKnown": "https://emanuele-f.github.io/.well-known/funding-manifest-urls"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/emanuele-f/PCAPdroid"
+      },
+      "licenses": [
+        "spdx:GPL-3.0"
+      ],
+      "tags": [
+        "network-security",
+        "vpn",
+        "android",
+        "privacy",
+        "firewall",
+        "wireshark",
+        "traffic-monitor",
+        "decryption",
+        "pcap",
+        "networking"
+      ]
+    },
+    {
+      "guid": "pcapdroid-mitm",
+      "name": "PCAPdroid-mitm",
+      "description": "A PCAPdroid addon that uses mitmproxy to decrypt TLS/SSL connections, to display the decrypted data within the app",
+      "webpageUrl": {
+        "url": "https://github.com/emanuele-f/PCAPdroid-mitm"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/emanuele-f/PCAPdroid-mitm"
+      },
+      "licenses": [
+        "spdx:GPL-3.0"
+      ],
+      "tags": [
+        "android",
+        "decryption",
+        "tls",
+        "mitmproxy",
+        "network-security",
+        "privacy",
+        "pcap",
+        "traffic-monitor",
+        "security",
+        "ssl"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "bank",
+        "type": "bank",
+        "description": "Will accept direct bank transfers. Please e-mail me for details"
+      },
+      {
+        "guid": "github-sponsors",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/emanuele-f",
+        "description": "GitHub Sponsors"
+      }
+    ],
+    "plans": [
+      {
+        "guid": "monthly-support",
+        "status": "active",
+        "name": "Monthly support",
+        "description": "Monthly recurring donation to support ongoing development",
+        "amount": 5,
+        "currency": "EUR",
+        "frequency": "monthly",
+        "channels": [
+          "github-sponsors"
+        ]
+      }
+    ]
+  }
+}
