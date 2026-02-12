@@ -45,10 +45,12 @@
       "name": "PCAPdroid-mitm",
       "description": "A PCAPdroid addon that uses mitmproxy to decrypt TLS/SSL connections, to display the decrypted data within the app",
       "webpageUrl": {
-        "url": "https://github.com/emanuele-f/PCAPdroid-mitm"
+        "url": "https://github.com/emanuele-f/PCAPdroid-mitm",
+        "wellKnown": "https://github.com/emanuele-f/PCAPdroid-mitm/blob/master/.well-known/funding-manifest-urls"
       },
       "repositoryUrl": {
-        "url": "https://github.com/emanuele-f/PCAPdroid-mitm"
+        "url": "https://github.com/emanuele-f/PCAPdroid-mitm",
+        "wellKnown": "https://github.com/emanuele-f/PCAPdroid-mitm/blob/master/.well-known/funding-manifest-urls"
       },
       "licenses": [
         "spdx:GPL-3.0"
