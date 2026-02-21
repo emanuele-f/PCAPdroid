@@ -89,8 +89,38 @@ android {
     testOptions {
         // needed by robolectric
         unitTests.includeAndroidResources = true
+        unitTests.all {
+            systemProperty "java.library.path", "${buildDir}/hostJni"
+        }
     }
     namespace 'com.emanuelef.remote_capture'
+}
+
+// Build zstd JNI for the host platform (needed by unit tests)
+tasks.register('buildHostZstdJni') {
+    def jniSrcDir = file("src/main/jni/zstd")
+    def cmakeBuildDir = "${buildDir}/hostJni/cmake"
+    def outputDir = "${buildDir}/hostJni"
+
+    inputs.dir(jniSrcDir)
+    inputs.dir("${rootDir}/submodules/zstd/lib")
+    outputs.dir(outputDir)
+
+    doLast {
+        exec {
+            commandLine 'cmake', '-S', jniSrcDir, '-B', cmakeBuildDir,
+                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${outputDir}"
+        }
+        exec {
+            commandLine 'cmake', '--build', cmakeBuildDir
+        }
+    }
+}
+
+tasks.configureEach { task ->
+    if (task.name.startsWith("test") && task.name.endsWith("UnitTest")) {
+        task.dependsOn buildHostZstdJni
+    }
 }
 
 dependencies {
@@ -120,6 +150,4 @@ dependencies {
     implementation 'com.github.KaKaVip:Android-Flag-Kit:v0.1'
     implementation 'com.github.AppIntro:AppIntro:6.2.0'
     implementation 'com.github.androidmads:QRGenerator:1.0.1'
-    implementation 'com.github.luben:zstd-jni:1.5.7-7@aar'
-    testImplementation 'com.github.luben:zstd-jni:1.5.7-7'
 }
