@@ -31,7 +31,8 @@ target_compile_definitions(zstd_dec PRIVATE
 
 target_include_directories(zstd_dec PRIVATE
         ${ZSTD_ROOT}
-        ${ZSTD_ROOT}/common)
+        ${ZSTD_ROOT}/common
+        ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 if(ANDROID)
     find_library(log-lib log)
