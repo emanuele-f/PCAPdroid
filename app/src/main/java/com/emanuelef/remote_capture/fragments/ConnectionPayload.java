@@ -183,7 +183,7 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
             dialog.setCanceledOnTouchOutside(false);
         }
 
-        if(menuVisible && mActivity != null)
+        if(menuVisible && (mActivity != null) && (mConn != null))
             mActivity.updateMenuVisibility();
     }
 
@@ -197,6 +197,9 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
     }
 
     public boolean guessDisplayAsPrintable() {
+        if (mConn == null)
+            return false;
+
         // try to determine the best mode based on the current payload
         if(mConn.getNumPayloadChunks() == 0)
             return mConn.l7proto.equals("HTTPS");
@@ -207,7 +210,7 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
 
         // guess based on the actual data
         int maxLen = Math.min(firstChunk.payload.length, 16);
-        for(int i=0; i<maxLen; i++) {
+        for(int i = 0; i < maxLen; i++) {
             if(!Utils.isPrintable(firstChunk.payload[i]))
                 return false;
         }
@@ -217,7 +220,7 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
 
     @Override
     public void connectionUpdated() {
-        if(mCurChunks == 0 && mActivity != null) {
+        if((mCurChunks == 0) && (mActivity != null)) {
             mActivity.updateMenuVisibility();
         }
 

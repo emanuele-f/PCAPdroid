@@ -382,12 +382,9 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
 
         if(isPayload) {
             Fragment currentFragment = getCurrentFragment();
-            if(currentFragment instanceof ConnectionPayload) {
-                ConnectionPayload payloadFragment = (ConnectionPayload) currentFragment;
-
-                if(mDisplayMode == null) {
+            if(currentFragment instanceof ConnectionPayload payloadFragment) {
+                if(mDisplayMode == null)
                     mDisplayMode = payloadFragment.guessDisplayAsPrintable();
-                }
 
                 payloadFragment.setDisplayMode(mDisplayMode);
 
