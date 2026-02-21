@@ -13,3 +13,6 @@
 [submodule "submodules/PCAPdroid-ushark-bin"]
 	path = submodules/PCAPdroid-ushark-bin
 	url = https://github.com/emanuele-f/PCAPdroid-ushark-bin
+[submodule "submodules/zstd"]
+	path = submodules/zstd
+	url = https://github.com/facebook/zstd

@@ -32,7 +32,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.Inflater;
 import org.brotli.dec.BrotliInputStream;
-import com.github.luben.zstd.ZstdInputStream;
 
 public class HTTPReassembly {
     private static final String TAG = "HTTPReassembly";
@@ -434,7 +433,7 @@ public class HTTPReassembly {
                     inputStream = new BrotliInputStream(bis);
                     break;
                 case ZSTD:
-                    inputStream = new ZstdInputStream(bis);
+                    body.payload = ZstdDecoder.decompress(body.payload);
                     break;
             }
 

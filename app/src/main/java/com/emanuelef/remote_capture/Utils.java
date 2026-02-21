@@ -901,7 +901,7 @@ public class Utils {
             try {
                 launcher.launch(intent);
                 return true;
-            } catch (ActivityNotFoundException ignored) {}
+            } catch (ActivityNotFoundException | IllegalStateException ignored) {}
         }
 
         Utils.showToastLong(context, R.string.no_activity_file_selection);
