@@ -157,6 +157,9 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
 
     private void handleToggle(int old_pos, boolean checked) {
         AppDescriptor app = getItem(old_pos);
+        if (app == null)
+            return;
+
         String packageName = app.getPackageName();
 
         if(checked == mCheckedItems.contains(packageName))

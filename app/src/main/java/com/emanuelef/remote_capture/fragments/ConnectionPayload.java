@@ -193,7 +193,9 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
 
     public void setDisplayMode(boolean showAsPrintable) {
         mShowAsPrintable = showAsPrintable;
-        mAdapter.setDisplayAsPrintableText(showAsPrintable);
+
+        if (mAdapter != null)
+            mAdapter.setDisplayAsPrintableText(showAsPrintable);
     }
 
     public boolean guessDisplayAsPrintable() {
@@ -225,7 +227,9 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
         }
 
         if(mConn.getNumPayloadChunks() > mCurChunks) {
-            mAdapter.handleChunksAdded(mConn.getNumPayloadChunks());
+            if (mAdapter != null)
+                mAdapter.handleChunksAdded(mConn.getNumPayloadChunks());
+
             mCurChunks = mConn.getNumPayloadChunks();
         }
 

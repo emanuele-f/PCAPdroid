@@ -1073,6 +1073,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void startOpenPcap(Uri pcap_uri, Uri keylog_uri) {
+        if (pcap_uri == null) {
+            Log.w(TAG, "startOpenPcap: null URI provided");
+            return;
+        }
+
         // Extract and store the base filename (without extension)
         Utils.UriStat stat = Utils.getUriStat(this, pcap_uri);
         if (stat != null && stat.name != null) {
