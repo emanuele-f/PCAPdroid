@@ -37,6 +37,7 @@ import androidx.collection.ArraySet;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.HttpLog;
@@ -95,8 +96,7 @@ public class HttpLogAdapter extends RecyclerView.Adapter<HttpLogAdapter.ViewHold
         public void bindItem(HttpRequest req, Context ctx, AppsResolver apps, Drawable unknownIcon) {
             AppDescriptor app = apps.getAppByUid(req.conn.uid, 0);
 
-            Drawable appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
-            icon.setImageDrawable(appIcon);
+            AppIconLoader.setIcon(icon, app, unknownIcon);
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(req.conn.uid);
             appName.setText(info_txt);

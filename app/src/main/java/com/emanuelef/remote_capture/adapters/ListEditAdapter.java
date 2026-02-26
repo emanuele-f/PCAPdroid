@@ -33,6 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
@@ -84,8 +85,7 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
             if (rule.getType() == MatchList.RuleType.APP) {
                 String package_name = (String) rule.getValue();
                 AppDescriptor app = mApps.getAppByPackage(package_name, 0);
-                Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
-                icon.setImageDrawable(drawable);
+                AppIconLoader.setIcon(icon, app, mUnknownIcon);
             } else
                 icon.setImageDrawable(mDefaultIcon);
         }

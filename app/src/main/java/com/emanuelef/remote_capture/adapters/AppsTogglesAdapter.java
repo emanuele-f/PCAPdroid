@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -128,8 +129,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         holder.packageName.setText(app.getPackageName());
         holder.toggle.setChecked(mCheckedItems.contains(app.getPackageName()));
 
-        if(app.getIcon() != null)
-            holder.icon.setImageDrawable(app.getIcon());
+        AppIconLoader.setIcon(holder.icon, app, null);
     }
 
     private boolean isFiltering() {

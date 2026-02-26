@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.Billing;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
@@ -93,13 +94,10 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         }
 
         public void bindAppStats(AppStats stats) {
-            Drawable appIcon;
-
             // NOTE: can be null
             AppDescriptor app = (mApps != null) ? mApps.getAppByUid(stats.getUid(), 0) : null;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
-            icon.setImageDrawable(appIcon);
+            AppIconLoader.setIcon(icon, app, mUnknownIcon);
 
             String info_txt = (app != null) ? app.getName() : Integer.toString(stats.getUid());
 

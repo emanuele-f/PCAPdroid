@@ -29,6 +29,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.R;
 
@@ -78,8 +79,7 @@ public class AppsAdapter extends RecyclerView.Adapter<AppsAdapter.AppViewHolder>
         holder.textInListView.setText(app.getName());
         holder.packageInListView.setText(app.getPackageName());
 
-        if(app.getIcon() != null)
-            holder.imageInListView.setImageDrawable(app.getIcon());
+        AppIconLoader.setIcon(holder.imageInListView, app, null);
     }
 
     @Override
