@@ -41,6 +41,7 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final String mPackageName;
     private final int mUid;
     private final boolean mIsSystem;
+    private final boolean mHasLauncherIntent;
     private Drawable mIcon;
     private final DrawableLoader mIconLoader;
     private String mDescription;
@@ -52,12 +53,17 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     PackageInfo mPackageInfo;
 
     public AppDescriptor(String name, DrawableLoader icon_loader, String package_name, int uid, boolean is_system) {
+        this(name, icon_loader, package_name, uid, is_system, false);
+    }
+
+    private AppDescriptor(String name, DrawableLoader icon_loader, String package_name, int uid, boolean is_system, boolean has_launcher) {
         this.mName = name;
         this.mIcon = null;
         this.mIconLoader = icon_loader;
         this.mPackageName = package_name;
         this.mUid = uid;
         this.mIsSystem = is_system;
+        this.mHasLauncherIntent = has_launcher;
         this.mDescription = "";
     }
 
@@ -69,7 +75,8 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
         this(String.valueOf(appInfo.loadLabel(pm)),
                 makeIconLoader(pm, appInfo),
                 appInfo.packageName, appInfo.uid,
-                (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+                (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0,
+                pm.getLaunchIntentForPackage(appInfo.packageName) != null);
 
         mPm = pm;
         mPackageInfo = pkgInfo;
@@ -151,6 +158,10 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     }
 
     public boolean isSystem() { return mIsSystem; }
+
+    // A system app with no launcher intent (e.g. NFC service, SystemUI).
+    // Pre-installed apps like Chrome/YouTube have a launcher intent and return false.
+    public boolean isBackgroundSystemApp() { return mIsSystem && !mHasLauncherIntent; }
 
     // the app does not have a package name (e.g. uid 0 is android system)
     public boolean isVirtual() { return (mPackageInfo == null); }

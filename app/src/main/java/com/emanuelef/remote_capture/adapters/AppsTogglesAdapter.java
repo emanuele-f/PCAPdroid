@@ -173,7 +173,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         if(mListener != null)
             mListener.onAppToggled(app, checked);
 
-        if(!checked && !mShowSystemApps && app.isSystem()) {
+        if(!checked && !mShowSystemApps && app.isBackgroundSystemApp()) {
             getApps().remove(old_pos);
             notifyItemRemoved(old_pos);
             return;
@@ -232,7 +232,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
             for(AppDescriptor app: mApps) {
                 if(!mFilter.isEmpty() && !app.matches(mFilter, false))
                     continue;
-                if(!mShowSystemApps && app.isSystem() && !mCheckedItems.contains(app.getPackageName()))
+                if(!mShowSystemApps && app.isBackgroundSystemApp() && !mCheckedItems.contains(app.getPackageName()))
                     continue;
                 mFilteredApps.add(app);
             }
