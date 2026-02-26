@@ -97,24 +97,31 @@ android {
 }
 
 // Build zstd JNI for the host platform (needed by unit tests)
-tasks.register('buildHostZstdJni') {
-    def jniSrcDir = file("src/main/jni/zstd")
-    def cmakeBuildDir = "${buildDir}/hostJni/cmake"
-    def outputDir = "${buildDir}/hostJni"
+abstract class BuildHostZstdJniTask extends DefaultTask {
+    @Inject abstract ExecOperations getExecOps()
 
-    inputs.dir(jniSrcDir)
-    inputs.dir("${rootDir}/submodules/zstd/lib")
-    outputs.dir(outputDir)
+    @InputDirectory File jniSrcDir
+    @InputDirectory File zstdLibDir
+    @OutputDirectory File outputDir
+    @Internal File cmakeBuildDir
 
-    doLast {
-        exec {
+    @TaskAction
+    void build() {
+        execOps.exec {
             commandLine 'cmake', '-S', jniSrcDir, '-B', cmakeBuildDir,
                 "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${outputDir}"
         }
-        exec {
+        execOps.exec {
             commandLine 'cmake', '--build', cmakeBuildDir
         }
     }
+}
+
+tasks.register('buildHostZstdJni', BuildHostZstdJniTask) {
+    jniSrcDir = file("src/main/jni/zstd")
+    zstdLibDir = file("${rootDir}/submodules/zstd/lib")
+    cmakeBuildDir = file("${buildDir}/hostJni/cmake")
+    outputDir = file("${buildDir}/hostJni")
 }
 
 tasks.configureEach { task ->
