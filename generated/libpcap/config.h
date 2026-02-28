@@ -103,9 +103,6 @@
 /* Define to 1 if you have the <linux/usbdevice_fs.h> header file. */
 /* #undef HAVE_LINUX_USBDEVICE_FS_H */
 
-/* Define to 1 if you have the <linux/wireless.h> header file. */
-#define HAVE_LINUX_WIRELESS_H 1
-
 /* Define to 1 if you have the <netpacket/packet.h> header file. */
 #define HAVE_NETPACKET_PACKET_H 1
 
@@ -139,7 +136,7 @@
 /* Use OpenSSL */
 /* #undef HAVE_OPENSSL */
 
-/* if there's an os_proto.h for this platform, to use additional prototypes */
+/* if there's an os-proto.h for this platform, to use additional prototypes */
 /* #undef HAVE_OS_PROTO_H */
 
 /* Define to 1 if you have a POSIX-style `strerror_r' function. */
@@ -257,6 +254,9 @@
 /* Define to 1 if you have the 'vsyslog' function. */
 #define HAVE_VSYSLOG 1
 
+/* Define to 1 if you have the <zone.h> header file. */
+/* #undef HAVE_ZONE_H */
+
 /* Define to 1 if you have the '_wcserror_s' function. */
 /* #undef HAVE__WCSERROR_S */
 
@@ -288,7 +288,7 @@
 #define PACKAGE_NAME "pcap"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "pcap 1.10.5"
+#define PACKAGE_STRING "pcap 1.10.6"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcap"
@@ -297,7 +297,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.10.5"
+#define PACKAGE_VERSION "1.10.6"
 
 /* target host supports Bluetooth sniffing */
 /* #undef PCAP_SUPPORT_BT */

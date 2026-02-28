@@ -30,7 +30,7 @@
  * The #define below is used for apps that dynamically link with nDPI to make
  * sure that datastructures and in sync across versions
  */
-#define NDPI_API_VERSION 11721
+#define NDPI_API_VERSION 13709
 
 /*
   gcc -E -dM - < /dev/null |grep ENDIAN
@@ -89,19 +89,9 @@
 
 #define NDPI_SELECTION_BITMASK_PROTOCOL_SIZE			u_int32_t
 
-/**
- * convenience macro to check for excluded protocol
- * a protocol is excluded if the flow is known and either the protocol is not detected at all
- * or the excluded bitmask contains the protocol
- */
-#define NDPI_FLOW_PROTOCOL_EXCLUDED(ndpi_struct,flow,protocol) ((flow) != NULL && \
-								( NDPI_COMPARE_PROTOCOL_TO_BITMASK((ndpi_struct)->detection_bitmask, (protocol)) == 0 || \
-								  NDPI_COMPARE_PROTOCOL_TO_BITMASK((flow)->excluded_protocol_bitmask, (protocol)) != 0 ) )
-
 #define MAX_DEFAULT_PORTS                                        5
 
-#define NDPI_EXCLUDE_PROTO(mod,flow) ndpi_exclude_protocol(mod, flow, NDPI_CURRENT_PROTO, __FILE__, __FUNCTION__, __LINE__)
-#define NDPI_EXCLUDE_PROTO_EXT(mod,flow,proto) ndpi_exclude_protocol(mod, flow, proto, __FILE__, __FUNCTION__, __LINE__)
+#define NDPI_EXCLUDE_DISSECTOR(mod,flow) exclude_dissector(mod, flow, mod->current_dissector_idx, __FILE__, __FUNCTION__, __LINE__)
 
 /**
  * macro for getting the string len of a static string
@@ -114,44 +104,14 @@
 #define NDPI_COMPARE_IPV6_ADDRESS_STRUCTS(x,y)  \
   ((x.u6_addr.u6_addr64[0] < y.u6_addr.u6_addr64[0]) || ((x.u6_addr.u6_addr64[0] == y.u6_addr.u6_addr64[0]) && (x.u6_addr.u6_addr64[1] < y.u6_addr.u6_addr64[1])))
 
-#define NDPI_NUM_BITS              512
-#define NDPI_NUM_BITS_MASK         (512-1)
-
-#define NDPI_BITS /* 32 */ (sizeof(ndpi_ndpi_mask) * 8 /* number of bits in a byte */)        /* bits per mask */
 #define howmanybits(x, y)   (((x)+((y)-1))/(y))
-
-
-#define NDPI_SET(p, n)    ((p)->fds_bits[(n)/NDPI_BITS] |=  (1ul << (((u_int32_t)n) % NDPI_BITS)))
-#define NDPI_CLR(p, n)    ((p)->fds_bits[(n)/NDPI_BITS] &= ~(1ul << (((u_int32_t)n) % NDPI_BITS)))
-#define NDPI_ISSET(p, n)  ((p)->fds_bits[(n)/NDPI_BITS] &   (1ul << (((u_int32_t)n) % NDPI_BITS)))
-#define NDPI_ZERO(p)      memset((char *)(p), 0, sizeof(*(p)))
-#define NDPI_ONE(p)       memset((char *)(p), 0xFF, sizeof(*(p)))
-
-#define NDPI_NUM_FDS_BITS     howmanybits(NDPI_NUM_BITS, NDPI_BITS)
-
-#define NDPI_PROTOCOL_BITMASK ndpi_protocol_bitmask_struct_t
-
-#define NDPI_BITMASK_ADD(a,b)     NDPI_SET(&a,b)
-#define NDPI_BITMASK_DEL(a,b)     NDPI_CLR(&a,b)
-#define NDPI_BITMASK_RESET(a)     NDPI_ZERO(&a)
-#define NDPI_BITMASK_SET_ALL(a)   NDPI_ONE(&a)
-#define NDPI_BITMASK_SET(a, b)    { memcpy(&a, &b, sizeof(NDPI_PROTOCOL_BITMASK)); }
 
 #define NDPI_SET_BIT(num, n)    num |= 1ULL << ( n )
 #define NDPI_CLR_BIT(num, n)    num &= ~(1ULL << ( n ))
 #define NDPI_CLR_BIT(num, n)    num &= ~(1ULL << ( n ))
 #define NDPI_ISSET_BIT(num, n)  (num & (1ULL << ( n )))
 #define NDPI_ZERO_BIT(num)      num = 0
-
-/* this is a very very tricky macro *g*,
- * the compiler will remove all shifts here if the protocol is static...
- */
-#define NDPI_ADD_PROTOCOL_TO_BITMASK(bmask,value)     NDPI_SET(&bmask,   value & NDPI_NUM_BITS_MASK)
-#define NDPI_DEL_PROTOCOL_FROM_BITMASK(bmask,value)   NDPI_CLR(&bmask,   value & NDPI_NUM_BITS_MASK)
-#define NDPI_COMPARE_PROTOCOL_TO_BITMASK(bmask,value) NDPI_ISSET(&bmask, value & NDPI_NUM_BITS_MASK)
-
-#define NDPI_SAVE_AS_BITMASK(bmask,value)  { NDPI_ZERO(&bmask) ; NDPI_ADD_PROTOCOL_TO_BITMASK(bmask, value); }
-
+#define NDPI_ONES_BIT(num)      num = -1;
 
 #define ndpi_min(a,b)   ((a < b) ? a : b)
 #define ndpi_max(a,b)   ((a > b) ? a : b)
@@ -176,7 +136,16 @@
 
 /* the get_uXX will return raw network packet bytes !! */
 #define get_u_int8_t(X,O)   (*(u_int8_t  *)((&(((u_int8_t *)X)[O]))))
+#if defined(__arm__)
+static inline uint16_t get_u_int16_t(const uint8_t* X, int O)
+{
+  uint16_t tmp;
+  memcpy(&tmp, X + O, sizeof(tmp));
+  return tmp;
+}
+#else
 #define get_u_int16_t(X,O)  (*(u_int16_t *)((&(((u_int8_t *)X)[O]))))
+#endif // __arm__
 #if defined(__arm__)
 static inline uint32_t get_u_int32_t(const uint8_t* X, int O)
 {
@@ -188,8 +157,6 @@ static inline uint32_t get_u_int32_t(const uint8_t* X, int O)
 #define get_u_int32_t(X,O)  (*(u_int32_t *)((&(((u_int8_t *)X)[O]))))
 #endif // __arm__
 #if defined(__arm__)
-#include <stdint.h>
-#include <string.h>
 static inline uint64_t get_u_int64_t(const uint8_t* X, int O)
 {
   uint64_t tmp;
@@ -230,12 +197,12 @@ static inline uint64_t get_u_int64_t(const uint8_t* X, int O)
 
 #endif /* WIN32 */
 
-#define NDPI_MAX_DNS_REQUESTS                   16
-#define NDPI_MIN_NUM_STUN_DETECTION             8
-
-#define NDPI_MAJOR                              4
-#define NDPI_MINOR                              12
+#define NDPI_MAJOR                              5
+#define NDPI_MINOR                              0
 #define NDPI_PATCH                              0
+
+#define NDPI_MAX_DNS_REQUESTS                   48
+#define NDPI_MIN_NUM_STUN_DETECTION             8
 
 /* IMPORTANT: order according to its severity */
 #define NDPI_CIPHER_SAFE                        0
@@ -408,5 +375,8 @@ static inline uint64_t get_u_int64_t(const uint8_t* X, int O)
 #endif
 
 #define MAX_NBPF_CUSTOM_PROTO  8
+
+/* Unused parameters can be silenced as follows */
+#define __ndpi_unused_param(x) (void)(x)
 
 #endif /* __NDPI_DEFINE_INCLUDE_FILE__ */

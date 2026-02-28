@@ -47,7 +47,7 @@ char *pd_appver = (char*) "";
 char *pd_device = (char*) "";
 char *pd_os = (char*) "";
 
-static ndpi_protocol_bitmask_struct_t masterProtos;
+static struct ndpi_bitmask masterProtos;
 static bool masterProtosInit = false;
 
 /* ******************************************************* */
@@ -85,7 +85,7 @@ uint16_t pd_ndpi2proto(ndpi_protocol nproto) {
 
     // nDPI will still return a disabled protocol (via the bitmask) if it matches some
     // metadata for it (e.g. the SNI)
-    if(!NDPI_ISSET(&masterProtos, l7proto))
+    if(!ndpi_bitmask_is_set(&masterProtos, l7proto))
         l7proto = NDPI_PROTOCOL_UNKNOWN;
 
     //log_d("PROTO: %d/%d -> %d", proto.master_protocol, proto.app_protocol, l7proto);
@@ -97,7 +97,7 @@ uint16_t pd_ndpi2proto(ndpi_protocol nproto) {
 
 static bool is_encrypted_l7(struct ndpi_detection_module_struct *ndpi_str, uint16_t l7proto) {
     // The ndpi_is_encrypted_proto API does not work reliably as it mixes master protocols with apps
-    if(l7proto >= (NDPI_MAX_SUPPORTED_PROTOCOLS + NDPI_MAX_NUM_CUSTOM_PROTOCOLS))
+    if(l7proto >= ndpi_get_num_protocols(ndpi_str))
         return false;
 
     ndpi_proto_defaults_t *proto_defaults = ndpi_get_proto_defaults(ndpi_str);
@@ -226,33 +226,36 @@ struct ndpi_detection_module_struct* init_ndpi() {
 #endif
 
     struct ndpi_detection_module_struct *ndpi = ndpi_init_detection_module(NULL);
-    NDPI_PROTOCOL_BITMASK protocols;
 
-    if(!ndpi)
+    if(!ndpi) {
+        log_e("ndpi_init_detection_module returned NULL");
         return(NULL);
+    }
 
-    // needed by pd_get_proto_name
+    // nDPI 5.0: all protocols are enabled by default, no need to set a bitmask
+
+#ifdef FUZZING
+    // nDPI has a big performance impact on fuzzing.
+    // Only enable some protocols to extract the metadata for use in
+    // PCAPdroid, we are not fuzzing nDPI!
+    ndpi_set_config(ndpi, "all", "enable", "0");
+    ndpi_set_config(ndpi, "DNS", "enable", "1");
+    ndpi_set_config(ndpi, "HTTP", "enable", "1");
+    //ndpi_set_config(ndpi, "TLS", "enable", "1");
+#endif
+
+    int rc = ndpi_finalize_initialization(ndpi);
+    if(rc != 0) {
+        log_e("ndpi_finalize_initialization failed: %d", rc);
+        ndpi_exit_detection_module(ndpi);
+        return(NULL);
+    }
+
+    // needed by pd_get_proto_name (must be after finalize)
     if(!masterProtosInit) {
         init_ndpi_protocols_bitmask(&masterProtos);
         masterProtosInit = true;
     }
-
-#ifndef FUZZING
-    // enable all the protocols
-    NDPI_BITMASK_SET_ALL(protocols);
-#else
-    // nDPI has a big performance impact on fuzzing.
-    // Only enable some protocols to extract the metadata for use in
-    // PCAPdroid, we are not fuzzing nDPI!
-    NDPI_BITMASK_RESET(protocols);
-    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_DNS);
-    NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_HTTP);
-    //NDPI_BITMASK_ADD(protocols, NDPI_PROTOCOL_TLS);
-#endif
-
-    ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
-
-    ndpi_finalize_initialization(ndpi);
 
 #ifdef FUZZING
     ndpi_cache = ndpi;
@@ -570,9 +573,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
         return;
 
     if(data->l7proto == NDPI_PROTOCOL_UNKNOWN) {
-        uint8_t proto_guessed;
-        struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow,
-                              &proto_guessed);
+        struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow);
         data->l7proto = pd_ndpi2proto(n_proto);
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
@@ -754,7 +755,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
         process_dns_reply(data, pd, pkt);
 
     if(giveup || ((data->l7proto != NDPI_PROTOCOL_UNKNOWN) &&
-            !ndpi_extra_dissection_possible(pd->ndpi, data->ndpi_flow)))
+            (n_proto.state >= NDPI_STATE_MONITORING)))
         pd_giveup_dpi(pd, data, &pkt->tuple); // calls process_ndpi_data
     else
         process_ndpi_data(pd, &pkt->tuple, data);
