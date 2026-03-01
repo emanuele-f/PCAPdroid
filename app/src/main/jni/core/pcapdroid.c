@@ -47,9 +47,6 @@ char *pd_appver = (char*) "";
 char *pd_device = (char*) "";
 char *pd_os = (char*) "";
 
-static struct ndpi_bitmask masterProtos;
-static bool masterProtosInit = false;
-
 /* ******************************************************* */
 
 /* NOTE: these must be reset during each run, as android may reuse the service */
@@ -68,7 +65,7 @@ static void conn_free_ndpi(pd_conn_t *data) {
 
 /* ******************************************************* */
 
-uint16_t pd_ndpi2proto(ndpi_protocol nproto) {
+uint16_t pd_ndpi2proto(const struct ndpi_bitmask *masterProtos, ndpi_protocol nproto) {
     // The nDPI master/app protocol logic is not clear (e.g. the first packet of a DNS flow has
     // master_protocol unknown whereas the second has master_protocol set to DNS). We are not interested
     // in the app protocols, so just take the one that's not unknown.
@@ -78,14 +75,9 @@ uint16_t pd_ndpi2proto(ndpi_protocol nproto) {
     if((l7proto == NDPI_PROTOCOL_HTTP_CONNECT) || (l7proto == NDPI_PROTOCOL_HTTP_PROXY))
         l7proto = NDPI_PROTOCOL_HTTP;
 
-    if(!masterProtosInit) {
-        init_ndpi_protocols_bitmask(&masterProtos);
-        masterProtosInit = true;
-    }
-
     // nDPI will still return a disabled protocol (via the bitmask) if it matches some
     // metadata for it (e.g. the SNI)
-    if(!ndpi_bitmask_is_set(&masterProtos, l7proto))
+    if(!ndpi_bitmask_is_set(masterProtos, l7proto))
         l7proto = NDPI_PROTOCOL_UNKNOWN;
 
     //log_d("PROTO: %d/%d -> %d", proto.master_protocol, proto.app_protocol, l7proto);
@@ -249,12 +241,6 @@ struct ndpi_detection_module_struct* init_ndpi() {
         log_e("ndpi_finalize_initialization failed: %d", rc);
         ndpi_exit_detection_module(ndpi);
         return(NULL);
-    }
-
-    // needed by pd_get_proto_name (must be after finalize)
-    if(!masterProtosInit) {
-        init_ndpi_protocols_bitmask(&masterProtos);
-        masterProtosInit = true;
     }
 
 #ifdef FUZZING
@@ -574,7 +560,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
     if(data->l7proto == NDPI_PROTOCOL_UNKNOWN) {
         struct ndpi_proto n_proto = ndpi_detection_giveup(pd->ndpi, data->ndpi_flow);
-        data->l7proto = pd_ndpi2proto(n_proto);
+        data->l7proto = pd_ndpi2proto(&pd->masterProtos, n_proto);
         data->encrypted_l7 = is_encrypted_l7(pd->ndpi, data->l7proto);
     }
 
@@ -744,7 +730,7 @@ static void perform_dpi(pcapdroid_t *pd, pkt_context_t *pctx) {
     uint16_t old_proto = data->l7proto;
     struct ndpi_proto n_proto = ndpi_detection_process_packet(pd->ndpi, data->ndpi_flow, (const u_char *)pkt->buf,
                                   pkt->len, data->last_seen, NULL);
-    data->l7proto = pd_ndpi2proto(n_proto);
+    data->l7proto = pd_ndpi2proto(&pd->masterProtos, n_proto);
 
     if(old_proto != data->l7proto) {
         data->update_type |= CONN_UPDATE_INFO;
@@ -1242,6 +1228,7 @@ int pd_run(pcapdroid_t *pd) {
         log_f("nDPI initialization failed");
         return(-1);
     }
+    init_ndpi_protocols_bitmask(&pd->masterProtos);
 
     pd->ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE);
 
@@ -1332,6 +1319,8 @@ int pd_run(pcapdroid_t *pd) {
 #ifndef FUZZING
     ndpi_exit_detection_module(pd->ndpi);
 #endif
+
+    ndpi_bitmask_free(&pd->masterProtos);
 
     if(pd->pcap_dump.dumper)
         stop_pcap_dump(pd);

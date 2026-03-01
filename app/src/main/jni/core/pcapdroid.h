@@ -205,6 +205,7 @@ typedef struct pcapdroid {
     int new_conn_id;
     uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     struct ndpi_detection_module_struct *ndpi;
+    struct ndpi_bitmask masterProtos;
     zdtun_t *zdt;
     ip_lru_t *ip_to_host;
     conn_array_t new_conns;
@@ -434,7 +435,7 @@ const char* get_file_path(pcapdroid_t *pd, const char *subpath);
 static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path(pd, ""); }
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
-uint16_t pd_ndpi2proto(ndpi_protocol proto);
+uint16_t pd_ndpi2proto(const struct ndpi_bitmask *masterProtos, ndpi_protocol proto);
 
 #ifdef ANDROID
 

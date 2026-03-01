@@ -1092,6 +1092,9 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     int num_protos = (int) ndpi_get_num_protocols(ndpi);
     ndpi_proto_defaults_t* proto_defaults = ndpi_get_proto_defaults(ndpi);
 
+    struct ndpi_bitmask masterProtos;
+    init_ndpi_protocols_bitmask(&masterProtos);
+
     struct ndpi_bitmask unique_protos;
     ndpi_bitmask_alloc(&unique_protos, num_protos);
 
@@ -1106,7 +1109,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
         memset(&n_proto, 0, sizeof(n_proto));
         n_proto.proto.master_protocol = proto_defaults[i].protoId;
         n_proto.proto.app_protocol = NDPI_PROTOCOL_UNKNOWN;
-        uint16_t proto = pd_ndpi2proto(n_proto);
+        uint16_t proto = pd_ndpi2proto(&masterProtos, n_proto);
         //log_d("protos: %d -> %d -> %d", i, proto_defaults[i].protoId, proto);
 
         if(!ndpi_bitmask_is_set(&unique_protos, proto)) {
@@ -1122,6 +1125,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     }
 
 out:
+    ndpi_bitmask_free(&masterProtos);
     ndpi_bitmask_free(&unique_protos);
     if(!success) {
         (*env)->DeleteLocalRef(env, plist);
