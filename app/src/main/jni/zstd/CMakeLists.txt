@@ -36,8 +36,9 @@ target_include_directories(zstd_dec PRIVATE
 
 if(ANDROID)
     find_library(log-lib log)
-    target_link_libraries(zstd_dec ${log-lib})
+    target_link_libraries(zstd_dec common ${log-lib})
 else()
     find_package(JNI REQUIRED)
     target_include_directories(zstd_dec PRIVATE ${JNI_INCLUDE_DIRS})
+    target_link_libraries(zstd_dec common)
 endif()
