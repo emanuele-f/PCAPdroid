@@ -229,10 +229,10 @@ public class CaptureService extends VpnService implements Runnable {
     // Android does not provide a reliable API to track the always-on VPN state
     // This function tries to detect but may fail to do so
     private boolean isAlwaysOnVpnDetected() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            return isAlwaysOn();
-
         try {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                return isAlwaysOn();
+
             String always_on_vpn_app = Settings.Secure.getString(getContentResolver(), "always_on_vpn_app");
             return always_on_vpn_app.equals(getPackageName());
         } catch (Exception e) {
