@@ -70,7 +70,7 @@ local function dissect_pcap_trailer(buffer, pinfo, tree)
 
   subtree:add(fields.magic, trailer(0, 4))
   subtree:add(fields.uid, trailer(4, 4))
-  subtree:add(fields.appname, trailer(8, 20))
+  subtree:add(fields.appname, appname)
   return true
 end
 
