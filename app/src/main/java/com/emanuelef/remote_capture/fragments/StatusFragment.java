@@ -62,6 +62,7 @@ import com.emanuelef.remote_capture.model.CaptureStats;
 import com.emanuelef.remote_capture.views.PrefSpinner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class StatusFragment extends Fragment implements AppStateListener, MenuProvider {
@@ -140,8 +141,15 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         filterTitle.setText(R.string.target_apps);
 
         mAppFilterSwitch.setOnClickListener((buttonView) -> {
-            mAppFilterSwitch.setChecked(!mAppFilterSwitch.isChecked());
-            openAppFilterSelector();
+            if (!mAppFilterSwitch.isChecked()) {
+                mPrefs.edit().putStringSet(Prefs.PREF_APP_FILTER, new HashSet<>()).apply();
+                mAppFilter = new HashSet<>();
+                refreshFilterInfo();
+                recheckFilterWarning();
+            } else {
+                mAppFilterSwitch.setChecked(false);
+                openAppFilterSelector();
+            }
         });
 
         refreshFilterInfo();
