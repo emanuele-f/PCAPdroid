@@ -18,14 +18,14 @@ Current limitations:
 - Decrypting STARTTLS [is not supported yet](https://github.com/mitmproxy/mitmproxy/issues/4215)
 - There are some protocol-specific limitations, check out [the mitmproxy docs](https://docs.mitmproxy.org/stable/concepts-protocols/#protocols) for more details
 
-TLS decryption on Android is not an easy task, technical knowledge and familiarity with the topic is required. There are many caveats and which are be discussed below. A rooted device will help you being successful in most circumstances.
+TLS decryption on Android is not an easy task, technical knowledge and familiarity with the topic is required. There are many caveats which are being discussed below. A rooted device will help you being successful in most circumstances.
 
 
 ## 3.2 Initial setup
 
 TLS decryption can be enabled from the PCAPdroid settings.
 
-         In PCAPdroid settings (top right ⚙️ icon), toggle **TLS decryption** switch under **Traffic inspection** menu.
+> In PCAPdroid settings (top right ⚙️ icon), toggle **TLS decryption** switch under **Traffic inspection** menu.
 
 The first time decryption is enabled, a setup wizard will help you properly setting up decryption. It includes the following steps:
 
@@ -33,12 +33,12 @@ The first time decryption is enabled, a setup wizard will help you properly sett
 2. Permission to control the mitm addon. This is a security measure to prevent other apps from controlling the addon
 3. Installation of the PCAPdroid [CA certificate](https://docs.mitmproxy.org/stable/concepts-certificates). The CA certificate is what allows PCAPdroid to decrypt the app data, and to do so, it must first be added to the certificate store. To increase security, a unique CA is generated at runtime by PCAPdroid
 
-Before proceeding, check if your device has [Autostart](https://www.vivo.com/en/support/questionByTitle?title=How%20to%20turn%20on/off%20Autostart%20for%20my%20apps) or similar software which prevents background services excecution, in which case you will need to whitelist the mitm addon, otherwise decryption will refuse to start.
+Before proceeding, check if your device has [Autostart](https://www.vivo.com/en/support/questionByTitle?title=How%20to%20turn%20on/off%20Autostart%20for%20my%20apps) or similar software which prevents background services execution, in which case you will need to whitelist the mitm addon, otherwise decryption will refuse to start.
 
 
 ## 3.3 Decrypting
 
-In order to decrypt connections, you first need to define some rules. You can do this either from the "Decryption rules" in the left drawer or by long pressing a connection and selecting a decryption criteria from the context menu. Please note that, due to Android security measures, decryption on common apps will not usually work, and will cause the apps to stop working. Read the section below to understand and possibly bypass these protections.
+In order to decrypt connections, you first need to define some rules. You can do this either from the "Decryption rules" in the left drawer or by long pressing a connection and selecting a decryption criterion from the context menu. Please note that, due to Android security measures, decryption on common apps will not usually work, and will cause the apps to stop working. Read the section below to understand and possibly bypass these protections.
 
 The first test you should do to verify that decryption works is to choose an app which is easy to decrypt. It turns out Google Chrome is a good candidate. Enable decryption, select Google Chrome as the target app and then start the capture in PCAPdroid. In chrome, open a new tab and a new HTTPS website (or just clear the browser cache) and you should start seeing decrypted connections in PCAPdroid. These are marked with a green open lock.
 
@@ -80,7 +80,7 @@ Google Chrome is a relatively easy app to decrypt. If you try to decrypt other a
 
 If you see the above error "*client does not trust proxy's certificate*" while decryption, it may occur due to the following reasons:
 
-- Starting from Android 7, when targetting the Android SDK 23 or later, apps no longer trust any user-installed certificates and instead rely only on the system-installed certificates i.e those that came pre-installed in your phone's OS, installed by default
+- Starting from Android 7, when targeting the Android SDK 23 or later, apps no longer trust any user-installed certificates and instead rely only on the system-installed certificates i.e. those that came pre-installed in your phone's OS, installed by default
 - An app may use its own internal database of root certificates. For example some apps (mainly browsers) implement a custom certificate trust store, separate from the system store. This will prevent them from using any certificates stored on your device certificate store. You should check if they have an option to disable it. For example, in Firefox, [you can do this](https://support.mozilla.org/en-US/questions/1304237) via `about:config`. If such option is not available, you will need to patch the app
 - The app may employ [Certificate pinning](https://developer.android.com/training/articles/security-ssl#Pinning) security measure which means that the app actively performs certificate verification against a whitelist embedded in the app. This is usually set through network_security_config.xml file in the app code. We shall discuss solutions for this in following sections
 
@@ -89,7 +89,7 @@ If you see the above error "*client does not trust proxy's certificate*" while d
 -  On a device rooted with Magisk, you can install the [Custom Certificate Authorities module](https://github.com/whalehub/custom-certificate-authorities) (Android 11+) or the [MagiskTrustUserCerts module](https://github.com/NVISOsecurity/MagiskTrustUserCerts), and then install the [hashed certificate](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#instructions) (replace `mitmproxy-ca-cert.cer` with the PCAPdroid certificate name) as a system certificate. This is the suggested solution if you have Magisk
 - On any rooted device, you can install the certificate [into the system store](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), by mounting the system partition as read-write (rw)
 - Alternatively you can install the [LSposed](https://github.com/LSPosed/LSPosed) module. Then install the [sslunpinning](https://github.com/Xposed-Modules-Repo/io.github.tehcneko.sslunpinning/releases) module
-- You can use [VirtualXposed](https://github.com/android-hacker/VirtualXposed) to virtualize your app, making it run as it was SDK 23 (Android 11 and later  [currently not supported](https://github.com/android-hacker/VirtualXposed/issues/1073)). To do so, open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method). Then in PCAPdroid, select VirtualXposed as the target app for the decryption. Virtualization is quite unreliable, so expect crashes
+- You can use [VirtualXposed](https://github.com/android-hacker/VirtualXposed) to virtualize your app, making it run as it was SDK 23 (Android 11 and later [currently not supported](https://github.com/android-hacker/VirtualXposed/issues/1073)). To do so, open VirtualXposed, select "Add App" and install the target application that you want to decrypt (use the "virtualxposed" method). Then in PCAPdroid, select VirtualXposed as the target app for the decryption. Virtualization is quite unreliable, so expect crashes
 
 #### Using a rooted Android emulator
 
@@ -100,14 +100,14 @@ If you see the above error "*client does not trust proxy's certificate*" while d
 - You can use [apk-mitm](https://github.com/shroudedcode/apk-mitm) which automates rebuilding the apk with the pinning logic disabled and signs the apk for installation without errors
 - Another tool that could be useful is [android-unpinner](https://github.com/mitmproxy/android-unpinner) which may have some benefits over the apk-mitm tool
 - You can use [apktool](https://apktool.org/) to decompile the app, lower its target SDK to 23, and rebuild it
-- If you have the app source code and can build the app, refer to the [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA.This would require you to have android studio or another IDE installed for editing the code and build the app. In the network security config xml, you can specify top level domains (TLDs), for example `<domain includeSubdomains="true">com</domain>`, to use the CA to mitm any `.com` domain. To specify the certificate, rename the PCAPdroid CA certificate you exported during the TLS decryption setup to `pcapdroid.crt` and place it under the `raw` resources folder. Please also note that some libraries may use a custom trust store; refer to their documentation on this subject
+- If you have the app source code and can build the app, refer to [the Android guide](https://developer.android.com/training/articles/security-config.html) to trust the PCAPdroid CA.This would require you to have android studio or another IDE installed for editing the code and build the app. In the network security config xml, you can specify top level domains (TLDs), for example `<domain includeSubdomains="true">com</domain>`, to use the CA to mitm any `.com` domain. To specify the certificate, rename the PCAPdroid CA certificate you exported during the TLS decryption setup to `pcapdroid.crt` and place it under the `raw` resources folder. Please also note that some libraries may use a custom trust store; refer to their documentation on this subject
 
 #### Reverse engineering APKs and other advanced topics
 
 - If none of the above mentioned method works, then the app may use custom pinning logic, in which case you will need to decompile the app, analyse the code and then patch and rebuild it. Commonly used softwares for decompiling and patching apps are [JADX](https://github.com/skylot/jadx), [apktool](https://apktool.org/) or the [APKLab](https://github.com/APKLab/APKLab) extension in Visual studio code. Refer to this [blog post](https://braincoke.fr/blog/2021/03/android-reverse-engineering-for-beginners-decompiling-and-patching/) for a full guide on reverse-engineering and decompiling apps using the above tools. 
 - Along with patching an Android app, you could take help of tools like [Objection](https://github.com/sensepost/objection) and [Frida tools](https://github.com/frida/frida) to bypass ssl pinning.
 For a full guide on how to use these tools, you can refer to this [video tutorial](https://www.youtube.com/watch?v=R3ptGaFW1AU). Instead of using the Burp Suite as in the tutorial, you could instead use pcapdroid-mitm or an [external mitmproxy](https://github.com/emanuele-f/PCAPdroid/edit/gh-pages/tls_decryption.md#35-decrypting-via-an-external-mitmproxy), if you just want to decrypt TLS traffic
-- You can also refer to the [OWASP mobile security](https://mas.owasp.org/MASTG/0x04c-Tampering-and-Reverse-Engineering/#references) website which has a repository of mobile application pen-testing and reverse-engineering [tools](https://mas.owasp.org/MASTG/tools/) discussed in-depth .You can refer to various OWASP uncrackable app tutorials on youtube for more insight
+- You can also refer to the [OWASP mobile security](https://mas.owasp.org/MASTG/0x04c-Tampering-and-Reverse-Engineering/#references) website which has a repository of mobile application pen-testing and reverse-engineering [tools](https://mas.owasp.org/MASTG/tools/) discussed in-depth. You can refer to various OWASP uncrackable app tutorials on youtube for more insight.
 
 
 ### 3.4.2 Certificate transparency
@@ -120,9 +120,9 @@ When decrypting a browser traffic, the browser may refuse to connect to websites
 
 ### 3.4.3 Traffic is still encrypted
 
-After decrypting the TLS traffic, the decrypted payload may still be encrypted with a another protocol. This occurs, in particular, with Telegram and Whatsapp, which use a custom encrypted protocol. Such protocols require the development of custom tools for the decryption, which are out of the scope of PCAPdroid.
+After decrypting the TLS traffic, the decrypted payload may still be encrypted with another protocol. This occurs, in particular, with Telegram and Whatsapp, which use a custom encrypted protocol. Such protocols require the development of custom tools for the decryption, which are out of the scope of PCAPdroid.
 
-Moreover, beware that the result of decryption may produce a *binary* protocol, which is not in a human-readable form. It's important to understand that a *binary* protocol does not necessarily means that the protocol is encrypted. For example, DNS is a binary protocol but it's not encrypted.
+Moreover, beware that the result of decryption may produce a *binary* protocol, which is not in a human-readable form. It's important to understand that a *binary* protocol does not necessarily mean that the protocol is encrypted. For example, DNS is a binary protocol but it's not encrypted.
 
 
 ## 3.5 Decrypting via an external mitmproxy
