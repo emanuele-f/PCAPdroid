@@ -48,6 +48,7 @@
     <string name="unlock_token" translatable="false">Unlock token</string>
     <string name="method_get" translatable="false">GET</string>
     <string name="method_post" translatable="false">POST</string>
+    <string name="plus_n" translatable="false">+%1$d</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -589,4 +590,19 @@
     <string name="next">Next</string>
     <string name="save_as_text">Save as text</string>
     <string name="save_as_har">Save as HAR</string>
+    <string name="last_capture">Last capture</string>
+    <string name="view_all">View all</string>
+    <string name="app_and_n_more">%1$s and %2$d more</string>
+    <string name="capture_list_info">%1$s · %2$s · %3$s</string>
+    <string name="capture_list">Capture list</string>
+    <string name="captures_count">Captures (%1$d)</string>
+    <string name="storage_used">Storage used</string>
+    <string name="storage_used_value">%1$s / %2$s</string>
+    <string name="no_captures">No captures</string>
+    <string name="rename">Rename</string>
+    <string name="captures_delete_confirm">Delete the selected captures?</string>
+    <string name="less_than_one_sec">&lt; 1 s></string>
+    <string name="n_seconds">%1$d s</string>
+    <string name="n_minutes">%1$d m</string>
+    <string name="n_hours_minutes">%1$d h, %2$d m</string>
 </resources>

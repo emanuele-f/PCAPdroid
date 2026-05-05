@@ -43,6 +43,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -134,6 +135,8 @@ public class CaptureService extends VpnService implements Runnable {
     private String dns_server;
     private long last_bytes;
     private int last_connections;
+    private long mCaptureStartTime;
+    private long mCaptureStartTimeMonotonic;
     private int[] mAppFilterUids;
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
@@ -360,6 +363,8 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
+        mCaptureStartTime = System.currentTimeMillis();
+        mCaptureStartTimeMonotonic = SystemClock.elapsedRealtime();
         last_connections = 0;
         mLowMemory = false;
         conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
@@ -1051,6 +1056,14 @@ public class CaptureService extends VpnService implements Runnable {
 
     public static long getBytes() {
         return((INSTANCE != null) ? INSTANCE.last_bytes : 0);
+    }
+
+    public static long getCaptureStartTime() {
+        return((INSTANCE != null) ? INSTANCE.mCaptureStartTime : 0);
+    }
+
+    public static long getCaptureStartTimeMonotonic() {
+        return((INSTANCE != null) ? INSTANCE.mCaptureStartTimeMonotonic : 0);
     }
 
     public static String getCollectorAddress() {

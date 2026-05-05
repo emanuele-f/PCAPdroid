@@ -113,6 +113,7 @@ public class Prefs {
     public static final String PREF_IGNORED_MITM_VERSION = "ignored_mitm_version";
     public static final String PREF_API_KEY = "api_key";
     public static final String PREF_FILENAME_PREFIX = "filename_prefix";
+    public static final String PREF_CAPTURE_LIST = "capture_list";
 
     public enum DumpMode {
         NONE,

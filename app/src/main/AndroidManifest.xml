@@ -120,6 +120,10 @@
             android:name=".activities.AppFilterActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />
+        <activity
+            android:name=".activities.CaptureListActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
 
         <service
             android:name=".CaptureService"

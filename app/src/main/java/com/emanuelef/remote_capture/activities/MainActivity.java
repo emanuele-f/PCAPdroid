@@ -21,7 +21,6 @@ package com.emanuelef.remote_capture.activities;
 
 import android.Manifest;
 import android.content.ActivityNotFoundException;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -52,6 +51,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,18 +69,20 @@ import com.emanuelef.remote_capture.MitmReceiver;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.prefs.SettingsActivity;
-import com.emanuelef.remote_capture.fragments.ConnectionsFragment;
 import com.emanuelef.remote_capture.fragments.DataViewContainerFragment;
 import com.emanuelef.remote_capture.fragments.StatusFragment;
 import com.emanuelef.remote_capture.interfaces.AppStateListener;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.AppState;
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.MitmAddon;
 import com.emanuelef.remote_capture.model.CaptureStats;
+import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
+import com.emanuelef.remote_capture.model.CaptureList;
 import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
@@ -93,7 +95,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -232,6 +236,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     } else if (mKeylogFile != null)
                         startExportSslkeylogfile();
                 }
+
                 appStateReady();
                 mWasStarted = false;
                 mStartPressed = false;
@@ -255,6 +260,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         setupNavigationDrawer();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String pcapUri = intent.getStringExtra(CaptureListActivity.OPEN_PCAP_EXTRA);
+            if (pcapUri != null)
+                startOpenPcap(Uri.parse(pcapUri));
+        }
     }
 
     @Override
@@ -928,25 +943,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage(message);
 
-        builder.setPositiveButton(R.string.share, (dialog, which) -> {
-            Intent sendIntent = new Intent(Intent.ACTION_SEND);
-            sendIntent.setType("application/cap");
-            sendIntent.putExtra(Intent.EXTRA_STREAM, pcapUri);
-            sendIntent.setClipData(ClipData.newRawUri("", pcapUri));
-            sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-            Utils.startActivity(this, Intent.createChooser(sendIntent, getResources().getString(R.string.share)));
-        });
+        builder.setPositiveButton(R.string.share, (dialog, which) -> Utils.shareCapture(this, pcapUri));
         builder.setNegativeButton(R.string.delete, (dialog, which) -> {
             deletePcapFile(pcapUri);
             pcapDeleted[0] = true;
         });
         builder.setNeutralButton(R.string.ok, (dialog, which) -> {});
         builder.setOnDismissListener(dialogInterface -> {
-            if (pcapDeleted[0])
-                discardKeylogFile();
-            else
+            if(!pcapDeleted[0]) {
                 exportSiblingKeylogFile(finalPcapName);
+                savePacketCapture();
+                notifyAppState();
+            } else
+                discardKeylogFile();
         });
 
         AlertDialog dialog = builder.create();
@@ -1073,7 +1082,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    private void startOpenPcap(Uri pcap_uri) {
+    public void startOpenPcap(Uri pcap_uri) {
         if (pcap_uri == null) {
             Log.w(TAG, "startOpenPcap: null URI provided");
             return;
@@ -1148,23 +1157,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             // For plain pcap with a real file path, check for a sibling .keylog file
             File siblingKeylog = null;
             if (!isPcapng)
-                siblingKeylog = findSiblingKeylog(path);
+                siblingKeylog = Utils.findSiblingKeylog(path);
 
             prepareKeylogAndStart(path, isPcapng, siblingKeylog);
         }
-    }
-
-    private File findSiblingKeylog(String pcap_path) {
-        File pcapFile = new File(pcap_path);
-        File parent = pcapFile.getParentFile();
-        if (parent == null)
-            return null;
-
-        String name = pcapFile.getName();
-        int dotIndex = name.lastIndexOf('.');
-        String baseName = (dotIndex > 0) ? name.substring(0, dotIndex) : name;
-        File candidate = new File(parent, baseName + ".keylog");
-        return (candidate.isFile() && Utils.isReadable(candidate.getAbsolutePath())) ? candidate : null;
     }
 
     private void prepareKeylogAndStart(String pcap_path, boolean isPcapng, File sibling_keylog) {
@@ -1221,5 +1217,60 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private File getKeylogPath() {
         // NOTE: keep in sync with run_libpcap
         return new File(getCacheDir() + "/sslkeylog.txt");
+    }
+
+    private void savePacketCapture() {
+        CaptureSettings settings = CaptureService.getCaptureSettings();
+        Uri pcap_uri = CaptureService.getPcapUri();
+        String pcap_fname = CaptureService.getPcapFname();
+
+        if ((settings == null) ||
+                (settings.dump_mode != Prefs.DumpMode.PCAP_FILE) ||
+                (pcap_uri == null) ||
+                (pcap_fname == null))
+            return;
+
+        CaptureStats stats = CaptureService.getStats();
+        if (stats.pcap_dump_size <= 0)
+            // ignore empty captures
+            return;
+
+        long start_time = CaptureService.getCaptureStartTime();
+        long duration = (SystemClock.elapsedRealtime() - CaptureService.getCaptureStartTimeMonotonic()) / 1000;
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        ArrayList<CaptureList.TargetApp> target_apps = new ArrayList<>();
+
+        if (reg != null) {
+            List<AppStats> apps_stats = reg.getAppsStats();
+            apps_stats.sort((a, b) -> Long.compare(b.sentBytes + b.rcvdBytes, a.sentBytes + a.rcvdBytes));
+            AppsResolver resolver = new AppsResolver(this);
+            for (AppStats s : apps_stats) {
+                AppDescriptor app = resolver.getAppByUid(s.getUid(), 0);
+                if ((app == null) || (app.getPackageName() == null))
+                    continue;
+                target_apps.add(new CaptureList.TargetApp(app.getUid(), app.getPackageName(), app.getName()));
+            }
+        }
+
+        boolean decrypted = false;
+        if (CaptureService.isDecryptingTLS() && (reg != null)) {
+            // check if any connection was actually decrypted
+            int cnt = reg.getConnCount();
+            for (int i = 0; i < cnt; i++) {
+                ConnectionDescriptor cd = reg.getConn(i);
+                if ((cd != null) && cd.isDecrypted()) {
+                    decrypted = true;
+                    break;
+                }
+            }
+        }
+
+        CaptureList.Capture capture = new CaptureList.Capture(pcap_uri.toString(), pcap_fname, start_time, duration,
+                stats.pcap_dump_size, stats.bytes_sent + stats.bytes_rcvd, decrypted,
+                target_apps);
+
+        Log.d(TAG, "Save capture in list: " + capture.name + " - " + capture.size + " B");
+        CaptureList capture_list = new CaptureList(this);
+        capture_list.add(capture);
     }
 }
