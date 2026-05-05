@@ -25,7 +25,7 @@ TLS decryption on Android is not an easy task, technical knowledge and familiari
 
 TLS decryption can be enabled from the PCAPdroid settings.
 
-         In PCAPdroid settings (top right ⚙️ icon), toggle **TLS decryption** switch under **Traffic inspection** menu.
+> In PCAPdroid settings (top right ⚙️ icon), toggle **TLS decryption** switch under **Traffic inspection** menu.
 
 The first time decryption is enabled, a setup wizard will help you properly setting up decryption. It includes the following steps:
 
