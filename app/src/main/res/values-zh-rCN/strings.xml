@@ -496,10 +496,7 @@
     <string name="errno_enetunreach_msg">系统无法找到前往目标网络的有效路由</string>
     <string name="malicious_connections_notice">黑名单可能包含误报。请在网上仔细检查 IP 地址/域名的信誉。你可以通过恶意软件白名单排除误报</string>
     <string name="errno_econnaborted_msg">连接被终止，通过是由于网络转换</string>
-    <string name="keylog_read_error">SSL 密钥记录读取出错</string>
     <string name="bytes_threshold">字节数临界值</string>
-    <string name="select_the_pcap_file">选择 PCAP/Pcapng 文件</string>
-    <string name="select_the_keylog_file">选择 SSL 密钥记录文件</string>
     <string name="error_code_with_text">%1$s （错误 %2$d）</string>
     <string name="errno_epipe">管道损坏</string>
     <string name="errno_epipe_msg">服务器在数据传输期间意外地关闭了连接</string>
@@ -525,7 +522,6 @@
     <string name="country_rules_warning">要使用基于地理位置的防火墙规则，请从 PCAPdroid 设置下载地理位置数据库，不然规则无效</string>
     <string name="ip_address_or_cidr">IP 地址 / CIDR</string>
     <string name="unsupported_pcap_file">不受支持的捕获文件格式</string>
-    <string name="decrypt_pcap_file">解密 PCAP/Pcapng 文件…</string>
     <string name="generate_api_key">生成 API 密钥</string>
     <string name="show_api_key">显示 API 密钥</string>
     <string name="api_key">API 密钥</string>

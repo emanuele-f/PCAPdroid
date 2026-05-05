@@ -539,12 +539,8 @@
     <string name="errno_etimedout_msg">Server terlalu lama merespons, kemungkinan karena penundaan jaringan atau server yang sibuk</string>
     <string name="errno_epipe">Broken Pipe</string>
     <string name="geo_db_missing">Database geolokasi tidak ada</string>
-    <string name="decrypt_pcap_file">Dekripsi file PCAP/Pcapng…</string>
-    <string name="keylog_read_error">Kesalahan pembacaan keylog SSL</string>
     <string name="unsupported_pcap_file">Format file penangkapan tidak didukung</string>
     <string name="bytes_threshold">Batas byte</string>
-    <string name="select_the_pcap_file">Pilih file PCAP/Pcapng</string>
-    <string name="select_the_keylog_file">Pilih file SSL keylog</string>
     <string name="error_code_with_text">%1$s (kesalahan %2$d)</string>
     <string name="errno_epipe_msg">Server tiba-tiba menutup koneksi saat transfer data</string>
     <string name="errno_enetreset_msg">Sambungan jaringan direset oleh perangkat perantara (mis. router atau operator seluler)</string>

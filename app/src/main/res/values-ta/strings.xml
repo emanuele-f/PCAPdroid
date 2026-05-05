@@ -489,7 +489,6 @@
     <string name="api_key_discard_confirm">தற்போதைய பநிஇ விசையை நிராகரித்து புதிய ஒன்றை உருவாக்க விரும்புகிறீர்களா?</string>
     <string name="country_rules_warning">நாட்டை அடிப்படையாகக் கொண்ட ஃபயர்வால் விதிகளைப் பயன்படுத்த, பி.சி.ஏ.பி டிராய்டு அமைப்புகளிலிருந்து புவிஇருப்பிட தரவுத்தளத்தைப் பதிவிறக்குங்கள், இல்லையெனில் நாட்டை அடிப்படையாகக் கொண்ட விதிகள் பயனற்றதாக இருக்கும்</string>
     <string name="unsupported_pcap_file">ஆதரிக்கப்படாத பிடிப்பு கோப்பு வடிவம்</string>
-    <string name="decrypt_pcap_file">பிசிஏபி/பி.சி.ஏ.பி.என்.சி கோப்பை டிக்ரிப்ட் செய்யுங்கள்…</string>
     <string name="errno_enetdown">பிணையம் கீழே உள்ளது</string>
     <string name="errno_enetdown_msg">பிணைய இடைமுகம் குறைந்துவிட்டது அல்லது பிணையத்துடன் இணைக்க முடியவில்லை</string>
     <string name="errno_enetunreach">பிணையம் அணுக முடியாதது</string>
@@ -525,10 +524,7 @@
     <string name="dump_extensions_summary">கொடுக்கப்பட்ட பாக்கெட்டை அனுப்பிய/பெற்ற பயன்பாடு போன்ற கூடுதல் மெட்டாடேட்டாவுடன் பாக்கெட் டம்ப் வடிவமைப்பை நீட்டிக்கவும்</string>
     <string name="malicious_connection_description">பயன்பாட்டின் \"%1$s\" இன் இணைப்பு தீம்பொருள் கண்டறிதல் விதியைத் தூண்டியது (%2$s)</string>
     <string name="malicious_connections_notice">தடுப்புப்பட்டியலில் தவறான நேர்மறைகள் இருக்கலாம். ஐபி முகவரி/டொமைன் நற்பெயரை ஆன்லைனில் இருமுறை சரிபார்க்கவும். தீம்பொருள் வைட்லிச்ட் வழியாக தவறான நேர்மறைகளை நீங்கள் விலக்கலாம்</string>
-    <string name="keylog_read_error">SSL KEYLOG READ பிழை</string>
     <string name="bytes_threshold">பைட்டுகள் வாசல்</string>
-    <string name="select_the_pcap_file">PCAP/PCAPNG கோப்பைத் தேர்ந்தெடுக்கவும்</string>
-    <string name="select_the_keylog_file">SSL கீலாக் கோப்பைத் தேர்ந்தெடுக்கவும்</string>
     <string name="error_code_with_text">%1$s (பிழை %2$d)</string>
     <string name="errno_epipe">உடைந்த குழாய்</string>
     <string name="errno_epipe_msg">தரவு பரிமாற்றத்தின் போது சேவையகம் எதிர்பாராத விதமாக இணைப்பை மூடியது</string>

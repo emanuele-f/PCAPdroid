@@ -499,8 +499,6 @@
     <string name="malicious_connection_description">\"%1$s\" uygulamasından gelen bir bağlantı, kötü amaçlı yazılım algılama kuralını (%2$s) tetikledi</string>
     <string name="country_rules_warning">Ülke tabanlı güvenlik duvarı kurallarını kullanmak için PCAPdroid ayarlarından coğrafi konum veritabanını indirin, aksi takdirde ülke tabanlı kurallar etkisiz olacaktır</string>
     <string name="bytes_threshold">Bayt eşiği</string>
-    <string name="select_the_pcap_file">PCAP/Pcapng dosyasını seçin</string>
-    <string name="select_the_keylog_file">SSL keylog dosyasını seçin</string>
     <string name="error_code_with_text">%1$s (hata %2$d)</string>
     <string name="errno_epipe">Kırık boru</string>
     <string name="errno_epipe_msg">Sunucu, veri aktarımı sırasında bağlantıyı beklenmedik bir şekilde kapattı</string>
@@ -518,8 +516,6 @@
     <string name="errno_ehostunreach_msg">Sistem, hedef ana bilgisayara giden bir rota bulamıyor</string>
     <string name="dns_conn_info">DNS, bir alan adını bir IP adresine çevirir. Gerçek veriler genellikle sonraki HTTPS/TLS bağlantıları üzerinden değiştirilir</string>
     <string name="unsupported_pcap_file">Desteklenmeyen yakalama dosyası biçimi</string>
-    <string name="decrypt_pcap_file">PCAP/Pcapng dosyasının şifresini çöz…</string>
-    <string name="keylog_read_error">SSL keylog okuma hatası</string>
     <string name="tcp_collector_info">TCP toplayıcı: %1$s:%2$d</string>
     <string name="tcp_exporter">TCP dışa aktarıcı</string>
     <string name="tcp_udp_exporter">TCP/UDP dışa aktarıcı</string>

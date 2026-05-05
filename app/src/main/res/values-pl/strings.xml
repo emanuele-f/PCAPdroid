@@ -430,7 +430,6 @@
     <string name="license_activation_ok">Aktywacja licencji zakończona</string>
     <string name="mitm_addon_running">Dodatek Mitm jest uruchomiony</string>
     <string name="decryption_rules_help">Te reguły określają, które połączenia mają być odszyfrowane. Reguły oparte na hostach działają tylko wtedy, gdy wcześniej otrzymano odpowiedź DNS</string>
-    <string name="keylog_read_error">Błąd odczytu SSL keylog</string>
     <string name="pcap_file_load_aborted">Ładowanie pliku przechwytywania przerwane</string>
     <string name="decryption_info_no_rule">Aby odszyfrować to połączenie, utwórz regułę deszyfrowania z panelu bocznego lub z menu kontekstowego na liście połączeń</string>
     <string name="active_vpn_detected">Wykryto aktywny VPN</string>
@@ -447,7 +446,6 @@
     <string name="vpn_reconnection">Ponowne połączenie VPN</string>
     <string name="vpn_reconnection_aborted">Ponowne połączenie VPN przerwane</string>
     <string name="bytes_threshold">Próg bajtów</string>
-    <string name="select_the_keylog_file">Wybierz plik SSL keylog</string>
     <string name="error_code_with_text">%1$s (błąd %2$d)</string>
     <string name="errno_epipe">Przerwany potok</string>
     <string name="errno_epipe_msg">Serwer niespodziewanie zamknął połączenie podczas przesyłania danych</string>
@@ -515,7 +513,6 @@
     <string name="open_pcap_file">Otwórz plik PCAP/Pcapng…</string>
     <string name="pcap_load_success">Załadowano plik przechwytywania</string>
     <string name="unsupported_pcap_file">Nieobsługiwany format pliku przechwytywania</string>
-    <string name="decrypt_pcap_file">Rozszyfruj plik PCAP/Pcapng…</string>
     <string name="invalid_pcap_file">Błędny format pliku przechwytywania</string>
     <string name="capture_interface_open_error">Nie można otworzyć interfejsu przechwytywania</string>
     <string name="unsupported_pcap_datalink">Plik zawiera nieobsługiwany typ łącza danych</string>
@@ -534,6 +531,5 @@
     <string name="raw_bytes">Surowe dane</string>
     <string name="restart_on_disconnection_summary">Automatycznie wznów przechwytywanie po zatrzymaniu przez inne aplikacje VPN</string>
     <string name="waiting_for_vpn_disconnect">Oczekiwanie na zakończenie aktywnego połączenia VPN…</string>
-    <string name="select_the_pcap_file">Wybierz plik PCAP/Pcapng</string>
     <string name="proxy_host">Host usługi Proxy</string>
 </resources>

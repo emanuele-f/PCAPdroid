@@ -492,10 +492,7 @@
     <string name="geo_db_missing">قاعدة بيانات تحديد الموقع الجغرافي مفقود</string>
     <string name="country_rules_warning">لاستخدام قواعد جدار الحماية القائمة على الدول، نزّل قاعدة بيانات تحديد الموقع الجغرافي من إعدادات PCAPdroid، وإلا ستكون القواعد القائمة على الدول غير فعالة</string>
     <string name="unsupported_pcap_file">تنسيق ملف التقاط غير مدعوم</string>
-    <string name="decrypt_pcap_file">فك تعمية Pcapng/PCAP…</string>
-    <string name="keylog_read_error">خطأ قراءة SSL keylog</string>
     <string name="bytes_threshold">بايتات عتبة</string>
-    <string name="select_the_keylog_file">حدد ملف Keylog SSL</string>
     <string name="error_code_with_text">%1$s (خطأ %2$d)</string>
     <string name="errno_epipe_msg">أغلق الخادم الاتصال بشكل غير متوقع أثناء نقل البيانات</string>
     <string name="errno_enetdown">الشبكة متعطلة</string>
@@ -516,7 +513,6 @@
     <string name="errno_ehostunreach_msg">لا يمكن للنظام العثور على طريق إلى مضيف الوجهة</string>
     <string name="dns_conn_info">يترجم DNS اسم مجال إلى عنوان IP. عادةً ما يتم تبادل البيانات الفعلية عبر اتصالات HTTPS/TLS اللاحقة</string>
     <string name="tls_conn_info">يتم تعمية حركة المرور TLS/HTTPS. لتفقد حركة المرور هذه، تحتاج إلى فك تعميتها. تحقق من <a href="%1$s">دليل المستخدم</a> PCAPdroid لمزيد من التفاصيل</string>
-    <string name="select_the_pcap_file">حدد ملف PCAP/Pcapng</string>
     <string name="errno_enetreset_msg">تمت إعادة ضبط اتصال الشبكة بواسطة جهاز وسيط (مثل جهاز التوجيه أو شركة الاتصالات المحمولة)</string>
     <string name="tcp_udp_exporter">مُصدّر TCP/UDP</string>
     <string name="tcp_exporter_info">أرسل ملف PCAP إلى مستقبل TCP عن بُعد (pcap-over-ip)</string>

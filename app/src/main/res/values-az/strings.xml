@@ -490,11 +490,7 @@
     <string name="geo_db_missing">Coğrafi məlumat bazası çatışmır</string>
     <string name="country_rules_warning">Ölkə üzrə qorunma qaydalarını istifadə etmək üçün,PCAPdroid coğrafi məlumat bazasından ayarları yükləyin,əks halda ölkə üzrə qaydalar təsirsiz olacaq</string>
     <string name="unsupported_pcap_file">Dəstəklənməyən yaxalama qovluq formatı</string>
-    <string name="decrypt_pcap_file">Şifrəsizləşdir PCAP/Pcaping faylı…</string>
-    <string name="keylog_read_error">SSL açar günlüyü oxu xətası</string>
     <string name="bytes_threshold">Bit limiti</string>
-    <string name="select_the_pcap_file">PCAP/Pcapng fayl seç</string>
-    <string name="select_the_keylog_file">SSL açar günlüyü faylını seç</string>
     <string name="error_code_with_text">%1$s (xəta %2$d)</string>
     <string name="errno_epipe">Sınıq boru</string>
     <string name="errno_epipe_msg">Məlumat ötürülməsi zamanı,server gözlənilmədən qapandı</string>

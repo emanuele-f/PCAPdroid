@@ -469,7 +469,6 @@
     <string name="open_pcap_file">Abrir archivo PCAP/Pcapng…</string>
     <string name="pcap_load_success">Archivo de captura cargado</string>
     <string name="unsupported_pcap_file">Formato de archivo de captura no compatible</string>
-    <string name="decrypt_pcap_file">Descifrar archivo PCAP/Pcapng…</string>
     <string name="invalid_pcap_file">Formato de archivo de captura no válido</string>
     <string name="root_capture_start_failed">Fallo del inicio de captura. Asegúrate de que el dispositivo está rooteado con Magisk</string>
     <string name="pcap_read_error">Error al leer el archivo de captura. Comprueba el registro para más detalles</string>
@@ -502,8 +501,6 @@
     <string name="vpn_reconnection_aborted">Reconexión a la VPN abortada</string>
     <string name="waiting_for_vpn_disconnect">Esperando a que la VPN activa se desconecte…</string>
     <string name="bytes_threshold">Umbral de bytes</string>
-    <string name="select_the_pcap_file">Seleccione el archivo PCAP/Pcapng</string>
-    <string name="select_the_keylog_file">Seleccione el archivo de registro de claves SSL</string>
     <string name="errno_epipe">Tubería rota</string>
     <string name="errno_epipe_msg">El servidor cerró la conexión inesperadamente durante la transferencia de datos</string>
     <string name="errno_enetdown">Red caída</string>
@@ -560,5 +557,4 @@
     <string name="errno_econnrefused">Conexión rechazada</string>
     <string name="error_code_with_text">%1$s (error %2$d)</string>
     <string name="api_key_discard_confirm">¿Realmente desea descartar la clave API actual y generar una nueva?</string>
-    <string name="keylog_read_error">Error de lectura del registro de claves SSL</string>
 </resources>

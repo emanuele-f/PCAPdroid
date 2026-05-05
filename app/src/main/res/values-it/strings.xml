@@ -496,10 +496,7 @@
     <string name="malicious_connections_notice">Le Blacklist possono contenere falsi positivi. Assicurati di ricontrollare online l\'indirizzo IP/reputazione del dominio. Puoi escludere i falsi positivi tramite la whitelist malware</string>
     <string name="geo_db_missing">Database geolocalizzazione non presente</string>
     <string name="country_rules_warning">Per utilizzare le regole del firewall basate sul paese, scarica il database di geolocalizzazione dalle impostazioni di PCAPdroid, altrimenti le regole basate sul paese saranno inefficaci</string>
-    <string name="keylog_read_error">Errore di lettura del keylog SSL</string>
     <string name="bytes_threshold">Soglia di byte</string>
-    <string name="select_the_pcap_file">Seleziona il file PCAP/Pcapng</string>
-    <string name="select_the_keylog_file">Seleziona il file keylog SSL</string>
     <string name="error_code_with_text">%1$s (errore %2$d)</string>
     <string name="errno_epipe_msg">Il server ha chiuso inaspettatamente la connessione durante il trasferimento dei dati</string>
     <string name="errno_enetdown">La rete non funziona</string>
@@ -518,7 +515,6 @@
     <string name="errno_econnrefused_msg">Il server ha rifiutato la connessione, potrebbe indicare un sovraccarico o un malfunzionamento</string>
     <string name="errno_ehostunreach">Nessuna rotta per l\'host</string>
     <string name="errno_ehostunreach_msg">Il sistema non riesce a trovare una rotta verso l\'host di destinazione</string>
-    <string name="decrypt_pcap_file">Decritta il file PCAP/Pcapng…</string>
     <string name="dump_extensions_how_to">Come visualizzare le estensioni dump PCAPdroid in Wireshark</string>
     <string name="ip_address_or_cidr">Indirizzo IP / CIDR</string>
     <string name="tcp_collector_info">Collettore TCP: %1$s:%2$d</string>

@@ -490,12 +490,8 @@
     <string name="geo_db_missing">Отсутствует база данных геолокации</string>
     <string name="country_rules_warning">Чтобы использовать правила по странам, необходимо загрузить базу данных геолокации из настроек PCAPdroid, иначе правила по странам будут неэффективны</string>
     <string name="unsupported_pcap_file">Неподдерживаемый формат файла захвата</string>
-    <string name="decrypt_pcap_file">Дешифровать PCAP/Pcapng файл…</string>
-    <string name="keylog_read_error">Ошибка чтения SSL keylog</string>
-    <string name="select_the_pcap_file">Выберите PCAP/Pcapng файл</string>
     <string name="error_code_with_text">%1$s (ошибка %2$d)</string>
     <string name="bytes_threshold">Пороговое значение в байтах</string>
-    <string name="select_the_keylog_file">Выберите файл SSL keylog</string>
     <string name="errno_epipe">Соединение разорвано</string>
     <string name="errno_econnaborted">Соединение прервано</string>
     <string name="errno_enetunreach">Сеть недостижима</string>

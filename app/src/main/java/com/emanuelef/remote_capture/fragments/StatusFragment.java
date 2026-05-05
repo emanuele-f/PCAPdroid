@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -48,7 +48,6 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.MitmReceiver;
-import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.activities.AppFilterActivity;
 import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.AppState;
@@ -70,7 +69,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
     private MenuItem mOpenPcap;
-    private MenuItem mDecryptPcap;
     private ImageView mFilterIcon;
     private MenuItem mMenuSettings;
     private TextView mInterfaceInfo;
@@ -172,8 +170,6 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mStopBtn = mMenu.findItem(R.id.action_stop);
         mMenuSettings = mMenu.findItem(R.id.action_settings);
         mOpenPcap = mMenu.findItem(R.id.open_pcap);
-        mDecryptPcap = mMenu.findItem(R.id.decrypt_pcap);
-        mDecryptPcap.setVisible(PCAPdroid.getInstance().isUsharkAvailable());
         refreshStatus();
     }
 
@@ -325,14 +321,12 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 mStopBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(false);
                 mOpenPcap.setEnabled(false);
-                mDecryptPcap.setEnabled(false);
             } else { // ready || starting
                 mStopBtn.setVisible(false);
                 mStartBtn.setEnabled(true);
                 mStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
                 mMenuSettings.setEnabled(true);
                 mOpenPcap.setEnabled(true);
-                mDecryptPcap.setEnabled(true);
             }
         }
 
