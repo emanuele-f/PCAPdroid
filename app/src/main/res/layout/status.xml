@@ -91,34 +91,57 @@
                 tools:listitem="@layout/quick_settings_item"
                 android:prompt="@string/traffic_dump"/>
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <include
-                    android:id="@+id/app_filter_text"
-                    layout="@layout/quick_settings_item"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="50dp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:baselineAligned="false">
 
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/app_filter_switch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true" />
+                    <FrameLayout
+                        android:id="@+id/app_filter_text"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <include layout="@layout/quick_settings_item" />
+                    </FrameLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:layout_marginHorizontal="8dp"
+                        android:background="?android:attr/listDivider" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/app_filter_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/app_filter_root_decryption_warning"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/app_filter_text"
                     android:paddingHorizontal="10dp"
                     android:layout_marginTop="5dp"
                     android:text="@string/decryption_no_filter_warn"
                     android:textColor="@color/warning"
                     android:textSize="14sp" />
-            </RelativeLayout>
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout

@@ -70,6 +70,7 @@ public class Prefs {
     public static final String PREF_FIREWALL = "firewall";
     public static final String PREF_TLS_DECRYPTION_KEY = "tls_decryption";
     public static final String PREF_APP_FILTER = "app_filter";
+    public static final String PREF_APP_FILTER_ENABLED = "app_filter_enabled";
     public static final String PREF_HTTP_SERVER_PORT = "http_server_port";
     public static final String PREF_PCAP_DUMP_MODE = "pcap_dump_mode_v2";
     public static final String PREF_IP_MODE = "ip_mode";
@@ -207,7 +208,9 @@ public class Prefs {
     public static boolean isSocks5AuthEnabled(SharedPreferences p)  { return(p.getBoolean(PREF_SOCKS5_AUTH_ENABLED_KEY, false)); }
     public static String getSocks5Username(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_USERNAME_KEY, "")); }
     public static String getSocks5Password(SharedPreferences p)     { return(p.getString(PREF_SOCKS5_PASSWORD_KEY, "")); }
-    public static Set<String> getAppFilter(SharedPreferences p)     { return(getStringSet(p, PREF_APP_FILTER)); }
+    public static Set<String> getAppFilter(SharedPreferences p)     { return(isAppFilterEnabled(p) ? getAppFilterRaw(p) : new ArraySet<>()); }
+    public static Set<String> getAppFilterRaw(SharedPreferences p)  { return(getStringSet(p, PREF_APP_FILTER)); }
+    public static boolean isAppFilterEnabled(SharedPreferences p)   { return(p.getBoolean(PREF_APP_FILTER_ENABLED, true)); }
     public static IpMode getIPMode(SharedPreferences p)          { return(getIPMode(p.getString(PREF_IP_MODE, IP_MODE_DEFAULT))); }
     public static BlockQuicMode getBlockQuicMode(SharedPreferences p) { return(getBlockQuicMode(p.getString(PREF_BLOCK_QUIC, BLOCK_QUIC_MODE_DEFAULT))); }
     public static String getAppLocale(SharedPreferences p) {

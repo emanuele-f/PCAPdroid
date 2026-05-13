@@ -195,7 +195,7 @@ public class PCAPdroid extends Application {
 
     private void removeUninstalledAppsFromAppFilter() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> filter = Prefs.getAppFilter(prefs);
+        Set<String> filter = Prefs.getAppFilterRaw(prefs);
         ArrayList<String> to_remove = new ArrayList<>();
         PackageManager pm = getPackageManager();
 

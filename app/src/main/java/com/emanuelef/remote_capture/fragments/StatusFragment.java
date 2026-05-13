@@ -90,6 +90,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     private TextView mFilterDescription;
     private SwitchCompat mAppFilterSwitch;
     private Set<String> mAppFilter;
+    private boolean mAppFilterEnabled;
     private TextView mFilterRootDecryptionWarning;
     private View mLastCaptureSection;
     private View mLastCapture;
@@ -141,7 +142,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         mQuickSettings = view.findViewById(R.id.quick_settings);
         mFilterRootDecryptionWarning = view.findViewById(R.id.app_filter_root_decryption_warning);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        mAppFilter = Prefs.getAppFilter(mPrefs);
+        mAppFilter = Prefs.getAppFilterRaw(mPrefs);
+        mAppFilterEnabled = Prefs.isAppFilterEnabled(mPrefs);
 
         PrefSpinner.init(view.findViewById(R.id.dump_mode_spinner),
                 R.array.pcap_dump_modes, R.array.pcap_dump_modes_labels, R.array.pcap_dump_modes_descriptions,
@@ -162,10 +164,9 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
 
         filterTitle.setText(R.string.target_apps);
 
-        mAppFilterSwitch.setOnClickListener((buttonView) -> {
-            mAppFilterSwitch.setChecked(!mAppFilterSwitch.isChecked());
-            openAppFilterSelector();
-        });
+        filterRow.setOnClickListener((v) -> openAppFilterSelector());
+
+        mAppFilterSwitch.setOnClickListener((buttonView) -> onAppFilterSwitchClicked());
 
         refreshFilterInfo();
 
@@ -204,11 +205,11 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
     }
 
     private void recheckFilterWarning() {
-        boolean hasFilter = ((mAppFilter != null) && (!mAppFilter.isEmpty()));
+        boolean hasEffectiveFilter = mAppFilterEnabled && (mAppFilter != null) && (!mAppFilter.isEmpty());
 
         mFilterRootDecryptionWarning.setVisibility((Prefs.getTlsDecryptionEnabled(mPrefs) &&
                 Prefs.isRootCaptureEnabled(mPrefs)
-                && !hasFilter) ? View.VISIBLE : View.GONE);
+                && !hasEffectiveFilter) ? View.VISIBLE : View.GONE);
     }
 
     private void refreshDecryptionStatus() {
@@ -226,14 +227,16 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         if(context == null)
             return;
 
-        if((mAppFilter == null) || (mAppFilter.isEmpty())) {
+        boolean hasApps = (mAppFilter != null) && (!mAppFilter.isEmpty());
+        boolean effective = hasApps && mAppFilterEnabled;
+
+        mAppFilterSwitch.setChecked(effective);
+
+        if (!effective) {
             mFilterDescription.setText(R.string.capture_all_apps);
             mFilterIcon.setVisibility(View.GONE);
-            mAppFilterSwitch.setChecked(false);
             return;
         }
-
-        mAppFilterSwitch.setChecked(true);
 
         Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
 
@@ -243,6 +246,23 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             mFilterIcon.setImageDrawable(pair.second);
             mFilterIcon.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void onAppFilterSwitchClicked() {
+        boolean hasApps = (mAppFilter != null) && (!mAppFilter.isEmpty());
+
+        if (!hasApps) {
+            mAppFilterSwitch.setChecked(false);
+            mPrefs.edit().putBoolean(Prefs.PREF_APP_FILTER_ENABLED, true).apply();
+            mAppFilterEnabled = true;
+            openAppFilterSelector();
+            return;
+        }
+
+        mAppFilterEnabled = !mAppFilterEnabled;
+        mPrefs.edit().putBoolean(Prefs.PREF_APP_FILTER_ENABLED, mAppFilterEnabled).apply();
+        refreshFilterInfo();
+        recheckFilterWarning();
     }
 
     private void onStatsUpdate(CaptureStats stats) {
@@ -361,7 +381,8 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                 mCollectorInfoLayout.setVisibility(View.GONE);
                 mInterfaceInfo.setVisibility(View.GONE);
                 mQuickSettings.setVisibility(View.VISIBLE);
-                mAppFilter = Prefs.getAppFilter(mPrefs);
+                mAppFilter = Prefs.getAppFilterRaw(mPrefs);
+                mAppFilterEnabled = Prefs.isAppFilterEnabled(mPrefs);
                 refreshFilterInfo();
                 refreshLastCapture();
                 break;
@@ -401,6 +422,7 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                     mInterfaceInfo.setVisibility(View.GONE);
 
                 mAppFilter = CaptureService.getAppFilter();
+                mAppFilterEnabled = (mAppFilter != null) && (!mAppFilter.isEmpty());
                 refreshPcapDumpInfo(context);
                 break;
             default:
