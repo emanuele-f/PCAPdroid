@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -262,6 +262,12 @@ public class CaptureCtrl extends AppCompatActivity {
             String disallowedServer = checkRemoteServerNotAllowed(settings);
             if(disallowedServer != null) {
                 Utils.showToastLong(this, R.string.remote_server_warning, disallowedServer);
+                abort();
+                return;
+            }
+
+            if(settings.pcapng_format && !Billing.newInstance(this).isPurchased(Billing.PCAPNG_SKU)) {
+                Utils.showToastLong(this, R.string.feature_unavailable, getString(R.string.pcapng_format));
                 abort();
                 return;
             }

@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import com.emanuelef.remote_capture.Billing;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,7 +93,7 @@ public class CaptureSettings implements Serializable {
         block_quic_mode = Prefs.getBlockQuicMode(getString(intent, "block_quic", Prefs.BLOCK_QUIC_MODE_DEFAULT));
         auto_block_private_dns = getBool(intent, Prefs.PREF_AUTO_BLOCK_PRIVATE_DNS, true);
         mitmproxy_opts = getString(intent, Prefs.PREF_MITMPROXY_OPTS, "");
-        pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false) && Billing.newInstance(ctx).isPurchased(Billing.PCAPNG_SKU);
+        pcapng_format = getBool(intent, Prefs.PREF_PCAPNG_ENABLED, false);
         sslkeylog_name = getString(intent, "sslkeylog_name", "");
         decryption_rules_json = getDecryptionRulesFromIntent(intent);
         api_capture = true;
