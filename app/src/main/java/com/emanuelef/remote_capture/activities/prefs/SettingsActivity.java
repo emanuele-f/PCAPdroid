@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities.prefs;
@@ -188,6 +188,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private DropDownPreference mIpMode;
         private DropDownPreference mCapInterface;
         private DropDownPreference mBlockQuic;
+        private DropDownPreference mConnectionsLogSize;
         private Preference mVpnExceptions;
         private Preference mSocks5Settings;
         private Preference mDnsSettings;
@@ -404,6 +405,31 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             });
 
             mSocks5Settings = requirePreference("socks5_settings");
+
+            setupConnectionsLogSizePref();
+        }
+
+        private void setupConnectionsLogSizePref() {
+            mConnectionsLogSize = requirePreference(Prefs.PREF_CONNECTIONS_LOG_SIZE);
+
+            int maxSupported = Prefs.getMaxConnectionsLogSize();
+            ArrayList<CharSequence> labels = new ArrayList<>();
+            ArrayList<CharSequence> values = new ArrayList<>();
+
+            for (int v = Prefs.MIN_CONNECTIONS_LOG_SIZE; v <= maxSupported; v <<= 1) {
+                int mb = (int) (((long) v * 2 /* KB per conn */) / 1024);
+                labels.add(getString(R.string.connections_log_size_entry, Integer.toString(v), mb));
+                values.add(Integer.toString(v));
+            }
+
+            mConnectionsLogSize.setEntries(labels.toArray(new CharSequence[0]));
+            mConnectionsLogSize.setEntryValues(values.toArray(new CharSequence[0]));
+
+            // Clamp the stored value if the device-supported max shrank (e.g. moved profile / smaller heap).
+            String current = mConnectionsLogSize.getValue();
+            if ((current == null) || !values.contains(current))
+                mConnectionsLogSize.setValue(Integer.toString(Prefs.getConnectionsLogSize(
+                        PreferenceManager.getDefaultSharedPreferences(requireContext()))));
         }
 
         private void socks5ProxyHideShow(boolean tlsDecryption, boolean rootEnabled) {

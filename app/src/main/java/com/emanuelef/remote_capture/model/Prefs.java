@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -115,6 +115,20 @@ public class Prefs {
     public static final String PREF_API_KEY = "api_key";
     public static final String PREF_FILENAME_PREFIX = "filename_prefix";
     public static final String PREF_CAPTURE_LIST = "capture_list";
+    public static final String PREF_CONNECTIONS_LOG_SIZE = "max_connections";
+
+    /* The default maximum connections to log into the ConnectionsRegister. Older connections are dropped.
+     * Average Java-heap cost is ~2 KB per connection (covers payload-minimal mode and possible new additions);
+     * base app overhead is ~8 MB. The user can override this via Prefs.PREF_CONNECTIONS_LOG_SIZE,
+     * bounded by the device heap (see Prefs.getMaxConnectionsLogSize). */
+    public static final int DEFAULT_CONNECTIONS_LOG_SIZE = 8192;
+    public static final int MIN_CONNECTIONS_LOG_SIZE = 1024;
+
+    // Java-heap budget used to derive the max selectable connections log size.
+    // Per-connection cost is a conservative average that covers payload-minimal mode.
+    private static final long BYTES_PER_CONNECTION = 2L * 1024;
+    private static final long HEAP_BASE_OVERHEAD = 8L * 1024 * 1024;
+    private static final long HEAP_RESERVE_MIN = 24L * 1024 * 1024;
 
     public enum DumpMode {
         NONE,
@@ -253,6 +267,36 @@ public class Prefs {
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
     public static String getFilenamePrefix(SharedPreferences p)     { return(p.getString(PREF_FILENAME_PREFIX, "PCAPdroid_")); }
 
+    // Largest connections log size the current device's Java heap can safely host.
+    // Rounded down to a power of two for a user-friendly dropdown.
+    public static int getMaxConnectionsLogSize() {
+        long heap = Runtime.getRuntime().maxMemory();
+        long reserve = Math.max(HEAP_RESERVE_MIN, heap * 15 / 100);
+        long available = heap - HEAP_BASE_OVERHEAD - reserve;
+        if (available < (long) MIN_CONNECTIONS_LOG_SIZE * BYTES_PER_CONNECTION)
+            return MIN_CONNECTIONS_LOG_SIZE;
+
+        long maxConn = available / BYTES_PER_CONNECTION;
+        int rounded = Integer.highestOneBit((int) Math.min(maxConn, Integer.MAX_VALUE));
+        return Math.max(rounded, MIN_CONNECTIONS_LOG_SIZE);
+    }
+
+    public static int getConnectionsLogSize(SharedPreferences p) {
+        int val;
+        try {
+            val = Integer.parseInt(p.getString(PREF_CONNECTIONS_LOG_SIZE, String.valueOf(DEFAULT_CONNECTIONS_LOG_SIZE)));
+        } catch (NumberFormatException e) {
+            val = DEFAULT_CONNECTIONS_LOG_SIZE;
+        }
+
+        int max = getMaxConnectionsLogSize();
+        if (val > max)
+            val = max;
+        if (val < MIN_CONNECTIONS_LOG_SIZE)
+            val = MIN_CONNECTIONS_LOG_SIZE;
+        return val;
+    }
+
     // Gets a StringSet from the prefs
     // The preference should either be a StringSet or a String
     // An empty set is returned as the default value
@@ -299,6 +343,7 @@ public class Prefs {
                 "\nTargetApps: " + getAppFilter(p) +
                 "\nIpMode: " + getIPMode(p) +
                 "\nDumpExtensions: " + isPcapdroidMetadataEnabled(p) +
-                "\nStartAtBoot: " + startAtBoot(p);
+                "\nStartAtBoot: " + startAtBoot(p) +
+                "\nConnectionsLogSize: " + getConnectionsLogSize(p);
     }
 }

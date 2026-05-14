@@ -174,10 +174,6 @@ public class CaptureService extends VpnService implements Runnable {
     private BroadcastReceiver mNewAppsInstallReceiver;
     private Utils.PrivateDnsMode mPrivateDnsMode;
 
-    /* The maximum connections to log into the ConnectionsRegister. Older connections are dropped.
-     * Max estimated memory usage: less than 4 MB (+8 MB with payload mode minimal). */
-    public static final int CONNECTIONS_LOG_SIZE = 8192;
-
     /* The IP address of the virtual network interface */
     public static final String VPN_IP_ADDRESS = "10.215.173.1";
     public static final String VPN_IP6_ADDRESS = "fd00:2:fd00:1:fd00:1:fd00:1";
@@ -367,7 +363,7 @@ public class CaptureService extends VpnService implements Runnable {
         mCaptureStartTimeMonotonic = SystemClock.elapsedRealtime();
         last_connections = 0;
         mLowMemory = false;
-        conn_reg = new ConnectionsRegister(this, CONNECTIONS_LOG_SIZE);
+        conn_reg = new ConnectionsRegister(this, Prefs.getConnectionsLogSize(mPrefs));
         mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;

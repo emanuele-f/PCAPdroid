@@ -606,4 +606,6 @@
     <string name="n_seconds">%1$d s</string>
     <string name="n_minutes">%1$d m</string>
     <string name="n_hours_minutes">%1$d h, %2$d m</string>
+    <string name="connections_log_size">Max logged connections</string>
+    <string name="connections_log_size_entry">%1$s (~%2$d MB of RAM used)</string>
 </resources>

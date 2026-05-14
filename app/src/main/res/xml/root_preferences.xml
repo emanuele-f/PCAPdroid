@@ -103,6 +103,13 @@
             app:summary="@string/full_payload_summary"
             app:defaultValue="false" />
 
+        <DropDownPreference
+            app:key="max_connections"
+            app:title="@string/connections_log_size"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="8192" />
+
         <Preference
             android:key="socks5_settings"
             app:title="@string/socks5_proxy"
