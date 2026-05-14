@@ -22,15 +22,15 @@ To do this, you need to:
   <img src="./images/invizible_5.jpg" width="250" />
   </p>
 
-3\. In the PCAPdroid settings, add InviZible to the VPN Exemptions. This is necessary to avoid traffic loops
-  <p align="center">
-  <img src="./images/invizible_1.jpg" width="250" />
-  </p>
-
-4\. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
+3\. Add two port mapping rules to PCAPdroid, one for TCP and one for UDP, to redirect the DNS traffic from port 53 to port 5354, where the InviZible proxy is listening
   <p align="center">
   <img src="./images/invizible_2.jpg" width="250" />
   <img src="./images/invizible_3.jpg" width="250" />
+  </p>
+
+4\. From the 3 dots menu, add InviZible to the port mapping Exemptions. This is necessary to avoid traffic loops.
+  <p align="center">
+  <img src="./images/invizible_1.jpg" width="250" />
   </p>
 
 5\. Start the PCAPdroid capture. DNS requests should now be redirected to InviZible proxy and then encrypted. In the Connections view, these are marked with a back arrow icon.
