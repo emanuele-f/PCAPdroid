@@ -422,6 +422,8 @@
     <string name="notifications_notice">The app uses notifications to send alerts in case of anomalous events. Grant it the permission to send notifications in the next screen</string>
     <string name="vpn_exemptions">VPN exemptions</string>
     <string name="vpn_exemptions_summary">Exempt some apps from the VPN connection. Their traffic will not be monitored</string>
+    <string name="port_map_exemptions">Exemptions</string>
+    <string name="port_map_exemptions_help">Select the apps to be excluded from the port mapping. To prevent traffic loops, you should exclude apps that need to reach their original servers to bootstrap (e.g. DNS-over-HTTPS resolvers)</string>
     <string name="no_matches_found">No matches</string>
     <string name="cleartext_connection">Cleartext</string>
     <string name="unblock_permanently">Unblock permanently</string>
@@ -479,6 +481,7 @@
     <string name="destination_host">Destination host</string>
     <string name="destination_port">Destination port</string>
     <string name="port_mapping_exists">Port mapping already defined</string>
+    <string name="port_mapping_disabled_reminder">Enable port mapping to use this rule</string>
     <string name="items_delete_confirm">Delete the selected items?</string>
     <string name="ip_address">IP address</string>
     <string name="ip_address_or_cidr">IP address / CIDR</string>

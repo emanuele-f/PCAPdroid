@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.fragments.prefs;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ActionMode;
@@ -47,6 +48,7 @@ import androidx.preference.PreferenceManager;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.activities.prefs.PortMapExemptionsActivity;
 import com.emanuelef.remote_capture.adapters.PortMappingAdapter;
 import com.emanuelef.remote_capture.model.PortMapping;
 import com.emanuelef.remote_capture.model.PortMapping.PortMap;
@@ -163,8 +165,15 @@ public class PortMapFragment extends Fragment implements MenuProvider {
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-        if(menuItem.getItemId() == R.id.add_mapping) {
+        int id = menuItem.getItemId();
+
+        if(id == R.id.add_mapping) {
             openAddDialog();
+            return true;
+        }
+
+        if(id == R.id.exemptions) {
+            startActivity(new Intent(requireContext(), PortMapExemptionsActivity.class));
             return true;
         }
 
@@ -207,6 +216,9 @@ public class PortMapFragment extends Fragment implements MenuProvider {
                     mPortMap.save();
                     mAdapter.add(mapping);
                     recheckListSize();
+
+                    if(!Prefs.isPortMappingEnabled(PreferenceManager.getDefaultSharedPreferences(requireContext())))
+                        Utils.showToastLong(requireContext(), R.string.port_mapping_disabled_reminder);
                 }
 
                 dialog.dismiss();

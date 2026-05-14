@@ -826,6 +826,33 @@ Java_com_emanuelef_remote_1capture_CaptureService_addPortMapping(JNIEnv *env, jc
 
 /* ******************************************************* */
 
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setPortMappingExemptions(JNIEnv *env, jclass clazz,
+                                                                           jintArray uids) {
+    if(uids == NULL) {
+        pd_set_port_map_exemptions(NULL, 0);
+        return;
+    }
+
+    jsize num = (*env)->GetArrayLength(env, uids);
+    if(num <= 0) {
+        pd_set_port_map_exemptions(NULL, 0);
+        return;
+    }
+
+    jint *elements = (*env)->GetIntArrayElements(env, uids, NULL);
+    if(!elements) {
+        log_e("setPortMappingExemptions: GetIntArrayElements failed");
+        return;
+    }
+
+    pd_set_port_map_exemptions((const int*) elements, (int) num);
+
+    (*env)->ReleaseIntArrayElements(env, uids, elements, JNI_ABORT);
+}
+
+/* ******************************************************* */
+
 JNIEXPORT jboolean JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_reloadBlocklist(JNIEnv *env, jclass clazz,
         jobject ld) {

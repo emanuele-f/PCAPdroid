@@ -589,7 +589,7 @@ int run_vpn(pcapdroid_t *pd) {
 
                 // To be run before pd_process_packet/process_payload
                 if(data->sent_pkts == 0) {
-                    if(pd_check_port_map(conn))
+                    if(pd_check_port_map(conn, data->uid))
                         data->port_mapping_applied = true;
                     else if(should_proxify(pd, tuple, data)) {
                         zdtun_conn_proxy(conn);

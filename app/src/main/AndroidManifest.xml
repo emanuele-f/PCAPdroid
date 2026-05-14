@@ -88,6 +88,10 @@
             android:launchMode="singleTop"
             android:parentActivityName=".activities.prefs.SettingsActivity" />
         <activity
+            android:name=".activities.prefs.PortMapExemptionsActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.prefs.PortMapActivity" />
+        <activity
             android:name=".activities.AboutActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activities.MainActivity" />

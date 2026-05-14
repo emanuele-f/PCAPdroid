@@ -91,8 +91,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -527,7 +527,7 @@ public class CaptureService extends VpnService implements Runnable {
                 }
             } else {
                 // VPN exceptions
-                Set<String> exceptions = mPrefs.getStringSet(Prefs.PREF_VPN_EXCEPTIONS, new HashSet<>());
+                Set<String> exceptions = mPrefs.getStringSet(Prefs.PREF_VPN_EXCEPTIONS, Collections.emptySet());
                 for(String packageName: exceptions) {
                     try {
                         builder.addDisallowedApplication(packageName);
@@ -1209,6 +1209,28 @@ public class CaptureService extends VpnService implements Runnable {
 
                 addPortMapping(mapping.ipproto, mapping.orig_port, mapping.redirect_port, ip);
             }
+
+            Set<String> exemptPkgs = mPrefs.getStringSet(Prefs.PREF_PORT_MAPPING_EXEMPTIONS, Collections.emptySet());
+            if(!exemptPkgs.isEmpty()) {
+                AppsResolver resolver = new AppsResolver(this);
+                ArrayList<Integer> exemptUids = new ArrayList<>();
+
+                for(String pkg : exemptPkgs) {
+                    int uid = resolver.getUid(pkg);
+                    if(uid == Utils.UID_NO_FILTER) {
+                        Log.w(TAG, "Could not resolve UID for port mapping exemption: " + pkg);
+                        continue;
+                    }
+                    exemptUids.add(uid);
+                }
+
+                int[] uids = new int[exemptUids.size()];
+                for(int i = 0; i < exemptUids.size(); i++)
+                    uids[i] = exemptUids.get(i);
+
+                Log.d(TAG, "Setting " + uids.length + " port mapping exemptions");
+                setPortMappingExemptions(uids);
+            }
         }
 
         return true;
@@ -1810,6 +1832,7 @@ public class CaptureService extends VpnService implements Runnable {
     private static native void setPrivateDnsBlocked(boolean to_block);
     private static native void setDnsServer(String server);
     private static native void addPortMapping(int ipproto, int orig_port, int redirect_port, String redirect_ip);
+    private static native void setPortMappingExemptions(int[] uids);
     private static native void reloadBlacklists();
     private static native boolean reloadBlocklist(MatchList.ListDescriptor blocklist);
     private static native boolean reloadFirewallWhitelist(MatchList.ListDescriptor whitelist);
