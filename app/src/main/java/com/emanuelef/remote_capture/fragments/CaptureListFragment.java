@@ -39,6 +39,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -79,6 +80,7 @@ public class CaptureListFragment extends Fragment {
     private TextView mEmptyText;
     private RecyclerView mRecycler;
     private ActionMode mActionMode;
+    private OnBackPressedCallback mBackCallback;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -149,6 +151,15 @@ public class CaptureListFragment extends Fragment {
                 return false;
             }
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
+        mBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mActionMode != null)
+                    mActionMode.finish();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), mBackCallback);
 
         refresh();
     }
@@ -243,6 +254,7 @@ public class CaptureListFragment extends Fragment {
         if (mActionMode != null)
             return;
         mActionMode = ((AppCompatActivity) requireActivity()).startSupportActionMode(mActionModeCallback);
+        mBackCallback.setEnabled(true);
         mAdapter.selectOnly(initial);
         updateActionMode();
     }
@@ -293,6 +305,7 @@ public class CaptureListFragment extends Fragment {
         public void onDestroyActionMode(ActionMode mode) {
             mAdapter.clearSelection();
             mActionMode = null;
+            mBackCallback.setEnabled(false);
         }
     };
 
@@ -397,11 +410,4 @@ public class CaptureListFragment extends Fragment {
         }
     }
 
-    public boolean onBackPressed() {
-        if (mActionMode != null) {
-            mActionMode.finish();
-            return true;
-        }
-        return false;
-    }
 }

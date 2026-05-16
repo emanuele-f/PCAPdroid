@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 package com.emanuelef.remote_capture.activities;
 
@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.view.MenuProvider;
@@ -78,6 +79,13 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finishOk();
+            }
+        });
 
         Intent intent = getIntent();
         if(intent != null) {
@@ -247,13 +255,6 @@ public class EditFilterActivity extends BaseActivity implements MenuProvider {
     public boolean onSupportNavigateUp() {
         finishOk();
         return true;
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        finishOk();
-        super.onBackPressed();
     }
 
     @Override

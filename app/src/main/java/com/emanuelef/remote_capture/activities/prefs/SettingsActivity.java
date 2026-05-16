@@ -34,6 +34,7 @@ import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -79,6 +80,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     private static final String ACTION_LANG_RESTART = "lang_restart";
     public static final String TARGET_PREF_EXTRA = "target_pref";
     private WindowInsetsCompat mInsets = null;
+    private OnBackPressedCallback mLangRestartCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +95,22 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 .commit();
 
         getSupportFragmentManager().addOnBackStackChangedListener(this);
+
+        // After a locale change the parent activity stack is stale, so back must re-launch MainActivity.
+        // Only relevant while the root SettingsFragment is showing — nested settings fragments pop normally.
+        Intent intent = getIntent();
+        if ((intent != null) && ACTION_LANG_RESTART.equals(intent.getAction())) {
+            mLangRestartCallback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    Intent restart = new Intent(SettingsActivity.this, MainActivity.class);
+                    restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(restart);
+                    finish();
+                }
+            };
+            getOnBackPressedDispatcher().addCallback(this, mLangRestartCallback);
+        }
     }
 
     @Nullable
@@ -149,34 +167,18 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
     @Override
     public void onBackStackChanged() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment);
-        if(f instanceof SettingsFragment) {
+        boolean atRoot = f instanceof SettingsFragment;
+
+        if(atRoot) {
             setTitle(R.string.title_activity_settings);
 
             var view = f.getView();
             if ((mInsets != null) && (view != null))
                 ViewCompat.dispatchApplyWindowInsets(view, mInsets);
         }
-    }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment);
-        if(f instanceof SettingsFragment) {
-            Intent intent = getIntent();
-
-            if ((intent != null) && SettingsActivity.ACTION_LANG_RESTART.equals(intent.getAction())) {
-                // Use a custom intent to provide "up" navigation after ACTION_LANG_RESTART took place
-                intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-                return;
-            }
-        }
-
-        // default behavior
-        super.onBackPressed();
+        if (mLangRestartCallback != null)
+            mLangRestartCallback.setEnabled(atRoot);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

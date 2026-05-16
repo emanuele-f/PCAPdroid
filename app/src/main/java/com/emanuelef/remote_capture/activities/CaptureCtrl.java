@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -102,6 +103,13 @@ public class CaptureCtrl extends AppCompatActivity {
         mCapHelper.setListener(success -> {
             setResult(success ? RESULT_OK : RESULT_CANCELED, null);
             finish();
+        });
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                abort();
+            }
         });
 
         Intent intent = getIntent();
@@ -205,13 +213,6 @@ public class CaptureCtrl extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        abort();
-        super.onBackPressed();
     }
 
     private void abort(boolean show_toast) {

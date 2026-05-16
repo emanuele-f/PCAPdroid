@@ -35,6 +35,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
@@ -101,6 +102,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private boolean autoScroll;
     private boolean listenerSet;
     private ActionMode mActionMode;
+    private OnBackPressedCallback mBackCallback;
 
     private final ActivityResultLauncher<Intent> filterLauncher =
             registerForActivityResult(new StartActivityForResult(), this::filterResult);
@@ -368,6 +370,26 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
             refreshMenuIcons();
         });
+
+        mBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    return;
+                }
+                mMenuItemSearch.collapseActionView();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), mBackCallback);
+    }
+
+    private void updateBackCallback() {
+        if (mBackCallback == null)
+            return;
+
+        boolean searchExpanded = (mSearchView != null) && !mSearchView.isIconified();
+        mBackCallback.setEnabled((mActionMode != null) || searchExpanded);
     }
 
     @Override
@@ -380,6 +402,20 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
         mSearchView.setOnQueryTextListener(this);
+
+        mMenuItemSearch.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(@NonNull MenuItem item) {
+                mBackCallback.setEnabled(true);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(@NonNull MenuItem item) {
+                mBackCallback.setEnabled(mActionMode != null);
+                return true;
+            }
+        });
 
         if((mQueryToApply != null) && (!mQueryToApply.isEmpty())) {
             String query = mQueryToApply;
@@ -423,15 +459,6 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         recheckScroll();
         refreshEmptyText();
         return true;
-    }
-
-    // NOTE: dispatched from activity, returns true if handled
-    public boolean onBackPressed() {
-        if(mActionMode != null) {
-            mActionMode.finish();
-            return true;
-        }
-        return Utils.backHandleSearchview(mSearchView);
     }
 
     @Override
@@ -879,6 +906,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         mActionMode = ((AppCompatActivity) requireActivity()).startSupportActionMode(mActionModeCallback);
         mAdapter.selectItem(position);
         updateActionModeTitle();
+        updateBackCallback();
     }
 
     private void toggleSelection(int pos) {
@@ -935,6 +963,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         public void onDestroyActionMode(ActionMode mode) {
             mAdapter.clearSelection();
             mActionMode = null;
+            updateBackCallback();
         }
     };
 

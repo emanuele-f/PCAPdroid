@@ -84,15 +84,6 @@ public class PortMapExemptionsActivity extends BaseActivity implements MenuProvi
         return false;
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        if(mFragment.onBackPressed())
-            return;
-
-        super.onBackPressed();
-    }
-
     public static class PortMapExemptionsFragment extends AppsToggles {
         private static final String TAG = "PortMapExemptions";
         private final Set<String> mExemptedApps = new ArraySet<>();

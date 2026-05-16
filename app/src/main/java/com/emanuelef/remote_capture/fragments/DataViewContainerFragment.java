@@ -225,16 +225,4 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
         }
     }
 
-    public boolean onBackPressed() {
-        if (mCurrentView == VIEW_CONNECTIONS && mConnectionsFragment != null) {
-            if (mConnectionsFragment instanceof ConnectionsFragment) {
-                return ((ConnectionsFragment) mConnectionsFragment).onBackPressed();
-            }
-        } else if (mCurrentView == VIEW_HTTP_LOG && mHttpLogFragment != null) {
-            if (mHttpLogFragment instanceof HttpLogFragment) {
-                return ((HttpLogFragment) mHttpLogFragment).onBackPressed();
-            }
-        }
-        return false;
-    }
 }

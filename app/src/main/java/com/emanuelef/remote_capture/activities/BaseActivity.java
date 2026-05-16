@@ -76,10 +76,9 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(mBackAction && (item.getItemId() == android.R.id.home)) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         }
 

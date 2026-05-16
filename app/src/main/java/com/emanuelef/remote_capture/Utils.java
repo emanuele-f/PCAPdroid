@@ -251,6 +251,7 @@ public class Utils {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static String getCountryName(Context context, String country_code) {
         Locale cur_locale = getPrimaryLocale(context);
         return(new Locale(cur_locale.getCountry(), country_code)).getDisplayCountry();
@@ -1528,16 +1529,6 @@ public class Utils {
 
         // Delay otherwise the query won't be set when the activity is just started
         searchView.post(() -> searchView.setQuery(query, true));
-    }
-
-    public static boolean backHandleSearchview(SearchView searchView) {
-        if((searchView != null) && !searchView.isIconified()) {
-            // Required to close the SearchView when the search submit button was not pressed
-            searchView.setIconified(true);
-            return true;
-        }
-
-        return false;
     }
 
     public static String getDeviceModel() {

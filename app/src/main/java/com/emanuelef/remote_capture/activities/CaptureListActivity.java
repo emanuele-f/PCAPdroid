@@ -51,12 +51,4 @@ public class CaptureListActivity extends BaseActivity {
         if (mFragment.isAdded())
             getSupportFragmentManager().putFragment(outState, "fragment", mFragment);
     }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        if ((mFragment != null) && mFragment.onBackPressed())
-            return;
-        super.onBackPressed();
-    }
 }

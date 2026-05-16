@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
@@ -119,6 +120,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private String mDecRemoveCidr;
     private ActionMode mActionMode;
     private AlertDialog mAlertDialog;
+    private OnBackPressedCallback mBackCallback;
 
     private final ActivityResultLauncher<Intent> csvFileLauncher =
             registerForActivityResult(new StartActivityForResult(), this::csvFileResult);
@@ -411,6 +413,26 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
             refreshMenuIcons();
         });
+
+        mBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    return;
+                }
+                mMenuItemSearch.collapseActionView();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), mBackCallback);
+    }
+
+    private void updateBackCallback() {
+        if (mBackCallback == null)
+            return;
+
+        boolean searchExpanded = (mSearchView != null) && !mSearchView.isIconified();
+        mBackCallback.setEnabled((mActionMode != null) || searchExpanded);
     }
 
     @Override
@@ -1002,6 +1024,20 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         mSearchView = (SearchView) mMenuItemSearch.getActionView();
         mSearchView.setOnQueryTextListener(this);
 
+        mMenuItemSearch.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(@NonNull MenuItem item) {
+                mBackCallback.setEnabled(true);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(@NonNull MenuItem item) {
+                mBackCallback.setEnabled(mActionMode != null);
+                return true;
+            }
+        });
+
         if((mQueryToApply != null) && (!mQueryToApply.isEmpty())) {
             String query = mQueryToApply;
             mQueryToApply = null;
@@ -1176,15 +1212,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         return true;
     }
 
-    // NOTE: dispatched from activity, returns true if handled
-    public boolean onBackPressed() {
-        if(mActionMode != null) {
-            mActionMode.finish();
-            return true;
-        }
-        return Utils.backHandleSearchview(mSearchView);
-    }
-
     private void startSelectionMode(ConnectionDescriptor conn) {
         if(mActionMode != null)
             return;
@@ -1201,6 +1228,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         }
 
         updateActionModeTitle();
+        updateBackCallback();
     }
 
     private void toggleSelection(int pos) {
@@ -1254,6 +1282,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         public void onDestroyActionMode(ActionMode mode) {
             mAdapter.clearSelection();
             mActionMode = null;
+            updateBackCallback();
         }
     };
 

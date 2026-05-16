@@ -26,6 +26,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.collection.ArraySet;
@@ -67,6 +68,13 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finishOk();
+            }
+        });
 
         Intent intent = getIntent();
         if(intent != null) {
@@ -288,13 +296,6 @@ public class HttpLogFilterActivity extends BaseActivity implements MenuProvider 
     public boolean onSupportNavigateUp() {
         finishOk();
         return true;
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        finishOk();
-        super.onBackPressed();
     }
 
     @Override

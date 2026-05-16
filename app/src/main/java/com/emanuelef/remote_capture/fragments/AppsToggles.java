@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,9 +56,11 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
     private static final String TAG = "AppsToggles";
     private static boolean sShowSystemApps;
     private AppsTogglesAdapter mAdapter;
+    private MenuItem mSearchItem;
     private SearchView mSearchView;
     private TextView mEmptyText;
     private String mQueryToApply;
+    private OnBackPressedCallback mBackCallback;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -92,6 +95,14 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
         (new AppsLoader((AppCompatActivity) requireActivity()))
                 .setAppsLoadListener(this)
                 .loadAllApps();
+
+        mBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                mSearchItem.collapseActionView();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), mBackCallback);
     }
 
     @Override
@@ -105,13 +116,29 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
     @Override
     public void onCreateMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.search_menu, menu);
-        MenuItem searchItem = menu.findItem(R.id.search);
-        mSearchView = (SearchView) searchItem.getActionView();
+        mSearchItem = menu.findItem(R.id.search);
+        mSearchView = (SearchView) mSearchItem.getActionView();
         mSearchView.setOnQueryTextListener(this);
+
+        mSearchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(@NonNull MenuItem item) {
+                if (mBackCallback != null)
+                    mBackCallback.setEnabled(true);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(@NonNull MenuItem item) {
+                if (mBackCallback != null)
+                    mBackCallback.setEnabled(false);
+                return true;
+            }
+        });
 
         if((mQueryToApply != null) && (!mQueryToApply.isEmpty())) {
             Log.d(TAG, "Initial filter: " + mQueryToApply);
-            Utils.setSearchQuery(mSearchView, searchItem, mQueryToApply);
+            Utils.setSearchQuery(mSearchView, mSearchItem, mQueryToApply);
         }
 
         MenuItem systemAppsItem = menu.findItem(R.id.show_system_apps);
@@ -140,12 +167,6 @@ public abstract class AppsToggles extends Fragment implements AppsLoadListener,
             Log.d(TAG, "Saving filter: " + query);
             outState.putString("filter", query);
         }
-    }
-
-    // NOTE: must be called from the activity
-    public boolean onBackPressed() {
-        Log.d(TAG, "onBackPressed");
-        return Utils.backHandleSearchview(mSearchView);
     }
 
     @Override

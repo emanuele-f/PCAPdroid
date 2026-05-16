@@ -6,8 +6,8 @@ android {
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 21
-        compileSdk 35
-        targetSdk 35
+        compileSdk 36
+        targetSdk 36
         versionCode 91
         versionName "1.9.1"
 
@@ -139,6 +139,7 @@ dependencies {
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
     implementation 'androidx.fragment:fragment:1.8.9'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'

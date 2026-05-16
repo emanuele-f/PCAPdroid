@@ -27,6 +27,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
@@ -293,6 +294,33 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        // (Re-)added on each drawer-open so it lands at the top of the dispatcher stack — without
+        // this, fragment-level callbacks registered later in onViewCreated would intercept back
+        // before the drawer can close.
+        OnBackPressedCallback drawerCloseCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                mDrawer.closeDrawer(GravityCompat.START, true);
+            }
+        };
+        mDrawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                getOnBackPressedDispatcher().addCallback(MainActivity.this, drawerCloseCallback);
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                drawerCloseCallback.remove();
+            }
+        });
+
+        // SimpleDrawerListener does not fire for state restored on rotation
+        mDrawer.post(() -> {
+            if (mDrawer.isDrawerOpen(GravityCompat.START))
+                getOnBackPressedDispatcher().addCallback(this, drawerCloseCallback);
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(mDrawer, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() |
                     WindowInsetsCompat.Type.displayCutout());
@@ -347,25 +375,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Menu navMenu = mNavView.getMenu();
         navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
         navMenu.findItem(R.id.firewall).setVisible(mIab.isFirewallVisible());
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        if(mDrawer.isDrawerOpen(GravityCompat.START))
-            mDrawer.closeDrawer(GravityCompat.START, true);
-        else {
-            if(mPager.getCurrentItem() == POS_CONNECTIONS) {
-                Fragment container = getFragmentAtPos(POS_CONNECTIONS);
-
-                if((container != null) && (container instanceof DataViewContainerFragment)) {
-                    if(((DataViewContainerFragment)container).onBackPressed())
-                        return;
-                }
-            }
-
-            super.onBackPressed();
-        }
     }
 
     private void checkPermissions() {
