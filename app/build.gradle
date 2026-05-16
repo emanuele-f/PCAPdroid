@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion "28.2.13676358"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
@@ -39,7 +39,7 @@ android {
             // Use a different app ID for debug to allow its coexistence with release builds
             applicationIdSuffix '.debug'
             versionNameSuffix '-beta'
-            pseudoLocalesEnabled true
+            pseudoLocalesEnabled = true
 
             if(project.hasProperty("doNotStrip")) {
                 // NOTE: packagingOptions will also affect the "release" build, so the "doNotStrip"
@@ -68,15 +68,15 @@ android {
     externalNativeBuild {
         cmake {
             path file('src/main/jni/CMakeLists.txt')
-            version "3.22.1"
+            version = "3.22.1"
         }
     }
 
     compileOptions {
-        encoding "UTF-8"
-        coreLibraryDesugaringEnabled true // support devices running older Java versions
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        encoding = "UTF-8"
+        coreLibraryDesugaringEnabled = true // support devices running older Java versions
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -93,7 +93,7 @@ android {
             systemProperty "java.library.path", "${buildDir}/hostJni"
         }
     }
-    namespace 'com.emanuelef.remote_capture'
+    namespace = 'com.emanuelef.remote_capture'
 }
 
 // Build zstd JNI for the host platform (needed by unit tests)
