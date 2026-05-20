@@ -238,7 +238,7 @@
     <string name="http_server_info">Запустити HTTP сервер для завантаження PCAP</string>
     <string name="udp_exporter_info">Надсилання PCAP до віддаленого UDP приймача</string>
     <string name="http_server_port">Порт HTTP сервера</string>
-    <string name="receiver_ip_address">IP адреса для збору</string>
+    <string name="receiver_host">Хост для збору</string>
     <string name="receiver_port">Порт для збору</string>
     <string name="traffic_dump">Дамп трафіку</string>
     <string name="user_guide">Посібник користувача</string>

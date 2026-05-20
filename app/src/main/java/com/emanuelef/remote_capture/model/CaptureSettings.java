@@ -45,7 +45,7 @@ public class CaptureSettings implements Serializable {
     public CaptureSettings(Context ctx, SharedPreferences prefs) {
         dump_mode = Prefs.getDumpMode(prefs);
         app_filter = new HashSet<>(Prefs.getAppFilter(prefs));
-        collector_address = Prefs.getCollectorIp(prefs);
+        collector_address = Prefs.getCollectorHost(prefs);
         collector_port = Prefs.getCollectorPort(prefs);
         http_server_port = Prefs.getHttpServerPort(prefs);
         socks5_enabled = Prefs.getSocks5Enabled(prefs);
@@ -69,7 +69,8 @@ public class CaptureSettings implements Serializable {
     public CaptureSettings(Context ctx, Intent intent) {
         dump_mode = Prefs.getDumpMode(getString(intent, "pcap_dump_mode", "none"));
         app_filter = new HashSet<>(getStringList(intent, Prefs.PREF_APP_FILTER));
-        collector_address = getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1");
+        collector_address = getString(intent, Prefs.PREF_COLLECTOR_HOST_KEY,
+                getString(intent, Prefs.PREF_COLLECTOR_IP_KEY, "127.0.0.1"));
         collector_port = getInt(intent, Prefs.PREF_COLLECTOR_PORT_KEY, 1234);
         http_server_port = getInt(intent, Prefs.PREF_HTTP_SERVER_PORT, 8080);
         socks5_enabled = getBool(intent, Prefs.PREF_SOCKS5_ENABLED_KEY, false);

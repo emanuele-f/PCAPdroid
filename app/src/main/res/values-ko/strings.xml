@@ -30,7 +30,7 @@
     <string name="udp_exporter_info">PCAP을 원격 UDP 리시버로 보냅니다</string>
     <string name="http_server_info">PCAP을 다운로드 하기위한 HTTP 서버를 시작합니다</string>
     <string name="traffic_dump">트래픽 덤프</string>
-    <string name="receiver_ip_address">콜렉터 IP 주소</string>
+    <string name="receiver_host">콜렉터 호스트</string>
     <string name="user_guide">사용자 가이드</string>
     <string name="open_telegram_group">텔레그램 그룹</string>
     <string name="app_not_found">앱 %1$s을 찾을 수 없습니다</string>

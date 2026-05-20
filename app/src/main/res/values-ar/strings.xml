@@ -32,7 +32,7 @@
     <string name="http_server_info">ابدأ خادم HTTP لتنزيل PCAP</string>
     <string name="udp_exporter_info">أرسل PCAP إلى جهاز استقبال UDP بعيد</string>
     <string name="http_server_port">منفذ خادم HTTP</string>
-    <string name="receiver_ip_address">عنوان IP للمجمع</string>
+    <string name="receiver_host">مضيف المجمع</string>
     <string name="receiver_port">منفذ جامع</string>
     <string name="user_guide">دليل المستخدم</string>
     <string name="source_code">الشيفرة المصدرية</string>

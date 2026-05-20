@@ -158,7 +158,7 @@
     <string name="open_nav_drawer">Åpne skuff</string>
     <string name="capture_all_apps">Fang trafikk for alle programmene</string>
     <string name="collector_info">UDP-innsamler: %1$s:%2$d</string>
-    <string name="receiver_ip_address">Innsamler-IP-adresse</string>
+    <string name="receiver_host">Innsamler-vert</string>
     <string name="receiver_port">Innsamler-port</string>
     <string name="udp_exporter_info">Sender PCAP til en UDP-mottager annensteds hen</string>
     <string name="dropped_connections">Droppede tilkoblinger</string>

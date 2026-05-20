@@ -34,7 +34,7 @@ A common task is to capture the traffic of a specific app to analyze it into you
 [UDP Exporter mode](https://emanuele-f.github.io/PCAPdroid/dump_modes#24-udp-exporter):
 
 ```bash
-adb shell am start -e action start -e pcap_dump_mode udp_exporter -e collector_ip_address 127.0.0.1 -e collector_port 5123 -e app_filter org.mozilla.firefox -n com.emanuelef.remote_capture/.activities.CaptureCtrl
+adb shell am start -e action start -e pcap_dump_mode udp_exporter -e collector_host 127.0.0.1 -e collector_port 5123 -e app_filter org.mozilla.firefox -n com.emanuelef.remote_capture/.activities.CaptureCtrl
 ```
 
 then your app can listen for UDP packets on port `5123` to handle the Firefox network packets.
@@ -53,7 +53,7 @@ class YourActivity extends Activity {
 
     intent.putExtra("action", "start");
     intent.putExtra("pcap_dump_mode", "udp_exporter");
-    intent.putExtra("collector_ip_address", "127.0.0.1");
+    intent.putExtra("collector_host", "127.0.0.1");
     intent.putExtra("collector_port", "5123");
     intent.putExtra("app_filter", "org.mozilla.firefox");
 
@@ -100,7 +100,7 @@ As shown above, the capture settings can be specified by using intent extras. Th
 |-------------------------|--------|-----|------|---------------------------------------------------------------------------------------------------------------------------------------|
 | pcap_dump_mode          | string |     |      | none \| http_server \| udp_exporter \| tcp_exporter \| pcap_file                                                                      |
 | app_filter              | string |     |      | package name of the app(s) to capture (73+: comma separated list)                                                                     |
-| collector_ip_address    | string |     |      | the IP address of the collector in tcp/udp_exporter mode                                                                              |
+| collector_ip_address    | string |     |      | (deprecated) alias for collector_host                                                                                                 |
 | collector_port          | int    |     |      | the UDP port of the collector in tcp/udp_exporter mode                                                                                |
 | http_server_port        | int    |     |      | the HTTP server port in http_server mode                                                                                              |
 | pcap_uri                | string |     |      | the URI for the PCAP dump in pcap_file mode (overrides pcap_name)                                                                     |
@@ -127,13 +127,14 @@ As shown above, the capture settings can be specified by using intent extras. Th
 | decryption_rules        | string | 89  | vpn  | provide decryption rules as json (e.g. [{"type":"APP","value":"com.example.app"},{"type":"IP","value":"1.1.1.1"}])                    |
 | full_payload            | bool   | 89  |      | true to dump the full payload of the packets                                                                                          |
 | socks5_proxy_host       | string | 90  | vpn  | the SOCKS5 proxy IP address or hostname                                                                                               |
+| collector_host          | string | 92  |      | the IP address or hostname of the collector in tcp/udp_exporter mode                                                                  |
 
 \*: paid feature
 
 The `Ver` column indicates the minimum PCAPdroid version required to use the given parameter. The PCAPdroid version can be queried via the `get_status` action as explained below.
 The `Mode` column indicates if the option applies to any mode or only to the VPN or root mode.
 
-*NOTE*: for security reasons, since version 1.5.3 you cannot specify a remote server address in `collector_ip_address` or in `socks5_proxy_ip_address`/`socks5_proxy_host`. If you really want to do this, you should first set such a remote address via the PCAPdroid gui and only then invoke the API.
+*NOTE*: for security reasons, since version 1.5.3 you cannot specify a remote server address in `collector_ip_address`/`collector_host` or in `socks5_proxy_ip_address`/`socks5_proxy_host`. If you really want to do this, you should first set such a remote address via the PCAPdroid gui and only then invoke the API.
 
 *NOTE*: since version 1.6.0, the `pcap_uri` behavior is changed as described in the `Dumping PCAP to file` section below
 

@@ -203,7 +203,7 @@
     <string name="udp_exporter_info">PCAP məlumatlarını uzaqdakı UDP qəbul edicisinə gönədirir</string>
     <string name="http_server_port">HTTP server portu</string>
     <string name="no_dump_info">Trafik dempinq olunmayacaq</string>
-    <string name="receiver_ip_address">Toplayıcı İP adresi</string>
+    <string name="receiver_host">Toplayıcı hostu</string>
     <string name="receiver_port">Toplayıcı port</string>
     <string name="traffic_dump">Trafik dempinqi</string>
     <string name="dropped_connections">Dayandırılan bağlantılar</string>

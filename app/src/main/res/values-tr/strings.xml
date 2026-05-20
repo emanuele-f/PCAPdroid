@@ -143,7 +143,7 @@
     <string name="status">Durum</string>
     <string name="connection_details">Bağlantı ayrıntıları</string>
     <string name="packets">Paketler</string>
-    <string name="receiver_ip_address">Toplayıcı IP adresi</string>
+    <string name="receiver_host">Toplayıcı ana makine</string>
     <string name="yes">Evet</string>
     <string name="vpn_setup_failed">VPN kurulamadı. Her zaman açık VPN\'in devre dışı bırakıldığından emin olun</string>
     <string name="app_not_found">%1$s uygulaması bulunamadı</string>

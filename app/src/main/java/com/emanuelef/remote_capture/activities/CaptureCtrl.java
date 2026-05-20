@@ -228,8 +228,8 @@ public class CaptureCtrl extends AppCompatActivity {
 
     // Check if the capture is requesting to send traffic to a remote server.
     // For security reasons, this is only allowed if such server is already configured by
-    // the user in the app prefs.
-    // see also MainActivity.showRemoteServerAlert
+    // the user in the app prefs. Any domain name is treated as remote.
+    // See also MainActivity.showRemoteServerAlert
     private String checkRemoteServerNotAllowed(CaptureSettings settings) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -238,7 +238,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
         if(exporterEnabled &&
                 !Utils.isLocalNetworkAddress(settings.collector_address) &&
-                !Prefs.getCollectorIp(prefs).equals(settings.collector_address))
+                !Prefs.getCollectorHost(prefs).equals(settings.collector_address))
             return settings.collector_address;
 
         if(settings.socks5_enabled &&

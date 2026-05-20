@@ -261,9 +261,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         @SuppressWarnings("deprecation")
         private void setupExporterPrefs() {
-            /* Collector IP validation */
-            EditTextPreference mRemoteCollectorIp = requirePreference(Prefs.PREF_COLLECTOR_IP_KEY);
-            mRemoteCollectorIp.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateIpAddress(newValue.toString()));
+            /* Collector host validation (IP address or domain name) */
+            EditTextPreference mRemoteCollectorHost = requirePreference(Prefs.PREF_COLLECTOR_HOST_KEY);
+            mRemoteCollectorHost.setOnPreferenceChangeListener((preference, newValue) -> Utils.validateHostOrIp(newValue.toString()));
 
             /* Collector port validation */
             EditTextPreference mRemoteCollectorPort = requirePreference(Prefs.PREF_COLLECTOR_PORT_KEY);

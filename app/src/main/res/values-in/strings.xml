@@ -189,7 +189,7 @@
     <string name="vpn_setup_failed">Tidak dapat mengatur VPN. Pastikan VPN Selalu Aktif dinonaktifkan</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
-    <string name="receiver_ip_address">Alamat IP kolektor</string>
+    <string name="receiver_host">Host kolektor</string>
     <string name="no">Tidak</string>
     <string name="app_not_found">Tidak dapat menemukan aplikasi %1$s</string>
     <string name="active_connections">Koneksi aktif</string>

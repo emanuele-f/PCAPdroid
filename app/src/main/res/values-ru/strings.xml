@@ -27,7 +27,7 @@
     <string name="http_server_info">Запустить HTTP сервер для скачивания PCAP</string>
     <string name="udp_exporter_info">Отправить PCAP на удалённый UDP приёмник</string>
     <string name="http_server_port">Порт HTTP сервера</string>
-    <string name="receiver_ip_address">IP адрес сборщика</string>
+    <string name="receiver_host">Хост сборщика</string>
     <string name="receiver_port">Порт сборщика</string>
     <string name="user_guide">Руководство пользователя</string>
     <string name="open_telegram_group">Telegram сообщество</string>

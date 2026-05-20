@@ -27,7 +27,7 @@
     <string name="http_server_info">Inicia um servidor HTTP para o download do PCAP</string>
     <string name="udp_exporter_info">Envia o PCAP para um receptor UDP remoto</string>
     <string name="http_server_port">Porta do servidor HTTP</string>
-    <string name="receiver_ip_address">Endereço IP do coletor</string>
+    <string name="receiver_host">Host do coletor</string>
     <string name="receiver_port">Porta do coletor</string>
     <string name="user_guide">Guia de usuario</string>
     <string name="open_telegram_group">Grupo no Telegram</string>

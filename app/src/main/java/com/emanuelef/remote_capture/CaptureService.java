@@ -166,6 +166,7 @@ public class CaptureService extends VpnService implements Runnable {
     private SparseArray<String> mIfIndexToName;
     private boolean mSocks5Enabled;
     private String mSocks5Address;
+    private String mCollectorAddress;
     private int mSocks5Port;
     private String mSocks5Auth;
     private static final MutableLiveData<CaptureStats> lastStats = new MutableLiveData<>();
@@ -372,6 +373,7 @@ public class CaptureService extends VpnService implements Runnable {
         HAS_ERROR = false;
 
         // Possibly allocate the dumper
+        mCollectorAddress = "";
         if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
             mDumper = new HTTPServer(this, mSettings.http_server_port, mSettings.pcapng_format);
         else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
@@ -386,35 +388,13 @@ public class CaptureService extends VpnService implements Runnable {
                 return abortStart();
 
             mDumper = new FileDumper(this, mPcapUri);
-        } else if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) {
-            InetAddress addr;
-
-            try {
-                addr = InetAddress.getByName(mSettings.collector_address);
-            } catch (UnknownHostException e) {
-                reportError(e.getLocalizedMessage());
-                e.printStackTrace();
-                return abortStart();
-            }
-
-            mDumper = new UDPDumper(new InetSocketAddress(addr, mSettings.collector_port), mSettings.pcapng_format);
-        } else if(mSettings.dump_mode == Prefs.DumpMode.TCP_EXPORTER) {
-            InetAddress addr;
-
-            try {
-                addr = InetAddress.getByName(mSettings.collector_address);
-            } catch (UnknownHostException e) {
-                reportError(e.getLocalizedMessage());
-                e.printStackTrace();
-                return abortStart();
-            }
-
-            mDumper = new TCPDumper(new InetSocketAddress(addr, mSettings.collector_port), mSettings.pcapng_format);
+        } else if((mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) ||
+                (mSettings.dump_mode == Prefs.DumpMode.TCP_EXPORTER)) {
+            // For UDP/TCP exporters, the dumper is allocated later in run() (after resolveHosts)
+            // so that domain names in mSettings.collector_address can be resolved on a background
+            // thread using the underlying (non-VPN) network.
+            mCollectorAddress = mSettings.collector_address;
         }
-
-        if(mDumper != null)
-            // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
-            mDumpQueue = new LinkedBlockingDeque<>(64);
 
         mSocks5Address = "";
         mSocks5Enabled = mSettings.socks5_enabled || mSettings.tls_decryption;
@@ -570,11 +550,6 @@ public class CaptureService extends VpnService implements Runnable {
         mNumUpdatesInProgress.set(0);
         mConnUpdateThread = new Thread(this::connUpdateWork, "UpdateListener");
         mConnUpdateThread.start();
-
-        if(mDumper != null) {
-            mDumperThread = new Thread(this::dumpWork, "DumperThread");
-            mDumperThread.start();
-        }
 
         if(mFirewallEnabled) {
             mNewAppsInstallReceiver = new BroadcastReceiver() {
@@ -1187,6 +1162,18 @@ public class CaptureService extends VpnService implements Runnable {
             mSocks5Address = resolved;
         }
 
+        if(!mCollectorAddress.isEmpty() && !Utils.validateIpAddress(mCollectorAddress)) {
+            String resolved = resolveHost(mCollectorAddress);
+            if(resolved == null) {
+                Log.e(TAG, "Could not resolve collector host: " + mCollectorAddress);
+                mHandler.post(() -> Utils.showToastLong(this, R.string.host_resolution_failed, mCollectorAddress));
+                return false;
+            }
+
+            Log.i(TAG, "Resolved collector host: " + mCollectorAddress + " -> " + resolved);
+            mCollectorAddress = resolved;
+        }
+
         if(Prefs.isPortMappingEnabled(mPrefs)) {
             PortMapping portMap = new PortMapping(this);
             Iterator<PortMapping.PortMap> it = portMap.iter();
@@ -1241,6 +1228,32 @@ public class CaptureService extends VpnService implements Runnable {
     public void run() {
         boolean hostResolved = resolveHosts();
         mUnderlyingNetwork = null;
+
+        // Allocate the exporter dumper now that the collector host has been resolved
+        // in resolveHosts(). mCollectorAddress is guaranteed to be a numeric IP here
+        if(hostResolved && !mCollectorAddress.isEmpty()) {
+            try {
+                InetAddress addr = InetAddress.getByName(mCollectorAddress);
+                InetSocketAddress sockAddr = new InetSocketAddress(addr, mSettings.collector_port);
+
+                if(mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER)
+                    mDumper = new UDPDumper(sockAddr, mSettings.pcapng_format);
+                else
+                    mDumper = new TCPDumper(sockAddr, mSettings.pcapng_format);
+            } catch (UnknownHostException e) {
+                reportError(e.getLocalizedMessage());
+                e.printStackTrace();
+                hostResolved = false;
+            }
+        }
+
+        if(hostResolved && (mDumper != null)) {
+            // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
+            mDumpQueue = new LinkedBlockingDeque<>(64);
+
+            mDumperThread = new Thread(this::dumpWork, "DumperThread");
+            mDumperThread.start();
+        }
 
         if(!hostResolved) {
             // fall through to cleanup

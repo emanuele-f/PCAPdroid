@@ -98,7 +98,7 @@
     <string name="udp_exporter_info">Envoie le PCAP à un receveur UCP distant</string>
     <string name="open_sockets">Ouvrir les sockets</string>
     <string name="http_server_port">Port du serveur HTTP</string>
-    <string name="receiver_ip_address">Adresse IP du collecteur</string>
+    <string name="receiver_host">Hôte du collecteur</string>
     <string name="receiver_port">Port du collecteur</string>
     <string name="pcap_file_info">Créer un fichier PCAP/Pcapng dans l\'espace de stockage de l\'appareil</string>
     <string name="get_app">L\'obtenir :</string>

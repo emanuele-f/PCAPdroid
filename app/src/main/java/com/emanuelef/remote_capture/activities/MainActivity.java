@@ -905,7 +905,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         boolean exporterEnabled = (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.UDP_EXPORTER) ||
                 (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.TCP_EXPORTER);
 
-        if((exporterEnabled && !Utils.isLocalNetworkAddress(Prefs.getCollectorIp(mPrefs))) ||
+        if((exporterEnabled && !Utils.isLocalNetworkAddress(Prefs.getCollectorHost(mPrefs))) ||
                 (Prefs.getSocks5Enabled(mPrefs) && !Utils.isLocalNetworkAddress(Prefs.getSocks5ProxyHost(mPrefs)))) {
             Log.i(TAG, "Showing possible scan notice");
 

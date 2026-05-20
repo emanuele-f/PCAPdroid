@@ -29,7 +29,7 @@
     <string name="http_server_info">Uruchom serwer HTTP do pobierania PCAP</string>
     <string name="udp_exporter_info">Wyślij PCAP do zdalnego odbiornika UDP</string>
     <string name="http_server_port">Port serwera HTTP</string>
-    <string name="receiver_ip_address">Adres IP kolektora</string>
+    <string name="receiver_host">Host kolektora</string>
     <string name="receiver_port">Port kolektora</string>
     <string name="traffic_dump">Zrzut ruchu sieciowego</string>
     <string name="user_guide">Podręcznik użytkownika</string>

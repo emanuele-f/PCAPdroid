@@ -30,10 +30,10 @@
 
     <PreferenceCategory app:title="@string/tcp_udp_exporter" app:iconSpaceReserved="false">
         <EditTextPreference
-            app:key="collector_ip_address"
-            app:title="@string/receiver_ip_address"
+            app:key="collector_host"
+            app:title="@string/receiver_host"
             app:iconSpaceReserved="false"
-            app:defaultValue="@string/default_collector_ip"
+            app:defaultValue="@string/default_collector_host"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference

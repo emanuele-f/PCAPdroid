@@ -27,7 +27,7 @@
     <string name="http_server_info">PCAP பதிவிறக்கத்திற்கு HTTP சேவையகத்தைத் தொடங்கவும்</string>
     <string name="udp_exporter_info">தொலைநிலை UDP ரிசீவருக்கு PCAP ஐ அனுப்பவும்</string>
     <string name="http_server_port">HTTP சேவையக போர்ட்</string>
-    <string name="receiver_ip_address">கலெக்டர் ஐபி முகவரி</string>
+    <string name="receiver_host">கலெக்டர் புரவலன்</string>
     <string name="receiver_port">கலெக்டர் போர்ட்</string>
     <string name="traffic_dump">போக்குவரத்து டம்ப்</string>
     <string name="user_guide">பயனர் வழிகாட்டி</string>

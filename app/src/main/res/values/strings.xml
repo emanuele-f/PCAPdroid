@@ -1,6 +1,6 @@
 <resources>
     <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
-    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
+    <string name="default_collector_host" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
     <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
     <string name="ipv6_and_port" translatable="false">[%1$s]:%2$d</string>
@@ -82,7 +82,7 @@
     <string name="udp_exporter_info">Send the PCAP to a remote UDP receiver</string>
     <string name="tcp_exporter_info">Send the PCAP to a remote TCP receiver (pcap-over-ip)</string>
     <string name="http_server_port">HTTP server port</string>
-    <string name="receiver_ip_address">Collector IP address</string>
+    <string name="receiver_host">Collector host</string>
     <string name="receiver_port">Collector port</string>
     <string name="traffic_dump">Traffic dump</string>
     <string name="user_guide">User guide</string>

@@ -60,7 +60,10 @@ public class Prefs {
     // used to initialize the whitelist with some safe defaults
     public static final int FIREWALL_WHITELIST_INIT_VER = 1;
 
+    // legacy storage key (kept for backwards compatibility with existing user prefs); the value
+    // may now be either an IP address or a domain name
     public static final String PREF_COLLECTOR_IP_KEY = "collector_ip_address";
+    public static final String PREF_COLLECTOR_HOST_KEY = "collector_host";
     public static final String PREF_COLLECTOR_PORT_KEY = "collector_port";
     public static final String PREF_SOCKS5_PROXY_IP_KEY = "socks5_proxy_ip_address";
     public static final String PREF_SOCKS5_PROXY_HOST_KEY = "socks5_proxy_host";
@@ -212,7 +215,7 @@ public class Prefs {
     }
 
     /* Prefs with defaults */
-    public static String getCollectorIp(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_IP_KEY, "127.0.0.1")); }
+    public static String getCollectorHost(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_HOST_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
     public static DumpMode getDumpMode(SharedPreferences p)  { return(getDumpMode(p.getString(PREF_PCAP_DUMP_MODE, DEFAULT_DUMP_MODE))); }
     public static int getHttpServerPort(SharedPreferences p) { return(Integer.parseInt(p.getString(Prefs.PREF_HTTP_SERVER_PORT, "8080"))); }

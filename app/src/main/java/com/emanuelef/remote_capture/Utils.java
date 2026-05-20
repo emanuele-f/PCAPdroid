@@ -1718,6 +1718,10 @@ public class Utils {
         }
     }
 
+    public static boolean validateHostOrIp(String value) {
+        return validateIpAddress(value) || validateHost(value);
+    }
+
     // https://mkyong.com/regular-expressions/how-to-validate-ip-address-with-regular-expression/
     private static final Pattern IPV4_PATTERN = Pattern.compile(
             "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$");
