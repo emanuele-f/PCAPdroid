@@ -1636,7 +1636,7 @@ public class Utils {
 
     // from bouncycastle
     private static boolean isValidIPv6(String address) {
-        if (address.length() == 0)
+        if (address.isEmpty())
             return false;
 
         char firstChar = address.charAt(0);
@@ -1712,10 +1712,8 @@ public class Utils {
     public static boolean validateIpAddress(String value) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             return (InetAddresses.isNumericAddress(value));
-        else {
-            Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
-            return(matcher.matches());
-        }
+        else
+            return validateIpv4Address(value) || isValidIPv6(value);
     }
 
     public static boolean validateHostOrIp(String value) {
