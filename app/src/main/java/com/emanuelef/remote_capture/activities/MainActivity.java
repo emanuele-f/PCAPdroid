@@ -1247,18 +1247,32 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         long start_time = CaptureService.getCaptureStartTime();
         long duration = (SystemClock.elapsedRealtime() - CaptureService.getCaptureStartTimeMonotonic()) / 1000;
         ConnectionsRegister reg = CaptureService.getConnsRegister();
-        ArrayList<CaptureList.TargetApp> target_apps = new ArrayList<>();
+        ArrayList<CaptureList.App> captured_apps = new ArrayList<>();
 
         if (reg != null) {
             List<AppStats> apps_stats = reg.getAppsStats();
             apps_stats.sort((a, b) -> Long.compare(b.sentBytes + b.rcvdBytes, a.sentBytes + a.rcvdBytes));
             AppsResolver resolver = new AppsResolver(this);
+
+            // When an app filter is set, skip virtual apps like netd, Unknown, etc. to
+            // make the ui more consistent to the filter. Add them only if no non-virtual app is captured
+            boolean skip_virtual = settings.app_filter.isEmpty();
+            ArrayList<CaptureList.App> virtual_apps = new ArrayList<>();
+
             for (AppStats s : apps_stats) {
                 AppDescriptor app = resolver.getAppByUid(s.getUid(), 0);
                 if ((app == null) || (app.getPackageName() == null))
                     continue;
-                target_apps.add(new CaptureList.TargetApp(app.getUid(), app.getPackageName(), app.getName()));
+
+                CaptureList.App target = new CaptureList.App(app.getUid(), app.getPackageName(), app.getName());
+                if (skip_virtual && app.isVirtual())
+                    virtual_apps.add(target);
+                else
+                    captured_apps.add(target);
             }
+
+            if (captured_apps.isEmpty())
+                captured_apps.addAll(virtual_apps);
         }
 
         boolean decrypted = false;
@@ -1276,7 +1290,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         CaptureList.Capture capture = new CaptureList.Capture(pcap_uri.toString(), pcap_fname, start_time, duration,
                 stats.pcap_dump_size, stats.bytes_sent + stats.bytes_rcvd, decrypted,
-                target_apps);
+                captured_apps);
 
         Log.d(TAG, "Save capture in list: " + capture.name + " - " + capture.size + " B");
         CaptureList capture_list = new CaptureList(this);

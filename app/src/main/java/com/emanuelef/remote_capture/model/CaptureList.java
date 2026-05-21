@@ -58,7 +58,7 @@ public class CaptureList {
     private ExecutorService mScanExecutor;
     private Set<String> mRenamedDuringScan;
 
-    public record TargetApp(int uid, String packageName, String name) {}
+    public record App(int uid, String packageName, String name) {}
 
     public static class Capture {
         public final String uri;
@@ -68,11 +68,11 @@ public class CaptureList {
         public final long size;
         public final long bytesCaptured;
         public boolean decrypted;
-        public List<TargetApp> targetApps;
+        public List<App> apps;
 
         public Capture(String uri, String name, long startTime, long duration,
                        long size, long bytesCaptured, boolean decrypted,
-                       List<TargetApp> targetApps)
+                       List<App> apps)
         {
             this.uri = uri;
             this.name = name;
@@ -81,7 +81,7 @@ public class CaptureList {
             this.size = size;
             this.bytesCaptured = bytesCaptured;
             this.decrypted = decrypted;
-            this.targetApps = (targetApps != null) ? targetApps : new ArrayList<>();
+            this.apps = (apps != null) ? apps : new ArrayList<>();
         }
     }
 
@@ -222,8 +222,8 @@ public class CaptureList {
             if (mCaptures == null)
                 mCaptures = new ArrayList<>();
             for (Capture c: mCaptures) {
-                if (c.targetApps == null)
-                    c.targetApps = new ArrayList<>();
+                if (c.apps == null)
+                    c.apps = new ArrayList<>();
             }
             return true;
         } catch (JsonParseException e) {
@@ -272,11 +272,11 @@ public class CaptureList {
         return total;
     }
 
-    public static String formatTargetApps(Context context, List<CaptureList.TargetApp> targetApps) {
-        if ((targetApps == null) || targetApps.isEmpty())
+    public static String formatApps(Context context, List<CaptureList.App> apps) {
+        if ((apps == null) || apps.isEmpty())
             return context.getString(R.string.no_apps);
-        if (targetApps.size() == 1)
-            return targetApps.get(0).name();
-        return context.getString(R.string.app_and_n_more, targetApps.get(0).name(), targetApps.size() - 1);
+        if (apps.size() == 1)
+            return apps.get(0).name();
+        return context.getString(R.string.app_and_n_more, apps.get(0).name(), apps.size() - 1);
     }
 }

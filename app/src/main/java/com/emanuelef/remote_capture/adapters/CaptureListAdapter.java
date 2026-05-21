@@ -178,7 +178,7 @@ public class CaptureListAdapter extends RecyclerView.Adapter<CaptureListAdapter.
 
             String date = Utils.formatEpochShort(context, capture.startTime / 1000);
             String duration = Utils.formatDuration(context, capture.duration);
-            String apps = CaptureList.formatTargetApps(context, capture.targetApps);
+            String apps = CaptureList.formatApps(context, capture.apps);
             meta.setText(context.getString(R.string.capture_list_info, date, duration, apps));
 
             decryptionIcon.setVisibility(capture.decrypted ? View.VISIBLE : View.GONE);
@@ -191,8 +191,8 @@ public class CaptureListAdapter extends RecyclerView.Adapter<CaptureListAdapter.
             appIcon.setPadding(0, 0, 0, 0);
 
             Drawable icon = null;
-            if (!capture.targetApps.isEmpty()) {
-                CaptureList.TargetApp first = capture.targetApps.get(0);
+            if (!capture.apps.isEmpty()) {
+                CaptureList.App first = capture.apps.get(0);
                 AppDescriptor app = AppsResolver.resolveInstalledApp(context.getPackageManager(), first.packageName(), 0);
                 if (app != null)
                     icon = app.getIcon();
@@ -201,7 +201,7 @@ public class CaptureListAdapter extends RecyclerView.Adapter<CaptureListAdapter.
                 icon = ContextCompat.getDrawable(context, R.drawable.ic_image);
             appIcon.setImageDrawable(icon);
 
-            int extra = capture.targetApps.size() - 1;
+            int extra = capture.apps.size() - 1;
             if (extra > 0) {
                 extraCount.setText(context.getString(R.string.plus_n, extra));
                 extraCount.setVisibility(View.VISIBLE);
