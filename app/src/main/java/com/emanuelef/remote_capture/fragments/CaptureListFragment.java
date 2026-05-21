@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -70,6 +71,7 @@ import java.util.Set;
 
 public class CaptureListFragment extends Fragment {
     private static final String TAG = "CaptureListFragment";
+    private static long sLastScanCompletedAt = 0;
 
     private CaptureList mCaptureList;
     private CaptureListAdapter mAdapter;
@@ -99,6 +101,11 @@ public class CaptureListFragment extends Fragment {
 
         Context ctx = requireContext();
         mCaptureList = new CaptureList(ctx);
+
+        // only run the scan if more than 10 seconds passed since the last one
+        if ((SystemClock.elapsedRealtime() - sLastScanCompletedAt) > 10_000)
+            scanForDeletedFiles();
+
         mAdapter = new CaptureListAdapter(ctx);
         mRecycler.setLayoutManager(new LinearLayoutManager(ctx));
         mRecycler.setAdapter(mAdapter);
@@ -146,6 +153,8 @@ public class CaptureListFragment extends Fragment {
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.refresh) {
                     refresh();
+                    scanForDeletedFiles();
+
                     return true;
                 }
                 return false;
@@ -160,8 +169,6 @@ public class CaptureListFragment extends Fragment {
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), mBackCallback);
-
-        refresh();
     }
 
     @Override
@@ -170,8 +177,36 @@ public class CaptureListFragment extends Fragment {
         refresh();
     }
 
+    @Override
+    public void onDestroyView() {
+        if (mCaptureList != null)
+            mCaptureList.abortScan();
+
+        super.onDestroyView();
+    }
+
+    private void scanForDeletedFiles() {
+        Log.d(TAG, "Scanning file changes on disk...");
+
+        mCaptureList.scanForDeletedFiles(changed -> {
+            Log.d(TAG, "File scan completed, changed=" + changed);
+            Context context = getContext();
+
+            if (changed && (context != null)) {
+                refreshUi();
+                Utils.showToast(context, R.string.capture_list_files_changed);
+            }
+
+            sLastScanCompletedAt = SystemClock.elapsedRealtime();
+        });
+    }
+
     private void refresh() {
         mCaptureList.reload();
+        refreshUi();
+    }
+
+    private void refreshUi() {
         List<CaptureList.Capture> captures = mCaptureList.getCaptures();
         mAdapter.setItems(captures);
 

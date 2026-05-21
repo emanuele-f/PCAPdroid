@@ -22,7 +22,10 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 
+import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
 import com.emanuelef.remote_capture.Log;
@@ -33,19 +36,27 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CaptureList {
     private static final String TAG = "CaptureList";
     private final SharedPreferences mPrefs;
     private final Context mContext;
     private ArrayList<Capture> mCaptures;
+    private ExecutorService mScanExecutor;
+    private Set<String> mRenamedDuringScan;
 
     public record TargetApp(int uid, String packageName, String name) {}
 
@@ -86,30 +97,115 @@ public class CaptureList {
             fromJson(serialized);
         else
             mCaptures = new ArrayList<>();
+    }
+
+    private record ScanDiff(Set<String> missing, Set<String> clearDecrypted) {}
+
+    public interface OnScanDoneListener {
+        void onScanDone(boolean changed);
+    }
+
+    /**
+     * Check the files actually on disk and update the model when done.
+     * Use abortScan() to cancel the scan if the listener is deallocated.
+     *
+     * @param listener onScanDone is invoked when done
+     * @return true if scan started, false otherwise
+     */
+    public boolean scanForDeletedFiles(@NotNull OnScanDoneListener listener) {
+        if (mScanExecutor != null)
+            return false;
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        if (mCaptures.isEmpty()) {
+            handler.post(() -> listener.onScanDone(false));
+            return true;
+        }
+
+        ArrayList<String> uris = new ArrayList<>(mCaptures.size());
+        ArrayList<Boolean> decryptedFlags = new ArrayList<>(mCaptures.size());
+        for (Capture c: mCaptures) {
+            uris.add(c.uri);
+            decryptedFlags.add(c.decrypted);
+        }
+
+        mRenamedDuringScan = new ArraySet<>();
+        mScanExecutor = Executors.newSingleThreadExecutor();
+        mScanExecutor.submit(() -> {
+            ScanDiff diff = scan(uris, decryptedFlags);
+            handler.post(() -> onScanResult(diff, listener));
+        });
+
+        return true;
+    }
+
+    public void abortScan() {
+        if (mScanExecutor != null) {
+            mScanExecutor.shutdownNow();
+            mScanExecutor = null;
+            mRenamedDuringScan = null;
+        }
+    }
+
+    private ScanDiff scan(List<String> uris, List<Boolean> decryptedFlags) {
+        Set<String> missing = new HashSet<>();
+        Set<String> clearDecrypted = new HashSet<>();
+
+        for (int i = 0; i < uris.size(); i++) {
+            String uri = uris.get(i);
+            try {
+                String path = Utils.uriToFilePath(mContext, Uri.parse(uri));
+                if ((path == null) || !new File(path).exists()) {
+                    missing.add(uri);
+                    continue;
+                }
+
+                if (decryptedFlags.get(i) && !path.endsWith(".pcapng") &&
+                        (Utils.findSiblingKeylog(path) == null))
+                {
+                    clearDecrypted.add(uri);
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "scan: check failed for " + uri + ": " + e.getMessage());
+            }
+        }
+
+        return new ScanDiff(missing, clearDecrypted);
+    }
+
+    private void onScanResult(ScanDiff diff, @NotNull OnScanDoneListener listener) {
+        if (mScanExecutor == null)
+            // scan was aborted
+            return;
 
         boolean changed = false;
         Iterator<Capture> it = mCaptures.iterator();
         while (it.hasNext()) {
             Capture c = it.next();
-            try {
-                String path = Utils.uriToFilePath(mContext, Uri.parse(c.uri));
-                if ((path == null) || !new File(path).exists()) {
-                    it.remove();
-                    Log.i(TAG, "removing deleted capture: " + c.uri);
-                    changed = true;
-                    continue;
-                }
-                if (c.decrypted && !path.endsWith(".pcapng") && (Utils.findSiblingKeylog(path) == null)) {
-                    Log.i(TAG, "clearing decrypted flag for " + c.uri + " (sibling keylog missing)");
-                    c.decrypted = false;
-                    changed = true;
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "reload: check failed for " + c.uri + ": " + e.getMessage());
+
+            if (mRenamedDuringScan.contains(c.uri))
+                // ignore renamed captures, as they may have changed name on disk
+                continue;
+
+            if (diff.missing.contains(c.uri)) {
+                Log.i(TAG, "removing deleted capture: " + c.uri);
+                it.remove();
+                changed = true;
+            } else if (c.decrypted && diff.clearDecrypted.contains(c.uri)) {
+                Log.i(TAG, "clearing decrypted flag for " + c.uri + " (sibling keylog missing)");
+                c.decrypted = false;
+                changed = true;
             }
         }
+
+        mScanExecutor = null;
+        mRenamedDuringScan = null;
+
         if (changed)
             save();
+
+        listener.onScanDone(changed);
     }
 
     public void save() {
@@ -154,6 +250,10 @@ public class CaptureList {
 
     public void rename(Capture capture, String newName) {
         capture.name = newName;
+
+        if (mRenamedDuringScan != null)
+            mRenamedDuringScan.add(capture.uri);
+
         save();
     }
 
