@@ -374,9 +374,8 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
     remote_ip[0] = '\0';
     inet_ntop(family, &dst_ip, remote_ip, sizeof(remote_ip));
 
-#ifdef ANDROID
-    getCountryCode(pd, remote_ip, data->country_code);
-#endif
+    if(pd->cb.get_country_code)
+        pd->cb.get_country_code(pd, remote_ip, data->country_code);
 
     // Try to resolve host name via the LRU cache
     data->info = ip_lru_find(pd->ip_to_host, &dst_ip);

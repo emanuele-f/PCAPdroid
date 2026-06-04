@@ -586,6 +586,8 @@ static void init_jni(JNIEnv *env) {
 
 /* ******************************************************* */
 
+static bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
+
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
                                                               jobject vpn, jint sdk) {
@@ -613,6 +615,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
                     .clear_payload_chunks = clearPayloadChunks,
+                    .get_country_code = getCountryCode,
             },
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
@@ -1372,7 +1375,7 @@ void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const c
 
 /* ******************************************************* */
 
-bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
+static bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
     bool rv = false;
     JNIEnv *env = pd->env;
     jstring host_str = (*env)->NewStringUTF(env, host);

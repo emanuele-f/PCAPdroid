@@ -192,6 +192,7 @@ typedef struct {
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
     bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
+    bool (*get_country_code)(struct pcapdroid *pd, const char *host, char out[3]);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -448,7 +449,6 @@ struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name);
-bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 
 #endif // ANDROID
 

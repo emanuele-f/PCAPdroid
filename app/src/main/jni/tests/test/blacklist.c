@@ -115,9 +115,381 @@ static void test_detection() {
 
 /* ******************************************************* */
 
+/* The following tests exercise the blacklist/whitelist/malware match logic of
+ * pd_new_connection directly, building the 5-tuple by hand and inspecting the
+ * resulting pd_conn_t flags, without going through a full capture. */
+
+static pcapdroid_t* match_test_init() {
+  pcapdroid_t *pd = pd_init_test(NULL);
+
+  pd->ip_to_host = ip_lru_init(MAX_HOST_LRU_SIZE);
+  assert(pd->ip_to_host != NULL);
+
+  return pd;
+}
+
+static void match_test_free(pcapdroid_t *pd) {
+  for(int i=0; i < pd->new_conns.cur_items; i++)
+    pd_purge_connection(pd, pd->new_conns.items[i].data);
+  pd_free(pd->new_conns.items);
+
+  ip_lru_destroy(pd->ip_to_host);
+
+  if(pd->malware_detection.bl)
+    blacklist_destroy(pd->malware_detection.bl);
+  if(pd->malware_detection.whitelist)
+    blacklist_destroy(pd->malware_detection.whitelist);
+  if(pd->firewall.bl)
+    blacklist_destroy(pd->firewall.bl);
+  if(pd->firewall.wl)
+    blacklist_destroy(pd->firewall.wl);
+
+  pd_free_test(pd);
+}
+
+/* Build a 5-tuple for the given destination and run it through pd_new_connection.
+ * If host is not NULL, it is first registered in the host LRU cache so that the
+ * domain match logic kicks in. */
+static pd_conn_t* match_new_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip,
+          uint16_t dst_port, int uid, const char *host) {
+  zdtun_5tuple_t tuple;
+  zdtun_ip_t ip;
+  memset(&tuple, 0, sizeof(tuple));
+
+  int ipver = zdtun_parse_ip(dst_ip, &ip);
+  assert((ipver == 4) || (ipver == 6));
+
+  tuple.ipver = ipver;
+  tuple.ipproto = ipproto;
+  tuple.src_port = htons(40000);
+  tuple.dst_port = htons(dst_port);
+  tuple.dst_ip = ip;
+
+  if(host)
+    ip_lru_add(pd->ip_to_host, &ip, host);
+
+  pd_conn_t *data = pd_new_connection(pd, &tuple, uid);
+  assert(data != NULL);
+
+  return data;
+}
+
+/* ******************************************************* */
+
+static void test_malware_match() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  blacklist_t *wl = blacklist_init();
+  assert(wl != NULL);
+
+  pd->malware_detection.enabled = true;
+  pd->malware_detection.bl = bl;
+  pd->malware_detection.whitelist = wl;
+
+  assert0(blacklist_add_ipstr(bl, "1.2.3.4"));
+  assert0(blacklist_add_ipstr(bl, "dead::beef"));
+  assert0(blacklist_add_domain(bl, "evil.com"));
+  assert0(blacklist_add_uid(bl, 1000)); // uid blacklist is ignored by malware detection
+  assert0(blacklist_add_ipstr(wl, "5.6.7.8"));
+  assert0(blacklist_add_domain(wl, "good.com"));
+  assert0(blacklist_add_uid(wl, 4242));
+
+  pd_conn_t *data;
+
+  // Blacklisted IPv4 -> flagged and blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "1.2.3.4", 443, 100, NULL);
+  assert1(data->blacklisted_ip);
+  assert1(data->to_block);
+  assert0(data->blacklisted_domain);
+  assert0(data->whitelisted_app);
+
+  // Blacklisted IPv6 -> flagged and blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "dead::beef", 443, 100, NULL);
+  assert1(data->blacklisted_ip);
+  assert1(data->to_block);
+
+  // Clean IP -> not flagged
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, NULL);
+  assert0(data->blacklisted_ip);
+  assert0(data->blacklisted_domain);
+  assert0(data->to_block);
+
+  // A uid in the malware blacklist must NOT cause a block: malware detection
+  // only matches on IP and domain, not on uid
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, NULL);
+  assert0(data->blacklisted_ip);
+  assert0(data->to_block);
+
+  // Blacklisted domain (resolved via the host LRU) -> flagged and blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, "sub.evil.com");
+  assert1(data->blacklisted_domain);
+  assert1(data->to_block);
+  assert0(data->blacklisted_ip);
+
+  // Whitelisted IP overrides the IP blacklist
+  assert0(blacklist_add_ipstr(bl, "5.6.7.8"));
+  data = match_new_conn(pd, IPPROTO_TCP, "5.6.7.8", 443, 100, NULL);
+  assert0(data->blacklisted_ip);
+  assert0(data->to_block);
+
+  // Whitelisted domain overrides the domain blacklist
+  assert0(blacklist_add_domain(bl, "good.com"));
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, "www.good.com");
+  assert0(data->blacklisted_domain);
+  assert0(data->to_block);
+
+  // Whitelisted app: blacklisted IP/domain checks are skipped entirely
+  data = match_new_conn(pd, IPPROTO_TCP, "1.2.3.4", 443, 4242, "sub.evil.com");
+  assert1(data->whitelisted_app);
+  assert0(data->blacklisted_ip);
+  assert0(data->blacklisted_domain);
+  assert0(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+static void test_firewall_match() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  assert0(blacklist_add_ipstr(bl, "1.2.3.4"));
+  assert0(blacklist_add_domain(bl, "blocked.com"));
+  assert0(blacklist_add_uid(bl, 1000));
+
+  pd_conn_t *data;
+
+  // Blocked by IP. The firewall only sets to_block, it does not set
+  // blacklisted_ip (that flag is specific to malware detection)
+  data = match_new_conn(pd, IPPROTO_TCP, "1.2.3.4", 443, 100, NULL);
+  assert1(data->to_block);
+  assert0(data->blacklisted_ip);
+
+  // Blocked by uid
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, NULL);
+  assert1(data->to_block);
+
+  // Blocked by domain
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, "www.blocked.com");
+  assert1(data->to_block);
+  assert0(data->blacklisted_domain);
+
+  // Not in any firewall list -> allowed
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, "www.allowed.com");
+  assert0(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+static void test_whitelist_mode_match() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  blacklist_t *wl = blacklist_init();
+  assert(wl != NULL);
+
+  // Whitelist mode: block every app unless it is explicitly whitelisted
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+  pd->firewall.wl_enabled = true;
+  pd->firewall.wl = wl;
+
+  assert0(blacklist_add_uid(wl, 100));
+
+  pd_conn_t *data;
+
+  // Whitelisted app -> allowed
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, NULL);
+  assert0(data->to_block);
+
+  // Non-whitelisted app -> blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 200, NULL);
+  assert1(data->to_block);
+
+  // DNS traffic from the unspecified/netd/phone uids is always allowed, even
+  // in whitelist mode
+  data = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_UNKNOWN, NULL);
+  assert0(data->to_block);
+  data = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_NETD, NULL);
+  assert0(data->to_block);
+  data = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_PHONE, NULL);
+  assert0(data->to_block);
+
+  // DNS traffic from a known, non-whitelisted app is still blocked
+  data = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, 200, NULL);
+  assert1(data->to_block);
+
+  // Non-DNS traffic from the unspecified uid is blocked like any other app
+  data = match_new_conn(pd, IPPROTO_TCP, "8.8.8.8", 443, UID_UNKNOWN, NULL);
+  assert1(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* When a DNS request issued by netd is later associated to an app (because the
+ * app connects to the resolved host), pd_new_connection retroactively assigns
+ * the app uid to the netd connection and, if that app would have been blocked,
+ * flags it with netd_block_missed (the block could not be enforced in time). */
+static void test_netd_block_missed() {
+  // Resolved app is in the firewall blocklist
+  {
+    pcapdroid_t *pd = match_test_init();
+
+    blacklist_t *bl = blacklist_init();
+    assert(bl != NULL);
+    pd->firewall.enabled = true;
+    pd->firewall.bl = bl;
+    assert0(blacklist_add_uid(bl, 1000));
+
+    // DNS request from netd, resolved to a host via the LRU cache
+    pd_conn_t *netd = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_NETD, "evil.com");
+    assert0(netd->to_block);
+    assert0(netd->netd_block_missed);
+
+    // A later connection to the same host from a blocklisted app: the netd
+    // request gets the app uid and is flagged, as the block was missed
+    match_new_conn(pd, IPPROTO_TCP, "1.1.1.1", 443, 1000, "evil.com");
+    assert(netd->uid == 1000);
+    assert1(netd->netd_block_missed);
+
+    match_test_free(pd);
+  }
+
+  // Resolved app is not blocked: the netd connection is not flagged
+  {
+    pcapdroid_t *pd = match_test_init();
+
+    blacklist_t *bl = blacklist_init();
+    assert(bl != NULL);
+    pd->firewall.enabled = true;
+    pd->firewall.bl = bl;
+    assert0(blacklist_add_uid(bl, 1000));
+
+    pd_conn_t *netd = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_NETD, "good.com");
+    assert0(netd->netd_block_missed);
+
+    match_new_conn(pd, IPPROTO_TCP, "1.1.1.1", 443, 100, "good.com");
+    assert(netd->uid == 100);
+    assert0(netd->netd_block_missed);
+
+    match_test_free(pd);
+  }
+
+  // Whitelist mode: the netd request is resolved to a non-whitelisted app
+  {
+    pcapdroid_t *pd = match_test_init();
+
+    blacklist_t *bl = blacklist_init();
+    assert(bl != NULL);
+    blacklist_t *wl = blacklist_init();
+    assert(wl != NULL);
+    pd->firewall.enabled = true;
+    pd->firewall.bl = bl;
+    pd->firewall.wl_enabled = true;
+    pd->firewall.wl = wl;
+    assert0(blacklist_add_uid(wl, 100));
+
+    // DNS from netd is exempt from the whitelist-mode block, so it is not
+    // blocked outright but can later be flagged as a missed block
+    pd_conn_t *netd = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_NETD, "host.com");
+    assert0(netd->to_block);
+
+    match_new_conn(pd, IPPROTO_TCP, "1.1.1.1", 443, 2000, "host.com");
+    assert(netd->uid == 2000);
+    assert1(netd->netd_block_missed);
+
+    match_test_free(pd);
+  }
+}
+
+/* ******************************************************* */
+
+/* The test getCountryCode stand-in (see test_utils.c) maps the last byte of the
+ * destination IP to a 2-hex-char country code, e.g. x.x.x.10 -> "0A". */
+static void test_country_match() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  assert0(blacklist_add_country(bl, "0A")); // last byte 10
+  assert0(blacklist_add_country(bl, "FF")); // last byte 255
+
+  pd_conn_t *data;
+
+  // IPv4 ending in .10 -> "0A" -> blocked by country
+  data = match_new_conn(pd, IPPROTO_TCP, "8.8.8.10", 443, 100, NULL);
+  assert1(data->to_block);
+
+  // IPv6 ending in ::ff -> "FF" -> blocked by country
+  data = match_new_conn(pd, IPPROTO_TCP, "2001:db8::ff", 443, 100, NULL);
+  assert1(data->to_block);
+
+  // Last byte not in the country blocklist -> allowed
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, NULL);
+  assert0(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* A malware-whitelisted app skips the malware IP/domain checks, but the
+ * firewall block still applies to it. */
+static void test_whitelisted_app_firewall_block() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *mbl = blacklist_init();
+  assert(mbl != NULL);
+  blacklist_t *mwl = blacklist_init();
+  assert(mwl != NULL);
+  blacklist_t *fbl = blacklist_init();
+  assert(fbl != NULL);
+
+  pd->malware_detection.enabled = true;
+  pd->malware_detection.bl = mbl;
+  pd->malware_detection.whitelist = mwl;
+  pd->firewall.enabled = true;
+  pd->firewall.bl = fbl;
+
+  assert0(blacklist_add_ipstr(mbl, "1.2.3.4"));
+  assert0(blacklist_add_uid(mwl, 4242));
+  assert0(blacklist_add_uid(fbl, 4242));
+
+  pd_conn_t *data = match_new_conn(pd, IPPROTO_TCP, "1.2.3.4", 443, 4242, NULL);
+  assert1(data->whitelisted_app);
+  assert0(data->blacklisted_ip);
+  assert1(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
 int main(int argc, char **argv) {
   add_test("match", test_match);
   add_test("detection", test_detection);
+  add_test("malware_match", test_malware_match);
+  add_test("firewall_match", test_firewall_match);
+  add_test("whitelist_mode_match", test_whitelist_mode_match);
+  add_test("netd_block_missed", test_netd_block_missed);
+  add_test("country_match", test_country_match);
+  add_test("whitelisted_app_firewall_block", test_whitelisted_app_firewall_block);
 
   run_test(argc, argv);
   return 0;
