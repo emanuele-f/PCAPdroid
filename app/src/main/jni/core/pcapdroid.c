@@ -277,7 +277,7 @@ const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, in
 
 /* ******************************************************* */
 
-static void check_blacklisted_domain(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple) {
+static void check_domain_block_rules(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple) {
     if(data->info && data->info[0]) {
         if(pd->malware_detection.bl && !data->blacklisted_domain && !data->whitelisted_app) {
             bool blacklisted = blacklist_match_domain(pd->malware_detection.bl, data->info);
@@ -417,7 +417,7 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             }
         }
 
-        check_blacklisted_domain(pd, data, tuple);
+        check_domain_block_rules(pd, data, tuple);
     }
 
     if(pd->malware_detection.bl) {
@@ -542,7 +542,7 @@ static void process_ndpi_data(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_c
         data->info = pd_strndup(found_info, 256);
         data->info_from_lru = false;
 
-        check_blacklisted_domain(pd, data, tuple);
+        check_domain_block_rules(pd, data, tuple);
         data->update_type |= CONN_UPDATE_INFO;
     }
 
@@ -945,7 +945,7 @@ static void iter_active_connections(pcapdroid_t *pd, conn_cb cb) {
 
 /* ******************************************************* */
 
-static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+static int recompute_conn_block_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     zdtun_ip_t dst_ip = tuple->dst_ip;
     blacklist_t *fw_bl = pd->firewall.bl;
     bool old_block = data->to_block;
@@ -971,7 +971,7 @@ static int check_blocked_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, p
 /* ******************************************************* */
 
 // Check if a previously blacklisted connection is now whitelisted
-static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+static int apply_malware_whitelist_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
     blacklist_t *whitelist = pd->malware_detection.whitelist;
     bool changed = false;
 
@@ -994,7 +994,7 @@ static int check_blacklisted_conn_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tupl
     if(changed) {
         // Possibly unblock the connection
         if(pd->firewall.bl)
-            check_blocked_conn_cb(pd, tuple, data);
+            recompute_conn_block_cb(pd, tuple, data);
 
         data->update_type |= CONN_UPDATE_STATS;
         pd_notify_connection_update(pd, tuple, data);
@@ -1076,7 +1076,7 @@ void pd_housekeeping(pcapdroid_t *pd) {
         pd->malware_detection.new_wl = NULL;
 
         // Check the active (blacklisted) connections to possibly whitelist (and unblock) them
-        iter_active_connections(pd, check_blacklisted_conn_cb);
+        iter_active_connections(pd, apply_malware_whitelist_cb);
     }
 
     if(pd->firewall.new_bl) {
@@ -1085,14 +1085,14 @@ void pd_housekeeping(pcapdroid_t *pd) {
             blacklist_destroy(pd->firewall.bl);
         pd->firewall.bl = pd->firewall.new_bl;
         pd->firewall.new_bl = NULL;
-        iter_active_connections(pd, check_blocked_conn_cb);
+        iter_active_connections(pd, recompute_conn_block_cb);
     } else if(pd->firewall.new_wl) {
         // Load new whitelist
         if(pd->firewall.wl)
             blacklist_destroy(pd->firewall.wl);
         pd->firewall.wl = pd->firewall.new_wl;
         pd->firewall.new_wl = NULL;
-        iter_active_connections(pd, check_blocked_conn_cb);
+        iter_active_connections(pd, recompute_conn_block_cb);
     }
 
     if(pd->tls_decryption.new_list) {

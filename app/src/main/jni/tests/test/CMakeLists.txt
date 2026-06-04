@@ -30,6 +30,9 @@ add_test(NAME blacklist_whitelist_mode_match COMMAND ./blacklist whitelist_mode_
 add_test(NAME blacklist_netd_block_missed COMMAND ./blacklist netd_block_missed)
 add_test(NAME blacklist_country_match COMMAND ./blacklist country_match)
 add_test(NAME blacklist_whitelisted_app_firewall_block COMMAND ./blacklist whitelisted_app_firewall_block)
+add_test(NAME blacklist_firewall_reload COMMAND ./blacklist firewall_reload)
+add_test(NAME blacklist_firewall_whitelist_reload COMMAND ./blacklist firewall_whitelist_reload)
+add_test(NAME blacklist_malware_whitelist_reload COMMAND ./blacklist malware_whitelist_reload)
 
 test_source(dump_api)
 add_test(NAME dump_api_snaplen COMMAND ./dump_api snaplen)

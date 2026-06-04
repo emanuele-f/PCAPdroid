@@ -667,6 +667,29 @@ void pcap_iter_connections(pcapdroid_t *pd, conn_cb cb) {
 
 /* ******************************************************* */
 
+#ifndef ANDROID
+
+void pcap_add_test_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    pcap_conn_t *conn = pd_malloc(sizeof(pcap_conn_t));
+    conn->tuple = *tuple;
+    conn->data = data;
+
+    HASH_ADD(hh, pd->pcap.connections, tuple, sizeof(zdtun_5tuple_t), conn);
+}
+
+void pcap_free_test_connections(pcapdroid_t *pd) {
+    pcap_conn_t *conn, *tmp;
+
+    HASH_ITER(hh, pd->pcap.connections, conn, tmp) {
+        HASH_DEL(pd->pcap.connections, conn);
+        pd_free(conn);
+    }
+}
+
+#endif // !ANDROID
+
+/* ******************************************************* */
+
 static void process_pcapd_rv(pcapdroid_t *pd, int rv) {
     pcapd_rv rrv = (pcapd_rv) rv;
     log_i("pcapd exit code: %d", rv);
