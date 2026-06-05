@@ -519,6 +519,7 @@ static void load_dns_servers(pcapdroid_t *pd) {
     // LibreDNS
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "88.198.92.222");
     blacklist_add_ipstr(pd->vpn.known_dns_servers, "116.202.176.26");
+    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a01:4f8:1c0c:8274::1");
     blacklist_add_domain(pd->vpn.known_dns_servers, "dot.libredns.gr");
     blacklist_add_domain(pd->vpn.known_dns_servers, "doh.libredns.gr");
     // DNSLify
