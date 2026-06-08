@@ -370,6 +370,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     public boolean isPortMappingApplied() { return port_mapping_applied; }
     public boolean hasWebsocketData() { return has_websocket_data; }
 
+    public boolean isMitmDecrypt()      { return mitm_decrypt; }
     public boolean isNotDecryptable()   { return !decryption_ignored && (encrypted_payload || !mitm_decrypt) && !PCAPdroid.getInstance().isDecryptingPcap(); }
     public boolean isDecrypted()        { return !decryption_ignored && !isNotDecryptable() && (mitm_decrypt || internal_decrypt) && (getNumPayloadChunks() > 0); }
     public boolean isCleartext()        { return !encrypted_payload && !encrypted_l7; }

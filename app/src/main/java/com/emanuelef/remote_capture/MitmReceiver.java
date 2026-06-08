@@ -448,6 +448,9 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         synchronized(this) {
             // Save the latest port->ID mapping
             for(ConnectionDescriptor conn: conns) {
+                if(!conn.isMitmDecrypt())
+                    continue;
+
                 //Log.d(TAG, "[+] port " + conn.local_port);
                 mPortToConnId.put(conn.local_port, conn.incr_id);
 

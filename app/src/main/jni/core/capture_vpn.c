@@ -759,14 +759,16 @@ int run_vpn(pcapdroid_t *pd) {
                         socket_t sock = zdtun_conn_get_socket(conn);
 
                         // In SOCKS5 with the MitmReceiver, we need the local port to the SOCKS5 proxy
-                        if((sock != INVALID_SOCKET) && (tuple->ipver == 4)) {
-                            // NOTE: the zdtun SOCKS5 implementation only supports IPv4 right now.
-                            // If it also supported IPv6, than we would need to expose "sock_ipver"
-                            struct sockaddr_in local_addr;
+                        if(sock != INVALID_SOCKET) {
+                            struct sockaddr_storage local_addr;
                             socklen_t addrlen = sizeof(local_addr);
 
-                            if(getsockname(sock, (struct sockaddr*) &local_addr, &addrlen) == 0)
-                                data->vpn.local_port = local_addr.sin_port;
+                            if(getsockname(sock, (struct sockaddr*) &local_addr, &addrlen) == 0) {
+                                if(local_addr.ss_family == AF_INET6)
+                                    data->vpn.local_port = ((struct sockaddr_in6*) &local_addr)->sin6_port;
+                                else
+                                    data->vpn.local_port = ((struct sockaddr_in*) &local_addr)->sin_port;
+                            }
                         }
                     }
                 }
