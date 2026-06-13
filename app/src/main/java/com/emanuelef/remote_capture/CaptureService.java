@@ -317,6 +317,11 @@ public class CaptureService extends VpnService implements Runnable {
             mSettings.capture_interface = mSettings.input_pcap_path;
         }
 
+        if(mSettings.tls_decryption && !MitmAddon.isSupportedTarget()) {
+            Log.w(TAG, "TLS decryption is not supported on this target, disabling it");
+            mSettings.tls_decryption = false;
+        }
+
         // Retrieve DNS server
         String fallbackDnsV4 = Prefs.getDnsServerV4(mPrefs);
         dns_server = fallbackDnsV4;

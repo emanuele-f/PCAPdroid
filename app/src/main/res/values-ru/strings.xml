@@ -546,6 +546,5 @@
     <string name="next">Следующий</string>
     <string name="content_type">Content type</string>
     <string name="content_type_filter">Content-Type: %1$s</string>
-    <string name="tls_decryption_not_supported_16KB">Дешифрование TLS на текущий момент не поддерживается на устройствах со страницей памяти 16КБ</string>
     <string name="item_not_found">Не удалось найти указанный элемент</string>
 </resources>

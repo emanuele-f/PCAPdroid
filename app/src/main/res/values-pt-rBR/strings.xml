@@ -525,7 +525,6 @@
     <string name="errno_ehostunreach_msg">O sistema não consegue encontrar uma rota para o host de destino</string>
     <string name="dns_conn_info">O DNS traduz um nome de domínio em um endereço IP. Os dados reais são normalmente trocados por meio de conexões HTTPS/TLS subsequentes</string>
     <string name="tls_conn_info">O tráfego TLS/HTTPS é criptografado. Para inspecionar esse tráfego, você precisa descriptografá-lo. Consulte o <a href="%1$s">guia do usuário</a> do PCAPdroid para obter mais detalhes</string>
-    <string name="tls_decryption_not_supported_16KB">A descriptografia TLS não é suportada atualmente em dispositivos de 16 KB</string>
     <string name="filename_prefix">Prefixo do nome do arquivo</string>
     <string name="filename_prefix_description">Defina o prefixo para os arquivos exportados pelo PCAPdroid, por exemplo, arquivos PCAP</string>
     <string name="select">Selecionar</string>

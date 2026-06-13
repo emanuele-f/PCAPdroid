@@ -507,7 +507,6 @@
     <string name="errno_ehostunreach">Tidak ada rute ke host</string>
     <string name="errno_ehostunreach_msg">Sistem tidak dapat menemukan rute ke host tujuan</string>
     <string name="tls_conn_info">lalu lintas TLS/HTTPS dienkripsi. Untuk memeriksa lalu lintas ini, Anda perlu mendekripsinya. Cek <a href="%1$s">panduan pengguna</a> PCAPdroid untuk detailnya</string>
-    <string name="tls_decryption_not_supported_16KB">Dekripsi TLS saat ini tidak didukung pada perangkat 16 KB</string>
     <string name="filename_prefix">Awalan nama file</string>
     <string name="filename_prefix_description">Atur awalan untuk file yang diekspor oleh PCAPdroid, mis. file PCAP</string>
     <string name="no_requests">Tidak ada permintaan</string>

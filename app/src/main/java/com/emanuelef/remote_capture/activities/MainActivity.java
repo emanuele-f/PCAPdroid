@@ -855,7 +855,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if(showRemoteServerAlert())
             return;
 
-        if(Prefs.getTlsDecryptionEnabled(mPrefs)) {
+        if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.isSupportedTarget()) {
             if (MitmAddon.needsSetup(this)) {
                 Intent intent = new Intent(this, MitmSetupWizard.class);
                 startActivity(intent);

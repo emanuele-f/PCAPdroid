@@ -523,7 +523,6 @@
     <string name="show_api_key">أظهِر مفتاح API</string>
     <string name="api_key">مفتاح API</string>
     <string name="api_key_discard_confirm">هل تريد حقًا التخلص من مفتاح الـ API الحالي وتوليد مفتاح جديد؟</string>
-    <string name="tls_decryption_not_supported_16KB">فك تعمية TLS غير مدعوم حاليًا على الأجهزة ذات الذاكرة 16 كيلوبايت</string>
     <string name="filename_prefix">بادئة اسم الملف</string>
     <string name="filename_prefix_description">عيّن البادئة للملفات التي يصدرها PCAPdroid، مثل ملفات PCAP</string>
     <string name="select">حدِّد</string>

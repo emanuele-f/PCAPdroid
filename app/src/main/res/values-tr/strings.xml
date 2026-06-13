@@ -527,7 +527,6 @@
     <string name="api_key">API anahtarı</string>
     <string name="api_key_discard_confirm">Geçerli API anahtarını gerçekten silmek ve yeni bir tane oluşturmak istiyor musunuz?</string>
     <string name="ip_address_or_cidr">IP adresi / CIDR</string>
-    <string name="tls_decryption_not_supported_16KB">TLS şifre çözme şu anda 16 KB aygıtlarda desteklenmiyor</string>
     <string name="filename_prefix">Dosya adı ön eki</string>
     <string name="filename_prefix_description">PCAPdroid tarafından dışa aktarılan dosyalar (örneğin PCAP dosyaları) için ön ek ayarlayın</string>
     <string name="select">Seç</string>

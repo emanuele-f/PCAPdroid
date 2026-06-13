@@ -513,7 +513,6 @@
     <string name="errno_ehostunreach">Barındırıcıya marşrut yoxdur</string>
     <string name="errno_ehostunreach_msg">Sistem hədəf barındırıcıya marşrutu tapmadı</string>
     <string name="tls_conn_info">TLS/HTTPS trafiki şifrəlidir.Bu trafiki incələmək üçün,deşifrləməyə ehtiyacın var.Yoxla PCAPdroid <a href="%1$s">istifadəçi təlimatını</a> ətraflı üçün</string>
-    <string name="tls_decryption_not_supported_16KB">TLS deşifrələməsi hazırda 16 KB cihazlarda dəstəklənmir</string>
     <string name="filename_prefix">Fayl adı prefiksi</string>
     <string name="filename_prefix_description">PCAPdroid tərəfindən ixrac edilən fayllar üçün prefiks təyin edin, məs. PCAP faylları</string>
     <string name="no_requests">Sorğu yoxdur</string>

@@ -504,7 +504,6 @@
     <string name="errno_ehostunreach">புரவலனுக்கு பாதை இல்லை</string>
     <string name="errno_ehostunreach_msg">இலக்கு புரவலனுக்கு ஒரு வழியை கணினியால் கண்டுபிடிக்க முடியவில்லை</string>
     <string name="tls_conn_info">TLS/HTTPS போக்குவரத்து குறியாக்கம் செய்யப்படுகிறது. இந்த போக்குவரத்தை ஆய்வு செய்ய, நீங்கள் அதை மறைகுறியாக்க வேண்டும். விவரங்களுக்கு pcapdroid <a href="%1$s"> பயனர் கையேடு </a> ஐப் பாருங்கள்</string>
-    <string name="tls_decryption_not_supported_16KB">16 KB சாதனங்களில் TLS மறைகுறியீடு தற்போது ஆதரிக்கப்படவில்லை</string>
     <string name="filename_prefix">கோப்புப்பெயர் முன்னொட்டு</string>
     <string name="filename_prefix_description">PCAPdroid ஏற்றுமதி செய்யும் கோப்புகளுக்கான முன்னொட்டை அமைக்கவும், எ.கா. PCAP கோப்புகள்</string>
     <string name="no_requests">கோரிக்கைகள் இல்லை</string>

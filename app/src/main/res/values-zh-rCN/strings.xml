@@ -527,7 +527,6 @@
     <string name="api_key">API 密钥</string>
     <string name="api_key_discard_confirm">你真要丢弃当前 API 密钥并生成新的 API 密钥吗？</string>
     <string name="no_permissions_set_info">未设置权限。通过 StartActivityForResult 调用 PCAPdroid 来显示权限提示</string>
-    <string name="tls_decryption_not_supported_16KB">目前不支持在 16 KB 设备上解密 TLS</string>
     <string name="filename_prefix">文件名前缀</string>
     <string name="filename_prefix_description">设置 PCAPdroid 导出的文件的前缀，比如 PCAP files</string>
     <string name="select">选择</string>

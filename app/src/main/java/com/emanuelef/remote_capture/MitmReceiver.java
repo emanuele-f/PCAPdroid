@@ -55,9 +55,11 @@ import java.util.StringTokenizer;
  * The mitm addon sends TCP messages via a socket, containing an header and the plaintext.
  *
  * The header is an ASCII string in the following format:
- *   "timestamp:port:msg_type:msg_length\n"
+ *   "timestamp:ipver:ipproto:port:msg_type:msg_length\n"
  * - timestamp: milliseconds timestamp for the message
- * - port: the TCP local port used by the SOCKS5 client
+ * - ipver: the IP version (4 or 6) of the connection
+ * - ipproto: the IP protocol number of the connection (e.g. 6 for TCP)
+ * - port: the local port used by the SOCKS5 client
  * - msg_type: type of message, see parseMsgType for possible values
  * - msg_length: the message length in bytes
  *
@@ -102,13 +104,15 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     private static class PendingMessage {
         MsgType type;
         byte[] msg;
+        int ipver;
         int port;
         long pendingSince;
         long when;
 
-        PendingMessage(MsgType _type, byte[] _msg, int _port, long _now) {
+        PendingMessage(MsgType _type, byte[] _msg, int _ipver, int _port, long _now) {
             type = _type;
             msg = _msg;
+            ipver = _ipver;
             port = _port;
             pendingSince = SystemClock.elapsedRealtime();
             when = _now;
@@ -204,6 +208,8 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         try(DataInputStream istream = new DataInputStream(new ParcelFileDescriptor.AutoCloseInputStream(mSocketFd))) {
             while(mAddon.isConnected()) {
                 String msg_type;
+                int ipver;
+                int ipproto;
                 int port;
                 int msg_len;
                 long tstamp;
@@ -222,13 +228,17 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 //Log.d(TAG, "[HEADER] " + header);
 
                 try {
-                    // timestamp:port:msg_type:msg_length\n
+                    // timestamp:ipver:ipproto:port:msg_type:msg_length\n
                     String tk_tstamp = tk.nextToken(":");
+                    String tk_ipver = tk.nextToken();
+                    String tk_ipproto = tk.nextToken();
                     String tk_port = tk.nextToken();
                     msg_type = tk.nextToken();
                     String tk_len = tk.nextToken();
 
                     tstamp = Long.parseLong(tk_tstamp);
+                    ipver = Integer.parseInt(tk_ipver);
+                    ipproto = Integer.parseInt(tk_ipproto);
                     port = Integer.parseInt(tk_port);
                     msg_len = Integer.parseInt(tk_len);
                 } catch (NoSuchElementException | NumberFormatException e) {
@@ -263,15 +273,16 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 } else if(type == MsgType.RUNNING) {
                     Log.i(TAG, "MITM proxy is running");
                     proxyStatus.postValue(Status.RUNNING);
-                } else {
-                    ConnectionDescriptor conn = getConnByLocalPort(port);
+                } else if(ipproto == 6 /* TCP */) {
+                    // only TCP connections are decrypted, UDP messages are ignored
+                    ConnectionDescriptor conn = getMitmConnByLocalPort(ipver, port);
                     //Log.d(TAG, "MSG." + type.name() + "[" + msg_len + " B]: port=" + port + ", match=" + (conn != null));
 
                     if(conn != null)
                         handleMessage(conn, type, msg, tstamp);
                     else
                         // We may receive a message before seeing the connection in connectionsAdded
-                        addPendingMessage(new PendingMessage(type, msg, port, tstamp));
+                        addPendingMessage(new PendingMessage(type, msg, ipver, port, tstamp));
                 }
             }
         } catch (IOException e) {
@@ -349,12 +360,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             }
         }
 
-        int idx = mPendingMessages.indexOfKey(pending.port);
+        int key = getMitmConnKey(pending.ipver, pending.port);
+        int idx = mPendingMessages.indexOfKey(key);
         ArrayList<PendingMessage> pp;
 
         if(idx < 0) {
             pp = new ArrayList<>();
-            mPendingMessages.put(pending.port, pp);
+            mPendingMessages.put(key, pp);
         } else
             pp = mPendingMessages.valueAt(idx);
 
@@ -451,11 +463,13 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 if(!conn.isMitmDecrypt())
                     continue;
 
+                int key = getMitmConnKey(conn.ipver, conn.local_port);
+
                 //Log.d(TAG, "[+] port " + conn.local_port);
-                mPortToConnId.put(conn.local_port, conn.incr_id);
+                mPortToConnId.put(key, conn.incr_id);
 
                 // Check if the message has already been received
-                int pending_idx = mPendingMessages.indexOfKey(conn.local_port);
+                int pending_idx = mPendingMessages.indexOfKey(key);
                 if(pending_idx >= 0) {
                     ArrayList<PendingMessage> pp = mPendingMessages.valueAt(pending_idx);
                     mPendingMessages.removeAt(pending_idx);
@@ -515,17 +529,21 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
         CaptureService.stopService();
     }
 
-    ConnectionDescriptor getConnByLocalPort(int local_port) {
+    private static int getMitmConnKey(int ipver, int local_port) {
+        return (ipver << 16) | local_port;
+    }
+
+    ConnectionDescriptor getMitmConnByLocalPort(int ipver, int local_port) {
         Integer conn_id;
 
         synchronized(this) {
-            conn_id = mPortToConnId.get(local_port);
+            conn_id = mPortToConnId.get(getMitmConnKey(ipver, local_port));
         }
         if(conn_id == null)
             return null;
 
         ConnectionDescriptor conn = mReg.getConnById(conn_id);
-        if((conn == null) || (conn.local_port != local_port))
+        if((conn == null) || (conn.ipver != ipver) || (conn.local_port != local_port))
             return null;
 
         // success

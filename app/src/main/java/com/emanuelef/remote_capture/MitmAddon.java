@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022-24 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class MitmAddon {
-    public static final long PACKAGE_VERSION_CODE = 21;
-    public static final String PACKAGE_VERSION_NAME = "1.4";
+    public static final long PACKAGE_VERSION_CODE = 22;
+    public static final String PACKAGE_VERSION_NAME = "2.0";
     public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
@@ -171,6 +171,15 @@ public class MitmAddon {
     public static String getGithubReleaseUrl(String version) {
         return REPOSITORY + "/releases/download/v" +
                 version + "/PCAPdroid-mitm_v" + version + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
+    }
+
+    // The mitm addon is only built for Android 7+ and the x86_64/arm64-v8a ABIs
+    public static boolean isSupportedTarget() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+            return false;
+
+        String abi = Build.SUPPORTED_ABIS[0];
+        return abi.equals("arm64-v8a") || abi.equals("x86_64");
     }
 
     public static void setCAInstallationSkipped(Context ctx, boolean skipped) {

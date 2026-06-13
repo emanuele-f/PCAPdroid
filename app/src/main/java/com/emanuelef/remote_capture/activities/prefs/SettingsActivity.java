@@ -28,8 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.Settings;
-import android.system.Os;
-import android.system.OsConstants;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.View;
@@ -355,30 +353,31 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mAutoBlockPrivateDNS = requirePreference("auto_block_private_dns");
 
             mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
-            mTlsDecryption.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean enabled = (boolean) newValue;
-                Context ctx = requireContext();
+            if(!MitmAddon.isSupportedTarget()) {
+                // The mitm addon dropped support for armv7/x86 and Android < 7
+                mTlsDecryption.setChecked(false);
+                mTlsDecryption.setEnabled(false);
+                mTlsDecryption.setSummary(R.string.tls_decryption_unsupported_target);
+            } else
+                mTlsDecryption.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean enabled = (boolean) newValue;
+                    Context ctx = requireContext();
 
-                if (enabled && (Os.sysconf(OsConstants._SC_PAGE_SIZE) == 16384)) {
-                    Utils.showToastLong(ctx, R.string.tls_decryption_not_supported_16KB);
-                    return false;
-                }
+                    if(!checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
+                        return false;
 
-                if(!checkDecrpytionWithRoot(rootCaptureEnabled(), (boolean) newValue))
-                    return false;
+                    if(enabled && MitmAddon.needsSetup(ctx)) {
+                        mHasStartedMitmWizard = true;
+                        Intent intent = new Intent(ctx, MitmSetupWizard.class);
+                        startActivity(intent);
+                        return false;
+                    }
 
-                if(enabled && MitmAddon.needsSetup(ctx)) {
-                    mHasStartedMitmWizard = true;
-                    Intent intent = new Intent(ctx, MitmSetupWizard.class);
-                    startActivity(intent);
-                    return false;
-                }
-
-                mMitmWizard.setVisible((boolean) newValue);
-                mMitmproxyOpts.setVisible((boolean) newValue);
-                socks5ProxyHideShow((boolean) newValue, rootCaptureEnabled());
-                return true;
-            });
+                    mMitmWizard.setVisible((boolean) newValue);
+                    mMitmproxyOpts.setVisible((boolean) newValue);
+                    socks5ProxyHideShow((boolean) newValue, rootCaptureEnabled());
+                    return true;
+                });
 
             mPcapngEnabled = requirePreference("pcapng_format");
 

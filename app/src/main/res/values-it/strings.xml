@@ -526,7 +526,6 @@
     <string name="show_api_key">Mostra chiave API</string>
     <string name="api_key">Chiave API</string>
     <string name="api_key_discard_confirm">Vuoi veramente scartare l\'attuale chiave API e generarne una nuova?</string>
-    <string name="tls_decryption_not_supported_16KB">La decrittazione TLS non è attualmente supportata su dispositivi a 16 KB</string>
     <string name="filename_prefix">Prefisso nomi dei file</string>
     <string name="filename_prefix_description">Imposta il prefisso usato per i file esportati da PCAPdroid, e.s. file PCAP</string>
     <string name="select">Seleziona</string>

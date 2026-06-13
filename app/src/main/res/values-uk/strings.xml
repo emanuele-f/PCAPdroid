@@ -507,7 +507,6 @@
     <string name="errno_econnrefused">Відмовлено у підключенні</string>
     <string name="errno_econnrefused_msg">Сервер відхилив з\'єднання, що може свідчити про надмірну зайнятість або несправність сервера</string>
     <string name="tls_conn_info">Трафік TLS/HTTPS зашифрований. Щоб оглядати цей трафік, необхідно його дешифрувати. Детальніше в <a href="%1$s">посібнику користувача</a> PCAPdroid</string>
-    <string name="tls_decryption_not_supported_16KB">Дешифрування TLS наразі не підтримується на пристроях з 16 КБ сторінками</string>
     <string name="filename_prefix">Префікс імені файлу</string>
     <string name="filename_prefix_description">Встановити префікс для файлів, експортованих PCAPdroid, наприклад файлів PCAP</string>
     <string name="no_requests">Немає запитів</string>

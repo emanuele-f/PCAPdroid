@@ -467,7 +467,6 @@
     <string name="errno_ehostunreach_msg">System nie może znaleźć trasy do hosta docelowego</string>
     <string name="dns_conn_info">DNS tłumaczy nazwę domeny na adres IP. Właściwe dane są zazwyczaj wymieniane przez kolejne połączenia HTTPS/TLS</string>
     <string name="tls_conn_info">Ruch TLS/HTTPS jest zaszyfrowany. Aby zbadać ten ruch, musisz go odszyfrować. Sprawdź <a href="%1$s">podręcznik użytkownika</a> PCAPdroid, aby uzyskać szczegóły</string>
-    <string name="tls_decryption_not_supported_16KB">Deszyfrowanie TLS nie jest obecnie obsługiwane na urządzeniach 16 KB</string>
     <string name="filename_prefix">Prefiks nazwy pliku</string>
     <string name="filename_prefix_description">Ustaw prefiks plików eksportowanych przez PCAPdroid, np. plików PCAP</string>
     <string name="no_requests">Brak żądań</string>
