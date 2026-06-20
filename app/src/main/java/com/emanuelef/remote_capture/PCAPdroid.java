@@ -131,7 +131,7 @@ public class PCAPdroid extends Application {
 
     public MatchList getVisualizationMask() {
         if(mVisMask == null)
-            mVisMask = new MatchList(mLocalizedContext, Prefs.PREF_VISUALIZATION_MASK);
+            mVisMask = MatchList.load(mLocalizedContext, Prefs.PREF_VISUALIZATION_MASK);
 
         return mVisMask;
     }
@@ -144,13 +144,13 @@ public class PCAPdroid extends Application {
 
     public MatchList getMalwareWhitelist() {
         if(mMalwareWhitelist == null)
-            mMalwareWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_MALWARE_WHITELIST);
+            mMalwareWhitelist = MatchList.load(mLocalizedContext, Prefs.PREF_MALWARE_WHITELIST);
         return mMalwareWhitelist;
     }
 
     public Blocklist getBlocklist() {
         if(mBlocklist == null)
-            mBlocklist = new Blocklist(mLocalizedContext);
+            mBlocklist = Blocklist.load(mLocalizedContext);
         return mBlocklist;
     }
 
@@ -219,7 +219,7 @@ public class PCAPdroid extends Application {
     public MatchList getFirewallWhitelist() {
         if(mFirewallWhitelist == null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            mFirewallWhitelist = new MatchList(mLocalizedContext, Prefs.PREF_FIREWALL_WHITELIST);
+            mFirewallWhitelist = MatchList.load(mLocalizedContext, Prefs.PREF_FIREWALL_WHITELIST);
 
             if(!Prefs.isFirewallWhitelistInitialized(prefs)) {
                 initFirewallWhitelist();
@@ -231,7 +231,7 @@ public class PCAPdroid extends Application {
 
     public MatchList getDecryptionList() {
         if(mDecryptionList == null)
-            mDecryptionList = new MatchList(mLocalizedContext, Prefs.PREF_DECRYPTION_LIST);
+            mDecryptionList = MatchList.load(mLocalizedContext, Prefs.PREF_DECRYPTION_LIST);
 
         return mDecryptionList;
     }

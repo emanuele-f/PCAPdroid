@@ -33,6 +33,13 @@ add_test(NAME blacklist_whitelisted_app_firewall_block COMMAND ./blacklist white
 add_test(NAME blacklist_firewall_reload COMMAND ./blacklist firewall_reload)
 add_test(NAME blacklist_firewall_whitelist_reload COMMAND ./blacklist firewall_whitelist_reload)
 add_test(NAME blacklist_malware_whitelist_reload COMMAND ./blacklist malware_whitelist_reload)
+add_test(NAME blacklist_app_allowlist_match COMMAND ./blacklist app_allowlist_match)
+add_test(NAME blacklist_app_allowlist_whitelist_mode COMMAND ./blacklist app_allowlist_whitelist_mode)
+add_test(NAME blacklist_app_allowlist_reload COMMAND ./blacklist app_allowlist_reload)
+add_test(NAME blacklist_app_allowlist_netd_block_missed COMMAND ./blacklist app_allowlist_netd_block_missed)
+add_test(NAME blacklist_app_allowlist_replace COMMAND ./blacklist app_allowlist_replace)
+add_test(NAME blacklist_app_allowlist_dpi_domain COMMAND ./blacklist app_allowlist_dpi_domain)
+add_test(NAME blacklist_app_allowlist_malware COMMAND ./blacklist app_allowlist_malware)
 
 test_source(dump_api)
 add_test(NAME dump_api_snaplen COMMAND ./dump_api snaplen)

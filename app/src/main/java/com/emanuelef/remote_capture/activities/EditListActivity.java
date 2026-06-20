@@ -14,16 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.ActionBar;
+
+import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.AppDescriptor;
 import com.emanuelef.remote_capture.model.ListInfo;
 import com.emanuelef.remote_capture.model.MatchList;
 
@@ -31,6 +35,7 @@ import com.emanuelef.remote_capture.model.MatchList;
 public class EditListActivity extends BaseActivity {
     private static final String TAG = "EditListActivity";
     public static final String LIST_TYPE_EXTRA = "list_type";
+    public static final String APP_PACKAGE_EXTRA = "app_package";
     private static final String FITS_SYSTEM_WINDOWS_ARG = "fits_system_windows";
     private ListInfo mListInfo;
 
@@ -51,14 +56,35 @@ public class EditListActivity extends BaseActivity {
             return;
         }
 
-        mListInfo = new ListInfo(ltype);
+        String appPackage = getIntent().getStringExtra(APP_PACKAGE_EXTRA);
+        if((ltype == ListInfo.Type.APP_ALLOWLIST) && (appPackage == null)) {
+            Log.e(TAG, "APP_ALLOWLIST requires APP_PACKAGE_EXTRA");
+            finish();
+            return;
+        }
 
-        setTitle(mListInfo.getTitle());
+        mListInfo = new ListInfo(ltype, appPackage);
+
+        if(ltype == ListInfo.Type.APP_ALLOWLIST)
+            setAppAllowlistTitle(appPackage);
+        else
+            setTitle(mListInfo.getTitle());
+
         setContentView(R.layout.fragment_activity);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment, mListInfo.newFragment())
                 .commit();
+    }
+
+    private void setAppAllowlistTitle(String appPackage) {
+        AppDescriptor app = AppsResolver.resolveInstalledApp(getPackageManager(), appPackage, 0);
+        String appName = (app != null) ? app.getName() : appPackage;
+        setTitle(R.string.allowlist);
+
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null)
+            actionBar.setSubtitle(appName);
     }
 
     public MatchList getList() {

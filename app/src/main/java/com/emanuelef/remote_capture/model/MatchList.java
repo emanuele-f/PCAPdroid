@@ -25,6 +25,7 @@ import android.graphics.Typeface;
 import android.text.style.StyleSpan;
 import android.util.ArrayMap;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
@@ -81,7 +82,7 @@ public class MatchList {
         private final RuleType mType;
         private final Object mValue;
 
-        private Rule(RuleType tp, Object value) {
+        Rule(RuleType tp, Object value) {
             mLabel = MatchList.getRuleLabel(mContext, tp, value.toString());
             mType = tp;
             mValue = value;
@@ -101,10 +102,9 @@ public class MatchList {
 
         @Override
         public boolean equals(@Nullable Object obj) {
-            if(!(obj instanceof Rule))
+            if(!(obj instanceof Rule other))
                 return super.equals(obj);
 
-            Rule other = (Rule) obj;
             return((mType == other.mType) && (mValue.equals(other.mValue)));
         }
     }
@@ -119,17 +119,39 @@ public class MatchList {
         public final List<String> hosts = new ArrayList<>();
         public final List<String> ips = new ArrayList<>();
         public final List<String> countries = new ArrayList<>();
+
+        // The uid this allowlist applies to; only set on the nested descriptors in allowlists.
+        public int uid = Utils.UID_NO_FILTER;
+        public final List<ListDescriptor> allowlists = new ArrayList<>();
     }
 
-    public MatchList(Context ctx, String pref_name) {
+    public MatchList(Context ctx, @NonNull String pref_name) {
         mContext = ctx;
-        mPrefName = pref_name; // The preference to bake the list rules
+        mPrefName = pref_name; // The preference to bake the list rules, empty if not baked
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         mResolver = new AppsResolver(ctx);
-        reload();
+    }
+
+    // Builds a list and loads its persisted rules. reload() is intentionally not called from the
+    // constructor: it would run before subclass fields are initialized.
+    public static MatchList load(Context ctx, @NonNull String pref_name) {
+        MatchList list = new MatchList(ctx, pref_name);
+        list.reload();
+        return list;
+    }
+
+    protected Context getContext() {
+        return mContext;
+    }
+
+    protected Integer getAppUid(String pkg) {
+        return mPackageToUid.get(pkg);
     }
 
     public void reload() {
+        if (mPrefName.isEmpty())
+            return;
+
         String serialized = mPrefs.getString(mPrefName, "");
         //Log.d(TAG, serialized);
 
@@ -146,6 +168,9 @@ public class MatchList {
     }
 
     public void save() {
+        if (mPrefName.isEmpty())
+            return;
+
         mPrefs.edit()
                 .putString(mPrefName, toJson(false))
                 .apply();
@@ -192,6 +217,10 @@ public class MatchList {
 
                 ruleObject.add("type", new JsonPrimitive(rule.getType().name()));
                 ruleObject.add("value", new JsonPrimitive(rule.getValue().toString()));
+
+                JsonArray allowlistArr = src.serializeAllowlist(rule);
+                if(allowlistArr != null)
+                    ruleObject.add("allowlist", allowlistArr);
 
                 rulesArr.add(ruleObject);
             }
@@ -260,8 +289,11 @@ public class MatchList {
                     }
                 }
 
-                if(addRule(new Rule(type, val), false)) {
+                Rule rule = new Rule(type, val);
+                if(addRule(rule, false)) {
                     num_rules += 1;
+
+                    deserializeAllowlist(rule, ruleObj);
 
                     if((max_rules > 0) && (num_rules >= max_rules))
                         break;
@@ -342,7 +374,7 @@ public class MatchList {
         return mCidrs.remove(cidr);
     }
 
-    private boolean addRule(Rule rule, boolean notify) {
+    boolean addRule(Rule rule, boolean notify) {
         String value = rule.getValue().toString();
         String key = matchKey(rule.getType(), value);
 
@@ -390,6 +422,17 @@ public class MatchList {
             notifyListeners();
 
         return num_added;
+    }
+
+    protected @Nullable JsonArray serializeAllowlist(Rule rule) {
+        return null;
+    }
+
+    protected void deserializeAllowlist(Rule rule, JsonObject ruleObj) {}
+
+    /* Create an empty, non-persistent list of the same kind */
+    public MatchList newEmptyList() {
+        return new MatchList(mContext, "");
     }
 
     public void removeRule(Rule rule) {
@@ -502,7 +545,7 @@ public class MatchList {
     }
 
     public boolean isEmpty() {
-        return(mRules.size() == 0);
+        return(mRules.isEmpty());
     }
 
     public int getSize() {

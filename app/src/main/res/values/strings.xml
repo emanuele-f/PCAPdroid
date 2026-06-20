@@ -261,6 +261,12 @@
     <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="unblock">Unblock…</string>
+    <string name="allow_for_app">Allow for %1$s…</string>
+    <string name="allowlist_allow">Allow %1$s</string>
+    <string name="allowlist_remove">Remove %1$s</string>
+    <string name="allowlist">Allowlist</string>
+    <string name="app_allowlist_help">Here you can specify a set of rules to allow some connections of the app while keeping the rest blocked</string>
+    <string name="app_with_exceptions">%1$s (%2$d exceptions)</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall rules</string>
     <string name="blocked_pkts">Blocked</string>

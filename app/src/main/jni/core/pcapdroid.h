@@ -122,6 +122,7 @@ typedef struct {
     bool blacklisted_domain;
     bool whitelisted_app;
     bool to_block;
+    bool fw_app_block;
     bool netd_block_missed;
     bool proxied;
     bool decryption_ignored;
@@ -384,6 +385,8 @@ typedef struct {
     jfieldID ld_hosts;
     jfieldID ld_ips;
     jfieldID ld_countries;
+    jfieldID ld_uid;
+    jfieldID ld_allowlists;
 } jni_fields_t;
 
 typedef struct {

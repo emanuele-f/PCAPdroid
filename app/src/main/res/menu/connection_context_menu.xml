@@ -129,6 +129,46 @@
         </menu>
     </item>
 
+    <item android:id="@+id/app_allowlist_menu" android:title="@string/allowlist" android:visible="false">
+        <menu>
+            <item
+                android:id="@+id/allow_ip"
+                android:title=""
+                tools:title="@string/ip_address_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/deny_ip"
+                android:title=""
+                tools:title="@string/ip_address_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/allow_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/deny_host"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/allow_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/deny_domain"
+                android:title=""
+                tools:title="@string/host_val"
+                android:visible="false" />
+        </menu>
+    </item>
+
     <item
         android:id="@+id/add_to_fw_whitelist"
         android:title="@string/add_to_fw_whitelist"

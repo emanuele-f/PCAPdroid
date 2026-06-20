@@ -577,6 +577,8 @@ static void init_jni(JNIEnv *env) {
     fields.ld_hosts = jniFieldID(env, cls.matchlist_descriptor, "hosts", "Ljava/util/List;");
     fields.ld_ips = jniFieldID(env, cls.matchlist_descriptor, "ips", "Ljava/util/List;");
     fields.ld_countries = jniFieldID(env, cls.matchlist_descriptor, "countries", "Ljava/util/List;");
+    fields.ld_uid = jniFieldID(env, cls.matchlist_descriptor, "uid", "I");
+    fields.ld_allowlists = jniFieldID(env, cls.matchlist_descriptor, "allowlists", "Ljava/util/List;");
 
     /* Enums */
     enums.bltype_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");

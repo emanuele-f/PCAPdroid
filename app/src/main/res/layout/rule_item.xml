@@ -28,8 +28,20 @@
 
     <TextView
         android:id="@+id/item_label"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         tools:text="App: example app"
         android:gravity="center_vertical" />
+
+    <ImageView
+        android:id="@+id/cog_icon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginStart="10dp"
+        android:padding="2dp"
+        android:visibility="gone"
+        android:contentDescription="@string/allowlist"
+        android:src="@drawable/ic_settings"
+        tools:visibility="visible" />
 </LinearLayout>

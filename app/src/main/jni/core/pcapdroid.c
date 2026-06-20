@@ -277,6 +277,28 @@ const char* pd_get_proto_name(pcapdroid_t *pd, uint16_t proto, uint16_t alpn, in
 
 /* ******************************************************* */
 
+// Check the per-app allowlist of the firewall blocklist for this connection's app.
+// A domain match requires data->info to be known before the connection's first packet: either from
+// a prior DNS reply (host LRU, at connection creation) or, for a DNS request, from the query name
+// DPI parses on the first packet. The TLS SNI cannot exempt a blocked TLS flow, as the connection
+// is dropped on its first packet (the SYN) and the ClientHello carrying the SNI is never sent; such
+// flows can only be allowed via the host resolved from a prior DNS reply
+static bool firewall_app_allowlisted(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data) {
+    if(!pd->firewall.enabled || !pd->firewall.bl)
+        return false;
+
+    blacklist_t *allowlist = blacklist_get_app_allowlist(pd->firewall.bl, data->uid);
+    if(allowlist == NULL)
+        return false;
+
+    const zdtun_ip_t dst_ip = tuple->dst_ip;
+
+    return blacklist_match_ip(allowlist, &dst_ip, tuple->ipver) ||
+           (data->info && data->info[0] && blacklist_match_domain(allowlist, data->info));
+}
+
+/* ******************************************************* */
+
 static void check_domain_block_rules(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple) {
     if(data->info && data->info[0]) {
         if(pd->malware_detection.bl && !data->blacklisted_domain && !data->whitelisted_app) {
@@ -299,15 +321,25 @@ static void check_domain_block_rules(pcapdroid_t *pd, pd_conn_t *data, const zdt
             }
         }
 
-        if(pd->firewall.enabled && pd->firewall.bl && !data->to_block) {
-            // Check if the domain is explicitly blocked by the firewall
-            data->to_block |= blacklist_match_domain(pd->firewall.bl, data->info);
-            if(data->to_block) {
-                char appbuf[64];
-                char buf[512];
+        if(pd->firewall.enabled && pd->firewall.bl && (!data->to_block || data->fw_app_block)) {
+            char appbuf[64];
+            char buf[512];
 
+            if(blacklist_match_domain(pd->firewall.bl, data->info)) {
+                data->to_block = true;
+                data->fw_app_block = false;
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
                 log_d("Blocked domain [%s]: %s [%s]", data->info, zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            } else if(data->fw_app_block) {
+                blacklist_t *allowlist = blacklist_get_app_allowlist(pd->firewall.bl, data->uid);
+
+                if((allowlist != NULL) && blacklist_match_domain(allowlist, data->info)) {
+                    data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain);
+                    data->fw_app_block = false;
+                    get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
+                    log_d("App allowlist exempted (domain) [%s]: %s [%s]", data->info,
+                          zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+                }
             }
         }
     }
@@ -325,7 +357,14 @@ static void check_whitelist_mode_block(pcapdroid_t *pd, const zdtun_5tuple_t *tu
     if(pd->firewall.enabled && pd->firewall.wl_enabled && pd->firewall.wl && !data->to_block &&
             // always allow DNS traffic from unspecified apps
             (!is_dns || ((data->uid != UID_NETD) && (data->uid != UID_PHONE) && (data->uid != UID_UNKNOWN))))
-        data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+    {
+        // The per-app allowlist is consulted before the whitelist
+        if(!firewall_app_allowlisted(pd, tuple, data)) {
+            data->to_block = !blacklist_match_uid(pd->firewall.wl, data->uid);
+            if(data->to_block)
+                data->fw_app_block = true;
+        }
+    }
 }
 
 /* ******************************************************* */
@@ -398,10 +437,15 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
 
                     conn->data->uid = data->uid;
 
-                    if(!conn->data->to_block && pd->firewall.enabled && pd->firewall.bl && (
-                            blacklist_match_uid(pd->firewall.bl, conn->data->uid) ||
-                            (pd->firewall.wl_enabled && pd->firewall.wl && !blacklist_match_uid(pd->firewall.wl, conn->data->uid))))
-                        conn->data->netd_block_missed = true;
+                    if(!conn->data->to_block && pd->firewall.enabled && pd->firewall.bl) {
+                        blacklist_t *allowlist = blacklist_get_app_allowlist(pd->firewall.bl, conn->data->uid);
+                        bool host_allowed = (allowlist != NULL) && blacklist_match_domain(allowlist, conn->data->info);
+
+                        if(!host_allowed && (
+                                blacklist_match_uid(pd->firewall.bl, conn->data->uid) ||
+                                (pd->firewall.wl_enabled && pd->firewall.wl && !blacklist_match_uid(pd->firewall.wl, conn->data->uid))))
+                            conn->data->netd_block_missed = true;
+                    }
 
                     zdtun_5tuple2str(&conn->tuple, buf, sizeof(buf));
                     log_d("Resolved netd uid: %s : %d", buf, data->uid);
@@ -452,20 +496,25 @@ pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int u
             log_d("Blocked ip: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
         }
 
-        if(!data->to_block) {
-            data->to_block = blacklist_match_uid(pd->firewall.bl, data->uid);
-            if(data->to_block) {
-                get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
-                log_d("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
-            }
-        }
-
+        // Global IP/domain/country block rules keep precedence over the per-app allowlist
         if(!data->to_block) {
             data->to_block = blacklist_match_country(pd->firewall.bl, data->country_code);
             if(data->to_block) {
                 get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
                 log_d("Blocked country \"%s\": %s [%s]", data->country_code,
                       zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            }
+        }
+
+        if(!data->to_block && blacklist_match_uid(pd->firewall.bl, data->uid)) {
+            if(!firewall_app_allowlisted(pd, tuple, data)) {
+                data->to_block = true;
+                data->fw_app_block = true;
+                get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
+                log_d("Blocked app: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
+            } else {
+                get_appname_by_uid(pd, data->uid, appbuf, sizeof(appbuf));
+                log_d("App allowlist exempted: %s [%s]", zdtun_5tuple2str(tuple, buf, sizeof(buf)), appbuf);
             }
         }
 
@@ -951,10 +1000,16 @@ static int recompute_conn_block_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple,
     bool old_block = data->to_block;
 
     data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain);
+    data->fw_app_block = false;
     if(!data->to_block && pd->firewall.enabled && fw_bl) {
-        data->to_block = blacklist_match_uid(fw_bl, data->uid) ||
-                         blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
+        // Global IP/domain block rules have precedence over the per-app allowlist
+        data->to_block = blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
                          (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
+
+        if(!data->to_block && blacklist_match_uid(fw_bl, data->uid) && !firewall_app_allowlisted(pd, tuple, data)) {
+            data->to_block = true;
+            data->fw_app_block = true;
+        }
     }
 
     check_whitelist_mode_block(pd, tuple, data);

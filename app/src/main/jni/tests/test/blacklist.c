@@ -686,6 +686,322 @@ static void test_firewall_whitelist_reload() {
 
 /* ******************************************************* */
 
+/* The per-app allowlist exempts a connection of a firewall-blocked app when it matches the app's
+ * allowlist (by IP or by domain resolved via the host LRU). Global IP/domain block rules keep
+ * precedence over the allowlist. */
+static void test_app_allowlist_match() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  // Global firewall block rules
+  assert0(blacklist_add_ipstr(bl, "1.2.3.4"));
+  assert0(blacklist_add_domain(bl, "blocked.com"));
+  assert0(blacklist_add_uid(bl, 1000)); // app 1000 is blocked
+
+  // Per-app allowlist for the blocked app 1000. It deliberately also allows a globally blocked
+  // IP and domain, to verify that the global block rules still take precedence.
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "allowed.com"));
+  assert0(blacklist_add_ipstr(allow, "5.6.7.8"));
+  assert0(blacklist_add_ipstr(allow, "1.2.3.4"));
+  assert0(blacklist_add_domain(allow, "blocked.com"));
+  assert0(blacklist_set_app_allowlist(bl, 1000, allow));
+
+  pd_conn_t *data;
+
+  // Blocked app, destination not in its allowlist -> blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, NULL);
+  assert1(data->to_block);
+
+  // Blocked app, allowlisted domain (resolved via the host LRU) -> exempted
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.allowed.com");
+  assert0(data->to_block);
+
+  // Blocked app, allowlisted IP -> exempted
+  data = match_new_conn(pd, IPPROTO_TCP, "5.6.7.8", 443, 1000, NULL);
+  assert0(data->to_block);
+
+  // Global IP block rule has precedence over the app allowlist
+  data = match_new_conn(pd, IPPROTO_TCP, "1.2.3.4", 443, 1000, "www.allowed.com");
+  assert1(data->to_block);
+
+  // Global domain block rule has precedence over the app allowlist
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.blocked.com");
+  assert1(data->to_block);
+
+  // An app without an allowlist is unaffected: not blocked -> allowed
+  data = match_new_conn(pd, IPPROTO_TCP, "5.6.7.8", 443, 100, "www.allowed.com");
+  assert0(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* In whitelist mode the per-app allowlist is consulted before the whitelist: a connection of a
+ * blocked app that matches its allowlist is allowed even if the app is not whitelisted. */
+static void test_app_allowlist_whitelist_mode() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  blacklist_t *wl = blacklist_init();
+  assert(wl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+  pd->firewall.wl_enabled = true;
+  pd->firewall.wl = wl;
+
+  // app 1000 is blocked by the firewall and has a per-app allowlist;
+  // app 100 is whitelisted (allowed) in whitelist mode
+  assert0(blacklist_add_uid(bl, 1000));
+  assert0(blacklist_add_uid(wl, 100));
+
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "allowed.com"));
+  assert0(blacklist_set_app_allowlist(bl, 1000, allow));
+
+  pd_conn_t *data;
+
+  // Whitelisted app -> allowed
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 100, NULL);
+  assert0(data->to_block);
+
+  // Blocked app, allowlisted domain -> allowed even though the app is not whitelisted
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.allowed.com");
+  assert0(data->to_block);
+
+  // Blocked app, destination not allowlisted and app not whitelisted -> blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.other.com");
+  assert1(data->to_block);
+
+  // App with no allowlist and not whitelisted -> blocked by whitelist mode
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 200, NULL);
+  assert1(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* A firewall blocklist reload re-evaluates active connections through the per-app allowlist:
+ * a previously blocked connection becomes allowed once the reloaded list adds a matching allowlist. */
+static void test_app_allowlist_reload() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *fbl = blacklist_init();
+  assert(fbl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = fbl;
+
+  assert0(blacklist_add_uid(fbl, 1000)); // app 1000 blocked, no allowlist yet
+
+  pd_conn_t *c_allow = match_add_active_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 50001, 1000, "www.allowed.com");
+  pd_conn_t *c_block = match_add_active_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 50002, 1000, "www.other.com");
+
+  assert1(c_allow->to_block); // initially blocked by uid (no allowlist)
+  assert1(c_block->to_block);
+
+  // New blocklist: app 1000 still blocked, but now with an allowlist for allowed.com
+  blacklist_t *new_bl = blacklist_init();
+  assert(new_bl != NULL);
+  assert0(blacklist_add_uid(new_bl, 1000));
+
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "allowed.com"));
+  assert0(blacklist_set_app_allowlist(new_bl, 1000, allow));
+  pd->firewall.new_bl = new_bl;
+
+  run_housekeeping_reload(pd);
+
+  assert0(c_allow->to_block); // now exempted by the app allowlist
+  assert1(c_block->to_block); // still blocked
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* netd_block_missed must account for the per-app allowlist: when the resolved host is in the
+ * blocked app's allowlist, the app connection would have been allowed, so the netd request is
+ * not a missed block. */
+static void test_app_allowlist_netd_block_missed() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+  assert0(blacklist_add_uid(bl, 1000));
+
+  // app 1000 is blocked, but its allowlist permits allowed.com
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "allowed.com"));
+  assert0(blacklist_set_app_allowlist(bl, 1000, allow));
+
+  // netd resolves an allowlisted host: the later app connection would be allowed, so the netd
+  // request is not flagged as a missed block
+  pd_conn_t *netd_ok = match_new_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, UID_NETD, "www.allowed.com");
+  match_new_conn(pd, IPPROTO_TCP, "1.1.1.1", 443, 1000, "www.allowed.com");
+  assert(netd_ok->uid == 1000);
+  assert0(netd_ok->netd_block_missed);
+
+  // netd resolves a non-allowlisted host: the app would be blocked -> missed block flagged
+  pd_conn_t *netd_blk = match_new_conn(pd, IPPROTO_UDP, "8.8.4.4", 53, UID_NETD, "www.other.com");
+  match_new_conn(pd, IPPROTO_TCP, "2.2.2.2", 443, 1000, "www.other.com");
+  assert(netd_blk->uid == 1000);
+  assert1(netd_blk->netd_block_missed);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+/* Setting an app allowlist for a uid that already has one replaces it (destroying the old one):
+ * a subsequent match is evaluated against the new allowlist only. */
+static void test_app_allowlist_replace() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  assert0(blacklist_add_uid(bl, 1000)); // app 1000 is blocked
+
+  blacklist_t *first = blacklist_init();
+  assert(first != NULL);
+  assert0(blacklist_add_domain(first, "first.com"));
+  assert0(blacklist_set_app_allowlist(bl, 1000, first));
+  assert(blacklist_get_app_allowlist(bl, 1000) == first);
+
+  pd_conn_t *data;
+
+  // first.com is exempted by the initial allowlist
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.first.com");
+  assert0(data->to_block);
+
+  // Replace the allowlist for the same uid: now only second.com is allowed
+  blacklist_t *second = blacklist_init();
+  assert(second != NULL);
+  assert0(blacklist_add_domain(second, "second.com"));
+  assert0(blacklist_set_app_allowlist(bl, 1000, second));
+  assert(blacklist_get_app_allowlist(bl, 1000) == second);
+
+  // first.com is no longer in the (replaced) allowlist -> blocked
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.first.com");
+  assert1(data->to_block);
+
+  // second.com is exempted by the new allowlist
+  data = match_new_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 1000, "www.second.com");
+  assert0(data->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
+static void allowlist_dpi_domain_cb(pcapdroid_t *pd) {
+  conn_and_tuple_t *conn;
+
+  // The queried host of a DNS request is only known after DPI parses the query, not at connection
+  // creation. Once resolved, the allowlisted domain exempts the firewall-blocked app.
+  conn = assert_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, "example.org");
+  assert0(conn->data->to_block);
+
+  // A blocked app connection to a non-allowlisted domain (resolved via DPI) stays blocked
+  conn = assert_conn(pd, IPPROTO_TCP, "8.8.8.8", 53, "f-droid.org");
+  assert1(conn->data->to_block);
+}
+
+/* The destination domain of a DNS request is only resolved by DPI, after pd_new_connection has
+ * already blocked the firewall-blocked app. The per-app allowlist must still exempt the connection
+ * once the domain becomes known. */
+static void test_app_allowlist_dpi_domain() {
+  pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  // The pcap connections carry no uid (UID_UNKNOWN): block it so the firewall app rule applies
+  assert0(blacklist_add_uid(bl, UID_UNKNOWN));
+
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "example.org"));
+  assert0(blacklist_set_app_allowlist(bl, UID_UNKNOWN, allow));
+
+  pd->cb.send_connections_dump = allowlist_dpi_domain_cb;
+  pd_run(pd);
+
+  pd_free_test(pd);
+}
+
+/* ******************************************************* */
+
+static void allowlist_malware_precedence_cb(pcapdroid_t *pd) {
+  conn_and_tuple_t *conn;
+
+  // example.org is both malware-blacklisted and in the app's firewall allowlist. The malware block
+  // must take precedence: the per-app allowlist exemption must NOT clear a malware domain block.
+  conn = assert_conn(pd, IPPROTO_UDP, "8.8.8.8", 53, "example.org");
+  assert1(conn->data->blacklisted_domain);
+  assert1(conn->data->to_block);
+}
+
+/* Regression test: a firewall-blocked app connection whose domain is resolved by DPI must stay
+ * blocked when that domain is malware-blacklisted, even if the same domain is in the app's
+ * firewall allowlist. The allowlist exemption in check_domain_block_rules must not override the
+ * malware block (mirroring the precedence enforced by recompute_conn_block_cb). */
+static void test_app_allowlist_malware() {
+  pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+  blacklist_t *mbl = blacklist_init();
+  assert(mbl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = bl;
+
+  pd->malware_detection.enabled = true;
+  pd->malware_detection.bl = mbl;
+
+  // The pcap connections carry no uid (UID_UNKNOWN): block it so the firewall app rule applies
+  assert0(blacklist_add_uid(bl, UID_UNKNOWN));
+
+  // example.org is allowed for the app by the firewall...
+  blacklist_t *allow = blacklist_init();
+  assert(allow != NULL);
+  assert0(blacklist_add_domain(allow, "example.org"));
+  assert0(blacklist_set_app_allowlist(bl, UID_UNKNOWN, allow));
+
+  // ...but the same domain is also flagged as malware
+  assert0(blacklist_add_domain(mbl, "example.org"));
+
+  pd->cb.send_connections_dump = allowlist_malware_precedence_cb;
+  pd_run(pd);
+
+  pd_free_test(pd);
+}
+
+/* ******************************************************* */
+
 int main(int argc, char **argv) {
   add_test("match", test_match);
   add_test("detection", test_detection);
@@ -698,6 +1014,13 @@ int main(int argc, char **argv) {
   add_test("firewall_reload", test_firewall_reload);
   add_test("firewall_whitelist_reload", test_firewall_whitelist_reload);
   add_test("malware_whitelist_reload", test_malware_whitelist_reload);
+  add_test("app_allowlist_match", test_app_allowlist_match);
+  add_test("app_allowlist_whitelist_mode", test_app_allowlist_whitelist_mode);
+  add_test("app_allowlist_reload", test_app_allowlist_reload);
+  add_test("app_allowlist_netd_block_missed", test_app_allowlist_netd_block_missed);
+  add_test("app_allowlist_replace", test_app_allowlist_replace);
+  add_test("app_allowlist_dpi_domain", test_app_allowlist_dpi_domain);
+  add_test("app_allowlist_malware", test_app_allowlist_malware);
 
   run_test(argc, argv);
   return 0;

@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -35,6 +36,7 @@ import java.util.Set;
 
 public class ListInfo {
     private final Type mType;
+    private final String mAppPackage;
 
     public enum Type {
         VISUALIZATION_MASK,
@@ -42,14 +44,24 @@ public class ListInfo {
         BLOCKLIST,
         FIREWALL_WHITELIST,
         DECRYPTION_LIST,
+        APP_ALLOWLIST,
     }
 
     public ListInfo(Type tp) {
+        this(tp, null);
+    }
+
+    public ListInfo(Type tp, @Nullable String appPackage) {
         mType = tp;
+        mAppPackage = appPackage;
     }
 
     public Type getType() {
         return mType;
+    }
+
+    public @Nullable String getAppPackage() {
+        return mAppPackage;
     }
 
     public @NonNull MatchList getList() {
@@ -64,6 +76,9 @@ public class ListInfo {
                 return PCAPdroid.getInstance().getFirewallWhitelist();
             case DECRYPTION_LIST:
                 return PCAPdroid.getInstance().getDecryptionList();
+            case APP_ALLOWLIST:
+                assert mAppPackage != null;
+                return PCAPdroid.getInstance().getBlocklist().getAppAllowlist(mAppPackage);
         }
 
         assert false;
@@ -82,6 +97,8 @@ public class ListInfo {
                 return R.string.whitelist;
             case DECRYPTION_LIST:
                 return R.string.decryption_rules;
+            case APP_ALLOWLIST:
+                return R.string.allowlist;
         }
 
         assert false;
@@ -100,6 +117,8 @@ public class ListInfo {
                 return R.string.firewall_whitelist_help;
             case DECRYPTION_LIST:
                 return R.string.decryption_rules_help;
+            case APP_ALLOWLIST:
+                return R.string.app_allowlist_help;
         }
 
         assert false;
@@ -116,10 +135,21 @@ public class ListInfo {
                 return new ArraySet<>(Arrays.asList(RuleType.APP, RuleType.IP, RuleType.HOST, RuleType.COUNTRY));
             case FIREWALL_WHITELIST:
                 return new ArraySet<>(Collections.singletonList(RuleType.APP));
+            case APP_ALLOWLIST:
+                return new ArraySet<>(Arrays.asList(RuleType.HOST, RuleType.IP));
         }
 
         assert false;
         return null;
+    }
+
+    public void save() {
+        // The per-app allowlist has no preference of its own; it is persisted as part of the
+        // owning blocklist.
+        if(mType == Type.APP_ALLOWLIST)
+            PCAPdroid.getInstance().getBlocklist().save();
+        else
+            getList().save();
     }
 
     public void reloadRules() {
@@ -127,7 +157,7 @@ public class ListInfo {
             case MALWARE_WHITELIST:
                 CaptureService.reloadMalwareWhitelist();
                 break;
-            case BLOCKLIST:
+            case BLOCKLIST, APP_ALLOWLIST:
                 if(CaptureService.isServiceActive())
                     CaptureService.requireInstance().reloadBlocklist();
                 break;
@@ -142,6 +172,6 @@ public class ListInfo {
     }
 
     public EditListFragment newFragment() {
-        return EditListFragment.newInstance(mType);
+        return EditListFragment.newInstance(mType, mAppPackage);
     }
 }

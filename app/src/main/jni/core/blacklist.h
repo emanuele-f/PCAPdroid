@@ -85,4 +85,7 @@ bool blacklist_match_uid(blacklist_t *bl, int uid);
 bool blacklist_match_country(blacklist_t *bl, const char country_code[3]);
 void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats);
 
+int blacklist_set_app_allowlist(blacklist_t *bl, int uid, blacklist_t *allowlist);
+blacklist_t* blacklist_get_app_allowlist(const blacklist_t *bl, int uid);
+
 #endif //PCAPDROID_BLACKLIST_H

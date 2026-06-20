@@ -48,7 +48,7 @@ public class MatchListTest {
     @Before
     public void setup() {
         Context ctx = ApplicationProvider.getApplicationContext();
-        list = new MatchList(ctx, PREF_NAME);
+        list = MatchList.load(ctx, PREF_NAME);
         list.clear();
     }
 
@@ -236,7 +236,7 @@ public class MatchListTest {
         list.addIp("10.0.0.1");
 
         Context ctx = ApplicationProvider.getApplicationContext();
-        MatchList other = new MatchList(ctx, PREF_NAME + "_other");
+        MatchList other = MatchList.load(ctx, PREF_NAME + "_other");
         other.clear();
         other.addIp("10.0.0.2");
         other.addIp("10.0.0.1"); // duplicate
