@@ -1002,9 +1002,10 @@ static int recompute_conn_block_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tuple,
     data->to_block = (data->blacklisted_internal || data->blacklisted_ip || data->blacklisted_domain);
     data->fw_app_block = false;
     if(!data->to_block && pd->firewall.enabled && fw_bl) {
-        // Global IP/domain block rules have precedence over the per-app allowlist
+        // Global IP/domain/country block rules have precedence over the per-app allowlist
         data->to_block = blacklist_match_ip(fw_bl, &dst_ip, tuple->ipver) ||
-                         (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info));
+                         (data->info && data->info[0] && blacklist_match_domain(fw_bl, data->info)) ||
+                         blacklist_match_country(fw_bl, data->country_code);
 
         if(!data->to_block && blacklist_match_uid(fw_bl, data->uid) && !firewall_app_allowlisted(pd, tuple, data)) {
             data->to_block = true;

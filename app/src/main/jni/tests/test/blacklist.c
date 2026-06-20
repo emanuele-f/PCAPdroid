@@ -584,6 +584,42 @@ static void test_firewall_reload() {
 
 /* ******************************************************* */
 
+/* A firewall blocklist reload (via pd_housekeeping) must re-apply the country
+ * block rules to the active connections, exactly like pd_new_connection does.
+ * The test getCountryCode stand-in maps the last byte of the destination IP to
+ * a 2-hex-char country code, e.g. x.x.x.10 -> "0A". */
+static void test_firewall_country_reload() {
+  pcapdroid_t *pd = match_test_init();
+
+  blacklist_t *fbl = blacklist_init();
+  assert(fbl != NULL);
+
+  pd->firewall.enabled = true;
+  pd->firewall.bl = fbl;
+
+  // IPv4 ending in .10 -> country "0A", initially not blocked by any rule
+  pd_conn_t *by_country = match_add_active_conn(pd, IPPROTO_TCP, "8.8.8.10", 443, 50001, 100, NULL);
+  pd_conn_t *allowed    = match_add_active_conn(pd, IPPROTO_TCP, "9.9.9.9", 443, 50002, 100, NULL);
+
+  assert0(by_country->to_block);
+  assert0(allowed->to_block);
+
+  // New firewall blocklist: block country "0A"
+  blacklist_t *new_bl = blacklist_init();
+  assert(new_bl != NULL);
+  assert0(blacklist_add_country(new_bl, "0A"));
+  pd->firewall.new_bl = new_bl;
+
+  run_housekeeping_reload(pd);
+
+  assert1(by_country->to_block); // now blocked by country
+  assert0(allowed->to_block);
+
+  match_test_free(pd);
+}
+
+/* ******************************************************* */
+
 /* A malware whitelist reload (via pd_housekeeping) un-flags and unblocks the
  * active connections that the new whitelist now covers. */
 static void test_malware_whitelist_reload() {
@@ -1012,6 +1048,7 @@ int main(int argc, char **argv) {
   add_test("country_match", test_country_match);
   add_test("whitelisted_app_firewall_block", test_whitelisted_app_firewall_block);
   add_test("firewall_reload", test_firewall_reload);
+  add_test("firewall_country_reload", test_firewall_country_reload);
   add_test("firewall_whitelist_reload", test_firewall_whitelist_reload);
   add_test("malware_whitelist_reload", test_malware_whitelist_reload);
   add_test("app_allowlist_match", test_app_allowlist_match);
