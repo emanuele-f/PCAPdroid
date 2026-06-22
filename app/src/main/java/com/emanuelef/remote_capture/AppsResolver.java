@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.util.ArrayMap;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -41,6 +42,7 @@ public class AppsResolver {
     private static final SparseArray<AppDescriptor> mMappedUids = new SparseArray<>();
     private static final ArrayMap<String, AppDescriptor> mMappedPackages = new ArrayMap<>();
     private final SparseArray<AppDescriptor> mApps;
+    private final SparseBooleanArray mUnresolvedUids = new SparseBooleanArray();
     private final PackageManager mPm;
     private final Context mContext;
     private Method getPackageInfoAsUser;
@@ -161,7 +163,11 @@ public class AppsResolver {
         }
 
         if((packages == null) || (packages.length < 1)) {
-            Log.w(TAG, "could not retrieve package: uid=" + uid);
+            if(!mUnresolvedUids.get(uid)) {
+                Log.w(TAG, "could not retrieve package: uid=" + uid);
+                mUnresolvedUids.put(uid, true);
+            }
+
             return null;
         }
 
@@ -239,6 +245,7 @@ public class AppsResolver {
 
     public void clear() {
         mApps.clear();
+        mUnresolvedUids.clear();
         initVirtualApps();
     }
 }
