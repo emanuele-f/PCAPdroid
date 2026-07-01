@@ -16,7 +16,7 @@ The tests are executed on every push via the
 Apart from automatic tests, the following manual tests should be performed
 before every release:
 
-- Test on devices matching the `minSdkVersion` (currently Android SDK 21)
+- Test on devices matching the `minSdkVersion` (currently Android SDK 23)
 - Test on devices matching the `targetSdkVersion` (currently Android SDK 31)
 - Rotate the device, put activity in background, clear from recent activities
 - Java memory consumption tests via the [Memory Profiler](https://developer.android.com/studio/profile/memory-profiler)

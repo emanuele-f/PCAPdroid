@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
-        minSdkVersion 21
+        minSdkVersion 23
         compileSdk 36
         targetSdk 36
         versionCode 91
@@ -144,13 +144,13 @@ dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation "androidx.navigation:navigation-fragment:2.9.7"
-    implementation "androidx.navigation:navigation-ui:2.9.7"
+    implementation "androidx.navigation:navigation-fragment:2.9.8"
+    implementation "androidx.navigation:navigation-ui:2.9.8"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
 // Google
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party

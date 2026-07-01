@@ -65,7 +65,7 @@
 /* #undef HAVE_GETSPNAM */
 
 /* Define to 1 if you have a GNU-style `strerror_r' function. */
-/* #undef HAVE_GNU_STRERROR_R */
+#define HAVE_GNU_STRERROR_R /**/
 
 /* on HP-UX 10.20 or later */
 /* #undef HAVE_HPUX10_20_OR_LATER */
@@ -140,7 +140,7 @@
 /* #undef HAVE_OS_PROTO_H */
 
 /* Define to 1 if you have a POSIX-style `strerror_r' function. */
-#define HAVE_POSIX_STRERROR_R /**/
+/* #undef HAVE_POSIX_STRERROR_R */
 
 /* define if you have the Septel API */
 /* #undef HAVE_SEPTEL_API */

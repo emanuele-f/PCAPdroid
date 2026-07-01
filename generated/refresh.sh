@@ -3,12 +3,13 @@ set -e
 
 # Set this to your NDK path
 # Should match the ndkVersion in app/build.gradle
-ANDROID_NDK="${ANDROID_NDK:-${HOME}/Android/Sdk/ndk}/26.3.11579264"
+ANDROID_NDK="${ANDROID_NDK:-${HOME}/Android/Sdk/ndk}/28.2.13676358"
 
 # https://developer.android.com/ndk/guides/other_build_systems
+# The API level must match minSdkVersion in app/build.gradle
 export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64
-export TARGET=x86_64-linux-android21
-export ANDROID_NATIVE_API_LEVEL=21
+export TARGET=x86_64-linux-android23
+export ANDROID_NATIVE_API_LEVEL=23
 export AR=$TOOLCHAIN/bin/llvm-ar
 export CC=$TOOLCHAIN/bin/$TARGET$API-clang
 export AS=$CC
