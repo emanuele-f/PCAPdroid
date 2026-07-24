@@ -713,7 +713,9 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         Notification notification = getStatusNotification();
-        NotificationManagerCompat.from(this).notify(NOTIFY_ID_VPNSERVICE, notification);
+        NotificationManagerCompat man = NotificationManagerCompat.from(this);
+        if(man.areNotificationsEnabled())
+            man.notify(NOTIFY_ID_VPNSERVICE, notification);
     }
 
     public void notifyBlacklistedConnection(ConnectionDescriptor conn) {

@@ -233,10 +233,11 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
             mCurChunks = mConn.getNumPayloadChunks();
         }
 
-        if(mConn.isPayloadTruncated() && (mTruncatedWarning != null))
+        if(mConn.isPayloadTruncated() && (mTruncatedWarning != null)) {
             mTruncatedWarning.setVisibility(View.VISIBLE);
 
             if (mInsets != null)
                 applyTruncatedWarningInsets(mInsets);
+        }
     }
 }
