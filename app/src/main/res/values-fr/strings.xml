@@ -25,7 +25,7 @@
     <string name="open_telegram_group">Groupe Telegram</string>
     <string name="source_code">Code source</string>
     <string name="yes">Oui</string>
-    <string name="vpn_setup_failed">Impossible de configurer le RPV</string>
+    <string name="vpn_setup_failed">Impossible de configurer le VPN</string>
     <string name="app_not_found">Impossible de trouver l\'application %1$s</string>
     <string name="stats">Statistiques</string>
     <string name="tot_connections">Total des connexions</string>
@@ -87,15 +87,15 @@
     <string name="unknown_app">Inconnue</string>
     <string name="search_apps">Chercher des applis</string>
     <string name="pcap_file">Fichier PCAP</string>
-    <string name="disconnect_vpn_confirm">Déconnecter l\'application RPV active et continuer \?</string>
+    <string name="disconnect_vpn_confirm">Déconnecter l\'application VPN active et continuer \?</string>
     <string name="version">Version</string>
     <string name="loading_apps">Chargement des applis…</string>
     <string name="close_nav_drawer">Fermer le menu</string>
     <string name="capture_all_apps">Capturer le trafic de toutes les applications</string>
     <string name="no_dump_info">Le trafic ne sera pas extrait</string>
     <string name="http_server_info">Démarrer un serveur HTTP pour le téléchargement du PCAP</string>
-    <string name="udp_exporter_info">Envoie le PCAP à un receveur UCP distant</string>
-    <string name="open_sockets">Ouvrir les sockets</string>
+    <string name="udp_exporter_info">Envoie le PCAP à un receveur UDP distant</string>
+    <string name="open_sockets">Sockets ouverts</string>
     <string name="http_server_port">Port du serveur HTTP</string>
     <string name="receiver_host">Hôte du collecteur</string>
     <string name="receiver_port">Port du collecteur</string>
@@ -116,7 +116,7 @@
     <string name="ctrl_consent">Une application voudrait capturer le trafic de l\'appareil.
 \nRefusez si vous n\'est pas sûr(e)</string>
     <string name="pending_transaction">Veuillez terminer votre transaction pour débloquer cette fonctionnalité</string>
-    <string name="ctrl_consent_title">Requête de contrôle cd PCAPdroid</string>
+    <string name="ctrl_consent_title">Requête de contrôle de PCAPdroid</string>
     <string name="security">Sécurité</string>
     <string name="internet">Internet</string>
     <string name="reset">Rétablir</string>
@@ -124,19 +124,19 @@
     <string name="all_interfaces">Tous les interfaces</string>
     <string name="edit_filter">Modifier le filtre</string>
     <string name="edit_list">Modifier la liste</string>
-    <string name="ctrl_consent_denied">PCAPdroid : la requête de contrôle à été refusée</string>
-    <string name="ctrl_consent_allowed">PCAPdroid : la requête de contrôle à été accepté</string>
+    <string name="ctrl_consent_denied">PCAPdroid : la requête de contrôle a été refusée</string>
+    <string name="ctrl_consent_allowed">PCAPdroid : la requête de contrôle a été acceptée</string>
     <string name="capturing_from">Capture des paquets depuis « %1$s »</string>
     <string name="hidden_connections_rules">Règles de connexions masquées</string>
     <string name="list_is_empty">La liste est vide</string>
     <string name="malware_detection">Détection de virus</string>
-    <string name="malware_detection_summary">Détecte les connexions connues des listes de bannissements pour héberger des virus</string>
+    <string name="malware_detection_summary">Détecte les connexions vers des hôtes malveillants connus via des listes noires tierces</string>
     <string name="show_only_malicious">Connexions malveillantes</string>
     <string name="copy_action">Copier…</string>
-    <string name="status_filter">Status : %1$s</string>
+    <string name="status_filter">Statut HTTP : %1$s</string>
     <string name="not_hidden_filter">Non masqué</string>
     <string name="url_val">URL : %1$s</string>
-    <string name="billing_connecting">Connexion au Google Player en cours, veuillez réessayer plus tard</string>
+    <string name="billing_connecting">Connexion au Google Play en cours, veuillez réessayer plus tard</string>
     <string name="feature_not_available">Cette fonctionnalité n\'est actuellement pas disponible sur votre appareil</string>
     <string name="malware_whitelist_rules">Règles d\'autorisation des virus</string>
     <string name="hidden_connections_help">La liste des règles pour masquer les connexions de la liste et ainsi se concentrer sur les plus pertinentes</string>
@@ -179,13 +179,13 @@
     <string name="private_dns_hinders_detection">Les DNS privés empêchent la détection</string>
     <string name="private_dns_message_notice">Un DNS privé empêche PCAPdroid d\'inspecter le trafic DNS. Vous pouvez le désactiver dans les préférences réseau du système Android</string>
     <string name="block">Bloquer…</string>
-    <string name="firewall">Par-feu</string>
+    <string name="firewall">Pare-feu</string>
     <string name="blocked_pkts">Bloqué</string>
     <string name="blocked_connection_filter">Bloqué</string>
     <string name="validate">Valider</string>
     <string name="valid">Valide</string>
     <string name="invalid">Invalide</string>
-    <string name="firewall_rules">Règles du par-feu</string>
+    <string name="firewall_rules">Règles du pare-feu</string>
     <string name="paid_features">Fonctionnalités payantes</string>
     <string name="no_intent_handler_found">Aucune application pour cette action</string>
     <string name="decryption_no_filter_warn">Sélectionnez une application cible lors du décryptage TLS pour éviter de perdre votre connexion internet</string>
@@ -200,7 +200,7 @@
     <string name="billing_failure">Échec de connexion au Google Play. Veuillez réessayer plus tard</string>
     <string name="capture_not_running_status">La capture n\'a pas été lancée</string>
     <string name="copied">Copié</string>
-    <string name="can_use_purchased_feature">Vous pouvez maintenant la fonctionnalité d\'achat</string>
+    <string name="can_use_purchased_feature">Vous pouvez maintenant utiliser la fonctionnalité achetée</string>
     <string name="start_capture_first">Lancez d\'abord la capture</string>
     <string name="malware_whitelist_help">Les listes utilisateur pour la détection des virus. Pressez longuement une connexion virale pour créer une nouvelle règle qui ne la détectera plus comme un virus</string>
     <string name="conn_status_active">Actif</string>
@@ -244,7 +244,7 @@
     <string name="geo_db_download">Tapez pour télécharger la dernière base de données. De nouvelles bases sont disponibles chaque mois</string>
     <string name="size_x">Taille : %1$s</string>
     <string name="built_on">Construit avec : %1$s</string>
-    <string name="connection_blocked">Cette connexion a été bloquée par PCAPdroit</string>
+    <string name="connection_blocked">Cette connexion a été bloquée par PCAPdroid</string>
     <string name="invalid_backup">Format de sauvegarde invalide</string>
     <string name="rules_import_success">%1$d règles importées</string>
     <string name="keep_action">Garder</string>
@@ -261,13 +261,13 @@
     <string name="firewall_is_enabled">Le pare-feu est actif</string>
     <string name="num_configured_rules">Règles configurées</string>
     <string name="action_unblock">Débloquer</string>
-    <string name="show_only_cleartext">Connections en clair</string>
+    <string name="show_only_cleartext">Connexions en clair</string>
     <string name="firewall_filter">Pare-feu : %1$s</string>
     <string name="ip_both">IPv4 et IPv6</string>
     <string name="unblock_for_n_hours">Débloquer pour %1$dh</string>
     <string name="cleartext_connection">En clair</string>
     <string name="no_matches_found">Aucune correspondance</string>
-    <string name="unblock_permanently">Débloqué en permanence</string>
+    <string name="unblock_permanently">Débloquer en permanence</string>
     <string name="app_blocked">Application bloquée</string>
     <string name="show_data_action">Afficher les données</string>
     <string name="allowed_connection_filter">Autorisé</string>
@@ -313,10 +313,10 @@
     <string name="install_the_mitm_addon">Installer <a href="%1$s">le greffon mitm</a> de PCAPdroid</string>
     <string name="app_blocked_info">L\'application %1$s a été bloquée par le pare-feu</string>
     <string name="paid_features_unlocked">Les fonctionnalités payantes ont été débloquées. Relancez la capture si déjà lancée</string>
-    <string name="access_paid_features_msg">Consultez <a href="%1$s">le guide utilisateur</a> pour savoir comment accéder au fonctionnalités payantes</string>
+    <string name="access_paid_features_msg">Consultez <a href="%1$s">le guide utilisateur</a> pour savoir comment accéder aux fonctionnalités payantes</string>
     <string name="unlock_token_error">Le \"unlock token\" [%1$d] n\'a pu être demandé : %2$s</string>
     <string name="show_action">Afficher</string>
-    <string name="license_service_unavailable">Le service de licences PCAPdroid n\'a actuellement pas disponible. Veuillez réessayer dans quelques instants</string>
+    <string name="license_service_unavailable">Le service de licences PCAPdroid n\'est actuellement pas disponible. Veuillez réessayer dans quelques instants</string>
     <string name="requesting_unlock_token">Demande d\'un \"unlock token\", veuillez patienter</string>
     <string name="vpn_exemptions">Exemptions VPN</string>
     <string name="remote_server_warning">Pour des raisons de sécurité, envoyer du trafic au serveur distant \"%1$s\" n\'est pas autorisé\"</string>
@@ -347,7 +347,7 @@
     <string name="update_available">Mise à jour disponible</string>
     <string name="update_action">Mettre à jour</string>
     <string name="cidr_val">CIDR: %1$s</string>
-    <string name="dump_extensions_summary">Enrichir le format de capture de paquet avec des métadonnées additionnelles, telles que l\'application qui a envoyé/reçu nun paquet donné</string>
+    <string name="dump_extensions_summary">Enrichir le format de capture de paquet avec des métadonnées additionnelles, telles que l\'application qui a envoyé/reçu un paquet donné</string>
     <string name="malicious_connection_description">Une connexion de l\'application \"%1$s\" a déclenché une règle de détection de malware (%2$s)</string>
     <string name="cert_exported_now_installed">Certificat exporté, installez-le maintenant à partir des paramètres Android</string>
     <string name="payload_truncated">La charge utile est tronquée. Pour le voir intégralement, arrêtez la capture et activez \"%1$s\" à partir des réglages de PCAPdroid</string>
@@ -391,4 +391,185 @@
     <string name="api_key_discard_confirm">Voulez-vous vraiment révoquer la clé d\'API actuelle et en générer une nouvelle ?</string>
     <string name="malicious_connections_notice">Les listes noires peuvent contenir des faux positifs. Assurez-vous de vérifier la réputation de l\'adresse IP/du domaine en ligne. Vous pouvez exclure des faux positifs par une liste blanche de logiciels malveillants</string>
     <string name="export_ca_certificate">Exporter le certificat du CA de PCAPdroid, puis ouvrez les paramètres Android \"Chiffrement et identifiants\" et choisissez \"Installer un certificat\" en tant que \"Certificat CA\"</string>
+    <string name="tcp_collector_info">Collecteur TCP : %1$s:%2$d</string>
+    <string name="select">Sélectionner</string>
+    <string name="allow_for_app">Autoriser pour %1$s…</string>
+    <string name="allowlist_allow">Autoriser %1$s</string>
+    <string name="allowlist_remove">Supprimer %1$s</string>
+    <string name="allowlist">Liste d\'autorisation</string>
+    <string name="app_allowlist_help">Vous pouvez ici définir un ensemble de règles pour autoriser certaines connexions de l\'application tout en gardant le reste bloqué</string>
+    <string name="app_with_exceptions">%1$s (%2$d exceptions)</string>
+    <string name="request_method">Méthode de requête</string>
+    <string name="content_type">Type de contenu</string>
+    <string name="http_status">Statut HTTP</string>
+    <string name="payload_size_threshold">Seuil de taille de charge utile</string>
+    <string name="method_filter">Méthode : %1$s</string>
+    <string name="content_type_filter">Content-Type : %1$s</string>
+    <string name="install_ca_certificate">Installez le certificat CA de PCAPdroid en choisissant « VPN et applications ». Android vous demandera votre code de verrouillage ou mot de passe</string>
+    <string name="ca_cert_export_failed">Une erreur s\'est produite lors de l\'exportation du certificat CA\n\nSi votre appareil utilise Autostart ou un logiciel similaire pour limiter l\'exécution des services en arrière-plan, assurez-vous d\'<a href='%1$s'>autoriser PCAPdroid</a></string>
+    <string name="mitm_addon_bad_version">Version du greffon mitm de PCAPdroid incorrecte. Veuillez installer la version %1$s et réessayer</string>
+    <string name="mitm_addon_update_available">Une nouvelle mise à jour du greffon mitm est disponible. Mettez à jour pour obtenir les dernières corrections de bogues</string>
+    <string name="mitm_addon">greffon mitm</string>
+    <string name="full_payload_summary">Afficher la charge utile complète des connexions (p. ex. la requête et la réponse HTTP complètes). Cela nécessite beaucoup de mémoire, à ne pas utiliser sur la durée</string>
+    <string name="connection_start_not_seen">PCAPdroid n\'a pas vu le début de cette connexion. Certaines informations peuvent manquer</string>
+    <string name="text">Texte</string>
+    <string name="display_as_text">Afficher en texte</string>
+    <string name="display_as_hexdump">Afficher en hexadécimal</string>
+    <string name="geolocation_summary">Afficher les informations de pays et d\'ASN en effectuant des recherches hors ligne</string>
+    <string name="exporting">Exportation…</string>
+    <string name="export_in_progress">Exportation en cours, veuillez patienter</string>
+    <string name="country_rules_warning">Pour utiliser les règles de pare-feu basées sur le pays, téléchargez la base de données de géolocalisation depuis les paramètres de PCAPdroid, sinon les règles basées sur le pays seront inefficaces</string>
+    <string name="firewall_summary">Bloquer l\'accès à Internet des applications, configurer des règles pour des domaines et adresses IP spécifiques. Fonctionne uniquement avec la capture non-root</string>
+    <string name="block_private_dns_summary">Détecter et éventuellement bloquer les DNS privés pour inspecter le trafic DNS. Désactiver cette option peut entraver l\'analyse du trafic</string>
+    <string name="mitm_setup_wizard_intro">Cet assistant vous guidera dans l\'installation du greffon mitm de PCAPdroid et de l\'autorité de certification, nécessaires pour effectuer le <a href='%1$s'>décryptage TLS</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid est maintenant prêt à décrypter le trafic TLS\n\nConsultez le <a href='%1$s'>guide d\'utilisation</a> pour en savoir plus sur les mesures de sécurité qui peuvent empêcher le décryptage et comment les contourner</string>
+    <string name="app_intro_welcome_msg">PCAPdroid est une application respectueuse de la vie privée qui vous permet de suivre et d\'analyser les connexions établies par les applications de votre appareil\n\nDe plus, elle vous permet d\'exporter une extraction PCAP du trafic, d\'extraire des métadonnées et bien plus encore !</string>
+    <string name="app_intro_privacy_msg">L\'application n\'utilise aucune fonctionnalité intrusive de pistage, d\'analyse ou de communication cachée\n\nComment en être sûr ? Consultez sa <a href='%1$s'>politique de confidentialité</a> et son <a href='%2$s'>code source</a></string>
+    <string name="app_intro_traffic_inspection">Inspecter les requêtes HTTP, les réponses et les données brutes est facile grâce aux décodeurs intégrés\n\nUne connexion cryptée ? Vous pouvez activer le <a href='%1$s'>décryptage TLS</a> pour obtenir les données décryptées</string>
+    <string name="app_intro_firewall_msg">Avec le <a href='%1$s'>pare-feu</a> intégré, vous pouvez facilement bloquer l\'accès à Internet d\'applications, de domaines et de pays\n\nCombinez cela avec la visibilité du trafic intégrée pour obtenir l\'outil ultime de protection de votre vie privée</string>
+    <string name="app_intro_malware_detection">Renforcez la sécurité de votre appareil avec la fonctionnalité de <a href='%1$s'>détection de virus</a>\n\nEn utilisant des listes de bannissements à jour, elle peut détecter, bloquer et signaler les connexions malveillantes en temps réel</string>
+    <string name="app_intro_traffic_dump">PCAPdroid propose <a href='%1$s'>plusieurs façons</a> d\'extraire le trafic au format PCAP standard pour une analyse approfondie\n\nVia l\'<a href='%2$s'>option des extensions PCAPdroid</a>, vous pouvez ajouter les noms des applications aux paquets et les afficher dans Wireshark</string>
+    <string name="vpn_lockdown_notice">Pour empêcher les applications d\'accéder à Internet lorsque PCAPdroid n\'est pas en cours d\'exécution (p. ex. après un redémarrage), vous pouvez définir PCAPdroid comme VPN permanent en mode blocage.\n\nVoulez-vous ouvrir les paramètres VPN maintenant ?</string>
+    <string name="notifications_notice">L\'application utilise les notifications pour envoyer des alertes en cas d\'événements anormaux. Accordez-lui l\'autorisation d\'envoyer des notifications à l\'écran suivant</string>
+    <string name="port_map_exemptions">Exemptions</string>
+    <string name="port_map_exemptions_help">Sélectionnez les applications à exclure de la redirection de port. Pour éviter les boucles de trafic, vous devriez exclure les applications qui doivent joindre leurs serveurs d\'origine pour s\'initialiser (p. ex. les résolveurs DNS-over-HTTPS)</string>
+    <string name="block_new_apps">Bloquer les applications récemment installées</string>
+    <string name="remote_collector_notice">Vous avez configuré PCAPdroid pour envoyer le trafic à un serveur distant. Le serveur pourra accéder à vos informations sensibles.\n\nSi quelqu\'un vous a demandé de faire cela, il s\'agit probablement d\'une tentative d\'arnaque</string>
+    <string name="tls_decryption_with_root_msg">La possibilité d\'exécuter le décryptage TLS avec un accès root est une fonctionnalité expérimentale. Voici la liste des bogues connus :\n\n
+- dans PCAPdroid, vous verrez le trafic tel qu\'il a été généré par l\'application greffon mitm à la place de l\'application d\'origine\n
+- l\'extraction du keylog SSL n\'est pas prise en charge\n
+- lorsqu\'un filtre d\'application est défini, le décryptage ne se produira que pour l\'application ciblée, mais PCAPdroid affichera tout de même le trafic des autres applications\n
+- si la capture ne démarre pas, assurez-vous que vous pouvez réellement exécuter la commande iptables en root (p. ex. via termux)\n
+- cela peut ne pas fonctionner sur Android 12 et versions ultérieures\n
+- si une application VPN est en cours d\'exécution, vous devez soit cibler une application spécifique pour le décryptage, soit exclure le greffon mitm de PCAPdroid du VPN, sinon le trafic tournera en boucle
+</string>
+    <string name="unlock_token_summary">Un jeton qui peut être utilisé pour débloquer les fonctionnalités payantes dans les versions de l\'application hors Google Play (p. ex. F-Droid/Github)</string>
+    <string name="show_connection">Afficher la connexion</string>
+    <string name="show_system_apps">Afficher les applications système</string>
+    <string name="unlock_token_msg1">Voici votre jeton de déverrouillage. Notez-le car vous en aurez besoin <a href='%1$s'>pour générer vos codes de licence</a></string>
+    <string name="feature_unavailable">La fonctionnalité « %1$s » n\'est pas disponible</string>
+    <string name="mitm_skip_notice">Le certificat mitm ne semble pas installé. Si vous continuez, le décryptage peut échouer</string>
+    <string name="mitm_wizard_description">Configurer l\'appareil pour le décryptage TLS</string>
+    <string name="mitmproxy_opts">Options mitmproxy supplémentaires</string>
+    <string name="mitmproxy_opts_description">Fournir des options supplémentaires pour mitmproxy</string>
+    <string name="mitm_addon_error">Erreur lors du démarrage du greffon mitm. Consultez le journal pour plus de détails</string>
+    <string name="whitelist_mode">Mode liste blanche</string>
+    <string name="firewall_whitelist_notice">Dans ce mode, toutes les connexions seront bloquées, sauf si elles sont autorisées manuellement. Vous pourriez manquer des notifications push sans une liste blanche appropriée</string>
+    <string name="firewall_whitelist_help">Ces règles indiquent quelles connexions autoriser. Les règles de blocage ont la priorité sur les règles de la liste blanche</string>
+    <string name="add_to_fw_whitelist">Ajouter à la liste autorisée du pare-feu</string>
+    <string name="port_mapping">Redirection de port</string>
+    <string name="port_mapping_summary">Configurer des règles de redirection de port pour rediriger les connexions vers un hôte ou un port différent</string>
+    <string name="redirect_to">Rediriger vers :</string>
+    <string name="original_port">Port d\'origine</string>
+    <string name="destination_host">Hôte de destination</string>
+    <string name="port_mapping_exists">Redirection de port déjà définie</string>
+    <string name="port_mapping_disabled_reminder">Activez la redirection de port pour utiliser cette règle</string>
+    <string name="dns_servers_summary">Configurer les serveurs DNS à utiliser pendant la capture</string>
+    <string name="use_system_dns">Utiliser le DNS du système</string>
+    <string name="external_storage_perm_required">L\'autorisation de stockage externe est requise</string>
+    <string name="mitm_addon_autostart_workaround">La connexion au greffon mitm a échoué. Pour contourner le problème, vous pouvez essayer d\'ouvrir l\'application greffon mitm puis revenir à PCAPdroid sans la fermer. Voulez-vous l\'ouvrir maintenant ?</string>
+    <string name="license_limit_reached">Vous avez atteint la limite de licences pour ce jeton de déverrouillage. Achetez un nouveau jeton pour générer plus de licences</string>
+    <string name="license_error">Erreur de génération de licence [%1$d] : %2$s</string>
+    <string name="requesting_license">Demande d\'un code de licence, veuillez patienter</string>
+    <string name="license_activation_ok">Activation de la licence terminée</string>
+    <string name="mitm_addon_starting">Le greffon mitm démarre…</string>
+    <string name="mitm_addon_running">Le greffon mitm est en cours d\'exécution</string>
+    <string name="decryption_rules">Règles de décryptage</string>
+    <string name="decryption_rules_help">Ces règles indiquent quelles connexions décrypter. Les règles basées sur l\'hôte ne fonctionnent que si une réponse DNS préalable est vue</string>
+    <string name="decrypt_action">Décrypter…</string>
+    <string name="dont_decrypt_action">Ne pas décrypter…</string>
+    <string name="status_encrypted">Crypté</string>
+    <string name="injected">Injecté</string>
+    <string name="open_pcap_file">Ouvrir un fichier PCAP/Pcapng…</string>
+    <string name="pcap_load_success">Capture chargée</string>
+    <string name="unsupported_pcap_file">Format de capture non pris en charge</string>
+    <string name="invalid_pcap_file">Format de capture invalide</string>
+    <string name="capture_interface_open_error">Impossible d\'ouvrir l\'interface de capture</string>
+    <string name="unsupported_pcap_datalink">Le fichier a un datalink non pris en charge</string>
+    <string name="pcap_file_not_exists">Le fichier spécifié n\'existe pas</string>
+    <string name="root_capture_start_failed">Échec du démarrage de la capture. Assurez-vous que l\'appareil est rooté avec Magisk</string>
+    <string name="root_capture_pcapd_start_failure">Échec du démarrage de la capture. Assurez-vous d\'accorder l\'accès root à PCAPdroid</string>
+    <string name="pcap_read_error">Erreur lors de la lecture du fichier de capture. Consultez le journal pour plus de détails</string>
+    <string name="pcap_file_load_aborted">Chargement de la capture annulé</string>
+    <string name="host_resolution_failed">"Impossible de résoudre l\'hôte %1$s</string>
+    <string name="pcapdroid_trailer_notice">Pour afficher les applications réelles au lieu de « %1$s », assurez-vous d\'activer l\'option « %2$s » avant de générer l\'extraction</string>
+    <string name="decryption_info_no_rule">Pour décrypter cette connexion, créez une règle de décryptage depuis le menu latéral gauche ou depuis le menu contextuel de la liste des connexions</string>
+    <string name="tls_decryption_no_rules_notice">Le décryptage TLS n\'est appliqué qu\'aux connexions qui correspondent aux règles configurées. Voulez-vous créer des règles de décryptage maintenant ?</string>
+    <string name="active_vpn_detected">VPN actif détecté</string>
+    <string name="mitm_doze_notice">L\'optimisation de la batterie peut interférer avec le greffon mitm</string>
+    <string name="redirected">redirigé</string>
+    <string name="connection_redirected_port_map">Cette connexion a été redirigée en raison d\'une règle de redirection de port</string>
+    <string name="dnscrypt_how_to">Comment utiliser DoH / DNSCrypt avec PCAPdroid</string>
+    <string name="never">Jamais</string>
+    <string name="always">Toujours</string>
+    <string name="for_connections_to_decrypt">Uniquement pour les connexions à décrypter</string>
+    <string name="decrypt_quic_notice">Le décryptage de QUIC n\'est actuellement pas pris en charge. Pour contourner le problème, arrêtez la capture et sélectionnez l\'option de blocage de QUIC dans les paramètres de PCAPdroid</string>
+    <string name="target_apps">Applications ciblées</string>
+    <string name="target_apps_help">Sélectionnez les applications à capturer</string>
+    <string name="headers">En-têtes</string>
+    <string name="body">Corps</string>
+    <string name="both">Les deux</string>
+    <string name="whats_new">Nouveautés</string>
+    <string name="raw_bytes">Octets bruts</string>
+    <string name="restart_on_disconnection">Redémarrer à la déconnexion</string>
+    <string name="restart_on_disconnection_summary">Redémarrer automatiquement la capture après son arrêt par d\'autres applications VPN</string>
+    <string name="vpn_reconnection">Reconnexion VPN</string>
+    <string name="vpn_reconnection_aborted">Reconnexion VPN annulée</string>
+    <string name="waiting_for_vpn_disconnect">En attente de la déconnexion du VPN actif…</string>
+    <string name="bytes_threshold">Seuil d\'octets</string>
+    <string name="error_code_with_text">%1$s (erreur %2$d)</string>
+    <string name="errno_epipe">Tube cassé</string>
+    <string name="errno_epipe_msg">Le serveur a fermé la connexion de manière inattendue pendant le transfert de données</string>
+    <string name="errno_enetdown">Le réseau est hors service</string>
+    <string name="errno_enetdown_msg">L\'interface réseau est hors service ou incapable de se connecter au réseau</string>
+    <string name="errno_enetunreach">Le réseau est injoignable</string>
+    <string name="errno_enetunreach_msg">Le système ne trouve pas de route valide vers le réseau de destination</string>
+    <string name="errno_enetreset">Réinitialisation du réseau</string>
+    <string name="errno_enetreset_msg">La connexion réseau a été réinitialisée par un appareil intermédiaire (p. ex. routeur ou opérateur mobile)</string>
+    <string name="errno_econnaborted">Connexion interrompue</string>
+    <string name="errno_econnaborted_msg">La connexion a été interrompue, généralement en raison d\'une transition réseau</string>
+    <string name="errno_econnreset">Connexion réinitialisée par le pair</string>
+    <string name="errno_econnreset_msg">Le serveur a fermé brusquement la connexion, généralement en raison d\'un plantage ou d\'un arrêt brutal</string>
+    <string name="errno_etimedout">Délai de connexion dépassé</string>
+    <string name="errno_etimedout_msg">Le serveur a mis trop de temps à répondre, probablement en raison de délais réseau ou d\'un serveur surchargé</string>
+    <string name="errno_econnrefused">Connexion refusée</string>
+    <string name="errno_econnrefused_msg">Le serveur a rejeté la connexion, ce qui peut indiquer un serveur surchargé ou défaillant</string>
+    <string name="errno_ehostunreach">Aucune route vers l\'hôte</string>
+    <string name="errno_ehostunreach_msg">Le système ne trouve pas de route vers l\'hôte de destination</string>
+    <string name="dns_conn_info">Le DNS traduit un nom de domaine en adresse IP. Les données réelles sont généralement échangées lors de connexions HTTPS/TLS ultérieures</string>
+    <string name="tls_conn_info">Le trafic TLS/HTTPS est crypté. Pour inspecter ce trafic, vous devez le décrypter. Consultez le <a href='%1$s'>guide d\'utilisation</a> de PCAPdroid pour plus de détails</string>
+    <string name="tls_decryption_unsupported_target">Le décryptage TLS nécessite Android 7 ou une version plus récente et un appareil x86_64/aarch64</string>
+    <string name="filename_prefix">Préfixe du nom de fichier</string>
+    <string name="filename_prefix_description">Définir le préfixe des fichiers exportés par PCAPdroid, p. ex. les fichiers PCAP</string>
+    <string name="no_requests">Aucune requête</string>
+    <string name="item_not_found">Impossible de trouver l\'élément spécifié</string>
+    <string name="connection_number">Connexion n°%1$d</string>
+    <string name="http_request_number">Requête HTTP n°%1$d</string>
+    <string name="http_requests">Requêtes HTTP</string>
+    <string name="switch_to_http">Afficher les requêtes HTTP</string>
+    <string name="switch_to_connections">Afficher les connexions</string>
+    <string name="decryption_error">Erreur de décryptage</string>
+    <string name="previous">Précédent</string>
+    <string name="next">Suivant</string>
+    <string name="save_as_text">Enregistrer en texte</string>
+    <string name="save_as_har">Enregistrer en HAR</string>
+    <string name="save_as_csv">Enregistrer en CSV</string>
+    <string name="last_capture">Dernière capture</string>
+    <string name="view_all">Tout afficher</string>
+    <string name="app_and_n_more">%1$s et %2$d de plus</string>
+    <string name="capture_list_info">%1$s · %2$s · %3$s</string>
+    <string name="capture_list">Liste des captures</string>
+    <string name="captures_count">Captures (%1$d)</string>
+    <string name="storage_used">Stockage utilisé</string>
+    <string name="storage_used_value">%1$s / %2$s</string>
+    <string name="no_captures">Aucune capture</string>
+    <string name="rename">Renommer</string>
+    <string name="captures_delete_confirm">Supprimer les captures sélectionnées ?</string>
+    <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="n_seconds">%1$d s</string>
+    <string name="n_minutes">%1$d m</string>
+    <string name="n_hours_minutes">%1$d h, %2$d m</string>
+    <string name="connections_log_size">Connexions journalisées max</string>
+    <string name="connections_log_size_entry">%1$s (~%2$d Mo de RAM utilisés)</string>
+    <string name="capture_list_files_changed">Captures modifiées sur le disque, liste mise à jour</string>
 </resources>

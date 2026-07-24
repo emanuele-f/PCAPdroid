@@ -13,8 +13,8 @@ android {
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
-        resourceConfigurations += ["en", "ar", "az", "de", "es", "in", "it", "pl", "pt-rBR", "ru", "ta", "tr",
-                                   "uk", "zh-rCN"]
+        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "hi", "in", "it", "ja", "ko",
+                                   "ms", "pl", "pt-rBR", "ru", "ta", "tr", "uk", "ur", "vi", "zh-rCN"]
     }
 
     flavorDimensions = ["type"]
