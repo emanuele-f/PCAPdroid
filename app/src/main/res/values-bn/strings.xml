@@ -259,11 +259,11 @@
     <string name="install_action">ইনস্টল করুন</string>
     <string name="export_action">রপ্তানি করুন</string>
     <string name="export_ellipsis">রপ্তানি করুন…</string>
-    <string name="install_the_mitm_addon">PCAPdroid <a href='%1$s'>mitm অ্যাডঅন</a> ইনস্টল করুন</string>
+    <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">mitm অ্যাডঅন</a> ইনস্টল করুন</string>
     <string name="export_ca_certificate">PCAPdroid CA সার্টিফিকেট রপ্তানি করুন, তারপর অ্যান্ড্রয়েডের \"Encryption &amp; Credentials\" সেটিংস খুলে এটি একটি \"CA certificate\" হিসেবে ইনস্টল করুন</string>
     <string name="install_ca_certificate">PCAPdroid CA সার্টিফিকেট ইনস্টল করুন, \"VPN and apps\" নির্বাচন করে। অ্যান্ড্রয়েড আপনার লকস্ক্রিন বা পাসওয়ার্ড চাইবে</string>
     <string name="checking_the_certificate">সার্টিফিকেট পরীক্ষা করা হচ্ছে…</string>
-    <string name="ca_cert_export_failed">CA সার্টিফিকেট রপ্তানি করার সময় একটি ত্রুটি ঘটেছে\n\nআপনার ডিভাইস যদি ব্যাকগ্রাউন্ড পরিষেবার সম্পাদন সীমিত করতে Autostart বা অনুরূপ সফটওয়্যার ব্যবহার করে, তাহলে অবশ্যই <a href='%1$s'>PCAPdroid হোয়াইটলিস্ট করুন</a></string>
+    <string name="ca_cert_export_failed">CA সার্টিফিকেট রপ্তানি করার সময় একটি ত্রুটি ঘটেছে\n\nআপনার ডিভাইস যদি ব্যাকগ্রাউন্ড পরিষেবার সম্পাদন সীমিত করতে Autostart বা অনুরূপ সফটওয়্যার ব্যবহার করে, তাহলে অবশ্যই <a href="%1$s">PCAPdroid হোয়াইটলিস্ট করুন</a></string>
     <string name="cert_exported_now_installed">সার্টিফিকেট রপ্তানি করা হয়েছে, এখন এটি অ্যান্ড্রয়েড সেটিংস থেকে ইনস্টল করুন</string>
     <string name="cert_installed_correctly">CA সার্টিফিকেট ইনস্টল করা হয়েছে</string>
     <string name="cert_reinstall_required">CA সার্টিফিকেট ইনস্টল করা নেই, mitm সেটআপ উইজার্ড চালান</string>
@@ -342,8 +342,8 @@
     <string name="block_quick">QUIC ব্লক করুন</string>
     <string name="block_private_dns">প্রাইভেট DNS ব্লক করুন</string>
     <string name="block_private_dns_summary">DNS ট্রাফিক পরিদর্শনের জন্য প্রাইভেট DNS সনাক্ত ও সম্ভব হলে ব্লক করুন। এটি নিষ্ক্রিয় করলে ট্রাফিক বিশ্লেষণে বাধা হতে পারে</string>
-    <string name="mitm_setup_wizard_intro">এই উইজার্ড আপনাকে PCAPdroid mitm অ্যাডঅন ও সার্টিফিকেশন অথরিটি ইনস্টল করতে গাইড করবে, যা <a href='%1$s'>TLS ডিক্রিপশন</a> সম্পাদনের জন্য প্রয়োজন</string>
-    <string name="mitm_setup_wizard_done">PCAPdroid এখন TLS ট্রাফিক ডিক্রিপ্ট করার জন্য প্রস্তুত\n\nডিক্রিপশন প্রতিরোধ করতে পারে এমন নিরাপত্তা ব্যবস্থা এবং কীভাবে সেগুলি বাইপাস করবেন সে সম্পর্কে আরও জানতে <a href='%1$s'>ব্যবহার নির্দেশিকা</a> দেখুন</string>
+    <string name="mitm_setup_wizard_intro">এই উইজার্ড আপনাকে PCAPdroid mitm অ্যাডঅন ও সার্টিফিকেশন অথরিটি ইনস্টল করতে গাইড করবে, যা <a href="%1$s">TLS ডিক্রিপশন</a> সম্পাদনের জন্য প্রয়োজন</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid এখন TLS ট্রাফিক ডিক্রিপ্ট করার জন্য প্রস্তুত\n\nডিক্রিপশন প্রতিরোধ করতে পারে এমন নিরাপত্তা ব্যবস্থা এবং কীভাবে সেগুলি বাইপাস করবেন সে সম্পর্কে আরও জানতে <a href="%1$s">ব্যবহার নির্দেশিকা</a> দেখুন</string>
     <string name="welcome_to_pcapdroid">PCAPdroid-এ স্বাগতম</string>
     <string name="app_intro_next_button">পরবর্তী</string>
     <string name="app_intro_skip_button">এড়িয়ে যান</string>
@@ -351,14 +351,14 @@
     <string name="app_intro_done_button">সম্পন্ন</string>
     <string name="app_intro_welcome_msg">PCAPdroid একটি গোপনীয়তা-বান্ধব অ্যাপ যা আপনাকে আপনার ডিভাইসের অ্যাপগুলির তৈরি করা সংযোগ ট্র্যাক ও বিশ্লেষণ করতে দেয়\n\nএছাড়াও, এটি আপনাকে ট্রাফিকের একটি PCAP ডাম্প রপ্তানি, মেটাডেটা নিষ্কাশন এবং আরও অনেক কিছু করতে দেয়!</string>
     <string name="privacy_first">গোপনীয়তা সর্বাগ্রে</string>
-    <string name="app_intro_privacy_msg">অ্যাপটি কোনো ট্র্যাকিং, অ্যানালিটিক্স বা ফোনিং-হোম অ্যান্টি-ফিচার ব্যবহার করে না\n\nআপনি কীভাবে নিশ্চিত হতে পারেন? এর <a href='%1$s'>গোপনীয়তা নীতি</a> এবং এর <a href='%2$s'>সোর্স কোড</a> দেখুন</string>
+    <string name="app_intro_privacy_msg">অ্যাপটি কোনো ট্র্যাকিং, অ্যানালিটিক্স বা ফোনিং-হোম অ্যান্টি-ফিচার ব্যবহার করে না\n\nআপনি কীভাবে নিশ্চিত হতে পারেন? এর <a href="%1$s">গোপনীয়তা নীতি</a> এবং এর <a href="%2$s">সোর্স কোড</a> দেখুন</string>
     <string name="country_and_asn">দেশ ও ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid একটি দূরবর্তী সার্ভারের দেশ নির্ধারণ করতে একটি স্থানীয় ডাটাবেসে কুয়েরি করতে পারে\n\nআপনাকে প্রথমে অ্যাপ সেটিংস থেকে জিওলোকেশন ডাটাবেস ডাউনলোড করতে হবে</string>
     <string name="vpn_setup_msg">PCAPdroid রুট ছাড়াই নেটওয়ার্ক ট্রাফিক ক্যাপচার করতে একটি VPN সিমুলেট করে।\n\nক্যাপচার শুরু করতে, আপনাকে পরবর্তী স্ক্রিনে VPN অনুরোধ গ্রহণ করতে হবে।\n\n<b>দ্রষ্টব্য:</b> এগিয়ে যেতে, অ্যান্ড্রয়েড সেটিংস থেকে যেকোনো কনফিগার করা সর্বদা-সক্রিয় VPN নিষ্ক্রিয় করুন</string>
-    <string name="app_intro_traffic_inspection">বিল্ট-ইন ডিকোডারের সাহায্যে HTTP রিকোয়েস্ট, রেসপন্স এবং কাঁচা ডেটা পরিদর্শন করা সহজ\n\nএকটি এনক্রিপ্ট করা সংযোগ আছে? ডিক্রিপ্ট করা ডেটা পেতে আপনি <a href='%1$s'>TLS ডিক্রিপশন</a> সক্রিয় করতে পারেন</string>
-    <string name="app_intro_firewall_msg">সমন্বিত <a href='%1$s'>ফায়ারওয়াল</a>-এর সাহায্যে আপনি সহজেই পৃথক অ্যাপ, ডোমেইন ও দেশে ইন্টারনেট অ্যাক্সেস ব্লক করতে পারেন\n\nআপনার গোপনীয়তা রক্ষার চূড়ান্ত সরঞ্জাম পেতে এটিকে বিল্ট-ইন ট্রাফিক দৃশ্যমানতার সাথে একত্রিত করুন</string>
-    <string name="app_intro_malware_detection"><a href='%1$s'>ম্যালওয়্যার সনাক্তকরণ</a> বৈশিষ্ট্যের সাহায্যে আপনার ডিভাইসের নিরাপত্তা বাড়ান\n\nহালনাগাদ ব্ল্যাকলিস্ট ব্যবহার করে, এটি রিয়েল-টাইমে ক্ষতিকর সংযোগ সনাক্ত, ব্লক ও সতর্ক করতে পারে</string>
-    <string name="app_intro_traffic_dump">PCAPdroid আরও বিশ্লেষণের জন্য স্ট্যান্ডার্ড PCAP ফরম্যাটে ট্রাফিক ডাম্প করার <a href='%1$s'>একাধিক উপায়</a> প্রদান করে\n\n<a href='%2$s'>PCAPdroid এক্সটেনশন অপশন</a>-এর মাধ্যমে, আপনি প্যাকেটে অ্যাপের নাম যোগ করে Wireshark-এ প্রদর্শন করতে পারেন</string>
+    <string name="app_intro_traffic_inspection">বিল্ট-ইন ডিকোডারের সাহায্যে HTTP রিকোয়েস্ট, রেসপন্স এবং কাঁচা ডেটা পরিদর্শন করা সহজ\n\nএকটি এনক্রিপ্ট করা সংযোগ আছে? ডিক্রিপ্ট করা ডেটা পেতে আপনি <a href="%1$s">TLS ডিক্রিপশন</a> সক্রিয় করতে পারেন</string>
+    <string name="app_intro_firewall_msg">সমন্বিত <a href="%1$s">ফায়ারওয়াল</a>-এর সাহায্যে আপনি সহজেই পৃথক অ্যাপ, ডোমেইন ও দেশে ইন্টারনেট অ্যাক্সেস ব্লক করতে পারেন\n\nআপনার গোপনীয়তা রক্ষার চূড়ান্ত সরঞ্জাম পেতে এটিকে বিল্ট-ইন ট্রাফিক দৃশ্যমানতার সাথে একত্রিত করুন</string>
+    <string name="app_intro_malware_detection"><a href="%1$s">ম্যালওয়্যার সনাক্তকরণ</a> বৈশিষ্ট্যের সাহায্যে আপনার ডিভাইসের নিরাপত্তা বাড়ান\n\nহালনাগাদ ব্ল্যাকলিস্ট ব্যবহার করে, এটি রিয়েল-টাইমে ক্ষতিকর সংযোগ সনাক্ত, ব্লক ও সতর্ক করতে পারে</string>
+    <string name="app_intro_traffic_dump">PCAPdroid আরও বিশ্লেষণের জন্য স্ট্যান্ডার্ড PCAP ফরম্যাটে ট্রাফিক ডাম্প করার <a href="%1$s">একাধিক উপায়</a> প্রদান করে\n\n<a href="%2$s">PCAPdroid এক্সটেনশন অপশন</a>-এর মাধ্যমে, আপনি প্যাকেটে অ্যাপের নাম যোগ করে Wireshark-এ প্রদর্শন করতে পারেন</string>
     <string name="permission_granted">%1$s অনুমতি দেওয়া হয়েছে</string>
     <string name="permission_grant_fail">%1$s অনুমতি দেওয়া যায়নি</string>
     <string name="connection_not_found">প্রদত্ত সংযোগটি খুঁজে পাওয়া যায়নি</string>
@@ -405,13 +405,13 @@
 </string>
     <string name="unlock_token_summary">একটি টোকেন যা অ্যাপের নন-Google-Play বিল্ডে (যেমন F-Droid/Github) পেইড বৈশিষ্ট্য আনলক করতে ব্যবহার করা যেতে পারে</string>
     <string name="unlock_token_error">আনলক টোকেন অনুরোধ করা যায়নি [%1$d]: %2$s</string>
-    <string name="access_paid_features_msg">পেইড বৈশিষ্ট্য কীভাবে অ্যাক্সেস করবেন তা জানতে <a href='%1$s'>ব্যবহার নির্দেশিকা</a> দেখুন</string>
+    <string name="access_paid_features_msg">পেইড বৈশিষ্ট্য কীভাবে অ্যাক্সেস করবেন তা জানতে <a href="%1$s">ব্যবহার নির্দেশিকা</a> দেখুন</string>
     <string name="license_service_unavailable">PCAPdroid লাইসেন্স পরিষেবা বর্তমানে অনুপলব্ধ। অনুগ্রহ করে কয়েক মিনিট পরে আবার চেষ্টা করুন</string>
     <string name="requesting_unlock_token">একটি আনলক টোকেন অনুরোধ করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন</string>
     <string name="show_action">দেখান</string>
     <string name="show_connection">সংযোগ দেখান</string>
     <string name="show_system_apps">সিস্টেম অ্যাপ দেখান</string>
-    <string name="unlock_token_msg1">এটি আপনার আনলক টোকেন। এটি নোট করে রাখুন কারণ <a href='%1$s'>আপনার লাইসেন্স কোড তৈরি করতে</a> এটি প্রয়োজন হবে</string>
+    <string name="unlock_token_msg1">এটি আপনার আনলক টোকেন। এটি নোট করে রাখুন কারণ <a href="%1$s">আপনার লাইসেন্স কোড তৈরি করতে</a> এটি প্রয়োজন হবে</string>
     <string name="paid_feature">পেইড বৈশিষ্ট্য</string>
     <string name="firewall_purchase_msg">সংযোগ ব্লক করা শুরু করতে <i>%1$s</i> বৈশিষ্ট্যটি কিনুন</string>
     <string name="feature_unavailable">\"%1$s\" বৈশিষ্ট্যটি অনুপলব্ধ</string>
@@ -532,7 +532,7 @@
     <string name="errno_ehostunreach">হোস্টে কোনো রুট নেই</string>
     <string name="errno_ehostunreach_msg">সিস্টেম গন্তব্য হোস্টে একটি রুট খুঁজে পাচ্ছে না</string>
     <string name="dns_conn_info">DNS একটি ডোমেইন নামকে একটি IP ঠিকানায় অনুবাদ করে। প্রকৃত ডেটা সাধারণত পরবর্তী HTTPS/TLS সংযোগের মাধ্যমে আদান-প্রদান হয়</string>
-    <string name="tls_conn_info">TLS/HTTPS ট্রাফিক এনক্রিপ্ট করা থাকে। এই ট্রাফিক পরিদর্শন করতে, আপনাকে এটি ডিক্রিপ্ট করতে হবে। বিস্তারিত জানতে PCAPdroid <a href='%1$s'>ব্যবহার নির্দেশিকা</a> দেখুন</string>
+    <string name="tls_conn_info">TLS/HTTPS ট্রাফিক এনক্রিপ্ট করা থাকে। এই ট্রাফিক পরিদর্শন করতে, আপনাকে এটি ডিক্রিপ্ট করতে হবে। বিস্তারিত জানতে PCAPdroid <a href="%1$s">ব্যবহার নির্দেশিকা</a> দেখুন</string>
     <string name="tls_decryption_unsupported_target">TLS ডিক্রিপশনের জন্য অ্যান্ড্রয়েড 7 বা তার নতুন এবং একটি x86_64/aarch64 ডিভাইস প্রয়োজন</string>
     <string name="filename_prefix">ফাইলনামের উপসর্গ</string>
     <string name="filename_prefix_description">PCAPdroid দ্বারা রপ্তানি করা ফাইলের জন্য উপসর্গ সেট করুন, যেমন PCAP ফাইল</string>

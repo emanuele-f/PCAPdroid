@@ -36,7 +36,7 @@
     <string name="app_not_found">앱 %1$s을 찾을 수 없습니다</string>
     <string name="yes">네</string>
     <string name="no">아니요</string>
-    <string name="vpn_setup_failed">VPN을 설정할 수 없습니다</string>
+    <string name="vpn_setup_failed">VPN을 설정할 수 없습니다. 상시 VPN이 비활성화되어 있는지 확인하세요</string>
     <string name="active_connections">활성화된 커넥션</string>
     <string name="receiver_port">콜렉터 포트</string>
     <string name="dropped_connections">버려진 커넥션</string>
@@ -56,7 +56,7 @@
     <string name="packets_rcvd">받은 패킷</string>
     <string name="dns_server">DNS 서버</string>
     <string name="apps">앱</string>
-    <string name="pcap_file_info">기기의 저장공간에 PCAP 파일을 생성합니다</string>
+    <string name="pcap_file_info">기기의 저장공간에 PCAP/Pcapng 파일을 생성합니다</string>
     <string name="pcap_file">PCAP 파일</string>
     <string name="ok">확인</string>
     <string name="capture_running">캡처 하는중</string>
@@ -76,7 +76,7 @@
     <string name="app_language">앱 언어</string>
     <string name="no_activity_file_selection">선택한 파일을 처리할 수 있는 앱을 찾을 수 없습니다</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="system_default">시스템</string>
+    <string name="system_default">시스템 기본값</string>
     <string name="file_saved_with_name">파일이 \"%1$s\"로 저장되었습니다</string>
     <string name="enable_socks5_proxy_summary">모든 TCP 커넥션을 지정된 SOCKS5 프록시로 리다이렉트합니다</string>
     <string name="root_capture">루트로 캡처하기</string>
@@ -127,7 +127,7 @@
     <string name="malware_whitelist_rules">멀웨어 화이트리스트 규칙</string>
     <string name="malware_whitelist_help">멀웨어 탐지를 제외하는 사용자 지정 화이트리스트입니다. 악성 연결을 길게 눌러 악성 연결로 표시하는 것을 해제하는 규칙을 만듭니다</string>
     <string name="start_at_boot_summary">부팅후 자동으로 캡처를 시작합니다</string>
-    <string name="status_filter">상태: %1$s</string>
+    <string name="status_filter">HTTP 상태: %1$s</string>
     <string name="not_hidden_filter">숨기지 않음</string>
     <string name="show_me">표시하기</string>
     <string name="copy_action">복사…</string>
@@ -260,11 +260,11 @@
     <string name="install_action">설치</string>
     <string name="export_action">추출</string>
     <string name="export_ellipsis">추출…</string>
-    <string name="install_the_mitm_addon">PCAPdroid <a href='%1$s'>mitm 애드온</a>을 설치하세요</string>
+    <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">mitm 애드온</a>을 설치하세요</string>
     <string name="export_ca_certificate">PCAPdroid CA 인증서를 추출한 다음, 안드로이드 \"암호화 및 사용자 인증 정보\" 설정을 열어 \"CA 인증서\"로 설치하세요</string>
     <string name="install_ca_certificate">PCAPdroid CA 인증서를 \"VPN 및 앱\"을 선택하여 설치하세요. 안드로이드가 잠금 화면 또는 비밀번호를 요구합니다</string>
     <string name="checking_the_certificate">인증서 확인 중…</string>
-    <string name="ca_cert_export_failed">CA 인증서를 추출하는 중 오류가 발생했습니다\n\n기기에 백그라운드 서비스 실행을 제한하는 자동 시작 또는 유사한 소프트웨어가 있는 경우, <a href='%1$s'>PCAPdroid를 화이트리스트에 추가</a>하세요</string>
+    <string name="ca_cert_export_failed">CA 인증서를 추출하는 중 오류가 발생했습니다\n\n기기에 백그라운드 서비스 실행을 제한하는 자동 시작 또는 유사한 소프트웨어가 있는 경우, <a href="%1$s">PCAPdroid를 화이트리스트에 추가</a>하세요</string>
     <string name="cert_exported_now_installed">인증서가 추출되었습니다. 이제 안드로이드 설정에서 설치하세요</string>
     <string name="cert_installed_correctly">CA 인증서가 설치되었습니다</string>
     <string name="cert_reinstall_required">CA 인증서가 설치되지 않았습니다. mitm 설정 마법사를 실행하세요</string>
@@ -343,8 +343,8 @@
     <string name="block_quick">QUIC 차단</string>
     <string name="block_private_dns">Private DNS 차단</string>
     <string name="block_private_dns_summary">DNS 트래픽을 검사하기 위해 Private DNS를 탐지하고 가능하면 차단합니다. 이를 비활성화하면 트래픽 분석이 방해받을 수 있습니다</string>
-    <string name="mitm_setup_wizard_intro">이 마법사는 <a href='%1$s'>TLS 복호화</a>를 수행하는 데 필요한 PCAPdroid mitm 애드온 및 인증 기관의 설치를 안내합니다</string>
-    <string name="mitm_setup_wizard_done">PCAPdroid가 이제 TLS 트래픽을 복호화할 준비가 되었습니다\n\n복호화를 막을 수 있는 보안 조치와 이를 우회하는 방법에 대해 자세히 알아보려면 <a href='%1$s'>사용자 가이드</a>를 확인하세요</string>
+    <string name="mitm_setup_wizard_intro">이 마법사는 <a href="%1$s">TLS 복호화</a>를 수행하는 데 필요한 PCAPdroid mitm 애드온 및 인증 기관의 설치를 안내합니다</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid가 이제 TLS 트래픽을 복호화할 준비가 되었습니다\n\n복호화를 막을 수 있는 보안 조치와 이를 우회하는 방법에 대해 자세히 알아보려면 <a href="%1$s">사용자 가이드</a>를 확인하세요</string>
     <string name="welcome_to_pcapdroid">PCAPdroid에 오신 것을 환영합니다</string>
     <string name="app_intro_next_button">다음</string>
     <string name="app_intro_skip_button">건너뛰기</string>
@@ -352,14 +352,14 @@
     <string name="app_intro_done_button">완료</string>
     <string name="app_intro_welcome_msg">PCAPdroid는 기기의 앱이 만드는 커넥션을 추적하고 분석할 수 있게 해주는 프라이버시 친화적인 앱입니다\n\n또한 트래픽의 PCAP 덤프를 추출하고, 메타데이터를 추출하는 등 다양한 작업을 할 수 있습니다!</string>
     <string name="privacy_first">프라이버시 우선</string>
-    <string name="app_intro_privacy_msg">이 앱은 어떠한 추적, 분석 또는 폰 홈 안티 기능도 사용하지 않습니다\n\n어떻게 확신할 수 있을까요? <a href='%1$s'>개인정보 처리방침</a>과 <a href='%2$s'>소스코드</a>를 확인하세요</string>
+    <string name="app_intro_privacy_msg">이 앱은 어떠한 추적, 분석 또는 폰 홈 안티 기능도 사용하지 않습니다\n\n어떻게 확신할 수 있을까요? <a href="%1$s">개인정보 처리방침</a>과 <a href="%2$s">소스코드</a>를 확인하세요</string>
     <string name="country_and_asn">국가 및 ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid는 로컬 데이터베이스를 조회하여 원격 서버의 국가를 확인할 수 있습니다\n\n먼저 앱 설정에서 위치정보 데이터베이스를 다운로드해야 합니다</string>
     <string name="vpn_setup_msg">PCAPdroid는 루트 없이 네트워크 트래픽을 캡처하기 위해 VPN을 시뮬레이션합니다.\n\n캡처를 시작하려면 다음 화면에서 VPN 요청을 수락해야 합니다.\n\n<b>참고:</b> 진행하려면 안드로이드 설정에서 설정된 Always-on VPN을 비활성화하세요</string>
-    <string name="app_intro_traffic_inspection">내장 디코더 덕분에 HTTP 요청, 응답 및 원시 데이터를 쉽게 검사할 수 있습니다\n\n암호화된 커넥션이 있나요? <a href='%1$s'>TLS 복호화</a>를 활성화하여 복호화된 데이터를 얻을 수 있습니다</string>
-    <string name="app_intro_firewall_msg">통합 <a href='%1$s'>방화벽</a>으로 개별 앱, 도메인 및 국가의 인터넷 접근을 쉽게 차단할 수 있습니다\n\n이를 내장 트래픽 가시성과 결합하여 프라이버시를 보호하는 최고의 도구를 얻으세요</string>
-    <string name="app_intro_malware_detection"><a href='%1$s'>멀웨어 탐지</a> 기능으로 기기의 보안을 강화하세요\n\n최신 블랙리스트를 사용하여 악성 커넥션을 실시간으로 탐지, 차단 및 경고할 수 있습니다</string>
-    <string name="app_intro_traffic_dump">PCAPdroid는 추가 분석을 위해 표준 PCAP 형식으로 트래픽을 덤프하는 <a href='%1$s'>여러 방법</a>을 제공합니다\n\n<a href='%2$s'>PCAPdroid 확장 옵션</a>을 통해 패킷에 앱 이름을 추가하고 Wireshark에서 표시할 수 있습니다</string>
+    <string name="app_intro_traffic_inspection">내장 디코더 덕분에 HTTP 요청, 응답 및 원시 데이터를 쉽게 검사할 수 있습니다\n\n암호화된 커넥션이 있나요? <a href="%1$s">TLS 복호화</a>를 활성화하여 복호화된 데이터를 얻을 수 있습니다</string>
+    <string name="app_intro_firewall_msg">통합 <a href="%1$s">방화벽</a>으로 개별 앱, 도메인 및 국가의 인터넷 접근을 쉽게 차단할 수 있습니다\n\n이를 내장 트래픽 가시성과 결합하여 프라이버시를 보호하는 최고의 도구를 얻으세요</string>
+    <string name="app_intro_malware_detection"><a href="%1$s">멀웨어 탐지</a> 기능으로 기기의 보안을 강화하세요\n\n최신 블랙리스트를 사용하여 악성 커넥션을 실시간으로 탐지, 차단 및 경고할 수 있습니다</string>
+    <string name="app_intro_traffic_dump">PCAPdroid는 추가 분석을 위해 표준 PCAP 형식으로 트래픽을 덤프하는 <a href="%1$s">여러 방법</a>을 제공합니다\n\n<a href="%2$s">PCAPdroid 확장 옵션</a>을 통해 패킷에 앱 이름을 추가하고 Wireshark에서 표시할 수 있습니다</string>
     <string name="permission_granted">%1$s 권한이 부여되었습니다</string>
     <string name="permission_grant_fail">%1$s 권한을 부여할 수 없습니다</string>
     <string name="connection_not_found">지정된 커넥션을 찾을 수 없습니다</string>
@@ -406,13 +406,13 @@
 </string>
     <string name="unlock_token_summary">비 Google Play 빌드의 앱(예: F-Droid/Github)에서 유료 기능을 잠금 해제하는 데 사용할 수 있는 토큰입니다</string>
     <string name="unlock_token_error">잠금 해제 토큰을 요청할 수 없습니다 [%1$d]: %2$s</string>
-    <string name="access_paid_features_msg">유료 기능에 접근하는 방법을 알아보려면 <a href='%1$s'>사용자 가이드</a>를 확인하세요</string>
+    <string name="access_paid_features_msg">유료 기능에 접근하는 방법을 알아보려면 <a href="%1$s">사용자 가이드</a>를 확인하세요</string>
     <string name="license_service_unavailable">PCAPdroid 라이선스 서비스를 현재 사용할 수 없습니다. 몇 분 후 다시 시도해주세요</string>
     <string name="requesting_unlock_token">잠금 해제 토큰을 요청 중입니다. 잠시 기다려주세요</string>
     <string name="show_action">표시</string>
     <string name="show_connection">커넥션 표시</string>
     <string name="show_system_apps">시스템 앱 표시</string>
-    <string name="unlock_token_msg1">이것은 귀하의 잠금 해제 토큰입니다. <a href='%1$s'>라이선스 코드를 생성</a>하는 데 필요하므로 기록해 두세요</string>
+    <string name="unlock_token_msg1">이것은 귀하의 잠금 해제 토큰입니다. <a href="%1$s">라이선스 코드를 생성</a>하는 데 필요하므로 기록해 두세요</string>
     <string name="paid_feature">유료 기능</string>
     <string name="firewall_purchase_msg">커넥션 차단을 시작하려면 <i>%1$s</i> 기능을 구매하세요</string>
     <string name="feature_unavailable">\"%1$s\" 기능을 사용할 수 없습니다</string>
@@ -533,7 +533,7 @@
     <string name="errno_ehostunreach">호스트로의 경로 없음</string>
     <string name="errno_ehostunreach_msg">시스템이 대상 호스트로의 경로를 찾을 수 없습니다</string>
     <string name="dns_conn_info">DNS는 도메인 이름을 IP 주소로 변환합니다. 실제 데이터는 일반적으로 이후의 HTTPS/TLS 커넥션을 통해 교환됩니다</string>
-    <string name="tls_conn_info">TLS/HTTPS 트래픽은 암호화되어 있습니다. 이 트래픽을 검사하려면 복호화해야 합니다. 자세한 내용은 PCAPdroid <a href='%1$s'>사용자 가이드</a>를 확인하세요</string>
+    <string name="tls_conn_info">TLS/HTTPS 트래픽은 암호화되어 있습니다. 이 트래픽을 검사하려면 복호화해야 합니다. 자세한 내용은 PCAPdroid <a href="%1$s">사용자 가이드</a>를 확인하세요</string>
     <string name="tls_decryption_unsupported_target">TLS 복호화에는 안드로이드 7 이상과 x86_64/aarch64 기기가 필요합니다</string>
     <string name="filename_prefix">파일 이름 접두사</string>
     <string name="filename_prefix_description">PCAPdroid가 추출하는 파일(예: PCAP 파일)의 접두사를 설정합니다</string>

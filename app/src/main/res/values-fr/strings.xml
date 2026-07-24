@@ -227,7 +227,7 @@
     <string name="decrypted">Décrypté</string>
     <string name="decryption">Décryption</string>
     <string name="not_decryptable">Ne peut pas être décrypté</string>
-    <string name="decryption_filter">Décryptage : %1$s</string>
+    <string name="decryption_filter">Statut : %1$s</string>
     <string name="network_traffic">Trafic</string>
     <string name="warn_no_app_data">Aucune donnée de l\'app n\'a été echangée</string>
     <string name="hexdump">En hexadécimal</string>
@@ -337,7 +337,7 @@
     <string name="socks5_auth_summary">S\'authentifier sur le proxy par nom d\'utilisateur et mot de passe</string>
     <string name="copy_error">Impossible d\'écrire dans le fichier</string>
     <string name="proxy_host">Nom d\'hôte du proxy</string>
-    <string name="pcap_load_in_progress">Chargement du fichier de capture en cours, merci de patienter</string>
+    <string name="pcap_load_in_progress">Chargement de la capture en cours, merci de patienter</string>
     <string name="geo_db_missing">Base de données de géolocalisation manquante</string>
     <string name="netd_block_missed">Cette connexion a été initiée par netd et n\'a donc pas pu être bloquée</string>
     <string name="ipv6_bytes_sent">Octets IPv6 envoyés</string>
@@ -406,7 +406,7 @@
     <string name="method_filter">Méthode : %1$s</string>
     <string name="content_type_filter">Content-Type : %1$s</string>
     <string name="install_ca_certificate">Installez le certificat CA de PCAPdroid en choisissant « VPN et applications ». Android vous demandera votre code de verrouillage ou mot de passe</string>
-    <string name="ca_cert_export_failed">Une erreur s\'est produite lors de l\'exportation du certificat CA\n\nSi votre appareil utilise Autostart ou un logiciel similaire pour limiter l\'exécution des services en arrière-plan, assurez-vous d\'<a href='%1$s'>autoriser PCAPdroid</a></string>
+    <string name="ca_cert_export_failed">Une erreur s\'est produite lors de l\'exportation du certificat CA\n\nSi votre appareil utilise Autostart ou un logiciel similaire pour limiter l\'exécution des services en arrière-plan, assurez-vous d\'<a href="%1$s">autoriser PCAPdroid</a></string>
     <string name="mitm_addon_bad_version">Version du greffon mitm de PCAPdroid incorrecte. Veuillez installer la version %1$s et réessayer</string>
     <string name="mitm_addon_update_available">Une nouvelle mise à jour du greffon mitm est disponible. Mettez à jour pour obtenir les dernières corrections de bogues</string>
     <string name="mitm_addon">greffon mitm</string>
@@ -421,14 +421,14 @@
     <string name="country_rules_warning">Pour utiliser les règles de pare-feu basées sur le pays, téléchargez la base de données de géolocalisation depuis les paramètres de PCAPdroid, sinon les règles basées sur le pays seront inefficaces</string>
     <string name="firewall_summary">Bloquer l\'accès à Internet des applications, configurer des règles pour des domaines et adresses IP spécifiques. Fonctionne uniquement avec la capture non-root</string>
     <string name="block_private_dns_summary">Détecter et éventuellement bloquer les DNS privés pour inspecter le trafic DNS. Désactiver cette option peut entraver l\'analyse du trafic</string>
-    <string name="mitm_setup_wizard_intro">Cet assistant vous guidera dans l\'installation du greffon mitm de PCAPdroid et de l\'autorité de certification, nécessaires pour effectuer le <a href='%1$s'>décryptage TLS</a></string>
-    <string name="mitm_setup_wizard_done">PCAPdroid est maintenant prêt à décrypter le trafic TLS\n\nConsultez le <a href='%1$s'>guide d\'utilisation</a> pour en savoir plus sur les mesures de sécurité qui peuvent empêcher le décryptage et comment les contourner</string>
+    <string name="mitm_setup_wizard_intro">Cet assistant vous guidera dans l\'installation du greffon mitm de PCAPdroid et de l\'autorité de certification, nécessaires pour effectuer le <a href="%1$s">décryptage TLS</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid est maintenant prêt à décrypter le trafic TLS\n\nConsultez le <a href="%1$s">guide d\'utilisation</a> pour en savoir plus sur les mesures de sécurité qui peuvent empêcher le décryptage et comment les contourner</string>
     <string name="app_intro_welcome_msg">PCAPdroid est une application respectueuse de la vie privée qui vous permet de suivre et d\'analyser les connexions établies par les applications de votre appareil\n\nDe plus, elle vous permet d\'exporter une extraction PCAP du trafic, d\'extraire des métadonnées et bien plus encore !</string>
-    <string name="app_intro_privacy_msg">L\'application n\'utilise aucune fonctionnalité intrusive de pistage, d\'analyse ou de communication cachée\n\nComment en être sûr ? Consultez sa <a href='%1$s'>politique de confidentialité</a> et son <a href='%2$s'>code source</a></string>
-    <string name="app_intro_traffic_inspection">Inspecter les requêtes HTTP, les réponses et les données brutes est facile grâce aux décodeurs intégrés\n\nUne connexion cryptée ? Vous pouvez activer le <a href='%1$s'>décryptage TLS</a> pour obtenir les données décryptées</string>
-    <string name="app_intro_firewall_msg">Avec le <a href='%1$s'>pare-feu</a> intégré, vous pouvez facilement bloquer l\'accès à Internet d\'applications, de domaines et de pays\n\nCombinez cela avec la visibilité du trafic intégrée pour obtenir l\'outil ultime de protection de votre vie privée</string>
-    <string name="app_intro_malware_detection">Renforcez la sécurité de votre appareil avec la fonctionnalité de <a href='%1$s'>détection de virus</a>\n\nEn utilisant des listes de bannissements à jour, elle peut détecter, bloquer et signaler les connexions malveillantes en temps réel</string>
-    <string name="app_intro_traffic_dump">PCAPdroid propose <a href='%1$s'>plusieurs façons</a> d\'extraire le trafic au format PCAP standard pour une analyse approfondie\n\nVia l\'<a href='%2$s'>option des extensions PCAPdroid</a>, vous pouvez ajouter les noms des applications aux paquets et les afficher dans Wireshark</string>
+    <string name="app_intro_privacy_msg">L\'application n\'utilise aucune fonctionnalité intrusive de pistage, d\'analyse ou de communication cachée\n\nComment en être sûr ? Consultez sa <a href="%1$s">politique de confidentialité</a> et son <a href="%2$s">code source</a></string>
+    <string name="app_intro_traffic_inspection">Inspecter les requêtes HTTP, les réponses et les données brutes est facile grâce aux décodeurs intégrés\n\nUne connexion cryptée ? Vous pouvez activer le <a href="%1$s">décryptage TLS</a> pour obtenir les données décryptées</string>
+    <string name="app_intro_firewall_msg">Avec le <a href="%1$s">pare-feu</a> intégré, vous pouvez facilement bloquer l\'accès à Internet d\'applications, de domaines et de pays\n\nCombinez cela avec la visibilité du trafic intégrée pour obtenir l\'outil ultime de protection de votre vie privée</string>
+    <string name="app_intro_malware_detection">Renforcez la sécurité de votre appareil avec la fonctionnalité de <a href="%1$s">détection de virus</a>\n\nEn utilisant des listes de bannissements à jour, elle peut détecter, bloquer et signaler les connexions malveillantes en temps réel</string>
+    <string name="app_intro_traffic_dump">PCAPdroid propose <a href="%1$s">plusieurs façons</a> d\'extraire le trafic au format PCAP standard pour une analyse approfondie\n\nVia l\'<a href="%2$s">option des extensions PCAPdroid</a>, vous pouvez ajouter les noms des applications aux paquets et les afficher dans Wireshark</string>
     <string name="vpn_lockdown_notice">Pour empêcher les applications d\'accéder à Internet lorsque PCAPdroid n\'est pas en cours d\'exécution (p. ex. après un redémarrage), vous pouvez définir PCAPdroid comme VPN permanent en mode blocage.\n\nVoulez-vous ouvrir les paramètres VPN maintenant ?</string>
     <string name="notifications_notice">L\'application utilise les notifications pour envoyer des alertes en cas d\'événements anormaux. Accordez-lui l\'autorisation d\'envoyer des notifications à l\'écran suivant</string>
     <string name="port_map_exemptions">Exemptions</string>
@@ -446,7 +446,7 @@
     <string name="unlock_token_summary">Un jeton qui peut être utilisé pour débloquer les fonctionnalités payantes dans les versions de l\'application hors Google Play (p. ex. F-Droid/Github)</string>
     <string name="show_connection">Afficher la connexion</string>
     <string name="show_system_apps">Afficher les applications système</string>
-    <string name="unlock_token_msg1">Voici votre jeton de déverrouillage. Notez-le car vous en aurez besoin <a href='%1$s'>pour générer vos codes de licence</a></string>
+    <string name="unlock_token_msg1">Voici votre jeton de déverrouillage. Notez-le car vous en aurez besoin <a href="%1$s">pour générer vos codes de licence</a></string>
     <string name="feature_unavailable">La fonctionnalité « %1$s » n\'est pas disponible</string>
     <string name="mitm_skip_notice">Le certificat mitm ne semble pas installé. Si vous continuez, le décryptage peut échouer</string>
     <string name="mitm_wizard_description">Configurer l\'appareil pour le décryptage TLS</string>
@@ -537,7 +537,7 @@
     <string name="errno_ehostunreach">Aucune route vers l\'hôte</string>
     <string name="errno_ehostunreach_msg">Le système ne trouve pas de route vers l\'hôte de destination</string>
     <string name="dns_conn_info">Le DNS traduit un nom de domaine en adresse IP. Les données réelles sont généralement échangées lors de connexions HTTPS/TLS ultérieures</string>
-    <string name="tls_conn_info">Le trafic TLS/HTTPS est crypté. Pour inspecter ce trafic, vous devez le décrypter. Consultez le <a href='%1$s'>guide d\'utilisation</a> de PCAPdroid pour plus de détails</string>
+    <string name="tls_conn_info">Le trafic TLS/HTTPS est crypté. Pour inspecter ce trafic, vous devez le décrypter. Consultez le <a href="%1$s">guide d\'utilisation</a> de PCAPdroid pour plus de détails</string>
     <string name="tls_decryption_unsupported_target">Le décryptage TLS nécessite Android 7 ou une version plus récente et un appareil x86_64/aarch64</string>
     <string name="filename_prefix">Préfixe du nom de fichier</string>
     <string name="filename_prefix_description">Définir le préfixe des fichiers exportés par PCAPdroid, p. ex. les fichiers PCAP</string>

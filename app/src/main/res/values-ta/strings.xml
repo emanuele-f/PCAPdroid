@@ -288,7 +288,7 @@
     <string name="geolocation_summary">இணைப்பில்லாத தேடல்களைச் செய்வதன் மூலம் நாடு மற்றும் ஏ.எச்.என் தகவலைக் காட்டு</string>
     <string name="downloading">பதிவிறக்கம்…</string>
     <string name="download_in_progress">பதிவிறக்கம் முன்னேற்றம், தயவுசெய்து காத்திருங்கள்</string>
-    <string name="pcap_load_in_progress">கோப்பு ஏற்றுதல் முன்னேற்றத்தில் உள்ளது, தயவுசெய்து காத்திருங்கள்</string>
+    <string name="pcap_load_in_progress">கைப்பற்றல்ஏற்றுதல்முன்னேற்றத்தஉள்ளது,தயவுசெய்காத்திருங்கள்</string>
     <string name="download_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
     <string name="exporting">ஏற்றுமதி செய்கிறது…</string>
     <string name="export_in_progress">ஏற்றுமதி நடைபெறுகிறது, காத்திருக்கவும்</string>
@@ -443,15 +443,15 @@
     <string name="status_encrypted">குறியாக்கப்பட்டது</string>
     <string name="injected">செலுத்தப்பட்டது</string>
     <string name="open_pcap_file">PCAP/PCAPNG கோப்பைத் திறக்கவும்…</string>
-    <string name="pcap_load_success">கைப்பற்றப்பட்ட கோப்பு ஏற்றப்பட்டது</string>
-    <string name="invalid_pcap_file">தவறான பிடிப்பு கோப்பு வடிவம்</string>
+    <string name="pcap_load_success">கைப்பற்றல்ஏற்றப்பட்டது</string>
+    <string name="invalid_pcap_file">தவறான கைப்பற்றல் வடிவம்</string>
     <string name="capture_interface_open_error">பிடிப்பு இடைமுகத்தைத் திறக்க முடியவில்லை</string>
     <string name="unsupported_pcap_datalink">கோப்பில் ஆதரிக்கப்படாத டேட்டாலிங்க் உள்ளது</string>
     <string name="pcap_file_not_exists">குறிப்பிட்ட கோப்பு இல்லை</string>
     <string name="root_capture_start_failed">தொடக்க தோல்வி. சாதனம் மேகிசுடன் வேரூன்றியிருப்பதை உறுதிசெய்க</string>
     <string name="root_capture_pcapd_start_failure">தொடக்க தோல்வி. PCAPDroid க்கு ரூட் அணுகலை வழங்குவதை உறுதிசெய்க</string>
     <string name="pcap_read_error">பிடிப்பு கோப்பைப் படிப்பதில் பிழை. விவரங்களுக்கு பதிவைச் சரிபார்க்கவும்</string>
-    <string name="pcap_file_load_aborted">கைப்பற்றப்பட்ட கோப்பு ஏற்றுதல் நிறுத்தப்பட்டது</string>
+    <string name="pcap_file_load_aborted">கைப்பற்றல்ஏற்றுதல்நிறுத்தப்பட்டது</string>
     <string name="host_resolution_failed">புரவலன் %1$s ஐ தீர்க்க முடியவில்லை</string>
     <string name="pcapdroid_trailer_notice">\"%1$s\" க்கு பதிலாக உண்மையான பயன்பாடுகளைக் காட்ட, டம்பை உருவாக்குவதற்கு முன் \"%2$s\" விருப்பத்தை இயக்க மறக்காதீர்கள்</string>
     <string name="decryption_info_no_rule">இந்த இணைப்பை மறைகுறியாக்க, இடது டிராயரில் இருந்து அல்லது இணைப்புகள் பட்டியலில் உள்ள சூழல் மெனுவிலிருந்து ஒரு மறைகுறியாக்க விதியை உருவாக்கவும்</string>
@@ -487,7 +487,7 @@
     <string name="api_key">பநிஇ விசை</string>
     <string name="api_key_discard_confirm">தற்போதைய பநிஇ விசையை நிராகரித்து புதிய ஒன்றை உருவாக்க விரும்புகிறீர்களா?</string>
     <string name="country_rules_warning">நாட்டை அடிப்படையாகக் கொண்ட ஃபயர்வால் விதிகளைப் பயன்படுத்த, பி.சி.ஏ.பி டிராய்டு அமைப்புகளிலிருந்து புவிஇருப்பிட தரவுத்தளத்தைப் பதிவிறக்குங்கள், இல்லையெனில் நாட்டை அடிப்படையாகக் கொண்ட விதிகள் பயனற்றதாக இருக்கும்</string>
-    <string name="unsupported_pcap_file">ஆதரிக்கப்படாத பிடிப்பு கோப்பு வடிவம்</string>
+    <string name="unsupported_pcap_file">ஆதரிக்கப்படாகைப்பற்றல்வடிவம்</string>
     <string name="errno_enetdown">பிணையம் கீழே உள்ளது</string>
     <string name="errno_enetdown_msg">பிணைய இடைமுகம் குறைந்துவிட்டது அல்லது பிணையத்துடன் இணைக்க முடியவில்லை</string>
     <string name="errno_enetunreach">பிணையம் அணுக முடியாதது</string>

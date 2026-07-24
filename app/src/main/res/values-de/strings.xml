@@ -442,19 +442,19 @@
     <string name="activate_via_qr_code">Aktivier mit QR-Code</string>
     <string name="copy_error">Datei kann nicht geschrieben werden</string>
     <string name="proxy_host">Proxy Host</string>
-    <string name="pcap_load_success">Capture-Datei geladen</string>
+    <string name="pcap_load_success">Capture geladen</string>
     <string name="decryption_info_no_rule">Um diese Verbindung zu entschlüsseln, erstellen Sie eine Entschlüsselungsregel aus der linken Menü oder aus dem Kontextmenü in der Verbindungsliste</string>
     <string name="pcap_read_error">Fehler beim Lesen der Erfassungsdatei. Überprüfen Sie das Protokoll für Details</string>
-    <string name="pcap_load_in_progress">Capture-Datei wird gerade geladen, bitte warten</string>
+    <string name="pcap_load_in_progress">Capture wird gerade geladen, bitte warten</string>
     <string name="open_pcap_file">PCAP/Pcapng Datei öffnen…</string>
-    <string name="invalid_pcap_file">Ungültiges Erfassungsdateiformat</string>
+    <string name="invalid_pcap_file">Ungültiges Erfassungsformat</string>
     <string name="unsupported_pcap_datalink">Die Datei hat einen nicht unterstützten Datenlink</string>
     <string name="pcap_file_not_exists">Die angegebene Datei existiert nicht</string>
     <string name="root_capture_pcapd_start_failure">Fehler beim starten der Aufzeichnung. Stelle sicher dass PCAPdroid root Berechtigungen erhalten hat</string>
     <string name="pcapdroid_trailer_notice">Um die tatsächlichen Anwendungen anstelle von „%1$s“ anzuzeigen, müssen Sie die Option „%2$s“ aktivieren, bevor Sie den Dump erstellen</string>
     <string name="tls_decryption_no_rules_notice">Nur Verbindungen die mit den vorkonfigurierten Regeln übereinstimmen werden entschlüsselt. Möchtest du jetzt eine Entschlüsselungsregel erstellen?</string>
     <string name="active_vpn_detected">Aktiver VPN festgestellt</string>
-    <string name="pcap_file_load_aborted">Laden der Aufzeichnungsdatei abgebrochen</string>
+    <string name="pcap_file_load_aborted">Laden der Aufzeichnung abgebrochen</string>
     <string name="host_resolution_failed">Der Host %1$s konnte nicht gefunden werden</string>
     <string name="capture_interface_open_error">Die Aufnahmeschnittstelle konnte nicht geöffnet werden</string>
     <string name="root_capture_start_failed">Fehler beim starten der Aufzeichnung. Stelle sicher, dass das Gerät mit Magisk gerootet ist</string>
@@ -513,7 +513,7 @@
     <string name="dns_conn_info">DNS übersetzt einen Domainnamen in eine IP-Adresse. Die tatsächlichen Daten werden typischerweise über nachfolgende HTTPS/TLS-Verbindungen ausgetauscht</string>
     <string name="tls_conn_info">TLS/HTTPS-Verkehr ist verschlüsselt. Um diesen Traffic zu überprüfen, müssen Sie ihn entschlüsseln. Überprüfen Sie die PCAPdroid <a href="%1$s">Benutzeranleitung</a> für Details</string>
     <string name="dump_extensions_summary">Erweitern Sie das Paket-Dump-Format mit zusätzlichen Metadaten, wie die App, die ein bestimmtes Paket gesendet / empfangen</string>
-    <string name="unsupported_pcap_file">Ununterstütztes Erfassungsdateiformat</string>
+    <string name="unsupported_pcap_file">Nicht unterstütztes Erfassungsformat</string>
     <string name="mitm_addon_update_available">Ein neues Update für das mitm AddOn ist verfügbar. Aktualisiere, um die aktuellsten Fehlerbehebungen zu installieren</string>
     <string name="update_action">Aktualisierung</string>
     <string name="ip_address_or_cidr">IP-Adresse / CIDR</string>

@@ -12,7 +12,7 @@
     <string name="source_code">Mã nguồn</string>
     <string name="yes">Có</string>
     <string name="no">Không</string>
-    <string name="vpn_setup_failed">Không thể thiết lập VPN</string>
+    <string name="vpn_setup_failed">Không thể thiết lập VPN. Hãy đảm bảo rằng VPN luôn bật đã bị tắt</string>
     <string name="app_not_found">Không thể tìm thấy ứng dụng %1$s</string>
     <string name="stats">Số liệu thống kê</string>
     <string name="active_connections">Kết nối đang hoạt động</string>
@@ -62,7 +62,7 @@
     <string name="dns_server">Máy chủ DNS</string>
     <string name="apps">Các ứng dụng</string>
     <string name="pcap_file">Tệp PCAP</string>
-    <string name="pcap_file_info">Tạo tệp PCAP trong bộ nhớ thiết bị</string>
+    <string name="pcap_file_info">Tạo tệp PCAP/Pcapng trong bộ nhớ thiết bị</string>
     <string name="cannot_write_file">Không thể ghi tệp</string>
     <string name="share">Chia sẻ</string>
     <string name="pcap_file_action">Lưu lượng đã được lưu vào tệp \"%1$s\" (%2$s)</string>
@@ -259,11 +259,11 @@
     <string name="install_action">Cài đặt</string>
     <string name="export_action">Xuất</string>
     <string name="export_ellipsis">Xuất…</string>
-    <string name="install_the_mitm_addon">Cài đặt <a href='%1$s'>addon mitm</a> của PCAPdroid</string>
+    <string name="install_the_mitm_addon">Cài đặt <a href="%1$s">addon mitm</a> của PCAPdroid</string>
     <string name="export_ca_certificate">Xuất chứng chỉ CA của PCAPdroid, sau đó mở cài đặt \"Mã hóa &amp; Thông tin xác thực\" của Android và chọn cài đặt nó như một \"chứng chỉ CA\"</string>
     <string name="install_ca_certificate">Cài đặt chứng chỉ CA của PCAPdroid, chọn \"VPN và ứng dụng\". Android sẽ yêu cầu mã màn hình khóa hoặc mật khẩu của bạn</string>
     <string name="checking_the_certificate">Đang kiểm tra chứng chỉ…</string>
-    <string name="ca_cert_export_failed">Đã xảy ra lỗi khi xuất chứng chỉ CA\n\nNếu thiết bị của bạn triển khai Autostart hoặc phần mềm tương tự để hạn chế việc thực thi dịch vụ nền, hãy chắc chắn <a href='%1$s'>đưa PCAPdroid vào danh sách cho phép</a></string>
+    <string name="ca_cert_export_failed">Đã xảy ra lỗi khi xuất chứng chỉ CA\n\nNếu thiết bị của bạn triển khai Autostart hoặc phần mềm tương tự để hạn chế việc thực thi dịch vụ nền, hãy chắc chắn <a href="%1$s">đưa PCAPdroid vào danh sách cho phép</a></string>
     <string name="cert_exported_now_installed">Đã xuất chứng chỉ, giờ hãy cài đặt nó từ cài đặt Android</string>
     <string name="cert_installed_correctly">Chứng chỉ CA đã được cài đặt</string>
     <string name="cert_reinstall_required">Chứng chỉ CA chưa được cài đặt, hãy chạy trình hướng dẫn thiết lập mitm</string>
@@ -342,8 +342,8 @@
     <string name="block_quick">Chặn QUIC</string>
     <string name="block_private_dns">Chặn DNS riêng tư</string>
     <string name="block_private_dns_summary">Phát hiện và có thể chặn DNS riêng tư để kiểm tra lưu lượng DNS. Tắt tùy chọn này có thể cản trở việc phân tích lưu lượng</string>
-    <string name="mitm_setup_wizard_intro">Trình hướng dẫn này sẽ hướng dẫn bạn qua việc cài đặt addon mitm và cơ quan cấp chứng chỉ của PCAPdroid, những thứ cần thiết để thực hiện <a href='%1$s'>giải mã TLS</a></string>
-    <string name="mitm_setup_wizard_done">PCAPdroid giờ đã sẵn sàng để giải mã lưu lượng TLS\n\nHãy xem <a href='%1$s'>hướng dẫn sử dụng</a> để biết thêm về các biện pháp bảo mật có thể ngăn việc giải mã và cách vượt qua chúng</string>
+    <string name="mitm_setup_wizard_intro">Trình hướng dẫn này sẽ hướng dẫn bạn qua việc cài đặt addon mitm và cơ quan cấp chứng chỉ của PCAPdroid, những thứ cần thiết để thực hiện <a href="%1$s">giải mã TLS</a></string>
+    <string name="mitm_setup_wizard_done">PCAPdroid giờ đã sẵn sàng để giải mã lưu lượng TLS\n\nHãy xem <a href="%1$s">hướng dẫn sử dụng</a> để biết thêm về các biện pháp bảo mật có thể ngăn việc giải mã và cách vượt qua chúng</string>
     <string name="welcome_to_pcapdroid">Chào mừng đến với PCAPdroid</string>
     <string name="app_intro_next_button">Tiếp theo</string>
     <string name="app_intro_skip_button">Bỏ qua</string>
@@ -351,14 +351,14 @@
     <string name="app_intro_done_button">Xong</string>
     <string name="app_intro_welcome_msg">PCAPdroid là một ứng dụng thân thiện với quyền riêng tư cho phép bạn theo dõi và phân tích các kết nối được thực hiện bởi các ứng dụng trên thiết bị của bạn\n\nHơn nữa, nó cho phép bạn xuất bản kết xuất PCAP của lưu lượng, trích xuất siêu dữ liệu và nhiều hơn nữa!</string>
     <string name="privacy_first">Quyền riêng tư trên hết</string>
-    <string name="app_intro_privacy_msg">Ứng dụng không sử dụng bất kỳ tính năng theo dõi, phân tích hay gọi về máy chủ nào\n\nLàm sao bạn có thể chắc chắn? Hãy xem <a href='%1$s'>chính sách quyền riêng tư</a> và <a href='%2$s'>mã nguồn</a> của nó</string>
+    <string name="app_intro_privacy_msg">Ứng dụng không sử dụng bất kỳ tính năng theo dõi, phân tích hay gọi về máy chủ nào\n\nLàm sao bạn có thể chắc chắn? Hãy xem <a href="%1$s">chính sách quyền riêng tư</a> và <a href="%2$s">mã nguồn</a> của nó</string>
     <string name="country_and_asn">Quốc gia và ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid có thể truy vấn một cơ sở dữ liệu cục bộ để xác định quốc gia của một máy chủ từ xa\n\nBạn phải tải xuống cơ sở dữ liệu định vị địa lý từ cài đặt ứng dụng trước</string>
     <string name="vpn_setup_msg">PCAPdroid mô phỏng một VPN để bắt lưu lượng mạng mà không cần root.\n\nĐể bắt đầu bắt gói tin, bạn cần chấp nhận yêu cầu VPN ở màn hình tiếp theo.\n\n<b>LƯU Ý:</b> để tiếp tục, hãy tắt bất kỳ VPN Luôn bật nào đã cấu hình trong cài đặt Android</string>
-    <string name="app_intro_traffic_inspection">Việc kiểm tra các yêu cầu, phản hồi HTTP và dữ liệu thô rất dễ dàng, nhờ các bộ giải mã tích hợp\n\nCó một kết nối được mã hóa? Bạn có thể bật <a href='%1$s'>giải mã TLS</a> để lấy dữ liệu đã giải mã</string>
-    <string name="app_intro_firewall_msg">Với <a href='%1$s'>Tường lửa</a> tích hợp, bạn có thể dễ dàng chặn truy cập Internet của từng ứng dụng, tên miền và quốc gia\n\nKết hợp điều này với khả năng hiển thị lưu lượng tích hợp để có công cụ tối thượng bảo vệ quyền riêng tư của bạn</string>
-    <string name="app_intro_malware_detection">Nâng cao bảo mật cho thiết bị của bạn với tính năng <a href='%1$s'>phát hiện mã độc</a>\n\nBằng cách sử dụng các danh sách đen được cập nhật, nó có thể phát hiện, chặn và cảnh báo các kết nối độc hại theo thời gian thực</string>
-    <string name="app_intro_traffic_dump">PCAPdroid cung cấp <a href='%1$s'>nhiều cách</a> để kết xuất lưu lượng ở định dạng PCAP tiêu chuẩn để phân tích thêm\n\nQua <a href='%2$s'>tùy chọn phần mở rộng PCAPdroid</a>, bạn có thể thêm tên ứng dụng vào các gói tin và hiển thị chúng trong Wireshark</string>
+    <string name="app_intro_traffic_inspection">Việc kiểm tra các yêu cầu, phản hồi HTTP và dữ liệu thô rất dễ dàng, nhờ các bộ giải mã tích hợp\n\nCó một kết nối được mã hóa? Bạn có thể bật <a href="%1$s">giải mã TLS</a> để lấy dữ liệu đã giải mã</string>
+    <string name="app_intro_firewall_msg">Với <a href="%1$s">Tường lửa</a> tích hợp, bạn có thể dễ dàng chặn truy cập Internet của từng ứng dụng, tên miền và quốc gia\n\nKết hợp điều này với khả năng hiển thị lưu lượng tích hợp để có công cụ tối thượng bảo vệ quyền riêng tư của bạn</string>
+    <string name="app_intro_malware_detection">Nâng cao bảo mật cho thiết bị của bạn với tính năng <a href="%1$s">phát hiện mã độc</a>\n\nBằng cách sử dụng các danh sách đen được cập nhật, nó có thể phát hiện, chặn và cảnh báo các kết nối độc hại theo thời gian thực</string>
+    <string name="app_intro_traffic_dump">PCAPdroid cung cấp <a href="%1$s">nhiều cách</a> để kết xuất lưu lượng ở định dạng PCAP tiêu chuẩn để phân tích thêm\n\nQua <a href="%2$s">tùy chọn phần mở rộng PCAPdroid</a>, bạn có thể thêm tên ứng dụng vào các gói tin và hiển thị chúng trong Wireshark</string>
     <string name="permission_granted">Quyền %1$s đã được cấp</string>
     <string name="permission_grant_fail">Không thể cấp quyền %1$s</string>
     <string name="connection_not_found">Không thể tìm thấy kết nối đã cho</string>
@@ -405,13 +405,13 @@
     </string>
     <string name="unlock_token_summary">Một token có thể được dùng để mở khóa các tính năng trả phí trong các bản dựng không phải Google Play của ứng dụng (ví dụ F-Droid/Github)</string>
     <string name="unlock_token_error">Không thể yêu cầu token mở khóa [%1$d]: %2$s</string>
-    <string name="access_paid_features_msg">Hãy xem <a href='%1$s'>hướng dẫn sử dụng</a> để tìm hiểu cách truy cập các tính năng trả phí</string>
+    <string name="access_paid_features_msg">Hãy xem <a href="%1$s">hướng dẫn sử dụng</a> để tìm hiểu cách truy cập các tính năng trả phí</string>
     <string name="license_service_unavailable">Dịch vụ giấy phép của PCAPdroid hiện không khả dụng. Vui lòng thử lại sau vài phút</string>
     <string name="requesting_unlock_token">Đang yêu cầu một token mở khóa, vui lòng đợi</string>
     <string name="show_action">Hiển thị</string>
     <string name="show_connection">Hiển thị kết nối</string>
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
-    <string name="unlock_token_msg1">Đây là token mở khóa của bạn. Hãy ghi lại vì bạn sẽ cần nó <a href='%1$s'>để tạo mã giấy phép của mình</a></string>
+    <string name="unlock_token_msg1">Đây là token mở khóa của bạn. Hãy ghi lại vì bạn sẽ cần nó <a href="%1$s">để tạo mã giấy phép của mình</a></string>
     <string name="paid_feature">Tính năng trả phí</string>
     <string name="firewall_purchase_msg">Mua tính năng <i>%1$s</i> để bắt đầu chặn các kết nối</string>
     <string name="feature_unavailable">Tính năng \"%1$s\" không khả dụng</string>
@@ -532,7 +532,7 @@
     <string name="errno_ehostunreach">Không có tuyến đường tới host</string>
     <string name="errno_ehostunreach_msg">Hệ thống không thể tìm thấy một tuyến đường tới host đích</string>
     <string name="dns_conn_info">DNS chuyển đổi một tên miền thành một địa chỉ IP. Dữ liệu thực tế thường được trao đổi qua các kết nối HTTPS/TLS tiếp theo</string>
-    <string name="tls_conn_info">Lưu lượng TLS/HTTPS được mã hóa. Để kiểm tra lưu lượng này, bạn cần giải mã nó. Hãy xem <a href='%1$s'>hướng dẫn sử dụng</a> của PCAPdroid để biết chi tiết</string>
+    <string name="tls_conn_info">Lưu lượng TLS/HTTPS được mã hóa. Để kiểm tra lưu lượng này, bạn cần giải mã nó. Hãy xem <a href="%1$s">hướng dẫn sử dụng</a> của PCAPdroid để biết chi tiết</string>
     <string name="tls_decryption_unsupported_target">Giải mã TLS yêu cầu Android 7 trở lên và một thiết bị x86_64/aarch64</string>
     <string name="filename_prefix">Tiền tố tên tệp</string>
     <string name="filename_prefix_description">Đặt tiền tố cho các tệp được PCAPdroid xuất ra, ví dụ các tệp PCAP</string>

@@ -289,7 +289,7 @@
     <string name="geolocation">Bölgə</string>
     <string name="geolocation_summary">Oflayn axtarışlar edərək ölkə və ASN məlumatlarını göstər</string>
     <string name="download_in_progress">Yükləmə davam edir, zəhmət olmasa, gözləyin</string>
-    <string name="pcap_load_in_progress">PCAP faylının yüklənməsi davam edir, zəhmət olmasa gözləyin</string>
+    <string name="pcap_load_in_progress">Yaxalamanın yüklənməsi davam edir, zəhmət olmasa gözləyin</string>
     <string name="download_failed">Yükləmə uğursuz oldu</string>
     <string name="exporting">İxrac edilir…</string>
     <string name="export_in_progress">İxrac davam edir, lütfən gözləyin</string>
@@ -377,13 +377,13 @@
     <string name="status_encrypted">Şifrəli</string>
     <string name="injected">İnyeksiya edildi</string>
     <string name="open_pcap_file">PCAP faylını aç…</string>
-    <string name="pcap_load_success">PCAP faylı yükləndi</string>
-    <string name="invalid_pcap_file">Etibarsız PCAP faylı</string>
+    <string name="pcap_load_success">Yaxalama yükləndi</string>
+    <string name="invalid_pcap_file">Etibarsız yaxalama formatı</string>
     <string name="capture_interface_open_error">İzləmə interfeysini açmaq mümkün olmadı</string>
     <string name="pcap_file_not_exists">Təyin edilən PCAP faylı mövcud deyil</string>
     <string name="root_capture_start_failed">İzləməni başlatmaq mümkün olmadı. Cihazın Magisk ilə root edildiyindən əmin olun</string>
     <string name="pcap_read_error">Yaxalanan fayl oxunarkən xəta.Ətraflı məlumat üçün günlüyü yoxla</string>
-    <string name="pcap_file_load_aborted">PCAP faylının yüklənməsi ləğv edildi</string>
+    <string name="pcap_file_load_aborted">Yaxalamanın yüklənməsi ləğv edildi</string>
     <string name="host_resolution_failed">%1$s host ünvanı problemini həll etmək mümkün olmadı</string>
     <string name="active_vpn_detected">Aktiv VPN aşkarlandı</string>
     <string name="redirected">yenidən yönləndirmək</string>
@@ -488,7 +488,7 @@
     <string name="malicious_connection_description">"\"%1$s\" Programından gələn qoşulma,  zərərli tətbiq təspit qaydasını tətiklədi  (%2$s)"</string>
     <string name="geo_db_missing">Coğrafi məlumat bazası çatışmır</string>
     <string name="country_rules_warning">Ölkə üzrə qorunma qaydalarını istifadə etmək üçün,PCAPdroid coğrafi məlumat bazasından ayarları yükləyin,əks halda ölkə üzrə qaydalar təsirsiz olacaq</string>
-    <string name="unsupported_pcap_file">Dəstəklənməyən yaxalama qovluq formatı</string>
+    <string name="unsupported_pcap_file">Dəstəklənməyən yaxalama formatı</string>
     <string name="bytes_threshold">Bit limiti</string>
     <string name="error_code_with_text">%1$s (xəta %2$d)</string>
     <string name="errno_epipe">Sınıq boru</string>

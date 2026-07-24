@@ -396,13 +396,13 @@
     <string name="firewall_whitelist_notice">Dalam mode ini semua koneksi akan diblokir, kecuali jika dimasukkan ke dalam daftar putih secara manual. Anda mungkin melewatkan notifikasi push tanpa daftar putih yang tepat</string>
     <string name="host_resolution_failed">Tidak dapat menyelesaikan host %1$s</string>
     <string name="dns_servers_summary">Mengonfigurasi server DNS yang akan digunakan selama pencatatan</string>
-    <string name="pcap_file_load_aborted">Pemuatan file penangkapan dibatalkan</string>
+    <string name="pcap_file_load_aborted">Pemuatan penangkapan dibatalkan</string>
     <string name="password">Sandi</string>
     <string name="many_rules_warning">Anda mencoba mengimpor banyak aturan, yang bisa membuat aplikasi tidak responsif selama berinteraksi. Apakah Anda benar-benar ingin melanjutkan\?</string>
     <string name="mitm_addon">addon mitm</string>
     <string name="decryption_rules">Aturan dekripsi</string>
     <string name="tls_decryption_no_rules_notice">Dekripsi TLS hanya diterapkan pada koneksi yang sesuai dengan aturan yang dikonfigurasi. Apakah Anda ingin membuat aturan dekripsi sekarang\?</string>
-    <string name="pcap_load_success">File penangkapan dimuat</string>
+    <string name="pcap_load_success">Penangkapan dimuat</string>
     <string name="ipv4_dns_server">Server DNS IPv4</string>
     <string name="firewall_whitelist_help">Aturan-aturan ini menentukan koneksi mana yang diizinkan. Aturan daftar blokir memiliki prioritas di atas aturan daftar putih</string>
     <string name="status_encrypted">Terenkripsi</string>
@@ -437,7 +437,7 @@
     <string name="pcap_read_error">Kesalahan membaca file tangkapan. Periksa log untuk detailnya</string>
     <string name="add_action">Tambahkan</string>
     <string name="active_vpn_detected">VPN aktif terdeteksi</string>
-    <string name="pcap_load_in_progress">Pemuatan file PCAP sedang berlangsung, harap tunggu</string>
+    <string name="pcap_load_in_progress">Pemuatan penangkapan sedang berlangsung, harap tunggu</string>
     <string name="app_log">Riwayat</string>
     <string name="required">dibutuhkan</string>
     <string name="destination_host">Host tujuan</string>
@@ -464,7 +464,7 @@
     <string name="root_capture_pcapd_start_failure">Pencatatan gagal dijalankan. Pastikan Anda memberikan akses root ke PCAPdroid</string>
     <string name="qr_purchase_required">Beli token pembuka kunci untuk melanjutkan aktivasi melalui kode QR</string>
     <string name="connection_error">Kesalahan koneksi: %1$s</string>
-    <string name="invalid_pcap_file">Format file penangkapan tidak valid</string>
+    <string name="invalid_pcap_file">Format penangkapan tidak valid</string>
     <string name="invalid_license">Lisensi tidak valid</string>
     <string name="decryption_rules_help">Aturan-aturan ini menentukan koneksi mana yang akan didekripsi. Aturan berbasis host hanya berfungsi jika balasan DNS sebelumnya terlihat</string>
     <string name="proxy_host">Proxy host</string>
@@ -537,7 +537,7 @@
     <string name="errno_etimedout_msg">Server terlalu lama merespons, kemungkinan karena penundaan jaringan atau server yang sibuk</string>
     <string name="errno_epipe">Broken Pipe</string>
     <string name="geo_db_missing">Database geolokasi tidak ada</string>
-    <string name="unsupported_pcap_file">Format file penangkapan tidak didukung</string>
+    <string name="unsupported_pcap_file">Format penangkapan tidak didukung</string>
     <string name="bytes_threshold">Batas byte</string>
     <string name="error_code_with_text">%1$s (kesalahan %2$d)</string>
     <string name="errno_epipe_msg">Server tiba-tiba menutup koneksi saat transfer data</string>
