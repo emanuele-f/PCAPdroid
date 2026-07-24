@@ -391,7 +391,7 @@
     <string name="cancel_action">रद्द करें</string>
     <string name="show_data_action">डेटा दिखाएँ</string>
     <string name="remote_collector_notice">आपने PCAPdroid को किसी रिमोट सर्वर पर ट्रैफ़िक भेजने के लिए कॉन्फ़िगर किया है। सर्वर आपकी संवेदनशील जानकारी तक पहुँच सकेगा।\n\nयदि किसी ने आपसे ऐसा करने के लिए कहा है, तो यह संभवतः कोई घोटाला प्रयास है</string>
-    <string name="remote_server_warning">सुरक्षा कारणों से, रिमोट सर्वर \"%1$s\" पर ट्रैफ़िक भेजने की अनुमति नहीं है"</string>
+    <string name="remote_server_warning">सुरक्षा कारणों से, रिमोट सर्वर \"%1$s\" पर ट्रैफ़िक भेजने की अनुमति नहीं है</string>
     <string name="warning">चेतावनी</string>
     <string name="paid_features_unlocked">सशुल्क सुविधाएँ अनलॉक की गईं। यदि कैप्चर चल रहा है तो उसे पुनः प्रारंभ करें</string>
     <string name="build_info">बिल्ड जानकारी</string>

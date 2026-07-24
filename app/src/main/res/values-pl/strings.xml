@@ -361,7 +361,7 @@
     <string name="cancel_action">Anuluj</string>
     <string name="show_data_action">Pokaż dane</string>
     <string name="remote_collector_notice">Skonfigurowałeś PCAPdroid do wysyłania ruchu do zdalnego serwera. Serwer będzie mógł uzyskać dostęp do Twoich poufnych informacji.\n\nJeśli ktoś Cię o to poprosi, prawdopodobnie jest to próba oszustwa</string>
-    <string name="remote_server_warning">Ze względów bezpieczeństwa wysyłanie ruchu do zdalnego serwera \"%1$s\" jest niedozwolone"</string>
+    <string name="remote_server_warning">Ze względów bezpieczeństwa wysyłanie ruchu do zdalnego serwera \"%1$s\" jest niedozwolone</string>
     <string name="warning">Ostrzeżenie</string>
     <string name="paid_features_unlocked">Płatne funkcje odblokowane. Uruchom ponownie przechwytywanie, jeśli jest uruchomione</string>
     <string name="build_info">Informacje o kompilacji</string>

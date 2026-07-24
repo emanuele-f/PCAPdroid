@@ -306,7 +306,7 @@
     <string name="vpn_exemptions_summary">Nehmen Sie einige Anwendungen von der VPN-Verbindung aus. Deren Datenverkehr wird nicht überwacht</string>
     <string name="cancel_action">Abbrechen</string>
     <string name="show_data_action">Daten anzeigen</string>
-    <string name="remote_server_warning">Aus Sicherheitsgründen ist das Senden von Daten an den Remote-Server \"%1$s\" nicht erlaubt\"</string>
+    <string name="remote_server_warning">Aus Sicherheitsgründen ist das Senden von Daten an den Remote-Server \"%1$s\" nicht erlaubt</string>
     <string name="paid_features_unlocked">Kostenpflichtige Funktionen freigeschaltet. Starten Sie die Aufzeichnung neu, wenn sie ausgeführt wird</string>
     <string name="build_info">Build-Informationen</string>
     <string name="mitmproxy_opts">Zusätzliche mitmproxy-Optionen</string>

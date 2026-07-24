@@ -392,7 +392,7 @@
     <string name="cancel_action">취소</string>
     <string name="show_data_action">데이터 표시</string>
     <string name="remote_collector_notice">원격 서버로 트래픽을 보내도록 PCAPdroid를 설정했습니다. 서버가 귀하의 민감한 정보에 접근할 수 있습니다.\n\n누군가 이렇게 하라고 요청했다면 아마도 사기 시도일 것입니다</string>
-    <string name="remote_server_warning">보안상의 이유로 원격 서버 \"%1$s\"로 트래픽을 보내는 것은 허용되지 않습니다"</string>
+    <string name="remote_server_warning">보안상의 이유로 원격 서버 \"%1$s\"로 트래픽을 보내는 것은 허용되지 않습니다</string>
     <string name="warning">경고</string>
     <string name="paid_features_unlocked">유료 기능이 잠금 해제되었습니다. 실행 중이면 캡처를 다시 시작하세요</string>
     <string name="build_info">빌드 정보</string>

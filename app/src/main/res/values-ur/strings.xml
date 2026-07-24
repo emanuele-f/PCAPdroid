@@ -391,7 +391,7 @@
     <string name="cancel_action">منسوخ کریں</string>
     <string name="show_data_action">ڈیٹا دکھائیں</string>
     <string name="remote_collector_notice">آپ نے PCAPdroid کو ٹریفک دور دراز سرور کو بھیجنے کے لیے ترتیب دیا ہے۔ سرور آپ کی حساس معلومات تک رسائی حاصل کر سکے گا۔\n\nاگر کسی نے آپ سے ایسا کرنے کو کہا ہے، تو یہ غالباً دھوکہ دہی کی کوشش ہے</string>
-    <string name="remote_server_warning">سیکیورٹی وجوہات کی بنا پر، دور دراز سرور \"%1$s\" کو ٹریفک بھیجنے کی اجازت نہیں ہے"</string>
+    <string name="remote_server_warning">سیکیورٹی وجوہات کی بنا پر، دور دراز سرور \"%1$s\" کو ٹریفک بھیجنے کی اجازت نہیں ہے</string>
     <string name="warning">تنبیہ</string>
     <string name="paid_features_unlocked">ادا شدہ خصوصیات ان لاک ہو گئیں۔ اگر کیپچر چل رہا ہے تو اسے دوبارہ شروع کریں</string>
     <string name="build_info">بلڈ معلومات</string>

@@ -391,7 +391,7 @@
     <string name="cancel_action">キャンセル</string>
     <string name="show_data_action">データを表示</string>
     <string name="remote_collector_notice">PCAPdroid をリモート サーバーにトラフィックを送信するように設定しています。サーバーはあなたの機密情報にアクセスできるようになります。\n\n誰かにこれを行うよう求められた場合、おそらく詐欺です</string>
-    <string name="remote_server_warning">セキュリティ上の理由により、リモート サーバー「%1$s」へのトラフィック送信は許可されていません\"</string>
+    <string name="remote_server_warning">セキュリティ上の理由により、リモート サーバー「%1$s」へのトラフィック送信は許可されていません</string>
     <string name="warning">警告</string>
     <string name="paid_features_unlocked">有料機能のロックが解除されました。実行中の場合はキャプチャを再起動してください</string>
     <string name="build_info">ビルド情報</string>
