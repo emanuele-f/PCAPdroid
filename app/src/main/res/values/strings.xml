@@ -618,4 +618,10 @@
     <string name="connections_log_size">Max logged connections</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB of RAM used)</string>
     <string name="capture_list_files_changed">Captures changed on disk, list updated</string>
+    <string name="permission_required">Permission required</string>
+    <string name="local_network_notice">Since Android 17, apps must ask permission before connecting to the devices on the local network. PCAPdroid needs the \"Nearby devices\" permission so that it can monitor all the network connections, including the ones directed to local devices</string>
+    <string name="local_network_permission_denied">PCAPdroid requires the \"Nearby devices\" permission to start the capture. You need to grant it manually from the app permissions settings</string>
+    <string name="local_network_permission_required">The \"Nearby devices\" permission is required to capture packets</string>
+    <string name="grant_permission_action">Grant</string>
+    <string name="open_settings">Open settings</string>
 </resources>

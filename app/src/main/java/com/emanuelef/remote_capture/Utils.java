@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -69,7 +70,6 @@ import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.util.Patterns;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -91,8 +91,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -878,6 +878,40 @@ public class Utils {
             return false;
 
         return(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
+    }
+
+    // exchanging traffic with the LAN only requires a runtime permission since API 37
+    public static boolean hasLocalNetworkPermission(Context context) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return true;
+
+        return(context.checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK) ==
+                PackageManager.PERMISSION_GRANTED);
+    }
+
+    // returns false if the permission cannot be requested
+    public static boolean requestLocalNetworkPermission(ActivityResultLauncher<String> launcher) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return false;
+
+        launcher.launch(Manifest.permission.ACCESS_LOCAL_NETWORK);
+        return true;
+    }
+
+    // true if the user has denied the permission at least once, without permanently denying it
+    public static boolean shouldShowLocalNetworkPermissionRationale(Activity activity) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return false;
+
+        return ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                Manifest.permission.ACCESS_LOCAL_NETWORK);
+    }
+
+    public static void openAppSettings(Context ctx, String packageName) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(Uri.fromParts("package", packageName, null));
+
+        startActivity(ctx, intent);
     }
 
     public static String getAppVersion(Context context) {

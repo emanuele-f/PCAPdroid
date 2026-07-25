@@ -317,6 +317,15 @@ public class CaptureService extends VpnService implements Runnable {
             mSettings.capture_interface = mSettings.input_pcap_path;
         }
 
+        // the capture is not allowed to run without the local network permission, otherwise the
+        // connections to the LAN devices would silently fail. It's normally requested by
+        // CaptureHelper, but the service can also be started without it (e.g. at boot)
+        if(!mSettings.readFromPcap() && !Utils.hasLocalNetworkPermission(this)) {
+            Log.e(TAG, "The local network permission is not granted, cannot start the capture");
+            Utils.showToastLong(this, R.string.local_network_permission_required);
+            return abortStart();
+        }
+
         if(mSettings.tls_decryption && !MitmAddon.isSupportedTarget()) {
             Log.w(TAG, "TLS decryption is not supported on this target, disabling it");
             mSettings.tls_decryption = false;

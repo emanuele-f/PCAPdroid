@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <!-- Required with root to properly resolve UIDs cross-users/profiles. Granted via root -->
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" android:protectionLevel="signature"  tools:ignore="ProtectedPermissions" />

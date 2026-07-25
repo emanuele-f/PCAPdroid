@@ -78,6 +78,12 @@ From the permission dialog the user can choose to permanently grant or deny the 
 
 Applications interfacing with PCAPdroid should use the `startActivityForResult` (or the equivalent `ActivityResultLauncher`) when calling its API, rather than `startActivity`. This ensures that the package name of the calling app can be retrieved via [getCallingPackage](https://developer.android.com/reference/android/app/Activity#getCallingPackage()).
 
+### Local Network Permission
+
+On Android 17+, PCAPdroid requires the `ACCESS_LOCAL_NETWORK` permission to run the capture, otherwise the captured connections towards the devices of the local network would fail.
+If the permission has not been granted yet, the user is prompted for it when the `start` action is invoked. This also happens when a valid `api_key` is provided, as the permission
+can only be granted by the user. If the user denies it, the `start` action fails.
+
 ### API Key
 
 Since PCAPdroid 1.8.6, you can pass an `api_key` parameter in the Intent to authenticate the request without showing the permission prompt. This is useful, in particular, when invoking PCAPdroid from adb or a third-party app which does not support `startActivityForResult`.
