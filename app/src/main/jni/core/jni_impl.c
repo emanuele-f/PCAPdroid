@@ -577,6 +577,8 @@ static void init_jni(JNIEnv *env) {
     fields.ld_hosts = jniFieldID(env, cls.matchlist_descriptor, "hosts", "Ljava/util/List;");
     fields.ld_ips = jniFieldID(env, cls.matchlist_descriptor, "ips", "Ljava/util/List;");
     fields.ld_countries = jniFieldID(env, cls.matchlist_descriptor, "countries", "Ljava/util/List;");
+    fields.ld_uid = jniFieldID(env, cls.matchlist_descriptor, "uid", "I");
+    fields.ld_allowlists = jniFieldID(env, cls.matchlist_descriptor, "allowlists", "Ljava/util/List;");
 
     /* Enums */
     enums.bltype_ip = jniEnumVal(env, "com/emanuelef/remote_capture/model/BlacklistDescriptor$Type", "IP_BLACKLIST");
@@ -586,13 +588,16 @@ static void init_jni(JNIEnv *env) {
 
 /* ******************************************************* */
 
+static bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
+
 JNIEXPORT void JNICALL
 Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jclass type, jint tunfd,
                                                               jobject vpn, jint sdk) {
 
 #ifdef PCAPDROID_TRACK_ALLOCS
-    set_ndpi_malloc(pd_ndpi_malloc);
-    set_ndpi_free(pd_ndpi_free);
+    ndpi_set_memory_alloction_functions(pd_ndpi_malloc, pd_ndpi_free,
+        pd_ndpi_calloc, pd_ndpi_realloc, NULL, NULL,
+        pd_ndpi_malloc, pd_ndpi_free);
 #endif
 
     init_jni(env);
@@ -612,6 +617,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .notify_blacklists_loaded = notifyBlacklistsLoaded,
                     .dump_payload_chunk = dumpPayloadChunk,
                     .clear_payload_chunks = clearPayloadChunks,
+                    .get_country_code = getCountryCode,
             },
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),
@@ -821,6 +827,33 @@ Java_com_emanuelef_remote_1capture_CaptureService_addPortMapping(JNIEnv *env, jc
         log_e("addPortMapping failed");
         return;
     }
+}
+
+/* ******************************************************* */
+
+JNIEXPORT void JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_setPortMappingExemptions(JNIEnv *env, jclass clazz,
+                                                                           jintArray uids) {
+    if(uids == NULL) {
+        pd_set_port_map_exemptions(NULL, 0);
+        return;
+    }
+
+    jsize num = (*env)->GetArrayLength(env, uids);
+    if(num <= 0) {
+        pd_set_port_map_exemptions(NULL, 0);
+        return;
+    }
+
+    jint *elements = (*env)->GetIntArrayElements(env, uids, NULL);
+    if(!elements) {
+        log_e("setPortMappingExemptions: GetIntArrayElements failed");
+        return;
+    }
+
+    pd_set_port_map_exemptions((const int*) elements, (int) num);
+
+    (*env)->ReleaseIntArrayElements(env, uids, elements, JNI_ABORT);
 }
 
 /* ******************************************************* */
@@ -1079,20 +1112,23 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     if(!ndpi)
         return(NULL);
 
-    NDPI_PROTOCOL_BITMASK protocols;
-    NDPI_BITMASK_SET_ALL(protocols);
-    ndpi_set_protocol_detection_bitmask2(ndpi, &protocols);
+    ndpi_finalize_initialization(ndpi);
 
     jobject plist = (*env)->NewObject(env, arrayListClass, arrayListNew);
-    if((plist == NULL) || jniCheckException(env))
+    if((plist == NULL) || jniCheckException(env)) {
+        ndpi_exit_detection_module(ndpi);
         return NULL;
+    }
 
     bool success = true;
-    int num_protos = (int) ndpi_get_ndpi_num_supported_protocols(ndpi);
+    int num_protos = (int) ndpi_get_num_protocols(ndpi);
     ndpi_proto_defaults_t* proto_defaults = ndpi_get_proto_defaults(ndpi);
 
-    ndpi_protocol_bitmask_struct_t unique_protos;
-    NDPI_BITMASK_RESET(unique_protos);
+    struct ndpi_bitmask masterProtos;
+    init_ndpi_protocols_bitmask(&masterProtos);
+
+    struct ndpi_bitmask unique_protos;
+    ndpi_bitmask_alloc(&unique_protos, num_protos);
 
     // NOTE: this does not currently exist as a protocol (see pd_get_proto_name)
     if(!arraylist_add_string(env, arrayListAdd, plist, "HTTPS")) {
@@ -1101,12 +1137,15 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     }
 
     for(int i=0; i<num_protos; i++) {
-        ndpi_protocol n_proto = {proto_defaults[i].protoId, NDPI_PROTOCOL_UNKNOWN, NDPI_PROTOCOL_CATEGORY_UNSPECIFIED};
-        uint16_t proto = pd_ndpi2proto(n_proto);
+        ndpi_protocol n_proto;
+        memset(&n_proto, 0, sizeof(n_proto));
+        n_proto.proto.master_protocol = proto_defaults[i].protoId;
+        n_proto.proto.app_protocol = NDPI_PROTOCOL_UNKNOWN;
+        uint16_t proto = pd_ndpi2proto(&masterProtos, n_proto);
         //log_d("protos: %d -> %d -> %d", i, proto_defaults[i].protoId, proto);
 
-        if(!NDPI_ISSET(&unique_protos, proto)) {
-            NDPI_SET(&unique_protos, proto);
+        if(!ndpi_bitmask_is_set(&unique_protos, proto)) {
+            ndpi_bitmask_set(&unique_protos, proto);
             const char *name = ndpi_get_proto_name(ndpi, proto);
             //log_d("proto: %d %s", proto, name);
 
@@ -1118,6 +1157,8 @@ Java_com_emanuelef_remote_1capture_CaptureService_getL7Protocols(JNIEnv *env, jc
     }
 
 out:
+    ndpi_bitmask_free(&masterProtos);
+    ndpi_bitmask_free(&unique_protos);
     if(!success) {
         (*env)->DeleteLocalRef(env, plist);
         plist = NULL;
@@ -1336,7 +1377,7 @@ void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const c
 
 /* ******************************************************* */
 
-bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
+static bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
     bool rv = false;
     JNIEnv *env = pd->env;
     jstring host_str = (*env)->NewStringUTF(env, host);

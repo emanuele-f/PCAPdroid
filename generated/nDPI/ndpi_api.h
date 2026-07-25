@@ -1,7 +1,7 @@
 /*
  * ndpi_api.h
  *
- * Copyright (C) 2011-24 - ntop.org
+ * Copyright (C) 2011-25 - ntop.org
  *
  * This file is part of nDPI, an open source deep packet inspection
  * library based on the OpenDPI and PACE technology by ipoque GmbH
@@ -21,6 +21,7 @@
  *
  */
 
+
 #ifndef __NDPI_API_H__
 #define __NDPI_API_H__
 
@@ -35,13 +36,8 @@ extern "C" {
 #define NDPI_DETECTION_ONLY_IPV4              ( 1 << 0 )
 #define NDPI_DETECTION_ONLY_IPV6              ( 1 << 1 )
 
-#define ADD_TO_DETECTION_BITMASK              1
-#define NO_ADD_TO_DETECTION_BITMASK           0
-#define SAVE_DETECTION_BITMASK_AS_UNKNOWN     1
-#define NO_SAVE_DETECTION_BITMASK_AS_UNKNOWN  0
-
   /*
-    In case a custom DGA function is used, the fucntion
+    In case a custom DGA function is used, the function
     below must be overwritten,
   */
   extern ndpi_custom_dga_predict_fctn ndpi_dga_function;
@@ -50,7 +46,7 @@ extern "C" {
    * Check if a string is encoded with punycode
    * ( https://tools.ietf.org/html/rfc3492 )
    *
-   * @par    buff = pointer to the string to ckeck
+   * @par    buff = pointer to the string to check
    * @par    len  = len of the string
    * @return 1 if the string is punycoded;
    *         else 0
@@ -67,28 +63,17 @@ extern "C" {
    */
   u_int32_t ndpi_detection_get_sizeof_ndpi_flow_struct(void);
 
-
   /**
-   * Get the size of the flow tcp struct
+   * Match a string against an automaton and retrieve its associated numeric value.
+   * This function is similar to ndpi_match_string_subprotocol() but is used for
+   * matching raw IDs that were added via ndpi_add_string_value_to_automa().
    *
-   * @return the size of the flow tcp struct
-   *
+   * @param _automa Automaton created with ndpi_init_automa()
+   * @param string_to_match String to search for
+   * @param match_len Length of the string to match
+   * @param num Pointer to store the associated numeric value (output parameter)
+   * @return 1 if a match was found, 0 otherwise
    */
-  u_int32_t ndpi_detection_get_sizeof_ndpi_flow_tcp_struct(void);
-
-
-  /**
-   * Get the size of the flow udp struct
-   *
-   * @return the size of the flow udp struct
-   *
-   */
-  u_int32_t ndpi_detection_get_sizeof_ndpi_flow_udp_struct(void);
-
-  /*
-    Same as the API call above but used for matching raw id's added
-    via ndpi_add_string_value_to_automa()
-  */
   int ndpi_match_string_value(void *_automa, char *string_to_match,
 			      u_int match_len, u_int32_t *num);
 
@@ -102,18 +87,115 @@ extern "C" {
   u_int32_t ndpi_get_flow_error_code(struct ndpi_flow_struct *flow);
 
   /**
-   * nDPI personal allocation and free functions
-   **/
+   * Allocate memory using nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom allocator.
+   *
+   * @param size Number of bytes to allocate
+   * @return Pointer to allocated memory, or NULL on failure
+   */
   void * ndpi_malloc(size_t size);
-  void * ndpi_calloc(unsigned long count, size_t size);
-  void * ndpi_realloc(void *ptr, size_t old_size, size_t new_size);
+
+  /**
+   * Allocate and zero-initialize memory using nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom allocator.
+   *
+   * @param count Number of elements to allocate
+   * @param size Size of each element in bytes
+   * @return Pointer to zero-initialized memory, or NULL on failure
+   */
+  void * ndpi_calloc(size_t nmemb, size_t size);
+
+  /**
+   * Reallocate memory using nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom allocator.
+   *
+   * @param ptr Pointer to previously allocated memory (or NULL for new allocation)
+   * @param old_size Current size of the allocated block in bytes
+   * @param new_size Desired new size in bytes
+   * @return Pointer to reallocated memory, or NULL on failure
+   */
+  void * ndpi_realloc(void *ptr, size_t size);
+
+  /**
+   * Allocate aligned memory using nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom allocator.
+   *
+   * @param the address of the allocated memory will be a multiple of `alignment`
+   * @param size Number of bytes to allocate
+   * @return Pointer to allocated memory, or NULL on failure
+   */
+  void * ndpi_aligned_malloc(size_t alignment, size_t size);
+
+  /**
+   * Duplicate a string using nDPI's memory allocator.
+   * The returned string must be freed with ndpi_free().
+   *
+   * @param s String to duplicate (null-terminated)
+   * @return Pointer to newly allocated string copy, or NULL on failure
+   */
   char * ndpi_strdup(const char *s);
+
+  /**
+   * Duplicate a string with length limit using nDPI's memory allocator.
+   * The returned string must be freed with ndpi_free().
+   *
+   * @param s String to duplicate
+   * @param size Maximum number of characters to copy (excluding null terminator)
+   * @return Pointer to newly allocated string copy, or NULL on failure
+   */
   char * ndpi_strndup(const char *s, size_t size);
+
+  /**
+   * Free memory allocated by nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom deallocator.
+   *
+   * @param ptr Pointer to memory to free (NULL is safe to pass)
+   */
   void   ndpi_free(void *ptr);
+
+  /**
+   * Free aligned memory allocated by nDPI's memory allocator.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom deallocator.
+   *
+   * @param ptr Pointer to memory to free (NULL is safe to pass)
+   */
+  void   ndpi_aligned_free(void *ptr);
+
+  /**
+   * Allocate memory for flow-specific data using nDPI's flow allocator.
+   * Flow memory can use a separate allocator from general memory for better
+   * memory management in high-throughput scenarios.
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom allocator.
+   *
+   * @param size Number of bytes to allocate
+   * @return Pointer to allocated memory, or NULL on failure
+   */
   void * ndpi_flow_malloc(size_t size);
+
+  /**
+   * Free memory allocated by ndpi_flow_malloc().
+   * This function can be customized via ndpi_set_memory_alloction_functions() to use a custom deallocator.
+   *
+   * @param ptr Pointer to flow memory to free (NULL is safe to pass)
+   */
   void   ndpi_flow_free(void *ptr);
+
+  /**
+   * Get the total amount of memory allocated by nDPI.
+   * This tracks memory allocated via ndpi_malloc(), ndpi_calloc(), ndpi_realloc(),
+   * ndpi_strdup(), and ndpi_strndup() (but not flow allocations).
+   *
+   * @return Total number of bytes currently allocated
+   */
   u_int32_t ndpi_get_tot_allocated_memory(void);
 
+  /**
+   * Remove leading and trailing whitespace from a string in-place.
+   *
+   * @param ptr Pointer to the string to process (modified in-place)
+   * @param ptr_len Pointer to the string length (updated to new length after stripping)
+   * @return Pointer to the start of the trimmed string (within the original buffer)
+   */
   char *ndpi_strip_leading_trailing_spaces(char *ptr, int *ptr_len) ;
 
   /**
@@ -152,6 +234,8 @@ extern "C" {
    */
   u_int16_t ndpi_network_ptree_match(struct ndpi_detection_module_struct *ndpi_struct,
 				     struct in_addr *pin);
+  u_int16_t ndpi_network_ptree6_match(struct ndpi_detection_module_struct *ndpi_str,
+				      struct in6_addr *pin);
 
   /**
    * Returns the nDPI protocol id for IP+port-based protocol detection
@@ -170,38 +254,6 @@ extern "C" {
   u_int16_t ndpi_network_port_ptree6_match(struct ndpi_detection_module_struct *ndpi_struct,
 					   struct in6_addr *pin,
 					   u_int16_t port /* network byte order */);
-
-  /**
-   * Creates a protocol match that does not contain any hostnames.
-   *
-   * @par hostname_list      = the desired hostname list form which the first entry is used to create the match
-   * @par empty_app_protocol = the resulting protocol match that does contain all information except the hostname
-   *
-   * @return 0 on success, 1 otherwise
-   */
-  int ndpi_init_empty_app_protocol(ndpi_protocol_match const * const hostname_list,
-                                   ndpi_protocol_match * const empty_app_protocol);
-
-  /**
-   * Init single protocol match.
-   *
-   * @par ndpi_mod  = the struct created for the protocol detection
-   * @par match     = the struct passed to match the protocol
-   *
-   * @return 0 on success, 1 otherwise
-   */
-  int ndpi_init_app_protocol(struct ndpi_detection_module_struct *ndpi_str,
-                             ndpi_protocol_match const * const match);
-
-  /**
-   * Init single protocol match and adds it to the Aho-Corasick automata.
-   *
-   * @par ndpi_mod  = the struct created for the protocol detection
-   * @par match     = the struct passed to match the protocol
-   *
-   */
-  void ndpi_init_protocol_match(struct ndpi_detection_module_struct *ndpi_mod,
-                                ndpi_protocol_match const * const match);
 
   /**
    * Returns a new initialized global context.
@@ -226,10 +278,10 @@ extern "C" {
    * it do not forget to call first ndpi_finalize_initialization()
    *
    * You can call this function multiple times, (i.e. to create multiple
-   * indipendent detection contexts) but all these calls MUST NOT run
+   * independent detection contexts) but all these calls MUST NOT run
    * in parallel
    *
-   * @g_ctx = global context associated to the new detection module; NULL if no global context is needed
+   * @par g_ctx = global context associated to the new detection module; NULL if no global context is needed
    * @return  the initialized detection module
    *
    */
@@ -270,73 +322,16 @@ extern "C" {
   void ndpi_exit_detection_module(struct ndpi_detection_module_struct *ndpi_struct);
 
   /**
-   * Sets a single protocol bitmask
-   * This function does not increment the index of the callback_buffer
-   *
-   * @par label                    = string for the protocol name
-   * @par ndpi_struct              = the detection module
-   * @par idx                      = the index of the callback_buffer
-   * @par func                     = function pointer of the protocol search
-   * @par ndpi_selection_bitmask   = the protocol selected bitmask
-   * @par b_save_bitmask_unknow    = if set as "true" save the detection bitmask as unknow
-   * @par b_add_detection_bitmask  = if set as "true" add the protocol bitmask to the detection bitmask
-   *
-   */
-  void ndpi_set_bitmask_protocol_detection(char *label,
-					   struct ndpi_detection_module_struct *ndpi_struct,
-					   const u_int32_t idx,
-					   u_int16_t ndpi_protocol_id,
-					   void (*func) (struct ndpi_detection_module_struct *,
-							 struct ndpi_flow_struct *flow),
-					   const NDPI_SELECTION_BITMASK_PROTOCOL_SIZE ndpi_selection_bitmask,
-					   u_int8_t b_save_bitmask_unknow,
-					   u_int8_t b_add_detection_bitmask);
-
-  /**
-   * Sets the protocol bitmask2
-   *
-   * @par ndpi_struct        = the detection module
-   * @par detection_bitmask  = the protocol bitmask to set
-   * @return 0 if ok, -1 if error
-   *
-   */
-  int ndpi_set_protocol_detection_bitmask2(struct ndpi_detection_module_struct *ndpi_struct,
-					    const NDPI_PROTOCOL_BITMASK * detection_bitmask);
-
-  /**
    *  Function to be called before we give up with detection for a given flow.
    *  This function reduces the NDPI_UNKNOWN_PROTOCOL detection
    *
    * @par    ndpi_struct  = the detection module
    * @par    flow         = the flow given for the detection module
-   * @par    protocol_was_guessed = 1 if the protocol was guesses (requires enable_guess = 1), 0 otherwise
    * @return the detected protocol even if the flow is not completed;
    *
    */
   ndpi_protocol ndpi_detection_giveup(struct ndpi_detection_module_struct *ndpi_struct,
-				      struct ndpi_flow_struct *flow,
-				      u_int8_t *protocol_was_guessed);
-
-  /**
-   * Processes an extra packet in order to get more information for a given protocol
-   * (like SSL getting both client and server certificate even if we already know after
-   * seeing the client certificate what the protocol is)
-   *
-   * @par    ndpi_struct    = the detection module
-   * @par    flow           = pointer to the connection state machine
-   * @par    packet         = unsigned char pointer to the Layer 3 (IP header)
-   * @par    packetlen      = the length of the packet
-   * @par    packet_time_ms = the current timestamp for the packet (expressed in msec)
-   * @par    input_info     = (optional) flow information provided by the (external) flow manager
-   * @return void
-   *
-   */
-  void ndpi_process_extra_packet(struct ndpi_detection_module_struct *ndpi_struct,
-				 struct ndpi_flow_struct *flow,
-				 const unsigned char *packet,
-				 const unsigned short packetlen,
-				 const u_int64_t packet_time_ms,
-				 struct ndpi_flow_input_info *input_info);
+				      struct ndpi_flow_struct *flow);
 
   /**
    * Processes one packet and returns the ID of the detected protocol.
@@ -485,6 +480,7 @@ extern "C" {
    * @par    string_to_match_len = the length of the string
    * @par    ret_match           = completed returned match information
    * @par    master_protocol_id  = value of the ID associated to the master protocol detected
+   * @par    update_flow_classification = update or not protocol (sub)classification
    * @return the ID of the matched subprotocol
    *
    */
@@ -493,7 +489,8 @@ extern "C" {
 					char *string_to_match,
 					u_int string_to_match_len,
 					ndpi_protocol_match_result *ret_match,
-					u_int16_t master_protocol_id);
+					u_int16_t master_protocol_id,
+					int update_flow_classification);
 
   /**
    * Check if the string content passed match with a protocol
@@ -505,18 +502,6 @@ extern "C" {
   void ndpi_check_subprotocol_risk(struct ndpi_detection_module_struct *ndpi_str,
 				 struct ndpi_flow_struct *flow, u_int16_t subprotocol_id);
 
-  /**
-   * Exclude protocol from search
-   *
-   * @par    ndpi_struct         = the detection module
-   * @par    flow                = the flow where match the host
-   * @par    master_protocol_id  = value of the ID associated to the master protocol detected
-   *
-   */
-  void ndpi_exclude_protocol(struct ndpi_detection_module_struct *ndpi_struct,
-			     struct ndpi_flow_struct *flow,
-			     u_int16_t master_protocol_id,
-			     const char *_file, const char *_func,int _line);
   /**
    * Check if the string -bigram_to_match- match with a bigram of -automa-
    *
@@ -532,35 +517,45 @@ extern "C" {
    * Write the protocol name in the buffer -buf- as master_protocol.protocol
    *
    * @par     ndpi_mod      = the detection module
-   * @par     proto         = the struct ndpi_protocol contain the protocols name
+   * @par     proto         = the struct ndpi_master_app_protocol contain the protocols name
    * @par     buf           = the buffer to write the name of the protocols
    * @par     buf_len       = the length of the buffer
    * @return  the buffer contains the master_protocol and protocol name
    *
    */
   char* ndpi_protocol2name(struct ndpi_detection_module_struct *ndpi_mod,
-			   ndpi_protocol proto, char *buf, u_int buf_len);
+                           ndpi_master_app_protocol proto, char *buf, u_int buf_len);
 
   /**
    * Same as ndpi_protocol2name() with the difference that the numeric protocol
    * name is returned
    *
-   * @par     proto         = the struct ndpi_protocol contain the protocols name
+   * @par     proto         = the struct ndpi_master_app_protocol contain the protocols name
    * @par     buf           = the buffer to write the name of the protocols
    * @par     buf_len       = the length of the buffer
    * @return  the buffer contains the master_protocol and protocol name
    *
    */
-  char* ndpi_protocol2id(ndpi_protocol proto, char *buf, u_int buf_len);
+  char* ndpi_protocol2id(ndpi_master_app_protocol proto, char *buf, u_int buf_len);
 
   /**
    * Find out if a given category is custom/user-defined
    *
    * @par     category      = the category associated to the protocol
-   * @return  1 if this is a custom user category, 0 otherwise
+   * @return  True if this is a custom user category, false otherwise
    *
    */
-  int ndpi_is_custom_category(ndpi_protocol_category_t category);
+  bool ndpi_is_custom_category(ndpi_protocol_category_t category);
+
+  /**
+   * Find out if a given protocol is custom/user-defined
+   *
+   * @par     ndpi_str      = the detection module
+   * @par     proto_id      = the proto_id to check
+   * @return  True if this is a custom user protocol, false otherwise (nDPI protocol already supported in the engine)
+   *
+   */
+  bool ndpi_is_custom_protocol(struct ndpi_detection_module_struct *ndpi_str, u_int16_t proto_id);
 
   /**
    * Overwrite a protocol category defined by nDPI with the custom category
@@ -585,14 +580,34 @@ extern "C" {
 			       u_int16_t protoId, ndpi_protocol_category_t protoCategory);
 
   /**
+   * Find the QoE category for the specified protocol
+   *
+   * @par     ndpi_mod      = the detection module
+   * @par     protoId       = the protocol identifier we're searching
+   *
+   */
+  ndpi_protocol_qoe_category_t ndpi_find_protocol_qoe(struct ndpi_detection_module_struct *ndpi_str,
+						      u_int16_t protoId);
+
+  /**
+   * Return the name of a RTP payload type
+   *
+   * @par     payload_type     = the RTP payload type
+   * @par     evs_payload_type = EVS payload type (only in case payload_type is EVS)
+   * @return  The symbolic payload type or "Unknown" if not found
+   */
+  const char* ndpi_rtp_payload_type2str(u_int8_t payload_type, u_int32_t evs_payload_type);
+
+  /**
    * Check if subprotocols of the specified master protocol are just
    * informative (and not real)
    *
+   * @par ndpi_mod          = the detection module
    * @par     protoId       = the (master) protocol identifier to query
    * @return  1 = the subprotocol is informative, 0 otherwise.
    *
    */
-  u_int8_t ndpi_is_subprotocol_informative(u_int16_t protoId);
+  u_int8_t ndpi_is_subprotocol_informative(struct ndpi_detection_module_struct *ndpi_mod, u_int16_t protoId);
 
   /**
    * Set hostname-based protocol
@@ -643,7 +658,7 @@ extern "C" {
    *
    * @par     mod           = the detection module
    * @par     category      = the category associated to the protocol
-   * @paw     name          = the string name of the category
+   * @par     name          = the string name of the category
    *
    */
   void ndpi_category_set_name(struct ndpi_detection_module_struct *ndpi_mod,
@@ -682,6 +697,15 @@ extern "C" {
 					     u_int16_t proto);
 
   /**
+   * Get the protocol breed ID associated to the breed name
+   *
+   * @par     name          = the string name of the breed
+   * @return  the breed ID associated to the name, or NDPI_PROTOCOL_UNRATED if not found
+   *
+   */
+  ndpi_protocol_breed_t ndpi_get_breed_by_name(const char *name);
+
+  /**
    * Return the string name of the protocol breed
    *
    * @par     ndpi_struct   = the detection module
@@ -699,7 +723,7 @@ extern "C" {
    * @return  the ID of the protocol
    *
    */
-  extern u_int16_t ndpi_get_proto_by_name(struct ndpi_detection_module_struct *ndpi_mod, const char *name);
+  extern u_int16_t ndpi_get_proto_by_name(const struct ndpi_detection_module_struct *ndpi_mod, const char *name);
 
   /**
    * Return the name of the protocol given its ID
@@ -709,7 +733,7 @@ extern "C" {
    * @return  the name of the protocol
    *
    */
-  extern char* ndpi_get_proto_by_id(struct ndpi_detection_module_struct *ndpi_mod, u_int id);
+  extern char* ndpi_get_proto_by_id(const struct ndpi_detection_module_struct *ndpi_mod, u_int id);
 
   /**
    * Return the name of the protocol given its ID. You can specify TLS.YouTube or just TLS
@@ -839,6 +863,19 @@ extern "C" {
 			       char* path);
 
   /**
+   * Load files (whose name is <protocolid>_<label>.<extension>) stored
+   * in a directory and binds each IP/network to the specified protocol.
+   * This function is used to bind IP addresses to protocols
+   *
+   * @par     ndpi_mod    = the detection module
+   * @par     path        = the path of the file
+   * @return  0 if the file is loaded correctly;
+   *          -1 else
+   */
+  int ndpi_load_protocols_dir(struct ndpi_detection_module_struct *ndpi_str,
+			       char* path);
+
+  /**
    * Read a file and load the list of risky domains
    *
    * @par     ndpi_mod = the detection module
@@ -849,14 +886,14 @@ extern "C" {
   int ndpi_load_risk_domain_file(struct ndpi_detection_module_struct *ndpi_str, const char* path);
 
   /**
-   * Read a file and load the list of malicious JA3 signatures
+   * Read a file and load the list of malicious JA4 signatures
    *
    * @par     ndpi_mod = the detection module
    * @par     path     = the path of the file
    * @return  0 if the file is loaded correctly;
    *          -1 else
    */
-  int ndpi_load_malicious_ja3_file(struct ndpi_detection_module_struct *ndpi_str, const char *path);
+  int ndpi_load_malicious_ja4_file(struct ndpi_detection_module_struct *ndpi_str, const char *path);
 
   /**
    * Read a file and load the list of malicious SSL certificate SHA1 fingerprints.
@@ -867,14 +904,40 @@ extern "C" {
    */
   int ndpi_load_malicious_sha1_file(struct ndpi_detection_module_struct *ndpi_str, const char *path);
 
+  /*
+    Add a new TCP fingerprint
+
+    Return code:
+    0   OK
+    -1  Duplicated fingerprint
+    -2  Unable to add a new entry
+  */
+  int ndpi_add_tcp_fingerprint(struct ndpi_detection_module_struct *ndpi_str,
+			       char *fingerprint, ndpi_os os);
+
   /**
-   * Get the total number of the supported protocols
+   * Read a file and load the list of TCP fingerprints
+   * @par     ndpi_mod = the detection module
+   * @par     path     = the path of the file
+   * @return  0 if the file is loaded correctly;
+   *          -1 else
+   */
+  int load_tcp_fingerprint_file_fd(struct ndpi_detection_module_struct *ndpi_str, FILE *fd);
+  int ndpi_load_tcp_fingerprint_file(struct ndpi_detection_module_struct *ndpi_str, const char *path);
+  void ndpi_load_tcp_fingerprints(struct ndpi_detection_module_struct *ndpi_str);
+  ndpi_os ndpi_get_os_from_tcp_fingerprint(struct ndpi_detection_module_struct *ndpi_str,
+					   char *tcp_fingerprint);
+
+  /**
+   * Get the total number of the defined protocols (internals and custom).
+   * It can be called only with finalized context, i.e. after having called
+   * ndpi_finalize_initialization()
    *
    * @par     ndpi_mod = the detection module
    * @return  the number of protocols
    *
    */
-  u_int ndpi_get_num_supported_protocols(struct ndpi_detection_module_struct *ndpi_mod);
+  u_int ndpi_get_num_protocols(struct ndpi_detection_module_struct *ndpi_mod);
 
   /**
    * Get the nDPI version release
@@ -893,48 +956,6 @@ extern "C" {
    */
   void ndpi_set_automa(struct ndpi_detection_module_struct *ndpi_struct,
 		       void* automa);
-
-  /* NDPI_PROTOCOL_HTTP */
-  /**
-   * Retrieve information for HTTP flows
-   *
-   * @par     flow     = the detected flow
-   * @return  the HTTP method information about the flow
-   *
-   */
-  ndpi_http_method ndpi_get_http_method(struct ndpi_flow_struct *flow);
-
-  /**
-   * Get the HTTP url
-   *
-   * @par     flow     = the detected flow
-   * @return  the HTTP method information about the flow
-   *
-   */
-  char* ndpi_get_http_url(struct ndpi_flow_struct *flow);
-
-  /**
-   * Get the HTTP content-type
-   *
-   * @par     flow     = the detected flow
-   * @return  the HTTP method information about the flow
-   *
-   */
-  char* ndpi_get_http_content_type(struct ndpi_flow_struct *flow);
-
-  /* NDPI_PROTOCOL_TOR */
-  /**
-   * Check if the flow could be detected as TOR protocol
-   *
-   * @par     ndpi_struct = the detection module
-   * @par     flow = the detected flow
-   * @par     certificate = the SSL/TLS certificate
-   * @return  1 if the flow is TOR;
-   *          0 else
-   *
-   */
-  int ndpi_is_tls_tor(struct ndpi_detection_module_struct *ndpi_struct,
-		      struct ndpi_flow_struct *flow, char *certificate);
 
   /* Wrappers functions */
   /**
@@ -960,7 +981,7 @@ extern "C" {
    * @par     The automata initialized with ndpi_init_automa();
    * @par     The (sub)string to search (malloc'ed memory)
    * @par     The number associated with this string
-   * @return  0 in case of no error, or -2 if the string has been already addeed, or -1 if an error occurred.
+   * @return  0 in case of no error, or -2 if the string has been already added, or -1 if an error occurred.
    *
    */
   int ndpi_add_string_value_to_automa(void *_automa, char *str, u_int32_t num);
@@ -1019,9 +1040,11 @@ extern "C" {
 			    const char *ip_address_and_mask, ndpi_protocol_category_t category,
 			    void *user_data);
   int ndpi_load_hostname_category(struct ndpi_detection_module_struct *ndpi_struct,
-				  const char *name_to_add, ndpi_protocol_category_t category);
+				  const char *name_to_add, ndpi_protocol_category_t category,
+				  ndpi_protocol_breed_t breed);
   int ndpi_load_category(struct ndpi_detection_module_struct *ndpi_struct,
 			 const char *ip_or_name, ndpi_protocol_category_t category,
+			 ndpi_protocol_breed_t breed,
 			 void *user_data);
   int ndpi_enable_loaded_categories(struct ndpi_detection_module_struct *ndpi_struct);
   void* ndpi_find_ipv4_category_userdata(struct ndpi_detection_module_struct *ndpi_str,
@@ -1038,33 +1061,37 @@ extern "C" {
 				       struct in6_addr *saddr, struct in6_addr *daddr,
 				      ndpi_protocol *ret);
   int ndpi_match_custom_category(struct ndpi_detection_module_struct *ndpi_struct,
-				 char *name, u_int name_len, ndpi_protocol_category_t *id);
-  void ndpi_fill_protocol_category(struct ndpi_detection_module_struct *ndpi_struct,
-				   struct ndpi_flow_struct *flow,
-				   ndpi_protocol *ret);
+				 char *name, u_int name_len, ndpi_protocol_category_t *id,
+				 ndpi_protocol_breed_t *breed);
   int ndpi_get_custom_category_match(struct ndpi_detection_module_struct *ndpi_struct,
 				     char *name_or_ip, u_int name_len,
-				     ndpi_protocol_category_t *id);
+				     ndpi_protocol_category_t *category,
+				     ndpi_protocol_breed_t *breed);
 
   u_int16_t ndpi_map_user_proto_id_to_ndpi_id(struct ndpi_detection_module_struct *ndpi_str,
 					      u_int16_t user_proto_id);
   u_int16_t ndpi_map_ndpi_id_to_user_proto_id(struct ndpi_detection_module_struct *ndpi_str,
 					      u_int16_t ndpi_proto_id);
-  void ndpi_self_check_host_match(FILE *error_out);
 
   /* Tells to called on what l4 protocol given application protocol can be found */
   ndpi_l4_proto_info ndpi_get_l4_proto_info(struct ndpi_detection_module_struct *ndpi_struct, u_int16_t ndpi_proto_id);
   const char* ndpi_get_l4_proto_name(ndpi_l4_proto_info proto);
 
-  u_int16_t ndpi_get_lower_proto(ndpi_protocol proto);
-  u_int16_t ndpi_get_upper_proto(ndpi_protocol proto);
+  u_int16_t ndpi_get_lower_proto(ndpi_master_app_protocol proto);
+  u_int16_t ndpi_get_upper_proto(ndpi_master_app_protocol proto);
   bool ndpi_is_proto(ndpi_master_app_protocol proto, u_int16_t p);
   bool ndpi_is_proto_unknown(ndpi_master_app_protocol proto);
   bool ndpi_is_proto_equals(ndpi_master_app_protocol to_check, ndpi_master_app_protocol to_match, bool exact_match_only);
+  u_int16_t ndpi_stack_get_lower_proto(struct ndpi_proto_stack *s);
+  u_int16_t ndpi_stack_get_upper_proto(struct ndpi_proto_stack *s);
+  bool ndpi_stack_contains(struct ndpi_proto_stack *s, u_int16_t proto_id);
+  bool ndpi_stack_is_tls_like(struct ndpi_proto_stack *s);
+  bool ndpi_stack_is_http_like(struct ndpi_proto_stack *s);
+
+  char *ndpi_stack2str(struct ndpi_detection_module_struct *ndpi_str,
+                       struct ndpi_proto_stack *stack, char *buf, u_int buf_len);
 
   ndpi_proto_defaults_t* ndpi_get_proto_defaults(struct ndpi_detection_module_struct *ndpi_mod);
-  u_int ndpi_get_ndpi_num_supported_protocols(struct ndpi_detection_module_struct *ndpi_mod);
-  u_int ndpi_get_ndpi_num_custom_protocols(struct ndpi_detection_module_struct *ndpi_mod);
   u_int ndpi_get_ndpi_detection_module_size(void);
 
   /* Simple helper to get current time, in sec */
@@ -1098,33 +1125,106 @@ extern "C" {
 				    ndpi_protocol_category_t *category,
 				    ndpi_protocol_breed_t *breed);
 
+  /**
+   * Handle risk exceptions for a flow by unsetting risks that should be ignored
+   * based on the exception rules configured via ndpi_load_risk_domain_exceptions().
+   *
+   * @param ndpi_str The detection module
+   * @param flow The flow to process for risk exceptions
+   */
   void ndpi_handle_risk_exceptions(struct ndpi_detection_module_struct *ndpi_str,
 				   struct ndpi_flow_struct *flow);
 
-  /* Utility functions to set ndpi malloc/free/print wrappers */
-  void set_ndpi_malloc(void* (*__ndpi_malloc)(size_t size));
-  void set_ndpi_free(void  (*__ndpi_free)(void *ptr));
-  void set_ndpi_flow_malloc(void* (*__ndpi_flow_malloc)(size_t size));
-  void set_ndpi_flow_free(void  (*__ndpi_flow_free)(void *ptr));
+  /**
+   * Set custom memory allocation functions for nDPI's general memory allocator.
+   *
+   * @param __ndpi_malloc         Function pointer to the custom malloc implementation
+   * @param __ndpi_free           Function pointer to the custom free implementation
+   * @param __ndpi_calloc         Function pointer to the custom calloc implementation
+   * @param __ndpi_realloc        Function pointer to the custom realloc implementation
+   * @param __ndpi_aligned_malloc Function pointer to the custom aligned allocation implementation
+   * @param __ndpi_aligned_free   Function pointer to the custom aligned free implementation
+   * @param __ndpi_flow_malloc    Function pointer to the custom allocation of flows
+   * @param __ndpi_flow_free      Function pointer to the custom free of flows
+   *
+   * This function is optional, but if used, it MUST be called before ANY other nDPI functions!!
+   *
+   * The first 4 parameters are mandatory.
+   * If you want to set a custom allocator for aligned memory, you must specify `__ndpi_aligned_malloc`
+   * and `__ndpi_aligned_free`, both
+   * If you want to set a custom allocator for flow memory, you must specify `__ndpi_flow_malloc`
+   * and `__ndpi_flow_free`, both
+   *
+   * Flow memory can use a separate allocator from general memory for better
+   * memory management in high-throughput scenarios.
+   */
+
+  void ndpi_set_memory_alloction_functions(void *(*__ndpi_malloc)(size_t size),
+                                           void (*__ndpi_free)(void *ptr),
+                                           void *(*__ndpi_calloc)(size_t nmemb, size_t size),
+                                           void *(*__ndpi_realloc)(void *ptr, size_t size),
+                                           void *(*__ndpi_aligned_malloc)(size_t alignment, size_t size),
+                                           void (*__ndpi_aligned_free)(void *ptr),
+                                           void *(*__ndpi_flow_malloc)(size_t size),
+                                           void (*__ndpi_flow_free)(void *ptr));
+
+  /**
+   * Set a custom debug/logging function for nDPI.
+   *
+   * @param ndpi_str The detection module
+   * @param ndpi_debug_printf Function pointer to the custom debug printf implementation
+   */
   void set_ndpi_debug_function(struct ndpi_detection_module_struct *ndpi_str,
 			       ndpi_debug_function_ptr ndpi_debug_printf);
   u_int16_t ndpi_get_api_version(void);
   const char *ndpi_get_gcrypt_version(void);
 
-  /* https://github.com/corelight/community-id-spec */
+  /**
+   * Compute the Community ID hash for an IPv4 flow.
+   * Community ID is a standard for flow hashing that enables correlation of
+   * network traffic across different monitoring tools.
+   * Specification: https://github.com/corelight/community-id-spec
+   *
+   * @param l4_proto Layer 4 protocol (e.g., IPPROTO_TCP, IPPROTO_UDP)
+   * @param src_ip Source IPv4 address in host byte order
+   * @param dst_ip Destination IPv4 address in host byte order
+   * @param src_port Source port (host byte order), or 0 for non-port protocols
+   * @param dst_port Destination port (host byte order), or 0 for non-port protocols
+   * @param icmp_type ICMP type (for ICMP), or 0 otherwise
+   * @param icmp_code ICMP code (for ICMP), or 0 otherwise
+   * @param hash_buf Buffer to store the resulting hash
+   * @param hash_buf_len Length of hash_buf (must be at least 20 bytes for SHA1)
+   * @return 0 on success, -1 on error
+   */
   int ndpi_flowv4_flow_hash(u_int8_t l4_proto, u_int32_t src_ip, u_int32_t dst_ip, u_int16_t src_port, u_int16_t dst_port,
 			    u_int8_t icmp_type, u_int8_t icmp_code, u_char *hash_buf, u_int8_t hash_buf_len);
-  int ndpi_flowv6_flow_hash(u_int8_t l4_proto, struct ndpi_in6_addr *src_ip, struct ndpi_in6_addr *dst_ip,
+
+  /**
+   * Compute the Community ID hash for an IPv6 flow.
+   * Community ID is a standard for flow hashing that enables correlation of
+   * network traffic across different monitoring tools.
+   * Specification: https://github.com/corelight/community-id-spec
+   *
+   * @param l4_proto Layer 4 protocol (e.g., IPPROTO_TCP, IPPROTO_UDP)
+   * @param src_ip Source IPv6 address
+   * @param dst_ip Destination IPv6 address
+   * @param src_port Source port (host byte order), or 0 for non-port protocols
+   * @param dst_port Destination port (host byte order), or 0 for non-port protocols
+   * @param icmp_type ICMPv6 type (for ICMPv6), or 0 otherwise
+   * @param icmp_code ICMPv6 code (for ICMPv6), or 0 otherwise
+   * @param hash_buf Buffer to store the resulting hash
+   * @param hash_buf_len Length of hash_buf (must be at least 20 bytes for SHA1)
+   * @return 0 on success, -1 on error
+   */
+  int ndpi_flowv6_flow_hash(u_int8_t l4_proto, const struct ndpi_in6_addr *src_ip, const struct ndpi_in6_addr *dst_ip,
 			    u_int16_t src_port, u_int16_t dst_port, u_int8_t icmp_type, u_int8_t icmp_code,
 			    u_char *hash_buf, u_int8_t hash_buf_len);
-  u_int8_t ndpi_extra_dissection_possible(struct ndpi_detection_module_struct *ndpi_str,
-                                          struct ndpi_flow_struct *flow);
   u_int8_t ndpi_is_safe_ssl_cipher(u_int32_t cipher);
   const char* ndpi_cipher2str(u_int32_t cipher, char unknown_cipher[8]);
   const char* ndpi_tunnel2str(ndpi_packet_tunnel tt);
   u_int16_t ndpi_guess_host_protocol_id(struct ndpi_detection_module_struct *ndpi_struct,
 					struct ndpi_flow_struct *flow);
-  int ndpi_has_human_readeable_string(char *buffer, u_int buffer_size,
+  int ndpi_has_human_readable_string(char *buffer, u_int buffer_size,
 				      u_int8_t min_string_match_len, /* Will return 0 if no string > min_string_match_len have been found */
 				      char *outbuf, u_int outbuf_len);
   /* Return a flow info string (summarized). Does only work for DNS/HTTP/TLS/QUIC. */
@@ -1138,8 +1238,13 @@ extern "C" {
   void ndpi_patchIPv6Address(char *str);
   void ndpi_user_pwd_payload_copy(u_int8_t *dest, u_int dest_len, u_int offset,
 				  const u_int8_t *src, u_int src_len);
+
   u_char* ndpi_base64_decode(const u_char *src, size_t len, size_t *out_len);
   char* ndpi_base64_encode(unsigned char const* bytes_to_encode, size_t in_len); /* NOTE: caller MUST free the returned pointer */
+
+  u_char* ndpi_hex_decode(const u_char *src, size_t len, size_t *out_len);
+  char* ndpi_hex_encode(unsigned char const* bytes_to_encode, size_t in_len); /* NOTE: caller MUST free the returned pointer */
+
   void ndpi_string_sha1_hash(const u_int8_t *message, size_t len, u_char *hash /* 20-bytes */);
 
   int ndpi_load_ipv4_ptree(struct ndpi_detection_module_struct *ndpi_str,
@@ -1206,13 +1311,13 @@ extern "C" {
   u_int8_t ndpi_is_public_ipv4(u_int32_t a /* host byte order */);
   u_int64_t ndpi_htonll(u_int64_t v);
   u_int64_t ndpi_ntohll(u_int64_t v);
-  u_int8_t ndpi_is_valid_protoId(u_int16_t protoId);
-  u_int8_t ndpi_is_encrypted_proto(struct ndpi_detection_module_struct *ndpi_str, ndpi_protocol proto);
+  u_int8_t ndpi_is_encrypted_proto(struct ndpi_detection_module_struct *ndpi_str, ndpi_master_app_protocol proto);
 
   /* DGA */
   int ndpi_check_dga_name(struct ndpi_detection_module_struct *ndpi_str,
 			  struct ndpi_flow_struct *flow,
-			  char *name, u_int8_t is_hostname, u_int8_t check_subproto);
+			  char *name, u_int8_t is_hostname, u_int8_t check_subproto,
+			  u_int8_t flow_fully_classified);
 
   /* Serializer (supports JSON, TLV, CSV) */
 
@@ -1246,7 +1351,7 @@ extern "C" {
   void ndpi_reset_serializer(ndpi_serializer *serializer);
 
   /**
-   * Hint to not create the header (used to avoid creaign the header when not used)
+   * Hint to not create the header (used to avoid creating the header when not used)
    * @param serializer The serializer handle
    */
   void ndpi_serializer_skip_header(ndpi_serializer *serializer);
@@ -1727,6 +1832,7 @@ extern "C" {
   float ndpi_data_variance(struct ndpi_analyze_struct *s);
   float ndpi_data_stddev(struct ndpi_analyze_struct *s);
   float ndpi_data_mean(struct ndpi_analyze_struct *s);
+  float ndpi_data_jitter(struct ndpi_analyze_struct *s);
   u_int64_t ndpi_data_last(struct ndpi_analyze_struct *s);
   u_int64_t ndpi_data_min(struct ndpi_analyze_struct *s);
   u_int64_t ndpi_data_max(struct ndpi_analyze_struct *s);
@@ -1798,7 +1904,8 @@ extern "C" {
 
   void ndpi_data_print_window_values(struct ndpi_analyze_struct *s); /* debug */
 
-  ndpi_risk_enum ndpi_validate_url(char *url);
+  ndpi_risk_enum ndpi_validate_url(struct ndpi_detection_module_struct *ndpi_str,
+				   struct ndpi_flow_struct *flow, char *url);
 
   u_int8_t ndpi_is_protocol_detected(ndpi_protocol proto);
   void ndpi_serialize_risk(ndpi_serializer *serializer, ndpi_risk risk);
@@ -1938,7 +2045,7 @@ extern "C" {
    *
    * @par    values      = pointer to the individual values to be analyzed [in]
    * @par    outliers    = pointer to a list of outliers identified        [out]
-   * @par    num_values  = lenght of values and outliers that MUST have the same lenght [in]
+   * @par    num_values  = length of values and outliers that MUST have the same length [in]
    *
    * @return The number of outliers found
   */
@@ -2039,7 +2146,7 @@ extern "C" {
    * @return 0 if an entry with that key was found, 1 otherwise
    *
    */
-  int ndpi_hash_find_entry(ndpi_str_hash *h, char *key, u_int key_len, u_int16_t *value);
+  int ndpi_hash_find_entry(ndpi_str_hash *h, char *key, u_int key_len, u_int64_t *value);
 
   /**
    * Add an entry to the hashmap.
@@ -2052,7 +2159,15 @@ extern "C" {
    * @return 0 if the entry was added, 1 otherwise
    *
    */
-  int ndpi_hash_add_entry(ndpi_str_hash **h, char *key, u_int8_t key_len, u_int16_t value);
+  int ndpi_hash_add_entry(ndpi_str_hash **h, char *key, u_int8_t key_len, u_int64_t value);
+
+  typedef void (*ndpi_hash_walk_iter)(char *key, u_int64_t value64, void *data);
+  void ndpi_hash_walk(ndpi_str_hash **h, ndpi_hash_walk_iter cb, void *data);
+  
+  void ndpi_hash_get_stats(ndpi_str_hash *h, struct ndpi_str_hash_stats *stats);
+  int ndpi_get_hash_stats(struct ndpi_detection_module_struct *ndpi_struct,
+                          str_hash_type hash_type,
+                          struct ndpi_str_hash_stats *stats);
 
   /* ******************************* */
 
@@ -2061,9 +2176,15 @@ extern "C" {
   void ndpi_free_geoip(struct ndpi_detection_module_struct *ndpi_str);
   int ndpi_get_geoip_asn(struct ndpi_detection_module_struct *ndpi_str,
 			 char *ip, u_int32_t *asn);
+  int ndpi_get_geoip_aso(struct ndpi_detection_module_struct *ndpi_str,
+			 char *ip, char *aso, u_int8_t aso_len);
   int ndpi_get_geoip_country_continent(struct ndpi_detection_module_struct *ndpi_str, char *ip,
 				       char *country_code, u_int8_t country_code_len,
 				       char *continent, u_int8_t continent_len);
+  int ndpi_get_geoip_country_continent_city(struct ndpi_detection_module_struct *ndpi_str, char *ip,
+					    char *country_code, u_int8_t country_code_len,
+					    char *continent, u_int8_t continent_len,
+					    char *city, u_int8_t city_len);
 
   /* ******************************* */
 
@@ -2098,7 +2219,7 @@ extern "C" {
   ndpi_bitmap* ndpi_bitmap_and_alloc(ndpi_bitmap* a, ndpi_bitmap* b_and);
   void ndpi_bitmap_andnot(ndpi_bitmap* a, ndpi_bitmap* b_and);
   void ndpi_bitmap_or(ndpi_bitmap* a, ndpi_bitmap* b_or);
-  ndpi_bitmap* ndpi_bitmap_ot_alloc(ndpi_bitmap* a, ndpi_bitmap* b_and);
+  ndpi_bitmap* ndpi_bitmap_or_alloc(ndpi_bitmap* a, ndpi_bitmap* b_and);
   void ndpi_bitmap_xor(ndpi_bitmap* a, ndpi_bitmap* b_xor);
   void ndpi_bitmap_optimize(ndpi_bitmap* a);
 
@@ -2175,14 +2296,14 @@ extern "C" {
   u_int32_t ndpi_domain_classify_size(ndpi_domain_classify *s);
   bool ndpi_domain_classify_add(struct ndpi_detection_module_struct *ndpi_mod,
 				ndpi_domain_classify *s,
-				u_int16_t class_id, char *domain);
+				u_int32_t class_id, char *domain);
   u_int32_t ndpi_domain_classify_add_domains(struct ndpi_detection_module_struct *ndpi_mod,
 					     ndpi_domain_classify *s,
-					     u_int16_t class_id,
+					     u_int32_t class_id,
 					     char *file_path);
   bool ndpi_domain_classify_hostname(struct ndpi_detection_module_struct *ndpi_mod,
 				     ndpi_domain_classify *s,
-				     u_int16_t *class_id /* out */,
+				     u_int64_t *class_id /* out */,
 				     char *hostname);
 
   /* ******************************* */
@@ -2259,7 +2380,7 @@ extern "C" {
    */
   const char* ndpi_get_host_domain_suffix(struct ndpi_detection_module_struct *ndpi_str,
 					  const char *hostname,
-					  u_int16_t *suffix_id /* out */);
+					  u_int64_t *suffix_id /* out */);
 
   /**
    * Returns the domain (including the TLS) suffix out of the specified hostname.
@@ -2270,7 +2391,7 @@ extern "C" {
    * @par ndpi_str = the struct created for the protocol detection
    * @par hostname = the hostname from which the domain name has to be extracted
    *
-   * @return The host domain name or the hosti tself if not found.
+   * @return The host domain name or the host itself if not found.
    *
    */
   const char* ndpi_get_host_domain(struct ndpi_detection_module_struct *ndpi_str,
@@ -2286,6 +2407,11 @@ extern "C" {
 			const char *proto, const char *param, char *buf, int buf_len);
   char *ndpi_dump_config(struct ndpi_detection_module_struct *ndpi_str,
 			 FILE *fd);
+
+  void ndpi_dump_host_based_protocol_id(struct ndpi_detection_module_struct *ndpi_str,
+					ndpi_hash_walk_iter walker, void *data);
+  void ndpi_dump_host_based_category_id(struct ndpi_detection_module_struct *ndpi_str,
+					ndpi_hash_walk_iter walker, void *data);
 
   /* ******************************* */
 
@@ -2308,6 +2434,7 @@ extern "C" {
   int ndpi_snprintf(char * str, size_t size, char const * format, ...);
   struct tm *ndpi_gmtime_r(const time_t *timep, struct tm *result);
   char* ndpi_strrstr(const char *haystack, const char *needle);
+  void *ndpi_memrchr(const void *m, int c, size_t n);
   int ndpi_str_endswith(const char *s, const char *suffix);
 
   /* ******************************* */
@@ -2336,9 +2463,12 @@ extern "C" {
 			   u_int16_t *decrypted_msg_len,
 			   u_char decrypt_key[64]);
 
+  void ndpi_fill_randombytes(unsigned char *buf,
+			     unsigned int buf_len);
+
   /* ******************************* */
 
-  const char* ndpi_print_os_hint(u_int8_t os_hint);
+  const char* ndpi_print_os_hint(ndpi_os os_hint);
 
   /* ******************************* */
 
@@ -2365,6 +2495,33 @@ extern "C" {
   bool ndpi_cache_address_dump(struct ndpi_detection_module_struct *ndpi_struct, char *path, u_int32_t epoch_now);
   u_int32_t ndpi_cache_address_restore(struct ndpi_detection_module_struct *ndpi_struct, char *path, u_int32_t epoch_now);
   u_int32_t ndpi_cache_address_flush_expired(struct ndpi_detection_module_struct *ndpi_struct, u_int32_t epoch_now);
+
+  /* Scaffolding code for triggering risk NDPI_UNRESOLVED_HOSTNAME */
+  bool ndpi_cache_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
+			      ndpi_ip_addr_t *ip_addr, char *hostname);
+  bool ndpi_cache_find_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
+				   ndpi_ip_addr_t *ip_addr, char *hostname);
+  void ndpi_cache_hostname_ip_swap(struct ndpi_detection_module_struct *ndpi_struct);
+  void ndpi_cache_enable(struct ndpi_detection_module_struct *ndpi_struct);
+
+  /* Protocol normalization functions */
+  /**
+   * Checks if the specified protocol identifier can be placed only on the master_protocol field of ndpi_master_app_protocol
+   * @param ndpi_str nDPI detection module
+   * @param proto_id nDPI protocol identifier
+   * @return true if proto_id cannot be used s app_protocol but only on master_protocol, false is it can be used on both fields
+   */
+  bool ndpi_is_master_only_protocol(struct ndpi_detection_module_struct *ndpi_str, u_int16_t proto_id);
+
+  /**
+   * Normalizes the ndpi_master_app_protocol by reworking values of the specified proto, placing the master/app protocols
+   * in the corresponding protocol fields
+   * @param ndpi_str nDPI detection module
+   * @param proto_id nDPI protocol identifier
+   * @return true if the protocok has been modified/normalized, false if proto has not been modified
+   */
+  bool ndpi_normalize_protocol(struct ndpi_detection_module_struct *ndpi_str,
+			       ndpi_master_app_protocol *proto);
 
   /* ******************************* */
 
@@ -2407,6 +2564,62 @@ extern "C" {
    */
   size_t ndpi_strlcpy(char* dst, const char* src, size_t dst_len, size_t src_len);
 
+  /**
+   * @brief Converts a string from ISO 8859 to UTF-8
+   *
+   * @param in String to convert
+   * @param in_len Source string length
+   * @param out Destination string buffer (UTF-8)
+   * @param out_len Length of destination string buffer. It must be at least (2*in_len)+1
+   *
+   * @return The destination string buffer
+   */
+  u_char* ndpi_str_to_utf8(u_char *in, u_int in_len, u_char *out, u_int out_len);
+
+  /**
+   * Performs a case-insensitive comparison of two memory regions
+   *
+   * @par    s1    Pointer to the first memory region
+   * @par    s2    Pointer to the second memory region
+   * @par    n     Number of bytes to compare
+   * @return       < 0 if s1 is less than s2 in a case-insensitive comparison
+   *               = 0 if s1 matches s2 in a case-insensitive comparison
+   *               > 0 if s1 is greater than s2 in a case-insensitive comparison
+   *               If s1 is NULL and s2 is not, returns -1
+   *               If s2 is NULL and s1 is not, returns 1
+   *               If both are NULL, returns 0
+   *
+   * This function works similarly to memcmp() but performs case-insensitive
+   * comparison.
+   */
+  int ndpi_memcasecmp(const void *s1, const void *s2, size_t n);
+
+
+  int ndpi_bitmask_alloc(struct ndpi_bitmask *b, u_int16_t max_bits);
+  void ndpi_bitmask_free(struct ndpi_bitmask *b);
+  void ndpi_bitmask_set(struct ndpi_bitmask *b, u_int16_t bit);
+  void ndpi_bitmask_clear(struct ndpi_bitmask *b, u_int16_t bit);
+  int ndpi_bitmask_is_set(const struct ndpi_bitmask *b, u_int16_t bit);
+  void ndpi_bitmask_set_all(struct ndpi_bitmask *b);
+  void ndpi_bitmask_reset(struct ndpi_bitmask *b);
+
+  bool ndpi_check_is_numeric_ip(char *host);
+  u_int16_t ndpi_get_master_proto(struct ndpi_detection_module_struct *ndpi_struct,
+				  struct ndpi_flow_struct *flow);
+
+  /* *********************** */
+
+  void ndpi_init_ranking(ndpi_ranking *rank, u_int16_t max_num_items, u_int16_t num_epochs);
+  void ndpi_term_ranking(ndpi_ranking *rank);
+  bool ndpi_serialize_ranking(ndpi_ranking *rank, const char *path);
+  bool ndpi_deserialize_ranking(ndpi_ranking *rank, const char *path);
+  void ndpi_print_ranking(ndpi_ranking *rank);
+  u_int16_t ndpi_ranking_add_epoch(ndpi_ranking *rank, u_int32_t epoch,
+				   ndpi_ranking_epoch_entry *entries,
+				   u_int16_t num_epoch_entries,
+				   ndpi_ranking_change *curr_ranking,/* Out */
+				   ndpi_ranking_change *prev_ranking /* Out */,
+				   u_int32_t *prev_ranking_epoch /* Out */);
 #ifdef __cplusplus
 }
 #endif

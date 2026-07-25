@@ -93,6 +93,14 @@ static inline void* pd_ndpi_malloc(size_t size) {
     return _pcapdroid_malloc(size, MEMTRACK_NDPI);
 }
 
+static inline void* pd_ndpi_calloc(size_t nmemb, size_t size) {
+    return _pcapdroid_calloc(nmemb, size, MEMTRACK_NDPI);
+}
+
+static inline void* pd_ndpi_realloc(void *ptr, size_t size) {
+    return _pcapdroid_realloc(ptr, size, MEMTRACK_NDPI);
+}
+
 static inline void pd_ndpi_free(void *ptr) {
     return _pcapdroid_free(ptr, MEMTRACK_NDPI);
 }

@@ -287,7 +287,7 @@ public class ConnectionOverview extends Fragment implements ConnectionDetailsAct
             mBlockedPktsRow.setVisibility(View.VISIBLE);
         }
 
-        mDurationView.setText(Utils.formatDuration((mConn.last_seen - mConn.first_seen) / 1000));
+        mDurationView.setText(Utils.formatDuration(context, (mConn.last_seen - mConn.first_seen) / 1000));
         mFirstSeen.setText(Utils.formatEpochMillis(mActivity, mConn.first_seen));
         mLastSeen.setText(Utils.formatEpochMillis(mActivity, mConn.last_seen));
         mStatus.setText(mConn.getStatusLabel(mActivity));

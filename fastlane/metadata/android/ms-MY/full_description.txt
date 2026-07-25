@@ -1,0 +1,20 @@
+<i>PCAPdroid</i> ialah aplikasi mesra privasi yang membolehkan anda menjejak dan menganalisis sambungan yang dibuat oleh aplikasi lain dalam peranti anda.
+Ia juga membolehkan anda mengeksport dump PCAP bagi trafik, memeriksa HTTP, menyahsulit trafik TLS dan banyak lagi.
+
+PCAPdroid mensimulasikan VPN untuk menangkap trafik rangkaian tanpa root. Ia tidak menggunakan pelayan VPN jauh; sebaliknya data diproses secara setempat pada peranti.
+
+<b>Ciri-ciri:</b>
+
+* Log dan periksa sambungan yang dibuat oleh aplikasi pengguna dan sistem
+* Ekstrak SNI, pertanyaan DNS, URL HTTP dan alamat IP jauh
+* Periksa permintaan dan respons HTTP menerusi penyahkod terbina dalam
+* Periksa keseluruhan muatan sambungan sebagai hexdump/teks
+* Nyahsulit trafik HTTPS/TLS dan eksport SSLKEYLOGFILE
+* Dump trafik ke fail PCAP, muat turun daripada pelayar, atau strim ke penerima jauh untuk analisis masa nyata (cth. Wireshark)
+* Cipta peraturan untuk menapis trafik yang baik dan mengesan anomali dengan mudah
+* Kenal pasti negara dan ASN pelayan jauh menerusi carian pangkalan data luar talian
+* Pada peranti yang diroot, tangkap trafik semasa aplikasi VPN lain sedang berjalan
+
+Jika anda bercadang menggunakan PCAPdroid untuk melakukan analisis paket, sila rujuk <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>bahagian khusus</a> dalam manual.
+
+Sertai komuniti antarabangsa PCAPdroid di <a href="https://t.me/PCAPdroid">Telegram</a> atau di <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.

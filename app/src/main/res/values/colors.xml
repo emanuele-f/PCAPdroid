@@ -25,4 +25,7 @@
     <color name="rcvdPayloadBg">#EDEDFB</color>
     <color name="rcvdPayloadFg">#00007F</color>
     <color name="lightGray">#aaa</color>
+    <color name="cardBorder">#e8e8e8</color>
+    <color name="appBadgeBg">#616161</color>
+    <color name="appBadgeText">#FFFFFF</color>
 </resources>

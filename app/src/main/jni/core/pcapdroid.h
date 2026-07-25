@@ -122,6 +122,7 @@ typedef struct {
     bool blacklisted_domain;
     bool whitelisted_app;
     bool to_block;
+    bool fw_app_block;
     bool netd_block_missed;
     bool proxied;
     bool decryption_ignored;
@@ -192,6 +193,7 @@ typedef struct {
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
     bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
+    bool (*get_country_code)(struct pcapdroid *pd, const char *host, char out[3]);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -205,6 +207,7 @@ typedef struct pcapdroid {
     int new_conn_id;
     uint64_t now_ms;            // Monotonic timestamp, see pd_refresh_time
     struct ndpi_detection_module_struct *ndpi;
+    struct ndpi_bitmask masterProtos;
     zdtun_t *zdt;
     ip_lru_t *ip_to_host;
     conn_array_t new_conns;
@@ -382,6 +385,8 @@ typedef struct {
     jfieldID ld_hosts;
     jfieldID ld_ips;
     jfieldID ld_countries;
+    jfieldID ld_uid;
+    jfieldID ld_allowlists;
 } jni_fields_t;
 
 typedef struct {
@@ -420,7 +425,7 @@ void pd_init_pkt_context(pkt_context_t *pctx,
 void pd_process_packet(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_account_stats(pcapdroid_t *pd, pkt_context_t *pctx);
 void pd_dump_packet(pcapdroid_t *pd, const char *pktbuf, int pktlen, const struct timeval *tv,
-                       int uid, u_int ifidx);
+                       int uid, u_int ifidx, bool is_tx);
 void pd_housekeeping(pcapdroid_t *pd);
 pd_conn_t* pd_new_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, int uid);
 void pd_purge_connection(pcapdroid_t *pd, pd_conn_t *data);
@@ -434,7 +439,7 @@ const char* get_file_path(pcapdroid_t *pd, const char *subpath);
 static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path(pd, ""); }
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
-uint16_t pd_ndpi2proto(ndpi_protocol proto);
+uint16_t pd_ndpi2proto(const struct ndpi_bitmask *masterProtos, ndpi_protocol proto);
 
 #ifdef ANDROID
 
@@ -447,12 +452,11 @@ struct in6_addr getIPv6Pref(JNIEnv *env, jobject vpn_inst, const char *key);
 void getApplicationByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void getPackageNameByUid(pcapdroid_t *pd, jint uid, char *buf, int bufsize);
 void loadUidMapping(pcapdroid_t *pd, jint uid, const char *package_name, const char *app_name);
-bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]);
 
 #endif // ANDROID
 
 // Internals
-void init_ndpi_protocols_bitmask(ndpi_protocol_bitmask_struct_t *b);
+void init_ndpi_protocols_bitmask(struct ndpi_bitmask *b);
 void load_ndpi_hosts(struct ndpi_detection_module_struct *ndpi);
 uint32_t crc32(u_char *buf, size_t len, uint32_t crc);
 char* get_allocs_summary();

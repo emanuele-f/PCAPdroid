@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.interfaces.ConnectionsListener;
@@ -121,11 +122,9 @@ public class ConnectionsAdapter extends RecyclerView.Adapter<ConnectionsAdapter.
         @SuppressWarnings("deprecation")
         public void bindConn(Context context, ConnectionDescriptor conn, AppsResolver apps, Drawable unknownIcon) {
             AppDescriptor app = apps.getAppByUid(conn.uid, 0);
-            Drawable appIcon;
             String l7Text;
 
-            appIcon = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : unknownIcon;
-            icon.setImageDrawable(appIcon);
+            AppIconLoader.setIcon(icon, app, unknownIcon);
 
             if((conn.info != null) && (conn.info.length() > 0))
                 remote.setText(conn.info);

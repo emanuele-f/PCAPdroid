@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="11dp"
+    android:paddingHorizontal="14dp"
+    android:background="?attr/selectableItemBackground">
+
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="10dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            tools:tint="@color/colorAccent"
+            tools:src="@drawable/ic_apps" />
+
+        <TextView
+            android:id="@+id/app_extra_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:background="@drawable/capture_app_badge_bg"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="3dp"
+            android:textColor="@color/appBadgeText"
+            android:textSize="8sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="+4"
+            tools:visibility="visible" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/capture_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:singleLine="true"
+                android:ellipsize="end"
+                tools:text="PCAPdroid_30_Mar_14_22_05" />
+
+            <TextView
+                android:id="@+id/capture_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="13sp"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="18.7 MB" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/capture_meta"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="2dp"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                android:textSize="11sp"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="30 Mar, 14:22:05 · 12 m · Termux and 1 more" />
+
+            <ImageView
+                android:id="@+id/decryption_icon"
+                android:src="@drawable/ic_lock_open"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:tint="@color/ok"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingEnd="-4dp"
+                android:adjustViewBounds="true"
+                android:paddingVertical="2dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

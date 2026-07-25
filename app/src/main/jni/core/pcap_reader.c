@@ -156,6 +156,7 @@ void pd_destroy_reader(pd_reader_t *reader) {
 
     mapped_uid_t *entry, *tmp;
     HASH_ITER(hh, reader->mapped_uids, entry, tmp) {
+        HASH_DEL(reader->mapped_uids, entry);
         pd_free(entry);
     }
 
@@ -336,6 +337,9 @@ static reader_rv read_enhanced_packet_block(pd_reader_t *reader, pcapd_hdr_t *hd
 
                 size_t read_size = min(opt.length, sizeof(comment) - 1);
                 if (fread(comment, read_size, 1, reader->fp) == 1) {
+                    // rewind so the generic option skip below advances consistently
+                    fseek(reader->fp, -(long)read_size, SEEK_CUR);
+
                     int parsed_length;
                     unsigned int uid;
                     comment[read_size] = '\0';
@@ -358,9 +362,22 @@ static reader_rv read_enhanced_packet_block(pd_reader_t *reader, pcapd_hdr_t *hd
                             }
                         } else
                             log_w("Ignore UID without mapping: %u", uid);
-
-                        break;
                     }
+                }
+            } else if ((opt.code == 2) && (opt.length >= 4)) { // EPB flags
+                // the low 2 bits encode the direction (01 = inbound, 10 = outbound)
+                uint32_t epb_flags;
+
+                if (fread(&epb_flags, sizeof(epb_flags), 1, reader->fp) == 1) {
+                    // rewind so the generic option skip below advances consistently
+                    fseek(reader->fp, -(long)sizeof(epb_flags), SEEK_CUR);
+
+                    uint8_t dir = epb_flags & 0x3;
+
+                    if (dir == 1)
+                        hdr->flags &= ~PCAPD_FLAG_TX;
+                    else if (dir == 2)
+                        hdr->flags |= PCAPD_FLAG_TX;
                 }
             }
 

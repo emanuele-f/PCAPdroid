@@ -43,6 +43,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/bytes_sent" />
             <TextView
@@ -50,6 +51,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -61,6 +63,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/bytes_rcvd" />
             <TextView
@@ -68,6 +71,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -80,6 +84,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/ipv6_bytes_sent" />
             <TextView
@@ -87,6 +92,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -99,6 +105,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/ipv6_bytes_rcvd" />
             <TextView
@@ -106,6 +113,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -118,6 +126,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/ipv6_bytes_percentage" />
             <TextView
@@ -125,6 +134,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -136,6 +146,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/packets_sent" />
             <TextView
@@ -143,6 +154,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -154,6 +166,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/packets_rcvd" />
             <TextView
@@ -161,6 +174,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -173,6 +187,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/packets_dropped" />
             <TextView
@@ -180,6 +195,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -192,6 +208,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/active_connections" />
             <TextView
@@ -199,6 +216,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -211,6 +229,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/dropped_connections" />
             <TextView
@@ -218,6 +237,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -229,6 +249,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/tot_connections" />
             <TextView
@@ -236,6 +257,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -248,6 +270,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/dns_server" />
             <TextView
@@ -255,6 +278,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -267,6 +291,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/dns_queries" />
             <TextView
@@ -274,6 +299,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -286,6 +312,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/heap_usage" />
             <TextView
@@ -293,6 +320,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -304,6 +332,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/memory_usage" />
             <TextView
@@ -311,6 +340,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -322,6 +352,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/low_memory" />
             <TextView
@@ -329,6 +360,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
 
@@ -341,6 +373,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/open_sockets" />
             <TextView
@@ -348,6 +381,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.50"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true" />
         </TableRow>
     </TableLayout>

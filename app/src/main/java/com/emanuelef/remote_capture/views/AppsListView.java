@@ -83,7 +83,7 @@ public class AppsListView extends EmptyRecyclerView implements SearchView.OnQuer
 
         List<AppDescriptor> filtered = new ArrayList<>();
         for(AppDescriptor app : mAllApps) {
-            if(!mShowSystemApps && app.isSystem())
+            if(!mShowSystemApps && app.isBackgroundSystemApp())
                 continue;
             if(!filter.isEmpty()
                     && !app.getPackageName().toLowerCase().contains(filter)

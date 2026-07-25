@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-24 - Emanuele Faranda
+ * Copyright 2021-26 - Emanuele Faranda
  */
 
 /*
@@ -341,15 +341,19 @@ static int init_pcapd_capture(pcapd_runtime_t *rt, pcapd_conf_t *conf) {
     goto err;
   }
 
-  if(rt->inet_iface) {
-    rt->nlroute_sock = nl_route_socket(RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_RULE |
-                                   RTMGRP_IPV6_ROUTE | RTMGRP_IPV6_IFADDR | RTMGRP_LINK);
-    if(rt->nlroute_sock < 0) {
-      log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
-      goto err;
-    }
-    rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
+  // The IFADDR groups keep iface->ip / iface->ip6 up to date for every captured interface (used by
+  // is_tx_packet), so they are needed even when capturing from a specific NIC. The ROUTE / RULE
+  // groups are only needed to detect changes of the internet interface.
+  uint32_t nl_groups = RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_LINK;
+  if(rt->inet_iface)
+    nl_groups |= RTMGRP_IPV4_ROUTE | RTMGRP_IPV4_RULE | RTMGRP_IPV6_ROUTE;
+
+  rt->nlroute_sock = nl_route_socket(nl_groups);
+  if(rt->nlroute_sock < 0) {
+    log_e("could not create netlink socket[%d]: %s", errno, strerror(errno));
+    goto err;
   }
+  rt->maxfd = max(rt->maxfd, rt->nlroute_sock);
 
   if(getuid() == 0) {
     if(nl_is_diag_working()) {
@@ -653,8 +657,10 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
           log_i("Detected possible IP address change");
 
           uint32_t netmask;
-          if(get_iface_ip(iface->name, &iface->ip, &netmask) < 0)
+          if(get_iface_ip(iface->name, &iface->ip, &netmask) < 0) {
             log_i("Could not get interface \"%s\" IP[%d]: %s", iface->name, errno, strerror(errno));
+            iface->ip = 0;
+          }
 
           if(get_iface_ip6(iface->name, &iface->ip6) < 0) {
             log_i("Could not get interface \"%s\" IPv6[%d]: %s", iface->name, errno, strerror(errno));
@@ -663,7 +669,7 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
         }
         break;
       case RTM_DELLINK:
-        if((iface = iface_by_ifidx(rt, ((struct ifaddrmsg *) NLMSG_DATA(nh))->ifa_index)) != NULL) {
+        if((iface = iface_by_ifidx(rt, ((struct ifinfomsg *) NLMSG_DATA(nh))->ifi_index)) != NULL) {
           // libpcap sometimes does not detect that an interface was removed. Making it necessary
           // to subscribe to RTMGRP_LINK
           log_i("RTM_DELLINK: interface %s deleted", iface->name);
@@ -688,9 +694,17 @@ static int handle_nl_message(pcapd_runtime_t *rt) {
 
 /* ******************************************************* */
 
-// try to determine the packet direction as it is only available in SLL / SLL2 ("any" interface)
+// try to determine the packet direction.
+// When an IP address of the capture interface is known, the decision is based on the IP layer
+// only: if neither the source nor the destination matches the interface, the packet is assumed
+// to be TX (no peers swap). This is conservative and avoids misclassifying routed traffic (e.g.
+// when the phone acts as a hotspot) as RX just because its destination MAC matches the interface.
+// The MAC / SLL heuristic is only used as a fallback, when the IP layer cannot be matched (e.g.
+// on the "any" interface, which has no single IP address).
 static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) {
   // TODO check for broadcast / multicast
+  int l2_hint = -1; // -1 = unknown, 0 = RX, 1 = TX
+
   if((iface->dlink == DLT_EN10MB) && (len >= 14)) {
     // Ethernet header present
     struct ethhdr *eth = (struct ethhdr *) pkt;
@@ -699,9 +713,9 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
 
     if(smac != dmac) {
       if(smac == iface->mac)
-        return 1; // TX
+        l2_hint = 1; // TX
       else if(dmac == iface->mac)
-        return 0; // RX
+        l2_hint = 0; // RX
     }
 
     len -= 14;
@@ -711,9 +725,9 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
     uint16_t pkttype = ntohs(sll->sll_pkttype);
 
     if(pkttype == LINUX_SLL_HOST)
-      return 0; // RX
+      l2_hint = 0; // RX
     else if(pkttype == LINUX_SLL_OUTGOING)
-      return 1; // TX
+      l2_hint = 1; // TX
 
     len -= SLL_HDR_LEN;
     pkt += SLL_HDR_LEN;
@@ -722,9 +736,9 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
     uint16_t pkttype = ntohs(sll2->sll2_pkttype);
 
     if(pkttype == LINUX_SLL_HOST)
-      return 0; // RX
+      l2_hint = 0; // RX
     else if(pkttype == LINUX_SLL_OUTGOING)
-      return 1; // TX
+      l2_hint = 1; // TX
 
     len -= SLL2_HDR_LEN;
     pkt += SLL2_HDR_LEN;
@@ -732,21 +746,36 @@ static int is_tx_packet(pcapd_iface_t *iface, const u_char *pkt, u_int16_t len) 
 
   // NOTE: this must be IPv4/IPv6 traffic due to the PCAP filter
   if(len < 20)
-    return 0;
+    return (l2_hint >= 0) ? l2_hint : 1;
 
   struct iphdr *ip = (struct iphdr *) pkt;
 
   if(ip->version == 4) {
-    if(ip->daddr == iface->ip)
-      return 0; // RX
+    if(iface->ip != 0) {
+      // the IP layer takes precedence over the MAC / SLL hint
+      if(ip->saddr == iface->ip)
+        return 1; // TX
+      if(ip->daddr == iface->ip)
+        return 0; // RX
+
+      return 1; // assume TX
+    }
   } else if((ip->version == 6) && (len >= sizeof(struct ipv6hdr))) {
+    static const struct in6_addr zero_ip6 = {0};
     struct ipv6hdr *hdr = (struct ipv6hdr *) pkt;
 
-    if(memcmp(&hdr->daddr, &iface->ip6, sizeof(iface->ip6)) == 0)
-      return 0; // RX
+    if(memcmp(&iface->ip6, &zero_ip6, sizeof(iface->ip6)) != 0) {
+      if(memcmp(&hdr->saddr, &iface->ip6, sizeof(iface->ip6)) == 0)
+        return 1; // TX
+      if(memcmp(&hdr->daddr, &iface->ip6, sizeof(iface->ip6)) == 0)
+        return 0; // RX
+
+      return 1; // assume TX
+    }
   }
 
-  return 1; // by default assume TX
+  // the interface IP is unknown (e.g. the "any" interface): fall back to the MAC / SLL hint
+  return (l2_hint >= 0) ? l2_hint : 1;
 }
 
 /* ******************************************************* */

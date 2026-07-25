@@ -50,6 +50,26 @@ static void getNativeLibPath(struct pcapdroid *pd, const char *prog_name, char *
 
 /* ******************************************************* */
 
+/* Test stand-in for the JNI getCountryCode: derives a deterministic, predictable
+ * 2-char "country code" from the last byte of the destination address (e.g.
+ * x.x.x.10 -> "0A"), so that the country match logic can be exercised. */
+static bool getCountryCodeFromIp(struct pcapdroid *pd, const char *host, char out[3]) {
+  zdtun_ip_t ip;
+  int ipver = zdtun_parse_ip(host, &ip);
+
+  if((ipver != 4) && (ipver != 6)) {
+    out[0] = '\0';
+    return false;
+  }
+
+  uint8_t last_byte = (ipver == 4) ? ((const uint8_t*)&ip.ip4)[3] : ip.ip6.s6_addr[15];
+
+  snprintf(out, 3, "%02X", last_byte);
+  return true;
+}
+
+/* ******************************************************* */
+
 void add_test(const char *name, void (*test_cb)()) {
   int len = strlen(name);
   assert(len < TEST_NAME_MAX_LENGTH);
@@ -97,6 +117,7 @@ pcapdroid_t* pd_init_test(const char *ifname) {
   pd->pcap.capture_interface = (char*) ifname;
   pd->pcap.as_root = false;   // don't run as root
   pd->cb.get_libprog_path = getNativeLibPath;
+  pd->cb.get_country_code = getCountryCodeFromIp;
   pd->payload_mode = PAYLOAD_MODE_FULL;
 
   strcpy(pd->cachedir, ".");

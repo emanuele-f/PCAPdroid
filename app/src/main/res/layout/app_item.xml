@@ -29,6 +29,7 @@
             android:id="@+id/app_info"
             android:textStyle="bold"
             android:textSize="14sp"
+            android:textAlignment="viewStart"
             android:ellipsize="end"
             android:singleLine="true"
             android:layout_width="wrap_content"
@@ -39,6 +40,7 @@
             android:id="@+id/sent_rcvd"
             tools:text="@string/rcvd_and_sent"
             android:textSize="12sp"
+            android:textAlignment="viewStart"
             android:layout_marginTop="2dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

@@ -30,10 +30,10 @@
 
     <PreferenceCategory app:title="@string/tcp_udp_exporter" app:iconSpaceReserved="false">
         <EditTextPreference
-            app:key="collector_ip_address"
-            app:title="@string/receiver_ip_address"
+            app:key="collector_host"
+            app:title="@string/receiver_host"
             app:iconSpaceReserved="false"
-            app:defaultValue="@string/default_collector_ip"
+            app:defaultValue="@string/default_collector_host"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
@@ -102,6 +102,13 @@
             app:iconSpaceReserved="false"
             app:summary="@string/full_payload_summary"
             app:defaultValue="false" />
+
+        <DropDownPreference
+            app:key="max_connections"
+            app:title="@string/connections_log_size"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="8192" />
 
         <Preference
             android:key="socks5_settings"

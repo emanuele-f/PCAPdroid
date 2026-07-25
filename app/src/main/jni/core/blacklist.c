@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #define _GNU_SOURCE
@@ -33,11 +33,18 @@ typedef struct {
     UT_hash_handle hh;
 } int_entry_t;
 
+typedef struct {
+    int uid;
+    blacklist_t *allowlist;
+    UT_hash_handle hh;
+} app_allowlist_t;
+
 struct blacklist {
     struct HashTable *domains;
     int_entry_t *uids;
     ndpi_ptree_t *ptree;
     country_entry_t* countries;
+    app_allowlist_t *app_allowlists;
     blacklists_stats_t stats;
 };
 
@@ -280,6 +287,13 @@ void blacklist_destroy(blacklist_t *bl) {
         bl_free(entry_c);
     }
 
+    app_allowlist_t *entry_a, *tmp_a;
+    HASH_ITER(hh, bl->app_allowlists, entry_a, tmp_a) {
+        HASH_DELETE(hh, bl->app_allowlists, entry_a);
+        blacklist_destroy(entry_a->allowlist);
+        bl_free(entry_a);
+    }
+
     ndpi_ptree_destroy(bl->ptree);
     bl_free(bl);
 }
@@ -380,6 +394,37 @@ void blacklist_get_stats(const blacklist_t *bl, blacklists_stats_t *stats) {
 
 /* ******************************************************* */
 
+int blacklist_set_app_allowlist(blacklist_t *bl, int uid, blacklist_t *allowlist) {
+    app_allowlist_t *entry;
+
+    HASH_FIND_INT(bl->app_allowlists, &uid, entry);
+    if(entry != NULL) {
+        blacklist_destroy(entry->allowlist);
+        entry->allowlist = allowlist;
+        return 0;
+    }
+
+    entry = bl_malloc(sizeof(app_allowlist_t));
+    if(!entry)
+        return -ENOMEM;
+
+    entry->uid = uid;
+    entry->allowlist = allowlist;
+    HASH_ADD_INT(bl->app_allowlists, uid, entry);
+    return 0;
+}
+
+/* ******************************************************* */
+
+blacklist_t* blacklist_get_app_allowlist(const blacklist_t *bl, int uid) {
+    app_allowlist_t *entry;
+
+    HASH_FIND_INT(bl->app_allowlists, &uid, entry);
+    return (entry != NULL) ? entry->allowlist : NULL;
+}
+
+/* ******************************************************* */
+
 #if ANDROID
 
 static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blacklist_type tp) {
@@ -425,25 +470,69 @@ static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blac
 
 /* ******************************************************* */
 
+// Each allowlist is loaded as a nested blacklist_t
+static int bl_load_app_allowlists(blacklist_t *bl, JNIEnv *env, jobject descriptors) {
+    int num_items = (*env)->CallIntMethod(env, descriptors, mids.listSize);
+    int num_loaded = 0;
+
+    for(int i=0; i<num_items; i++) {
+        jobject descr = (*env)->CallObjectMethod(env, descriptors, mids.listGet, i);
+        if(descr == NULL)
+            continue;
+
+        int uid = (*env)->GetIntField(env, descr, fields.ld_uid);
+
+        blacklist_t *allowlist = blacklist_init();
+        if(!allowlist) {
+            log_e("blacklist_init failed for app allowlist (uid %d)", uid);
+            (*env)->DeleteLocalRef(env, descr);
+            return -1;
+        }
+
+        if(blacklist_load_list_descriptor(allowlist, env, descr) < 0) {
+            blacklist_destroy(allowlist);
+            (*env)->DeleteLocalRef(env, descr);
+            return -1;
+        }
+
+        if(blacklist_set_app_allowlist(bl, uid, allowlist) < 0) {
+            log_e("blacklist_set_app_allowlist failed for uid %d", uid);
+            blacklist_destroy(allowlist);
+            (*env)->DeleteLocalRef(env, descr);
+            return -1;
+        }
+        num_loaded++;
+
+        (*env)->DeleteLocalRef(env, descr);
+    }
+
+    return num_loaded;
+}
+
+/* ******************************************************* */
+
 int blacklist_load_list_descriptor(blacklist_t *bl, JNIEnv *env, jobject ld) {
     jobject apps = (*env)->GetObjectField(env, ld, fields.ld_apps);
     jobject hosts = (*env)->GetObjectField(env, ld, fields.ld_hosts);
     jobject ips = (*env)->GetObjectField(env, ld, fields.ld_ips);
     jobject countries = (*env)->GetObjectField(env, ld, fields.ld_countries);
+    jobject allowlists = (*env)->GetObjectField(env, ld, fields.ld_allowlists);
 
     int num_apps = bl_load_list_of_type(bl, env, apps, UID_BLACKLIST);
     int num_domains = bl_load_list_of_type(bl, env, hosts, DOMAIN_BLACKLIST);
     int num_ips = bl_load_list_of_type(bl, env, ips, IP_BLACKLIST);
     int num_countries = bl_load_list_of_type(bl, env, countries, COUNTRY_BLACKLIST);
+    int num_allowlists = bl_load_app_allowlists(bl, env, allowlists);
     int rv = 0;
 
-    if((num_apps == -1) || (num_ips == -1) || (num_domains == -1) || (num_countries == -1))
+    if((num_apps == -1) || (num_ips == -1) || (num_domains == -1) || (num_countries == -1) || (num_allowlists == -1))
         rv = -1;
 
     (*env)->DeleteLocalRef(env, apps);
     (*env)->DeleteLocalRef(env, hosts);
     (*env)->DeleteLocalRef(env, ips);
     (*env)->DeleteLocalRef(env, countries);
+    (*env)->DeleteLocalRef(env, allowlists);
     return rv;
 }
 

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2023-25 - Emanuele Faranda
+ * Copyright 2023-26 - Emanuele Faranda
  */
 
 #include <linux/if_ether.h>
@@ -204,6 +204,7 @@ void pcap_destroy_dumper(pcap_dumper_t *dumper) {
     {
         mapped_uid_t *entry, *tmp;
         HASH_ITER(hh, dumper->mapped_uids, entry, tmp) {
+            HASH_DEL(dumper->mapped_uids, entry);
             pd_free(entry);
         }
     }
@@ -211,6 +212,7 @@ void pcap_destroy_dumper(pcap_dumper_t *dumper) {
     {
         dumped_interface_t *entry, *tmp;
         HASH_ITER(hh, dumper->dumped_interfaces, entry, tmp) {
+            HASH_DEL(dumper->dumped_interfaces, entry);
             pd_free(entry);
         }
     }
@@ -257,6 +259,13 @@ static int write_pcapng_opt(char *buf, pcapng_opt_t *opt) {
     return opt->tot_length;
 }
 
+static int write_pcapng_opt_end(void *buf) {
+    pcapng_enh_option_t *opt = (pcapng_enh_option_t*) buf;
+    opt->code = 0;
+    opt->length = 0;
+    return sizeof(*opt);
+}
+
 /* ******************************************************* */
 
 static int get_pcap_file_header(pcap_dumper_t *dumper, char **out) {
@@ -282,7 +291,8 @@ static int get_pcapng_preamble(pcap_dumper_t *dumper, char **out) {
     pcapng_opt_t shb_app = pcapng_option(0x4, pd_appver, strlen(pd_appver));
 
     int shb_length = sizeof(pcapng_section_hdr_block_t) + shb_hw.tot_length +
-            shb_os.tot_length + shb_app.tot_length + 4 /* total_length */;
+            shb_os.tot_length + shb_app.tot_length +
+            sizeof(pcapng_enh_option_t) /* opt_endofopt */ + 4 /* total_length */;
     int idb_length = sizeof(pcapng_intf_descr_block_t) + 4 /* total_length */;
     int preamble_sz = shb_length + idb_length;
     char *preamble = (char*) pd_malloc(preamble_sz);
@@ -302,6 +312,7 @@ static int get_pcapng_preamble(pcap_dumper_t *dumper, char **out) {
     ptr += write_pcapng_opt(ptr, &shb_hw);
     ptr += write_pcapng_opt(ptr, &shb_os);
     ptr += write_pcapng_opt(ptr, &shb_app);
+    ptr += write_pcapng_opt_end(ptr);
     *(uint32_t*)ptr = shb->total_length;
     ptr += 4;
 
@@ -499,6 +510,7 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
         total_length += sizeof(pcapng_enh_option_t) + strlen(ifname);
         ifname_padding = (~total_length + 1) & 0x3;
         total_length += ifname_padding;
+        total_length += sizeof(pcapng_enh_option_t); // opt_endofopt
     }
 
     int8_t *buffer = alloc_dump_buffer(dumper, total_length);
@@ -524,6 +536,8 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
 
         for(uint8_t i=0; i<ifname_padding; i++)
             *(buffer++) = 0x00;
+
+        buffer += write_pcapng_opt_end(buffer);
     }
 
     *(uint32_t*)buffer = idb->total_length;
@@ -531,7 +545,7 @@ static bool dump_pcapng_interface(pcap_dumper_t *dumper, u_int ifidx) {
 }
 
 static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktlen,
-                                      const struct timeval *tv, int uid, u_int ifidx) {
+                                      const struct timeval *tv, int uid, u_int ifidx, bool is_tx) {
     u_int pcapng_ifid = 0;
 
     if(ifidx > 0) {
@@ -568,6 +582,12 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
     uint8_t padding = (~incl_len + 1) & 0x3; // packet data must be padded to 32 bits
     int total_length = epb_size + incl_len + padding;
 
+    // EPB flags option (root mode only, to store the direction heuristic result)
+    // Don't dump it in vpn mode to save space
+    bool dump_direction = !dumper->pd->vpn_capture;
+    if(dump_direction)
+        total_length += sizeof(pcapng_enh_option_t) + 4;
+
     char comment[32];
     int comment_len = 0;
     uint8_t comment_padding = 0;
@@ -579,6 +599,10 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
         total_length += sizeof(pcapng_enh_option_t) + comment_len + comment_padding;
         has_comment = true;
     }
+
+    bool has_options = dump_direction || has_comment;
+    if(has_options)
+        total_length += sizeof(pcapng_enh_option_t); // opt_endofopt
 
     uint64_t now_usec = (uint64_t)tv->tv_sec * 1000000 + tv->tv_usec;
     int8_t *buffer = alloc_dump_buffer(dumper, total_length);
@@ -599,6 +623,18 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
     for(uint8_t i=0; i<padding; i++)
         *(buffer++) = 0x00;
 
+    if(dump_direction) {
+        // EPB flags option: its low 2 bits are the standard direction field
+        // (01 = inbound, 10 = outbound)
+        pcapng_enh_option_t *flags_opt = (pcapng_enh_option_t *) buffer;
+        flags_opt->code = 0x0002;
+        flags_opt->length = 4;
+        buffer += sizeof(pcapng_enh_option_t);
+
+        *(uint32_t*)buffer = is_tx ? 0x2 : 0x1;
+        buffer += 4;
+    }
+
     if (has_comment) {
         // specify the UID as a comment
         // this is necessary until custom options are supported by Wireshark
@@ -615,6 +651,9 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
             *(buffer++) = 0x00;
     }
 
+    if(has_options)
+        buffer += write_pcapng_opt_end(buffer);
+
     *(uint32_t*)buffer = epb->total_length;
     return true;
 }
@@ -622,10 +661,10 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
 /* Dump a single packet into the buffer. Returns false if PCAP dump must be stopped (e.g. if max
  * dump size reached or an error occurred). */
 bool pcap_dump_packet(pcap_dumper_t *dumper, const char *pkt, int pktlen,
-                      const struct timeval *tv, int uid, u_int ifidx) {
+                      const struct timeval *tv, int uid, u_int ifidx, bool is_tx) {
     bool rv;
     if (dumper->format == PCAPNG_DUMP)
-        rv = dump_packet_pcapng(dumper, pkt, pktlen, tv, uid, ifidx);
+        rv = dump_packet_pcapng(dumper, pkt, pktlen, tv, uid, ifidx, is_tx);
     else
         rv = dump_packet_pcap(dumper, pkt, pktlen, tv, uid);
 

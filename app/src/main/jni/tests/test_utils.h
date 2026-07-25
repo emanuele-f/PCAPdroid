@@ -56,4 +56,8 @@ bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_
 
 conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip, uint16_t dst_port, const char *info);
 
+// Active connections table (capture_pcap.c), test-only
+void pcap_add_test_connection(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *data);
+void pcap_free_test_connections(pcapdroid_t *pd);
+
 #endif

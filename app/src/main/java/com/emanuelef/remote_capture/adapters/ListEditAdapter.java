@@ -33,10 +33,12 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.interfaces.TextAdapter;
 import com.emanuelef.remote_capture.model.AppDescriptor;
+import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.MatchList;
 import com.haipq.android.flagkit.FlagImageView;
 
@@ -47,6 +49,7 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
     private final AppsResolver mApps;
     private final Drawable mDefaultIcon;
     private final Drawable mUnknownIcon;
+    private Blocklist mBlocklist;
 
     public ListEditAdapter(Context context) {
         super(context, R.layout.rule_item);
@@ -58,6 +61,10 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
         DrawableCompat.setTint(mDefaultIcon, ContextCompat.getColor(context, R.color.colorTabText));
     }
 
+    public void setAppAllowlistSource(Blocklist blocklist) {
+        mBlocklist = blocklist;
+    }
+
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -65,10 +72,12 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
             convertView = mLayoutInflater.inflate(R.layout.rule_item, parent, false);
 
         MatchList.Rule rule = getItem(position);
-        ((TextView)convertView.findViewById(R.id.item_label)).setText(rule.getLabel());
+        TextView label = convertView.findViewById(R.id.item_label);
+        label.setText(rule.getLabel());
 
         ImageView icon = convertView.findViewById(R.id.icon);
         FlagImageView country_flag = convertView.findViewById(R.id.country_flag);
+        ImageView cog = convertView.findViewById(R.id.cog_icon);
         boolean showFlag = false;
 
         if (rule.getType() == MatchList.RuleType.COUNTRY) {
@@ -84,10 +93,18 @@ public class ListEditAdapter extends ArrayAdapter<MatchList.Rule> implements Tex
             if (rule.getType() == MatchList.RuleType.APP) {
                 String package_name = (String) rule.getValue();
                 AppDescriptor app = mApps.getAppByPackage(package_name, 0);
-                Drawable drawable = ((app != null) && (app.getIcon() != null)) ? app.getIcon() : mUnknownIcon;
-                icon.setImageDrawable(drawable);
+                AppIconLoader.setIcon(icon, app, mUnknownIcon);
             } else
                 icon.setImageDrawable(mDefaultIcon);
+        }
+
+        boolean isAppRule = ((mBlocklist != null) && (rule.getType() == MatchList.RuleType.APP));
+        cog.setVisibility(isAppRule ? View.VISIBLE : View.GONE);
+
+        if(isAppRule) {
+            MatchList allowlist = mBlocklist.findAppAllowlist((String) rule.getValue());
+            if((allowlist != null) && !allowlist.isEmpty())
+                label.setText(getContext().getString(R.string.app_with_exceptions, rule.getLabel(), allowlist.getSize()));
         }
 
         return convertView;

@@ -29,7 +29,7 @@
     <string name="http_server_info">Uruchom serwer HTTP do pobierania PCAP</string>
     <string name="udp_exporter_info">Wyślij PCAP do zdalnego odbiornika UDP</string>
     <string name="http_server_port">Port serwera HTTP</string>
-    <string name="receiver_ip_address">Adres IP kolektora</string>
+    <string name="receiver_host">Host kolektora</string>
     <string name="receiver_port">Port kolektora</string>
     <string name="traffic_dump">Zrzut ruchu sieciowego</string>
     <string name="user_guide">Podręcznik użytkownika</string>
@@ -70,7 +70,6 @@
     <string name="last_seen">Ostatnio widziany</string>
     <string name="conn_status_closed">Zamknij</string>
     <string name="copy_to_clipboard">Kopiuj</string>
-    <string name="save_to_file">Zapisz do pliku</string>
     <string name="older_connections_notice">Nie pokazano %1$d starszych połączeń</string>
     <string name="about_text">PCAPdroid to narzędzie opensource do przechwytywania i monitorowania sieci, które działa bez uprawnień administratora</string>
     <string name="get_app">Pobierz:</string>
@@ -362,7 +361,7 @@
     <string name="cancel_action">Anuluj</string>
     <string name="show_data_action">Pokaż dane</string>
     <string name="remote_collector_notice">Skonfigurowałeś PCAPdroid do wysyłania ruchu do zdalnego serwera. Serwer będzie mógł uzyskać dostęp do Twoich poufnych informacji.\n\nJeśli ktoś Cię o to poprosi, prawdopodobnie jest to próba oszustwa</string>
-    <string name="remote_server_warning">Ze względów bezpieczeństwa wysyłanie ruchu do zdalnego serwera \"%1$s\" jest niedozwolone"</string>
+    <string name="remote_server_warning">Ze względów bezpieczeństwa wysyłanie ruchu do zdalnego serwera \"%1$s\" jest niedozwolone</string>
     <string name="warning">Ostrzeżenie</string>
     <string name="paid_features_unlocked">Płatne funkcje odblokowane. Uruchom ponownie przechwytywanie, jeśli jest uruchomione</string>
     <string name="build_info">Informacje o kompilacji</string>
@@ -430,8 +429,7 @@
     <string name="license_activation_ok">Aktywacja licencji zakończona</string>
     <string name="mitm_addon_running">Dodatek Mitm jest uruchomiony</string>
     <string name="decryption_rules_help">Te reguły określają, które połączenia mają być odszyfrowane. Reguły oparte na hostach działają tylko wtedy, gdy wcześniej otrzymano odpowiedź DNS</string>
-    <string name="keylog_read_error">Błąd odczytu SSL keylog</string>
-    <string name="pcap_file_load_aborted">Ładowanie pliku przechwytywania przerwane</string>
+    <string name="pcap_file_load_aborted">Ładowanie przechwytywania przerwane</string>
     <string name="decryption_info_no_rule">Aby odszyfrować to połączenie, utwórz regułę deszyfrowania z panelu bocznego lub z menu kontekstowego na liście połączeń</string>
     <string name="active_vpn_detected">Wykryto aktywny VPN</string>
     <string name="mitm_doze_notice">Optymalizacja baterii może zakłócać działanie dodatku mitm</string>
@@ -447,7 +445,6 @@
     <string name="vpn_reconnection">Ponowne połączenie VPN</string>
     <string name="vpn_reconnection_aborted">Ponowne połączenie VPN przerwane</string>
     <string name="bytes_threshold">Próg bajtów</string>
-    <string name="select_the_keylog_file">Wybierz plik SSL keylog</string>
     <string name="error_code_with_text">%1$s (błąd %2$d)</string>
     <string name="errno_epipe">Przerwany potok</string>
     <string name="errno_epipe_msg">Serwer niespodziewanie zamknął połączenie podczas przesyłania danych</string>
@@ -469,7 +466,6 @@
     <string name="errno_ehostunreach_msg">System nie może znaleźć trasy do hosta docelowego</string>
     <string name="dns_conn_info">DNS tłumaczy nazwę domeny na adres IP. Właściwe dane są zazwyczaj wymieniane przez kolejne połączenia HTTPS/TLS</string>
     <string name="tls_conn_info">Ruch TLS/HTTPS jest zaszyfrowany. Aby zbadać ten ruch, musisz go odszyfrować. Sprawdź <a href="%1$s">podręcznik użytkownika</a> PCAPdroid, aby uzyskać szczegóły</string>
-    <string name="tls_decryption_not_supported_16KB">Deszyfrowanie TLS nie jest obecnie obsługiwane na urządzeniach 16 KB</string>
     <string name="filename_prefix">Prefiks nazwy pliku</string>
     <string name="filename_prefix_description">Ustaw prefiks plików eksportowanych przez PCAPdroid, np. plików PCAP</string>
     <string name="no_requests">Brak żądań</string>
@@ -504,7 +500,7 @@
     <string name="update_available">Dostępna jest aktualizacja</string>
     <string name="mitm_addon_update_available">Dostępna jest aktualizacja dodatku mitm. Pobierz, by otrzymać najnowsze poprawki</string>
     <string name="update_action">Aktualizuj</string>
-    <string name="pcap_load_in_progress">Trwa ładowanie pliku przechwytywania, proszę czekać</string>
+    <string name="pcap_load_in_progress">Trwa ładowanie przechwytywania, proszę czekać</string>
     <string name="geo_db_missing">Brak bazy danych geolokalizacji</string>
     <string name="ip_address_or_cidr">adres IP / CIDR</string>
     <string name="decryption_rules">Reguły rozszyfrowywania</string>
@@ -513,10 +509,9 @@
     <string name="status_encrypted">Zaszyfrowane</string>
     <string name="injected">Wstrzyknięte</string>
     <string name="open_pcap_file">Otwórz plik PCAP/Pcapng…</string>
-    <string name="pcap_load_success">Załadowano plik przechwytywania</string>
-    <string name="unsupported_pcap_file">Nieobsługiwany format pliku przechwytywania</string>
-    <string name="decrypt_pcap_file">Rozszyfruj plik PCAP/Pcapng…</string>
-    <string name="invalid_pcap_file">Błędny format pliku przechwytywania</string>
+    <string name="pcap_load_success">Załadowano przechwytywanie</string>
+    <string name="unsupported_pcap_file">NNieobsługiwany format przechwytywania</string>
+    <string name="invalid_pcap_file">Błędny format przechwytywania</string>
     <string name="capture_interface_open_error">Nie można otworzyć interfejsu przechwytywania</string>
     <string name="unsupported_pcap_datalink">Plik zawiera nieobsługiwany typ łącza danych</string>
     <string name="pcap_file_not_exists">Wskazany plik nie istnieje</string>
@@ -534,6 +529,35 @@
     <string name="raw_bytes">Surowe dane</string>
     <string name="restart_on_disconnection_summary">Automatycznie wznów przechwytywanie po zatrzymaniu przez inne aplikacje VPN</string>
     <string name="waiting_for_vpn_disconnect">Oczekiwanie na zakończenie aktywnego połączenia VPN…</string>
-    <string name="select_the_pcap_file">Wybierz plik PCAP/Pcapng</string>
     <string name="proxy_host">Host usługi Proxy</string>
+    <string name="allow_for_app">Zezwól dla %1$s…</string>
+    <string name="allowlist_allow">Zezwól na %1$s</string>
+    <string name="allowlist_remove">Usuń %1$s</string>
+    <string name="allowlist">Lista dozwolonych</string>
+    <string name="app_allowlist_help">Tutaj możesz określić zestaw reguł, aby zezwolić na niektóre połączenia aplikacji, blokując pozostałe</string>
+    <string name="app_with_exceptions">%1$s (%2$d wyjątków)</string>
+    <string name="port_map_exemptions">Wyjątki</string>
+    <string name="port_map_exemptions_help">Wybierz aplikacje, które mają zostać wykluczone z mapowania portów. Aby zapobiec zapętleniu ruchu, wyklucz aplikacje, które muszą połączyć się z oryginalnymi serwerami podczas uruchamiania (np. resolvery DNS-over-HTTPS)</string>
+    <string name="feature_unavailable">Funkcja \"%1$s\" jest niedostępna</string>
+    <string name="port_mapping_disabled_reminder">Włącz mapowanie portów, aby użyć tej reguły</string>
+    <string name="tls_decryption_unsupported_target">Deszyfrowanie TLS wymaga systemu Android 7 lub nowszego oraz urządzenia x86_64/aarch64</string>
+    <string name="save_as_csv">Zapisz jako CSV</string>
+    <string name="last_capture">Ostatnie przechwytywanie</string>
+    <string name="view_all">Zobacz wszystkie</string>
+    <string name="app_and_n_more">%1$s i %2$d więcej</string>
+    <string name="capture_list_info">%1$s · %2$s · %3$s</string>
+    <string name="capture_list">Lista przechwytywań</string>
+    <string name="captures_count">Przechwytywania (%1$d)</string>
+    <string name="storage_used">Wykorzystana pamięć</string>
+    <string name="storage_used_value">%1$s / %2$s</string>
+    <string name="no_captures">Brak przechwytywań</string>
+    <string name="rename">Zmień nazwę</string>
+    <string name="captures_delete_confirm">Usunąć wybrane przechwytywania?</string>
+    <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="n_seconds">%1$d s</string>
+    <string name="n_minutes">%1$d m</string>
+    <string name="n_hours_minutes">%1$d h, %2$d m</string>
+    <string name="connections_log_size">Maks. rejestrowanych połączeń</string>
+    <string name="connections_log_size_entry">%1$s (~%2$d MB wykorzystanej pamięci RAM)</string>
+    <string name="capture_list_files_changed">Przechwytywania zmienione na dysku, lista zaktualizowana</string>
 </resources>

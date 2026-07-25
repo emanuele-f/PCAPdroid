@@ -115,6 +115,11 @@ public class FirewallActivity extends BaseActivity {
         mPagerAdapter = new StateAdapter(this);
         mPager.setAdapter(mPagerAdapter);
 
+        // Keep all the tabs attached. Otherwise, navigating to a non-adjacent tab detaches an
+        // edit list page from the window, which breaks the ListView CHOICE_MODE_MULTIPLE_MODAL
+        // long-press selection when the page is shown again (e.g. the whitelist tab).
+        mPager.setOffscreenPageLimit(TOTAL_COUNT - 1);
+
         new TabLayoutMediator(findViewById(R.id.tablayout), mPager, (tab, position) ->
                 tab.setText(getString(mPagerAdapter.getPageTitle(position)))
         ).attach();

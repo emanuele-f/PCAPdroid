@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #ifndef PCAPDROID_PORTMAP_H
@@ -24,7 +24,8 @@
 #include "zdtun.h"
 
 bool pd_add_port_map(int ipver, int ipproto, int orig_port, int redirect_port, const zdtun_ip_t *redirect_ip);
-bool pd_check_port_map(zdtun_conn_t *conn);
+bool pd_check_port_map(zdtun_conn_t *conn, int uid);
+bool pd_set_port_map_exemptions(const int *uids, int num_uids);
 void pd_reset_port_map();
 
 #endif //PCAPDROID_PORTMAP_H

@@ -1,6 +1,6 @@
 <resources>
     <string name="pcapdroid_app_name" translatable="false">PCAPdroid</string>
-    <string name="default_collector_ip" translatable="false">127.0.0.1</string>
+    <string name="default_collector_host" translatable="false">127.0.0.1</string>
     <string name="default_collector_port" translatable="false">1234</string>
     <string name="ip_and_port" translatable="false">%1$s:%2$d</string>
     <string name="ipv6_and_port" translatable="false">[%1$s]:%2$d</string>
@@ -48,6 +48,7 @@
     <string name="unlock_token" translatable="false">Unlock token</string>
     <string name="method_get" translatable="false">GET</string>
     <string name="method_post" translatable="false">POST</string>
+    <string name="plus_n" translatable="false">+%1$d</string>
 
     <!-- Localized -->
     <string name="start_button">Start</string>
@@ -81,7 +82,7 @@
     <string name="udp_exporter_info">Send the PCAP to a remote UDP receiver</string>
     <string name="tcp_exporter_info">Send the PCAP to a remote TCP receiver (pcap-over-ip)</string>
     <string name="http_server_port">HTTP server port</string>
-    <string name="receiver_ip_address">Collector IP address</string>
+    <string name="receiver_host">Collector host</string>
     <string name="receiver_port">Collector port</string>
     <string name="traffic_dump">Traffic dump</string>
     <string name="user_guide">User guide</string>
@@ -125,7 +126,6 @@
     <string name="last_seen">Last seen</string>
     <string name="conn_status_closed">Closed</string>
     <string name="copy_to_clipboard">Copy</string>
-    <string name="save_to_file">Save to file</string>
     <string name="older_connections_notice">%1$d older connections not shown</string>
     <string name="about_text">PCAPdroid is an open source network capture and monitoring tool which works without root privileges</string>
     <string name="get_app">Get it:</string>
@@ -260,6 +260,12 @@
     <string name="decryption_no_filter_warn">Select a target app when decrypting TLS to avoid losing your connection to the Internet</string>
     <string name="block">Block…</string>
     <string name="unblock">Unblock…</string>
+    <string name="allow_for_app">Allow for %1$s…</string>
+    <string name="allowlist_allow">Allow %1$s</string>
+    <string name="allowlist_remove">Remove %1$s</string>
+    <string name="allowlist">Allowlist</string>
+    <string name="app_allowlist_help">Here you can specify a set of rules to allow some connections of the app while keeping the rest blocked</string>
+    <string name="app_with_exceptions">%1$s (%2$d exceptions)</string>
     <string name="firewall">Firewall</string>
     <string name="firewall_rules">Firewall rules</string>
     <string name="blocked_pkts">Blocked</string>
@@ -349,7 +355,7 @@
     <string name="geolocation_summary">Show country and ASN info by performing offline lookups</string>
     <string name="downloading">Downloading…</string>
     <string name="download_in_progress">Download in progress, please wait</string>
-    <string name="pcap_load_in_progress">Capture file loading in progress, please wait</string>
+    <string name="pcap_load_in_progress">Capture loading in progress, please wait</string>
     <string name="download_failed">Download failed</string>
     <string name="exporting">Exporting…</string>
     <string name="export_in_progress">Export in progress, please wait</string>
@@ -421,6 +427,8 @@
     <string name="notifications_notice">The app uses notifications to send alerts in case of anomalous events. Grant it the permission to send notifications in the next screen</string>
     <string name="vpn_exemptions">VPN exemptions</string>
     <string name="vpn_exemptions_summary">Exempt some apps from the VPN connection. Their traffic will not be monitored</string>
+    <string name="port_map_exemptions">Exemptions</string>
+    <string name="port_map_exemptions_help">Select the apps to be excluded from the port mapping. To prevent traffic loops, you should exclude apps that need to reach their original servers to bootstrap (e.g. DNS-over-HTTPS resolvers)</string>
     <string name="no_matches_found">No matches</string>
     <string name="cleartext_connection">Cleartext</string>
     <string name="unblock_permanently">Unblock permanently</string>
@@ -434,7 +442,7 @@
     <string name="cancel_action">Cancel</string>
     <string name="show_data_action">Show data</string>
     <string name="remote_collector_notice">You have configured PCAPdroid to send traffic to a remote server. The server will be able to access your sensitive information.\n\nIf someone asked you to do this, it is probably a scam attempt</string>
-    <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed"</string>
+    <string name="remote_server_warning">For security reasons, sending traffic to the remote server \"%1$s\" is not allowed</string>
     <string name="warning">Warning</string>
     <string name="paid_features_unlocked">Paid features unlocked. Restart the capture if running</string>
     <string name="build_info">Build info</string>
@@ -457,6 +465,7 @@
     <string name="unlock_token_msg1">This is your unlock token. Note it down as you will need it <a href='%1$s'>to generate your license codes</a></string>
     <string name="paid_feature">Paid feature</string>
     <string name="firewall_purchase_msg">Buy the <i>%1$s</i> feature to start blocking connections</string>
+    <string name="feature_unavailable">The \"%1$s\" feature is unavailable</string>
     <string name="mitm_skip_notice">The mitm certificate does not seem to be installed. If you proceed, decryption may fail</string>
     <string name="mitm_wizard_description">Configure the device for the TLS decryption</string>
     <string name="mitmproxy_opts">Additional mitmproxy options</string>
@@ -477,6 +486,7 @@
     <string name="destination_host">Destination host</string>
     <string name="destination_port">Destination port</string>
     <string name="port_mapping_exists">Port mapping already defined</string>
+    <string name="port_mapping_disabled_reminder">Enable port mapping to use this rule</string>
     <string name="items_delete_confirm">Delete the selected items?</string>
     <string name="ip_address">IP address</string>
     <string name="ip_address_or_cidr">IP address / CIDR</string>
@@ -517,18 +527,16 @@
     <string name="status_encrypted">Encrypted</string>
     <string name="injected">Injected</string>
     <string name="open_pcap_file">Open PCAP/Pcapng file…</string>
-    <string name="pcap_load_success">Capture file loaded</string>
-    <string name="unsupported_pcap_file">Unsupported capture file format</string>
-    <string name="decrypt_pcap_file">Decrypt PCAP/Pcapng file…</string>
-    <string name="invalid_pcap_file">Invalid capture file format</string>
+    <string name="pcap_load_success">Capture loaded</string>
+    <string name="unsupported_pcap_file">Unsupported capture format</string>
+    <string name="invalid_pcap_file">Invalid capture format</string>
     <string name="capture_interface_open_error">Could not open the capture interface</string>
     <string name="unsupported_pcap_datalink">The file has an unsupported datalink</string>
     <string name="pcap_file_not_exists">The specified file does not exist</string>
     <string name="root_capture_start_failed">Capture start failure. Ensure that the device is rooted with Magisk</string>
     <string name="root_capture_pcapd_start_failure">Capture start failure. Make sure you grant root access to PCAPdroid</string>
     <string name="pcap_read_error">Error reading the capture file. Check the log for details</string>
-    <string name="keylog_read_error">SSL keylog read error</string>
-    <string name="pcap_file_load_aborted">Capture file loading aborted</string>
+    <string name="pcap_file_load_aborted">Capture loading aborted</string>
     <string name="host_resolution_failed">"Could not resolve host %1$s</string>
     <string name="pcapdroid_trailer_notice">To show the actual apps instead of \"%1$s\", be sure to enable the \"%2$s\" option before generating the dump</string>
     <string name="decryption_info_no_rule">To decrypt this connection, create a decryption rule from the left drawer or from the contextual menu in the Connections list</string>
@@ -555,8 +563,6 @@
     <string name="vpn_reconnection_aborted">VPN reconnection aborted</string>
     <string name="waiting_for_vpn_disconnect">Waiting for the active VPN to disconnect…</string>
     <string name="bytes_threshold">Bytes threshold</string>
-    <string name="select_the_pcap_file">Select the PCAP/Pcapng file</string>
-    <string name="select_the_keylog_file">Select the SSL keylog file</string>
     <string name="error_code_with_text">%1$s (error %2$d)</string>
     <string name="errno_epipe">Broken pipe</string>
     <string name="errno_epipe_msg">The server unexpectedly closed the connection during the data transfer</string>
@@ -578,7 +584,7 @@
     <string name="errno_ehostunreach_msg">The system cannot find a route to the destination host</string>
     <string name="dns_conn_info">DNS translates a domain name into an IP address. The actual data is typically exchanged over subsequent HTTPS/TLS connections</string>
     <string name="tls_conn_info">TLS/HTTPS traffic is encrypted. To inspect this traffic, you need to decrypt it. Check out the PCAPdroid <a href='%1$s'>user guide</a> for details</string>
-    <string name="tls_decryption_not_supported_16KB">TLS decryption is currently unsupported on 16 KB devices</string>
+    <string name="tls_decryption_unsupported_target">TLS decryption requires Android 7 or newer and a x86_64/aarch64 device</string>
     <string name="filename_prefix">Filename prefix</string>
     <string name="filename_prefix_description">Set the prefix for the files exported by PCAPdroid, e.g. PCAP files</string>
     <string name="no_requests">No requests</string>
@@ -593,4 +599,23 @@
     <string name="next">Next</string>
     <string name="save_as_text">Save as text</string>
     <string name="save_as_har">Save as HAR</string>
+    <string name="save_as_csv">Save as CSV</string>
+    <string name="last_capture">Last capture</string>
+    <string name="view_all">View all</string>
+    <string name="app_and_n_more">%1$s and %2$d more</string>
+    <string name="capture_list_info">%1$s · %2$s · %3$s</string>
+    <string name="capture_list">Capture list</string>
+    <string name="captures_count">Captures (%1$d)</string>
+    <string name="storage_used">Storage used</string>
+    <string name="storage_used_value">%1$s / %2$s</string>
+    <string name="no_captures">No captures</string>
+    <string name="rename">Rename</string>
+    <string name="captures_delete_confirm">Delete the selected captures?</string>
+    <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="n_seconds">%1$d s</string>
+    <string name="n_minutes">%1$d m</string>
+    <string name="n_hours_minutes">%1$d h, %2$d m</string>
+    <string name="connections_log_size">Max logged connections</string>
+    <string name="connections_log_size_entry">%1$s (~%2$d MB of RAM used)</string>
+    <string name="capture_list_files_changed">Captures changed on disk, list updated</string>
 </resources>

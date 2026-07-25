@@ -1,0 +1,20 @@
+<i>PCAPdroid</i> は、端末内の他のアプリが行う接続を追跡・分析できる、プライバシーに配慮したアプリです。
+トラフィックの PCAP ダンプのエクスポート、HTTP の検査、TLS トラフィックの復号など、さまざまなことが可能です。
+
+PCAPdroid は、root なしでネットワークトラフィックを取得するために VPN をシミュレートします。リモート VPN サーバーは使用せず、データは端末上でローカルに処理されます。
+
+<b>機能:</b>
+
+* ユーザーアプリおよびシステムアプリが行う接続を記録・確認
+* SNI、DNS クエリ、HTTP URL、リモート IP アドレスを抽出
+* 内蔵デコーダーにより HTTP リクエストとレスポンスを検査
+* 接続の全ペイロードを hexdump／テキストとして検査
+* HTTPS/TLS トラフィックを復号し、SSLKEYLOGFILE をエクスポート
+* トラフィックを PCAP ファイルにダンプし、ブラウザからダウンロード、またはリアルタイム分析のためにリモート受信先へストリーミング（例: Wireshark）
+* 正常なトラフィックを除外して異常を簡単に見つけるためのルールを作成
+* オフライン DB 検索でリモートサーバーの国と ASN を特定
+* root 化された端末では、他の VPN アプリの実行中にトラフィックを取得
+
+PCAPdroid をパケット分析に使用する予定がある場合は、マニュアルの<a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>該当セクション</a>をご確認ください。
+
+PCAPdroid の国際コミュニティに <a href="https://t.me/PCAPdroid">Telegram</a> または <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a> で参加しましょう。

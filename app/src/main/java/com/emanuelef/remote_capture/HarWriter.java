@@ -164,8 +164,7 @@ public class HarWriter {
                 httpVersion = reqChunk.httpVersion;
 
             if (reqChunk.payload != null) {
-                String httpText = new String(reqChunk.payload, StandardCharsets.UTF_8);
-                requestHeaders = parseHeaders(httpText);
+                requestHeaders = parseHeaders(reqChunk.payload);
                 headersSize = getHeadersSize(reqChunk.payload);
             }
         }
@@ -231,8 +230,7 @@ public class HarWriter {
                 httpVersion = respChunk.httpVersion;
 
             if (respChunk.payload != null) {
-                String httpText = new String(respChunk.payload, StandardCharsets.UTF_8);
-                responseHeaders = parseHeaders(httpText);
+                responseHeaders = parseHeaders(respChunk.payload);
                 headersSize = getHeadersSize(respChunk.payload);
             }
         }
@@ -256,23 +254,24 @@ public class HarWriter {
     }
 
     private void writeContent(JsonWriter writer, HttpLog.HttpReply reply, PayloadChunk respChunk) throws IOException {
+        byte[] body = null;
+        if ((respChunk != null) && (respChunk.payload != null))
+            body = extractBody(respChunk.payload);
+
         writer.beginObject();
-        writer.name("size").value(reply.bodyLength);
+
+        // "size" is the length of the stored body, which is decompressed, whereas bodyLength is
+        // the length on the wire. They differ when a content-encoding is applied
+        int size = (body != null) ? body.length : reply.bodyLength;
+        writer.name("size").value(size);
+        if (size > reply.bodyLength)
+            writer.name("compression").value(size - reply.bodyLength);
 
         String mimeType = reply.contentType != null ? reply.contentType : "application/octet-stream";
         writer.name("mimeType").value(mimeType);
 
-        if ((respChunk != null) && (respChunk.payload != null)) {
-            byte[] body = extractBody(respChunk.payload);
-            if ((body != null) && (body.length > 0)) {
-                if (isTextContent(body, reply.contentType))
-                    writer.name("text").value(new String(body, StandardCharsets.UTF_8));
-                else {
-                    writer.name("text").value(Base64.encodeToString(body, Base64.NO_WRAP));
-                    writer.name("encoding").value("base64");
-                }
-            }
-        }
+        if ((body != null) && (body.length > 0))
+            writeBody(writer, body, reply.contentType);
 
         writer.endObject();
     }
@@ -286,7 +285,7 @@ public class HarWriter {
         if ((reqChunk != null) && (reqChunk.payload != null)) {
             byte[] body = extractBody(reqChunk.payload);
             if ((body != null) && (body.length > 0))
-                writer.name("text").value(new String(body, StandardCharsets.UTF_8));
+                writeBody(writer, body, contentType);
         }
 
         // params empty - we don't parse form data
@@ -295,6 +294,19 @@ public class HarWriter {
         writer.endArray();
 
         writer.endObject();
+    }
+
+    // Writes the "text" field of a postData/content object, falling back to base64 for data
+    // which cannot be represented as JSON text without losing bytes
+    private void writeBody(JsonWriter writer, byte[] body, String contentType) throws IOException {
+        String text = isTextContent(body, contentType) ? Utils.decodeUtf8Strict(body) : null;
+
+        if (text != null)
+            writer.name("text").value(text);
+        else {
+            writer.name("text").value(Base64.encodeToString(body, Base64.NO_WRAP));
+            writer.name("encoding").value("base64");
+        }
     }
 
     private void writeTimings(JsonWriter writer) throws IOException {
@@ -452,12 +464,16 @@ public class HarWriter {
         writer.endArray();
     }
 
-    private List<String[]> parseHeaders(String httpText) {
+    private List<String[]> parseHeaders(byte[] payload) {
         List<String[]> headers = new ArrayList<>();
-        int headerEnd = Utils.getEndOfHTTPHeaders(httpText.getBytes(StandardCharsets.UTF_8));
-        if (headerEnd == 0) headerEnd = httpText.length();
 
-        String headerSection = httpText.substring(0, Math.min(headerEnd, httpText.length()));
+        // getEndOfHTTPHeaders returns a byte offset, so the headers must be located before decoding,
+        // otherwise the offset would not match the character index of a non-ASCII header section
+        int headerEnd = Utils.getEndOfHTTPHeaders(payload);
+        if (headerEnd == 0)
+            headerEnd = payload.length;
+
+        String headerSection = new String(payload, 0, headerEnd, StandardCharsets.UTF_8);
         String[] lines = headerSection.split("\r\n");
 
         // Skip first line (request line or status line)
@@ -591,10 +607,14 @@ public class HarWriter {
             writer.name("opcode").value(opcode);
 
             if ((chunk.payload != null) && (chunk.payload.length > 0)) {
-                if (opcode == WebSocketDecoder.OPCODE_TEXT)
-                    writer.name("data").value(new String(chunk.payload, StandardCharsets.UTF_8));
-                else
+                String text = (opcode == WebSocketDecoder.OPCODE_TEXT) ? Utils.decodeUtf8Strict(chunk.payload) : null;
+
+                if (text != null)
+                    writer.name("data").value(text);
+                else {
                     writer.name("data").value(Base64.encodeToString(chunk.payload, Base64.NO_WRAP));
+                    writer.name("encoding").value("base64");
+                }
             } else
                 writer.name("data").value("");
 

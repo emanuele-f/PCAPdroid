@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [1.9.1] - 2026-02-22
+- Fix minor crashes
+- Switch to facebook/zstd and build from the source
+
 ## [1.9.0] - 2026-02-12
 - New HTTP requests view
 - Export HTTP data in the HAR format

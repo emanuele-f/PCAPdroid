@@ -95,16 +95,16 @@
 /* #undef NDPI_ENABLE_DEBUG_MESSAGES */
 
 /* Last GIT change */
-#define NDPI_GIT_DATE "Sat Mar 22 16:35:45 2025 +0100"
+#define NDPI_GIT_DATE "Sat Feb 28 23:29:08 2026 +0100"
 
 /* GIT Release */
-#define NDPI_GIT_RELEASE "4.12.0-5035-ce606bf"
+#define NDPI_GIT_RELEASE "5.0.0-5584-ab51f43"
 
 /* nDPI major release */
-#define NDPI_MAJOR_RELEASE "4"
+#define NDPI_MAJOR_RELEASE "5"
 
 /* nDPI minor release */
-#define NDPI_MINOR_RELEASE "12"
+#define NDPI_MINOR_RELEASE "0"
 
 /* nDPI patch level */
 #define NDPI_PATCH_LEVEL "0"
@@ -122,7 +122,7 @@
 #define PACKAGE_NAME "libndpi"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libndpi 4.12.0"
+#define PACKAGE_STRING "libndpi 5.0.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libndpi"
@@ -131,7 +131,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.12.0"
+#define PACKAGE_VERSION "5.0.0"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -145,11 +145,8 @@
 /* Use locally installed libgcrypt instead of builtin gcrypt-light */
 /* #undef USE_HOST_LIBGCRYPT */
 
-/* Use CRoaring 2.1.x */
-/* #undef USE_ROARING_V2 */
-
 /* Version number of package */
-#define VERSION "4.12.0"
+#define VERSION "5.0.0"
 
 /* Define to '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

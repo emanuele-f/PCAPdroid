@@ -29,6 +29,7 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -514,6 +516,146 @@ public class HarWriterTest {
     }
 
     @Test
+    public void testPostRequestWithBinaryBody() throws IOException {
+        ConnectionDescriptor conn = createConnection(4, "10.0.0.2", 80);
+        conn.info = "api.example.com";
+        conn.l7proto = "HTTP";
+
+        byte[] body = new byte[]{
+                (byte)0x00, (byte)0x00, (byte)0xC5, (byte)0x48, (byte)0x23, (byte)0x2A, (byte)0xF5, (byte)0xC8,
+                (byte)0x05, (byte)0xFF, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x30, (byte)0x0A, (byte)0x0D,
+                't', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e', '-', 's', '2', 's', (byte)0x10, (byte)0x01, (byte)0xC2
+        };
+
+        String httpHeaders = "POST /translate HTTP/1.1\r\n" +
+                "Host: api.example.com\r\n" +
+                "Content-Type: application/octet-stream\r\n" +
+                "Content-Length: " + body.length + "\r\n" +
+                "\r\n";
+
+        byte[] headerBytes = httpHeaders.getBytes(StandardCharsets.UTF_8);
+        byte[] payload = new byte[headerBytes.length + body.length];
+        System.arraycopy(headerBytes, 0, payload, 0, headerBytes.length);
+        System.arraycopy(body, 0, payload, headerBytes.length, body.length);
+
+        long reqTimestamp = System.currentTimeMillis();
+        addChunkDirect(conn, new PayloadChunk(payload, PayloadChunk.ChunkType.HTTP, true, reqTimestamp, 0));
+
+        HttpLog.HttpRequest httpReq = new HttpLog.HttpRequest(conn, 0);
+        httpReq.method = "POST";
+        httpReq.host = "api.example.com";
+        httpReq.path = "/translate";
+        httpReq.query = "";
+        httpReq.timestamp = reqTimestamp;
+        httpReq.bodyLength = body.length;
+
+        httpLog.addHttpRequest(httpReq);
+
+        String harJson = writeHarToString();
+        JsonObject har = parseHar(harJson);
+        JsonObject entry = har.getAsJsonObject("log").getAsJsonArray("entries").get(0).getAsJsonObject();
+        JsonObject postData = entry.getAsJsonObject("request").getAsJsonObject("postData");
+
+        // A binary body must be base64-encoded, as UTF-8 decoding would corrupt it
+        assertEquals("base64", postData.get("encoding").getAsString());
+        assertArrayEquals(body, Base64.decode(postData.get("text").getAsString(), Base64.DEFAULT));
+    }
+
+    @Test
+    public void testPostRequestWithInvalidUtf8TextBody() throws IOException {
+        ConnectionDescriptor conn = createConnection(5, "10.0.0.3", 80);
+        conn.info = "api.example.com";
+        conn.l7proto = "HTTP";
+
+        // Content-Type claims JSON, but the body contains an invalid UTF-8 sequence
+        byte[] body = new byte[]{'{', '"', 'a', '"', ':', '"', (byte)0xC3, (byte)0x28, '"', '}'};
+
+        String httpHeaders = "POST /api/data HTTP/1.1\r\n" +
+                "Host: api.example.com\r\n" +
+                "Content-Type: application/json\r\n" +
+                "Content-Length: " + body.length + "\r\n" +
+                "\r\n";
+
+        byte[] headerBytes = httpHeaders.getBytes(StandardCharsets.UTF_8);
+        byte[] payload = new byte[headerBytes.length + body.length];
+        System.arraycopy(headerBytes, 0, payload, 0, headerBytes.length);
+        System.arraycopy(body, 0, payload, headerBytes.length, body.length);
+
+        long reqTimestamp = System.currentTimeMillis();
+        addChunkDirect(conn, new PayloadChunk(payload, PayloadChunk.ChunkType.HTTP, true, reqTimestamp, 0));
+
+        HttpLog.HttpRequest httpReq = new HttpLog.HttpRequest(conn, 0);
+        httpReq.method = "POST";
+        httpReq.host = "api.example.com";
+        httpReq.path = "/api/data";
+        httpReq.query = "";
+        httpReq.timestamp = reqTimestamp;
+        httpReq.bodyLength = body.length;
+
+        httpLog.addHttpRequest(httpReq);
+
+        String harJson = writeHarToString();
+        JsonObject har = parseHar(harJson);
+        JsonObject entry = har.getAsJsonObject("log").getAsJsonArray("entries").get(0).getAsJsonObject();
+        JsonObject postData = entry.getAsJsonObject("request").getAsJsonObject("postData");
+
+        assertEquals("base64", postData.get("encoding").getAsString());
+        assertArrayEquals(body, Base64.decode(postData.get("text").getAsString(), Base64.DEFAULT));
+    }
+
+    @Test
+    public void testNonAsciiHeadersDoNotLeakBody() throws IOException {
+        ConnectionDescriptor conn = createConnection(6, "10.0.0.4", 80);
+        conn.info = "api.example.com";
+        conn.l7proto = "HTTP";
+
+        // Each 'é' is 1 char but 2 bytes, so the end-of-headers byte offset runs past the
+        // character index of the header section
+        StringBuilder title = new StringBuilder();
+        for (int i = 0; i < 40; i++)
+            title.append('é');
+
+        String body = "X-Leaked: secret\r\n{\"a\":1}";
+        String httpRequest = "POST /api/data HTTP/1.1\r\n" +
+                "Host: api.example.com\r\n" +
+                "X-Title: " + title + "\r\n" +
+                "Content-Type: text/plain\r\n" +
+                "Content-Length: " + body.length() + "\r\n" +
+                "\r\n" +
+                body;
+
+        long reqTimestamp = System.currentTimeMillis();
+        addChunkDirect(conn, createHttpChunk(httpRequest, true, reqTimestamp));
+
+        HttpLog.HttpRequest httpReq = new HttpLog.HttpRequest(conn, 0);
+        httpReq.method = "POST";
+        httpReq.host = "api.example.com";
+        httpReq.path = "/api/data";
+        httpReq.query = "";
+        httpReq.timestamp = reqTimestamp;
+        httpReq.bodyLength = body.length();
+
+        httpLog.addHttpRequest(httpReq);
+
+        String harJson = writeHarToString();
+        JsonObject har = parseHar(harJson);
+        JsonObject entry = har.getAsJsonObject("log").getAsJsonArray("entries").get(0).getAsJsonObject();
+        JsonObject request = entry.getAsJsonObject("request");
+
+        String titleValue = null;
+        for (JsonElement el : request.getAsJsonArray("headers")) {
+            JsonObject header = el.getAsJsonObject();
+            assertFalse("body must not be parsed as a header", header.get("name").getAsString().equals("X-Leaked"));
+
+            if (header.get("name").getAsString().equals("X-Title"))
+                titleValue = header.get("value").getAsString();
+        }
+
+        assertEquals(title.toString(), titleValue);
+        assertEquals(body, request.getAsJsonObject("postData").get("text").getAsString());
+    }
+
+    @Test
     public void testNoResponseEntry() throws IOException {
         // Test entry where no response was received
         ConnectionDescriptor conn = createConnection(8, "10.0.0.5", 80);
@@ -814,10 +956,84 @@ public class HarWriterTest {
         // the content should be plain text (not base64 encoded)
         assertFalse("decompressed text content should NOT have encoding field", content.has("encoding"));
 
+        // "size" must be the length of the decompressed body, whereas bodySize is the length on the wire
+        assertEquals(originalJs.getBytes(StandardCharsets.UTF_8).length, content.get("size").getAsInt());
+        assertEquals(gzippedBody.length, response.get("bodySize").getAsInt());
+
         // Verify the actual content is the original JavaScript (decompressed)
         assertTrue("content should have text field", content.has("text"));
         String textContent = content.get("text").getAsString();
         assertEquals("content should match original JavaScript", originalJs, textContent);
+    }
+
+    @Test
+    public void testGzipCompressionSavings() throws IOException {
+        ConnectionDescriptor conn = createConnection(16, "10.0.0.12", 80);
+        conn.info = "gzip.example.com";
+        conn.l7proto = "HTTP";
+
+        String httpRequest = "GET /big.js HTTP/1.1\r\n" +
+                "Host: gzip.example.com\r\n" +
+                "\r\n";
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 200; i++)
+            sb.append("function hello() { console.log('Hello, World!'); }\n");
+        String originalJs = sb.toString();
+
+        ByteArrayOutputStream gzipOut = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzos = new GZIPOutputStream(gzipOut)) {
+            gzos.write(originalJs.getBytes(StandardCharsets.UTF_8));
+        }
+        byte[] gzippedBody = gzipOut.toByteArray();
+
+        String httpResponseHeaders = "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: application/javascript\r\n" +
+                "Content-Encoding: gzip\r\n" +
+                "Content-Length: " + gzippedBody.length + "\r\n" +
+                "\r\n";
+        byte[] headerBytes = httpResponseHeaders.getBytes(StandardCharsets.UTF_8);
+        byte[] fullResponse = new byte[headerBytes.length + gzippedBody.length];
+        System.arraycopy(headerBytes, 0, fullResponse, 0, headerBytes.length);
+        System.arraycopy(gzippedBody, 0, fullResponse, headerBytes.length, gzippedBody.length);
+
+        long reqTimestamp = System.currentTimeMillis();
+        long respTimestamp = reqTimestamp + 50;
+
+        addChunkDirect(conn, createHttpChunk(httpRequest, true, reqTimestamp));
+        addChunkDirect(conn, new PayloadChunk(fullResponse, PayloadChunk.ChunkType.HTTP, false, respTimestamp, 0));
+
+        HttpLog.HttpRequest httpReq = new HttpLog.HttpRequest(conn, 0);
+        httpReq.method = "GET";
+        httpReq.host = "gzip.example.com";
+        httpReq.path = "/big.js";
+        httpReq.query = "";
+        httpReq.timestamp = reqTimestamp;
+        httpReq.bodyLength = 0;
+
+        HttpLog.HttpReply httpReply = new HttpLog.HttpReply(httpReq, 1);
+        httpReply.responseCode = 200;
+        httpReply.responseStatus = "OK";
+        httpReply.contentType = "application/javascript";
+        httpReply.bodyLength = gzippedBody.length;
+        httpReq.reply = httpReply;
+
+        httpLog.addHttpRequest(httpReq);
+        httpLog.addHttpReply(httpReply);
+
+        String harJson = writeHarToString();
+        JsonObject har = parseHar(harJson);
+        JsonObject entry = har.getAsJsonObject("log").getAsJsonArray("entries").get(0).getAsJsonObject();
+        JsonObject response = entry.getAsJsonObject("response");
+        JsonObject content = response.getAsJsonObject("content");
+
+        int decompressedSize = originalJs.getBytes(StandardCharsets.UTF_8).length;
+        assertTrue("the test data must actually shrink when compressed", gzippedBody.length < decompressedSize);
+
+        assertEquals(originalJs, content.get("text").getAsString());
+        assertEquals(decompressedSize, content.get("size").getAsInt());
+        assertEquals(gzippedBody.length, response.get("bodySize").getAsInt());
+        assertEquals(decompressedSize - gzippedBody.length, content.get("compression").getAsInt());
     }
 
     @Test
@@ -910,7 +1126,67 @@ public class HarWriterTest {
         assertEquals("receive", msg3.get("type").getAsString());
         assertEquals(2, msg3.get("opcode").getAsInt()); // Binary
         // Binary data should be base64 encoded
-        assertNotNull(msg3.get("data").getAsString());
+        assertEquals("base64", msg3.get("encoding").getAsString());
+        assertArrayEquals(wsBinaryPayload, Base64.decode(msg3.get("data").getAsString(), Base64.DEFAULT));
+
+        // A text message is stored verbatim, so it carries no encoding field
+        assertFalse("text message should not have an encoding field", msg1.has("encoding"));
+    }
+
+    @Test
+    public void testWebSocketTextFrameWithInvalidUtf8() throws IOException {
+        ConnectionDescriptor conn = createConnection(22, "10.0.0.22", 80);
+        conn.info = "ws.example.com";
+        conn.l7proto = "HTTP";
+
+        String httpRequest = "GET /websocket HTTP/1.1\r\n" +
+                "Host: ws.example.com\r\n" +
+                "Upgrade: websocket\r\n" +
+                "\r\n";
+
+        String httpResponse = "HTTP/1.1 101 Switching Protocols\r\n" +
+                "Upgrade: websocket\r\n" +
+                "\r\n";
+
+        long reqTimestamp = System.currentTimeMillis();
+        long respTimestamp = reqTimestamp + 50;
+
+        addChunkDirect(conn, createHttpChunk(httpRequest, true, reqTimestamp));
+        addChunkDirect(conn, createHttpChunk(httpResponse, false, respTimestamp));
+
+        // A frame explicitly marked as text, whose payload is not valid UTF-8 (e.g. truncated capture)
+        byte[] wsPayload = new byte[]{'{', '"', 'm', '"', ':', '"', (byte)0xC3, (byte)0x28, '"', '}'};
+        PayloadChunk wsChunk = new PayloadChunk(wsPayload, PayloadChunk.ChunkType.WEBSOCKET, true, respTimestamp + 100, 0);
+        wsChunk.wsOpcode = WebSocketDecoder.OPCODE_TEXT;
+        addChunkDirect(conn, wsChunk);
+
+        HttpLog.HttpRequest httpReq = new HttpLog.HttpRequest(conn, 0);
+        httpReq.method = "GET";
+        httpReq.host = "ws.example.com";
+        httpReq.path = "/websocket";
+        httpReq.query = "";
+        httpReq.timestamp = reqTimestamp;
+        httpReq.bodyLength = 0;
+
+        HttpLog.HttpReply httpReply = new HttpLog.HttpReply(httpReq, 1);
+        httpReply.responseCode = 101;
+        httpReply.responseStatus = "Switching Protocols";
+        httpReply.contentType = "";
+        httpReply.bodyLength = 0;
+        httpReq.reply = httpReply;
+
+        httpLog.addHttpRequest(httpReq);
+        httpLog.addHttpReply(httpReply);
+
+        String harJson = writeHarToString();
+        JsonObject har = parseHar(harJson);
+        JsonObject entry = har.getAsJsonObject("log").getAsJsonArray("entries").get(0).getAsJsonObject();
+        JsonObject msg = entry.getAsJsonArray("_webSocketMessages").get(0).getAsJsonObject();
+
+        // The opcode must be preserved, with the undecodable payload flagged as base64
+        assertEquals(WebSocketDecoder.OPCODE_TEXT, msg.get("opcode").getAsInt());
+        assertEquals("base64", msg.get("encoding").getAsString());
+        assertArrayEquals(wsPayload, Base64.decode(msg.get("data").getAsString(), Base64.DEFAULT));
     }
 
     @Test

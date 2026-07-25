@@ -23,16 +23,4 @@
         android:orderInCategory="30"
         android:icon="@drawable/ic_settings"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/open_pcap"
-        android:title="@string/open_pcap_file"
-        android:enabled="true"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/decrypt_pcap"
-        android:title="@string/decrypt_pcap_file"
-        android:enabled="true"
-        app:showAsAction="never" />
 </menu>

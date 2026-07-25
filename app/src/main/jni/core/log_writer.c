@@ -5,6 +5,7 @@
 
 struct log_writer;
 
+// NOTE: don't use memtrack.h (e.g. pd_malloc), as loggers are never free
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct log_writer **loggers = NULL;
 static int num_loggers = 0;
@@ -20,8 +21,8 @@ struct log_writer {
 static void pd_destroy_logger(struct log_writer *logger) {
     if(logger->f)
         fclose(logger->f);
-    pd_free(logger->path);
-    pd_free(logger);
+    free(logger->path);
+    free(logger);
 }
 
 void pd_close_loggers() {
@@ -29,7 +30,7 @@ void pd_close_loggers() {
 
     for(int i=0; i<num_loggers; i++)
         pd_destroy_logger(loggers[i]);
-    pd_free(loggers);
+    free(loggers);
     loggers = NULL;
     num_loggers = 0;
 
@@ -38,19 +39,19 @@ void pd_close_loggers() {
 
 int pd_init_logger(const char *path, int min_lvl) {
     int rv;
-    struct log_writer *logger = (struct log_writer*) pd_calloc(1, sizeof(struct log_writer));
+    struct log_writer *logger = (struct log_writer*) calloc(1, sizeof(struct log_writer));
     if(!logger)
         return -errno;
 
     logger->level = min_lvl;
-    logger->path = pd_strdup(path);
+    logger->path = strdup(path);
     if(!logger->path) {
-        pd_free(logger);
+        free(logger);
         return -errno;
     }
 
     pthread_mutex_lock(&mutex);
-    loggers = pd_realloc(loggers, sizeof(void*) * (num_loggers + 1));
+    loggers = realloc(loggers, sizeof(void*) * (num_loggers + 1));
     if(!loggers) {
         pd_destroy_logger(logger);
         rv = -1;

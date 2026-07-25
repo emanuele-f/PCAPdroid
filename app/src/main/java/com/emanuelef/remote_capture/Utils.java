@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -134,6 +134,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -251,6 +254,7 @@ public class Utils {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static String getCountryName(Context context, String country_code) {
         Locale cur_locale = getPrimaryLocale(context);
         return(new Locale(cur_locale.getCountry(), country_code)).getDisplayCountry();
@@ -271,15 +275,16 @@ public class Utils {
         return String.format(locale, "%,d", num);
     }
 
-    public static String formatDuration(long seconds) {
+    public static String formatDuration(Context context, long seconds) {
         if(seconds == 0)
-            return "< 1 s";
+            return context.getString(R.string.less_than_one_sec);
         else if(seconds < 60)
-            return String.format("%d s", seconds);
+            return context.getString(R.string.n_seconds, seconds);
         else if(seconds < 3600)
-            return String.format("> %d m", seconds / 60);
+            return context.getString(R.string.n_minutes, seconds / 60);
         else
-            return String.format("> %d h", seconds / 3600);
+            return context.getString(R.string.n_hours_minutes,
+                    seconds / 3600, (seconds % 3600) / 60);
     }
 
     public static String formatEpochShort(Context context, long epoch) {
@@ -776,6 +781,16 @@ public class Utils {
         return(Utils.getUniqueFileName(context, pcapng_format ? "pcapng" : "pcap"));
     }
 
+    public static String removePcapExtension(String fname) {
+        if (fname == null)
+            return null;
+        if (fname.endsWith(".pcapng"))
+            return fname.substring(0, fname.length() - 7);
+        if (fname.endsWith(".pcap"))
+            return fname.substring(0, fname.length() - 5);
+        return fname;
+    }
+
     // Returns the export filename with the given extension.
     // If a PCAP file was loaded by the user, uses that filename as base.
     // Otherwise, generates a unique filename based on date/time.
@@ -1015,6 +1030,19 @@ public class Utils {
         intent.setType("text/plain");
         intent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
         intent.putExtra(android.content.Intent.EXTRA_TEXT, contents);
+
+        startActivity(ctx, Intent.createChooser(intent, ctx.getResources().getString(R.string.share)));
+    }
+
+    public static void shareCapture(Context ctx, Uri uri) {
+        if (uri == null)
+            return;
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("application/cap");
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        intent.setClipData(ClipData.newRawUri("", uri));
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         startActivity(ctx, Intent.createChooser(intent, ctx.getResources().getString(R.string.share)));
     }
@@ -1393,6 +1421,21 @@ public class Utils {
         return ((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t');
     }
 
+    // Decode data as UTF-8, returning null if it contains invalid sequences. Unlike
+    // new String(data, UTF_8), this never silently replaces bytes with U+FFFD
+    @Nullable
+    public static String decodeUtf8Strict(byte[] data) {
+        CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
+
+        try {
+            return decoder.decode(ByteBuffer.wrap(data)).toString();
+        } catch (CharacterCodingException e) {
+            return null;
+        }
+    }
+
     // Get a CharSequence which properly displays clickable links obtained by formatting a parametric
     // string resource with the provided args. See setTextUrls
     // https://stackoverflow.com/questions/23503642/how-to-use-formatted-strings-together-with-placeholders-in-android
@@ -1506,16 +1549,6 @@ public class Utils {
         searchView.post(() -> searchView.setQuery(query, true));
     }
 
-    public static boolean backHandleSearchview(SearchView searchView) {
-        if((searchView != null) && !searchView.isIconified()) {
-            // Required to close the SearchView when the search submit button was not pressed
-            searchView.setIconified(true);
-            return true;
-        }
-
-        return false;
-    }
-
     public static String getDeviceModel() {
         if(Build.MODEL.startsWith(Build.MANUFACTURER))
             return Build.MANUFACTURER;
@@ -1621,7 +1654,7 @@ public class Utils {
 
     // from bouncycastle
     private static boolean isValidIPv6(String address) {
-        if (address.length() == 0)
+        if (address.isEmpty())
             return false;
 
         char firstChar = address.charAt(0);
@@ -1697,10 +1730,12 @@ public class Utils {
     public static boolean validateIpAddress(String value) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             return (InetAddresses.isNumericAddress(value));
-        else {
-            Matcher matcher = Patterns.IP_ADDRESS.matcher(value);
-            return(matcher.matches());
-        }
+        else
+            return validateIpv4Address(value) || isValidIPv6(value);
+    }
+
+    public static boolean validateHostOrIp(String value) {
+        return validateIpAddress(value) || validateHost(value);
     }
 
     // https://mkyong.com/regular-expressions/how-to-validate-ip-address-with-regular-expression/
@@ -1976,6 +2011,19 @@ public class Utils {
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public static File findSiblingKeylog(String pcap_path) {
+        File pcapFile = new File(pcap_path);
+        File parent = pcapFile.getParentFile();
+        if (parent == null)
+            return null;
+
+        String name = pcapFile.getName();
+        int dotIndex = name.lastIndexOf('.');
+        String baseName = (dotIndex > 0) ? name.substring(0, dotIndex) : name;
+        File candidate = new File(parent, baseName + ".keylog");
+        return (candidate.isFile() && isReadable(candidate.getAbsolutePath())) ? candidate : null;
     }
 
     public static boolean isPcapng(Context ctx, Uri uri) {

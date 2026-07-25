@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #include "common/memtrack.h"
@@ -33,10 +33,17 @@ typedef struct {
     int num_items;
 } port_map_list_t;
 
+typedef struct {
+    int *uids;
+    int num_uids;
+} port_map_exemptions_t;
+
 static struct {
     port_map_list_t tcp;
     port_map_list_t udp;
 } mappings;
+
+static port_map_exemptions_t exemptions;
 
 /* ******************************************************* */
 
@@ -73,11 +80,16 @@ bool pd_add_port_map(int ipver, int ipproto, int orig_port, int redirect_port, c
 
 /* ******************************************************* */
 
-bool pd_check_port_map(zdtun_conn_t *conn) {
+bool pd_check_port_map(zdtun_conn_t *conn, int uid) {
     const zdtun_5tuple_t *tuple = zdtun_conn_get_5tuple(conn);
     port_map_list_t *mlist = get_map_list(tuple->ipproto);
     if(!mlist)
         return false;
+
+    for(int i=0; i<exemptions.num_uids; i++) {
+        if(exemptions.uids[i] == uid)
+            return false;
+    }
 
     for(int i=0; i<mlist->num_items; i++) {
         port_map_t *mapping = &mlist->items[i];
@@ -94,6 +106,28 @@ bool pd_check_port_map(zdtun_conn_t *conn) {
 
 /* ******************************************************* */
 
+bool pd_set_port_map_exemptions(const int *uids, int num_uids) {
+    pd_free(exemptions.uids);
+    exemptions.uids = NULL;
+    exemptions.num_uids = 0;
+
+    if(num_uids <= 0)
+        return true;
+
+    int *new_buf = (int*) pd_malloc(num_uids * sizeof(int));
+    if(!new_buf) {
+        log_e("pd_set_port_map_exemptions: allocation failed");
+        return false;
+    }
+
+    exemptions.uids = new_buf;
+    exemptions.num_uids = num_uids;
+    memcpy(exemptions.uids, uids, num_uids * sizeof(int));
+    return true;
+}
+
+/* ******************************************************* */
+
 static void clear_map_list(port_map_list_t *mlist) {
     pd_free(mlist->items);
     mlist->items = NULL;
@@ -103,4 +137,8 @@ static void clear_map_list(port_map_list_t *mlist) {
 void pd_reset_port_map() {
     clear_map_list(&mappings.tcp);
     clear_map_list(&mappings.udp);
+
+    pd_free(exemptions.uids);
+    exemptions.uids = NULL;
+    exemptions.num_uids = 0;
 }

@@ -9,20 +9,20 @@ android {
             keyPassword 'android'
         }
     }
-    ndkVersion "28.2.13676358"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
-        minSdkVersion 21
-        compileSdk 35
-        targetSdk 35
-        versionCode 90
-        versionName "1.9.0"
+        minSdkVersion 23
+        compileSdk 36
+        targetSdk 36
+        versionCode 91
+        versionName "1.9.1"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
-        resourceConfigurations += ["en", "ar", "az", "de", "es", "in", "it", "pl", "pt-rBR", "ru", "ta", "tr",
-                                   "uk", "zh-rCN"]
+        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "hi", "in", "it", "ja", "ko",
+                                   "ms", "pl", "pt", "pt-rBR", "ru", "ta", "tr", "uk", "ur", "vi", "zh-rCN"]
     }
 
     flavorDimensions = ["type"]
@@ -48,7 +48,7 @@ android {
             // Use a different app ID for debug to allow its coexistence with release builds
             //applicationIdSuffix '.debug'
             versionNameSuffix '-beta'
-            pseudoLocalesEnabled true
+            pseudoLocalesEnabled = true
 
             if(project.hasProperty("doNotStrip")) {
                 // NOTE: packagingOptions will also affect the "release" build, so the "doNotStrip"
@@ -77,15 +77,15 @@ android {
     externalNativeBuild {
         cmake {
             path file('src/main/jni/CMakeLists.txt')
-            version "3.22.1"
+            version = "3.22.1"
         }
     }
 
     compileOptions {
-        encoding "UTF-8"
-        coreLibraryDesugaringEnabled true // support devices running older Java versions
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        encoding = "UTF-8"
+        coreLibraryDesugaringEnabled = true // support devices running older Java versions
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -102,28 +102,35 @@ android {
             systemProperty "java.library.path", "${buildDir}/hostJni"
         }
     }
-    namespace 'com.emanuelef.remote_capture'
+    namespace = 'com.emanuelef.remote_capture'
 }
 
 // Build zstd JNI for the host platform (needed by unit tests)
-tasks.register('buildHostZstdJni') {
-    def jniSrcDir = file("src/main/jni/zstd")
-    def cmakeBuildDir = "${buildDir}/hostJni/cmake"
-    def outputDir = "${buildDir}/hostJni"
+abstract class BuildHostZstdJniTask extends DefaultTask {
+    @Inject abstract ExecOperations getExecOps()
 
-    inputs.dir(jniSrcDir)
-    inputs.dir("${rootDir}/submodules/zstd/lib")
-    outputs.dir(outputDir)
+    @InputDirectory File jniSrcDir
+    @InputDirectory File zstdLibDir
+    @OutputDirectory File outputDir
+    @Internal File cmakeBuildDir
 
-    doLast {
-        exec {
+    @TaskAction
+    void build() {
+        execOps.exec {
             commandLine 'cmake', '-S', jniSrcDir, '-B', cmakeBuildDir,
                 "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${outputDir}"
         }
-        exec {
+        execOps.exec {
             commandLine 'cmake', '--build', cmakeBuildDir
         }
     }
+}
+
+tasks.register('buildHostZstdJni', BuildHostZstdJniTask) {
+    jniSrcDir = file("src/main/jni/zstd")
+    zstdLibDir = file("${rootDir}/submodules/zstd/lib")
+    cmakeBuildDir = file("${buildDir}/hostJni/cmake")
+    outputDir = file("${buildDir}/hostJni")
 }
 
 tasks.configureEach { task ->
@@ -141,17 +148,18 @@ dependencies {
 // AndroidX
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
     implementation 'androidx.fragment:fragment:1.8.9'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation "androidx.navigation:navigation-fragment:2.9.7"
-    implementation "androidx.navigation:navigation-ui:2.9.7"
+    implementation "androidx.navigation:navigation-fragment:2.9.8"
+    implementation "androidx.navigation:navigation-ui:2.9.8"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
 // Google
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party

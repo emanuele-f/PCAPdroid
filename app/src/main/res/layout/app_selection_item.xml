@@ -27,6 +27,7 @@
             android:id="@+id/app_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textAlignment="viewStart"
             android:textStyle="bold"
             android:textSize="14sp"
             tools:text="App Name"/>
@@ -34,6 +35,7 @@
             android:id="@+id/app_package"
             tools:text="App Package Name"
             android:textSize="12sp"
+            android:textAlignment="viewStart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>

@@ -1,0 +1,20 @@
+<i>PCAPdroid</i> là một ứng dụng thân thiện với quyền riêng tư, cho phép bạn theo dõi và phân tích các kết nối được thực hiện bởi các ứng dụng khác trên thiết bị của bạn.
+Nó cũng cho phép bạn xuất một tệp PCAP dump của lưu lượng mạng, kiểm tra HTTP, giải mã lưu lượng TLS và nhiều tính năng khác.
+
+PCAPdroid giả lập một VPN để thu thập lưu lượng mạng mà không cần quyền root. Nó không sử dụng máy chủ VPN từ xa, thay vào đó dữ liệu được xử lý cục bộ trên thiết bị.
+
+<b>Tính năng:</b>
+
+* Ghi nhật ký và kiểm tra các kết nối được thực hiện bởi ứng dụng của người dùng và hệ thống
+* Trích xuất SNI, truy vấn DNS, URL HTTP và địa chỉ IP từ xa
+* Kiểm tra các yêu cầu và phản hồi HTTP nhờ các bộ giải mã tích hợp sẵn
+* Kiểm tra toàn bộ dữ liệu kết nối dưới dạng hexdump/văn bản
+* Giải mã lưu lượng HTTPS/TLS và xuất tệp SSLKEYLOGFILE
+* Xuất lưu lượng thành tệp PCAP, tải xuống từ trình duyệt, hoặc truyền trực tiếp đến một thiết bị nhận từ xa để phân tích thời gian thực (ví dụ: Wireshark)
+* Tạo các quy tắc để lọc ra lưu lượng hợp lệ và dễ dàng phát hiện các bất thường
+* Xác định quốc gia và ASN của máy chủ từ xa thông qua tra cứu cơ sở dữ liệu ngoại tuyến
+* Trên các thiết bị đã root, thu thập lưu lượng ngay cả khi các ứng dụng VPN khác đang chạy
+
+Nếu bạn có kế hoạch sử dụng PCAPdroid để phân tích gói tin, vui lòng kiểm tra <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>phần cụ thể</a> trong hướng dẫn.
+
+Tham gia cộng đồng quốc tế PCAPdroid trên <a href="https://t.me/PCAPdroid">Telegram</a> hoặc trên <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.

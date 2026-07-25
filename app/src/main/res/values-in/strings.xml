@@ -189,7 +189,7 @@
     <string name="vpn_setup_failed">Tidak dapat mengatur VPN. Pastikan VPN Selalu Aktif dinonaktifkan</string>
     <string name="older_connections_notice">%1$d koneksi lama tidak ditampilkan</string>
     <string name="http_server_port">Port server HTTP</string>
-    <string name="receiver_ip_address">Alamat IP kolektor</string>
+    <string name="receiver_host">Host kolektor</string>
     <string name="no">Tidak</string>
     <string name="app_not_found">Tidak dapat menemukan aplikasi %1$s</string>
     <string name="active_connections">Koneksi aktif</string>
@@ -205,7 +205,6 @@
     <string name="delete">Hapus</string>
     <string name="capture_running">Capture berjalan</string>
     <string name="copy_to_clipboard">Salin ke papan klip</string>
-    <string name="save_to_file">Simpan ke file</string>
     <string name="unknown_app">Tidak diketahui</string>
     <string name="system_default">Bawaan sistem</string>
     <string name="conn_status_unreachable">Tidak terjangkau</string>
@@ -397,13 +396,13 @@
     <string name="firewall_whitelist_notice">Dalam mode ini semua koneksi akan diblokir, kecuali jika dimasukkan ke dalam daftar putih secara manual. Anda mungkin melewatkan notifikasi push tanpa daftar putih yang tepat</string>
     <string name="host_resolution_failed">Tidak dapat menyelesaikan host %1$s</string>
     <string name="dns_servers_summary">Mengonfigurasi server DNS yang akan digunakan selama pencatatan</string>
-    <string name="pcap_file_load_aborted">Pemuatan file penangkapan dibatalkan</string>
+    <string name="pcap_file_load_aborted">Pemuatan penangkapan dibatalkan</string>
     <string name="password">Sandi</string>
     <string name="many_rules_warning">Anda mencoba mengimpor banyak aturan, yang bisa membuat aplikasi tidak responsif selama berinteraksi. Apakah Anda benar-benar ingin melanjutkan\?</string>
     <string name="mitm_addon">addon mitm</string>
     <string name="decryption_rules">Aturan dekripsi</string>
     <string name="tls_decryption_no_rules_notice">Dekripsi TLS hanya diterapkan pada koneksi yang sesuai dengan aturan yang dikonfigurasi. Apakah Anda ingin membuat aturan dekripsi sekarang\?</string>
-    <string name="pcap_load_success">File penangkapan dimuat</string>
+    <string name="pcap_load_success">Penangkapan dimuat</string>
     <string name="ipv4_dns_server">Server DNS IPv4</string>
     <string name="firewall_whitelist_help">Aturan-aturan ini menentukan koneksi mana yang diizinkan. Aturan daftar blokir memiliki prioritas di atas aturan daftar putih</string>
     <string name="status_encrypted">Terenkripsi</string>
@@ -438,7 +437,7 @@
     <string name="pcap_read_error">Kesalahan membaca file tangkapan. Periksa log untuk detailnya</string>
     <string name="add_action">Tambahkan</string>
     <string name="active_vpn_detected">VPN aktif terdeteksi</string>
-    <string name="pcap_load_in_progress">Pemuatan file PCAP sedang berlangsung, harap tunggu</string>
+    <string name="pcap_load_in_progress">Pemuatan penangkapan sedang berlangsung, harap tunggu</string>
     <string name="app_log">Riwayat</string>
     <string name="required">dibutuhkan</string>
     <string name="destination_host">Host tujuan</string>
@@ -465,7 +464,7 @@
     <string name="root_capture_pcapd_start_failure">Pencatatan gagal dijalankan. Pastikan Anda memberikan akses root ke PCAPdroid</string>
     <string name="qr_purchase_required">Beli token pembuka kunci untuk melanjutkan aktivasi melalui kode QR</string>
     <string name="connection_error">Kesalahan koneksi: %1$s</string>
-    <string name="invalid_pcap_file">Format file penangkapan tidak valid</string>
+    <string name="invalid_pcap_file">Format penangkapan tidak valid</string>
     <string name="invalid_license">Lisensi tidak valid</string>
     <string name="decryption_rules_help">Aturan-aturan ini menentukan koneksi mana yang akan didekripsi. Aturan berbasis host hanya berfungsi jika balasan DNS sebelumnya terlihat</string>
     <string name="proxy_host">Proxy host</string>
@@ -507,7 +506,6 @@
     <string name="errno_ehostunreach">Tidak ada rute ke host</string>
     <string name="errno_ehostunreach_msg">Sistem tidak dapat menemukan rute ke host tujuan</string>
     <string name="tls_conn_info">lalu lintas TLS/HTTPS dienkripsi. Untuk memeriksa lalu lintas ini, Anda perlu mendekripsinya. Cek <a href="%1$s">panduan pengguna</a> PCAPdroid untuk detailnya</string>
-    <string name="tls_decryption_not_supported_16KB">Dekripsi TLS saat ini tidak didukung pada perangkat 16 KB</string>
     <string name="filename_prefix">Awalan nama file</string>
     <string name="filename_prefix_description">Atur awalan untuk file yang diekspor oleh PCAPdroid, mis. file PCAP</string>
     <string name="no_requests">Tidak ada permintaan</string>
@@ -539,12 +537,8 @@
     <string name="errno_etimedout_msg">Server terlalu lama merespons, kemungkinan karena penundaan jaringan atau server yang sibuk</string>
     <string name="errno_epipe">Broken Pipe</string>
     <string name="geo_db_missing">Database geolokasi tidak ada</string>
-    <string name="decrypt_pcap_file">Dekripsi file PCAP/Pcapng…</string>
-    <string name="keylog_read_error">Kesalahan pembacaan keylog SSL</string>
-    <string name="unsupported_pcap_file">Format file penangkapan tidak didukung</string>
+    <string name="unsupported_pcap_file">Format penangkapan tidak didukung</string>
     <string name="bytes_threshold">Batas byte</string>
-    <string name="select_the_pcap_file">Pilih file PCAP/Pcapng</string>
-    <string name="select_the_keylog_file">Pilih file SSL keylog</string>
     <string name="error_code_with_text">%1$s (kesalahan %2$d)</string>
     <string name="errno_epipe_msg">Server tiba-tiba menutup koneksi saat transfer data</string>
     <string name="errno_enetreset_msg">Sambungan jaringan direset oleh perangkat perantara (mis. router atau operator seluler)</string>
@@ -561,4 +555,34 @@
     <string name="api_key">Kunci API</string>
     <string name="api_key_discard_confirm">Apakah Anda benar-benar ingin membuang kunci API saat ini dan membuat yang baru?</string>
     <string name="no_permissions_set_info">Tidak ada izin yang ditetapkan. Panggil PCAPdroid melalui StartActivityForResult untuk menampilkan permintaan izin</string>
+    <string name="allow_for_app">Izinkan untuk %1$s…</string>
+    <string name="allowlist_allow">Izinkan %1$s</string>
+    <string name="allowlist_remove">Hapus %1$s</string>
+    <string name="allowlist">Daftar izin</string>
+    <string name="app_allowlist_help">Di sini Anda dapat menentukan sekumpulan aturan untuk mengizinkan beberapa koneksi aplikasi sambil tetap memblokir sisanya</string>
+    <string name="app_with_exceptions">%1$s (%2$d pengecualian)</string>
+    <string name="port_map_exemptions">Pengecualian</string>
+    <string name="port_map_exemptions_help">Pilih aplikasi yang akan dikecualikan dari pemetaan port. Untuk mencegah perulangan lalu lintas, Anda sebaiknya mengecualikan aplikasi yang perlu menjangkau server aslinya untuk bootstrap (mis. resolver DNS-over-HTTPS)</string>
+    <string name="feature_unavailable">Fitur \"%1$s\" tidak tersedia</string>
+    <string name="port_mapping_disabled_reminder">Aktifkan pemetaan port untuk menggunakan aturan ini</string>
+    <string name="tls_decryption_unsupported_target">Dekripsi TLS memerlukan Android 7 atau yang lebih baru dan perangkat x86_64/aarch64</string>
+    <string name="save_as_csv">Simpan sebagai CSV</string>
+    <string name="last_capture">Tangkapan terakhir</string>
+    <string name="view_all">Lihat semua</string>
+    <string name="app_and_n_more">%1$s dan %2$d lainnya</string>
+    <string name="capture_list_info">%1$s · %2$s · %3$s</string>
+    <string name="capture_list">Daftar tangkapan</string>
+    <string name="captures_count">Tangkapan (%1$d)</string>
+    <string name="storage_used">Penyimpanan digunakan</string>
+    <string name="storage_used_value">%1$s / %2$s</string>
+    <string name="no_captures">Tidak ada tangkapan</string>
+    <string name="rename">Ganti nama</string>
+    <string name="captures_delete_confirm">Hapus tangkapan yang dipilih\?</string>
+    <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="n_seconds">%1$d s</string>
+    <string name="n_minutes">%1$d m</string>
+    <string name="n_hours_minutes">%1$d h, %2$d m</string>
+    <string name="connections_log_size">Maks koneksi tercatat</string>
+    <string name="connections_log_size_entry">%1$s (~%2$d MB RAM digunakan)</string>
+    <string name="capture_list_files_changed">Tangkapan berubah di disk, daftar diperbarui</string>
 </resources>

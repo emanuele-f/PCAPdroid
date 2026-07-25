@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.emanuelef.remote_capture.AppIconLoader;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.model.AppDescriptor;
@@ -128,8 +129,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         holder.packageName.setText(app.getPackageName());
         holder.toggle.setChecked(mCheckedItems.contains(app.getPackageName()));
 
-        if(app.getIcon() != null)
-            holder.icon.setImageDrawable(app.getIcon());
+        AppIconLoader.setIcon(holder.icon, app, null);
     }
 
     private boolean isFiltering() {
@@ -157,6 +157,9 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
 
     private void handleToggle(int old_pos, boolean checked) {
         AppDescriptor app = getItem(old_pos);
+        if (app == null)
+            return;
+
         String packageName = app.getPackageName();
 
         if(checked == mCheckedItems.contains(packageName))
@@ -170,7 +173,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
         if(mListener != null)
             mListener.onAppToggled(app, checked);
 
-        if(!checked && !mShowSystemApps && app.isSystem()) {
+        if(!checked && !mShowSystemApps && app.isBackgroundSystemApp()) {
             getApps().remove(old_pos);
             notifyItemRemoved(old_pos);
             return;
@@ -229,7 +232,7 @@ public class AppsTogglesAdapter extends RecyclerView.Adapter<AppsTogglesAdapter.
             for(AppDescriptor app: mApps) {
                 if(!mFilter.isEmpty() && !app.matches(mFilter, false))
                     continue;
-                if(!mShowSystemApps && app.isSystem() && !mCheckedItems.contains(app.getPackageName()))
+                if(!mShowSystemApps && app.isBackgroundSystemApp() && !mCheckedItems.contains(app.getPackageName()))
                     continue;
                 mFilteredApps.add(app);
             }

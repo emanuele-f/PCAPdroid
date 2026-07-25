@@ -26,6 +26,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.UserHandle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.emanuelef.remote_capture.CaptureService;
@@ -33,12 +34,14 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.interfaces.DrawableLoader;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     private final String mName;
     private final String mPackageName;
     private final int mUid;
     private final boolean mIsSystem;
+    private final boolean mHasLauncherIntent;
     private Drawable mIcon;
     private final DrawableLoader mIconLoader;
     private String mDescription;
@@ -50,19 +53,30 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     PackageInfo mPackageInfo;
 
     public AppDescriptor(String name, DrawableLoader icon_loader, String package_name, int uid, boolean is_system) {
+        this(name, icon_loader, package_name, uid, is_system, false);
+    }
+
+    private AppDescriptor(String name, DrawableLoader icon_loader, String package_name, int uid, boolean is_system, boolean has_launcher) {
         this.mName = name;
         this.mIcon = null;
         this.mIconLoader = icon_loader;
         this.mPackageName = package_name;
         this.mUid = uid;
         this.mIsSystem = is_system;
+        this.mHasLauncherIntent = has_launcher;
         this.mDescription = "";
     }
 
-    public AppDescriptor(PackageManager pm, PackageInfo pkgInfo) {
-        this(pkgInfo.applicationInfo.loadLabel(pm).toString(), null,
-                pkgInfo.applicationInfo.packageName, pkgInfo.applicationInfo.uid,
-                (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+    public AppDescriptor(PackageManager pm, @NonNull PackageInfo pkgInfo) {
+        this(pm, pkgInfo, Objects.requireNonNull(pkgInfo.applicationInfo));
+    }
+
+    private AppDescriptor(PackageManager pm, PackageInfo pkgInfo, ApplicationInfo appInfo) {
+        this(String.valueOf(appInfo.loadLabel(pm)),
+                makeIconLoader(pm, appInfo),
+                appInfo.packageName, appInfo.uid,
+                (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0,
+                pm.getLaunchIntentForPackage(appInfo.packageName) != null);
 
         mPm = pm;
         mPackageInfo = pkgInfo;
@@ -81,43 +95,58 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
         return mName;
     }
 
-    public @Nullable Drawable getIcon() {
-        if(mIcon != null)
-            return mIcon;
-
-        if(mIconLoader != null) {
-            mIcon = mIconLoader.getDrawable();
-            return mIcon;
-        }
-
-        if((mPackageInfo == null) || (mPm == null))
-            return null;
-
-        // NOTE: this call is expensive
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) && CaptureService.isCapturingAsRoot()) {
-            // Contrary to "loadIcon", this returns the correct icon for main-profile apps
-            // when PCAPdroid is running into a work profile with root. For work-profile apps,
-            // the badge is added below via getUserHandleForUid
-            mIcon = mPackageInfo.applicationInfo.loadUnbadgedIcon(mPm);
-
-            if (!badgedIconFails) {
-                try {
-                    UserHandle handle = UserHandle.getUserHandleForUid(mUid);
-
-                    // On some systems may throw "java.lang.SecurityException: You need MANAGE_USERS permission to:
-                    // check if specified user a managed profile outside your profile group"
-                    mIcon = mPm.getUserBadgedIcon(mIcon, handle);
-                } catch (SecurityException e) {
-                    Log.w(TAG, "getUserBadgedIcon failed, using icons without badges: " + e.getMessage());
-                    badgedIconFails = true;
-                }
-            }
-        } else
-            mIcon = mPackageInfo.applicationInfo.loadIcon(mPm);
-
-        //Log.d("Icon size", mIcon.getIntrinsicWidth() + "x" + mIcon.getIntrinsicHeight());
-
+    public @Nullable Drawable getCachedIcon() {
         return mIcon;
+    }
+
+    // NOTE: must be called from the main thread. For background loading use loadIcon() + setLoadedIcon()
+    public @Nullable Drawable getIcon() {
+        if((mIcon == null) && (mIconLoader != null))
+            mIcon = mIconLoader.getDrawable();
+        return mIcon;
+    }
+
+    // Calls the icon loader without caching. Safe to call from any thread.
+    public @Nullable Drawable loadIcon() {
+        if(mIconLoader != null)
+            return mIconLoader.getDrawable();
+        return null;
+    }
+
+    public void setLoadedIcon(@Nullable Drawable icon) {
+        mIcon = icon;
+    }
+
+    private static DrawableLoader makeIconLoader(PackageManager pm, ApplicationInfo appInfo) {
+        int uid = appInfo.uid;
+
+        return () -> {
+            // NOTE: this call is expensive
+            Drawable icon;
+
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) && CaptureService.isCapturingAsRoot()) {
+                // Contrary to "loadIcon", this returns the correct icon for main-profile apps
+                // when PCAPdroid is running into a work profile with root. For work-profile apps,
+                // the badge is added below via getUserHandleForUid
+                icon = appInfo.loadUnbadgedIcon(pm);
+
+                if (!badgedIconFails) {
+                    try {
+                        UserHandle handle = UserHandle.getUserHandleForUid(uid);
+
+                        // On some systems may throw "java.lang.SecurityException: You need MANAGE_USERS permission to:
+                        // check if specified user a managed profile outside your profile group"
+                        icon = pm.getUserBadgedIcon(icon, handle);
+                    } catch (SecurityException e) {
+                        Log.w(TAG, "getUserBadgedIcon failed, using icons without badges: " + e.getMessage());
+                        badgedIconFails = true;
+                    }
+                }
+            } else
+                icon = appInfo.loadIcon(pm);
+
+            return icon;
+        };
     }
 
     public String getPackageName() {
@@ -129,6 +158,10 @@ public class AppDescriptor implements Comparable<AppDescriptor>, Serializable {
     }
 
     public boolean isSystem() { return mIsSystem; }
+
+    // A system app with no launcher intent (e.g. NFC service, SystemUI).
+    // Pre-installed apps like Chrome/YouTube have a launcher intent and return false.
+    public boolean isBackgroundSystemApp() { return mIsSystem && !mHasLauncherIntent; }
 
     // the app does not have a package name (e.g. uid 0 is android system)
     public boolean isVirtual() { return (mPackageInfo == null); }

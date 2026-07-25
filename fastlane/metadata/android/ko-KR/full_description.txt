@@ -10,11 +10,11 @@ PCAPdroid는 루트 권한 없이 네트워크 트래픽을 캡처하기 위해�
 * 내장된 디코더를 이용해 HTTP 요청 및 응답을 확인합니다.
 * 모든 커넥션 페이로드를 16진수 또는 텍스트로 확인합니다.
 * HTTPS/TLS 트래픽을 해독하고 SSLKEYLOGFILE을 내보냅니다.
-* 트래픽을 PCAP 파일로 덤프하거나, 브라우저에서 다운로드 하거나, 실시간 분석을 위해원격 리시버(와이어샤크 등)로 보냅니다.
+* 트래픽을 PCAP 파일로 덤프하거나, 브라우저에서 다운로드 하거나, 실시간 분석을 위해 원격 리시버(와이어샤크 등)로 보냅니다.
 * 정상 트래픽을 필터링하고 이상 징후를 쉽게 찾아내는 규칙을 생성합니다.
 * 오프라인 DB 조회로 원격 서버의 국가 및 ASN을 식별합니다.
 * 루팅된 기기에서는 다른 VPN이 실행되는 동안 트래픽을 캡처할 수 있습니다.
 
 PCAPdroid를 사용하여 패킷 분석을 하려는 경우, 설명서의 <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>특정 섹션</a>을 확인하세요.
 
-<a href="https://t.me/PCAPdroid">텔레그램</a> 또는 <a href="https://matrix.to/#/#pcapdroid:matrix.org">매트릭스</a>를 통해 전세계 커뮤니팅에 가입하세요.
+<a href="https://t.me/PCAPdroid">텔레그램</a> 또는 <a href="https://matrix.to/#/#pcapdroid:matrix.org">매트릭스</a>를 통해 전세계 커뮤니티에 가입하세요.

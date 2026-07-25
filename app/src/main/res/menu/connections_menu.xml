@@ -24,7 +24,7 @@
 
     <item
         android:id="@+id/save"
-        android:title="@string/save_to_file"
+        android:title="@string/save_as_csv"
         android:orderInCategory="30"
         android:icon="@drawable/ic_save"
         app:showAsAction="never" />

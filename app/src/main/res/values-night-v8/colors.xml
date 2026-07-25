@@ -13,4 +13,7 @@
     <color name="backgroundColor">@color/background_material_dark</color>
     <color name="drawerItemColor">@android:color/primary_text_dark</color>
     <color name="highContrast">#FFFFFF</color>
+    <color name="cardBorder">#2A2A2A</color>
+    <color name="appBadgeBg">#616161</color>
+    <color name="appBadgeText">#FFFFFF</color>
 </resources>

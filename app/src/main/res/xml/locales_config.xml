@@ -4,15 +4,24 @@
     <locale android:name="en-US"/>
     <locale android:name="ar"/> <!-- Arabic -->
     <locale android:name="az"/> <!-- Azerbaijani -->
+    <locale android:name="bn"/> <!-- Bengali -->
     <locale android:name="de"/> <!-- German -->
     <locale android:name="es"/> <!-- Spanish  -->
+    <locale android:name="fr"/> <!-- French -->
+    <locale android:name="hi"/> <!-- Hindi -->
     <locale android:name="in"/> <!-- Indonesian -->
     <locale android:name="it"/> <!-- Italian -->
+    <locale android:name="ja"/> <!-- Japanese -->
+    <locale android:name="ko"/> <!-- Korean -->
+    <locale android:name="ms"/> <!-- Malay -->
     <locale android:name="pl"/> <!-- Polish -->
+    <locale android:name="pt"/> <!-- Portuguese (Portugal) -->
     <locale android:name="pt-BR"/> <!-- Portuguese (Brazil) -->
     <locale android:name="ru"/> <!-- Russian -->
     <locale android:name="ta"/> <!-- Tamil -->
     <locale android:name="tr"/> <!-- Turkish -->
     <locale android:name="uk"/> <!-- Ukrainian -->
+    <locale android:name="ur"/> <!-- Urdu -->
+    <locale android:name="vi"/> <!-- Vietnamese -->
     <locale android:name="zh-Hans"/> <!-- Chinese (Simplified) -->
 </locale-config>

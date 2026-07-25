@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #include "test_utils.h"
+#include "core/pcap_reader.h"
+#include "pcapd/pcapd.h"
 
 #define TEST_SNAPLEN 256
 #define TEST_MAX_PKTS 8
@@ -142,10 +144,76 @@ static void max_dump_size() {
 
 /* ******************************************************* */
 
+static FILE *roundtrip_fp = NULL;
+
+static void roundtrip_dump_cb(struct pcapdroid *pd, const int8_t *buf, int len) {
+  assert(fwrite(buf, len, 1, roundtrip_fp) == 1);
+}
+
+/* Tests that the packet direction survives a Pcapng dump + reload. The direction
+ * is carried by the EPB flags option: without it the reader would default every
+ * reloaded packet to TX, losing the direction set by the capture heuristic.
+ *
+ * dump_extensions is enabled to increase coverage.
+ */
+static void direction_roundtrip() {
+  pcapdroid_t *pd = pd_init_test(PCAP_PATH "/metadata.pcap");
+
+  // A minimal IPv4 packet: its content is irrelevant to the direction check
+  u_char pkt[20] = {0};
+  pkt[0] = 0x45; // version 4, IHL 5
+  struct timeval tv = { .tv_sec = 1234, .tv_usec = 567 };
+
+  pcap_dumper_t *dumper = pcap_new_dumper(PCAPNG_DUMP, true, PCAPD_SNAPLEN,
+                                          0, roundtrip_dump_cb, pd);
+  assert(dumper != NULL);
+
+  roundtrip_fp = fopen(PCAP_OUT_PATH, "wb+");
+  assert(roundtrip_fp != NULL);
+
+  char *preamble;
+  int preamble_sz = pcap_get_preamble(dumper, &preamble);
+  assert(preamble_sz > 0);
+  assert(fwrite(preamble, preamble_sz, 1, roundtrip_fp) == 1);
+  pd_free(preamble);
+
+  // Dump a TX packet followed by an RX packet
+  assert(pcap_dump_packet(dumper, (char*)pkt, sizeof(pkt), &tv, 1000, 0, true));
+  assert(pcap_dump_packet(dumper, (char*)pkt, sizeof(pkt), &tv, 1000, 0, false));
+
+  pcap_destroy_dumper(dumper); // flushes the buffered packets
+  fclose(roundtrip_fp);
+  roundtrip_fp = NULL;
+
+  // Read the packets back and verify the direction is preserved
+  char *error = NULL;
+  pd_reader_t *reader = pd_new_reader(PCAP_OUT_PATH, &error);
+  assert(reader != NULL);
+  assert(pd_get_dump_format(reader) == PCAPNG_DUMP);
+
+  char buffer[PCAPD_SNAPLEN];
+  pcapd_hdr_t hdr;
+  pd_read_callbacks_t cb = {0};
+
+  assert(pd_read_next(reader, &hdr, buffer, &cb, NULL) == READER_PACKET_OK);
+  assert(hdr.flags & PCAPD_FLAG_TX);
+
+  assert(pd_read_next(reader, &hdr, buffer, &cb, NULL) == READER_PACKET_OK);
+  assert(!(hdr.flags & PCAPD_FLAG_TX));
+
+  assert(pd_read_next(reader, &hdr, buffer, &cb, NULL) == READER_EOF);
+
+  pd_destroy_reader(reader);
+  pd_free_test(pd);
+}
+
+/* ******************************************************* */
+
 int main(int argc, char **argv) {
   add_test("snaplen", test_snaplen);
   add_test("max_pkts_per_flow", max_pkts_per_flow);
   add_test("max_dump_size", max_dump_size);
+  add_test("direction_roundtrip", direction_roundtrip);
 
   run_test(argc, argv);
   return 0;

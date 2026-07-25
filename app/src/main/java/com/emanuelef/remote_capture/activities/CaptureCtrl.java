@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -102,6 +103,13 @@ public class CaptureCtrl extends AppCompatActivity {
         mCapHelper.setListener(success -> {
             setResult(success ? RESULT_OK : RESULT_CANCELED, null);
             finish();
+        });
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                abort();
+            }
         });
 
         Intent intent = getIntent();
@@ -207,13 +215,6 @@ public class CaptureCtrl extends AppCompatActivity {
         getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onBackPressed() {
-        abort();
-        super.onBackPressed();
-    }
-
     private void abort(boolean show_toast) {
         if(show_toast)
             Utils.showToast(this, R.string.ctrl_consent_denied);
@@ -227,8 +228,8 @@ public class CaptureCtrl extends AppCompatActivity {
 
     // Check if the capture is requesting to send traffic to a remote server.
     // For security reasons, this is only allowed if such server is already configured by
-    // the user in the app prefs.
-    // see also MainActivity.showRemoteServerAlert
+    // the user in the app prefs. Any domain name is treated as remote.
+    // See also MainActivity.showRemoteServerAlert
     private String checkRemoteServerNotAllowed(CaptureSettings settings) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -237,7 +238,7 @@ public class CaptureCtrl extends AppCompatActivity {
 
         if(exporterEnabled &&
                 !Utils.isLocalNetworkAddress(settings.collector_address) &&
-                !Prefs.getCollectorIp(prefs).equals(settings.collector_address))
+                !Prefs.getCollectorHost(prefs).equals(settings.collector_address))
             return settings.collector_address;
 
         if(settings.socks5_enabled &&
@@ -262,6 +263,12 @@ public class CaptureCtrl extends AppCompatActivity {
             String disallowedServer = checkRemoteServerNotAllowed(settings);
             if(disallowedServer != null) {
                 Utils.showToastLong(this, R.string.remote_server_warning, disallowedServer);
+                abort();
+                return;
+            }
+
+            if(settings.pcapng_format && !Billing.newInstance(this).isPurchased(Billing.PCAPNG_SKU)) {
+                Utils.showToastLong(this, R.string.feature_unavailable, getString(R.string.pcapng_format));
                 abort();
                 return;
             }

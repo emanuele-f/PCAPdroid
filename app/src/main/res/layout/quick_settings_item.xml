@@ -25,18 +25,19 @@
 
         <ImageView
             android:id="@+id/icon"
+            tools:visibility="visible"
             android:visibility="gone"
-            android:adjustViewBounds="false"
-            android:layout_width="24dp"
-            android:layout_height="match_parent"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_marginVertical="1dp"
-            android:layout_marginEnd="2dp"
+            android:layout_marginEnd="4dp"
             tools:src="@drawable/ic_apps"
             tools:tint="?attr/colorAccent" />
 
         <TextView
             android:id="@+id/description"
             tools:text="Description"
+            android:singleLine="true"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>

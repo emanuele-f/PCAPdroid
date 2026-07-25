@@ -7,7 +7,7 @@
         android:icon="@drawable/ic_select_all"
         app:showAsAction="ifRoom" />
     <item android:id="@+id/save"
-        android:title="@string/save_to_file"
+        android:title="@string/save_as_csv"
         android:orderInCategory="20"
         android:icon="@drawable/ic_save"
         app:showAsAction="ifRoom" />

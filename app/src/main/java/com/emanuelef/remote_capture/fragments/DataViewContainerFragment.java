@@ -178,12 +178,21 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
         switchToView(targetView);
     }
 
+    public void resetToConnectionsView() {
+        switchToView(VIEW_CONNECTIONS);
+    }
+
     private void switchToView(int targetView) {
         if (mCurrentView == targetView) {
             return;
         }
 
         mCurrentView = targetView;
+
+        // The child fragments are only available once the view is created; otherwise
+        // onViewCreated() will honor the updated mCurrentView
+        if ((mConnectionsFragment == null) || (mHttpLogFragment == null))
+            return;
 
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
 
@@ -225,16 +234,4 @@ public class DataViewContainerFragment extends Fragment implements MenuProvider 
         }
     }
 
-    public boolean onBackPressed() {
-        if (mCurrentView == VIEW_CONNECTIONS && mConnectionsFragment != null) {
-            if (mConnectionsFragment instanceof ConnectionsFragment) {
-                return ((ConnectionsFragment) mConnectionsFragment).onBackPressed();
-            }
-        } else if (mCurrentView == VIEW_HTTP_LOG && mHttpLogFragment != null) {
-            if (mHttpLogFragment instanceof HttpLogFragment) {
-                return ((HttpLogFragment) mHttpLogFragment).onBackPressed();
-            }
-        }
-        return false;
-    }
 }

@@ -42,6 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/app_name" />
             <TextView
@@ -49,6 +50,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="PCAPdroid" />
         </TableRow>
@@ -62,6 +64,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/package_name" />
             <TextView
@@ -69,6 +72,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="com.emanuelef.remote_capture" />
         </TableRow>
@@ -81,6 +85,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/uid" />
             <TextView
@@ -88,6 +93,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="12345" />
         </TableRow>
@@ -101,6 +107,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/version" />
             <TextView
@@ -108,6 +115,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="1.3.9" />
         </TableRow>
@@ -121,6 +129,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/target_sdk" />
             <TextView
@@ -128,6 +137,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="23" />
         </TableRow>
@@ -141,6 +151,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/installed_on" />
             <TextView
@@ -148,6 +159,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="01/02/20 00:45:01" />
         </TableRow>
@@ -161,6 +173,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/last_update" />
             <TextView
@@ -168,6 +181,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="01/02/20 00:45:01" />
         </TableRow>
@@ -180,6 +194,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/network_traffic" />
             <TextView
@@ -187,6 +202,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="410 B received — 590 B sent" />
         </TableRow>
@@ -199,6 +215,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/connections_view" />
             <TextView
@@ -206,6 +223,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="2" />
         </TableRow>
@@ -219,6 +237,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"
+                android:textAlignment="viewStart"
                 android:textStyle="bold"
                 android:text="@string/connections_blocked" />
             <TextView
@@ -226,6 +245,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.65"
+                android:textAlignment="viewStart"
                 android:textIsSelectable="true"
                 tools:text="5" />
         </TableRow>
