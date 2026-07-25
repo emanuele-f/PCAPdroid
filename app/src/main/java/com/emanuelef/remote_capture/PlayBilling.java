@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -298,13 +298,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
     @Override
     public void onBillingServiceDisconnected() {
+        // NOTE: reconnection is handled by the library via enableAutoServiceReconnection
         Log.w(TAG, "onBillingServiceDisconnected");
-
-        // Reconnect
-        mHandler.postDelayed(() -> {
-            if(mBillingClient != null)
-                mBillingClient.startConnection(PlayBilling.this);
-        }, 5000);
     }
 
     public void setPurchaseReadyListener(PurchaseReadyListener listener) {
@@ -328,6 +323,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
 
         mBillingClient = BillingClient.newBuilder(mContext)
                 .setListener(this)
+                .enableAutoServiceReconnection()
                 .enablePendingPurchases(PendingPurchasesParams.newBuilder()
                         .enableOneTimeProducts().build())
                 .build();
