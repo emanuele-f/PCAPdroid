@@ -585,4 +585,10 @@
     <string name="connections_log_size">En fazla kaydedilen bağlantı</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM kullanılıyor)</string>
     <string name="capture_list_files_changed">Diskteki yakalamalar değişti, liste güncellendi</string>
+    <string name="permission_required">İzin gerekli</string>
+    <string name="local_network_notice">Android 17\'den itibaren uygulamalar, yerel ağdaki cihazlara bağlanmadan önce izin istemek zorundadır. PCAPdroid, yerel cihazlara yönelenler de dahil olmak üzere tüm ağ bağlantılarını izleyebilmek için \"Yakındaki cihazlar\" iznine ihtiyaç duyar</string>
+    <string name="local_network_permission_denied">PCAPdroid, yakalamayı başlatmak için \"Yakındaki cihazlar\" iznini gerektirir. Bunu uygulama izinleri ayarlarından el ile vermeniz gerekir</string>
+    <string name="local_network_permission_required">Paketleri yakalamak için \"Yakındaki cihazlar\" izni gereklidir</string>
+    <string name="grant_permission_action">İzin ver</string>
+    <string name="open_settings">Ayarları aç</string>
 </resources>

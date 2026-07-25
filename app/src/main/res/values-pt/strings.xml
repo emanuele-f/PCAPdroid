@@ -570,4 +570,10 @@
     <string name="storage_used_value">%1$s / %2$s</string>
     <string name="tls_decryption_unsupported_target">A descriptografia TLS requer Android 7 ou mais recente e um dispositivo x86_64/aarch64</string>
     <string name="view_all">Ver tudo</string>
+    <string name="permission_required">Permissão necessária</string>
+    <string name="local_network_notice">A partir do Android 17, as apps devem pedir permissão antes de se conectarem aos dispositivos na rede local. O PCAPdroid precisa da permissão \"Dispositivos próximos\" para poder monitorar todas as conexões de rede, incluindo as dirigidas a dispositivos locais</string>
+    <string name="local_network_permission_denied">O PCAPdroid requer a permissão \"Dispositivos próximos\" para iniciar a captura. Precisa de concedê-la manualmente em configurações de permissões da app</string>
+    <string name="local_network_permission_required">A permissão \"Dispositivos próximos\" é necessária para capturar pacotes</string>
+    <string name="grant_permission_action">Conceder</string>
+    <string name="open_settings">Abrir configurações</string>
 </resources>

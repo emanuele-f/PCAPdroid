@@ -585,4 +585,10 @@
     <string name="connections_log_size">连接记录的最大值</string>
     <string name="connections_log_size_entry">%1$s （约使用了 %2$d MB 的内存）</string>
     <string name="capture_list_files_changed">磁盘上的捕获文件已更改，列表已更新</string>
+    <string name="permission_required">需要权限</string>
+    <string name="local_network_notice">自 Android 17 起，应用在连接局域网中的设备之前必须请求权限。PCAPdroid 需要“附近的设备”权限，才能监控所有的网络连接，包括发往本地设备的连接</string>
+    <string name="local_network_permission_denied">PCAPdroid 需要“附近的设备”权限才能开始捕获。你需要在应用权限设置中手动授予该权限</string>
+    <string name="local_network_permission_required">捕获数据包需要“附近的设备”权限</string>
+    <string name="grant_permission_action">授予</string>
+    <string name="open_settings">打开设置</string>
 </resources>

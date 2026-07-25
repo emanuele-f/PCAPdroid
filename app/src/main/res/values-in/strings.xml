@@ -585,4 +585,10 @@
     <string name="connections_log_size">Maks koneksi tercatat</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM digunakan)</string>
     <string name="capture_list_files_changed">Tangkapan berubah di disk, daftar diperbarui</string>
+    <string name="permission_required">Izin diperlukan</string>
+    <string name="local_network_notice">Sejak Android 17, aplikasi harus meminta izin sebelum terhubung ke perangkat di jaringan lokal. PCAPdroid membutuhkan izin \"Perangkat di sekitar\" agar dapat memantau semua koneksi jaringan, termasuk yang ditujukan ke perangkat lokal</string>
+    <string name="local_network_permission_denied">PCAPdroid membutuhkan izin \"Perangkat di sekitar\" untuk memulai penangkapan. Anda harus memberikannya secara manual dari pengaturan izin aplikasi</string>
+    <string name="local_network_permission_required">Izin \"Perangkat di sekitar\" diperlukan untuk menangkap paket</string>
+    <string name="grant_permission_action">Beri izin</string>
+    <string name="open_settings">Buka pengaturan</string>
 </resources>

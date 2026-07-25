@@ -581,4 +581,10 @@
     <string name="save_as_csv">احفظ كملف CSV</string>
     <string name="connections_log_size">أقصى عدد للاتصالات المسجلة</string>
     <string name="connections_log_size_entry">%1$s (استُخدم حوالي %2$d م.بايت من ذاكرة الوصول العشوائي)</string>
+    <string name="permission_required">الإذن مطلوب</string>
+    <string name="local_network_notice">بدءًا من Android 17، يجب على التطبيقات طلب الإذن قبل الاتصال بالأجهزة الموجودة على الشبكة المحلية. يحتاج PCAPdroid إلى إذن \"الأجهزة المجاورة\" ليتمكن من مراقبة جميع اتصالات الشبكة، بما في ذلك تلك الموجهة إلى الأجهزة المحلية</string>
+    <string name="local_network_permission_denied">يتطلب PCAPdroid إذن \"الأجهزة المجاورة\" لبدء الالتقاط. عليك منحه يدويًا من إعدادات أذونات التطبيق</string>
+    <string name="local_network_permission_required">إذن \"الأجهزة المجاورة\" مطلوب لالتقاط الحزم</string>
+    <string name="grant_permission_action">منح</string>
+    <string name="open_settings">افتح الإعدادات</string>
 </resources>

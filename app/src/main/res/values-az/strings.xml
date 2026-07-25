@@ -560,4 +560,10 @@
     <string name="connections_log_size">Maksimum qeydə alınan bağlantılar</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM istifadə olunur)</string>
     <string name="capture_list_files_changed">İzləmələr diskdə dəyişdi, siyahı yeniləndi</string>
+    <string name="permission_required">İcazə tələb olunur</string>
+    <string name="local_network_notice">Android 17-dən etibarən tətbiqlər lokal şəbəkədəki cihazlara qoşulmadan əvvəl icazə istəməlidir. PCAPdroid bütün şəbəkə bağlantılarını, o cümlədən lokal cihazlara yönəlmiş olanları izləyə bilmək üçün \"Yaxınlıqdakı cihazlar\" icazəsinə ehtiyac duyur</string>
+    <string name="local_network_permission_denied">İzləməyə başlamaq üçün PCAPdroid \"Yaxınlıqdakı cihazlar\" icazəsini tələb edir. Onu tətbiq icazələri parametrlərindən əl ilə verməlisiniz</string>
+    <string name="local_network_permission_required">Paketləri izləmək üçün \"Yaxınlıqdakı cihazlar\" icazəsi tələb olunur</string>
+    <string name="grant_permission_action">Ver</string>
+    <string name="open_settings">Parametrləri aç</string>
 </resources>

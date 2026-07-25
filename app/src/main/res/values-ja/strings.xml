@@ -567,4 +567,10 @@
     <string name="connections_log_size">最大記録接続数</string>
     <string name="connections_log_size_entry">%1$s (RAM 使用量 約 %2$d MB)</string>
     <string name="capture_list_files_changed">ディスク上のキャプチャが変更されたため、一覧を更新しました</string>
+    <string name="permission_required">権限が必要です</string>
+    <string name="local_network_notice">Android 17 以降、アプリはローカル ネットワーク上のデバイスに接続する前に権限を要求する必要があります。PCAPdroid がローカル デバイス宛ての接続を含むすべてのネットワーク接続を監視するには、「付近のデバイス」の権限が必要です</string>
+    <string name="local_network_permission_denied">キャプチャを開始するには、PCAPdroid に「付近のデバイス」の権限が必要です。アプリの権限設定から手動で許可してください</string>
+    <string name="local_network_permission_required">パケットをキャプチャするには「付近のデバイス」の権限が必要です</string>
+    <string name="grant_permission_action">許可</string>
+    <string name="open_settings">設定を開く</string>
 </resources>

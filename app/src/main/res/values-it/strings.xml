@@ -584,4 +584,10 @@
     <string name="connections_log_size_entry">%1$s (~%2$d MB di RAM usati)</string>
     <string name="capture_list_files_changed">Le catture su disco sono cambiate, lista aggiornata</string>
     <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="permission_required">Permesso richiesto</string>
+    <string name="local_network_notice">A partire da Android 17, le app devono chiedere il permesso prima di connettersi ai dispositivi sulla rete locale. PCAPdroid necessita del permesso \"Dispositivi nelle vicinanze\" per poter monitorare tutte le connessioni di rete, incluse quelle dirette ai dispositivi locali</string>
+    <string name="local_network_permission_denied">PCAPdroid richiede il permesso \"Dispositivi nelle vicinanze\" per avviare la cattura. Devi concederlo manualmente dalle impostazioni dei permessi dell\'app</string>
+    <string name="local_network_permission_required">Il permesso \"Dispositivi nelle vicinanze\" è necessario per catturare i pacchetti</string>
+    <string name="grant_permission_action">Concedi</string>
+    <string name="open_settings">Apri impostazioni</string>
 </resources>

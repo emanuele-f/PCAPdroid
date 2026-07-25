@@ -560,4 +560,10 @@
     <string name="connections_log_size">பதிவு செய்யப்பட்ட அதிகபட்ச இணைப்புகள்</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM பயன்படுத்தப்பட்டது)</string>
     <string name="capture_list_files_changed">வட்டில் பிடிப்புகள் மாற்றப்பட்டன, பட்டியல் புதுப்பிக்கப்பட்டது</string>
+    <string name="permission_required">அனுமதி தேவை</string>
+    <string name="local_network_notice">ஆண்ட்ராய்டு 17 முதல், உள்ளக பிணையத்தில் உள்ள சாதனங்களுடன் இணைவதற்கு முன் பயன்பாடுகள் அனுமதி கேட்க வேண்டும். உள்ளக சாதனங்களுக்குச் செல்லும் இணைப்புகள் உட்பட அனைத்து பிணைய இணைப்புகளையும் கண்காணிக்க PCAPdroid-க்கு \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை</string>
+    <string name="local_network_permission_denied">பிடிப்பைத் தொடங்க PCAPdroid-க்கு \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை. பயன்பாட்டு அனுமதிகள் அமைப்புகளிலிருந்து அதை நீங்கள் கைமுறையாக வழங்க வேண்டும்</string>
+    <string name="local_network_permission_required">பாக்கெட்டுகளை கைப்பற்ற \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை</string>
+    <string name="grant_permission_action">வழங்கு</string>
+    <string name="open_settings">அமைப்புகளைத் திற</string>
 </resources>

@@ -567,4 +567,10 @@
     <string name="connections_log_size">अधिकतम लॉग किए गए कनेक्शन</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM उपयोग)</string>
     <string name="capture_list_files_changed">डिस्क पर कैप्चर बदले गए, सूची अपडेट की गई</string>
+    <string name="permission_required">अनुमति आवश्यक</string>
+    <string name="local_network_notice">Android 17 से, ऐप्स को लोकल नेटवर्क के डिवाइस से कनेक्ट करने से पहले अनुमति मांगनी होगी। PCAPdroid को सभी नेटवर्क कनेक्शन की निगरानी करने के लिए \"आस-पास मौजूद डिवाइस\" अनुमति की आवश्यकता है, जिनमें लोकल डिवाइस को भेजे गए कनेक्शन भी शामिल हैं</string>
+    <string name="local_network_permission_denied">कैप्चर शुरू करने के लिए PCAPdroid को \"आस-पास मौजूद डिवाइस\" अनुमति की आवश्यकता है। आपको इसे ऐप अनुमति सेटिंग्स से मैन्युअल रूप से देना होगा</string>
+    <string name="local_network_permission_required">पैकेट कैप्चर करने के लिए \"आस-पास मौजूद डिवाइस\" अनुमति आवश्यक है</string>
+    <string name="grant_permission_action">अनुमति दें</string>
+    <string name="open_settings">सेटिंग्स खोलें</string>
 </resources>

@@ -576,4 +576,10 @@
     <string name="capture_list_files_changed">Дампы на диске изменились, список обновлен</string>
     <string name="connections_log_size">Макс. логируемых соединений</string>
     <string name="storage_used">Использованное хранилище</string>
+    <string name="permission_required">Требуется разрешение</string>
+    <string name="local_network_notice">Начиная с Android 17 приложения должны запрашивать разрешение перед подключением к устройствам в локальной сети. PCAPdroid необходимо разрешение \"Устройства поблизости\", чтобы отслеживать все сетевые соединения, включая направленные к локальным устройствам</string>
+    <string name="local_network_permission_denied">Для запуска перехвата PCAPdroid требуется разрешение \"Устройства поблизости\". Вам нужно выдать его вручную в настройках разрешений приложения</string>
+    <string name="local_network_permission_required">Для перехвата пакетов требуется разрешение \"Устройства поблизости\"</string>
+    <string name="grant_permission_action">Выдать</string>
+    <string name="open_settings">Открыть настройки</string>
 </resources>

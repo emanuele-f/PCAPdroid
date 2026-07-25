@@ -567,4 +567,10 @@
     <string name="connections_log_size">Số kết nối được ghi tối đa</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM được sử dụng)</string>
     <string name="capture_list_files_changed">Các bản bắt gói tin đã thay đổi trên đĩa, danh sách đã được cập nhật</string>
+    <string name="permission_required">Cần có quyền</string>
+    <string name="local_network_notice">Từ Android 17, các ứng dụng phải xin quyền trước khi kết nối đến các thiết bị trong mạng cục bộ. PCAPdroid cần quyền \"Thiết bị ở gần\" để có thể theo dõi mọi kết nối mạng, bao gồm cả các kết nối đến thiết bị cục bộ</string>
+    <string name="local_network_permission_denied">PCAPdroid cần quyền \"Thiết bị ở gần\" để bắt đầu bắt gói tin. Bạn phải cấp quyền này thủ công trong cài đặt quyền của ứng dụng</string>
+    <string name="local_network_permission_required">Cần quyền \"Thiết bị ở gần\" để bắt gói tin</string>
+    <string name="grant_permission_action">Cấp</string>
+    <string name="open_settings">Mở cài đặt</string>
 </resources>

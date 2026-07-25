@@ -567,4 +567,10 @@
     <string name="connections_log_size">সর্বাধিক লগ করা সংযোগ</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM ব্যবহৃত)</string>
     <string name="capture_list_files_changed">ডিস্কে ক্যাপচার পরিবর্তিত হয়েছে, তালিকা আপডেট করা হয়েছে</string>
+    <string name="permission_required">অনুমতি প্রয়োজন</string>
+    <string name="local_network_notice">অ্যান্ড্রয়েড 17 থেকে, স্থানীয় নেটওয়ার্কের ডিভাইসের সাথে সংযোগ করার আগে অ্যাপগুলিকে অনুমতি চাইতে হবে। স্থানীয় ডিভাইসে যাওয়া সংযোগসহ সমস্ত নেটওয়ার্ক সংযোগ নিরীক্ষণ করার জন্য PCAPdroid-এর \"আশেপাশের ডিভাইস\" অনুমতি প্রয়োজন</string>
+    <string name="local_network_permission_denied">ক্যাপচার শুরু করতে PCAPdroid-এর \"আশেপাশের ডিভাইস\" অনুমতি প্রয়োজন। আপনাকে অ্যাপ অনুমতি সেটিংস থেকে এটি ম্যানুয়ালি দিতে হবে</string>
+    <string name="local_network_permission_required">প্যাকেট ক্যাপচার করার জন্য \"আশেপাশের ডিভাইস\" অনুমতি প্রয়োজন</string>
+    <string name="grant_permission_action">অনুমতি দিন</string>
+    <string name="open_settings">সেটিংস খুলুন</string>
 </resources>

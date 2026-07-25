@@ -585,4 +585,10 @@
     <string name="connections_log_size">Максимальна кількість зареєстрованих підключень</string>
     <string name="connections_log_size_entry">%1$s (використано ~%2$d МБ оперативної пам\'яті)</string>
     <string name="capture_list_files_changed">Змінені захоплення на диску, список оновлено</string>
+    <string name="permission_required">Потрібен дозвіл</string>
+    <string name="local_network_notice">Починаючи з Android 17 застосунки повинні запитувати дозвіл перед підключенням до пристроїв у локальній мережі. PCAPdroid потребує дозволу \"Пристрої поблизу\", щоб мати змогу відслідковувати всі мережеві з\'єднання, включно з тими, що спрямовані до локальних пристроїв</string>
+    <string name="local_network_permission_denied">PCAPdroid потребує дозволу \"Пристрої поблизу\", щоб розпочати захоплення. Вам потрібно надати його вручну в налаштуваннях дозволів застосунку</string>
+    <string name="local_network_permission_required">Дозвіл \"Пристрої поблизу\" потрібен для захоплення пакетів</string>
+    <string name="grant_permission_action">Надати</string>
+    <string name="open_settings">Відкрити налаштування</string>
 </resources>

@@ -568,4 +568,10 @@
     <string name="connections_log_size">최대 기록 커넥션 수</string>
     <string name="connections_log_size_entry">%1$s (RAM %2$d MB 사용)</string>
     <string name="capture_list_files_changed">디스크의 캡처가 변경되어 목록이 업데이트되었습니다</string>
+    <string name="permission_required">권한 필요</string>
+    <string name="local_network_notice">안드로이드 17부터 앱은 로컬 네트워크의 기기에 연결하기 전에 권한을 요청해야 합니다. PCAPdroid가 로컬 기기로 향하는 연결을 포함한 모든 네트워크 연결을 모니터링하려면 \"근처 기기\" 권한이 필요합니다</string>
+    <string name="local_network_permission_denied">캡처를 시작하려면 PCAPdroid에 \"근처 기기\" 권한이 필요합니다. 앱 권한 설정에서 직접 부여해야 합니다</string>
+    <string name="local_network_permission_required">패킷을 캡처하려면 \"근처 기기\" 권한이 필요합니다</string>
+    <string name="grant_permission_action">부여</string>
+    <string name="open_settings">설정 열기</string>
 </resources>

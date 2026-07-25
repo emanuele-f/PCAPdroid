@@ -560,4 +560,10 @@
     <string name="connections_log_size">Maks. rejestrowanych połączeń</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB wykorzystanej pamięci RAM)</string>
     <string name="capture_list_files_changed">Przechwytywania zmienione na dysku, lista zaktualizowana</string>
+    <string name="permission_required">Wymagane uprawnienie</string>
+    <string name="local_network_notice">Od Androida 17 aplikacje muszą poprosić o uprawnienie, zanim połączą się z urządzeniami w sieci lokalnej. PCAPdroid potrzebuje uprawnienia \"Urządzenia w pobliżu\", aby móc monitorować wszystkie połączenia sieciowe, w tym te kierowane do urządzeń lokalnych</string>
+    <string name="local_network_permission_denied">PCAPdroid wymaga uprawnienia \"Urządzenia w pobliżu\", aby rozpocząć przechwytywanie. Musisz przyznać je ręcznie w ustawieniach uprawnień aplikacji</string>
+    <string name="local_network_permission_required">Uprawnienie \"Urządzenia w pobliżu\" jest wymagane do przechwytywania pakietów</string>
+    <string name="grant_permission_action">Przyznaj</string>
+    <string name="open_settings">Otwórz ustawienia</string>
 </resources>
