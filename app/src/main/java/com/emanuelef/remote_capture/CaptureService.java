@@ -1135,7 +1135,7 @@ public class CaptureService extends VpnService implements Runnable {
             INSTANCE.mBlacklistsUpdateRequested = true;
 
             // Wake the update thread to run the blacklist thread
-            INSTANCE.mPendingUpdates.offer(new Pair<>(new ConnectionDescriptor[0], new ConnectionUpdate[0]));
+            INSTANCE.mPendingUpdates.offer(new Pair<>(new ConnectionDescriptor[0], null));
         }
     }
 
@@ -1351,6 +1351,10 @@ public class CaptureService extends VpnService implements Runnable {
 
             if(!mLowMemory)
                 checkAvailableHeap();
+
+            if(conns_updates == null)
+                // wake-up request
+                continue;
 
             // synchronize the conn_reg to ensure that newConnections and connectionsUpdates run atomically
             // thus preventing the ConnectionsAdapter from interleaving other operations
