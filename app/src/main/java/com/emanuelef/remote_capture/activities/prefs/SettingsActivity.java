@@ -199,6 +199,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private SwitchPreference mDumpExtensions;
         private SwitchPreference mRestartOnDisconnect;
         private Billing mIab;
+        private SettingsBackupHandler mBackupHandler;
         private boolean mHasStartedMitmWizard;
         private boolean mRootDecryptionNoticeShown = false;
 
@@ -206,6 +207,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             mIab = Billing.newInstance(requireContext());
+            mBackupHandler = new SettingsBackupHandler(this);
 
             setupExporterPrefs();
             setupHttpServerPrefs();
@@ -213,6 +215,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             setupCapturePrefs();
             setupSecurityPrefs();
             setupOtherPrefs();
+            setupBackupPrefs();
 
             socks5ProxyHideShow(mTlsDecryption.isChecked(), rootCaptureEnabled());
             mBlockQuic.setVisible(!rootCaptureEnabled());
@@ -530,6 +533,20 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             ctrlPerm.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireContext(), EditCtrlPermissions.class);
                 startActivity(intent);
+                return true;
+            });
+        }
+
+        private void setupBackupPrefs() {
+            Preference exportSettings = requirePreference("export_settings");
+            exportSettings.setOnPreferenceClickListener(preference -> {
+                mBackupHandler.startExport();
+                return true;
+            });
+
+            Preference importSettings = requirePreference("import_settings");
+            importSettings.setOnPreferenceClickListener(preference -> {
+                mBackupHandler.startImport();
                 return true;
             });
         }
