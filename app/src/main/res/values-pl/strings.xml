@@ -566,4 +566,20 @@
     <string name="local_network_permission_required">Uprawnienie \"Urządzenia w pobliżu\" jest wymagane do przechwytywania pakietów</string>
     <string name="grant_permission_action">Przyznaj</string>
     <string name="open_settings">Otwórz ustawienia</string>
+    <string name="backup_restore">Kopia zapasowa i przywracanie</string>
+    <string name="export_settings">Eksportuj ustawienia</string>
+    <string name="export_settings_summary">Zapisz ustawienia aplikacji do pliku, aby przywrócić je później</string>
+    <string name="import_settings">Importuj ustawienia</string>
+    <string name="import_settings_summary">Przywróć ustawienia aplikacji z wcześniejszej kopii zapasowej</string>
+    <string name="import_settings_confirm">Wszystkie bieżące ustawienia zostaną zastąpione tymi wyeksportowanymi %1$s.\n\nAplikacja zostanie uruchomiona ponownie, aby je zastosować. Kontynuować?</string>
+    <string name="settings_imported">Ustawienia zaimportowane</string>
+    <string name="imported_license_invalid">Zaimportowana licencja jest nieprawidłowa na tym urządzeniu, więc płatne funkcje nie będą dostępne. Licencje są powiązane z konkretnym urządzeniem i instalacją aplikacji</string>
+    <string name="captures_not_accessible">Nie można uzyskać dostępu do %1$d przechwytywań z zaimportowanej listy. Jeśli ich pliki są nadal dostępne, wybierz folder, który je zawiera, aby przywrócić listę</string>
+    <string name="captures_restored">Przywrócono %1$d przechwytywań, pominięto %2$d</string>
+    <string name="select_folder">Wybierz folder</string>
+    <string name="skip_action">Pomiń</string>
+    <string name="import_capture_list_confirm">Kopia zapasowa zawiera %1$d przechwytywań, a na liście tego urządzenia znajduje się już %2$d przechwytywań.\n\nJak chcesz postąpić?</string>
+    <string name="merge_action">Scal</string>
+    <string name="replace_action">Zastąp</string>
+    <string name="keep_current_action">Zachowaj obecne</string>
 </resources>

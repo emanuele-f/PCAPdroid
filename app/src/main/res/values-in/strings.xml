@@ -591,4 +591,20 @@
     <string name="local_network_permission_required">Izin \"Perangkat di sekitar\" diperlukan untuk menangkap paket</string>
     <string name="grant_permission_action">Beri izin</string>
     <string name="open_settings">Buka pengaturan</string>
+    <string name="backup_restore">Cadangkan dan pulihkan</string>
+    <string name="export_settings">Ekspor pengaturan</string>
+    <string name="export_settings_summary">Simpan pengaturan aplikasi ke sebuah file, untuk memulihkannya nanti</string>
+    <string name="import_settings">Impor pengaturan</string>
+    <string name="import_settings_summary">Pulihkan pengaturan aplikasi dari cadangan sebelumnya</string>
+    <string name="import_settings_confirm">Semua pengaturan saat ini akan diganti dengan yang diekspor pada %1$s.\n\nAplikasi akan dimulai ulang untuk menerapkannya. Lanjutkan\?</string>
+    <string name="settings_imported">Pengaturan diimpor</string>
+    <string name="imported_license_invalid">Lisensi yang diimpor tidak valid pada perangkat ini, sehingga fitur berbayar tidak akan tersedia. Lisensi terikat pada perangkat dan instalasi aplikasi tertentu</string>
+    <string name="captures_not_accessible">%1$d tangkapan dari daftar yang diimpor tidak dapat diakses. Jika file-nya masih tersedia, pilih folder yang berisi file tersebut untuk memulihkan daftarnya</string>
+    <string name="captures_restored">%1$d tangkapan dipulihkan, %2$d dilewati</string>
+    <string name="select_folder">Pilih folder</string>
+    <string name="skip_action">Lewati</string>
+    <string name="import_capture_list_confirm">Cadangan berisi %1$d tangkapan, sedangkan %2$d tangkapan sudah ada dalam daftar di perangkat ini.\n\nBagaimana Anda ingin melanjutkan?</string>
+    <string name="merge_action">Gabungkan</string>
+    <string name="replace_action">Ganti</string>
+    <string name="keep_current_action">Pertahankan yang ada</string>
 </resources>

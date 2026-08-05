@@ -589,4 +589,20 @@
     <string name="local_network_permission_required">Die Berechtigung \"Geräte in der Nähe\" ist erforderlich, um Pakete zu erfassen</string>
     <string name="grant_permission_action">Erteilen</string>
     <string name="open_settings">Einstellungen öffnen</string>
+    <string name="backup_restore">Sichern und Wiederherstellen</string>
+    <string name="export_settings">Einstellungen exportieren</string>
+    <string name="export_settings_summary">Die App-Einstellungen in einer Datei speichern, um sie später wiederherzustellen</string>
+    <string name="import_settings">Einstellungen importieren</string>
+    <string name="import_settings_summary">Die App-Einstellungen aus einer früheren Sicherung wiederherstellen</string>
+    <string name="import_settings_confirm">Alle aktuellen Einstellungen werden durch die am %1$s exportierten ersetzt.\n\nDie App wird neu gestartet, um sie anzuwenden. Fortfahren\?</string>
+    <string name="settings_imported">Einstellungen importiert</string>
+    <string name="imported_license_invalid">Die importierte Lizenz ist auf diesem Gerät nicht gültig, daher sind die kostenpflichtigen Funktionen nicht verfügbar. Lizenzen sind an ein bestimmtes Gerät und eine bestimmte App-Installation gebunden</string>
+    <string name="captures_not_accessible">Auf %1$d Aufnahmen der importierten Liste kann nicht zugegriffen werden. Wenn deren Dateien noch vorhanden sind, wählen Sie den Ordner aus, der sie enthält, um die Liste wiederherzustellen</string>
+    <string name="captures_restored">%1$d Aufnahmen wiederhergestellt, %2$d übersprungen</string>
+    <string name="select_folder">Ordner auswählen</string>
+    <string name="skip_action">Überspringen</string>
+    <string name="import_capture_list_confirm">Die Sicherung enthält %1$d Aufnahmen, während sich bereits %2$d Aufnahmen in der Liste dieses Geräts befinden.\n\nWie möchten Sie fortfahren?</string>
+    <string name="merge_action">Zusammenführen</string>
+    <string name="replace_action">Ersetzen</string>
+    <string name="keep_current_action">Aktuelle behalten</string>
 </resources>

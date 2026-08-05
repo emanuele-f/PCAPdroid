@@ -573,4 +573,20 @@
     <string name="local_network_permission_required">パケットをキャプチャするには「付近のデバイス」の権限が必要です</string>
     <string name="grant_permission_action">許可</string>
     <string name="open_settings">設定を開く</string>
+    <string name="backup_restore">バックアップと復元</string>
+    <string name="export_settings">設定をエクスポート</string>
+    <string name="export_settings_summary">後で復元できるように、アプリの設定をファイルに保存します</string>
+    <string name="import_settings">設定をインポート</string>
+    <string name="import_settings_summary">以前のバックアップからアプリの設定を復元します</string>
+    <string name="import_settings_confirm">現在の設定はすべて %1$s にエクスポートされたものに置き換えられます。\n\n適用するためにアプリを再起動します。続行しますか?</string>
+    <string name="settings_imported">設定をインポートしました</string>
+    <string name="imported_license_invalid">インポートされたライセンスはこのデバイスでは有効でないため、有料機能は利用できません。ライセンスは特定のデバイスとアプリのインストールに紐付けられています</string>
+    <string name="captures_not_accessible">インポートされた一覧のうち %1$d 件のキャプチャにアクセスできません。ファイルがまだ存在する場合は、それらを含むフォルダーを選択して一覧を復元してください</string>
+    <string name="captures_restored">%1$d 件のキャプチャを復元し、%2$d 件をスキップしました</string>
+    <string name="select_folder">フォルダーを選択</string>
+    <string name="skip_action">スキップ</string>
+    <string name="import_capture_list_confirm">バックアップには %1$d 件のキャプチャが含まれていますが、このデバイスの一覧にはすでに %2$d 件のキャプチャがあります。\n\nどのように続行しますか？</string>
+    <string name="merge_action">統合</string>
+    <string name="replace_action">置き換え</string>
+    <string name="keep_current_action">現在のものを保持</string>
 </resources>

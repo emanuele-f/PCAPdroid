@@ -591,4 +591,20 @@
     <string name="local_network_permission_required">Дозвіл \"Пристрої поблизу\" потрібен для захоплення пакетів</string>
     <string name="grant_permission_action">Надати</string>
     <string name="open_settings">Відкрити налаштування</string>
+    <string name="backup_restore">Резервне копіювання та відновлення</string>
+    <string name="export_settings">Експортувати налаштування</string>
+    <string name="export_settings_summary">Зберегти налаштування додатку у файл, щоб відновити їх пізніше</string>
+    <string name="import_settings">Імпортувати налаштування</string>
+    <string name="import_settings_summary">Відновити налаштування додатку з попередньої резервної копії</string>
+    <string name="import_settings_confirm">Усі поточні налаштування буде замінено налаштуваннями, експортованими %1$s.\n\nДодаток буде перезапущено, щоб застосувати їх. Продовжити\?</string>
+    <string name="settings_imported">Налаштування імпортовано</string>
+    <string name="imported_license_invalid">Імпортована ліцензія недійсна на цьому пристрої, тому платні функції будуть недоступні. Ліцензії прив\'язані до конкретного пристрою та встановлення додатку</string>
+    <string name="captures_not_accessible">%1$d захоплень з імпортованого списку недоступні. Якщо їхні файли досі наявні, виберіть папку, яка їх містить, щоб відновити список</string>
+    <string name="captures_restored">%1$d захоплень відновлено, %2$d пропущено</string>
+    <string name="select_folder">Вибрати папку</string>
+    <string name="skip_action">Пропустити</string>
+    <string name="import_capture_list_confirm">Резервна копія містить %1$d захоплень, а в списку цього пристрою вже є %2$d захоплень.\n\nЯк ви хочете продовжити?</string>
+    <string name="merge_action">Об\'єднати</string>
+    <string name="replace_action">Замінити</string>
+    <string name="keep_current_action">Залишити поточні</string>
 </resources>

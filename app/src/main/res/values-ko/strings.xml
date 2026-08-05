@@ -574,4 +574,20 @@
     <string name="local_network_permission_required">패킷을 캡처하려면 \"근처 기기\" 권한이 필요합니다</string>
     <string name="grant_permission_action">부여</string>
     <string name="open_settings">설정 열기</string>
+    <string name="backup_restore">백업 및 복원</string>
+    <string name="export_settings">설정 추출</string>
+    <string name="export_settings_summary">나중에 복원할 수 있도록 앱 설정을 파일로 저장합니다</string>
+    <string name="import_settings">설정 가져오기</string>
+    <string name="import_settings_summary">이전 백업에서 앱 설정을 복원합니다</string>
+    <string name="import_settings_confirm">현재 설정이 모두 %1$s에 추출된 설정으로 대체됩니다.\n\n설정을 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?</string>
+    <string name="settings_imported">설정을 가져왔습니다</string>
+    <string name="imported_license_invalid">가져온 라이선스가 이 기기에서 유효하지 않으므로 유료 기능을 사용할 수 없습니다. 라이선스는 특정 기기 및 앱 설치에 종속됩니다</string>
+    <string name="captures_not_accessible">가져온 목록의 캡처 %1$d개에 접근할 수 없습니다. 해당 파일이 아직 남아 있다면, 파일이 들어 있는 폴더를 선택하여 목록을 복원하세요</string>
+    <string name="captures_restored">캡처 %1$d개 복원됨, %2$d개 건너뜀</string>
+    <string name="select_folder">폴더 선택</string>
+    <string name="skip_action">건너뛰기</string>
+    <string name="import_capture_list_confirm">백업에는 캡처 %1$d개가 있고, 이 기기의 목록에는 이미 캡처 %2$d개가 있습니다.\n\n어떻게 진행하시겠습니까?</string>
+    <string name="merge_action">병합</string>
+    <string name="replace_action">바꾸기</string>
+    <string name="keep_current_action">현재 유지</string>
 </resources>

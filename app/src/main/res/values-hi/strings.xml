@@ -573,4 +573,20 @@
     <string name="local_network_permission_required">पैकेट कैप्चर करने के लिए \"आस-पास मौजूद डिवाइस\" अनुमति आवश्यक है</string>
     <string name="grant_permission_action">अनुमति दें</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
+    <string name="backup_restore">बैकअप और पुनर्स्थापना</string>
+    <string name="export_settings">सेटिंग्स एक्सपोर्ट करें</string>
+    <string name="export_settings_summary">ऐप सेटिंग्स को एक फ़ाइल में सहेजें, ताकि उन्हें बाद में पुनर्स्थापित किया जा सके</string>
+    <string name="import_settings">सेटिंग्स इंपोर्ट करें</string>
+    <string name="import_settings_summary">पिछले बैकअप से ऐप सेटिंग्स पुनर्स्थापित करें</string>
+    <string name="import_settings_confirm">सभी वर्तमान सेटिंग्स को %1$s को एक्सपोर्ट की गई सेटिंग्स से बदल दिया जाएगा।\n\nउन्हें लागू करने के लिए ऐप पुनः प्रारंभ किया जाएगा। जारी रखें?</string>
+    <string name="settings_imported">सेटिंग्स इंपोर्ट की गईं</string>
+    <string name="imported_license_invalid">इंपोर्ट किया गया लाइसेंस इस डिवाइस पर वैध नहीं है, इसलिए सशुल्क सुविधाएँ उपलब्ध नहीं होंगी। लाइसेंस एक विशिष्ट डिवाइस और ऐप स्थापना से बंधे होते हैं</string>
+    <string name="captures_not_accessible">इंपोर्ट की गई सूची के %1$d कैप्चर तक पहुँचा नहीं जा सकता। यदि उनकी फ़ाइलें अभी भी उपलब्ध हैं, तो सूची पुनर्स्थापित करने के लिए उन्हें रखने वाला फ़ोल्डर चुनें</string>
+    <string name="captures_restored">%1$d कैप्चर पुनर्स्थापित किए गए, %2$d छोड़े गए</string>
+    <string name="select_folder">फ़ोल्डर चुनें</string>
+    <string name="skip_action">छोड़ें</string>
+    <string name="import_capture_list_confirm">बैकअप में %1$d कैप्चर हैं, जबकि इस डिवाइस की सूची में पहले से %2$d कैप्चर मौजूद हैं।\n\nआप कैसे आगे बढ़ना चाहते हैं?</string>
+    <string name="merge_action">मर्ज करें</string>
+    <string name="replace_action">बदलें</string>
+    <string name="keep_current_action">मौजूदा रखें</string>
 </resources>

@@ -566,4 +566,20 @@
     <string name="local_network_permission_required">A permissão \"Dispositivos próximos\" é necessária para capturar pacotes</string>
     <string name="grant_permission_action">Conceder</string>
     <string name="open_settings">Abrir configurações</string>
+    <string name="backup_restore">Backup e restauro</string>
+    <string name="export_settings">Exportar configurações</string>
+    <string name="export_settings_summary">Gravar as configurações da app num ficheiro, para as restaurar mais tarde</string>
+    <string name="import_settings">Importar configurações</string>
+    <string name="import_settings_summary">Restaurar as configurações da app a partir de um backup anterior</string>
+    <string name="import_settings_confirm">Todas as configurações atuais serão substituídas pelas exportadas em %1$s.\n\nA app será reiniciada para as aplicar. Continuar?</string>
+    <string name="settings_imported">Configurações importadas</string>
+    <string name="imported_license_invalid">A licença importada não é válida neste dispositivo, por isso as funcionalidades pagas não estarão disponíveis. As licenças estão associadas a um dispositivo e a uma instalação da app específicos</string>
+    <string name="captures_not_accessible">Não é possível aceder a %1$d capturas da lista importada. Se os ficheiros ainda estiverem disponíveis, selecione a pasta que os contém para restaurar a lista</string>
+    <string name="captures_restored">%1$d capturas restauradas, %2$d ignoradas</string>
+    <string name="select_folder">Selecionar pasta</string>
+    <string name="skip_action">Ignorar</string>
+    <string name="import_capture_list_confirm">O backup contém %1$d capturas, enquanto %2$d capturas já se encontram na lista deste dispositivo.\n\nComo pretende continuar?</string>
+    <string name="merge_action">Unir</string>
+    <string name="replace_action">Substituir</string>
+    <string name="keep_current_action">Manter as atuais</string>
 </resources>

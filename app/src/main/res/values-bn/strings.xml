@@ -573,4 +573,20 @@
     <string name="local_network_permission_required">প্যাকেট ক্যাপচার করার জন্য \"আশেপাশের ডিভাইস\" অনুমতি প্রয়োজন</string>
     <string name="grant_permission_action">অনুমতি দিন</string>
     <string name="open_settings">সেটিংস খুলুন</string>
+    <string name="backup_restore">ব্যাকআপ ও পুনরুদ্ধার</string>
+    <string name="export_settings">সেটিংস রপ্তানি করুন</string>
+    <string name="export_settings_summary">পরে পুনরুদ্ধার করার জন্য অ্যাপের সেটিংস একটি ফাইলে সংরক্ষণ করুন</string>
+    <string name="import_settings">সেটিংস আমদানি করুন</string>
+    <string name="import_settings_summary">পূর্ববর্তী একটি ব্যাকআপ থেকে অ্যাপের সেটিংস পুনরুদ্ধার করুন</string>
+    <string name="import_settings_confirm">বর্তমান সব সেটিংস %1$s-এ রপ্তানি করা সেটিংস দিয়ে প্রতিস্থাপন করা হবে।\n\nসেগুলি প্রয়োগ করতে অ্যাপটি পুনরায় চালু করা হবে। চালিয়ে যাবেন?</string>
+    <string name="settings_imported">সেটিংস আমদানি করা হয়েছে</string>
+    <string name="imported_license_invalid">আমদানি করা লাইসেন্সটি এই ডিভাইসে বৈধ নয়, তাই পেইড বৈশিষ্ট্যগুলি উপলব্ধ হবে না। লাইসেন্স একটি নির্দিষ্ট ডিভাইস ও অ্যাপ ইনস্টলেশনের সাথে আবদ্ধ থাকে</string>
+    <string name="captures_not_accessible">আমদানি করা তালিকার %1$dটি ক্যাপচার অ্যাক্সেস করা যাচ্ছে না। এগুলির ফাইল যদি এখনও উপলব্ধ থাকে, তবে তালিকাটি পুনরুদ্ধার করতে সেগুলি ধারণকারী ফোল্ডারটি নির্বাচন করুন</string>
+    <string name="captures_restored">%1$dটি ক্যাপচার পুনরুদ্ধার করা হয়েছে, %2$dটি বাদ দেওয়া হয়েছে</string>
+    <string name="select_folder">ফোল্ডার নির্বাচন করুন</string>
+    <string name="skip_action">এড়িয়ে যান</string>
+    <string name="import_capture_list_confirm">ব্যাকআপে %1$dটি ক্যাপচার রয়েছে, আর এই ডিভাইসের তালিকায় ইতিমধ্যে %2$dটি ক্যাপচার রয়েছে।\n\nআপনি কীভাবে এগোতে চান?</string>
+    <string name="merge_action">মার্জ করুন</string>
+    <string name="replace_action">প্রতিস্থাপন করুন</string>
+    <string name="keep_current_action">বর্তমানটি রাখুন</string>
 </resources>

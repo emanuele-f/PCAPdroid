@@ -591,4 +591,20 @@
     <string name="local_network_permission_required">El permiso \"Dispositivos cercanos\" es necesario para capturar paquetes</string>
     <string name="grant_permission_action">Conceder</string>
     <string name="open_settings">Abrir ajustes</string>
+    <string name="backup_restore">Copia de seguridad y restauración</string>
+    <string name="export_settings">Exportar ajustes</string>
+    <string name="export_settings_summary">Guarda los ajustes de la app en un archivo para restaurarlos más tarde</string>
+    <string name="import_settings">Importar ajustes</string>
+    <string name="import_settings_summary">Restaura los ajustes de la app desde una copia de seguridad anterior</string>
+    <string name="import_settings_confirm">Todos los ajustes actuales se reemplazarán por los exportados el %1$s.\n\nLa app se reiniciará para aplicarlos. ¿Continuar\?</string>
+    <string name="settings_imported">Ajustes importados</string>
+    <string name="imported_license_invalid">La licencia importada no es válida en este dispositivo, por lo que las funciones de pago no estarán disponibles. Las licencias están vinculadas a un dispositivo y a una instalación de la app específicos</string>
+    <string name="captures_not_accessible">No se puede acceder a %1$d capturas de la lista importada. Si sus archivos siguen disponibles, selecciona la carpeta que los contiene para restaurar la lista</string>
+    <string name="captures_restored">%1$d capturas restauradas, %2$d omitidas</string>
+    <string name="select_folder">Seleccionar carpeta</string>
+    <string name="skip_action">Omitir</string>
+    <string name="import_capture_list_confirm">La copia de seguridad contiene %1$d capturas, mientras que ya hay %2$d capturas en la lista de este dispositivo.\n\n¿Cómo quieres continuar?</string>
+    <string name="merge_action">Combinar</string>
+    <string name="replace_action">Reemplazar</string>
+    <string name="keep_current_action">Mantener las actuales</string>
 </resources>

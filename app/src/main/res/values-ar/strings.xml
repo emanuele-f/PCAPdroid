@@ -587,4 +587,20 @@
     <string name="local_network_permission_required">إذن \"الأجهزة المجاورة\" مطلوب لالتقاط الحزم</string>
     <string name="grant_permission_action">منح</string>
     <string name="open_settings">افتح الإعدادات</string>
+    <string name="backup_restore">النسخ الاحتياطي والاستعادة</string>
+    <string name="export_settings">تصدير الإعدادات</string>
+    <string name="export_settings_summary">احفظ إعدادات التطبيق في ملف لاستعادتها لاحقًا</string>
+    <string name="import_settings">استيراد الإعدادات</string>
+    <string name="import_settings_summary">استعد إعدادات التطبيق من نسخة احتياطية سابقة</string>
+    <string name="import_settings_confirm">سيتم استبدال جميع الإعدادات الحالية بالإعدادات المُصدَّرة في %1$s.\n\nسيُعاد تشغيل التطبيق لتطبيقها. هل تريد المتابعة؟</string>
+    <string name="settings_imported">استُوردت الإعدادات</string>
+    <string name="imported_license_invalid">الترخيص المستورد غير صالح على هذا الجهاز، لذلك لن تكون الميزات المدفوعة متاحة. ترتبط التراخيص بجهاز محدد وبتثبيت محدد للتطبيق</string>
+    <string name="captures_not_accessible">تعذر الوصول إلى %1$d من الالتقاطات في القائمة المستوردة. إذا كانت ملفاتها لا تزال متوفرة، فحدّد المجلد الذي يحتوي عليها لاستعادة القائمة</string>
+    <string name="captures_restored">تم استعادة %1$d من الالتقاطات، وتخطي %2$d</string>
+    <string name="select_folder">حدّد المجلد</string>
+    <string name="skip_action">تخطي</string>
+    <string name="import_capture_list_confirm">تحتوي النسخة الاحتياطية على %1$d من الالتقاطات، بينما يوجد %2$d منها بالفعل في قائمة هذا الجهاز.\n\nكيف تريد المتابعة؟</string>
+    <string name="merge_action">دمج</string>
+    <string name="replace_action">استبدال</string>
+    <string name="keep_current_action">إبقاء الحالية</string>
 </resources>

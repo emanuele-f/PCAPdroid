@@ -573,4 +573,20 @@
     <string name="local_network_permission_required">Cần quyền \"Thiết bị ở gần\" để bắt gói tin</string>
     <string name="grant_permission_action">Cấp</string>
     <string name="open_settings">Mở cài đặt</string>
+    <string name="backup_restore">Sao lưu và khôi phục</string>
+    <string name="export_settings">Xuất cài đặt</string>
+    <string name="export_settings_summary">Lưu cài đặt ứng dụng vào một tệp để khôi phục sau này</string>
+    <string name="import_settings">Nhập cài đặt</string>
+    <string name="import_settings_summary">Khôi phục cài đặt ứng dụng từ một bản sao lưu trước đó</string>
+    <string name="import_settings_confirm">Tất cả các cài đặt hiện tại sẽ được thay thế bằng các cài đặt đã xuất vào %1$s.\n\nỨng dụng sẽ được khởi động lại để áp dụng chúng. Tiếp tục?</string>
+    <string name="settings_imported">Đã nhập cài đặt</string>
+    <string name="imported_license_invalid">Giấy phép đã nhập không hợp lệ trên thiết bị này, nên các tính năng trả phí sẽ không khả dụng. Giấy phép được gắn với một thiết bị và một bản cài đặt ứng dụng cụ thể</string>
+    <string name="captures_not_accessible">Không thể truy cập %1$d bản bắt gói tin trong danh sách đã nhập. Nếu các tệp của chúng vẫn còn, hãy chọn thư mục chứa chúng để khôi phục danh sách</string>
+    <string name="captures_restored">Đã khôi phục %1$d bản bắt gói tin, bỏ qua %2$d</string>
+    <string name="select_folder">Chọn thư mục</string>
+    <string name="skip_action">Bỏ qua</string>
+    <string name="import_capture_list_confirm">Bản sao lưu chứa %1$d bản bắt gói tin, trong khi danh sách trên thiết bị này đã có %2$d bản.\n\nBạn muốn tiếp tục như thế nào?</string>
+    <string name="merge_action">Hợp nhất</string>
+    <string name="replace_action">Thay thế</string>
+    <string name="keep_current_action">Giữ danh sách hiện tại</string>
 </resources>
