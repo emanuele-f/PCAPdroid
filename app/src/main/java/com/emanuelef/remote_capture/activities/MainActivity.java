@@ -177,7 +177,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         mIab = Billing.newInstance(this);
-        mIab.setLicense(mIab.getLicense());
 
         initPeerAppInfo();
         initAppState();

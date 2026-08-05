@@ -185,8 +185,7 @@ public class SettingsBackupHandler {
     /* The license is bound to the installation id, which changes with the device and with the app
      * signature, so an imported license is usually not valid anymore. When it cannot be used, the
      * license which was already on this device is restored, as the import must not take away an
-     * entitlement of this installation. The play build never keeps a license, as the purchases are
-     * re-validated via the billing library.
+     * entitlement of this installation.
      * Returns true if the user must be warned about the paid features. */
     @SuppressLint("ApplySharedPref")
     private boolean checkImportedLicense(SharedPreferences prefs, String localLicense) {
@@ -197,24 +196,31 @@ public class SettingsBackupHandler {
         if (imported.isEmpty() && localLicense.isEmpty())
             return false;
 
-        boolean playStore = billing.isPlayStore();
-        if (!playStore && billing.isValidLicense(imported))
+        if (billing.isValidLicense(imported))
             return false;
 
-        boolean restore_needed = !playStore && billing.isValidLicense(localLicense);
+        boolean restore_needed = billing.isValidLicense(localLicense);
         SharedPreferences.Editor editor = prefs.edit();
 
         if (restore_needed) {
             Log.i(TAG, "restoring the license of this installation");
             editor.putString(SettingsBackup.LICENSE_KEY, localLicense);
         } else {
-            Log.i(TAG, "dropping the imported license (playStore=" + playStore + ")");
+            Log.i(TAG, "dropping the imported license");
             editor.remove(SettingsBackup.LICENSE_KEY);
         }
 
         editor.commit();
 
-        return !playStore && !restore_needed && !imported.isEmpty();
+        if (restore_needed || imported.isEmpty())
+            return false;
+
+        for (String sku: Billing.ALL_SKUS) {
+            if (billing.isPurchased(sku))
+                return false;
+        }
+
+        return true;
     }
 
     private record CaptureCheck(ArrayMap<CaptureList.Capture, String> recovered,

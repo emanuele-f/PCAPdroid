@@ -363,7 +363,6 @@ public class CaptureCtrl extends AppCompatActivity {
         }
 
         Billing billing = Billing.newInstance(this);
-        billing.setLicense(billing.getLicense());
 
         Intent res = new Intent();
         HashSet<String> purchased = new HashSet<>();

@@ -349,7 +349,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         private void setupSecurityPrefs() {
             mMalwareDetectionEnabled = requirePreference(Prefs.PREF_MALWARE_DETECTION);
 
-            if(!mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
+            if(!mIab.isPurchased(Billing.MALWARE_DETECTION_SKU) && !mIab.isAvailable(Billing.MALWARE_DETECTION_SKU)) {
                 getPreferenceScreen().removePreference(requirePreference("security"));
                 return;
             }
@@ -391,7 +391,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mPcapngEnabled = requirePreference(Prefs.PREF_PCAPNG_ENABLED);
             mDumpExtensions = requirePreference(Prefs.PREF_DUMP_EXTENSIONS);
 
-            if(mIab.isAvailable(Billing.PCAPNG_SKU)) {
+            if(mIab.isPurchased(Billing.PCAPNG_SKU) || mIab.isAvailable(Billing.PCAPNG_SKU)) {
                 mPcapngEnabled.setOnPreferenceClickListener((preference -> {
                     // Billing code here
 

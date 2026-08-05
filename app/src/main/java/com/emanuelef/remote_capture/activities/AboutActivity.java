@@ -143,8 +143,11 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
     public void onCreateMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.about_menu, menu);
 
+        /* In the play build, the paid features are purchased via the billing library. The license
+         * dialog is only shown to the users which already have a license (e.g. purchased before
+         * switching to the play build), so that they can review and update it. */
         Billing billing = Billing.newInstance(this);
-        if(billing.isPlayStore())
+        if(billing.isPlayStore() && billing.getLicense().isEmpty())
             menu.findItem(R.id.paid_features).setVisible(false);
     }
 
@@ -215,10 +218,14 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         instIdText.setText(instId);
 
         mDialogClosing = false;
+
+        // the QR activation is only used to purchase a license, which is not possible in the play build
+        boolean qr_available = !billing.isPlayStore();
         final View showQr = content.findViewById(R.id.show_qr_code);
+        showQr.setVisibility(qr_available ? View.VISIBLE : View.GONE);
         showQr.setOnClickListener(v -> showQrCode(content, instId));
 
-        if(Utils.isTv(this) && !billing.isPurchased(Billing.SUPPORTER_SKU)) {
+        if(qr_available && Utils.isTv(this) && !billing.isPurchased(Billing.SUPPORTER_SKU)) {
             instIdText.setOnClickListener(v -> Utils.shareText(this, getString(R.string.installation_id), instId));
             showQrCode(content, instId);
         }
@@ -233,8 +240,17 @@ public class AboutActivity extends BaseActivity implements MenuProvider {
         mLicenseDialog = new AlertDialog.Builder(this)
                 .setView(content)
                 .setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+                    String license = licenseCode.getText().toString();
+                    if(license.equals(billing.getLicense()))
+                        return;
+
+                    if(!license.isEmpty() && !billing.isValidLicense(license)) {
+                        Utils.showToastLong(this, R.string.invalid_license);
+                        return;
+                    }
+
                     boolean was_valid = billing.isPurchased(Billing.SUPPORTER_SKU);
-                    billing.setLicense(licenseCode.getText().toString());
+                    billing.setLicense(license);
 
                     if(!was_valid && billing.isPurchased(Billing.SUPPORTER_SKU))
                         Utils.showToastLong(this, R.string.paid_features_unlocked);
