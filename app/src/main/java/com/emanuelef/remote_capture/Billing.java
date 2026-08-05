@@ -90,6 +90,9 @@ public class Billing {
     // this is initialized in MainActivity
     private static final ArraySet<String> mPeerSkus = new ArraySet<>();
 
+    private static volatile String mCheckedLicense = null;
+    private static volatile boolean mCheckedLicenseValid = false;
+
     protected Billing(Context ctx) {
         mContext = ctx;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -112,7 +115,20 @@ public class Billing {
         if(mPeerSkus.contains(sku))
             return true;
 
-        return !getLicense().isEmpty();
+        return hasValidLicense();
+    }
+
+    public boolean hasValidLicense() {
+        String license = getLicense();
+        if(license.isEmpty())
+            return false;
+
+        if(!license.equals(mCheckedLicense)) {
+            mCheckedLicenseValid = isValidLicense(license);
+            mCheckedLicense = license;
+        }
+
+        return mCheckedLicenseValid;
     }
 
     public boolean isPlayStore() {

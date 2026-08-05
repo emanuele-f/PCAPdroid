@@ -168,7 +168,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                     mRequestTokenThread.start();
                                     mHandler.post(() -> Utils.showToast(mContext, R.string.requesting_unlock_token));
                                 }
-                            } else if(!isPurchased(sku) && setPurchased(sku, true)) {
+                            } else if(!hasPlayPurchase(sku) && setPurchased(sku, true)) {
                                 newPurchase = true;
                                 Log.d(TAG, "New purchase: " + sku);
 
@@ -211,7 +211,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 for (String sku : ALL_SKUS) {
                     // NOTE: the purchases array may contain only new items, e.g. when called via onPurchasesUpdated
                     // so check seenSkus to prevent incorrect voids
-                    if (!purchased.contains(sku) && isPurchased(sku)) {
+                    if (!purchased.contains(sku) && hasPlayPurchase(sku)) {
                         Log.w(TAG, "Previously purchased SKU " + sku + " was voided");
 
                         if (setPurchased(sku, false) && !mWaitingStart)
@@ -395,15 +395,21 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
         return true;
     }
 
-    @Override
-    public boolean setLicense(String license) { return false; }
-
     public boolean isPurchased(String sku) {
+        if(hasValidLicense() && !sku.equals(UNLOCK_TOKEN_SKU))
+            return true;
+
+        return hasPlayPurchase(sku);
+    }
+
+    /* The purchases made via the billing library. This ignores the license, as the purchases
+     * bookkeeping (e.g. the acknowledgement) must not be affected by it. */
+    private boolean hasPlayPurchase(String sku) {
         // one-use items
         if(sku.equals(UNLOCK_TOKEN_SKU))
             return false;
 
-        if(!(sku.equals(SUPPORTER_SKU)) && isPurchased(SUPPORTER_SKU))
+        if(!(sku.equals(SUPPORTER_SKU)) && hasPlayPurchase(SUPPORTER_SKU))
             return true;
 
         long purchaseTime = mPrefs.getLong(sku2pref(sku), 0);
