@@ -202,30 +202,47 @@ public class Billing {
         return installation_id;
     }
 
+    /* Converts the raw r|s signature into the DER encoding expected by Signature.verify */
     private byte[] getASN1(byte[] signature, int offset) {
         int r_len = 28;
 
         if((signature.length - offset) != 2*r_len)
             throw new IllegalArgumentException("invalid signature length");
 
-        int r_extra = (signature[offset] < 0) ? 1 : 0;
-        int n_extra = (signature[offset + r_len] < 0) ? 1 : 0;
-        int tot_len = 2*r_len + 6 + r_extra + n_extra;
-        byte[] rv = new byte[tot_len];
-        int i = 0;
+        // 2 bytes for the SEQUENCE header, then at most 3 header/padding bytes per INTEGER
+        byte[] rv = new byte[2*r_len + 8];
+        int i = 2;
 
-        rv[i++] = 0x30; rv[i++] = (byte)(tot_len - 2);
+        i = writeASN1Integer(rv, i, signature, offset, r_len);
+        i = writeASN1Integer(rv, i, signature, offset + r_len, r_len);
 
-        rv[i++] = 0x02; rv[i++] = (byte)(r_len + r_extra);
-        if(r_extra > 0) rv[i++] = 0x00;
-        System.arraycopy(signature, offset, rv, i, r_len);
-        i += 28;
+        rv[0] = 0x30;
+        rv[1] = (byte)(i - 2);
 
-        rv[i++] = 0x02; rv[i++] = (byte)(r_len + n_extra);
-        if(n_extra > 0) rv[i++] = 0x00;
-        System.arraycopy(signature, offset + r_len, rv, i, r_len);
+        return Arrays.copyOf(rv, i);
+    }
 
-        return rv;
+    /* Writes a fixed-width big-endian unsigned value as a DER INTEGER. DER mandates the shortest
+     * possible encoding, so the leading zero bytes must be dropped and a 0x00 byte is only
+     * prepended when the value would otherwise be read as negative. Emitting the raw value as-is
+     * makes strict parsers (Conscrypt) reject the whole signature. */
+    private int writeASN1Integer(byte[] out, int pos, byte[] value, int offset, int len) {
+        int end = offset + len;
+        int start = offset;
+
+        while((start < (end - 1)) && (value[start] == 0x00))
+            start++;
+
+        boolean pad = (value[start] < 0);
+        int val_len = end - start;
+
+        out[pos++] = 0x02;
+        out[pos++] = (byte)(val_len + (pad ? 1 : 0));
+        if(pad)
+            out[pos++] = 0x00;
+        System.arraycopy(value, start, out, pos, val_len);
+
+        return pos + val_len;
     }
 
     public boolean isFirewallVisible() {
