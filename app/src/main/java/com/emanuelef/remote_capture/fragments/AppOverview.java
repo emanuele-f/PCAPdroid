@@ -14,21 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -225,9 +222,7 @@ public class AppOverview extends Fragment implements MenuProvider {
         int id = item.getItemId();
 
         if(id == R.id.app_info) {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            intent.setData(Uri.fromParts("package", mPinfo.packageName, null));
-            Utils.startActivity(requireContext(), intent);
+            Utils.openAppSettings(requireContext(), mPinfo.packageName);
             return true;
         } else if(id == R.id.copy_to_clipboard) {
             Utils.copyToClipboard(requireContext(), asString());

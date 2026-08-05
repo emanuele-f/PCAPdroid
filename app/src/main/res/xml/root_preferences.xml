@@ -243,4 +243,18 @@
             app:iconSpaceReserved="false"
             android:summary="@string/control_permissions_summary" />
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/backup_restore" app:iconSpaceReserved="false" >
+        <Preference
+            app:key="export_settings"
+            app:title="@string/export_settings"
+            app:summary="@string/export_settings_summary"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            app:key="import_settings"
+            app:title="@string/import_settings"
+            app:summary="@string/import_settings_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
 </PreferenceScreen>

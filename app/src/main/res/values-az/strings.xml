@@ -560,4 +560,26 @@
     <string name="connections_log_size">Maksimum qeydə alınan bağlantılar</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM istifadə olunur)</string>
     <string name="capture_list_files_changed">İzləmələr diskdə dəyişdi, siyahı yeniləndi</string>
+    <string name="permission_required">İcazə tələb olunur</string>
+    <string name="local_network_notice">Android 17-dən etibarən tətbiqlər lokal şəbəkədəki cihazlara qoşulmadan əvvəl icazə istəməlidir. PCAPdroid bütün şəbəkə bağlantılarını, o cümlədən lokal cihazlara yönəlmiş olanları izləyə bilmək üçün \"Yaxınlıqdakı cihazlar\" icazəsinə ehtiyac duyur</string>
+    <string name="local_network_permission_denied">İzləməyə başlamaq üçün PCAPdroid \"Yaxınlıqdakı cihazlar\" icazəsini tələb edir. Onu tətbiq icazələri parametrlərindən əl ilə verməlisiniz</string>
+    <string name="local_network_permission_required">Paketləri izləmək üçün \"Yaxınlıqdakı cihazlar\" icazəsi tələb olunur</string>
+    <string name="grant_permission_action">Ver</string>
+    <string name="open_settings">Parametrləri aç</string>
+    <string name="backup_restore">Ehtiyat nüsxə və bərpa</string>
+    <string name="export_settings">Parametrləri ixrac et</string>
+    <string name="export_settings_summary">Sonradan bərpa etmək üçün tətbiq parametrlərini fayla yadda saxla</string>
+    <string name="import_settings">Parametrləri idxal et</string>
+    <string name="import_settings_summary">Tətbiq parametrlərini əvvəlki ehtiyat nüsxədən bərpa et</string>
+    <string name="import_settings_confirm">Bütün cari parametrlər %1$s tarixində ixrac edilənlərlə əvəz olunacaq.\n\nOnları tətbiq etmək üçün tətbiq yenidən başladılacaq. Davam edilsin?</string>
+    <string name="settings_imported">Parametrlər idxal edildi</string>
+    <string name="imported_license_invalid">İdxal edilən lisenziya bu cihazda etibarlı deyil, ona görə ödənişli xüsusiyyətlər əlçatan olmayacaq. Lisenziyalar müəyyən bir cihaza və tətbiq quraşdırmasına bağlıdır</string>
+    <string name="captures_not_accessible">İdxal edilən siyahıdakı %1$d izləməyə giriş mümkün deyil. Əgər onların faylları hələ də mövcuddursa, siyahını bərpa etmək üçün onları saxlayan qovluğu seçin</string>
+    <string name="captures_restored">%1$d izləmə bərpa edildi, %2$d buraxıldı</string>
+    <string name="select_folder">Qovluğu seç</string>
+    <string name="skip_action">Burax</string>
+    <string name="import_capture_list_confirm">Ehtiyat nüsxədə %1$d izləmə var, bu cihazın siyahısında isə artıq %2$d izləmə mövcuddur.\n\nNecə davam etmək istəyirsiniz?</string>
+    <string name="merge_action">Birləşdir</string>
+    <string name="replace_action">Əvəz et</string>
+    <string name="keep_current_action">Mövcudu saxla</string>
 </resources>

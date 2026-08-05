@@ -19,12 +19,14 @@
 
 package com.emanuelef.remote_capture.model;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 
@@ -46,6 +48,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,7 +64,7 @@ public class CaptureList {
     public record App(int uid, String packageName, String name) {}
 
     public static class Capture {
-        public final String uri;
+        public String uri;
         public String name;
         public final long startTime;
         public final long duration;
@@ -155,13 +158,16 @@ public class CaptureList {
         for (int i = 0; i < uris.size(); i++) {
             String uri = uris.get(i);
             try {
-                String path = Utils.uriToFilePath(mContext, Uri.parse(uri));
-                if ((path == null) || !new File(path).exists()) {
+                Uri parsed = Uri.parse(uri);
+                String path = Utils.uriToFilePath(mContext, parsed);
+                boolean hasFile = (path != null) && new File(path).exists();
+
+                if (!hasFile && !Utils.isUriReadable(mContext, parsed)) {
                     missing.add(uri);
                     continue;
                 }
 
-                if (decryptedFlags.get(i) && !path.endsWith(".pcapng") &&
+                if (hasFile && decryptedFlags.get(i) && !path.endsWith(".pcapng") &&
                         (Utils.findSiblingKeylog(path) == null))
                 {
                     clearDecrypted.add(uri);
@@ -214,23 +220,37 @@ public class CaptureList {
                 .apply();
     }
 
-    public boolean fromJson(String json_str) {
+    @SuppressLint("ApplySharedPref")
+    public void saveNow() {
+        mPrefs.edit()
+                .putString(Prefs.PREF_CAPTURE_LIST, toJson())
+                .commit();
+    }
+
+    /* Returns null if the captures could not be parsed */
+    public static @Nullable ArrayList<Capture> parseList(String json_str) {
         try {
             Type listType = new TypeToken<ArrayList<Capture>>() {}.getType();
             Gson gson = new Gson();
-            mCaptures = gson.fromJson(json_str, listType);
-            if (mCaptures == null)
-                mCaptures = new ArrayList<>();
-            for (Capture c: mCaptures) {
+            ArrayList<Capture> captures = gson.fromJson(json_str, listType);
+            if (captures == null)
+                captures = new ArrayList<>();
+            for (Capture c: captures) {
                 if (c.apps == null)
                     c.apps = new ArrayList<>();
             }
-            return true;
+            return captures;
         } catch (JsonParseException e) {
-            Log.e(TAG, "fromJson: " + e.getMessage());
-            mCaptures = new ArrayList<>();
-            return false;
+            Log.e(TAG, "parseList: " + e.getMessage());
+            return null;
         }
+    }
+
+    public boolean fromJson(String json_str) {
+        ArrayList<Capture> captures = parseList(json_str);
+        mCaptures = (captures != null) ? captures : new ArrayList<>();
+
+        return (captures != null);
     }
 
     public String toJson() {
@@ -245,6 +265,46 @@ public class CaptureList {
 
     public void remove(Collection<Capture> captures) {
         mCaptures.removeAll(captures);
+        save();
+    }
+
+    public List<Capture> replace(List<Capture> imported) {
+        mCaptures = new ArrayList<>(imported);
+        save();
+
+        return imported;
+    }
+
+    public List<Capture> merge(List<Capture> imported) {
+        Set<Long> known = new ArraySet<>();
+        for (Capture c: mCaptures)
+            known.add(c.startTime);
+
+        ArrayList<Capture> added = new ArrayList<>();
+        for (Capture c: imported) {
+            if (known.add(c.startTime))
+                added.add(c);
+        }
+
+        mCaptures.addAll(added);
+        Collections.sort(mCaptures, (c1, c2) -> Long.compare(c2.startTime, c1.startTime));
+        save();
+
+        return added;
+    }
+
+    /**
+     * Point the given captures to new URIs, dropping the ones which could not be resolved.
+     * Used after a settings import, when the URIs of the imported list are not accessible anymore.
+     *
+     * @param newUris the captures to relocate, mapped to their new URI
+     * @param toDrop the captures whose file could not be found
+     */
+    public void relocate(Map<Capture, String> newUris, Collection<Capture> toDrop) {
+        for (Map.Entry<Capture, String> entry: newUris.entrySet())
+            entry.getKey().uri = entry.getValue();
+
+        mCaptures.removeAll(toDrop);
         save();
     }
 

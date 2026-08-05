@@ -567,4 +567,26 @@
     <string name="connections_log_size">Maks sambungan dilog</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM digunakan)</string>
     <string name="capture_list_files_changed">Tangkapan berubah pada cakera, senarai dikemas kini</string>
+    <string name="permission_required">Kebenaran diperlukan</string>
+    <string name="local_network_notice">Sejak Android 17, aplikasi mesti meminta kebenaran sebelum menyambung ke peranti pada rangkaian tempatan. PCAPdroid memerlukan kebenaran \"Peranti berdekatan\" supaya ia boleh memantau semua sambungan rangkaian, termasuk yang ditujukan kepada peranti tempatan</string>
+    <string name="local_network_permission_denied">PCAPdroid memerlukan kebenaran \"Peranti berdekatan\" untuk memulakan tangkapan. Anda perlu memberikannya secara manual daripada tetapan kebenaran aplikasi</string>
+    <string name="local_network_permission_required">Kebenaran \"Peranti berdekatan\" diperlukan untuk menangkap paket</string>
+    <string name="grant_permission_action">Beri</string>
+    <string name="open_settings">Buka tetapan</string>
+    <string name="backup_restore">Sandaran dan pemulihan</string>
+    <string name="export_settings">Eksport tetapan</string>
+    <string name="export_settings_summary">Simpan tetapan aplikasi ke fail, untuk memulihkannya kemudian</string>
+    <string name="import_settings">Import tetapan</string>
+    <string name="import_settings_summary">Pulihkan tetapan aplikasi daripada sandaran terdahulu</string>
+    <string name="import_settings_confirm">Semua tetapan semasa akan digantikan dengan tetapan yang dieksport pada %1$s.\n\nAplikasi akan dimulakan semula untuk menggunakannya. Teruskan?</string>
+    <string name="settings_imported">Tetapan diimport</string>
+    <string name="imported_license_invalid">Lesen yang diimport tidak sah pada peranti ini, jadi ciri berbayar tidak akan tersedia. Lesen terikat pada peranti dan pemasangan aplikasi tertentu</string>
+    <string name="captures_not_accessible">%1$d tangkapan dalam senarai yang diimport tidak dapat diakses. Jika failnya masih tersedia, pilih folder yang mengandunginya untuk memulihkan senarai</string>
+    <string name="captures_restored">%1$d tangkapan dipulihkan, %2$d dilangkau</string>
+    <string name="select_folder">Pilih folder</string>
+    <string name="skip_action">Langkau</string>
+    <string name="import_capture_list_confirm">Sandaran mengandungi %1$d tangkapan, manakala %2$d tangkapan sudah ada dalam senarai peranti ini.\n\nBagaimanakah anda mahu meneruskan?</string>
+    <string name="merge_action">Gabungkan</string>
+    <string name="replace_action">Ganti</string>
+    <string name="keep_current_action">Kekalkan semasa</string>
 </resources>

@@ -14,8 +14,8 @@ android {
     defaultConfig {
         applicationId "com.emanuelef.remote_capture"
         minSdkVersion 23
-        compileSdk 36
-        targetSdk 36
+        compileSdk 37
+        targetSdk 37
         versionCode 91
         versionName "1.9.1"
 

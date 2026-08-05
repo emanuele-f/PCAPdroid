@@ -21,6 +21,7 @@ package com.emanuelef.remote_capture;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -60,6 +61,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -69,7 +71,6 @@ import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.util.Patterns;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
@@ -91,8 +92,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -169,6 +170,8 @@ public class Utils {
     static final String TAG = "Utils";
     public static final String INTERACT_ACROSS_USERS = "android.permission.INTERACT_ACROSS_USERS";
     public static final String PCAPDROID_WEBSITE = "https://pcapdroid.org";
+    private static final String DOWNLOADS_FOLDER = "PCAPdroid";
+    private static final String EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents";
     public static final int PER_USER_RANGE = 100000;
     public static final int UID_UNKNOWN = -1;
     public static final int UID_NO_FILTER = -2;
@@ -880,6 +883,40 @@ public class Utils {
         return(uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
     }
 
+    // exchanging traffic with the LAN only requires a runtime permission since API 37
+    public static boolean hasLocalNetworkPermission(Context context) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return true;
+
+        return(context.checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK) ==
+                PackageManager.PERMISSION_GRANTED);
+    }
+
+    // returns false if the permission cannot be requested
+    public static boolean requestLocalNetworkPermission(ActivityResultLauncher<String> launcher) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return false;
+
+        launcher.launch(Manifest.permission.ACCESS_LOCAL_NETWORK);
+        return true;
+    }
+
+    // true if the user has denied the permission at least once, without permanently denying it
+    public static boolean shouldShowLocalNetworkPermissionRationale(Activity activity) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN)
+            return false;
+
+        return ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                Manifest.permission.ACCESS_LOCAL_NETWORK);
+    }
+
+    public static void openAppSettings(Context ctx, String packageName) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(Uri.fromParts("package", packageName, null));
+
+        startActivity(ctx, intent);
+    }
+
     public static String getAppVersion(Context context) {
         String appver;
 
@@ -930,14 +967,15 @@ public class Utils {
 
         //values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fname);
-        String selectQuery = "";
+        String selectQuery;
+        String[] selectArgs;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // On Android Q+ cannot directly access the external dir. Must use RELATIVE_PATH instead.
             // Important: trailing "/" required for the selectQuery
-            String relPath = Environment.DIRECTORY_DOWNLOADS + "/PCAPdroid/";
-            selectQuery = MediaStore.MediaColumns.RELATIVE_PATH + "='" + relPath + "' AND " +
-                MediaStore.MediaColumns.DISPLAY_NAME + "='" + fname + "'";
+            String relPath = getDownloadsRelativePath();
+            selectQuery = relativePathSelection();
+            selectArgs = new String[]{relPath, fname};
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -947,36 +985,29 @@ public class Utils {
                 }
             }
 
-            // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder
-            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File folder = new File(downloadsDir + "/PCAPdroid");
+            File folder = getDownloadsFolder();
             try {
                 folder.mkdirs();
             } catch (Exception ignored) {}
             if(!folder.exists())
-                folder = downloadsDir;
+                folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
             String path = folder + "/" + fname;
             Log.d(TAG, "getDownloadsUri: path=" + path);
-            selectQuery = MediaStore.MediaColumns.DATA + "='" + path + "'";
+            selectQuery = MediaStore.MediaColumns.DATA + "=?";
+            selectArgs = new String[]{path};
             values.put(MediaStore.MediaColumns.DATA, path);
         }
 
-        Uri externalUri = MediaStore.Files.getContentUri("external");
-
         // if the file with given name already exists, overwrite it
-        try (Cursor cursor = context.getContentResolver().query(externalUri, new String[]{MediaStore.MediaColumns._ID}, selectQuery, null, null)) {
-            if ((cursor != null) && cursor.moveToFirst()) {
-                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
-                Uri existingUri = ContentUris.withAppendedId(externalUri, id);
-
-                Log.d(TAG, "getDownloadsUri: overwriting file " + existingUri);
-                return existingUri;
-            }
-        } catch (Exception ignored) {}
+        Uri existingUri = queryExternalFile(context, selectQuery, selectArgs);
+        if (existingUri != null) {
+            Log.d(TAG, "getDownloadsUri: overwriting file " + existingUri);
+            return existingUri;
+        }
 
         try {
-            Uri newUri = context.getContentResolver().insert(externalUri, values);
+            Uri newUri = context.getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
             Log.d(TAG, "getDownloadsUri: new file " + newUri);
             return newUri;
         } catch (Exception e) {
@@ -985,6 +1016,59 @@ public class Utils {
             Utils.showToastLong(context, R.string.write_ext_storage_failed);
             return(null);
         }
+    }
+
+    private static File getDownloadsFolder() {
+        // NOTE: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) returns an app internal folder,
+        // which is not what we want
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), DOWNLOADS_FOLDER);
+    }
+
+    /* Look for a file with the given name in the PCAPdroid downloads folder.
+     * NOTE: on Android Q+, only the files owned by this installation can be found, so a file
+     * written by a previous installation of PCAPdroid is not visible. */
+    public static @Nullable Uri findDownloadsUri(Context context, String fname) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            return queryExternalFile(context, relativePathSelection(), getDownloadsRelativePath(), fname);
+
+        String dataSelection = MediaStore.MediaColumns.DATA + "=?";
+        Uri uri = queryExternalFile(context, dataSelection, getDownloadsFolder() + "/" + fname);
+
+        // getDownloadsUri writes into the downloads root when the PCAPdroid folder cannot be created
+        if (uri == null)
+            uri = queryExternalFile(context, dataSelection,
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + fname);
+
+        return uri;
+    }
+
+    private static String getDownloadsRelativePath() {
+        return Environment.DIRECTORY_DOWNLOADS + "/" + DOWNLOADS_FOLDER + "/";
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private static String relativePathSelection() {
+        return MediaStore.MediaColumns.RELATIVE_PATH + "=? AND " + MediaStore.MediaColumns.DISPLAY_NAME + "=?";
+    }
+
+    private static @Nullable Uri queryExternalFile(Context context, String selectQuery, String... selectArgs) {
+        Uri externalUri = MediaStore.Files.getContentUri("external");
+
+        try (Cursor cursor = context.getContentResolver().query(externalUri, new String[]{MediaStore.MediaColumns._ID}, selectQuery, selectArgs, null)) {
+            if ((cursor != null) && cursor.moveToFirst()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+                return ContentUris.withAppendedId(externalUri, id);
+            }
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    // The document URI of the PCAPdroid downloads folder, to be used as the initial location of a
+    // file/folder picker
+    public static Uri getDownloadsFolderDocumentUri() {
+        return DocumentsContract.buildDocumentUri(EXTERNAL_STORAGE_AUTHORITY,
+                "primary:" + Environment.DIRECTORY_DOWNLOADS + "/" + DOWNLOADS_FOLDER);
     }
 
     public static boolean isRootAvailable() {
@@ -1851,11 +1935,25 @@ public class Utils {
     }
 
     public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+        return EXTERNAL_STORAGE_AUTHORITY.equals(uri.getAuthority());
     }
 
     public static boolean isDownloadsDocument(Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    // true if the URI comes from the mediastore, e.g. as returned by getDownloadsUri
+    public static boolean isMediaStoreUri(Uri uri) {
+        return "media".equals(uri.getAuthority());
+    }
+
+    // true if the URI comes from ACTION_OPEN_DOCUMENT_TREE, i.e. it grants a whole folder
+    public static boolean isTreeUri(Uri uri) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            return DocumentsContract.isTreeUri(uri);
+
+        List<String> paths = uri.getPathSegments();
+        return (paths.size() >= 2) && "tree".equals(paths.get(0));
     }
 
     public static class UriStat {
@@ -2008,6 +2106,14 @@ public class Utils {
     public static boolean isReadable(String path) {
         try(FileInputStream ignored = new FileInputStream(path)) {
             return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    public static boolean isUriReadable(Context ctx, Uri uri) {
+        try (ParcelFileDescriptor pfd = ctx.getContentResolver().openFileDescriptor(uri, "r")) {
+            return (pfd != null);
         } catch (Exception ignored) {
             return false;
         }

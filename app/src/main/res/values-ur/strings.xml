@@ -567,4 +567,26 @@
     <string name="connections_log_size">زیادہ سے زیادہ لاگ شدہ کنکشنز</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM استعمال شدہ)</string>
     <string name="capture_list_files_changed">کیپچرز ڈسک پر تبدیل ہوئے، فہرست تازہ ہو گئی</string>
+    <string name="permission_required">اجازت درکار ہے</string>
+    <string name="local_network_notice">اینڈرائیڈ 17 سے، ایپس کو مقامی نیٹ ورک کے آلات سے منسلک ہونے سے پہلے اجازت لینی ہوگی۔ PCAPdroid کو تمام نیٹ ورک کنکشنز، بشمول مقامی آلات کی طرف جانے والے کنکشنز، کی نگرانی کرنے کے لیے \"قریبی آلات\" کی اجازت درکار ہے</string>
+    <string name="local_network_permission_denied">کیپچر شروع کرنے کے لیے PCAPdroid کو \"قریبی آلات\" کی اجازت درکار ہے۔ آپ کو یہ ایپ اجازتیں ترتیبات سے دستی طور پر دینی ہوگی</string>
+    <string name="local_network_permission_required">پیکٹس کیپچر کرنے کے لیے \"قریبی آلات\" کی اجازت درکار ہے</string>
+    <string name="grant_permission_action">اجازت دیں</string>
+    <string name="open_settings">ترتیبات کھولیں</string>
+    <string name="backup_restore">بیک اپ اور بحالی</string>
+    <string name="export_settings">ترتیبات ایکسپورٹ کریں</string>
+    <string name="export_settings_summary">ایپ کی ترتیبات کو ایک فائل میں محفوظ کریں، تاکہ انہیں بعد میں بحال کیا جا سکے</string>
+    <string name="import_settings">ترتیبات امپورٹ کریں</string>
+    <string name="import_settings_summary">پچھلے بیک اپ سے ایپ کی ترتیبات بحال کریں</string>
+    <string name="import_settings_confirm">تمام موجودہ ترتیبات کو %1$s پر ایکسپورٹ کی گئی ترتیبات سے بدل دیا جائے گا۔\n\nانہیں لاگو کرنے کے لیے ایپ دوبارہ شروع کی جائے گی۔ جاری رکھیں؟</string>
+    <string name="settings_imported">ترتیبات امپورٹ ہو گئیں</string>
+    <string name="imported_license_invalid">امپورٹ کیا گیا لائسنس اس آلے پر درست نہیں ہے، اس لیے ادا شدہ خصوصیات دستیاب نہیں ہوں گی۔ لائسنسز ایک مخصوص آلے اور ایپ انسٹالیشن سے منسلک ہوتے ہیں</string>
+    <string name="captures_not_accessible">امپورٹ کی گئی فہرست کے %1$d کیپچرز تک رسائی نہیں ہو سکتی۔ اگر ان کی فائلیں اب بھی دستیاب ہیں، تو فہرست بحال کرنے کے لیے وہ فولڈر منتخب کریں جس میں وہ موجود ہیں</string>
+    <string name="captures_restored">%1$d کیپچرز بحال ہوئے، %2$d چھوڑے گئے</string>
+    <string name="select_folder">فولڈر منتخب کریں</string>
+    <string name="skip_action">چھوڑیں</string>
+    <string name="import_capture_list_confirm">بیک اپ میں %1$d کیپچرز ہیں، جبکہ اس آلے کی فہرست میں پہلے سے %2$d کیپچرز موجود ہیں۔\n\nآپ کیسے آگے بڑھنا چاہتے ہیں؟</string>
+    <string name="merge_action">ضم کریں</string>
+    <string name="replace_action">تبدیل کریں</string>
+    <string name="keep_current_action">موجودہ رکھیں</string>
 </resources>

@@ -120,6 +120,7 @@ public class Prefs {
     public static final String PREF_FILENAME_PREFIX = "filename_prefix";
     public static final String PREF_CAPTURE_LIST = "capture_list";
     public static final String PREF_CONNECTIONS_LOG_SIZE = "max_connections";
+    public static final String PREF_LOCAL_NETWORK_NOTICE_SHOWN = "local_network_notice";
 
     /* The default maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Average Java-heap cost is ~2 KB per connection (covers payload-minimal mode and possible new additions);
@@ -214,6 +215,10 @@ public class Prefs {
         p.edit().putBoolean(PREF_PORT_MAPPING_ENABLED, enabled).apply();
     }
 
+    public static void setLocalNetworkNoticeShown(SharedPreferences p) {
+        p.edit().putBoolean(PREF_LOCAL_NETWORK_NOTICE_SHOWN, true).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorHost(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_HOST_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -270,6 +275,7 @@ public class Prefs {
     public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
     public static String getFilenamePrefix(SharedPreferences p)     { return(p.getString(PREF_FILENAME_PREFIX, "PCAPdroid_")); }
+    public static boolean localNetworkNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCAL_NETWORK_NOTICE_SHOWN, false)); }
 
     // Largest connections log size the current device's Java heap can safely host.
     // Rounded down to a power of two for a user-friendly dropdown.

@@ -584,4 +584,26 @@
     <string name="connections_log_size_entry">%1$s (~%2$d MB di RAM usati)</string>
     <string name="capture_list_files_changed">Le catture su disco sono cambiate, lista aggiornata</string>
     <string name="less_than_one_sec">&lt; 1 s</string>
+    <string name="permission_required">Permesso richiesto</string>
+    <string name="local_network_notice">A partire da Android 17, le app devono chiedere il permesso prima di connettersi ai dispositivi sulla rete locale. PCAPdroid necessita del permesso \"Dispositivi nelle vicinanze\" per poter monitorare tutte le connessioni di rete, incluse quelle dirette ai dispositivi locali</string>
+    <string name="local_network_permission_denied">PCAPdroid richiede il permesso \"Dispositivi nelle vicinanze\" per avviare la cattura. Devi concederlo manualmente dalle impostazioni dei permessi dell\'app</string>
+    <string name="local_network_permission_required">Il permesso \"Dispositivi nelle vicinanze\" è necessario per catturare i pacchetti</string>
+    <string name="grant_permission_action">Concedi</string>
+    <string name="open_settings">Apri impostazioni</string>
+    <string name="backup_restore">Backup e ripristino</string>
+    <string name="export_settings">Esporta impostazioni</string>
+    <string name="export_settings_summary">Salva le impostazioni dell\'app in un file, per ripristinarle in seguito</string>
+    <string name="import_settings">Importa impostazioni</string>
+    <string name="import_settings_summary">Ripristina le impostazioni dell\'app da un backup precedente</string>
+    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
+    <string name="settings_imported">Impostazioni importate</string>
+    <string name="imported_license_invalid">La licenza importata non è valida su questo dispositivo, quindi le funzioni a pagamento non saranno disponibili. Le licenze sono legate a uno specifico dispositivo e a una specifica installazione dell\'app</string>
+    <string name="captures_not_accessible">%1$d catture della lista importata non sono accessibili. Se i relativi file sono ancora disponibili, seleziona la cartella che li contiene per ripristinare la lista</string>
+    <string name="captures_restored">%1$d catture ripristinate, %2$d saltate</string>
+    <string name="select_folder">Seleziona cartella</string>
+    <string name="skip_action">Salta</string>
+    <string name="import_capture_list_confirm">Il backup contiene %1$d catture, mentre nella lista di questo dispositivo sono già presenti %2$d catture.\n\nCome vuoi procedere?</string>
+    <string name="merge_action">Unisci</string>
+    <string name="replace_action">Sostituisci</string>
+    <string name="keep_current_action">Mantieni attuali</string>
 </resources>

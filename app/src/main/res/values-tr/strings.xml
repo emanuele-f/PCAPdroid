@@ -585,4 +585,26 @@
     <string name="connections_log_size">En fazla kaydedilen bağlantı</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM kullanılıyor)</string>
     <string name="capture_list_files_changed">Diskteki yakalamalar değişti, liste güncellendi</string>
+    <string name="permission_required">İzin gerekli</string>
+    <string name="local_network_notice">Android 17\'den itibaren uygulamalar, yerel ağdaki cihazlara bağlanmadan önce izin istemek zorundadır. PCAPdroid, yerel cihazlara yönelenler de dahil olmak üzere tüm ağ bağlantılarını izleyebilmek için \"Yakındaki cihazlar\" iznine ihtiyaç duyar</string>
+    <string name="local_network_permission_denied">PCAPdroid, yakalamayı başlatmak için \"Yakındaki cihazlar\" iznini gerektirir. Bunu uygulama izinleri ayarlarından el ile vermeniz gerekir</string>
+    <string name="local_network_permission_required">Paketleri yakalamak için \"Yakındaki cihazlar\" izni gereklidir</string>
+    <string name="grant_permission_action">İzin ver</string>
+    <string name="open_settings">Ayarları aç</string>
+    <string name="backup_restore">Yedekleme ve geri yükleme</string>
+    <string name="export_settings">Ayarları dışa aktar</string>
+    <string name="export_settings_summary">Uygulama ayarlarını daha sonra geri yüklemek üzere bir dosyaya kaydedin</string>
+    <string name="import_settings">Ayarları içe aktar</string>
+    <string name="import_settings_summary">Uygulama ayarlarını önceki bir yedeklemeden geri yükleyin</string>
+    <string name="import_settings_confirm">Geçerli tüm ayarlar, %1$s tarihinde dışa aktarılanlarla değiştirilecek.\n\nBunları uygulamak için uygulama yeniden başlatılacak. Devam edilsin mi?</string>
+    <string name="settings_imported">Ayarlar içe aktarıldı</string>
+    <string name="imported_license_invalid">İçe aktarılan lisans bu aygıtta geçerli değil, bu nedenle ücretli özellikler kullanılamayacak. Lisanslar belirli bir aygıta ve uygulama kurulumuna bağlıdır</string>
+    <string name="captures_not_accessible">İçe aktarılan listedeki %1$d yakalamaya erişilemiyor. Dosyaları hâlâ mevcutsa, listeyi geri yüklemek için onları içeren klasörü seçin</string>
+    <string name="captures_restored">%1$d yakalama geri yüklendi, %2$d atlandı</string>
+    <string name="select_folder">Klasör seç</string>
+    <string name="skip_action">Atla</string>
+    <string name="import_capture_list_confirm">Yedek %1$d yakalama içeriyor, bu aygıtın listesinde ise zaten %2$d yakalama var.\n\nNasıl devam etmek istersiniz?</string>
+    <string name="merge_action">Birleştir</string>
+    <string name="replace_action">Değiştir</string>
+    <string name="keep_current_action">Mevcutları koru</string>
 </resources>

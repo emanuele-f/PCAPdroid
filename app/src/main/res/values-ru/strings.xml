@@ -576,4 +576,26 @@
     <string name="capture_list_files_changed">Дампы на диске изменились, список обновлен</string>
     <string name="connections_log_size">Макс. логируемых соединений</string>
     <string name="storage_used">Использованное хранилище</string>
+    <string name="permission_required">Требуется разрешение</string>
+    <string name="local_network_notice">Начиная с Android 17 приложения должны запрашивать разрешение перед подключением к устройствам в локальной сети. PCAPdroid необходимо разрешение \"Устройства поблизости\", чтобы отслеживать все сетевые соединения, включая направленные к локальным устройствам</string>
+    <string name="local_network_permission_denied">Для запуска перехвата PCAPdroid требуется разрешение \"Устройства поблизости\". Вам нужно выдать его вручную в настройках разрешений приложения</string>
+    <string name="local_network_permission_required">Для перехвата пакетов требуется разрешение \"Устройства поблизости\"</string>
+    <string name="grant_permission_action">Выдать</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="backup_restore">Резервное копирование и восстановление</string>
+    <string name="export_settings">Экспорт настроек</string>
+    <string name="export_settings_summary">Сохранить настройки приложения в файл, чтобы восстановить их позже</string>
+    <string name="import_settings">Импорт настроек</string>
+    <string name="import_settings_summary">Восстановить настройки приложения из предыдущей резервной копии</string>
+    <string name="import_settings_confirm">Все текущие настройки будут заменены настройками из резервной копии от %1$s.\n\nДля их применения приложение будет перезапущено. Продолжить?</string>
+    <string name="settings_imported">Настройки импортированы</string>
+    <string name="imported_license_invalid">Импортированная лицензия недействительна на этом устройстве, поэтому платные функции будут недоступны. Лицензии привязаны к конкретному устройству и установке приложения</string>
+    <string name="captures_not_accessible">%1$d дампов из импортированного списка недоступны. Если их файлы ещё существуют, выберите содержащую их папку, чтобы восстановить список</string>
+    <string name="captures_restored">Восстановлено дампов: %1$d, пропущено: %2$d</string>
+    <string name="select_folder">Выбрать папку</string>
+    <string name="skip_action">Пропустить</string>
+    <string name="import_capture_list_confirm">Резервная копия содержит %1$d дампов, а в списке этого устройства уже есть %2$d дампов.\n\nКак вы хотите продолжить?</string>
+    <string name="merge_action">Объединить</string>
+    <string name="replace_action">Заменить</string>
+    <string name="keep_current_action">Оставить текущие</string>
 </resources>

@@ -585,4 +585,26 @@
     <string name="connections_log_size">连接记录的最大值</string>
     <string name="connections_log_size_entry">%1$s （约使用了 %2$d MB 的内存）</string>
     <string name="capture_list_files_changed">磁盘上的捕获文件已更改，列表已更新</string>
+    <string name="permission_required">需要权限</string>
+    <string name="local_network_notice">自 Android 17 起，应用在连接局域网中的设备之前必须请求权限。PCAPdroid 需要“附近的设备”权限，才能监控所有的网络连接，包括发往本地设备的连接</string>
+    <string name="local_network_permission_denied">PCAPdroid 需要“附近的设备”权限才能开始捕获。你需要在应用权限设置中手动授予该权限</string>
+    <string name="local_network_permission_required">捕获数据包需要“附近的设备”权限</string>
+    <string name="grant_permission_action">授予</string>
+    <string name="open_settings">打开设置</string>
+    <string name="backup_restore">备份和恢复</string>
+    <string name="export_settings">导出设置</string>
+    <string name="export_settings_summary">将应用设置保存到文件，以便日后恢复</string>
+    <string name="import_settings">导入设置</string>
+    <string name="import_settings_summary">从之前的备份恢复应用设置</string>
+    <string name="import_settings_confirm">当前所有设置都将被 %1$s 导出的设置替换。\n\n应用将重启以应用这些设置。要继续吗？</string>
+    <string name="settings_imported">设置已导入</string>
+    <string name="imported_license_invalid">导入的许可证在此设备上无效，因此付费功能将不可用。许可证与特定的设备和应用安装绑定</string>
+    <string name="captures_not_accessible">导入列表中有 %1$d 个捕获文件无法访问。如果这些文件仍然存在，请选择包含它们的文件夹以恢复列表</string>
+    <string name="captures_restored">已恢复 %1$d 个捕获文件，跳过 %2$d 个</string>
+    <string name="select_folder">选择文件夹</string>
+    <string name="skip_action">跳过</string>
+    <string name="import_capture_list_confirm">备份中包含 %1$d 个捕获文件，而此设备的列表中已有 %2$d 个捕获文件。\n\n您想如何继续？</string>
+    <string name="merge_action">合并</string>
+    <string name="replace_action">替换</string>
+    <string name="keep_current_action">保留当前</string>
 </resources>

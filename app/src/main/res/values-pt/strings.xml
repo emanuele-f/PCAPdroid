@@ -26,7 +26,6 @@
     <string name="no_dump_info">O tráfego não será despejado</string>
     <string name="http_server_info">Inicia um servidor HTTP para a descarga do PCAP</string>
     <string name="http_server_port">Porta do servidor HTTP</string>
-    <string name="receiver_ip_address">Endereço IP do coletor</string>
     <string name="receiver_port">Porta do coletor</string>
     <string name="traffic_dump">Dump do tráfego</string>
     <string name="user_guide">Guia de usuario</string>
@@ -69,7 +68,6 @@
     <string name="last_seen">Última atividade</string>
     <string name="conn_status_closed">Fechado</string>
     <string name="copy_to_clipboard">Copiar</string>
-    <string name="save_to_file">Gravar no ficheiro</string>
     <string name="older_connections_notice">%1$d conexões antigas não exibidas</string>
     <string name="about_text">PCAPdroid é uma ferramenta de captura e monitoramento de rede de software livre que funciona sem privilégios root</string>
     <string name="get_app">Descarregue:</string>
@@ -79,7 +77,6 @@
     <string name="conn_status_unreachable">Inacessível</string>
     <string name="other_prefs">Outro</string>
     <string name="app_language">Idioma da app</string>
-    <string name="lang_english">Inglês</string>
     <string name="system_default">Padrão do Sistema</string>
     <string name="no_activity_file_selection">Nenhuma app de seleção de ficheiros foi encontrada</string>
     <string name="file_saved_with_name">Ficheiro gravado como \"%1$s\"</string>
@@ -256,8 +253,6 @@
     <string name="network_traffic">Tráfego</string>
     <string name="warn_no_app_data">Nenhum dado da app foi intercambiado</string>
     <string name="waiting_application_data">A aguardar dados</string>
-    <string name="display_as">Mostrar como…</string>
-    <string name="printable_text">Texto para impressão</string>
     <string name="hexdump">Hexdump</string>
     <string name="geolocation">Geolocalização</string>
     <string name="geolocation_summary">Mostrar informações sobre o país e o ASN realizando pesquisas offline</string>
@@ -465,14 +460,12 @@
     <string name="open_pcap_file">Abrir ficheiro PCAP/Pcapng…</string>
     <string name="pcap_load_success">Captura carregada</string>
     <string name="unsupported_pcap_file">Formato de captura não suportado</string>
-    <string name="decrypt_pcap_file">Descriptografar ficheiro PCAP/Pcapng…</string>
     <string name="invalid_pcap_file">Formato de captura inválido</string>
     <string name="capture_interface_open_error">Não foi possível abrir a interface de captura</string>
     <string name="unsupported_pcap_datalink">O ficheiro tem um datalink não suportado</string>
     <string name="pcap_file_not_exists">O ficheiro especificado não existe</string>
     <string name="root_capture_start_failed">Falha na inicialização da captura. Certifique-se de que o dispositivo esteja enraizado com Magisk</string>
     <string name="root_capture_pcapd_start_failure">Falha na inicialização da captura. Certifique-se de conceder acesso root ao PCAPdroid</string>
-    <string name="keylog_read_error">Erro de leitura do keylog SSL</string>
     <string name="pcap_file_load_aborted">Carregamento da captura abortado</string>
     <string name="host_resolution_failed">Não foi possível resolver o host %1$s</string>
     <string name="pcapdroid_trailer_notice">Para mostrar as apps reais em vez de \"%1$s\", certifique-se de ativar a opção \"%2$s\" antes de gerar o dump</string>
@@ -500,8 +493,6 @@
     <string name="vpn_reconnection_aborted">Reconexão VPN abortada</string>
     <string name="waiting_for_vpn_disconnect">A aguardar a desconexão da VPN ativa…</string>
     <string name="bytes_threshold">Limite de bytes</string>
-    <string name="select_the_pcap_file">Selecione o ficheiro PCAP/Pcapng</string>
-    <string name="select_the_keylog_file">Selecione o ficheiro keylog SSL</string>
     <string name="error_code_with_text">%1$s (erro %2$d)</string>
     <string name="errno_epipe">Cano quebrado</string>
     <string name="errno_epipe_msg">O servidor fechou inesperadamente a conexão durante a transferência de dados</string>
@@ -523,7 +514,6 @@
     <string name="errno_ehostunreach_msg">O sistema não consegue encontrar uma rota para o host de destino</string>
     <string name="dns_conn_info">O DNS traduz um nome de domínio num endereço IP. Os dados reais são normalmente trocados por meio de conexões HTTPS/TLS subsequentes</string>
     <string name="tls_conn_info">O tráfego TLS/HTTPS é criptografado. Para inspecionar este tráfego, precisa descriptografá-lo. Consulte o <a href="%1$s">guia do utilizador</a> do PCAPdroid para obter mais pormenores</string>
-    <string name="tls_decryption_not_supported_16KB">A descriptografia TLS não é suportada atualmente em dispositivos de 16 KB</string>
     <string name="filename_prefix">Prefixo do nome do ficheiro</string>
     <string name="filename_prefix_description">Defina o prefixo para os ficheiros exportados pelo PCAPdroid, por exemplo, ficheiros PCAP</string>
     <string name="no_requests">Nenhuma solicitação</string>
@@ -570,4 +560,26 @@
     <string name="storage_used_value">%1$s / %2$s</string>
     <string name="tls_decryption_unsupported_target">A descriptografia TLS requer Android 7 ou mais recente e um dispositivo x86_64/aarch64</string>
     <string name="view_all">Ver tudo</string>
+    <string name="permission_required">Permissão necessária</string>
+    <string name="local_network_notice">A partir do Android 17, as apps devem pedir permissão antes de se conectarem aos dispositivos na rede local. O PCAPdroid precisa da permissão \"Dispositivos próximos\" para poder monitorar todas as conexões de rede, incluindo as dirigidas a dispositivos locais</string>
+    <string name="local_network_permission_denied">O PCAPdroid requer a permissão \"Dispositivos próximos\" para iniciar a captura. Precisa de concedê-la manualmente em configurações de permissões da app</string>
+    <string name="local_network_permission_required">A permissão \"Dispositivos próximos\" é necessária para capturar pacotes</string>
+    <string name="grant_permission_action">Conceder</string>
+    <string name="open_settings">Abrir configurações</string>
+    <string name="backup_restore">Backup e restauro</string>
+    <string name="export_settings">Exportar configurações</string>
+    <string name="export_settings_summary">Gravar as configurações da app num ficheiro, para as restaurar mais tarde</string>
+    <string name="import_settings">Importar configurações</string>
+    <string name="import_settings_summary">Restaurar as configurações da app a partir de um backup anterior</string>
+    <string name="import_settings_confirm">Todas as configurações atuais serão substituídas pelas exportadas em %1$s.\n\nA app será reiniciada para as aplicar. Continuar?</string>
+    <string name="settings_imported">Configurações importadas</string>
+    <string name="imported_license_invalid">A licença importada não é válida neste dispositivo, por isso as funcionalidades pagas não estarão disponíveis. As licenças estão associadas a um dispositivo e a uma instalação da app específicos</string>
+    <string name="captures_not_accessible">Não é possível aceder a %1$d capturas da lista importada. Se os ficheiros ainda estiverem disponíveis, selecione a pasta que os contém para restaurar a lista</string>
+    <string name="captures_restored">%1$d capturas restauradas, %2$d ignoradas</string>
+    <string name="select_folder">Selecionar pasta</string>
+    <string name="skip_action">Ignorar</string>
+    <string name="import_capture_list_confirm">O backup contém %1$d capturas, enquanto %2$d capturas já se encontram na lista deste dispositivo.\n\nComo pretende continuar?</string>
+    <string name="merge_action">Unir</string>
+    <string name="replace_action">Substituir</string>
+    <string name="keep_current_action">Manter as atuais</string>
 </resources>

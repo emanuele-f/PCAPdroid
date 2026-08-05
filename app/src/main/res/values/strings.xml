@@ -618,4 +618,26 @@
     <string name="connections_log_size">Max logged connections</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB of RAM used)</string>
     <string name="capture_list_files_changed">Captures changed on disk, list updated</string>
+    <string name="permission_required">Permission required</string>
+    <string name="local_network_notice">Since Android 17, apps must ask permission before connecting to the devices on the local network. PCAPdroid needs the \"Nearby devices\" permission so that it can monitor all the network connections, including the ones directed to local devices</string>
+    <string name="local_network_permission_denied">PCAPdroid requires the \"Nearby devices\" permission to start the capture. You need to grant it manually from the app permissions settings</string>
+    <string name="local_network_permission_required">The \"Nearby devices\" permission is required to capture packets</string>
+    <string name="grant_permission_action">Grant</string>
+    <string name="open_settings">Open settings</string>
+    <string name="backup_restore">Backup and restore</string>
+    <string name="export_settings">Export settings</string>
+    <string name="export_settings_summary">Save the app settings to a file, to restore them later</string>
+    <string name="import_settings">Import settings</string>
+    <string name="import_settings_summary">Restore the app settings from a previous backup</string>
+    <string name="import_settings_confirm">All the current settings will be replaced with the ones exported on %1$s.\n\nThe app will be restarted to apply them. Continue?</string>
+    <string name="settings_imported">Settings imported</string>
+    <string name="imported_license_invalid">The imported license is not valid on this device, so the paid features will not be available. Licenses are bound to a specific device and app installation</string>
+    <string name="import_capture_list_confirm">The backup contains %1$d captures, while %2$d captures are already in the list of this device.\n\nHow would you like to proceed?</string>
+    <string name="merge_action">Merge</string>
+    <string name="replace_action">Replace</string>
+    <string name="keep_current_action">Keep current</string>
+    <string name="captures_not_accessible">%1$d captures of the imported list cannot be accessed. If their files are still available, select the folder which contains them to restore the list</string>
+    <string name="captures_restored">%1$d captures restored, %2$d skipped</string>
+    <string name="select_folder">Select folder</string>
+    <string name="skip_action">Skip</string>
 </resources>

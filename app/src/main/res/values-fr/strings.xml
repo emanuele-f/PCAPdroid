@@ -572,4 +572,26 @@
     <string name="connections_log_size">Connexions journalisées max</string>
     <string name="connections_log_size_entry">%1$s (~%2$d Mo de RAM utilisés)</string>
     <string name="capture_list_files_changed">Captures modifiées sur le disque, liste mise à jour</string>
+    <string name="permission_required">Autorisation requise</string>
+    <string name="local_network_notice">Depuis Android 17, les applications doivent demander une autorisation avant de se connecter aux appareils du réseau local. PCAPdroid a besoin de l\'autorisation \"Appareils à proximité\" pour pouvoir surveiller toutes les connexions réseau, y compris celles dirigées vers des appareils locaux</string>
+    <string name="local_network_permission_denied">PCAPdroid nécessite l\'autorisation \"Appareils à proximité\" pour lancer la capture. Vous devez l\'accorder manuellement depuis les paramètres des autorisations de l\'application</string>
+    <string name="local_network_permission_required">L\'autorisation \"Appareils à proximité\" est nécessaire pour capturer les paquets</string>
+    <string name="grant_permission_action">Accorder</string>
+    <string name="open_settings">Ouvrir les paramètres</string>
+    <string name="backup_restore">Sauvegarde et restauration</string>
+    <string name="export_settings">Exporter les paramètres</string>
+    <string name="export_settings_summary">Enregistrer les paramètres de l\'application dans un fichier, pour les restaurer plus tard</string>
+    <string name="import_settings">Importer les paramètres</string>
+    <string name="import_settings_summary">Restaurer les paramètres de l\'application depuis une sauvegarde précédente</string>
+    <string name="import_settings_confirm">Tous les paramètres actuels seront remplacés par ceux exportés le %1$s.\n\nL\'application sera redémarrée pour les appliquer. Continuer ?</string>
+    <string name="settings_imported">Paramètres importés</string>
+    <string name="imported_license_invalid">La licence importée n\'est pas valide sur cet appareil, les fonctionnalités payantes ne seront donc pas disponibles. Les licences sont liées à un appareil et à une installation de l\'application spécifiques</string>
+    <string name="captures_not_accessible">%1$d captures de la liste importée ne sont pas accessibles. Si leurs fichiers sont toujours disponibles, sélectionnez le dossier qui les contient pour restaurer la liste</string>
+    <string name="captures_restored">%1$d captures restaurées, %2$d ignorées</string>
+    <string name="select_folder">Sélectionner le dossier</string>
+    <string name="skip_action">Passer</string>
+    <string name="import_capture_list_confirm">La sauvegarde contient %1$d captures, alors que %2$d captures sont déjà dans la liste de cet appareil.\n\nComment souhaitez-vous procéder ?</string>
+    <string name="merge_action">Fusionner</string>
+    <string name="replace_action">Remplacer</string>
+    <string name="keep_current_action">Garder les actuelles</string>
 </resources>

@@ -560,4 +560,26 @@
     <string name="connections_log_size">பதிவு செய்யப்பட்ட அதிகபட்ச இணைப்புகள்</string>
     <string name="connections_log_size_entry">%1$s (~%2$d MB RAM பயன்படுத்தப்பட்டது)</string>
     <string name="capture_list_files_changed">வட்டில் பிடிப்புகள் மாற்றப்பட்டன, பட்டியல் புதுப்பிக்கப்பட்டது</string>
+    <string name="permission_required">அனுமதி தேவை</string>
+    <string name="local_network_notice">ஆண்ட்ராய்டு 17 முதல், உள்ளக பிணையத்தில் உள்ள சாதனங்களுடன் இணைவதற்கு முன் பயன்பாடுகள் அனுமதி கேட்க வேண்டும். உள்ளக சாதனங்களுக்குச் செல்லும் இணைப்புகள் உட்பட அனைத்து பிணைய இணைப்புகளையும் கண்காணிக்க PCAPdroid-க்கு \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை</string>
+    <string name="local_network_permission_denied">பிடிப்பைத் தொடங்க PCAPdroid-க்கு \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை. பயன்பாட்டு அனுமதிகள் அமைப்புகளிலிருந்து அதை நீங்கள் கைமுறையாக வழங்க வேண்டும்</string>
+    <string name="local_network_permission_required">பாக்கெட்டுகளை கைப்பற்ற \"அருகிலுள்ள சாதனங்கள்\" அனுமதி தேவை</string>
+    <string name="grant_permission_action">வழங்கு</string>
+    <string name="open_settings">அமைப்புகளைத் திற</string>
+    <string name="backup_restore">காப்புப்பிரதி மற்றும் மீட்டெடுப்பு</string>
+    <string name="export_settings">அமைப்புகளை ஏற்றுமதி செய்</string>
+    <string name="export_settings_summary">பின்னர் மீட்டெடுப்பதற்காக பயன்பாட்டு அமைப்புகளை ஒரு கோப்பில் சேமிக்கவும்</string>
+    <string name="import_settings">அமைப்புகளை இறக்குமதி செய்</string>
+    <string name="import_settings_summary">முந்தைய காப்புப்பிரதியிலிருந்து பயன்பாட்டு அமைப்புகளை மீட்டெடுக்கவும்</string>
+    <string name="import_settings_confirm">தற்போதைய அனைத்து அமைப்புகளும் %1$s அன்று ஏற்றுமதி செய்யப்பட்டவற்றால் மாற்றப்படும்.\n\nஅவற்றைப் பயன்படுத்த பயன்பாடு மறுதொடக்கம் செய்யப்படும். தொடரவா?</string>
+    <string name="settings_imported">அமைப்புகள் இறக்குமதி செய்யப்பட்டன</string>
+    <string name="imported_license_invalid">இறக்குமதி செய்யப்பட்ட உரிமம் இந்த சாதனத்தில் செல்லுபடியாகாது, எனவே கட்டண அம்சங்கள் கிடைக்காது. உரிமங்கள் ஒரு குறிப்பிட்ட சாதனத்துடனும் பயன்பாட்டு நிறுவலுடனும் பிணைக்கப்பட்டுள்ளன</string>
+    <string name="captures_not_accessible">இறக்குமதி செய்யப்பட்ட பட்டியலில் உள்ள %1$d பிடிப்புகளை அணுக முடியவில்லை. அவற்றின் கோப்புகள் இன்னும் கிடைத்தால், பட்டியலை மீட்டெடுக்க அவற்றைக் கொண்டிருக்கும் கோப்புறையைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="captures_restored">%1$d பிடிப்புகள் மீட்டெடுக்கப்பட்டன, %2$d தவிர்க்கப்பட்டன</string>
+    <string name="select_folder">கோப்புறையைத் தேர்ந்தெடு</string>
+    <string name="skip_action">தவிர்</string>
+    <string name="import_capture_list_confirm">காப்புப்பிரதியில் %1$d பிடிப்புகள் உள்ளன, ஆனால் இந்த சாதனத்தின் பட்டியலில் ஏற்கனவே %2$d பிடிப்புகள் உள்ளன.\n\nநீங்கள் எவ்வாறு தொடர விரும்புகிறீர்கள்?</string>
+    <string name="merge_action">இணைக்கவும்</string>
+    <string name="replace_action">மாற்றவும்</string>
+    <string name="keep_current_action">தற்போதையதை வைத்திருங்கள்</string>
 </resources>
