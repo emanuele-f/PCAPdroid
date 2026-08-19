@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -49,6 +49,15 @@ public class Billing {
     private static final String KEY = "ME4wEAYHKoZIzj0CAQYFK4EEACEDOgAE6cS1N1P0kaiuxq0g70OVVE0uIOD+t809" +
             "Etg3k2h11k8uNvfkx3mL1HTjQyzSfdueyY4DqTW7+sk=";
     private static final String PEER_SKU_KEY = "peer_skus";
+
+    /* Prefs which cache the billing state. They must never be restored from a settings backup:
+     * the play build re-validates the purchases via the billing library, while the peer skus are
+     * advertised by the mitm addon at runtime. NOTE: some of these keys are only written by the
+     * play build (see PlayBilling), but they are listed here to keep the exclusions in one place. */
+    public static final String SKU_PREF_PREFIX = "SKU:";
+    public static final List<String> BILLING_STATE_KEYS = Arrays.asList(
+            PEER_SKU_KEY, "available_skus", "unlock_token"
+    );
 
     // SKUs
     public static final String SUPPORTER_SKU = "pcapdroid_supporter";

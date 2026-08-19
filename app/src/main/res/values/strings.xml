@@ -593,4 +593,12 @@
     <string name="next">Next</string>
     <string name="save_as_text">Save as text</string>
     <string name="save_as_har">Save as HAR</string>
+    <string name="backup_restore">Backup and restore</string>
+    <string name="export_settings">Export settings</string>
+    <string name="export_settings_summary">Save the app settings to a file, to restore them later</string>
+    <string name="import_settings">Import settings</string>
+    <string name="import_settings_summary">Restore the app settings from a previous backup</string>
+    <string name="import_settings_confirm">All the current settings will be replaced with the ones exported on %1$s.\n\nThe app will be restarted to apply them. Continue?</string>
+    <string name="settings_imported">Settings imported</string>
+    <string name="imported_license_invalid">The imported license is not valid on this device, so the paid features will not be available. Licenses are bound to a specific device and app installation</string>
 </resources>

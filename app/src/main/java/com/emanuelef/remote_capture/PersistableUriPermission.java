@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -38,7 +38,7 @@ import androidx.preference.PreferenceManager;
 // permission, which requires the user to manually select the output file from the UI.
 public class PersistableUriPermission {
     private static final String TAG = "PersistableUriPermission";
-    private static final String PREF_KEY = "persistable_uri";
+    public static final String PREF_KEY = "persistable_uri";
 
     /* FLAG_GRANT_READ_URI_PERMISSION required for showPcapActionDialog (e.g. when auto-started at boot) */
     private static int PERSIST_MODE = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
