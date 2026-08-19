@@ -560,4 +560,12 @@
     <string name="previous">Precedente</string>
     <string name="next">Successivo</string>
     <string name="save_as_text">Salva come testo</string>
+    <string name="backup_restore">Backup e ripristino</string>
+    <string name="export_settings">Esporta impostazioni</string>
+    <string name="export_settings_summary">Salva le impostazioni dell\'app in un file, per ripristinarle in seguito</string>
+    <string name="import_settings">Importa impostazioni</string>
+    <string name="import_settings_summary">Ripristina le impostazioni dell\'app da un backup precedente</string>
+    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
+    <string name="settings_imported">Impostazioni importate</string>
+    <string name="imported_license_invalid">La licenza importata non è valida su questo dispositivo, quindi le funzioni a pagamento non saranno disponibili. Le licenze sono legate a uno specifico dispositivo e a una specifica installazione dell\'app</string>
 </resources>

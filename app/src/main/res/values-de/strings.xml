@@ -559,4 +559,12 @@
     <string name="decryption_error">Entschlüsselungsfehler</string>
     <string name="previous">Zurück</string>
     <string name="next">Weiter</string>
+    <string name="backup_restore">Sichern und Wiederherstellen</string>
+    <string name="export_settings">Einstellungen exportieren</string>
+    <string name="export_settings_summary">Die App-Einstellungen in einer Datei speichern, um sie später wiederherzustellen</string>
+    <string name="import_settings">Einstellungen importieren</string>
+    <string name="import_settings_summary">Die App-Einstellungen aus einer früheren Sicherung wiederherstellen</string>
+    <string name="import_settings_confirm">Alle aktuellen Einstellungen werden durch die am %1$s exportierten ersetzt.\n\nDie App wird neu gestartet, um sie anzuwenden. Fortfahren\?</string>
+    <string name="settings_imported">Einstellungen importiert</string>
+    <string name="imported_license_invalid">Die importierte Lizenz ist auf diesem Gerät nicht gültig, daher sind die kostenpflichtigen Funktionen nicht verfügbar. Lizenzen sind an ein bestimmtes Gerät und eine bestimmte App-Installation gebunden</string>
 </resources>

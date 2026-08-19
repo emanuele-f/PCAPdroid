@@ -536,4 +536,12 @@
     <string name="errno_etimedout_msg">பிணையம் தாமதங்கள் அல்லது பிசியான சேவையகம் காரணமாக சேவையகம் பதிலளிக்க அதிக நேரம் எடுத்தது</string>
     <string name="dns_conn_info">டி.என்.எச் ஒரு டொமைன் பெயரை ஐபி முகவரியாக மொழிபெயர்க்கிறது. உண்மையான தரவு பொதுவாக அடுத்தடுத்த HTTPS/TLS இணைப்புகளில் பரிமாறப்படுகிறது</string>
     <string name="ip_address_or_cidr">ஐபி முகவரி / சிஐடிஆர்</string>
+    <string name="backup_restore">காப்புப்பிரதி மற்றும் மீட்டெடுப்பு</string>
+    <string name="export_settings">அமைப்புகளை ஏற்றுமதி செய்</string>
+    <string name="export_settings_summary">பின்னர் மீட்டெடுப்பதற்காக பயன்பாட்டு அமைப்புகளை ஒரு கோப்பில் சேமிக்கவும்</string>
+    <string name="import_settings">அமைப்புகளை இறக்குமதி செய்</string>
+    <string name="import_settings_summary">முந்தைய காப்புப்பிரதியிலிருந்து பயன்பாட்டு அமைப்புகளை மீட்டெடுக்கவும்</string>
+    <string name="import_settings_confirm">தற்போதைய அனைத்து அமைப்புகளும் %1$s அன்று ஏற்றுமதி செய்யப்பட்டவற்றால் மாற்றப்படும்.\n\nஅவற்றைப் பயன்படுத்த பயன்பாடு மறுதொடக்கம் செய்யப்படும். தொடரவா?</string>
+    <string name="settings_imported">அமைப்புகள் இறக்குமதி செய்யப்பட்டன</string>
+    <string name="imported_license_invalid">இறக்குமதி செய்யப்பட்ட உரிமம் இந்த சாதனத்தில் செல்லுபடியாகாது, எனவே கட்டண அம்சங்கள் கிடைக்காது. உரிமங்கள் ஒரு குறிப்பிட்ட சாதனத்துடனும் பயன்பாட்டு நிறுவலுடனும் பிணைக்கப்பட்டுள்ளன</string>
 </resources>

@@ -559,4 +559,12 @@
     <string name="next">Próximo</string>
     <string name="save_as_text">Salvar como texto</string>
     <string name="save_as_har">Salvar como HAR</string>
+    <string name="backup_restore">Backup e restauração</string>
+    <string name="export_settings">Exportar configurações</string>
+    <string name="export_settings_summary">Salve as configurações do app em um arquivo, para restaurá-las mais tarde</string>
+    <string name="import_settings">Importar configurações</string>
+    <string name="import_settings_summary">Restaure as configurações do app a partir de um backup anterior</string>
+    <string name="import_settings_confirm">Todas as configurações atuais serão substituídas pelas exportadas em %1$s.\n\nO app será reiniciado para aplicá-las. Deseja continuar?</string>
+    <string name="settings_imported">Configurações importadas</string>
+    <string name="imported_license_invalid">A licença importada não é válida neste dispositivo, portanto as funcionalidades pagas não estarão disponíveis. As licenças estão vinculadas a um dispositivo e a uma instalação do app específicos</string>
 </resources>

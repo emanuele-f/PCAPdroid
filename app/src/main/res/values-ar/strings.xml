@@ -557,4 +557,12 @@
     <string name="next">التالي</string>
     <string name="save_as_text">احفظ كنص</string>
     <string name="save_as_har">حفظ ك HAR</string>
+    <string name="backup_restore">النسخ الاحتياطي والاستعادة</string>
+    <string name="export_settings">تصدير الإعدادات</string>
+    <string name="export_settings_summary">احفظ إعدادات التطبيق في ملف لاستعادتها لاحقًا</string>
+    <string name="import_settings">استيراد الإعدادات</string>
+    <string name="import_settings_summary">استعد إعدادات التطبيق من نسخة احتياطية سابقة</string>
+    <string name="import_settings_confirm">سيتم استبدال جميع الإعدادات الحالية بالإعدادات المُصدَّرة في %1$s.\n\nسيُعاد تشغيل التطبيق لتطبيقها. هل تريد المتابعة؟</string>
+    <string name="settings_imported">استُوردت الإعدادات</string>
+    <string name="imported_license_invalid">الترخيص المستورد غير صالح على هذا الجهاز، لذلك لن تكون الميزات المدفوعة متاحة. ترتبط التراخيص بجهاز محدد وبتثبيت محدد للتطبيق</string>
 </resources>

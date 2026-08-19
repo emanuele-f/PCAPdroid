@@ -536,4 +536,12 @@
     <string name="tcp_exporter">TCP ixracatçısı</string>
     <string name="tcp_udp_exporter">TCP/UDP ixracatçısı</string>
     <string name="tcp_exporter_info">PCAP məlumatını uzaq TCP qəbuledicisinə göndər (pcap-over-ip vasitəsilə)</string>
+    <string name="backup_restore">Ehtiyat nüsxə və bərpa</string>
+    <string name="export_settings">Parametrləri ixrac et</string>
+    <string name="export_settings_summary">Sonradan bərpa etmək üçün tətbiq parametrlərini fayla yadda saxla</string>
+    <string name="import_settings">Parametrləri idxal et</string>
+    <string name="import_settings_summary">Tətbiq parametrlərini əvvəlki ehtiyat nüsxədən bərpa et</string>
+    <string name="import_settings_confirm">Bütün cari parametrlər %1$s tarixində ixrac edilənlərlə əvəz olunacaq.\n\nOnları tətbiq etmək üçün tətbiq yenidən başladılacaq. Davam edilsin?</string>
+    <string name="settings_imported">Parametrlər idxal edildi</string>
+    <string name="imported_license_invalid">İdxal edilən lisenziya bu cihazda etibarlı deyil, ona görə ödənişli xüsusiyyətlər əlçatan olmayacaq. Lisenziyalar müəyyən bir cihaza və tətbiq quraşdırmasına bağlıdır</string>
 </resources>

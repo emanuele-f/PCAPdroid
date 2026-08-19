@@ -561,4 +561,12 @@
     <string name="show_api_key">Показати API-ключ</string>
     <string name="api_key">API-ключ</string>
     <string name="api_key_discard_confirm">Ви дійсно хочете скасувати поточний API-ключ і згенерувати новий?</string>
+    <string name="backup_restore">Резервне копіювання та відновлення</string>
+    <string name="export_settings">Експортувати налаштування</string>
+    <string name="export_settings_summary">Зберегти налаштування додатку у файл, щоб відновити їх пізніше</string>
+    <string name="import_settings">Імпортувати налаштування</string>
+    <string name="import_settings_summary">Відновити налаштування додатку з попередньої резервної копії</string>
+    <string name="import_settings_confirm">Усі поточні налаштування буде замінено налаштуваннями, експортованими %1$s.\n\nДодаток буде перезапущено, щоб застосувати їх. Продовжити\?</string>
+    <string name="settings_imported">Налаштування імпортовано</string>
+    <string name="imported_license_invalid">Імпортована ліцензія недійсна на цьому пристрої, тому платні функції будуть недоступні. Ліцензії прив\'язані до конкретного пристрою та встановлення додатку</string>
 </resources>

@@ -536,4 +536,12 @@
     <string name="waiting_for_vpn_disconnect">Oczekiwanie na zakończenie aktywnego połączenia VPN…</string>
     <string name="select_the_pcap_file">Wybierz plik PCAP/Pcapng</string>
     <string name="proxy_host">Host usługi Proxy</string>
+    <string name="backup_restore">Kopia zapasowa i przywracanie</string>
+    <string name="export_settings">Eksportuj ustawienia</string>
+    <string name="export_settings_summary">Zapisz ustawienia aplikacji do pliku, aby przywrócić je później</string>
+    <string name="import_settings">Importuj ustawienia</string>
+    <string name="import_settings_summary">Przywróć ustawienia aplikacji z wcześniejszej kopii zapasowej</string>
+    <string name="import_settings_confirm">Wszystkie bieżące ustawienia zostaną zastąpione tymi wyeksportowanymi %1$s.\n\nAplikacja zostanie uruchomiona ponownie, aby je zastosować. Kontynuować?</string>
+    <string name="settings_imported">Ustawienia zaimportowane</string>
+    <string name="imported_license_invalid">Zaimportowana licencja jest nieprawidłowa na tym urządzeniu, więc płatne funkcje nie będą dostępne. Licencje są powiązane z konkretnym urządzeniem i instalacją aplikacji</string>
 </resources>

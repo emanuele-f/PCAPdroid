@@ -552,4 +552,12 @@
     <string name="content_type_filter">Content-Type: %1$s</string>
     <string name="tls_decryption_not_supported_16KB">Дешифрование TLS на текущий момент не поддерживается на устройствах со страницей памяти 16КБ</string>
     <string name="item_not_found">Не удалось найти указанный элемент</string>
+    <string name="backup_restore">Резервное копирование и восстановление</string>
+    <string name="export_settings">Экспорт настроек</string>
+    <string name="export_settings_summary">Сохранить настройки приложения в файл, чтобы восстановить их позже</string>
+    <string name="import_settings">Импорт настроек</string>
+    <string name="import_settings_summary">Восстановить настройки приложения из предыдущей резервной копии</string>
+    <string name="import_settings_confirm">Все текущие настройки будут заменены настройками из резервной копии от %1$s.\n\nДля их применения приложение будет перезапущено. Продолжить?</string>
+    <string name="settings_imported">Настройки импортированы</string>
+    <string name="imported_license_invalid">Импортированная лицензия недействительна на этом устройстве, поэтому платные функции будут недоступны. Лицензии привязаны к конкретному устройству и установке приложения</string>
 </resources>

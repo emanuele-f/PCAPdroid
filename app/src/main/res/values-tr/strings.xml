@@ -561,4 +561,12 @@
     <string name="next">Sonraki</string>
     <string name="save_as_text">Metin olarak kaydet</string>
     <string name="save_as_har">HAR olarak kaydet</string>
+    <string name="backup_restore">Yedekleme ve geri yükleme</string>
+    <string name="export_settings">Ayarları dışa aktar</string>
+    <string name="export_settings_summary">Uygulama ayarlarını daha sonra geri yüklemek üzere bir dosyaya kaydedin</string>
+    <string name="import_settings">Ayarları içe aktar</string>
+    <string name="import_settings_summary">Uygulama ayarlarını önceki bir yedeklemeden geri yükleyin</string>
+    <string name="import_settings_confirm">Geçerli tüm ayarlar, %1$s tarihinde dışa aktarılanlarla değiştirilecek.\n\nBunları uygulamak için uygulama yeniden başlatılacak. Devam edilsin mi?</string>
+    <string name="settings_imported">Ayarlar içe aktarıldı</string>
+    <string name="imported_license_invalid">İçe aktarılan lisans bu aygıtta geçerli değil, bu nedenle ücretli özellikler kullanılamayacak. Lisanslar belirli bir aygıta ve uygulama kurulumuna bağlıdır</string>
 </resources>

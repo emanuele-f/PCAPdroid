@@ -381,4 +381,12 @@
     <string name="username">Nom d\'utilisateur</string>
     <string name="password">Mot de passe</string>
     <string name="qr_code_expired">Le QR code a expiré. Générez un nouveau code QR et réessayez</string>
+    <string name="backup_restore">Sauvegarde et restauration</string>
+    <string name="export_settings">Exporter les paramètres</string>
+    <string name="export_settings_summary">Enregistrer les paramètres de l\'application dans un fichier, pour les restaurer plus tard</string>
+    <string name="import_settings">Importer les paramètres</string>
+    <string name="import_settings_summary">Restaurer les paramètres de l\'application depuis une sauvegarde précédente</string>
+    <string name="import_settings_confirm">Tous les paramètres actuels seront remplacés par ceux exportés le %1$s.\n\nL\'application sera redémarrée pour les appliquer. Continuer ?</string>
+    <string name="settings_imported">Paramètres importés</string>
+    <string name="imported_license_invalid">La licence importée n\'est pas valide sur cet appareil, les fonctionnalités payantes ne seront donc pas disponibles. Les licences sont liées à un appareil et à une installation de l\'application spécifiques</string>
 </resources>

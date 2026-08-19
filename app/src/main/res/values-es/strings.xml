@@ -561,4 +561,12 @@
     <string name="error_code_with_text">%1$s (error %2$d)</string>
     <string name="api_key_discard_confirm">¿Realmente desea descartar la clave API actual y generar una nueva?</string>
     <string name="keylog_read_error">Error de lectura del registro de claves SSL</string>
+    <string name="backup_restore">Copia de seguridad y restauración</string>
+    <string name="export_settings">Exportar ajustes</string>
+    <string name="export_settings_summary">Guarda los ajustes de la app en un archivo para restaurarlos más tarde</string>
+    <string name="import_settings">Importar ajustes</string>
+    <string name="import_settings_summary">Restaura los ajustes de la app desde una copia de seguridad anterior</string>
+    <string name="import_settings_confirm">Todos los ajustes actuales se reemplazarán por los exportados el %1$s.\n\nLa app se reiniciará para aplicarlos. ¿Continuar\?</string>
+    <string name="settings_imported">Ajustes importados</string>
+    <string name="imported_license_invalid">La licencia importada no es válida en este dispositivo, por lo que las funciones de pago no estarán disponibles. Las licencias están vinculadas a un dispositivo y a una instalación de la app específicos</string>
 </resources>

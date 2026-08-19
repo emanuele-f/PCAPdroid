@@ -561,4 +561,12 @@
     <string name="api_key">Kunci API</string>
     <string name="api_key_discard_confirm">Apakah Anda benar-benar ingin membuang kunci API saat ini dan membuat yang baru?</string>
     <string name="no_permissions_set_info">Tidak ada izin yang ditetapkan. Panggil PCAPdroid melalui StartActivityForResult untuk menampilkan permintaan izin</string>
+    <string name="backup_restore">Cadangkan dan pulihkan</string>
+    <string name="export_settings">Ekspor pengaturan</string>
+    <string name="export_settings_summary">Simpan pengaturan aplikasi ke sebuah file, untuk memulihkannya nanti</string>
+    <string name="import_settings">Impor pengaturan</string>
+    <string name="import_settings_summary">Pulihkan pengaturan aplikasi dari cadangan sebelumnya</string>
+    <string name="import_settings_confirm">Semua pengaturan saat ini akan diganti dengan yang diekspor pada %1$s.\n\nAplikasi akan dimulai ulang untuk menerapkannya. Lanjutkan\?</string>
+    <string name="settings_imported">Pengaturan diimpor</string>
+    <string name="imported_license_invalid">Lisensi yang diimpor tidak valid pada perangkat ini, sehingga fitur berbayar tidak akan tersedia. Lisensi terikat pada perangkat dan instalasi aplikasi tertentu</string>
 </resources>
