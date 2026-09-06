@@ -1224,8 +1224,8 @@ public class Utils {
                 try {
                     // Necessary otherwise the connection will stay open
                     con.setRequestProperty("Connection", "Close");
-                    con.setConnectTimeout(5000);
-                    con.setReadTimeout(5000);
+                    con.setConnectTimeout(15000);
+                    con.setReadTimeout(15000);
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
