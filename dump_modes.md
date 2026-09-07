@@ -1,14 +1,14 @@
 PCAPdroid offers different ways to export the captured traffic. This is called *dump mode* and can be changed from the app settings.
 
-## 2.1 None
+## 2.1 No Dump
 
-This mode does not export the traffic in any way. This is suitable to only perform traffic analysis directly from the *connections* view of PCAPdroid.
+This mode does not export the traffic in any way. This is the default mode, suitable to only perform traffic analysis directly from the *connections* view of PCAPdroid.
 
 ## 2.2 HTTP Server
 
-This mode starts an HTTP server which can be accessed by any PC in the local network to download the PCAP file containing the captured traffic. This is the default mode of PCAPdroid as it does not require any further setup or a specific OS.
+This mode starts an HTTP server which can be accessed by any PC in the local network to download the PCAP file containing the captured traffic. It does not require any further setup or a specific OS.
 
-After the capture is started, you can connect to the URL displayed by PCAPdroid in the "Status" view to start downloading the PCAP. It is normal if you don't see any download progress in your browser as the PCAP size is unknown. The PCAP file will be properly saved once you stop the capture from PCAPdroid.
+After the capture is started, you can connect to the URL displayed by PCAPdroid in the "Status" view to start downloading the PCAP. It is normal if you don't see any download progress in your browser as the PCAP size is unknown. The PCAP file will be properly saved once you stop the capture from PCAPdroid. Beware that any user in your local network can download a copy of your device traffic.
 
 On Linux, you can also use this mode to analyze the PCAP in real time on Wireshark with the following command (replace `192.168.1.10:8080`):
 

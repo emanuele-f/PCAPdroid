@@ -9,7 +9,7 @@ Welcome to the PCAPdroid User Guide.
     - [1.4 Packet Analysis](quick_start#14-packet-analysis)
     - [1.5 Packet Captures](quick_start#15-packet-captures)
 - [2. Dump Modes](dump_modes)
-    - [2.1 None](dump_modes#21-none)
+    - [2.1 No Dump](dump_modes#21-no-dump)
     - [2.2 HTTP Server](dump_modes#22-http-server)
     - [2.3 PCAP File](dump_modes#23-pcap-file)
     - [2.4 UDP Exporter](dump_modes#24-udp-exporter)
