@@ -1,1 +1,1 @@
-Android aygıtlar için root gerektirmeyen ağ izleme ve trafik dökümü aracı
+Android için root gerektirmeyen ağ izleyici, güvenlik duvarı ve PCAP aracı

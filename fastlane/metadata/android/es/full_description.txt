@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> es una aplicación respetuosa con la privacidad que le permite rastrear y analizar las conexiones realizadas por otras aplicaciones en su dispositivo.
-También le permite exportar un volcado PCAP del tráfico, inspeccionar HTTP, descifrar el tráfico TLS y mucho más.
+<i>PCAPdroid</i> es una aplicación de código abierto respetuosa con la privacidad que permite rastrear, analizar y bloquear las conexiones realizadas por otras aplicaciones en el dispositivo.
+También puede exportar un volcado PCAP del tráfico, inspeccionar las peticiones HTTP, descifrar el tráfico TLS y mucho más.
 
 PCAPdroid simula una VPN para capturar el tráfico de red sin root. No utiliza un servidor VPN remoto, sino que los datos se procesan localmente en el dispositivo.
 
-<b>Características:</b>
+<b>Características principales:</b>
 
-* Registrar y examinar las conexiones realizadas por el usuario y las aplicaciones del sistema
-* Extraiga el SNI, la consulta DNS, la URL HTTP y la dirección IP remota
-* Inspeccione las solicitudes y respuestas HTTP gracias a los decodificadores incorporados
-* Inspeccionar la carga útil de conexiones completas como hexdump/text
-* Descifrar el tráfico HTTPS/TLS y exportar el SSLKEYLOGFILE
-* Vuelque el tráfico a un archivo PCAP, descárguelo desde un navegador o transmítalo a un receptor remoto para un análisis en tiempo real (por ejemplo, Wireshark)
-* Cree reglas para filtrar el buen tráfico y detectar anomalías fácilmente
-* Identifique el país y el ASN del servidor remoto a través de búsquedas de base de datos fuera de línea
+* Registre y analice las conexiones realizadas por las aplicaciones del usuario y del sistema
+* Obtenga un resumen de cuántos datos ha enviado y recibido cada aplicación
+* Bajo consumo de batería, para una captura continua durante todo el día
+* Extraiga los hosts y las direcciones IP de DNS, TLS y HTTP
+* Grabe el tráfico en archivos PCAP con metadatos adicionales de las aplicaciones
+* Envíe el tráfico mediante PCAP-over-IP para el análisis en tiempo real (por ejemplo, en Wireshark)
+* Descifre el tráfico HTTPS/TLS, extraiga las URL y guarde el SSLKEYLOGFILE
+* Inspeccione las peticiones/respuestas HTTP y expórtelas a HAR
+* Identifique el país y el ASN del servidor remoto a través de búsquedas en bases de datos sin conexión
 * En dispositivos rooteados, capture el tráfico mientras se ejecutan otras aplicaciones VPN
 
-Si planea usar PCAPdroid para realizar análisis de paquetes, consulte <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>la sección específica</a> de el manual.
+Si planea usar PCAPdroid para realizar análisis de paquetes, consulte <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>la sección específica</a> del manual.
 
-Únase a la comunidad internacional de PCAPdroid en<a href="https://t.me/PCAPdroid">Telegrama</a>o en<a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.
+Únase a la comunidad internacional de PCAPdroid <a href="https://t.me/PCAPdroid">en Telegram</a> o <a href="https://matrix.to/#/#pcapdroid:matrix.org">en Matrix</a>.

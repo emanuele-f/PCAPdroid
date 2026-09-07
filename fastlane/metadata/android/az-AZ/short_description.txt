@@ -1,1 +1,1 @@
-Android cihazları üçün root tələb etməyən şəbəkə monitoru və trafik dempinqi aləti
+Android üçün rootsuz şəbəkə monitoru, təhlükəsizlik divarı və PCAP aləti

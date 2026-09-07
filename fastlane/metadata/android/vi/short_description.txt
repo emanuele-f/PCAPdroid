@@ -1,1 +1,1 @@
-Công cụ giám sát mạng và lưu lượng truy cập không cần root cho thiết bị Android
+Giám sát mạng, tường lửa và kết xuất PCAP cho Android, không cần root

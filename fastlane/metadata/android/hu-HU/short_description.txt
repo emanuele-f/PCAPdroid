@@ -1,1 +1,1 @@
-Root mentes hálózat figyelő és a hálózati forgalom mentő alkalmazás Androidra
+Root mentes hálózatfigyelő, tűzfal és PCAP mentő Androidra

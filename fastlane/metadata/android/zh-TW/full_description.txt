@@ -1,0 +1,21 @@
+<i>PCAPdroid</i> 是一款注重隱私的開源應用程式，可追蹤、分析並封鎖裝置中其他應用程式建立的連線。
+它還支援匯出流量的 PCAP 傾印、檢查 HTTP 請求、解密 TLS 流量等諸多功能。
+
+PCAPdroid 透過模擬 VPN 來實現免 root 擷取網路流量。它不使用遠端 VPN 伺服器，而是在裝置本機處理資料。
+
+<b>主要功能：</b>
+
+* 記錄並分析使用者應用程式和系統應用程式建立的連線
+* 查看每個應用程式傳送和接收的資料量摘要
+* 低耗電量，可全天持續擷取
+* 從 DNS、TLS 和 HTTP 中擷取主機名稱和 IP 位址
+* 將流量記錄為 PCAP 檔案，並附帶額外的應用程式中繼資料
+* 透過 PCAP-over-IP 傳送流量以進行即時分析（如在 Wireshark 中）
+* 解密 HTTPS/TLS 流量、擷取 URL 並儲存 SSLKEYLOGFILE
+* 檢查 HTTP 請求/回應並匯出為 HAR
+* 透過離線資料庫查詢識別遠端伺服器的國家和 ASN
+* 在已 root 的裝置上，可在其他 VPN 應用程式執行時擷取流量
+
+如果您打算使用 PCAPdroid 進行封包分析，請查閱手冊中的<a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>相關章節</a>。
+
+歡迎<a href="https://t.me/PCAPdroid">在 Telegram</a> 或<a href="https://matrix.to/#/#pcapdroid:matrix.org">在 Matrix</a> 上加入 PCAPdroid 國際社群。

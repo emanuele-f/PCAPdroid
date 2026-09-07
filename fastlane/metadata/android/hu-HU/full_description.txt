@@ -1,0 +1,21 @@
+<i>PCAPdroid</i> egy adatvédelembarát, nyílt forráskódú alkalmazás, amely képes nyomon követni, elemezni és blokkolni az eszközön lévő többi alkalmazás által létrehozott kapcsolatokat.
+Lehetővé teszi továbbá a forgalom PCAP-mentésének exportálását, a HTTP-kérések vizsgálatát, a TLS-forgalom visszafejtését és még sok mást.
+
+A PCAPdroid VPN-t szimulál, hogy root nélkül rögzíthesse a hálózati forgalmat. Nem használ távoli VPN-kiszolgálót, az adatokat helyben, az eszközön dolgozza fel.
+
+<b>Fő funkciók:</b>
+
+* Naplózza és elemzi a felhasználói és rendszeralkalmazások által létrehozott kapcsolatokat
+* Összesítést ad arról, hogy az egyes alkalmazások mennyi adatot küldtek és fogadtak
+* Alacsony akkumulátorhasználat az egész napos, folyamatos rögzítéshez
+* Kinyeri a gépneveket és IP-címeket a DNS-, TLS- és HTTP-forgalomból
+* Rögzíti a forgalmat PCAP-fájlokba, további alkalmazás-metaadatokkal
+* Továbbítja a forgalmat PCAP-over-IP protokollon valós idejű elemzéshez (pl. Wireshark)
+* Visszafejti a HTTPS/TLS-forgalmat, kinyeri az URL-eket és menti az SSLKEYLOGFILE-t
+* Megvizsgálja a HTTP-kéréseket és -válaszokat, és HAR formátumba exportálja őket
+* Azonosítja a távoli kiszolgáló országát és ASN-jét offline adatbázis-lekérdezésekkel
+* Rootolt eszközökön akkor is rögzíti a forgalmat, ha más VPN-alkalmazások futnak
+
+Ha csomagelemzésre szeretné használni a PCAPdroidot, tekintse meg a kézikönyv <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>vonatkozó szakaszát</a>.
+
+Csatlakozzon a nemzetközi PCAPdroid közösséghez <a href="https://t.me/PCAPdroid">a Telegramon</a> vagy <a href="https://matrix.to/#/#pcapdroid:matrix.org">a Matrixon</a>.

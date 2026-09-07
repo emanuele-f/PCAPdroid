@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> é um app que respeita sua privacidade, permite rastrear e analisar as conexões feitas pelos apps de seu dispositivo.
-Também permite que você exporte o PCAP dump do tráfego, inspecione HTTP, decodifique o tráfego TLS e muito mais.
+<i>PCAPdroid</i> é um app de código aberto que respeita a privacidade e permite rastrear, analisar e bloquear as conexões feitas pelos outros apps do dispositivo.
+Também pode exportar o PCAP dump do tráfego, inspecionar as requisições HTTP, descriptografar o tráfego TLS e muito mais.
 
 PCAPdroid simula uma conexão VPN a fim de capturar o tráfego da rede sem necessitar de acesso root. Não utiliza nenhum servidor remoto da VPN. Todos os dados são processados localmente no dispositivo.
 
-<b>Funcionalidades:</b>
+<b>Principais funcionalidades:</b>
 
-* Regista e examina conexões feitas pelo usuário e apps do sistema
-* Extrai SNI, consultas do DNS, URLs e endereços IP remotos
-* Inspeciona solicitações e respostas HTTP graças aos decodificadores integrados
-* Inspeciona payload completo de conexões via hexdump/texto
-* Descriptografa o tráfego HTTPS/TLS e exporta o SSLKEYLOGFILE
-* Despeja o tráfego a um arquivo PCAP, pode baixá-lo de um navegador ou transmiti-lo para um receptor remoto para análise em tempo real (p.ex. wireshark)
-* Cria regras para filtrar o bom tráfego e detectar facilmente as anomalias
+* Registra e analisa as conexões feitas pelo usuário e apps do sistema
+* Mostra um resumo de quantos dados cada app enviou e recebeu
+* Baixo consumo de bateria, para uma captura contínua o dia inteiro
+* Extrai hosts e endereços IP de DNS, TLS e HTTP
+* Grava o tráfego em arquivos PCAP, com metadados adicionais dos apps
+* Envia o tráfego via PCAP-over-IP para análise em tempo real (p.ex. no Wireshark)
+* Descriptografa o tráfego HTTPS/TLS, extrai as URLs e salva o SSLKEYLOGFILE
+* Inspeciona as requisições/respostas HTTP e as exporta para HAR
 * Identifica o país e o ASN do servidor remoto via buscas offline de db
 * Em dispositivos com acesso root, pode capturar o tráfego enquanto outros apps da VPN estão em execução
 
 Se você planeja usar o PCAPdroid para realizar análise de pacotes, verifique <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>a seção específica</a> do manual.
 
-Junte-se à comunidade internacional do PCAPdroid no <a href="https://t.me/PCAPdroid">Telegram</a> ou no <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.
+Junte-se à comunidade internacional do PCAPdroid <a href="https://t.me/PCAPdroid">no Telegram</a> ou <a href="https://matrix.to/#/#pcapdroid:matrix.org">no Matrix</a>.

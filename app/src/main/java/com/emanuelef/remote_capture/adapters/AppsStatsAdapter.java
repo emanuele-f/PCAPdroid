@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.adapters;
@@ -59,6 +59,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
     private final Blocklist mBlocklist;
     private final MatchList mWhitelist;
     private final boolean mFirewallAvailable;
+    private boolean mWhitelistEnabled;
     private View.OnClickListener mListener;
     private List<AppStats> mStats;
     private final AppsResolver mApps;
@@ -109,12 +110,11 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
             boolean isGracedApp = mBlocklist.isExemptedApp(stats.getUid());
             boolean isBlockedApp = mBlocklist.matchesApp(stats.getUid());
             boolean isWhitelistedApp = mWhitelist.matchesApp(stats.getUid());
-            boolean isWhitelistEnabled = Prefs.isFirewallEnabled(mContext, mPrefs) && Prefs.isFirewallWhitelistMode(mPrefs);
 
             sent_rcvd.setText(mContext.getString(R.string.rcvd_and_sent, Utils.formatBytes(stats.rcvdBytes), Utils.formatBytes(stats.sentBytes)));
             traffic.setText(Utils.formatBytes(stats.sentBytes + stats.rcvdBytes));
             blockedFlag.setVisibility(isBlockedApp ? View.VISIBLE : View.GONE);
-            whitelistedFlag.setVisibility(isWhitelistEnabled && isWhitelistedApp ? View.VISIBLE : View.GONE);
+            whitelistedFlag.setVisibility(mWhitelistEnabled && isWhitelistedApp ? View.VISIBLE : View.GONE);
             tempUnblocked.setVisibility(isGracedApp ? View.VISIBLE : View.GONE);
         }
     }
@@ -130,6 +130,7 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         mListener = null;
         mStats = new ArrayList<>();
         mFirewallAvailable = Billing.newInstance(context).isFirewallVisible();
+        mWhitelistEnabled = isWhitelistEnabled();
         mSortField = SortField.NAME;
         setHasStableIds(true);
     }
@@ -239,7 +240,12 @@ public class AppsStatsAdapter extends RecyclerView.Adapter<AppsStatsAdapter.View
         });
 
         mStats = stats;
+        mWhitelistEnabled = isWhitelistEnabled();
         notifyDataSetChanged();
+    }
+
+    private boolean isWhitelistEnabled() {
+        return (Prefs.isFirewallEnabled(mContext, mPrefs) && Prefs.isFirewallWhitelistMode(mPrefs));
     }
 
     public SortField getSortField() {

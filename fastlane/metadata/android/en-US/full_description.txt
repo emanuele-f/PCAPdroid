@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> is a privacy-friendly app which lets you track and analyze the connections made by the other apps in your device.
-It also allows you to export a PCAP dump of the traffic, inspect HTTP, decrypt TLS traffic and much more.
+<i>PCAPdroid</i> is a privacy-friendly open source app which can track, analyze and block the connections made by the other apps on the device.
+It can also export a PCAP dump of the traffic, inspect HTTP requests, decrypt TLS traffic and much more.
 
 PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server, instead data is processed locally on the device.
 
-<b>Features:</b>
+<b>Main features:</b>
 
-* Log and examine the connections made by user and system apps
-* Extract the SNI, DNS query, HTTP URL and the remote IP address
-* Inspect HTTP requests and replies thanks to the built-in decoders
-* Inspect the full connections payload as hexdump/text
-* Decrypt the HTTPS/TLS traffic and export the SSLKEYLOGFILE
-* Dump the traffic to a PCAP file, download it from a browser, or stream it to a remote receiver for real-time analysis (e.g. Wireshark)
-* Create rules to filter out the good traffic and easily spot anomalies
-* Identify the country and ASN of remote server via offline DB lookups
+* Log and analyze the connections made by user and system apps
+* Get a summary of how much data each app sent and received
+* Low battery usage for continuous, all-day capture
+* Extract hosts and IP addresses from DNS, TLS and HTTP
+* Record the traffic to PCAP files with additional app metadata
+* Send traffic via PCAP-over-IP for real-time analysis (e.g. on Wireshark)
+* Decrypt the HTTPS/TLS traffic, extract the URLs and save the SSLKEYLOGFILE
+* Inspect the HTTP requests/replies and export them to HAR
+* Identify the country and ASN of the remote server via offline DB lookups
 * On rooted devices, capture the traffic while other VPN apps are running
 
-If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
+If you plan to use PCAPdroid to perform packet analysis, check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
 
-Join the PCAPdroid international community on <a href="https://t.me/PCAPdroid">Telegram</a> or on <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a>.
+Join the international PCAPdroid community <a href="https://t.me/PCAPdroid">on Telegram</a> or <a href="https://matrix.to/#/#pcapdroid:matrix.org">on Matrix</a>.

@@ -1,24 +1,25 @@
 # PCAPdroid
 
-PCAPdroid is a privacy-friendly open source app which lets you track, analyze and block the connections made by the other apps in your device. It also allows you to export a PCAP dump of the traffic, inspect HTTP, decrypt TLS traffic and much more!
+PCAPdroid is a privacy-friendly open source app which can track, analyze and block the connections made by the other apps on the device. It can also export a PCAP dump of the traffic, inspect HTTP requests, decrypt TLS traffic and much more.
 
 PCAPdroid simulates a VPN in order to capture the network traffic without root. It does not use a remote VPN server, instead data is processed locally on the device.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="190" />
-<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="190" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="190" />
+<img src="https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="190" />
 </p>
 
-Features:
+Main features:
 
-- Log and examine the connections made by user and system apps
-- Extract the SNI, DNS query, HTTP URL and the remote IP address
-- Inspect HTTP requests and replies thanks to the built-in decoders
-- Inspect the full connections payload as hexdump/text
-- [Decrypt the HTTPS/TLS traffic](https://emanuele-f.github.io/PCAPdroid/tls_decryption) and export the SSLKEYLOGFILE
-- Dump the traffic to a PCAP file, download it from a browser, or stream it to a remote receiver for real-time analysis (e.g. Wireshark)
-- Create rules to filter out the good traffic and easily spot anomalies
-- Identify the country and ASN of remote server via offline DB lookups
+- Log and analyze the connections made by user and system apps
+- Get a summary of how much data each app sent and received
+- Low battery usage for continuous, all-day capture
+- Extract hosts and IP addresses from DNS, TLS and HTTP
+- Record the traffic to PCAP files with additional app metadata
+- Send traffic via PCAP-over-IP for real-time analysis (e.g. on Wireshark)
+- Decrypt the HTTPS/TLS traffic, extract the URLs and save the SSLKEYLOGFILE
+- Inspect the HTTP requests/replies and export them to HAR
+- Identify the country and ASN of the remote server via offline DB lookups
 - On rooted devices, capture the traffic while other VPN apps are running
 
 Paid features:
@@ -27,7 +28,7 @@ Paid features:
 - [Malware detection](https://emanuele-f.github.io/PCAPdroid/paid_features#52-malware-detection): detect malicious connections by using third-party blacklists
 - [PCAPng format](https://emanuele-f.github.io/PCAPdroid/paid_features#53-pcapng-format): makes it easier to export and analyze decrypted traffic
 
-If you plan to use PCAPdroid to perform packet analysis, please check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
+If you plan to use PCAPdroid to perform packet analysis, check out <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>the specific section</a> of the manual.
 
 <a href="https://f-droid.org/packages/com.emanuelef.remote_capture">
     <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"

@@ -1,1 +1,1 @@
-Supervise y capture el tráfico de dispositivos Android no rooteados
+Monitor de red, cortafuegos y volcado PCAP para Android, sin root

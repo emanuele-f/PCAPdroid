@@ -1,1 +1,1 @@
-Monitora e cattura il traffico di dispositivi Android senza root
+Monitor di rete, firewall e dump PCAP per Android, senza root

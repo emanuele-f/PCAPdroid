@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments.mitmwizard;
@@ -45,12 +45,14 @@ import com.emanuelef.remote_capture.MitmAddon;
 import com.pcapdroid.mitm.MitmAPI;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 public class InstallCertificate extends StepFragment implements MitmListener {
     private static final String TAG = "InstallCertificate";
+    private static final String CA_PEM_KEY = "ca_pem";
+    private static final String FALLBACK_EXPORT_KEY = "fallback_export";
     private MitmAddon mAddon;
     private String mCaPem;
     private X509Certificate mCaCert;
@@ -64,6 +66,14 @@ public class InstallCertificate extends StepFragment implements MitmListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if(savedInstanceState != null) {
+            mFallbackExport = savedInstanceState.getBoolean(FALLBACK_EXPORT_KEY);
+            mCaPem = savedInstanceState.getString(CA_PEM_KEY);
+            if(mCaPem != null)
+                mCaCert = Utils.x509FromPem(mCaPem);
+        }
+
         mStepLabel.setText(R.string.checking_the_certificate);
         mStepButton.setText(canInstallCertViaIntent() ? R.string.install_action : R.string.export_action);
         mStepButton.setEnabled(false);
@@ -78,6 +88,15 @@ public class InstallCertificate extends StepFragment implements MitmListener {
                 })
                 .show());
         mAddon = new MitmAddon(requireContext(), this);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Store the certificate into the saved state to prevent a null PEM on activity re-creation
+        outState.putString(CA_PEM_KEY, mCaPem);
+        outState.putBoolean(FALLBACK_EXPORT_KEY, mFallbackExport);
     }
 
     @Override
@@ -169,17 +188,28 @@ public class InstallCertificate extends StepFragment implements MitmListener {
         if((result.getResultCode() == Activity.RESULT_OK) && (result.getData() != null)) {
             Context ctx = requireContext();
             Uri cert_uri = result.getData().getData();
+
+            if(mCaPem == null) {
+                Log.e(TAG, "Certificate not available, cannot export");
+                Utils.showToastLong(ctx, R.string.export_failed);
+                return;
+            }
+
             boolean written = false;
 
-            try(PrintWriter writer = new PrintWriter(ctx.getContentResolver().openOutputStream(cert_uri, "rwt"))) {
-                writer.print(mCaPem);
-                written = true;
+            try(OutputStream out = ctx.getContentResolver().openOutputStream(cert_uri, "rwt")) {
+                if(out != null) {
+                    out.write(mCaPem.getBytes(StandardCharsets.UTF_8));
+                    written = true;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             if(written)
                 Utils.showToastLong(ctx, R.string.cert_exported_now_installed);
+            else
+                Utils.showToastLong(ctx, R.string.export_failed);
         }
     }
 

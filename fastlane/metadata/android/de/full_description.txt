@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> ist eine datenschutzfreundliche App, mit der Sie die von anderen Apps auf Ihrem Gerät hergestellten Verbindungen verfolgen und analysieren können.
-Es ermöglicht Ihnen auch, einen PCAP-Dump des Datenverkehrs zu exportieren, HTTP zu untersuchen, TLS-Datenverkehr zu entschlüsseln und vieles mehr.
+<i>PCAPdroid</i> ist eine datenschutzfreundliche Open-Source-App, mit der sich die von anderen Apps auf dem Gerät hergestellten Verbindungen verfolgen, analysieren und blockieren lassen.
+Sie kann außerdem einen PCAP-Dump des Datenverkehrs exportieren, HTTP-Anfragen untersuchen, TLS-Datenverkehr entschlüsseln und vieles mehr.
 
 PCAPdroid simuliert ein VPN, um den Netzwerkverkehr ohne Root abzufangen. Es wird kein Remote-VPN-Server verwendet, sondern die Daten werden lokal auf dem Gerät verarbeitet.
 
-<b>Eigenschaften:</b>
+<b>Hauptfunktionen:</b>
 
-* Protokollieren und untersuchen Sie die Verbindungen, die von Benutzer- und System-Apps hergestellt wurden
-* Extrahieren Sie SNI, DNS-Abfrage, HTTP-URL und die Remote-IP-Adresse
-* Untersuchen Sie HTTP-Anforderungen und -Antworten dank der eingebauten Decoder
-* Überprüfen Sie die vollständige Verbindungsnutzlast als Hexdump/Text
-* Entschlüsseln Sie den HTTPS/TLS-Verkehr und exportieren Sie die SSLKEYLOGFILE
-* Dump den Datenverkehr in eine PCAP-Datei, lade ihn von einem Browser herunter oder streame ihn zur Echtzeitanalyse an einen entfernten Empfänger (z. B. Wireshark)
-* Erstellen Sie Regeln, um den guten Verkehr herauszufiltern und Anomalien leicht zu erkennen
+* Protokollieren und analysieren Sie die von Benutzer- und System-Apps hergestellten Verbindungen
+* Erhalten Sie eine Übersicht darüber, wie viele Daten jede App gesendet und empfangen hat
+* Geringer Akkuverbrauch für eine durchgehende Aufzeichnung über den ganzen Tag
+* Extrahieren Sie Hosts und IP-Adressen aus DNS, TLS und HTTP
+* Zeichnen Sie den Datenverkehr in PCAP-Dateien mit zusätzlichen App-Metadaten auf
+* Senden Sie den Datenverkehr per PCAP-over-IP zur Echtzeitanalyse (z. B. in Wireshark)
+* Entschlüsseln Sie den HTTPS/TLS-Verkehr, extrahieren Sie die URLs und speichern Sie die SSLKEYLOGFILE
+* Untersuchen Sie die HTTP-Anfragen/-Antworten und exportieren Sie sie nach HAR
 * Identifizieren Sie das Land und die ASN des Remote-Servers über Offline-DB-Lookups
 * Erfassen Sie auf gerooteten Geräten den Datenverkehr, während andere VPN-Apps ausgeführt werden
 
-Wenn Sie planen, PCAPdroid zur Durchführung von Paketanalysen zu verwenden, lesen Sie bitte den <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>spezifischen Abschnitt</a> im Handbuch.
+Wenn Sie planen, PCAPdroid zur Durchführung von Paketanalysen zu verwenden, lesen Sie den <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>spezifischen Abschnitt</a> im Handbuch.
 
-Treten Sie der internationalen PCAPdroid-Community auf <a href="https://t.me/PCAPdroid">Telegram</a> oder auf <a href="https://matrix.to/#/#pcapdroid:matrix.org bei ">Matrix</a>.
+Treten Sie der internationalen PCAPdroid-Community <a href="https://t.me/PCAPdroid">auf Telegram</a> oder <a href="https://matrix.to/#/#pcapdroid:matrix.org">auf Matrix</a> bei.

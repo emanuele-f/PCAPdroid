@@ -1,1 +1,1 @@
-No-root network monitor and traffic dump tool for Android devices
+No-root network monitor, firewall and PCAP dumper for Android

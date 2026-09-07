@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> è un'app privacy-friendly che ti permette di tracciare e analizzare le connessioni di rete effetuate dalle app nel tuo dispositivo.
-Ti permette inoltre di salvare il traffico in formato PCAP, ispezionare l'HTTP, decritta il traffico TLS e molto altro.
+<i>PCAPdroid</i> è un'app open source privacy-friendly che permette di tracciare, analizzare e bloccare le connessioni effettuate dalle altre app sul dispositivo.
+Può inoltre esportare un dump PCAP del traffico, ispezionare le richieste HTTP, decrittare il traffico TLS e molto altro.
 
-Per funzionare senza root, PCAPdroid simula una connessione VPN. Non viene usato alcun server di VPN remoto. Al contrario, il traffico è processato localmente al dispositivo.
+Per funzionare senza root, PCAPdroid simula una connessione VPN. Non viene usato alcun server di VPN remoto. Al contrario, il traffico è processato localmente sul dispositivo.
 
-<b>Funzionalità:</b>
+<b>Funzionalità principali:</b>
 
-* Registra ed esamina le connessioni effuttuate dalle app utente e di sistema
-* Estrae SNI, query DNS, URL HTTP e l'indirizzo IP del server remoto
-* Ispeziona le richieste e le risposte HTTP grazie ai decodificatori integrati
-* Ispeziona l'intero contenuto delle connessioni di rete, in formato esadecimale/di testo
-* Decritta il traffico HTTPS/TLS ed esporta lo SSLKEYLOGFILE
-* Esporta il traffico in un file PCAP, scaricalo tramite un browser o effettuane lo streaming a un collettore remoto per l'analisi in tempo reale (es. Wireshark)
-* Crea regole per filtrare il traffico buono e rilevare in maniera semplice possibili anomalie
-* Identifica la nazione e l'ASN dei server remoti tramite ricerche in database locali
+* Registra e analizza le connessioni effettuate dalle app utente e di sistema
+* Ottieni un riepilogo di quanti dati ogni app ha inviato e ricevuto
+* Basso consumo di batteria, per una cattura continua per tutto il giorno
+* Estrai host e indirizzi IP da DNS, TLS e HTTP
+* Registra il traffico in file PCAP, con metadati aggiuntivi sulle app
+* Invia il traffico tramite PCAP-over-IP per l'analisi in tempo reale (es. su Wireshark)
+* Decritta il traffico HTTPS/TLS, estrai gli URL e salva lo SSLKEYLOGFILE
+* Ispeziona le richieste/risposte HTTP ed esportale in formato HAR
+* Identifica la nazione e l'ASN del server remoto tramite ricerche in database offline
 * Su dispositivi con root, cattura il traffico mentre altre app di VPN sono in esecuzione
 
 Se utilizzi PCAPdroid per effettuare l'analisi dei pacchetti di rete, fai riferimento <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>alla sezione specifica</a> del manuale.
 
-Unisciti alla community internazionale di PCAPdroid su <a href="https://t.me/PCAPdroid">telegram</a> o su <a href="https://matrix.to/#/#pcapdroid:matrix.org">matrix</a>.
+Unisciti alla community internazionale di PCAPdroid <a href="https://t.me/PCAPdroid">su Telegram</a> o <a href="https://matrix.to/#/#pcapdroid:matrix.org">su Matrix</a>.

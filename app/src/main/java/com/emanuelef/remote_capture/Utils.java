@@ -1224,8 +1224,8 @@ public class Utils {
                 try {
                     // Necessary otherwise the connection will stay open
                     con.setRequestProperty("Connection", "Close");
-                    con.setConnectTimeout(5000);
-                    con.setReadTimeout(5000);
+                    con.setConnectTimeout(15000);
+                    con.setReadTimeout(15000);
 
                     try(InputStream in = new BufferedInputStream(con.getInputStream())) {
                         byte[] bytesIn = new byte[4096];
@@ -1360,6 +1360,7 @@ public class Utils {
             sha1.update(signatures[0].toByteArray());
 
             // keytool -printcert -jarfile file.apk
+            // see also tools/verify_apk_signature.sh
             String hex = byteArrayToHex(sha1.digest(), sha1.getDigestLength());
             switch(hex) {
                 case "511140392BFF2CFB4BD825895DD6510CE1807F6D":

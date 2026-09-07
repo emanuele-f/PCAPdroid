@@ -1,1 +1,1 @@
-Ferramenta de monitoramento e despejo de tráfego para dispositivos Android
+Monitor de rede, firewall e despejo PCAP para Android, sem root

@@ -238,7 +238,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     if(!settings.decryption_rules_json.isBlank())
                         PCAPdroid.getInstance().getDecryptionList().reload();
                 } else {
-                    if ((Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+                    if ((settings != null) && (settings.dump_mode == Prefs.DumpMode.PCAP_FILE)) {
                         showPcapActionDialog();
 
                         // will export the keylogfile after saving/sharing pcap
@@ -298,8 +298,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mIab.connectBilling();
 
         if(mNavView != null) {
+            boolean is_running = CaptureService.isServiceActive();
+            boolean tls_decryption = is_running ? CaptureService.isDecryptingTLS() : Prefs.getTlsDecryptionEnabled(mPrefs);
+            boolean root_capture = is_running ? CaptureService.isCapturingAsRoot() : Prefs.isRootCaptureEnabled(mPrefs);
+
             Menu navMenu = mNavView.getMenu();
-            navMenu.findItem(R.id.tls_decryption).setVisible(Prefs.getTlsDecryptionEnabled(mPrefs) && !Prefs.isRootCaptureEnabled(mPrefs));
+            navMenu.findItem(R.id.tls_decryption).setVisible(tls_decryption && !root_capture);
         }
 
         checkPaidDrawerEntries();

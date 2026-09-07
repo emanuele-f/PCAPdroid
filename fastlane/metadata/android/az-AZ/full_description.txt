@@ -1,20 +1,21 @@
-<i>PCAPdroid</i> cihazınızdakı digər tətbiqlərin qurduğu əlaqələri izləməyə və təhlil etməyə imkan verən məxfiliyə hörmətlə yanaşan tətbiqdir.
-O, həmçinin trafikin PCAP dempini ixrac etməyə, HTTP-ni yoxlamağa, TLS trafikini deşifrə etməyə və daha çox şeyə imkan verir.
+<i>PCAPdroid</i> cihazdakı digər tətbiqlərin qurduğu əlaqələri izləməyə, təhlil etməyə və bloklamağa imkan verən, məxfiliyə hörmətlə yanaşan açıq mənbəli tətbiqdir.
+Bundan əlavə, trafikin PCAP dempini ixrac edə, HTTP sorğularını yoxlaya, TLS trafikini deşifrə edə və daha çoxunu edə bilər.
 
 PCAPdroid şəbəkə trafikini root olmadan tutmaq üçün VPN simulyasiya edir. O, uzaq VPN serverindən istifadə etmir; bunun əvəzinə məlumatlar cihazda lokal olaraq emal olunur.
 
-<b>Xüsusiyyətlər:</b>
+<b>Əsas xüsusiyyətlər:</b>
 
-* İstifadəçi və sistem tətbiqlərinin qurduğu əlaqələri qeydə alın və nəzərdən keçirin
-* SNI, DNS sorğusu, HTTP URL və uzaq IP ünvanını çıxarın
-* Daxili dekoderlər sayəsində HTTP sorğu və cavablarını yoxlayın
-* Əlaqələrin tam yükünü heksdemp/mətn şəklində yoxlayın
-* HTTPS/TLS trafikini deşifrə edin və SSLKEYLOGFILE ixrac edin
-* Trafiki PCAP faylına yazın, brauzerdən endirin və ya real vaxt təhlili üçün uzaq qəbuledici cihaza ötürün (məsələn, Wireshark)
-* Yaxşı trafiki süzgəcdən keçirmək və anomaliyaları asanlıqla aşkar etmək üçün qaydalar yaradın
+* İstifadəçi və sistem tətbiqlərinin qurduğu əlaqələri qeydə alın və təhlil edin
+* Hər bir tətbiqin nə qədər məlumat göndərdiyini və aldığını icmal şəklində görün
+* Bütün gün ərzində fasiləsiz tutma üçün aşağı batareya sərfiyyatı
+* DNS, TLS və HTTP-dən hostları və IP ünvanlarını çıxarın
+* Trafiki əlavə tətbiq metaməlumatları ilə birlikdə PCAP fayllarına yazın
+* Real vaxt təhlili üçün trafiki PCAP-over-IP vasitəsilə göndərin (məsələn, Wireshark-a)
+* HTTPS/TLS trafikini deşifrə edin, URL-ləri çıxarın və SSLKEYLOGFILE saxlayın
+* HTTP sorğu və cavablarını yoxlayın və onları HAR formatına ixrac edin
 * Oflayn verilənlər bazası axtarışları vasitəsilə uzaq serverin ölkəsini və ASN-ni müəyyən edin
 * Rootlanmış cihazlarda digər VPN tətbiqləri işləyərkən trafiki tutun
 
-PCAPdroid-dan paket təhlili aparmaq üçün istifadə etməyi planlaşdırırsınızsa, lütfən, təlimatın <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>müvafiq bölməsinə</a> baxın.
+PCAPdroid-dan paket təhlili aparmaq üçün istifadə etməyi planlaşdırırsınızsa, təlimatın <a href='https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis'>müvafiq bölməsinə</a> baxın.
 
-PCAPdroid beynəlxalq icmasına <a href="https://t.me/PCAPdroid">Telegram</a> və ya <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix</a> vasitəsilə qoşulun.
+PCAPdroid beynəlxalq icmasına <a href="https://t.me/PCAPdroid">Telegram vasitəsilə</a> və ya <a href="https://matrix.to/#/#pcapdroid:matrix.org">Matrix vasitəsilə</a> qoşulun.

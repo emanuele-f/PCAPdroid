@@ -1,1 +1,1 @@
-适用于 Android 设备的免 root 网络监控与流量转储工具
+适用于 Android 的免 root 网络监控、防火墙与 PCAP 抓包工具
