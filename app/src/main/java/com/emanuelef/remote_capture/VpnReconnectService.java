@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -188,7 +188,12 @@ public class VpnReconnectService extends Service {
                         unregisterNetworkCallback();
 
                         Context ctx = VpnReconnectService.this;
-                        CaptureSettings settings = new CaptureSettings(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+
+                        // reuse the settings of the interrupted capture, as they may have been
+                        // adjusted on startup (e.g. root_capture is forced off with always-on VPN)
+                        CaptureSettings settings = CaptureService.getCaptureSettings();
+                        if (settings == null)
+                            settings = new CaptureSettings(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
 
                         CaptureHelper helper = new CaptureHelper(ctx);
                         helper.setListener(success -> stopService());

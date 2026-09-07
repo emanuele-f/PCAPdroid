@@ -248,6 +248,7 @@ public class CaptureService extends VpnService implements Runnable {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         mStopping = false;
+        mRevoked = false;
 
         // startForeground must always be called since the Service is being started with
         // ContextCompat.startForegroundService.
@@ -268,6 +269,10 @@ public class CaptureService extends VpnService implements Runnable {
             return abortStart();
         }
 
+        // onDestroy is not necessarily invoked between two captures on the same service instance,
+        // so a receiver registered by the previous capture may still be around
+        unregisterNewAppsInstallReceiver();
+
         if (VpnReconnectService.isAvailable())
             VpnReconnectService.stopService();
 
@@ -281,7 +286,9 @@ public class CaptureService extends VpnService implements Runnable {
         //  adb shell ps | grep remote_capture | awk '{print $2}' | xargs adb shell run-as com.emanuelef.remote_capture.debug kill
         CaptureSettings settings = ((intent == null) ? null : Utils.getSerializableExtra(intent, "settings", CaptureSettings.class));
         if(settings == null) {
-            // Use the settings from mPrefs
+            // Use the settings from mPrefs. They must be re-read here, as onStartCommand may be
+            // invoked again on the same service instance, after a previous capture has terminated.
+            mSettings = new CaptureSettings(this, mPrefs);
 
             // An Intent without extras is delivered in case of always on VPN
             // https://developer.android.com/guide/topics/connectivity/vpn#always-on
@@ -663,10 +670,7 @@ public class CaptureService extends VpnService implements Runnable {
         if(mBlacklistsUpdateThread != null)
             mBlacklistsUpdateThread.interrupt();
 
-        if(mNewAppsInstallReceiver != null) {
-            unregisterReceiver(mNewAppsInstallReceiver);
-            mNewAppsInstallReceiver = null;
-        }
+        unregisterNewAppsInstallReceiver();
 
         super.onDestroy();
     }
@@ -851,6 +855,13 @@ public class CaptureService extends VpnService implements Runnable {
             }
 
             mNetworkCallback = null;
+        }
+    }
+
+    private void unregisterNewAppsInstallReceiver() {
+        if(mNewAppsInstallReceiver != null) {
+            unregisterReceiver(mNewAppsInstallReceiver);
+            mNewAppsInstallReceiver = null;
         }
     }
 
@@ -1114,6 +1125,11 @@ public class CaptureService extends VpnService implements Runnable {
     public static boolean isDecryptingTLS() {
         return((INSTANCE != null) &&
                 (INSTANCE.isTlsDecryptionEnabled() == 1));
+    }
+
+    public static boolean isMalwareDetectionEnabled() {
+        return((INSTANCE != null) &&
+                (INSTANCE.mMalwareDetectionEnabled));
     }
 
     public static boolean isReadingFromPcapFile() {
@@ -1639,7 +1655,10 @@ public class CaptureService extends VpnService implements Runnable {
             reloadBlocklist();
             reloadFirewallWhitelist();
         } else if (cur_status == ServiceStatus.STOPPED) {
-            if (mRevoked && Prefs.restartOnDisconnect(mPrefs) && !mIsAlwaysOnVPN && (isVpnCapture() == 1)) {
+            // NOTE: an API capture is not restarted, as the starter app is notified of the stop
+            // and decides itself when to capture again
+            if (mRevoked && Prefs.restartOnDisconnect(mPrefs) && !mIsAlwaysOnVPN
+                    && !mSettings.api_capture && (isVpnCapture() == 1)) {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                     Log.i(TAG, "VPN disconnected, starting reconnect service");
 
