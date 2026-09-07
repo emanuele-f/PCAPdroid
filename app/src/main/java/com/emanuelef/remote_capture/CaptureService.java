@@ -152,6 +152,7 @@ public class CaptureService extends VpnService implements Runnable {
     private Geolocation mNativeGeolocation;   // only native
     private boolean mMalwareDetectionEnabled;
     private boolean mBlacklistsUpdateRequested;
+    private boolean mFirewallSupported;
     private boolean mFirewallEnabled;
     private boolean mBlockPrivateDns;
     private boolean mDnsEncrypted;
@@ -470,7 +471,13 @@ public class CaptureService extends VpnService implements Runnable {
             mAppFilterUids = new int[0];
 
         mMalwareDetectionEnabled = !mSettings.readFromPcap() && Prefs.isMalwareDetectionEnabled(this, mPrefs);
-        mFirewallEnabled = !mSettings.readFromPcap() && Prefs.isFirewallEnabled(this, mPrefs);
+
+        // NOTE: Prefs.isFirewallEnabled cannot be used here as, until the capture thread is
+        // started, it determines the capture mode from the persistent preferences rather than
+        // from the current settings of this capture
+        mFirewallSupported = !mSettings.readFromPcap() && !mSettings.root_capture
+                && mBilling.isPurchased(Billing.FIREWALL_SKU);
+        mFirewallEnabled = mFirewallSupported && mPrefs.getBoolean(Prefs.PREF_FIREWALL, true);
 
         if(!mSettings.root_capture && !mSettings.readFromPcap()) {
             Log.i(TAG, "Using DNS server " + dns_server);
@@ -1778,7 +1785,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reloadBlocklist() {
-        if(!mBilling.isFirewallVisible())
+        if(!mFirewallSupported)
             return;
 
         Log.i(TAG, "reloading firewall blocklist");
@@ -1786,7 +1793,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public void reloadFirewallWhitelist() {
-        if(!mBilling.isFirewallVisible())
+        if(!mFirewallSupported)
             return;
 
         Log.i(TAG, "reloading firewall whitelist");
