@@ -8,8 +8,8 @@ android {
         minSdkVersion 23
         compileSdk 37
         targetSdk 37
-        versionCode 92
-        versionName "2.0.0"
+        versionCode 93
+        versionName "2.0.1"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
