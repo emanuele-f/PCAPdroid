@@ -2,6 +2,14 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [2.0.1] - 2026-09-09
+- Update maltrail malware blacklist URL
+- Bump mitm addon to 2.4, fixes decryption with root
+- Fix null mitm certificate after export on some devices (#887)
+- Fix firewall not working with always-on VPN when root capture is enabled
+- Fix other inconsistencies when running via always-on VPN / from Intent
+- Fix possible crash in ConnectionsFragment
+
 ## [2.0.0] - 2026-08-19
 - PCAPdroid now requires Android 23+
 - The mitm addon now requires Android 24+ and it drops support for the x86 and armeabi-v7a ABIs
