@@ -51,7 +51,7 @@ import java.lang.ref.WeakReference;
 public class MitmAddon {
     public static final long PACKAGE_VERSION_CODE = 26;
     public static final String PACKAGE_VERSION_NAME = "2.4";
-    public static final String REPOSITORY = "https://github.com/emanuele-f/PCAPdroid-mitm";
+    public static final String REPOSITORY = "";
     private static final String TAG = "MitmAddon";
     private final Context mContext;
     private final MitmListener mReceiver;
@@ -169,8 +169,7 @@ public class MitmAddon {
     }
 
     public static String getGithubReleaseUrl(String version) {
-        return REPOSITORY + "/releases/download/v" +
-                version + "/PCAPdroid-mitm_v" + version + "_" + Build.SUPPORTED_ABIS[0] + ".apk";
+        return "";
     }
 
     // The mitm addon is only built for Android 7+ and the x86_64/arm64-v8a ABIs
