@@ -582,4 +582,5 @@
     <string name="merge_action">இணைக்கவும்</string>
     <string name="replace_action">மாற்றவும்</string>
     <string name="keep_current_action">தற்போதையதை வைத்திருங்கள்</string>
+    <string name="mitm_addon_not_available">TLS மறைகுறியாக்கத்திற்கு PCAPdroid mitm addon தேவை, இது இந்த பதிப்பில் கிடைக்கவில்லை</string>
 </resources>

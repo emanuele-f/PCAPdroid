@@ -603,4 +603,5 @@
     <string name="merge_action">دمج</string>
     <string name="replace_action">استبدال</string>
     <string name="keep_current_action">إبقاء الحالية</string>
+    <string name="mitm_addon_not_available">فك تعمية TLS يتطلب إضافة mitm الخاصة بـ PCAPdroid، وهي غير متوفرة في هذا الإصدار</string>
 </resources>

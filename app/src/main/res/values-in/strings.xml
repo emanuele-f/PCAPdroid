@@ -607,4 +607,5 @@
     <string name="merge_action">Gabungkan</string>
     <string name="replace_action">Ganti</string>
     <string name="keep_current_action">Pertahankan yang ada</string>
+    <string name="mitm_addon_not_available">Dekripsi TLS memerlukan addon mitm PCAPdroid, yang tidak tersedia di build ini</string>
 </resources>

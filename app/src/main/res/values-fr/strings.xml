@@ -594,4 +594,5 @@
     <string name="merge_action">Fusionner</string>
     <string name="replace_action">Remplacer</string>
     <string name="keep_current_action">Garder les actuelles</string>
+    <string name="mitm_addon_not_available">Le décryptage TLS nécessite le greffon mitm de PCAPdroid, qui n\'est pas disponible dans cette version</string>
 </resources>

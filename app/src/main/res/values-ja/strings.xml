@@ -589,4 +589,5 @@
     <string name="merge_action">統合</string>
     <string name="replace_action">置き換え</string>
     <string name="keep_current_action">現在のものを保持</string>
+    <string name="mitm_addon_not_available">TLS 復号には PCAPdroid mitm アドオンが必要ですが、このビルドでは利用できません</string>
 </resources>

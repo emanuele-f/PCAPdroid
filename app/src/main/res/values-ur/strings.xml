@@ -589,4 +589,5 @@
     <string name="merge_action">ضم کریں</string>
     <string name="replace_action">تبدیل کریں</string>
     <string name="keep_current_action">موجودہ رکھیں</string>
+    <string name="mitm_addon_not_available">TLS ڈکرپشن کے لیے PCAPdroid mitm ایڈآن درکار ہے، جو اس بلڈ میں دستیاب نہیں ہے</string>
 </resources>

@@ -590,4 +590,5 @@
     <string name="merge_action">병합</string>
     <string name="replace_action">바꾸기</string>
     <string name="keep_current_action">현재 유지</string>
+    <string name="mitm_addon_not_available">TLS 복호화에는 PCAPdroid mitm 애드온이 필요하지만, 이 빌드에서는 사용할 수 없습니다</string>
 </resources>

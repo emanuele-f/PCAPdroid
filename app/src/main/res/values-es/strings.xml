@@ -607,4 +607,5 @@
     <string name="merge_action">Combinar</string>
     <string name="replace_action">Reemplazar</string>
     <string name="keep_current_action">Mantener las actuales</string>
+    <string name="mitm_addon_not_available">El descifrado TLS requiere el complemento mitm de PCAPdroid, que no está disponible en esta versión</string>
 </resources>

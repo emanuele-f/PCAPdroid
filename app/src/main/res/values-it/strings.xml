@@ -606,4 +606,5 @@
     <string name="merge_action">Unisci</string>
     <string name="replace_action">Sostituisci</string>
     <string name="keep_current_action">Mantieni attuali</string>
+    <string name="mitm_addon_not_available">La decrittazione TLS richiede l\'addon mitm di PCAPdroid, che non è disponibile in questa build</string>
 </resources>

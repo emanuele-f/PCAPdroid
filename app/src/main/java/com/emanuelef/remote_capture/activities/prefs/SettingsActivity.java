@@ -373,7 +373,11 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             mAutoBlockPrivateDNS = requirePreference("auto_block_private_dns");
 
             mTlsDecryption = requirePreference(Prefs.PREF_TLS_DECRYPTION_KEY);
-            if(!MitmAddon.isSupportedTarget()) {
+            if(Utils.isPlaystore() && !MitmAddon.isInstalled(requireContext())) {
+                // the addon cannot be installed from the app, see InstallAddon
+                mTlsDecryption.setChecked(false);
+                mTlsDecryption.setVisible(false);
+            } else if(!MitmAddon.isSupportedTarget()) {
                 // The mitm addon dropped support for armv7/x86 and Android < 7
                 mTlsDecryption.setChecked(false);
                 mTlsDecryption.setEnabled(false);

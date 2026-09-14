@@ -582,4 +582,5 @@
     <string name="merge_action">Birləşdir</string>
     <string name="replace_action">Əvəz et</string>
     <string name="keep_current_action">Mövcudu saxla</string>
+    <string name="mitm_addon_not_available">TLS deşifrələməsi PCAPdroid mitm əlavəsini tələb edir, lakin bu əlavə bu versiyada mövcud deyil</string>
 </resources>
