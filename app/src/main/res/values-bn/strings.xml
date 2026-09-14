@@ -589,4 +589,5 @@
     <string name="merge_action">মার্জ করুন</string>
     <string name="replace_action">প্রতিস্থাপন করুন</string>
     <string name="keep_current_action">বর্তমানটি রাখুন</string>
+    <string name="mitm_addon_not_available">TLS ডিক্রিপশনের জন্য PCAPdroid mitm অ্যাডঅন প্রয়োজন, যা এই বিল্ডে উপলব্ধ নয়</string>
 </resources>

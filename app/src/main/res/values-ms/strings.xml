@@ -589,4 +589,5 @@
     <string name="merge_action">Gabungkan</string>
     <string name="replace_action">Ganti</string>
     <string name="keep_current_action">Kekalkan semasa</string>
+    <string name="mitm_addon_not_available">Penyahsulitan TLS memerlukan tambahan mitm PCAPdroid, yang tidak tersedia dalam binaan ini</string>
 </resources>

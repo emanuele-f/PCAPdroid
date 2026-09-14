@@ -589,4 +589,5 @@
     <string name="merge_action">Hợp nhất</string>
     <string name="replace_action">Thay thế</string>
     <string name="keep_current_action">Giữ danh sách hiện tại</string>
+    <string name="mitm_addon_not_available">Giải mã TLS yêu cầu addon mitm của PCAPdroid, addon này không có sẵn trong bản dựng này</string>
 </resources>

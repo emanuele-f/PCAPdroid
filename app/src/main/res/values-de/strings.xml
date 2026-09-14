@@ -605,4 +605,5 @@
     <string name="merge_action">Zusammenführen</string>
     <string name="replace_action">Ersetzen</string>
     <string name="keep_current_action">Aktuelle behalten</string>
+    <string name="mitm_addon_not_available">Die TLS-Entschlüsselung erfordert das PCAPdroid mitm Addon, das in diesem Build nicht verfügbar ist</string>
 </resources>

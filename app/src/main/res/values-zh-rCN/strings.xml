@@ -607,4 +607,5 @@
     <string name="merge_action">合并</string>
     <string name="replace_action">替换</string>
     <string name="keep_current_action">保留当前</string>
+    <string name="mitm_addon_not_available">TLS 解密需要 PCAPdroid mitm 附加组件，但此版本中不可用</string>
 </resources>

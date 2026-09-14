@@ -607,4 +607,5 @@
     <string name="merge_action">Birleştir</string>
     <string name="replace_action">Değiştir</string>
     <string name="keep_current_action">Mevcutları koru</string>
+    <string name="mitm_addon_not_available">TLS şifre çözme, bu sürümde bulunmayan PCAPdroid ortadaki adam eklentisini gerektirir</string>
 </resources>

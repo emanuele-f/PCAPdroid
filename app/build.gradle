@@ -16,7 +16,7 @@ android {
         minSdkVersion 23
         compileSdk 37
         targetSdk 37
-        versionCode 93
+        versionCode 94
         versionName "2.0.1"
 
         // only include full translations

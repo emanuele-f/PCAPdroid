@@ -598,4 +598,5 @@
     <string name="merge_action">Объединить</string>
     <string name="replace_action">Заменить</string>
     <string name="keep_current_action">Оставить текущие</string>
+    <string name="mitm_addon_not_available">Для дешифрования TLS требуется mitm дополнение PCAPdroid, которое недоступно в этой сборке</string>
 </resources>

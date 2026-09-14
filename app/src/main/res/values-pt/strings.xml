@@ -582,4 +582,5 @@
     <string name="merge_action">Unir</string>
     <string name="replace_action">Substituir</string>
     <string name="keep_current_action">Manter as atuais</string>
+    <string name="mitm_addon_not_available">A decriptação do TLS requer a extensão de mitm do PCAPdroid, que não está disponível nesta versão</string>
 </resources>

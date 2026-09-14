@@ -582,4 +582,5 @@
     <string name="merge_action">Scal</string>
     <string name="replace_action">Zastąp</string>
     <string name="keep_current_action">Zachowaj obecne</string>
+    <string name="mitm_addon_not_available">Deszyfrowanie TLS wymaga dodatku mitm PCAPdroid, który nie jest dostępny w tej wersji</string>
 </resources>

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments.mitmwizard;
@@ -35,6 +35,12 @@ public class InstallAddon extends StepFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if(Utils.isPlaystore()) {
+            checkAddonInstalled();
+            return;
+        }
+
         Utils.setTextUrls(mStepLabel, R.string.install_the_mitm_addon, MitmAddon.REPOSITORY);
 
         String new_ver = MitmAddon.getNewVersionAvailable(requireContext());
@@ -48,6 +54,11 @@ public class InstallAddon extends StepFragment {
     public void onResume() {
         super.onResume();
 
+        if(Utils.isPlaystore()) {
+            checkAddonInstalled();
+            return;
+        }
+
         if(MitmAddon.getNewVersionAvailable(requireContext()).isEmpty() &&
                 MitmAddon.isInstalled(requireContext()))
             addonOk();
@@ -55,6 +66,20 @@ public class InstallAddon extends StepFragment {
 
     private void addonOk() {
         nextStep(R.id.navto_install_cert);
+    }
+
+    // On the Google Play build the addon can only be used if the user installed it on their own, as
+    // providing a way to download it outside Google Play violates the Device and Network Abuse policy
+    private void checkAddonInstalled() {
+        if(MitmAddon.isInstalled(requireContext())) {
+            mStepLabel.setText(getString(R.string.install_the_mitm_addon));
+            addonOk();
+            return;
+        }
+
+        mStepLabel.setText(R.string.mitm_addon_not_available);
+        mStepIcon.setColorFilter(mDangerColor);
+        mStepButton.setEnabled(false);
     }
 
     private void installAddon(String new_ver) {

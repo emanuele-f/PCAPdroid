@@ -926,7 +926,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 return;
             }
 
-            if (!MitmAddon.getNewVersionAvailable(this).isEmpty()) {
+            if (!Utils.isPlaystore() && !MitmAddon.getNewVersionAvailable(this).isEmpty()) {
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.update_available)
                         .setMessage(R.string.mitm_addon_update_available)
