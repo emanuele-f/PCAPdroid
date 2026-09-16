@@ -35,6 +35,8 @@ The first time decryption is enabled, a setup wizard will help you properly set 
 1. Download and installation of the [PCAPdroid-mitm addon](https://github.com/emanuele-f/PCAPdroid-mitm). The actual decryption is performed by [mitmproxy](https://github.com/mitmproxy/mitmproxy), which is bundled into the addon
 2. Installation of the PCAPdroid [CA certificate](https://docs.mitmproxy.org/stable/concepts-certificates). The CA certificate is what allows PCAPdroid to decrypt the app data, and to do so, it must first be added to the certificate store. To increase security, a unique CA is generated at runtime by PCAPdroid
 
+**Note**: since PCAPdroid 2.0.1, if you installed PCAPdroid from Google Play, you have to download the addon APK from the [addon releases page](https://github.com/emanuele-f/PCAPdroid-mitm/releases) and install it manually; you will also need to update it manually when a new version is released. As long as the addon is not installed, the "TLS decryption" setting is hidden. This change was done to comply with the Google Play policies, which discourage any APK download outside of the Google Play environment. The F-Droid and Github builds are not affected, and still install and update the addon via the wizard.
+
 Before proceeding, check if your device has [Autostart](https://www.vivo.com/en/support/questionByTitle?title=How%20to%20turn%20on/off%20Autostart%20for%20my%20apps) or similar software which prevents background services from running, in which case you will need to whitelist the mitm addon, otherwise decryption will refuse to start.
 
 ## 3.3 Decrypting
