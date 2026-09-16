@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #ifndef __JNI_UTILS_H__
@@ -30,6 +30,7 @@ jmethodID jniGetStaticMethodID(JNIEnv *env, jclass cls, const char *name, const 
 jfieldID jniFieldID(JNIEnv *env, jclass cls, const char *name, const char *type);
 jobject jniEnumVal(JNIEnv *env, const char *class_name, const char *enum_key);
 int jniCheckException(JNIEnv *env);
+jstring jniNewStringUTF(JNIEnv *env, const char *s);
 void jniDumpReferences(JNIEnv *env);
 
 #else // if ANDROID

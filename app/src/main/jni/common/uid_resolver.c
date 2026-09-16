@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #include <stdio.h>
@@ -199,14 +199,15 @@ static int get_uid_q(uid_resolver_t *resolver,
     inet_ntop(family, &conn_info->src_ip, srcip, sizeof(srcip));
     inet_ntop(family, &conn_info->dst_ip, dstip, sizeof(dstip));
 
-    jstring jsource = (*env)->NewStringUTF(env, srcip);
-    jstring jdest = (*env)->NewStringUTF(env, dstip);
+    jstring jsource = jniNewStringUTF(env, srcip);
+    jstring jdest = jniNewStringUTF(env, dstip);
 
     if((jsource != NULL) && (jdest != NULL)) {
         juid = (*env)->CallIntMethod(
             env, resolver->vpn_service, resolver->getUidQ,
             conn_info->ipproto, jsource, sport, jdest, dport);
-        jniCheckException(env);
+        if(jniCheckException(env))
+            juid = UID_UNKNOWN;
     }
 
     (*env)->DeleteLocalRef(env, jsource);

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #ifdef ANDROID
@@ -33,6 +33,17 @@ int jniCheckException(JNIEnv *env) {
         return 1;
     }
     return 0;
+}
+
+/* ******************************************************* */
+
+// Returns NULL on failure, with the pending exception cleared
+jstring jniNewStringUTF(JNIEnv *env, const char *s) {
+    jstring str = (*env)->NewStringUTF(env, s);
+    if(jniCheckException(env))
+        return NULL;
+
+    return str;
 }
 
 /* ******************************************************* */
