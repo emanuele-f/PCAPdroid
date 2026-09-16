@@ -1431,6 +1431,8 @@ static bool getCountryCode(pcapdroid_t *pd, const char *host, char out[3]) {
             (*env)->ReleaseStringUTFChars(env, obj, value);
         } else
             jniCheckException(env);
+
+        (*env)->DeleteLocalRef(env, obj);
     }
 
     (*env)->DeleteLocalRef(env, host_str);
