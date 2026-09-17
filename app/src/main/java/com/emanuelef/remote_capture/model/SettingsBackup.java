@@ -37,6 +37,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import java.util.Map;
 import java.util.Set;
@@ -170,16 +171,30 @@ public class SettingsBackup {
         if ((type == null) || (value == null))
             return null;
 
+        JsonPrimitive primitive = value.isJsonPrimitive() ? value.getAsJsonPrimitive() : null;
+
         switch (type.getAsString()) {
-            case TYPE_BOOLEAN:  return value.getAsBoolean();
-            case TYPE_INT:      return value.getAsInt();
-            case TYPE_LONG:     return value.getAsLong();
-            case TYPE_FLOAT:    return value.getAsFloat();
-            case TYPE_STRING:   return value.getAsString();
+            case TYPE_BOOLEAN:
+                return ((primitive != null) && primitive.isBoolean()) ? value.getAsBoolean() : null;
+            case TYPE_INT:
+                return ((primitive != null) && primitive.isNumber()) ? value.getAsInt() : null;
+            case TYPE_LONG:
+                return ((primitive != null) && primitive.isNumber()) ? value.getAsLong() : null;
+            case TYPE_FLOAT:
+                return ((primitive != null) && primitive.isNumber()) ? value.getAsFloat() : null;
+            case TYPE_STRING:
+                return ((primitive != null) && primitive.isString()) ? value.getAsString() : null;
             case TYPE_STRING_SET:
+                if (!value.isJsonArray())
+                    return null;
+
                 ArraySet<String> items = new ArraySet<>();
-                for (JsonElement item: value.getAsJsonArray())
+                for (JsonElement item: value.getAsJsonArray()) {
+                    if (!item.isJsonPrimitive() || !item.getAsJsonPrimitive().isString())
+                        return null;
+
                     items.add(item.getAsString());
+                }
                 return items;
         }
 
@@ -192,10 +207,15 @@ public class SettingsBackup {
     @SuppressLint("ApplySharedPref")
     @SuppressWarnings("unchecked")
     public void apply(SharedPreferences prefs) {
+        Map<String, ?> current = prefs.getAll();
         SharedPreferences.Editor editor = prefs.edit();
 
-        for (String key: prefs.getAll().keySet()) {
-            if (!isExcluded(key) && !requiresMerge(key))
+        for (Map.Entry<String, ?> entry: current.entrySet()) {
+            String key = entry.getKey();
+            Object imported = mSettings.get(key);
+
+            if (!isExcluded(key) && !requiresMerge(key)
+                    && ((imported == null) || hasCompatibleType(entry.getValue(), imported)))
                 editor.remove(key);
         }
 
@@ -205,6 +225,12 @@ public class SettingsBackup {
 
             if (isExcluded(key) || requiresMerge(key))
                 continue;
+
+            Object oldValue = current.get(key);
+            if ((oldValue != null) && !hasCompatibleType(oldValue, value)) {
+                Log.w(TAG, "ignoring type change for preference " + key);
+                continue;
+            }
 
             if (value instanceof Boolean)
                 editor.putBoolean(key, (Boolean) value);
@@ -221,6 +247,11 @@ public class SettingsBackup {
         }
 
         editor.commit();
+    }
+
+    private static boolean hasCompatibleType(Object oldValue, Object newValue) {
+        return ((oldValue instanceof Set) && (newValue instanceof Set))
+                || oldValue.getClass().equals(newValue.getClass());
     }
 
     public long getCreationTime() {

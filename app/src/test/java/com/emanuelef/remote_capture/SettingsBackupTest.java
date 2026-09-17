@@ -178,4 +178,33 @@ public class SettingsBackupTest {
         assertNull(SettingsBackup.fromJson("{\"version\": " + (SettingsBackup.VERSION + 1) +
                 ", \"app_version\": 1, \"created\": 1, \"settings\": {\"a\": {\"type\": \"int\", \"value\": 1}}}"));
     }
+
+    @Test
+    public void testMalformedSettingValueIsIgnored() {
+        String json = "{\"version\": 1, \"app_version\": 1, \"created\": 1, \"settings\": {"
+                + "\"root_capture\": {\"type\": \"boolean\", \"value\": true},"
+                + "\"app_language\": {\"type\": \"boolean\", \"value\": \"system\"}}}";
+
+        SettingsBackup backup = SettingsBackup.fromJson(json);
+        assertNotNull(backup);
+        backup.apply(prefs);
+
+        assertNull(Prefs.getAppLocale(prefs));
+        assertTrue(prefs.getBoolean(Prefs.PREF_ROOT_CAPTURE, false));
+    }
+
+    @Test
+    public void testSettingTypeChangeIsIgnored() {
+        prefs.edit().putString(Prefs.PREF_APP_LANGUAGE, "it").commit();
+        String json = "{\"version\": 1, \"app_version\": 1, \"created\": 1, \"settings\": {"
+                + "\"root_capture\": {\"type\": \"boolean\", \"value\": true},"
+                + "\"app_language\": {\"type\": \"boolean\", \"value\": false}}}";
+
+        SettingsBackup backup = SettingsBackup.fromJson(json);
+        assertNotNull(backup);
+        backup.apply(prefs);
+
+        assertEquals("it", Prefs.getAppLocale(prefs));
+        assertTrue(prefs.getBoolean(Prefs.PREF_ROOT_CAPTURE, false));
+    }
 }
