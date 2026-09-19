@@ -455,7 +455,25 @@ static void notifyBlacklistsLoaded(pcapdroid_t *pd, bl_status_arr_t *status_arr)
 
 /* ******************************************************* */
 
-static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size) {
+// on-disk chunks counterpart of PayloadIndex.isPrintablePrefix, keep in sync
+#define PRINTABLE_CHECK_LEN 16
+
+static bool isPrintablePrefix(const char *data, int size) {
+    int check_len = min(size, PRINTABLE_CHECK_LEN);
+
+    for(int i = 0; i < check_len; i++) {
+        char c = data[i];
+
+        if(!(((c >= 32) && (c <= 126)) || (c == '\r') || (c == '\n') || (c == '\t')))
+            return false;
+    }
+
+    return true;
+}
+
+/* ******************************************************* */
+
+static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size, int64_t file_offset) {
     JNIEnv *env = pd->env;
     bool rv = false;
 
@@ -468,15 +486,27 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, 
             return false;
     }
 
-    jbyteArray barray = (*env)->NewByteArray(env, dump_size);
-    if(jniCheckException(env))
-        return false;
+    bool is_http = (conn->l7proto == NDPI_PROTOCOL_HTTP);
+    jobject chunk_type = is_http ? enums.chunktype_http : enums.chunktype_raw;
+    jbyteArray barray = NULL;
+    jobject chunk;
 
-    jobject chunk_type = (conn->l7proto == NDPI_PROTOCOL_HTTP) ? enums.chunktype_http : enums.chunktype_raw;
+    if((file_offset >= 0) && !is_http && dump_data) {
+        // the payload is read from the PCAP file on demand, to save memory
+        bool printable = isPrintablePrefix(dump_data, dump_size);
 
-    jobject chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, is_tx, ms, stream_id);
+        chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInitOnDisk, chunk_type, is_tx, ms,
+                                  stream_id, (jlong) file_offset, dump_size, printable);
+    } else {
+        barray = (*env)->NewByteArray(env, dump_size);
+        if(jniCheckException(env))
+            return false;
+
+        chunk = (*env)->NewObject(env, cls.payload_chunk, mids.payloadChunkInit, barray, chunk_type, is_tx, ms, stream_id);
+    }
+
     if(!jniCheckException(env) && (chunk != NULL)) {
-        if (dump_data) // can be NULL for RST reporting in HTTP/2
+        if (barray && dump_data) // can be NULL for RST reporting in HTTP/2
             (*env)->SetByteArrayRegion(env, barray, 0, dump_size, (jbyte*) dump_data);
         rv = (*env)->CallBooleanMethod(env, conn->payload_chunks, mids.arraylistAdd, chunk);
         if(jniCheckException(env))
@@ -485,7 +515,8 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, 
 
     //log_d("Dump chunk [size=%d]: %d", rv, dump_size);
 
-    (*env)->DeleteLocalRef(env, barray);
+    if (barray)
+        (*env)->DeleteLocalRef(env, barray);
     (*env)->DeleteLocalRef(env, chunk);
     return rv;
 }
@@ -605,6 +636,7 @@ static void init_jni(JNIEnv *env) {
     mids.arraylistNew = jniGetMethodID(env, cls.arraylist, "<init>", "()V");
     mids.arraylistAdd = jniGetMethodID(env, cls.arraylist, "add", "(Ljava/lang/Object;)Z");
     mids.payloadChunkInit = jniGetMethodID(env, cls.payload_chunk, "<init>", "([BLcom/emanuelef/remote_capture/model/PayloadChunk$ChunkType;ZJI)V");
+    mids.payloadChunkInitOnDisk = jniGetMethodID(env, cls.payload_chunk, "<init>", "(Lcom/emanuelef/remote_capture/model/PayloadChunk$ChunkType;ZJIJIZ)V");
 
     /* Fields */
     fields.bldescr_fname = jniFieldID(env, cls.blacklist_descriptor, "fname", "Ljava/lang/String;");

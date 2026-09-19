@@ -217,6 +217,9 @@ public class CaptureService extends VpnService implements Runnable {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
 
+        if((INSTANCE != null) && (INSTANCE.conn_reg != null))
+            INSTANCE.conn_reg.cleanup();
+
         INSTANCE = this;
         super.onCreate();
     }
@@ -389,7 +392,14 @@ public class CaptureService extends VpnService implements Runnable {
         last_connections = 0;
         mLowMemory = false;
         mGcPending = false;
+
+        if(conn_reg != null)
+            conn_reg.cleanup();
+
         conn_reg = new ConnectionsRegister(this, Prefs.getConnectionsLogSize(mPrefs));
+        if(mSettings.readFromPcap())
+            conn_reg.openPcapFile(mSettings.input_pcap_path);
+
         mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;

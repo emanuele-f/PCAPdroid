@@ -558,8 +558,12 @@ public class HarWriter {
             int startPos = req.firstChunkPos;
             synchronized (conn) {
                 for (int i = startPos; i < conn.getNumPayloadChunks(); i++) {
+                    // RAW chunks may be on disk, check the type before getting them
+                    if (conn.getChunkType(i) == PayloadChunk.ChunkType.RAW)
+                        continue;
+
                     PayloadChunk chunk = conn.getPayloadChunk(i);
-                    if ((chunk == null) || (chunk.type == PayloadChunk.ChunkType.RAW))
+                    if (chunk == null)
                         continue;
 
                     if (chunk.is_sent)
@@ -575,8 +579,11 @@ public class HarWriter {
 
             synchronized (conn) {
                 for (int i = startPos; i < conn.getNumPayloadChunks(); i++) {
+                    if (conn.getChunkType(i) != PayloadChunk.ChunkType.WEBSOCKET)
+                        continue;
+
                     PayloadChunk chunk = conn.getPayloadChunk(i);
-                    if ((chunk != null) && (chunk.type == PayloadChunk.ChunkType.WEBSOCKET))
+                    if (chunk != null)
                         wsChunks.add(chunk);
                 }
             }

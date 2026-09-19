@@ -624,7 +624,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 // dumps the payload and returns true if fully dumped, false if failed or truncated
 static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id,
-                         const char *to_dump, int dump_size)
+                         const char *to_dump, int dump_size, int64_t file_offset)
 {
     bool truncated = false;
 
@@ -633,7 +633,7 @@ static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t 
         truncated = true;
     }
 
-    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size)) {
+    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size, file_offset)) {
         conn->has_payload[is_tx] = true;
         pd->payload_bytes_since_heap_check += dump_size;
     } else
@@ -686,10 +686,16 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
                 // use the item is_tx and ms timestamp data, rather than the ones from pctx because
                 // http2.c may buffer http responses/resets so they may be processed with a different pctx
                 truncated |= !dump_payload(pd, pctx->data, item->is_tx, item->ms, item->stream_id,
-                                           (const char*) item->data, (int) item->data_length);
+                                           (const char*) item->data, (int) item->data_length, -1);
             }
-        } else
-            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len);
+        } else {
+            int64_t file_offset = -1;
+
+            if (pctx->file_offset >= 0)
+                file_offset = pctx->file_offset + (pkt->l7 - pkt->buf);
+
+            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len, file_offset);
+        }
 
         updated = true;
     } else
@@ -1199,6 +1205,7 @@ void pd_init_pkt_context(pkt_context_t *pctx,
     pctx->tuple = tuple;
     pctx->data = data;
     pctx->plain_data = NULL; // managed by capture_libpcap
+    pctx->file_offset = -1;
 }
 
 /* ******************************************************* */

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-25 - Emanuele Faranda
+ * Copyright 2021-26 - Emanuele Faranda
  */
 
 #include <stdio.h>
@@ -53,6 +53,7 @@ struct pd_reader {
     mapped_uid_t *mapped_uids;
     long cur_block_pos;
     size_t cur_block_size;
+    int64_t pkt_data_offset;
 };
 
 static int linktype_to_dlt(int linktype) {
@@ -184,6 +185,10 @@ bool pd_has_unsupported_dlt_packets(pd_reader_t *reader) {
     return reader->has_unsupported_dlt_packets;
 }
 
+int64_t pd_get_packet_data_offset(pd_reader_t *reader) {
+    return reader->pkt_data_offset;
+}
+
 static bool reserve_buffer(pd_reader_t *reader, size_t size) {
     if (reader->buffer_size < size) {
         reader->buffer = pd_realloc(reader->buffer, size);
@@ -220,6 +225,7 @@ static reader_rv pd_pcap_read_next(pd_reader_t *reader, pcapd_hdr_t *hdr, char* 
     }
 
     int size = min(rec.incl_len, PCAPD_SNAPLEN);
+    reader->pkt_data_offset = ftell(reader->fp);
 
     if (fread(buffer, size, 1, reader->fp) != 1) {
         if (ferror(reader->fp)) {
@@ -297,6 +303,7 @@ static reader_rv read_enhanced_packet_block(pd_reader_t *reader, pcapd_hdr_t *hd
     }
 
     int size = min(enh.captured_len, PCAPD_SNAPLEN);
+    reader->pkt_data_offset = ftell(reader->fp);
 
     if (fread(buffer, size, 1, reader->fp) != 1) {
         if (ferror(reader->fp)) {

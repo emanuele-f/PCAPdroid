@@ -326,22 +326,37 @@ public class PayloadAdapterTest {
 
     // ========== Paging ==========
 
-    private String getPageText(Object aChunk, int pageIdx) throws Exception {
-        Method getPage = aChunk.getClass().getDeclaredMethod("getPage", int.class);
-        getPage.setAccessible(true);
-        Object page = getPage.invoke(aChunk, pageIdx);
+    private Object getItemChunk(int pos) {
+        Object page = adapter.getItem(pos);
+        assertNotNull(page);
+        return Whitebox.getInternalState(page, "adaptChunk");
+    }
 
-        Method getText = page.getClass().getDeclaredMethod("getText");
-        getText.setAccessible(true);
-        return (String) getText.invoke(page);
+    @Test
+    public void testPagesAfterMiddleInsert() {
+        PayloadChunk reqA = makeHttpRequest(1);
+        PayloadChunk reqB = makeHttpRequest(3);
+        PayloadChunk resA = makeHttpResponse(1);
+
+        adapter.onChunkReassembled(reqA);
+        adapter.onChunkReassembled(reqB);
+        adapter.onChunkReassembled(resA);
+
+        assertEquals(3, adapter.getItemCount());
+        assertNull(adapter.getItem(3));
+
+        for (int i = 0; i < 3; i++)
+            assertSame(getChunks().get(i), getItemChunk(i));
     }
 
     private String getPagesText(Object aChunk) throws Exception {
         int numPages = (int) Whitebox.getInternalState(aChunk, "mNumPages");
+        Method getPageText = aChunk.getClass().getDeclaredMethod("getPageText", int.class);
+        getPageText.setAccessible(true);
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < numPages; i++)
-            sb.append(getPageText(aChunk, i));
+            sb.append((String) getPageText.invoke(aChunk, i));
         return sb.toString();
     }
 
@@ -359,7 +374,7 @@ public class PayloadAdapterTest {
         conn.processUpdate(update);
 
         adapter = new PayloadAdapter(context, conn, ChunkType.RAW, as_printable);
-        Object aChunk = getChunks().get(0);
+        Object aChunk = getItemChunk(0);
 
         Method expand = aChunk.getClass().getDeclaredMethod("expand");
         expand.setAccessible(true);
@@ -384,10 +399,50 @@ public class PayloadAdapterTest {
     public void testExpandedHexdumpPagesSkipPageBreakNewline() throws Exception {
         byte[] payload = new byte[4 * PayloadAdapter.VISUAL_PAGE_SIZE];
         Object aChunk = expandChunk(new PayloadChunk(payload, ChunkType.RAW, true, 0, 0), false);
-        String firstPage = getPageText(aChunk, 0);
+
+        Method getPageText = aChunk.getClass().getDeclaredMethod("getPageText", int.class);
+        getPageText.setAccessible(true);
+        String firstPage = (String) getPageText.invoke(aChunk, 0);
 
         // the page break replaces the newline of the last hexdump line
         assertEquals(PayloadAdapter.VISUAL_PAGE_SIZE - 1, firstPage.length());
         assertFalse(firstPage.endsWith("\n"));
+    }
+
+    @Test
+    public void testRawModeWithChunksOnDisk() {
+        ConnectionDescriptor conn = new ConnectionDescriptor(2, 4, 17,
+                "192.168.1.100", "93.184.216.34", "US",
+                54321, 53, 0, 1000, 0, false, 0);
+
+        ArrayList<PayloadChunk> chunks = new ArrayList<>();
+        chunks.add(new PayloadChunk(ChunkType.RAW, true, 100, 0, 1000, 5000, false));
+        chunks.add(new PayloadChunk("in memory".getBytes(), ChunkType.RAW, false, 200, 0));
+        chunks.add(new PayloadChunk(ChunkType.RAW, false, 300, 0, 7000, 20, true));
+
+        com.emanuelef.remote_capture.model.ConnectionUpdate update =
+                new com.emanuelef.remote_capture.model.ConnectionUpdate(conn.incr_id);
+        update.setPayload(chunks, 0);
+        conn.processUpdate(update);
+
+        PayloadAdapter rawAdapter = new PayloadAdapter(context, conn, ChunkType.RAW, true);
+        adapter = rawAdapter;
+
+        assertEquals(3, rawAdapter.getItemCount());
+
+        Object first = getItemChunk(0);
+        assertNull(Whitebox.getInternalState(first, "mChunk"));
+        assertEquals(0, Whitebox.getInternalState(first, "mChunkPos"));
+        assertEquals(5000, Whitebox.getInternalState(first, "mLength"));
+        assertEquals(true, Whitebox.getInternalState(first, "mIsSent"));
+
+        Object second = getItemChunk(1);
+        assertNotNull(Whitebox.getInternalState(second, "mChunk"));
+
+        Object third = getItemChunk(2);
+        assertEquals(2, Whitebox.getInternalState(third, "mChunkPos"));
+        assertEquals(300L, Whitebox.getInternalState(third, "mTimestamp"));
+
+        rawAdapter.destroy();
     }
 }

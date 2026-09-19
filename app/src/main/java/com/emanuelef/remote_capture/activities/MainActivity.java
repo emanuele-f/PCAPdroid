@@ -1175,6 +1175,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             // PCAP file can be big, copy in a different thread
             mPcapExecutor.execute(() -> {
+                // unlink the file before creating a new one to avoid truncating data
+                // from a previous capture load (ConnectionsRegister.getPcapFile)
+                out.delete();
+
                 try (InputStream in_stream = getContentResolver().openInputStream(pcap_uri)) {
                     Utils.copy(in_stream, out);
                 } catch (IOException | RuntimeException e) {

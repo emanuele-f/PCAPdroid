@@ -244,7 +244,7 @@ u_char* next_pcap_record(pcap_rec_t *rec) {
 
 /* Dumps all the payload chunks into a linked list. The linked list is accessible via
  * (payload_chunk_t*)conn->payload_chunks */
-bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size) {
+bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size, int64_t file_offset) {
   payload_chunk_t *chunk = calloc(1, sizeof(payload_chunk_t));
   assert(chunk != NULL);
   chunk->payload = (u_char*)malloc(dump_size);
@@ -253,6 +253,7 @@ bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_
   memcpy(chunk->payload, dump_data, dump_size);
   chunk->size = dump_size;
   chunk->is_tx = is_tx;
+  chunk->file_offset = file_offset;
 
   // append to the linked list
   payload_chunk_t *last = (payload_chunk_t*) conn->payload_chunks;

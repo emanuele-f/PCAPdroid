@@ -91,6 +91,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
@@ -135,6 +136,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
@@ -2174,5 +2176,19 @@ public class Utils {
     public static boolean isSemanticVersionCompatible(String a, String b) {
         int va = getMajorVersion(a);
         return (va >= 0) && (va == getMajorVersion(b));
+    }
+
+    // Reads len bytes at the given offset. Positional reads are thread safe on the FileChannel
+    @WorkerThread
+    public static byte[] readFully(FileChannel channel, long offset, int len) throws IOException {
+        ByteBuffer buf = ByteBuffer.allocate(len);
+
+        while (buf.hasRemaining()) {
+            int read = channel.read(buf, offset + buf.position());
+            if (read < 0)
+                throw new IOException("Unexpected EOF at " + (offset + buf.position()));
+        }
+
+        return buf.array();
     }
 }

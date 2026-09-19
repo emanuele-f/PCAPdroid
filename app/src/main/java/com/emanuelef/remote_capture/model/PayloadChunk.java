@@ -29,6 +29,11 @@ public class PayloadChunk implements Serializable {
     public ChunkType type;
     public int stream_id;
 
+    // PCAP file loading: the payload is not in memory, it must be read from the file (see PayloadIndex)
+    public long file_offset = -1;
+    public int file_len;
+    public boolean file_printable;
+
     // HTTP
     public int httpResponseCode = 0;
     public String httpResponseStatus = "";
@@ -60,6 +65,15 @@ public class PayloadChunk implements Serializable {
         is_sent = _is_sent;
         timestamp = _timestamp;
         stream_id = _stream_id;
+    }
+
+    // NOTE: invoked from JNI
+    public PayloadChunk(ChunkType _type, boolean _is_sent, long _timestamp, int _stream_id,
+                        long _file_offset, int _len, boolean _printable) {
+        this(null, _type, _is_sent, _timestamp, _stream_id);
+        file_offset = _file_offset;
+        file_len = _len;
+        file_printable = _printable;
     }
 
     public PayloadChunk subchunk(int start, int size) {

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -32,6 +32,9 @@ import com.emanuelef.remote_capture.model.AppStats;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.ConnectionUpdate;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +72,7 @@ public class ConnectionsRegister {
     private final ArrayList<ConnectionsListener> mListeners;
     private final Geolocation mGeo;
     private final AppsResolver mAppsResolver;
+    private FileChannel mPcapFile;
 
     public ConnectionsRegister(Context ctx, int _size) {
         mTail = 0;
@@ -82,6 +86,25 @@ public class ConnectionsRegister {
         mAppsStats = new SparseArray<>(); // uid -> AppStats
         mConnsByIface = new SparseIntArray();
         mAppsResolver = new AppsResolver(ctx);
+    }
+
+    // Opens the PCAP file being loaded, from which the payload of the connections is read on demand.
+    // The file is kept open until cleanup, as the payload is browsed after the capture stops
+    public synchronized void openPcapFile(String path) {
+        try {
+            mPcapFile = new FileInputStream(path).getChannel();
+        } catch (IOException e) {
+            Log.e(TAG, "Could not open the PCAP file: " + e);
+        }
+    }
+
+    public synchronized void cleanup() {
+        Utils.safeClose(mPcapFile);
+        mPcapFile = null;
+    }
+
+    public synchronized @Nullable FileChannel getPcapFile() {
+        return mPcapFile;
     }
 
     // returns the position in mItemsRing of the oldest connection

@@ -174,6 +174,7 @@ typedef struct pkt_context {
     const zdtun_5tuple_t *tuple;
     pd_conn_t *data;
     plain_data_t *plain_data;
+    int64_t file_offset;
 } pkt_context_t;
 
 struct ushark;
@@ -192,7 +193,7 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
-    bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size, int64_t file_offset);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
     bool (*get_country_code)(struct pcapdroid *pd, const char *host, char out[3]);
     void (*check_available_heap)(struct pcapdroid *pd);
@@ -367,6 +368,7 @@ typedef struct {
     jmethodID arraylistAdd;
     jmethodID payloadChunkInit;
     jmethodID checkAvailableHeap;
+    jmethodID payloadChunkInitOnDisk;
 } jni_methods_t;
 
 typedef struct {

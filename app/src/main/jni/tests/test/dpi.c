@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #define _GNU_SOURCE // for memmem
@@ -86,9 +86,66 @@ static void test_proxy_extraction() {
 
 /* ******************************************************* */
 
+static FILE *offset_check_fp = NULL;
+static int num_checked_chunks = 0;
+static long checked_bytes = 0;
+
+// Verifies that the chunk data can be read back from the pcap file at the reported offset
+static bool check_offset_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id,
+                                       const char *dump_data, int dump_size, int64_t file_offset) {
+    assert(file_offset >= 0);
+
+    char *file_data = malloc(dump_size);
+    assert(file_data != NULL);
+
+    assert(fseek(offset_check_fp, (long) file_offset, SEEK_SET) == 0);
+    assert(fread(file_data, dump_size, 1, offset_check_fp) == 1);
+    assert(memcmp(file_data, dump_data, dump_size) == 0);
+    free(file_data);
+
+    num_checked_chunks++;
+    checked_bytes += dump_size;
+    return true;
+}
+
+// returns the number of payload bytes checked
+static long run_payload_offsets_check(const char *pcap_path) {
+    pcapdroid_t *pd = pd_init_test(pcap_path);
+
+    offset_check_fp = fopen(pcap_path, "rb");
+    assert(offset_check_fp != NULL);
+    num_checked_chunks = 0;
+    checked_bytes = 0;
+
+    pd->cb.dump_payload_chunk = check_offset_payload_chunk;
+    pd_run(pd);
+
+    assert(num_checked_chunks > 0);
+
+    fclose(offset_check_fp);
+    offset_check_fp = NULL;
+    pd_free_test(pd);
+
+    return checked_bytes;
+}
+
+static void test_payload_offsets() {
+    long full_bytes = run_payload_offsets_check(PCAP_PATH "/metadata.pcap");
+
+    // the snaplen files contain truncated packets, whose partial payload must still match
+    long pcap_snaplen_bytes = run_payload_offsets_check(PCAP_PATH "/metadata_snaplen.pcap");
+    long pcapng_snaplen_bytes = run_payload_offsets_check(PCAP_PATH "/metadata_snaplen.pcapng");
+
+    assert(pcap_snaplen_bytes < full_bytes);
+    assert(pcapng_snaplen_bytes == pcap_snaplen_bytes);
+}
+
+/* ******************************************************* */
+
 int main(int argc, char **argv) {
   add_test("extract", test_metadata_extraction);
   add_test("extract_proxy", test_proxy_extraction);
+  add_test("payload_offsets", test_payload_offsets);
 
   run_test(argc, argv);
   return 0;

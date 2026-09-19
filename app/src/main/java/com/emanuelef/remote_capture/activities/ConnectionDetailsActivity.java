@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -55,12 +55,10 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
     private static final String TAG = "ConnectionDetails";
     public static final String CONN_ID_KEY = "conn_id";
     public static final String FILTERED_IDS_KEY = "filtered_ids";
-    private static final int MAX_CHUNKS_TO_CHECK = 10;
     private ConnectionDescriptor mConn;
     private ViewPager2 mPager;
     private StateAdapter mPagerAdapter;
     private Handler mHandler;
-    private int mCurChunks;
     private boolean mListenerSet;
     private boolean mHasPayload;
     private boolean mHasHttpTab;
@@ -154,7 +152,6 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             }
         });
 
-        mCurChunks = 0;
         recheckTabs();
     }
 
@@ -282,43 +279,35 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
 
     @SuppressLint("NotifyDataSetChanged")
     private void recheckTabs() {
-        if(mHasHttpTab && mHasWsTab)
+        if(mHasPayload && mHasHttpTab && mHasWsTab)
             return;
 
-        int max_check = Math.min(mConn.getNumPayloadChunks(), MAX_CHUNKS_TO_CHECK);
         boolean changed = false;
 
-        if(!mHasPayload && (max_check > 0)) {
+        if(!mHasPayload && (mConn.getNumPayloadChunks() > 0)) {
             mHasPayload = true;
             changed = true;
         }
 
-        for(int i=mCurChunks; i<max_check; i++) {
-            PayloadChunk chunk = mConn.getPayloadChunk(i);
-            if(chunk == null)
-                continue;
+        if(!mHasHttpTab && mConn.hasHttpChunks()) {
+            mHasHttpTab = true;
+            changed = true;
+        }
 
-            if(!mHasHttpTab && (chunk.type == PayloadChunk.ChunkType.HTTP)) {
-                mHasHttpTab = true;
-                changed = true;
-            } else if (!mHasWsTab && (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)) {
-                mHasWsTab = true;
-                changed = true;
-            }
+        if(!mHasWsTab && mConn.hasWebsocketData()) {
+            mHasWsTab = true;
+            changed = true;
         }
 
         if(changed)
             mPagerAdapter.notifyDataSetChanged();
-
-        mCurChunks = max_check;
     }
 
     private void dispatchConnUpdate() {
         for(PayloadHostActivity.ConnUpdateListener listener: mListeners)
             listener.connectionUpdated();
 
-        if((mCurChunks < MAX_CHUNKS_TO_CHECK) && (mConn.getNumPayloadChunks() > mCurChunks))
-            recheckTabs();
+        recheckTabs();
 
         if(mConn.status >= ConnectionDescriptor.CONN_STATUS_CLOSED)
             unregisterConnsListener();
@@ -383,10 +372,7 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
         if(isPayload) {
             Fragment currentFragment = getCurrentFragment();
             if(currentFragment instanceof ConnectionPayload payloadFragment) {
-                if(mDisplayMode == null)
-                    mDisplayMode = payloadFragment.guessDisplayAsPrintable();
-
-                payloadFragment.setDisplayMode(mDisplayMode);
+                payloadFragment.setDisplayMode(getDisplayMode(payloadFragment));
 
                 if(mDisplayMode) {
                     mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
@@ -395,6 +381,13 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
                 }
             }
         }
+    }
+
+    @Override
+    public boolean getDisplayMode(ConnectionPayload fragment) {
+        if(mDisplayMode == null)
+            mDisplayMode = fragment.guessDisplayAsPrintable();
+        return mDisplayMode;
     }
 
     @Override
@@ -489,7 +482,6 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
                 mHasPayload = false;
                 mHasHttpTab = false;
                 mHasWsTab = false;
-                mCurChunks = 0;
 
                 setupTabs();
 
