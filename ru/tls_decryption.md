@@ -94,7 +94,7 @@ Google Chrome является относительно простым для д
 
 #### Использование Android-устройства с root-доступом
 
-- На устройстве с root-правами и Magisk, вы можете установить [модуль MagiskTrustUserCerts](https://github.com/NVISOsecurity/MagiskTrustUserCerts), после чего установить [хешированный сертификат](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#instructions) (замените `mitmproxy-ca-cert.cer` на название сертификата от PCAPdroid) в качестве системного сертификата. Данное решение **рекомендуется** если у вас есть Magisk.
+- На устройстве с root-правами и Magisk, вы можете установить [модуль movecert](https://github.com/Magisk-Modules-Repo/movecert), после чего установить сертификат PCAPdroid как пользовательский и перезагрузить устройство, чтобы модуль перенёс его в системное хранилище. Данное решение **рекомендуется** если у вас есть Magisk.
 
 - На любом устройстве с root-правами вы можете установить сертификат [в системное хранилище](https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store), предварительно примонтировав системный раздел в режиме `rw`
 
