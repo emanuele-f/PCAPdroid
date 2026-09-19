@@ -1735,7 +1735,7 @@ public class Utils {
     public static boolean validatePort(String value) {
         try {
             int val = Integer.parseInt(value);
-            return((val > 0) && (val < 65535));
+            return((val > 0) && (val <= 65535));
         } catch(NumberFormatException e) {
             return false;
         }

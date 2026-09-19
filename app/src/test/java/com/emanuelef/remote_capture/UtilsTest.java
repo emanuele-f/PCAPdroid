@@ -101,10 +101,10 @@ public class UtilsTest {
         assertTrue(Utils.validatePort("1"));
         assertTrue(Utils.validatePort("80"));
         assertTrue(Utils.validatePort("443"));
-        assertTrue(Utils.validatePort("65534"));
+        assertTrue(Utils.validatePort("65535"));
 
         assertFalse(Utils.validatePort("0"));
-        assertFalse(Utils.validatePort("65535"));
+        assertFalse(Utils.validatePort("65536"));
         assertFalse(Utils.validatePort("-1"));
         assertFalse(Utils.validatePort("abc"));
         assertFalse(Utils.validatePort(""));
