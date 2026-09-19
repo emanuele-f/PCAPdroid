@@ -229,9 +229,13 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
             if(mTheText == null)
                 mTheText = makeText();
 
-            if((start == 0) && (end >= mTheText.length() - 1)) {
+            int len = mTheText.length();
+            if((start == 0) && (end == len))
                 return mTheText;
-            }
+
+            // the page break already acts as a line break, avoid an empty line (e.g. in the hexdump)
+            if((end < len) && (mTheText.charAt(end - 1) == '\n'))
+                end--;
 
             return mTheText.substring(start, end);
         }
@@ -247,10 +251,10 @@ public class PayloadAdapter extends RecyclerView.Adapter<PayloadAdapter.PayloadV
                 mTheText = makeText();
 
             if(!mIsExpanded)
-                return new Page(this, 0, mTheText.length() - 1, true);
+                return new Page(this, 0, mTheText.length(), true);
             else
                 return new Page(this, pageIdx * VISUAL_PAGE_SIZE,
-                        Math.min(((pageIdx + 1) * VISUAL_PAGE_SIZE) - 1, mTheText.length() - 1),
+                        Math.min((pageIdx + 1) * VISUAL_PAGE_SIZE, mTheText.length()),
                         pageIdx == (mNumPages - 1));
         }
     }

@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -321,5 +322,72 @@ public class PayloadAdapterTest {
         assertSame(res1, getChunkPayload(1));
         assertSame(req3, getChunkPayload(2));
         assertSame(res3, getChunkPayload(3));
+    }
+
+    // ========== Paging ==========
+
+    private String getPageText(Object aChunk, int pageIdx) throws Exception {
+        Method getPage = aChunk.getClass().getDeclaredMethod("getPage", int.class);
+        getPage.setAccessible(true);
+        Object page = getPage.invoke(aChunk, pageIdx);
+
+        Method getText = page.getClass().getDeclaredMethod("getText");
+        getText.setAccessible(true);
+        return (String) getText.invoke(page);
+    }
+
+    private String getPagesText(Object aChunk) throws Exception {
+        int numPages = (int) Whitebox.getInternalState(aChunk, "mNumPages");
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numPages; i++)
+            sb.append(getPageText(aChunk, i));
+        return sb.toString();
+    }
+
+    private Object expandChunk(PayloadChunk chunk, boolean as_printable) throws Exception {
+        ConnectionDescriptor conn = new ConnectionDescriptor(3, 4, 6,
+                "192.168.1.100", "93.184.216.34", "US",
+                54321, 80, 0, 1000, 0, false, 0);
+
+        ArrayList<PayloadChunk> chunks = new ArrayList<>();
+        chunks.add(chunk);
+
+        com.emanuelef.remote_capture.model.ConnectionUpdate update =
+                new com.emanuelef.remote_capture.model.ConnectionUpdate(conn.incr_id);
+        update.setPayload(chunks, 0);
+        conn.processUpdate(update);
+
+        adapter = new PayloadAdapter(context, conn, ChunkType.RAW, as_printable);
+        Object aChunk = getChunks().get(0);
+
+        Method expand = aChunk.getClass().getDeclaredMethod("expand");
+        expand.setAccessible(true);
+        expand.invoke(aChunk);
+
+        assertTrue((int) Whitebox.getInternalState(aChunk, "mNumPages") > 1);
+        return aChunk;
+    }
+
+    @Test
+    public void testExpandedPagesKeepAllText() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 3 * PayloadAdapter.VISUAL_PAGE_SIZE; i++)
+            sb.append((char) ('a' + (i % 26)));
+        String text = sb.toString();
+
+        Object aChunk = expandChunk(new PayloadChunk(text.getBytes(), ChunkType.RAW, true, 0, 0), true);
+        assertEquals(text, getPagesText(aChunk));
+    }
+
+    @Test
+    public void testExpandedHexdumpPagesSkipPageBreakNewline() throws Exception {
+        byte[] payload = new byte[4 * PayloadAdapter.VISUAL_PAGE_SIZE];
+        Object aChunk = expandChunk(new PayloadChunk(payload, ChunkType.RAW, true, 0, 0), false);
+        String firstPage = getPageText(aChunk, 0);
+
+        // the page break replaces the newline of the last hexdump line
+        assertEquals(PayloadAdapter.VISUAL_PAGE_SIZE - 1, firstPage.length());
+        assertFalse(firstPage.endsWith("\n"));
     }
 }
