@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #include <inttypes.h>
@@ -633,10 +633,16 @@ static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t 
         truncated = true;
     }
 
-    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size))
+    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size)) {
         conn->has_payload[is_tx] = true;
-    else
+        pd->payload_bytes_since_heap_check += dump_size;
+    } else
         truncated = true;
+
+    if((pd->payload_bytes_since_heap_check >= PAYLOAD_HEAP_CHECK_BYTES) && pd->cb.check_available_heap) {
+        pd->payload_bytes_since_heap_check = 0;
+        pd->cb.check_available_heap(pd);
+    }
 
     return !truncated;
 }
@@ -670,6 +676,12 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
 
             for (unsigned int i = 0; i < pctx->plain_data->n_items; i++) {
                 const plain_data_item_t *item =  &pctx->plain_data->items[i];
+
+                // the payload may have been disabled by the heap check in dump_payload
+                if (pd->payload_mode == PAYLOAD_MODE_NONE) {
+                    truncated = true;
+                    break;
+                }
 
                 // use the item is_tx and ms timestamp data, rather than the ones from pctx because
                 // http2.c may buffer http responses/resets so they may be processed with a different pctx

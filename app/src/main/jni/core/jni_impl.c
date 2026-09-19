@@ -492,6 +492,15 @@ static bool dumpPayloadChunk(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, 
 
 /* ******************************************************* */
 
+static void checkAvailableHeap(pcapdroid_t *pd) {
+    JNIEnv *env = pd->env;
+
+    (*env)->CallVoidMethod(env, pd->capture_service, mids.checkAvailableHeap);
+    jniCheckException(env);
+}
+
+/* ******************************************************* */
+
 static void clearPayloadChunks(struct pcapdroid *pd, const pkt_context_t *pctx) {
     JNIEnv *env = pd->env;
 
@@ -580,6 +589,8 @@ static void init_jni(JNIEnv *env) {
     mids.getLibprogPath = jniGetMethodID(env, cls.vpn_service, "getLibprogPath", "(Ljava/lang/String;)Ljava/lang/String;");
     mids.notifyBlacklistsLoaded = jniGetMethodID(env, cls.vpn_service, "notifyBlacklistsLoaded", "([Lcom/emanuelef/remote_capture/Blacklists$NativeBlacklistStatus;)V");
     mids.getBlacklistsInfo = jniGetMethodID(env, cls.vpn_service, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
+    mids.checkAvailableHeap = jniGetMethodID(env, cls.vpn_service, "checkAvailableHeap", "()V");
+
     mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIZJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
@@ -643,6 +654,7 @@ Java_com_emanuelef_remote_1capture_CaptureService_runPacketLoop(JNIEnv *env, jcl
                     .dump_payload_chunk = dumpPayloadChunk,
                     .clear_payload_chunks = clearPayloadChunks,
                     .get_country_code = getCountryCode,
+                    .check_available_heap = checkAvailableHeap,
             },
             .mitm_addon_uid = getIntPref(env, vpn, "getMitmAddonUid"),
             .vpn_capture = (bool) getIntPref(env, vpn, "isVpnCapture"),

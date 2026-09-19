@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #ifndef __PCAPDROID_H__
@@ -39,6 +39,7 @@
 #define MAX_HOST_LRU_SIZE 256
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 #define MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE 512
+#define PAYLOAD_HEAP_CHECK_BYTES (2 * 1024 * 1024)
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
@@ -194,6 +195,7 @@ typedef struct {
     bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
     bool (*get_country_code)(struct pcapdroid *pd, const char *host, char out[3]);
+    void (*check_available_heap)(struct pcapdroid *pd);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -225,6 +227,7 @@ typedef struct pcapdroid {
     bool pcap_file_capture;
     const char *keylog_path_override;  // For tests: override sslkeylog.txt location
     payload_mode_t payload_mode;
+    uint32_t payload_bytes_since_heap_check;
 
     // stats
     u_int num_dropped_pkts;
@@ -363,6 +366,7 @@ typedef struct {
     jmethodID arraylistNew;
     jmethodID arraylistAdd;
     jmethodID payloadChunkInit;
+    jmethodID checkAvailableHeap;
 } jni_methods_t;
 
 typedef struct {
