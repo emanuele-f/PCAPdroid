@@ -631,7 +631,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DOCS_URL));
             Utils.startActivity(this, browserIntent);
         } else if (id == R.id.action_stats) {
-            if(mState == AppState.running) {
+            if(CaptureService.getConnsRegister() != null) {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 startActivity(intent);
             } else
