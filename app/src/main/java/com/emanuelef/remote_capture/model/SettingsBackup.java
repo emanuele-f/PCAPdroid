@@ -61,6 +61,13 @@ public class SettingsBackup {
         // the mitm addon and its CA certificate must be set up again on the new installation
         EXCLUDED_KEYS.add(Prefs.PREF_TLS_DECRYPTION_SETUP_DONE);
         EXCLUDED_KEYS.add(Prefs.PREF_CA_INSTALLATION_SKIPPED);
+        EXCLUDED_KEYS.add(Prefs.PREF_IGNORED_MITM_VERSION);
+
+        // one-time notices
+        EXCLUDED_KEYS.add(Prefs.PREF_REMOTE_COLLECTOR_ACK);
+        EXCLUDED_KEYS.add(Prefs.PREF_LOCKDOWN_VPN_NOTICE_SHOWN);
+        EXCLUDED_KEYS.add(Prefs.PREF_LOCAL_NETWORK_NOTICE_SHOWN);
+        EXCLUDED_KEYS.add(Prefs.PREF_PAYLOAD_NOTICE_ACK);
 
         EXCLUDED_KEYS.add(Prefs.PREF_APP_VERSION);
         EXCLUDED_KEYS.add(PersistableUriPermission.PREF_KEY);
