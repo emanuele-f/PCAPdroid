@@ -415,6 +415,12 @@ public class ConnectionDetailsActivity extends PayloadExportActivity implements 
             return true;
         }
 
+        Fragment currentFragment = getCurrentFragment();
+        if(currentFragment instanceof MenuActionHandler) {
+            if(((MenuActionHandler) currentFragment).handleMenuAction(item))
+                return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
