@@ -1734,11 +1734,14 @@ public class Utils {
 
     public static boolean validatePort(String value) {
         try {
-            int val = Integer.parseInt(value);
-            return((val > 0) && (val <= 65535));
+            return validatePort(Integer.parseInt(value));
         } catch(NumberFormatException e) {
             return false;
         }
+    }
+
+    public static boolean validatePort(int port) {
+        return((port > 0) && (port <= 65535));
     }
 
     // from bouncycastle

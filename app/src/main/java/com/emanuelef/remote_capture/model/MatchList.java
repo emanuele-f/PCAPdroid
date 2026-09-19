@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -241,9 +241,19 @@ public class MatchList {
             clear(false);
 
             for(JsonElement el: ruleArray) {
+                if(!el.isJsonObject()) {
+                    Log.w(TAG, "Skipping invalid rule: " + el);
+                    continue;
+                }
+
                 JsonObject ruleObj = el.getAsJsonObject();
-                String typeStr = ruleObj.get("type").getAsString();
-                String val = ruleObj.get("value").getAsString();
+                String typeStr = getPrimitiveString(ruleObj, "type");
+                String val = getPrimitiveString(ruleObj, "value");
+                if((typeStr == null) || (val == null)) {
+                    Log.w(TAG, "Skipping invalid rule: " + el);
+                    continue;
+                }
+
                 RuleType type;
 
                 try {
@@ -258,6 +268,11 @@ public class MatchList {
                         e.printStackTrace();
                         continue;
                     }
+                }
+
+                if(!isValidRuleValue(type, val)) {
+                    Log.w(TAG, "Skipping invalid rule: " + el);
+                    continue;
                 }
 
                 if(type == RuleType.APP) {
@@ -579,6 +594,21 @@ public class MatchList {
 
     public int fromJson(String json_str) {
         return fromJson(json_str, -1);
+    }
+
+    protected static @Nullable String getPrimitiveString(JsonObject obj, String member) {
+        JsonElement el = obj.get(member);
+        return ((el != null) && el.isJsonPrimitive()) ? el.getAsString() : null;
+    }
+
+    /* An invalid IP rule would make the whole native list fail to load, and Cidr would resolve a
+     * hostname on the calling thread (NetworkOnMainThreadException) */
+    protected static boolean isValidRuleValue(RuleType type, String val) {
+        switch(type) {
+            case IP:        return Utils.validateCidr(val);
+            case COUNTRY:   return (val.length() == 2);
+            default:        return true;
+        }
     }
 
     // can be used by a subclass to exempt specific app (e.g. Blocklist grace apps)

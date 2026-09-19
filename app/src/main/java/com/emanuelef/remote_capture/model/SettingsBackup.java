@@ -27,11 +27,8 @@ import androidx.annotation.Nullable;
 import androidx.collection.ArrayMap;
 import androidx.collection.ArraySet;
 
-import com.emanuelef.remote_capture.Billing;
-import com.emanuelef.remote_capture.Blacklists;
 import com.emanuelef.remote_capture.BuildConfig;
 import com.emanuelef.remote_capture.Log;
-import com.emanuelef.remote_capture.PersistableUriPermission;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -48,8 +45,6 @@ public class SettingsBackup {
     public static final int VERSION = 1;
     public static final String LICENSE_KEY = "license";
 
-    private static final Set<String> EXCLUDED_KEYS = new ArraySet<>();
-
     private static final String TYPE_BOOLEAN = "boolean";
     private static final String TYPE_INT = "int";
     private static final String TYPE_LONG = "long";
@@ -57,41 +52,15 @@ public class SettingsBackup {
     private static final String TYPE_STRING = "string";
     private static final String TYPE_STRING_SET = "string_set";
 
-    static {
-        // the mitm addon and its CA certificate must be set up again on the new installation
-        EXCLUDED_KEYS.add(Prefs.PREF_TLS_DECRYPTION_SETUP_DONE);
-        EXCLUDED_KEYS.add(Prefs.PREF_CA_INSTALLATION_SKIPPED);
-        EXCLUDED_KEYS.add(Prefs.PREF_IGNORED_MITM_VERSION);
-
-        // one-time notices
-        EXCLUDED_KEYS.add(Prefs.PREF_REMOTE_COLLECTOR_ACK);
-        EXCLUDED_KEYS.add(Prefs.PREF_LOCKDOWN_VPN_NOTICE_SHOWN);
-        EXCLUDED_KEYS.add(Prefs.PREF_LOCAL_NETWORK_NOTICE_SHOWN);
-        EXCLUDED_KEYS.add(Prefs.PREF_PAYLOAD_NOTICE_ACK);
-
-        EXCLUDED_KEYS.add(Prefs.PREF_APP_VERSION);
-        EXCLUDED_KEYS.add(PersistableUriPermission.PREF_KEY);
-        EXCLUDED_KEYS.add(Blacklists.PREF_BLACKLISTS_STATUS);
-        EXCLUDED_KEYS.addAll(Billing.BILLING_STATE_KEYS);
-    }
-
     private final ArrayMap<String, Object> mSettings = new ArrayMap<>();
     private int mAppVersion;
     private long mCreated;
-
-    public static boolean isExcluded(String key) {
-        return EXCLUDED_KEYS.contains(key) || key.startsWith(Billing.SKU_PREF_PREFIX);
-    }
-
-    private static boolean requiresMerge(String key) {
-        return key.equals(Prefs.PREF_CAPTURE_LIST);
-    }
 
     public static String serialize(SharedPreferences prefs) {
         JsonObject settings = new JsonObject();
 
         for (Map.Entry<String, ?> entry: prefs.getAll().entrySet()) {
-            if (isExcluded(entry.getKey()))
+            if (PrefsSchema.isExcludedFromBackup(entry.getKey()))
                 continue;
 
             JsonObject encoded = encode(entry.getValue());
@@ -123,9 +92,30 @@ public class SettingsBackup {
             rv.mCreated = root.getAsJsonPrimitive("created").getAsLong();
 
             for (Map.Entry<String, JsonElement> entry: root.getAsJsonObject("settings").entrySet()) {
-                Object value = decode(entry.getValue().getAsJsonObject());
-                if (value != null)
-                    rv.mSettings.put(entry.getKey(), value);
+                String key = entry.getKey();
+                if (PrefsSchema.isExcludedFromBackup(key))
+                    continue;
+
+                Object value;
+                try {
+                    value = decode(entry.getValue().getAsJsonObject());
+                } catch (RuntimeException e) {
+                    Log.w(TAG, "skipping \"" + key + "\": " + e.getMessage());
+                    continue;
+                }
+
+                if (value == null) {
+                    Log.w(TAG, "skipping \"" + key + "\": invalid encoding");
+                    continue;
+                }
+
+                String error = PrefsSchema.validate(key, value);
+                if (error != null) {
+                    Log.w(TAG, "skipping \"" + key + "\": " + error);
+                    continue;
+                }
+
+                rv.mSettings.put(key, value);
             }
 
             if (rv.mSettings.isEmpty())
@@ -177,21 +167,58 @@ public class SettingsBackup {
         if ((type == null) || (value == null))
             return null;
 
+        // Gson converts between primitive types (e.g. "abc".getAsBoolean() is false), which would
+        // silently turn a wrong value into a valid one
         switch (type.getAsString()) {
-            case TYPE_BOOLEAN:  return value.getAsBoolean();
-            case TYPE_INT:      return value.getAsInt();
-            case TYPE_LONG:     return value.getAsLong();
-            case TYPE_FLOAT:    return value.getAsFloat();
-            case TYPE_STRING:   return value.getAsString();
+            case TYPE_BOOLEAN:  return isBoolean(value) ? value.getAsBoolean() : null;
+            case TYPE_INT:      return isNumber(value) ? parseInt(value.getAsString()) : null;
+            case TYPE_LONG:     return isNumber(value) ? parseLong(value.getAsString()) : null;
+            case TYPE_FLOAT:    return isNumber(value) ? value.getAsFloat() : null;
+            case TYPE_STRING:   return isString(value) ? value.getAsString() : null;
             case TYPE_STRING_SET:
+                if (!value.isJsonArray())
+                    return null;
+
                 ArraySet<String> items = new ArraySet<>();
-                for (JsonElement item: value.getAsJsonArray())
+                for (JsonElement item: value.getAsJsonArray()) {
+                    if (!isString(item))
+                        return null;
                     items.add(item.getAsString());
+                }
                 return items;
         }
 
         Log.w(TAG, "unhandled backup type: " + type.getAsString());
         return null;
+    }
+
+    private static boolean isBoolean(JsonElement el) {
+        return el.isJsonPrimitive() && el.getAsJsonPrimitive().isBoolean();
+    }
+
+    private static boolean isNumber(JsonElement el) {
+        return el.isJsonPrimitive() && el.getAsJsonPrimitive().isNumber();
+    }
+
+    private static boolean isString(JsonElement el) {
+        return el.isJsonPrimitive() && el.getAsJsonPrimitive().isString();
+    }
+
+    // unlike getAsInt, rejects decimals and out of range values instead of truncating them
+    private static @Nullable Integer parseInt(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static @Nullable Long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /* Replaces the current preferences with the bundled ones. The excluded keys keep the value they
@@ -202,7 +229,7 @@ public class SettingsBackup {
         SharedPreferences.Editor editor = prefs.edit();
 
         for (String key: prefs.getAll().keySet()) {
-            if (!isExcluded(key) && !requiresMerge(key))
+            if (!PrefsSchema.isExcludedFromBackup(key) && !PrefsSchema.requiresBackupMerge(key))
                 editor.remove(key);
         }
 
@@ -210,7 +237,7 @@ public class SettingsBackup {
             String key = mSettings.keyAt(i);
             Object value = mSettings.valueAt(i);
 
-            if (isExcluded(key) || requiresMerge(key))
+            if (PrefsSchema.requiresBackupMerge(key))
                 continue;
 
             if (value instanceof Boolean)

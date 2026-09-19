@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -23,12 +23,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.ArrayMap;
 
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
+
+import com.emanuelef.remote_capture.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
@@ -39,7 +43,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class CtrlPermissions {
-    private static final String PREF_NAME = "ctrl_perms";
+    private static final String TAG = "CtrlPermissions";
+    public static final String PREF_NAME = "ctrl_perms";
     private final ArrayMap<String, Rule> mRules = new ArrayMap<>();
     private final SharedPreferences mPrefs;
 
@@ -68,30 +73,49 @@ public class CtrlPermissions {
         String serialized = mPrefs.getString(PREF_NAME, "");
         //Log.d(TAG, serialized);
 
-        if(!serialized.isEmpty()) {
-            JsonObject obj = JsonParser.parseString(serialized).getAsJsonObject();
-            deserialize(obj);
-        } else
-            mRules.clear();
-    }
-
-    private void deserialize(JsonObject object) {
         mRules.clear();
 
-        JsonObject rules = object.getAsJsonObject("rules");
-        if(rules == null)
-            return;
+        if(!serialized.isEmpty()) {
+            ArrayMap<String, Rule> rules = deserialize(serialized);
+            if(rules != null)
+                mRules.putAll(rules);
+        }
+    }
 
-        for(Map.Entry<String, JsonElement> rule: rules.entrySet()) {
+    /* Returns null if the serialized rules are invalid */
+    private static @Nullable ArrayMap<String, Rule> deserialize(String serialized) {
+        ArrayMap<String, Rule> rv = new ArrayMap<>();
+        JsonElement el;
+
+        try {
+            el = JsonParser.parseString(serialized);
+        } catch (JsonParseException e) {
+            Log.w(TAG, "invalid rules: " + e.getMessage());
+            return null;
+        }
+
+        if(!el.isJsonObject())
+            return null;
+
+        JsonElement rules = el.getAsJsonObject().get("rules");
+        if(rules == null)
+            return rv;
+
+        if(!rules.isJsonObject())
+            return null;
+
+        for(Map.Entry<String, JsonElement> rule: rules.getAsJsonObject().entrySet()) {
             if(rule.getValue().isJsonPrimitive() && rule.getValue().getAsJsonPrimitive().isString()) {
                 String val = rule.getValue().getAsJsonPrimitive().getAsString();
 
                 try {
                     ConsentType tp = ConsentType.valueOf(val);
-                    mRules.put(rule.getKey(), new Rule(rule.getKey(), tp));
+                    rv.put(rule.getKey(), new Rule(rule.getKey(), tp));
                 } catch (IllegalArgumentException ignored) {}
             }
         }
+
+        return rv;
     }
 
     private static class Serializer implements JsonSerializer<CtrlPermissions> {
