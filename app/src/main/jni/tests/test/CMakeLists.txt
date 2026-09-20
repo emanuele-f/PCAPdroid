@@ -49,5 +49,10 @@ add_test(NAME dump_api_max_pkts_flow COMMAND ./dump_api max_pkts_per_flow)
 add_test(NAME dump_api_max_size COMMAND ./dump_api max_dump_size)
 add_test(NAME dump_api_direction_roundtrip COMMAND ./dump_api direction_roundtrip)
 
+test_source(pcapng_reader)
+add_test(NAME pcapng_epb_truncated_options COMMAND ./pcapng_reader epb_truncated_options)
+add_test(NAME pcapng_idb_bad_length COMMAND ./pcapng_reader idb_bad_length)
+add_test(NAME pcapng_epb_overlong_option COMMAND ./pcapng_reader epb_overlong_option)
+
 test_source(root_capture)
 add_test(NAME root_capture COMMAND ./root_capture invalid_pkts)
