@@ -165,7 +165,7 @@
     <string name="forever">என்றென்றும்</string>
     <string name="control_permissions">கட்டுப்பாட்டு அனுமதிகள்</string>
     <string name="control_permissions_summary">பி.சி.ஏ.பி டிராய்டு பிடிப்பைக் கட்டுப்படுத்த எந்த பயன்பாடுகள் அனுமதிக்கப்படுகின்றன என்பதைச் சரிபார்க்கவும்</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">நாடு</string>
     <string name="asn">ASN</string>
     <string name="country_val">நாடு: %1$s</string>

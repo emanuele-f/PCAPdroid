@@ -139,7 +139,7 @@
     <string name="forever">Para siempre</string>
     <string name="control_permissions">Permisos de control</string>
     <string name="control_permissions_summary">Comprueba qué aplicaciones pueden controlar la captura de PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">No se han establecido permisos. Invoque PCAPdroid mediante StartActivityForResult para mostrar el diálogo de permisos</string>
     <string name="country">País</string>
     <string name="asn">ASN</string>

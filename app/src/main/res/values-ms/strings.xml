@@ -168,7 +168,7 @@
     <string name="forever">Selamanya</string>
     <string name="control_permissions">Kebenaran kawalan</string>
     <string name="control_permissions_summary">Semak aplikasi mana yang dibenarkan untuk mengawal tangkapan PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">Tiada kebenaran ditetapkan. Panggil PCAPdroid melalui StartActivityForResult untuk memaparkan gesaan kebenaran</string>
     <string name="generate_api_key">Jana kunci API</string>
     <string name="show_api_key">Tunjukkan kunci API</string>

@@ -242,7 +242,6 @@ typedef struct pcapdroid {
         struct {
             int tunfd;
             block_quic_mode_t block_quic_mode;
-            blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
 
             struct {
@@ -446,6 +445,9 @@ static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
 uint16_t pd_ndpi2proto(const struct ndpi_bitmask *masterProtos, ndpi_protocol proto);
+bool is_known_dns_ip(const zdtun_ip_t *ip, int ipver);
+bool is_known_dns_domain(const char *domain);
+bool is_known_dns_ipstr(const char *ip);
 
 #ifdef ANDROID
 

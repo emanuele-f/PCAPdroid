@@ -26,6 +26,7 @@ import androidx.collection.ArraySet;
 import androidx.preference.PreferenceManager;
 import androidx.test.core.app.ApplicationProvider;
 
+import com.emanuelef.remote_capture.activities.prefs.SettingsBackupHandler;
 import com.emanuelef.remote_capture.model.Blocklist;
 import com.emanuelef.remote_capture.model.CaptureList;
 import com.emanuelef.remote_capture.model.CtrlPermissions;
@@ -146,6 +147,53 @@ public class SettingsBackupTest {
         assertFalse(json.contains("unlock_token"));
         assertFalse(json.contains(Billing.SKU_PREF_PREFIX));
         assertTrue(json.contains(Prefs.PREF_ROOT_CAPTURE));
+    }
+
+    @Test
+    public void testSensitiveKeysReported() {
+        prefs.edit()
+                .putBoolean(Prefs.PREF_ROOT_CAPTURE, true)
+                .putString(Prefs.PREF_COLLECTOR_HOST_KEY, "example.org")
+                .putString(Prefs.PREF_DNS_SERVER_V4, "192.168.1.1")
+                .putString(Prefs.PREF_SOCKS5_PROXY_IP_KEY, "")
+                .commit();
+
+        SettingsBackup backup = SettingsBackup.fromJson(SettingsBackup.serialize(prefs));
+        assertNotNull(backup);
+
+        // the same values are already set on this device
+        assertTrue(SettingsBackupHandler.getPrefsToConfirm(backup, prefs).isEmpty());
+
+        prefs.edit()
+                .putString(Prefs.PREF_DNS_SERVER_V4, "10.0.0.1")
+                .remove(Prefs.PREF_COLLECTOR_HOST_KEY)
+                .commit();
+
+        // the empty proxy host is not a change the user must confirm
+        assertEquals(setOf(Prefs.PREF_COLLECTOR_HOST_KEY, Prefs.PREF_DNS_SERVER_V4),
+                new ArraySet<>(SettingsBackupHandler.getPrefsToConfirm(backup, prefs)));
+    }
+
+    @Test
+    public void testLocalhostNotReported() {
+        prefs.edit()
+                .putString(Prefs.PREF_COLLECTOR_HOST_KEY, "localhost")
+                .putString(Prefs.PREF_DNS_SERVER_V4, "127.0.0.1")
+                .putString(Prefs.PREF_DNS_SERVER_V6, "::1")
+                .putString(Prefs.PREF_SOCKS5_PROXY_IP_KEY, "127.0.0.53")
+                .commit();
+
+        SettingsBackup backup = SettingsBackup.fromJson(SettingsBackup.serialize(prefs));
+        assertNotNull(backup);
+
+        prefs.edit()
+                .remove(Prefs.PREF_COLLECTOR_HOST_KEY)
+                .remove(Prefs.PREF_DNS_SERVER_V4)
+                .remove(Prefs.PREF_DNS_SERVER_V6)
+                .remove(Prefs.PREF_SOCKS5_PROXY_IP_KEY)
+                .commit();
+
+        assertTrue(SettingsBackupHandler.getPrefsToConfirm(backup, prefs).isEmpty());
     }
 
     // the excluded keys describe this installation, they must survive an import

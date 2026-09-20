@@ -144,7 +144,7 @@
     <string name="forever">永久</string>
     <string name="control_permissions">控制权限</string>
     <string name="control_permissions_summary">检查哪些应用被允许控制 PCAPdroid 捕获流量</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">国家</string>
     <string name="asn">ASN</string>
     <string name="country_val">国家： %1$s</string>

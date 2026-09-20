@@ -86,7 +86,7 @@ public class CtrlPermissionsAdapter extends ArrayAdapter<CtrlPermissions.Rule> i
 
         CtrlPermissions.Rule rule = getItem(position);
         AppDescriptor app = mPkgToApp.get(rule.package_name); // may be null
-        String text = String.format(mContext.getString(R.string.control_permissions_item),
+        String text = String.format(mContext.getString(R.string.name_value),
                 (app == null) ? rule.package_name : String.format("%s (%s)", app.getName(), app.getPackageName()),
                 mContext.getString((rule.consent == CtrlPermissions.ConsentType.ALLOW) ? R.string.allow : R.string.deny));
 

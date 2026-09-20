@@ -172,7 +172,7 @@
     <string name="forever">Mãi mãi</string>
     <string name="control_permissions">Quyền điều khiển</string>
     <string name="control_permissions_summary">Kiểm tra ứng dụng nào được phép điều khiển việc bắt gói tin của PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">Chưa thiết lập quyền nào. Gọi PCAPdroid qua StartActivityForResult để hiển thị lời nhắc quyền</string>
     <string name="generate_api_key">Tạo khóa API</string>
     <string name="show_api_key">Hiển thị khóa API</string>

@@ -134,7 +134,7 @@
     <string name="show_me">Tunjukkan</string>
     <string name="hint">Petunjuk</string>
     <string name="control_permissions">Izin kontrol</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="send_report">Kirim laporan</string>
     <string name="start_at_boot">Mulai saat boot</string>
     <string name="start_at_boot_summary">Mulai penangkapan otomatis setelah boot</string>

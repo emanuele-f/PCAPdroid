@@ -168,7 +168,7 @@
     <string name="forever">हमेशा</string>
     <string name="control_permissions">नियंत्रण अनुमतियाँ</string>
     <string name="control_permissions_summary">जाँचें कि किन ऐप्स को PCAPdroid कैप्चर नियंत्रित करने की अनुमति है</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">कोई अनुमति सेट नहीं है। अनुमति प्रॉम्प्ट दिखाने के लिए StartActivityForResult के माध्यम से PCAPdroid को कॉल करें</string>
     <string name="generate_api_key">API कुंजी जनरेट करें</string>
     <string name="show_api_key">API कुंजी दिखाएँ</string>

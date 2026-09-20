@@ -167,6 +167,8 @@ public class UtilsTest {
         assertFalse(Utils.validateHost("Example.org"));
         assertFalse(Utils.validateHost("example .org"));
         assertFalse(Utils.validateHost("example?.org"));
+        assertFalse(Utils.validateHost("example.org\nfoo"));
+        assertFalse(Utils.validateHost("example.org\nfoo\nbar"));
     }
 
     @Test

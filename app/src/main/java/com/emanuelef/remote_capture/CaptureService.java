@@ -114,6 +114,7 @@ public class CaptureService extends VpnService implements Runnable {
     public static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     private static boolean HAS_ERROR = false;
+    private static boolean NATIVE_LIB_LOADED = false;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -197,6 +198,7 @@ public class CaptureService extends VpnService implements Runnable {
         try {
             System.loadLibrary("capture");
             CaptureService.initPlatformInfo(Utils.getAppVersionString(), Utils.getDeviceModel(), Utils.getOsVersion());
+            NATIVE_LIB_LOADED = true;
         } catch (UnsatisfiedLinkError e) {
             // This should only happen while running tests
             //e.printStackTrace();
@@ -1911,6 +1913,12 @@ public class CaptureService extends VpnService implements Runnable {
         return isServiceActive() ? INSTANCE.mPrivateDnsMode : null;
     }
 
+    /* Returns true if the given IP address belongs to a well known public DNS server.
+     * Always false when the native library is not available, e.g. while running the tests. */
+    public static boolean isKnownDnsServer(String ip) {
+        return NATIVE_LIB_LOADED && nativeIsKnownDnsServer(ip);
+    }
+
     public static native int initLogger(String path, int level);
     public static native int writeLog(int logger, int lvl, String message);
     private static native void initPlatformInfo(String appver, String device, String os);
@@ -1937,4 +1945,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void dumpMasterSecret(byte[] secret);
     public static native boolean hasSeenDumpExtensions();
     public static native boolean extractKeylogFromPcapng(String pcapng_path, String out_path);
+    private static native boolean nativeIsKnownDnsServer(String ip);
 }

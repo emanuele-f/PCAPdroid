@@ -136,7 +136,7 @@
     <string name="show_only_malicious">Ondsinnede tilkoblinger</string>
     <string name="control_permissions">Kontrolltilganger</string>
     <string name="control_permissions_summary">Sjekk hvilke programmer som tillates å kontrollere PCAPdroid-fangst</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="asn">ASN</string>
     <string name="malware_status_ok">Ingen ondsinnet trafikk oppdaget</string>
     <string name="malware_status_detected">Ondsinnet trafikk oppdaget</string>

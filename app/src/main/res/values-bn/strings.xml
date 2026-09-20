@@ -168,7 +168,7 @@
     <string name="forever">সর্বদা</string>
     <string name="control_permissions">নিয়ন্ত্রণ অনুমতি</string>
     <string name="control_permissions_summary">কোন অ্যাপগুলিকে PCAPdroid ক্যাপচার নিয়ন্ত্রণের অনুমতি দেওয়া হয়েছে তা পরীক্ষা করুন</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">কোনো অনুমতি সেট করা নেই। অনুমতি প্রম্পট দেখাতে StartActivityForResult-এর মাধ্যমে PCAPdroid চালু করুন</string>
     <string name="generate_api_key">API কী তৈরি করুন</string>
     <string name="show_api_key">API কী দেখান</string>

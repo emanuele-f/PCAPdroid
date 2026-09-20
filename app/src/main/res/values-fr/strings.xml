@@ -148,7 +148,7 @@
     <string name="asn">ASN</string>
     <string name="whitelist">Autorisés</string>
     <string name="show_me">M\'afficher</string>
-    <string name="control_permissions_item">%1$s : %2$s</string>
+    <string name="name_value">%1$s : %2$s</string>
     <string name="country_val">Pays : %1$s</string>
     <string name="send_report">Envoyer le rapport</string>
     <string name="control_permissions_summary">Vérifier quelles applications peuvent contrôler la capture de PCAPdroid</string>

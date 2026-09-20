@@ -159,7 +159,7 @@
     <string name="forever">Na zawsze</string>
     <string name="control_permissions">Kontroluj uprawnienia</string>
     <string name="control_permissions_summary">Sprawdź, które aplikacje mogą kontrolować przechwytywanie PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Kraj</string>
     <string name="asn">ASN</string>
     <string name="country_val">Kraj: %1$s</string>

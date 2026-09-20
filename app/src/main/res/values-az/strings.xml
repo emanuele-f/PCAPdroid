@@ -245,7 +245,7 @@
     <string name="once">Bir dəfə</string>
     <string name="forever">Həmişəlik</string>
     <string name="control_permissions">Kontrol icazələri</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">Heç bir icazə təyin edilməyib. İcazə sorğusunu göstərmək üçün PCAPdroid-i StartActivityForResult vasitəsilə çağırın</string>
     <string name="generate_api_key">API açarı yarat</string>
     <string name="show_api_key">API açarını göstər</string>

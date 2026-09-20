@@ -140,7 +140,7 @@
     <string name="forever">表示しない</string>
     <string name="control_permissions">権限を管理</string>
     <string name="control_permissions_summary">PCAPdroid キャプチャー制御を許可するアプリを確認します</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">国</string>
     <string name="asn">AS 番号</string>
     <string name="country_val">国: %1$s</string>

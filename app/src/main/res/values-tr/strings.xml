@@ -102,7 +102,7 @@
     <string name="forever">Sonsuza kadar</string>
     <string name="control_permissions">Denetim izinleri</string>
     <string name="control_permissions_summary">Hangi uygulamaların PCAPdroid yakalamasını denetlemesine izin verildiğine göz atın</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Ülke</string>
     <string name="asn">ASN</string>
     <string name="country_val">Ülke: %1$s</string>

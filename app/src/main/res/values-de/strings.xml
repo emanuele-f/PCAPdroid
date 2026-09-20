@@ -66,7 +66,7 @@
     <string name="billing_connecting">Verbinde mit Google Play… Versuche es später noch einmal</string>
     <string name="hidden_connections_help">Liste der Regeln zum Ausblenden von Verbindungslisteneinträgen, um sich auf relevante fokussieren zu können</string>
     <string name="control_permissions">Berechtigungssteuerung</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">Keine Berechtigungen festgelegt. Rufen Sie PCAPdroid über StartActivityForResult auf, um die Berechtigungsabfrage anzuzeigen</string>
     <string name="status_outdated">Veraltet</string>
     <string name="status_not_loaded">Nicht geladen</string>

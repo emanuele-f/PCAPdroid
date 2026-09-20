@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021 - Emanuele Faranda
+ * Copyright 2021-26 - Emanuele Faranda
  */
 
 #include <netinet/tcp.h>
@@ -167,7 +167,7 @@ static bool check_dns_req_allowed(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_conte
         // try with known DNS servers
         zdtun_ip_t dst_ip = tuple->dst_ip;
 
-        if(blacklist_match_ip(pd->vpn.known_dns_servers, &dst_ip, tuple->ipver)) {
+        if(is_known_dns_ip(&dst_ip, tuple->ipver)) {
             char ip[INET6_ADDRSTRLEN];
             int family = (tuple->ipver == 4) ? AF_INET : AF_INET6;
 
@@ -403,150 +403,11 @@ void vpn_process_ndpi(pcapdroid_t *pd, const zdtun_5tuple_t *tuple, pd_conn_t *d
 
     if(block_private_dns && !data->to_block &&
             (data->l7proto == NDPI_PROTOCOL_TLS) &&
-            data->info && blacklist_match_domain(pd->vpn.known_dns_servers, data->info)) {
+            data->info && is_known_dns_domain(data->info)) {
         log_d("blocking connection to private DNS server %s", data->info);
         data->blacklisted_internal = true;
         data->to_block = true;
     }
-}
-
-/* ******************************************************* */
-
-static void load_dns_servers(pcapdroid_t *pd) {
-    // IP addresses (both legacy and private DNS) and domains (only private DNS). These are used to count DNS queries and
-    // redirect DNS queries to the public DNS server (see check_dns_req_allowed)
-    // https://help.firewalla.com/hc/en-us/articles/360060661873-Dealing-DNS-over-HTTPS-and-DNS-over-TLS-on-your-network
-    // https://adguard-dns.io/kb/general/dns-providers/
-    // Google
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "8.8.8.8");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "8.8.4.4");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8888");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::8844");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::6464"); // DNS64
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2001:4860:4860::64");   // DNS64
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.google");
-    // Cloudflare
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.1.1.1");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.0.0.1");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.1.1.2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.0.0.2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.1.1.3");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "1.0.0.3");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1111");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1001");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1112");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1002");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1113");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::1003");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::64");   // DNS64
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:4700:4700::6400"); // DNS64
-    blacklist_add_domain(pd->vpn.known_dns_servers, "one.one.one.one");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.cloudflare.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "chrome.cloudflare-dns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "mozilla.cloudflare-dns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "security.cloudflare-dns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "family.cloudflare-dns.com");
-    // Quad9
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "9.9.9.9");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "149.112.112.112");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "9.9.9.10");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "149.112.112.10");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "9.9.9.11");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "149.112.112.11");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::fe");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::9");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::10");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::fe:10");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::11");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:fe::fe:11");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.quad9.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns10.quad9.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns11.quad9.net");
-    // CleanBrowsing
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.168.168");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.169.168");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.168.10");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.169.11");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.168.9");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "185.228.169.9");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:1::");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:2::");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:1::1");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:2::1");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:1::2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a0d:2a00:2::2");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.cleanbrowsing.org");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "family-filter-dns.cleanbrowsing.org");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "adult-filter-dns.cleanbrowsing.org");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "security-filter-dns.cleanbrowsing.org");
-    // NextDNS
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.nextdns.io");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "anycast.dns.nextdns.io");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "chromium.dns.nextdns.io");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "firefox.dns.nextdns.io");
-    // OpenDNS
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.222.222");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.220.220");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.222.123");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.220.123");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.222.2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "208.67.220.2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:119:35::35");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2620:119:53::53");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.opendns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.opendns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.familyshield.opendns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "familyshield.opendns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.sandbox.opendns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "sandbox.opendns.com");
-    // Adguard
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.14.14");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.15.15");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.14.15");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.15.16");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.14.140");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "94.140.14.141");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::ad1:ff");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::ad2:ff");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::bad1:ff");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::bad2:ff");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::1:ff");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a10:50c0::2:ff");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.adguard.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.adguard-dns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "family.adguard-dns.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "unfiltered.adguard-dns.com");
-    // LibreDNS
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "88.198.92.222");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "116.202.176.26");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2a01:4f8:1c0c:8274::1");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dot.libredns.gr");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.libredns.gr");
-    // DNSLify
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.dnslify.com");
-    // Quadrant Security
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns-tls.qis.io");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "doh.qis.io");
-    // Mullvad
-    blacklist_add_domain(pd->vpn.known_dns_servers, "dns.mullvad.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "adblock.dns.mullvad.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "base.dns.mullvad.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "extended.dns.mullvad.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "family.dns.mullvad.net");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "all.dns.mullvad.net");
-    // ControlD
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "76.76.2.0");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "76.76.10.0");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "76.76.2.1");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "76.76.2.2");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "76.76.2.3");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:1a40::");
-    blacklist_add_ipstr(pd->vpn.known_dns_servers, "2606:1a40:1::");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "freedns.controld.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "p0.freedns.controld.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "p1.freedns.controld.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "p2.freedns.controld.com");
-    blacklist_add_domain(pd->vpn.known_dns_servers, "p3.freedns.controld.com");
 }
 
 /* ******************************************************* */
@@ -565,7 +426,6 @@ int run_vpn(pcapdroid_t *pd) {
 
 #if ANDROID
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
-    pd->vpn.known_dns_servers = blacklist_init();
     pd->vpn.block_quic_mode = getIntPref(pd->env, pd->capture_service, "getBlockQuickMode");
 
     pd->vpn.ipv4.enabled = (bool) getIntPref(pd->env, pd->capture_service, "getIPv4Enabled");
@@ -583,8 +443,6 @@ int run_vpn(pcapdroid_t *pd) {
         .on_connection_open = handle_new_connection,
         .on_connection_close = connection_closed,
     };
-
-    load_dns_servers(pd);
 
     zdt = zdtun_init(&callbacks, pd);
     if(zdt == NULL) {
@@ -797,7 +655,6 @@ int run_vpn(pcapdroid_t *pd) {
 
 #if ANDROID
     destroy_uid_resolver(pd->vpn.resolver);
-    blacklist_destroy(pd->vpn.known_dns_servers);
 #endif
 
     return(0);

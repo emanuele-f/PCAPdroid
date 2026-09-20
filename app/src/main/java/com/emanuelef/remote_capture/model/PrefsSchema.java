@@ -41,7 +41,8 @@ public class PrefsSchema {
         BOOLEAN,
         INT,
         STRING,
-        STRING_SET
+        STRING_SET,
+        JSON
     }
 
     public interface StringValidator {
@@ -53,6 +54,7 @@ public class PrefsSchema {
         final @Nullable StringValidator validator;
         boolean backup = true;
         boolean merge = false;
+        boolean sensitive = false;
 
         Spec(Type type, @Nullable StringValidator validator) {
             this.type = type;
@@ -65,6 +67,10 @@ public class PrefsSchema {
 
         void mergeOnRestore() {
             merge = true;
+        }
+
+        void sensitive() {
+            sensitive = true;
         }
     }
 
@@ -82,20 +88,20 @@ public class PrefsSchema {
         bool(Prefs.PREF_TLS_DECRYPTION_SETUP_DONE).noBackup();
         bool(Prefs.PREF_CA_INSTALLATION_SKIPPED).noBackup();
         string(Prefs.PREF_IGNORED_MITM_VERSION).noBackup();
-        string(Prefs.PREF_DECRYPTION_LIST);
+        json(Prefs.PREF_DECRYPTION_LIST);
 
         // Dump
         string(Prefs.PREF_PCAP_DUMP_MODE, oneOf(
                 Prefs.DUMP_NONE, Prefs.DUMP_HTTP_SERVER,
                 Prefs.DUMP_UDP_EXPORTER, Prefs.DUMP_TCP_EXPORTER, Prefs.DUMP_PCAP_FILE));
         string(Prefs.PREF_HTTP_SERVER_PORT, Utils::validatePort);
-        string(Prefs.PREF_COLLECTOR_HOST_KEY, Utils::validateHostOrIp);
+        string(Prefs.PREF_COLLECTOR_HOST_KEY, Utils::validateHostOrIp).sensitive();
         string(Prefs.PREF_COLLECTOR_PORT_KEY, Utils::validatePort);
         bool(Prefs.PREF_PCAPNG_ENABLED);
         bool(Prefs.PREF_DUMP_EXTENSIONS);
         string(Prefs.PREF_FILENAME_PREFIX);
         bool(Prefs.PREF_REMOTE_COLLECTOR_ACK).noBackup();
-        string(Prefs.PREF_CAPTURE_LIST).mergeOnRestore();
+        json(Prefs.PREF_CAPTURE_LIST).mergeOnRestore();
 
         // Capture
         bool(Prefs.PREF_ROOT_CAPTURE);
@@ -112,42 +118,42 @@ public class PrefsSchema {
         bool(Prefs.PREF_LOCKDOWN_VPN_NOTICE_SHOWN).noBackup();
         bool(Prefs.PREF_LOCAL_NETWORK_NOTICE_SHOWN).noBackup();
         bool(Prefs.PREF_PAYLOAD_NOTICE_ACK).noBackup();
-        string(Prefs.PREF_VISUALIZATION_MASK);
+        json(Prefs.PREF_VISUALIZATION_MASK);
 
         // DNS
         bool(Prefs.PREF_USE_SYSTEM_DNS);
-        string(Prefs.PREF_DNS_SERVER_V4, Utils::validateIpv4Address);
-        string(Prefs.PREF_DNS_SERVER_V6, value -> !value.equals("::") && Utils.validateIpv6Address(value));
+        string(Prefs.PREF_DNS_SERVER_V4, Utils::validateIpv4Address).sensitive();
+        string(Prefs.PREF_DNS_SERVER_V6, value -> !value.equals("::") && Utils.validateIpv6Address(value)).sensitive();
 
         // SOCKS5
         bool(Prefs.PREF_SOCKS5_ENABLED_KEY);
-        string(Prefs.PREF_SOCKS5_PROXY_IP_KEY, Utils::validateHost);
+        string(Prefs.PREF_SOCKS5_PROXY_IP_KEY, Utils::validateHost).sensitive();
         string(Prefs.PREF_SOCKS5_PROXY_PORT_KEY, Utils::validatePort);
         bool(Prefs.PREF_SOCKS5_AUTH_ENABLED_KEY);
         string(Prefs.PREF_SOCKS5_USERNAME_KEY);
         string(Prefs.PREF_SOCKS5_PASSWORD_KEY);
 
         // Port mapping
-        string(Prefs.PREF_PORT_MAPPING);
+        json(Prefs.PREF_PORT_MAPPING).sensitive();
         bool(Prefs.PREF_PORT_MAPPING_ENABLED);
         stringSet(Prefs.PREF_PORT_MAPPING_EXEMPTIONS);
 
         // Security
         bool(Prefs.PREF_MALWARE_DETECTION);
-        string(Prefs.PREF_MALWARE_WHITELIST);
+        json(Prefs.PREF_MALWARE_WHITELIST);
         bool(Prefs.PREF_FIREWALL);
         bool(Prefs.PREF_BLOCK_NEW_APPS);
         bool(Prefs.PREF_FIREWALL_WHITELIST_MODE);
         integer(Prefs.PREF_FIREWALL_WHITELIST_INIT_VER);
-        string(Prefs.PREF_FIREWALL_WHITELIST);
-        string(Prefs.PREF_BLOCKLIST);
-        string(Blacklists.PREF_BLACKLISTS_STATUS).noBackup();
+        json(Prefs.PREF_FIREWALL_WHITELIST);
+        json(Prefs.PREF_BLOCKLIST);
+        json(Blacklists.PREF_BLACKLISTS_STATUS).noBackup();
 
         // Other
         string(Prefs.PREF_APP_LANGUAGE, PrefsSchema::isNotEmpty);
         integer(Prefs.PREF_APP_VERSION).noBackup();
         string(Prefs.PREF_API_KEY).noBackup();
-        string(CtrlPermissions.PREF_NAME).noBackup();
+        json(CtrlPermissions.PREF_NAME).noBackup();
         string(PersistableUriPermission.PREF_KEY).noBackup();
         string(SettingsBackup.LICENSE_KEY);
 
@@ -181,8 +187,17 @@ public class PrefsSchema {
         return register(key, new Spec(Type.STRING, validator));
     }
 
+    private static Spec json(String key) {
+        return register(key, new Spec(Type.JSON, null));
+    }
+
     private static Spec stringSet(String key) {
         return register(key, new Spec(Type.STRING_SET, null));
+    }
+
+    public static boolean isJson(String key) {
+        Spec spec = SCHEMA.get(key);
+        return (spec != null) && (spec.type == Type.JSON);
     }
 
     public static boolean isKnown(String key) {
@@ -203,6 +218,12 @@ public class PrefsSchema {
 
         Spec spec = SCHEMA.get(key);
         return (spec != null) && !spec.backup;
+    }
+
+    // prefs which can be dangerous to import, e.g. they can redirect traffic to a malicious server
+    public static boolean isSensitive(String key) {
+        Spec spec = SCHEMA.get(key);
+        return (spec != null) && spec.sensitive;
     }
 
     // prefs which must be merged with the current value when restoring a settings backup
@@ -231,7 +252,8 @@ public class PrefsSchema {
         switch (type) {
             case BOOLEAN:       return (value instanceof Boolean);
             case INT:           return (value instanceof Integer);
-            case STRING:        return (value instanceof String);
+            case STRING:
+            case JSON:          return (value instanceof String);
             case STRING_SET:    return (value instanceof Set);
         }
 

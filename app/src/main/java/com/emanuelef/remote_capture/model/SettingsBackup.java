@@ -35,6 +35,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -175,7 +177,8 @@ public class SettingsBackup {
         switch (type) {
             case BOOLEAN:   return isBoolean(value) ? value.getAsBoolean() : null;
             case INT:       return isNumber(value) ? parseInt(value.getAsString()) : null;
-            case STRING:    return isString(value) ? value.getAsString() : null;
+            case STRING:
+            case JSON:      return isString(value) ? value.getAsString() : null;
             case STRING_SET:
                 if (!value.isJsonArray())
                     return null;
@@ -253,8 +256,27 @@ public class SettingsBackup {
         return mCreated;
     }
 
+    public List<String> getChangedKeys(SharedPreferences prefs) {
+        ArrayList<String> rv = new ArrayList<>();
+        Map<String, ?> current = prefs.getAll();
+
+        for (int i = 0; i < mSettings.size(); i++) {
+            String key = mSettings.keyAt(i);
+
+            if (!mSettings.valueAt(i).equals(current.get(key)))
+                rv.add(key);
+        }
+
+        return rv;
+    }
+
     public @NonNull String getString(String key) {
         Object value = mSettings.get(key);
         return (value instanceof String) ? (String) value : "";
+    }
+
+    public @NonNull String getValueAsString(String key) {
+        Object value = mSettings.get(key);
+        return (value != null) ? value.toString() : "";
     }
 }

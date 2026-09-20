@@ -98,6 +98,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.text.BidiFormatter;
 import androidx.core.text.HtmlCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -1865,6 +1866,8 @@ public class Utils {
                 (!is_v6 && (prefix <= 32)));
     }
 
+    private static final Pattern INVALID_HOST_CHARS = Pattern.compile("[A-Z\\s?!=`@]");
+
     // rough validation
     public static boolean validateHost(String host) {
         int len = host.length();
@@ -1872,9 +1875,21 @@ public class Utils {
             return false;
         if((host.charAt(0) == '-') || (host.charAt(len-1) == '-'))
             return false;
-        if(host.matches(".*[A-Z\\s?!=`@].*"))
+        if(INVALID_HOST_CHARS.matcher(host).find())
             return false;
         return true;
+    }
+
+    public static boolean isLocalhost(String host) {
+        if (host.equals("localhost") || host.equals("::1"))
+            return true;
+
+        return host.startsWith("127.") && validateIpv4Address(host);
+    }
+
+    // prevents the bidi reordering of a Latin/numeric value embedded in an RTL text
+    public static String bidiWrap(String text) {
+        return BidiFormatter.getInstance().unicodeWrap(text);
     }
 
     public static String uriToFilePath(Context ctx, Uri uri) {

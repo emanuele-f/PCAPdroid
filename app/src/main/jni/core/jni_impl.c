@@ -1521,4 +1521,17 @@ Java_com_emanuelef_remote_1capture_CaptureService_extractKeylogFromPcapng(JNIEnv
     return rv;
 }
 
+/* ******************************************************* */
+
+JNIEXPORT jboolean JNICALL
+Java_com_emanuelef_remote_1capture_CaptureService_nativeIsKnownDnsServer(JNIEnv *env, jclass clazz,
+                                                                         jstring ip) {
+    const char *ip_s = (*env)->GetStringUTFChars(env, ip, 0);
+
+    bool rv = is_known_dns_ipstr(ip_s);
+
+    (*env)->ReleaseStringUTFChars(env, ip, ip_s);
+    return rv;
+}
+
 #endif // ANDROID

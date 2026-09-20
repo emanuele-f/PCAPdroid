@@ -275,7 +275,7 @@
     <string name="decryption_info_no_rule">لفك تعمية هذا الاتصال، أنشئ قاعدة فك التعمية من الدرج الأيسر أو من القائمة السياقية في قائمة الاتصالات</string>
     <string name="error">خطأ</string>
     <string name="socks5_proxy">SOCKS5</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="asn">ASN</string>
     <string name="export_ca_certificate">صدّر شهادة PCAPdroid CA، افتح إعدادات \"التشفير وبيانات الاعتماد\" لنظام Android واختر تثبيتها كـ \"شهادة CA\"</string>
     <string name="install_ca_certificate">قم بتثبيت شهادة PCAPdroid CA، واختيار \"VPN والتطبيقات\". سيطلب Android شاشة القفل أو كلمة مرورك</string>

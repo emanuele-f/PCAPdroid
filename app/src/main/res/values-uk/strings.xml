@@ -348,7 +348,7 @@
     <string name="once">Раз</string>
     <string name="forever">Назавжди</string>
     <string name="control_permissions_summary">Виберіть, яким програмам дозволено керувати захопленням PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Країна</string>
     <string name="send_report">Надіслати звіт</string>
     <string name="start_at_boot">Запускати при завантаженні</string>

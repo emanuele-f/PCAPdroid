@@ -136,7 +136,7 @@
     <string name="forever">Навсегда</string>
     <string name="control_permissions">Контроль разрешений</string>
     <string name="control_permissions_summary">Проверьте каким приложениям разрешено контролировать захват трафика через PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Страна</string>
     <string name="asn">ASN</string>
     <string name="country_val">Страна: %1$s</string>
