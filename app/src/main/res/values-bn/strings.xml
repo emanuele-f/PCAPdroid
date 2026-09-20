@@ -168,7 +168,7 @@
     <string name="forever">সর্বদা</string>
     <string name="control_permissions">নিয়ন্ত্রণ অনুমতি</string>
     <string name="control_permissions_summary">কোন অ্যাপগুলিকে PCAPdroid ক্যাপচার নিয়ন্ত্রণের অনুমতি দেওয়া হয়েছে তা পরীক্ষা করুন</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">কোনো অনুমতি সেট করা নেই। অনুমতি প্রম্পট দেখাতে StartActivityForResult-এর মাধ্যমে PCAPdroid চালু করুন</string>
     <string name="generate_api_key">API কী তৈরি করুন</string>
     <string name="show_api_key">API কী দেখান</string>
@@ -578,7 +578,7 @@
     <string name="export_settings_summary">পরে পুনরুদ্ধার করার জন্য অ্যাপের সেটিংস একটি ফাইলে সংরক্ষণ করুন</string>
     <string name="import_settings">সেটিংস আমদানি করুন</string>
     <string name="import_settings_summary">পূর্ববর্তী একটি ব্যাকআপ থেকে অ্যাপের সেটিংস পুনরুদ্ধার করুন</string>
-    <string name="import_settings_confirm">বর্তমান সব সেটিংস %1$s-এ রপ্তানি করা সেটিংস দিয়ে প্রতিস্থাপন করা হবে।\n\nসেগুলি প্রয়োগ করতে অ্যাপটি পুনরায় চালু করা হবে। চালিয়ে যাবেন?</string>
+    <string name="import_settings_confirm">বর্তমান সব সেটিংস %1$s-এ রপ্তানি করা সেটিংস দিয়ে প্রতিস্থাপন করা হবে।\n\nদ্রষ্টব্য: শুধুমাত্র বিশ্বস্ত উৎস থেকে সেটিংস আমদানি করুন।\n\nসেগুলি প্রয়োগ করতে অ্যাপটি পুনরায় চালু করা হবে। চালিয়ে যাবেন?</string>
     <string name="settings_imported">সেটিংস আমদানি করা হয়েছে</string>
     <string name="imported_license_invalid">আমদানি করা লাইসেন্সটি এই ডিভাইসে বৈধ নয়, তাই পেইড বৈশিষ্ট্যগুলি উপলব্ধ হবে না। লাইসেন্স একটি নির্দিষ্ট ডিভাইস ও অ্যাপ ইনস্টলেশনের সাথে আবদ্ধ থাকে</string>
     <string name="captures_not_accessible">আমদানি করা তালিকার %1$dটি ক্যাপচার অ্যাক্সেস করা যাচ্ছে না। এগুলির ফাইল যদি এখনও উপলব্ধ থাকে, তবে তালিকাটি পুনরুদ্ধার করতে সেগুলি ধারণকারী ফোল্ডারটি নির্বাচন করুন</string>
@@ -590,4 +590,10 @@
     <string name="replace_action">প্রতিস্থাপন করুন</string>
     <string name="keep_current_action">বর্তমানটি রাখুন</string>
     <string name="mitm_addon_not_available">TLS ডিক্রিপশনের জন্য PCAPdroid mitm অ্যাডঅন প্রয়োজন, যা এই বিল্ডে উপলব্ধ নয়</string>
+    <string name="import_anyway_action">তবুও আমদানি করুন</string>
+    <string name="and_n_more">এবং আরও %1$dটি</string>
+    <string name="import_sensitive_prefs_confirm">ব্যাকআপটি কিছু সংবেদনশীল সেটিংস পরিবর্তন করে, যা আপনার ডিভাইসের ট্রাফিক একটি ক্ষতিকর সার্ভারে পুনর্নির্দেশ করতে ব্যবহার করা হতে পারে:\n%1$s\n\nআপনি নিজে এই ব্যাকআপ তৈরি করে থাকলে তবেই চালিয়ে যান। এটি অন্য কারও কাছ থেকে এলে আমদানি বাতিল করুন।</string>
+    <string name="restart_app_action">অ্যাপ পুনরায় চালু করুন</string>
+    <string name="skipped_prefs_import">দ্রষ্টব্য: নিম্নলিখিত সেটিংস অজানা বা অবৈধ হওয়ায় আমদানি করা যায়নি:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid-এর জন্য সর্বদা-সক্রিয় VPN চালু আছে, তাই আপনাকে অ্যান্ড্রয়েড সেটিংস থেকে ক্যাপচার বন্ধ করতে হবে।\n\nআপনি কি এখন VPN সেটিংস খুলতে চান?</string>
 </resources>

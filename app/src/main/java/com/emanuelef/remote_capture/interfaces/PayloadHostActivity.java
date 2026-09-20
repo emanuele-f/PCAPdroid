@@ -20,6 +20,7 @@
 package com.emanuelef.remote_capture.interfaces;
 
 import com.emanuelef.remote_capture.adapters.PayloadAdapter;
+import com.emanuelef.remote_capture.fragments.ConnectionPayload;
 
 /**
  * Interface for activities that host payload display fragments (like ConnectionPayload).
@@ -30,6 +31,11 @@ public interface PayloadHostActivity extends PayloadAdapter.ExportPayloadHandler
      * Called when the fragment needs to update menu visibility based on the current state.
      */
     void updateMenuVisibility();
+
+    /**
+     * Returns true if the payload should be displayed as printable text, false for hexdump.
+     */
+    boolean getDisplayMode(ConnectionPayload fragment);
 
     /**
      * Interface for receiving connection update notifications.

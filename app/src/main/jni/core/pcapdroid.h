@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-24 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #ifndef __PCAPDROID_H__
@@ -39,6 +39,7 @@
 #define MAX_HOST_LRU_SIZE 256
 #define PERIODIC_PURGE_TIMEOUT_MS 5000
 #define MINIMAL_PAYLOAD_MAX_DIRECTION_SIZE 512
+#define PAYLOAD_HEAP_CHECK_BYTES (2 * 1024 * 1024)
 
 #define DNS_FLAGS_MASK 0x8000
 #define DNS_TYPE_REQUEST 0x0000
@@ -173,6 +174,7 @@ typedef struct pkt_context {
     const zdtun_5tuple_t *tuple;
     pd_conn_t *data;
     plain_data_t *plain_data;
+    int64_t file_offset;
 } pkt_context_t;
 
 struct ushark;
@@ -191,9 +193,10 @@ typedef struct {
     void (*stop_pcap_dump)(struct pcapdroid *pd);
     void (*notify_service_status)(struct pcapdroid *pd, const char *status);
     void (*notify_blacklists_loaded)(struct pcapdroid *pd, bl_status_arr_t *status_arr);
-    bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
+    bool (*dump_payload_chunk)(struct pcapdroid *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size, int64_t file_offset);
     void (*clear_payload_chunks)(struct pcapdroid *pd, const pkt_context_t *pctx);
     bool (*get_country_code)(struct pcapdroid *pd, const char *host, char out[3]);
+    void (*check_available_heap)(struct pcapdroid *pd);
 } pd_callbacks_t;
 
 /* ******************************************************* */
@@ -225,6 +228,7 @@ typedef struct pcapdroid {
     bool pcap_file_capture;
     const char *keylog_path_override;  // For tests: override sslkeylog.txt location
     payload_mode_t payload_mode;
+    uint32_t payload_bytes_since_heap_check;
 
     // stats
     u_int num_dropped_pkts;
@@ -238,7 +242,6 @@ typedef struct pcapdroid {
         struct {
             int tunfd;
             block_quic_mode_t block_quic_mode;
-            blacklist_t *known_dns_servers;
             uid_resolver_t *resolver;
 
             struct {
@@ -363,6 +366,8 @@ typedef struct {
     jmethodID arraylistNew;
     jmethodID arraylistAdd;
     jmethodID payloadChunkInit;
+    jmethodID checkAvailableHeap;
+    jmethodID payloadChunkInitOnDisk;
 } jni_methods_t;
 
 typedef struct {
@@ -440,6 +445,9 @@ static inline const char* get_cache_dir(pcapdroid_t *pd) { return get_cache_path
 static inline const char* get_files_dir(pcapdroid_t *pd) { return get_file_path(pd, ""); }
 char* get_appname_by_uid(pcapdroid_t *pd, int uid, char *buf, int bufsize);
 uint16_t pd_ndpi2proto(const struct ndpi_bitmask *masterProtos, ndpi_protocol proto);
+bool is_known_dns_ip(const zdtun_ip_t *ip, int ipver);
+bool is_known_dns_domain(const char *domain);
+bool is_known_dns_ipstr(const char *ip);
 
 #ifdef ANDROID
 

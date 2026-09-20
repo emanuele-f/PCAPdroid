@@ -148,7 +148,7 @@
     <string name="asn">ASN</string>
     <string name="whitelist">Autorisés</string>
     <string name="show_me">M\'afficher</string>
-    <string name="control_permissions_item">%1$s : %2$s</string>
+    <string name="name_value">%1$s : %2$s</string>
     <string name="country_val">Pays : %1$s</string>
     <string name="send_report">Envoyer le rapport</string>
     <string name="control_permissions_summary">Vérifier quelles applications peuvent contrôler la capture de PCAPdroid</string>
@@ -583,7 +583,7 @@
     <string name="export_settings_summary">Enregistrer les paramètres de l\'application dans un fichier, pour les restaurer plus tard</string>
     <string name="import_settings">Importer les paramètres</string>
     <string name="import_settings_summary">Restaurer les paramètres de l\'application depuis une sauvegarde précédente</string>
-    <string name="import_settings_confirm">Tous les paramètres actuels seront remplacés par ceux exportés le %1$s.\n\nL\'application sera redémarrée pour les appliquer. Continuer ?</string>
+    <string name="import_settings_confirm">Tous les paramètres actuels seront remplacés par ceux exportés le %1$s.\n\nNOTE : n\'importez des paramètres que depuis une source fiable.\n\nL\'application sera redémarrée pour les appliquer. Continuer ?</string>
     <string name="settings_imported">Paramètres importés</string>
     <string name="imported_license_invalid">La licence importée n\'est pas valide sur cet appareil, les fonctionnalités payantes ne seront donc pas disponibles. Les licences sont liées à un appareil et à une installation de l\'application spécifiques</string>
     <string name="captures_not_accessible">%1$d captures de la liste importée ne sont pas accessibles. Si leurs fichiers sont toujours disponibles, sélectionnez le dossier qui les contient pour restaurer la liste</string>
@@ -595,4 +595,10 @@
     <string name="replace_action">Remplacer</string>
     <string name="keep_current_action">Garder les actuelles</string>
     <string name="mitm_addon_not_available">Le décryptage TLS nécessite le greffon mitm de PCAPdroid, qui n\'est pas disponible dans cette version</string>
+    <string name="import_anyway_action">Importer quand même</string>
+    <string name="and_n_more">et %1$d de plus</string>
+    <string name="import_sensitive_prefs_confirm">La sauvegarde modifie certains paramètres sensibles, qui peuvent être utilisés pour rediriger le trafic de votre appareil vers un serveur malveillant :\n%1$s\n\nNe continuez que si vous avez créé cette sauvegarde vous-même. Si elle provient de quelqu\'un d\'autre, annulez l\'importation.</string>
+    <string name="restart_app_action">Redémarrer l\'application</string>
+    <string name="skipped_prefs_import">NOTE : les paramètres suivants n\'ont pas pu être importés, car ils sont inconnus ou invalides :\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">Le VPN permanent est activé pour PCAPdroid, vous devez donc arrêter la capture depuis les paramètres Android.\n\nVoulez-vous ouvrir les paramètres VPN maintenant ?</string>
 </resources>

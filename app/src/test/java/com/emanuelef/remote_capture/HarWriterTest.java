@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import com.emanuelef.remote_capture.model.CaptureSettings;
 import com.emanuelef.remote_capture.model.ConnectionDescriptor;
 import com.emanuelef.remote_capture.model.PayloadChunk;
+import com.emanuelef.remote_capture.model.PayloadIndex;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -103,12 +104,11 @@ public class HarWriterTest {
      * Add a payload chunk directly to the connection without triggering HTTP logging.
      * This allows us to control test data precisely.
      */
-    @SuppressWarnings("unchecked")
     private void addChunkDirect(ConnectionDescriptor conn, PayloadChunk chunk) {
         try {
             java.lang.reflect.Field field = ConnectionDescriptor.class.getDeclaredField("payload_chunks");
             field.setAccessible(true);
-            java.util.ArrayList<PayloadChunk> chunks = (java.util.ArrayList<PayloadChunk>) field.get(conn);
+            PayloadIndex chunks = (PayloadIndex) field.get(conn);
             synchronized (conn) {
                 chunks.add(chunk);
             }

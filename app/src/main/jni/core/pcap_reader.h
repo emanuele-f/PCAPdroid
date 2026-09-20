@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2021-25 - Emanuele Faranda
+ * Copyright 2021-26 - Emanuele Faranda
  */
 
 #ifndef __PCAPDROID_PCAP_READER_H__
@@ -54,6 +54,11 @@ void pd_destroy_reader(pd_reader_t *reader);
 pcap_dump_format_t pd_get_dump_format(pd_reader_t *reader);
 bool pd_has_unsupported_dlt_packets(pd_reader_t *reader);
 bool pd_has_seen_dump_extensions(pd_reader_t *reader);
+
+/**
+ * Get the file offset of the data of the last packet read with pd_read_next, or -1 on error
+ */
+int64_t pd_get_packet_data_offset(pd_reader_t *reader);
 
 /**
  * Read the next packet

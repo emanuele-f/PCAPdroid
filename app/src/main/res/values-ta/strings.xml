@@ -165,7 +165,7 @@
     <string name="forever">என்றென்றும்</string>
     <string name="control_permissions">கட்டுப்பாட்டு அனுமதிகள்</string>
     <string name="control_permissions_summary">பி.சி.ஏ.பி டிராய்டு பிடிப்பைக் கட்டுப்படுத்த எந்த பயன்பாடுகள் அனுமதிக்கப்படுகின்றன என்பதைச் சரிபார்க்கவும்</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">நாடு</string>
     <string name="asn">ASN</string>
     <string name="country_val">நாடு: %1$s</string>
@@ -571,7 +571,7 @@
     <string name="export_settings_summary">பின்னர் மீட்டெடுப்பதற்காக பயன்பாட்டு அமைப்புகளை ஒரு கோப்பில் சேமிக்கவும்</string>
     <string name="import_settings">அமைப்புகளை இறக்குமதி செய்</string>
     <string name="import_settings_summary">முந்தைய காப்புப்பிரதியிலிருந்து பயன்பாட்டு அமைப்புகளை மீட்டெடுக்கவும்</string>
-    <string name="import_settings_confirm">தற்போதைய அனைத்து அமைப்புகளும் %1$s அன்று ஏற்றுமதி செய்யப்பட்டவற்றால் மாற்றப்படும்.\n\nஅவற்றைப் பயன்படுத்த பயன்பாடு மறுதொடக்கம் செய்யப்படும். தொடரவா?</string>
+    <string name="import_settings_confirm">தற்போதைய அனைத்து அமைப்புகளும் %1$s அன்று ஏற்றுமதி செய்யப்பட்டவற்றால் மாற்றப்படும்.\n\nகுறிப்பு: நம்பகமான மூலத்திலிருந்து மட்டுமே அமைப்புகளை இறக்குமதி செய்யவும்.\n\nஅவற்றைப் பயன்படுத்த பயன்பாடு மறுதொடக்கம் செய்யப்படும். தொடரவா?</string>
     <string name="settings_imported">அமைப்புகள் இறக்குமதி செய்யப்பட்டன</string>
     <string name="imported_license_invalid">இறக்குமதி செய்யப்பட்ட உரிமம் இந்த சாதனத்தில் செல்லுபடியாகாது, எனவே கட்டண அம்சங்கள் கிடைக்காது. உரிமங்கள் ஒரு குறிப்பிட்ட சாதனத்துடனும் பயன்பாட்டு நிறுவலுடனும் பிணைக்கப்பட்டுள்ளன</string>
     <string name="captures_not_accessible">இறக்குமதி செய்யப்பட்ட பட்டியலில் உள்ள %1$d பிடிப்புகளை அணுக முடியவில்லை. அவற்றின் கோப்புகள் இன்னும் கிடைத்தால், பட்டியலை மீட்டெடுக்க அவற்றைக் கொண்டிருக்கும் கோப்புறையைத் தேர்ந்தெடுக்கவும்</string>
@@ -583,4 +583,10 @@
     <string name="replace_action">மாற்றவும்</string>
     <string name="keep_current_action">தற்போதையதை வைத்திருங்கள்</string>
     <string name="mitm_addon_not_available">TLS மறைகுறியாக்கத்திற்கு PCAPdroid mitm addon தேவை, இது இந்த பதிப்பில் கிடைக்கவில்லை</string>
+    <string name="import_anyway_action">எப்படியும் இறக்குமதி செய்</string>
+    <string name="and_n_more">மற்றும் இன்னும் %1$d</string>
+    <string name="import_sensitive_prefs_confirm">இந்த காப்புப்பிரதி சில முக்கியமான அமைப்புகளை மாற்றுகிறது, அவை உங்கள் சாதனத்தின் போக்குவரத்தை ஒரு தீங்கிழைக்கும் சேவையகத்திற்கு திருப்பிவிடப் பயன்படுத்தப்படலாம்:\n%1$s\n\nஇந்த காப்புப்பிரதியை நீங்களே உருவாக்கியிருந்தால் மட்டும் தொடரவும். வேறு யாரிடமிருந்தாவது வந்திருந்தால், இறக்குமதியை ரத்து செய்யவும்.</string>
+    <string name="restart_app_action">பயன்பாட்டை மறுதொடக்கம் செய்</string>
+    <string name="skipped_prefs_import">குறிப்பு: பின்வரும் அமைப்புகள் தெரியாதவை அல்லது தவறானவை என்பதால் இறக்குமதி செய்ய முடியவில்லை:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid-க்கு எப்போதும் இயங்கும் VPN இயக்கப்பட்டுள்ளது, எனவே ஆண்ட்ராய்டு அமைப்புகளிலிருந்து பிடிப்பை நிறுத்த வேண்டும்.\n\nVPN அமைப்புகளை இப்போது திறக்க வேண்டுமா?</string>
 </resources>

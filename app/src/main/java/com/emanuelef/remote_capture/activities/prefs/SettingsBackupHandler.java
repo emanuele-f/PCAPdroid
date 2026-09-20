@@ -50,6 +50,7 @@ import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.activities.MainActivity;
 import com.emanuelef.remote_capture.model.CaptureList;
 import com.emanuelef.remote_capture.model.Prefs;
+import com.emanuelef.remote_capture.model.PrefsSchema;
 import com.emanuelef.remote_capture.model.SettingsBackup;
 
 import java.io.File;
@@ -81,6 +82,7 @@ public class SettingsBackupHandler {
     private CaptureList mCaptureList;
     private List<CaptureList.Capture> mUnresolvedCaptures;
     private boolean mLicenseWarning;
+    private String mSkippedPrefs;
     private int mCapturesRecovered;
     private int mCapturesRestored = -1;
 
@@ -166,9 +168,71 @@ public class SettingsBackupHandler {
         new AlertDialog.Builder(context)
                 .setTitle(R.string.import_settings)
                 .setMessage(mFragment.getString(R.string.import_settings_confirm, date))
-                .setPositiveButton(R.string.import_action, (dialog, which) -> doImport(backup))
+                .setPositiveButton(R.string.import_action, (dialog, which) -> confirmSensitivePrefs(backup))
                 .setNegativeButton(R.string.cancel_action, (dialog, which) -> {})
                 .show();
+    }
+
+    public static List<String> getPrefsToConfirm(SettingsBackup backup, SharedPreferences prefs) {
+        ArrayList<String> rv = new ArrayList<>();
+
+        for (String key: backup.getChangedKeys(prefs)) {
+            String value = backup.getValueAsString(key);
+            if (!value.isEmpty() && PrefsSchema.isSensitive(key) && !isSafeValue(key, value))
+                rv.add(key);
+        }
+
+        return rv;
+    }
+
+    private static boolean isSafeValue(String key, String value) {
+        boolean is_host = key.equals(Prefs.PREF_COLLECTOR_HOST_KEY) || key.equals(Prefs.PREF_SOCKS5_PROXY_IP_KEY)
+                || key.equals(Prefs.PREF_DNS_SERVER_V4) || key.equals(Prefs.PREF_DNS_SERVER_V6);
+
+        if (is_host && Utils.isLocalhost(value))
+            return true;
+
+        if (key.equals(Prefs.PREF_DNS_SERVER_V4) || key.equals(Prefs.PREF_DNS_SERVER_V6))
+            return CaptureService.isKnownDnsServer(value);
+
+        return false;
+    }
+
+    private void confirmSensitivePrefs(SettingsBackup backup) {
+        List<String> keys = getPrefsToConfirm(backup, PreferenceManager.getDefaultSharedPreferences(mAppContext));
+        if (keys.isEmpty()) {
+            doImport(backup);
+            return;
+        }
+
+        StringBuilder prefs = new StringBuilder();
+        for (String key: keys)
+            prefs.append("\n- ").append(describePref(key, backup.getValueAsString(key), 0));
+
+        new AlertDialog.Builder(mFragment.requireContext())
+                .setTitle(R.string.warning)
+                .setMessage(mFragment.getString(R.string.import_sensitive_prefs_confirm, prefs.toString()))
+                .setPositiveButton(R.string.import_anyway_action, (dialog, which) -> doImport(backup))
+                .setNegativeButton(R.string.cancel_action, (dialog, which) -> {})
+                .show();
+    }
+
+    private String describePref(String key, String value, int max_len) {
+        String key_clean = sanitize(key, max_len);
+
+        // JSON values are too long and complex to understand, so just show the pref key
+        if (PrefsSchema.isJson(key))
+            return Utils.bidiWrap(key_clean);
+
+        return Utils.bidiWrap(mFragment.getString(R.string.name_value, key_clean, sanitize(value, max_len)));
+    }
+
+    private static String sanitize(String s, int max_len) {
+        String rv = s.replaceAll("\\s+", " ");
+        if (max_len > 0)
+            rv = Utils.shorten(rv, max_len);
+
+        return rv;
     }
 
     private void doImport(SettingsBackup backup) {
@@ -178,8 +242,30 @@ public class SettingsBackupHandler {
 
         backup.apply(prefs);
         mLicenseWarning = checkImportedLicense(prefs, localLicense);
+        mSkippedPrefs = describeSkippedPrefs(backup);
 
         importCaptureList(backup);
+    }
+
+    private @Nullable String describeSkippedPrefs(SettingsBackup backup) {
+        Map<String, String> skipped = backup.getSkippedPrefs();
+        if (skipped.isEmpty())
+            return null;
+
+        StringBuilder rv = new StringBuilder();
+        int shown = 0;
+
+        for (Map.Entry<String, String> entry: skipped.entrySet()) {
+            if (shown >= 8) {
+                rv.append("\n- ").append(Utils.bidiWrap(mFragment.getString(R.string.and_n_more, skipped.size() - shown)));
+                break;
+            }
+
+            rv.append("\n- ").append(describePref(entry.getKey(), entry.getValue(), 32));
+            shown++;
+        }
+
+        return rv.toString();
     }
 
     /* The license is bound to the installation id, which changes with the device and with the app
@@ -538,6 +624,9 @@ public class SettingsBackupHandler {
 
         StringBuilder msg = new StringBuilder(mFragment.getString(R.string.settings_imported));
 
+        if (mSkippedPrefs != null)
+            msg.append("\n\n").append(mFragment.getString(R.string.skipped_prefs_import, mSkippedPrefs));
+
         if (mCapturesRestored >= 0) {
             int inaccessible = mCapturesRecovered + mUnresolvedCaptures.size();
 
@@ -552,7 +641,7 @@ public class SettingsBackupHandler {
                 .setTitle(R.string.import_settings)
                 .setMessage(msg.toString())
                 .setCancelable(false)
-                .setPositiveButton(R.string.ok, (dialog, which) -> restartApp())
+                .setPositiveButton(R.string.restart_app_action, (dialog, which) -> restartApp())
                 .show();
     }
 

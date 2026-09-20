@@ -361,12 +361,12 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
             if((state == AppState.running) || (state == AppState.stopping)) {
                 mStartBtn.setVisible(false);
                 mStopBtn.setEnabled(true);
-                mStopBtn.setVisible(!CaptureService.isAlwaysOnVPN());
+                mStopBtn.setVisible(true);
                 mMenuSettings.setEnabled(false);
             } else { // ready || starting
                 mStopBtn.setVisible(false);
                 mStartBtn.setEnabled(true);
-                mStartBtn.setVisible(!CaptureService.isAlwaysOnVPN());
+                mStartBtn.setVisible(true);
                 mMenuSettings.setEnabled(true);
             }
         }

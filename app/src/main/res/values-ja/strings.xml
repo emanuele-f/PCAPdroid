@@ -140,7 +140,7 @@
     <string name="forever">表示しない</string>
     <string name="control_permissions">権限を管理</string>
     <string name="control_permissions_summary">PCAPdroid キャプチャー制御を許可するアプリを確認します</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">国</string>
     <string name="asn">AS 番号</string>
     <string name="country_val">国: %1$s</string>
@@ -578,7 +578,7 @@
     <string name="export_settings_summary">後で復元できるように、アプリの設定をファイルに保存します</string>
     <string name="import_settings">設定をインポート</string>
     <string name="import_settings_summary">以前のバックアップからアプリの設定を復元します</string>
-    <string name="import_settings_confirm">現在の設定はすべて %1$s にエクスポートされたものに置き換えられます。\n\n適用するためにアプリを再起動します。続行しますか?</string>
+    <string name="import_settings_confirm">現在の設定はすべて %1$s にエクスポートされたものに置き換えられます。\n\n注意: 信頼できるソースからのみ設定をインポートしてください。\n\n適用するためにアプリを再起動します。続行しますか?</string>
     <string name="settings_imported">設定をインポートしました</string>
     <string name="imported_license_invalid">インポートされたライセンスはこのデバイスでは有効でないため、有料機能は利用できません。ライセンスは特定のデバイスとアプリのインストールに紐付けられています</string>
     <string name="captures_not_accessible">インポートされた一覧のうち %1$d 件のキャプチャにアクセスできません。ファイルがまだ存在する場合は、それらを含むフォルダーを選択して一覧を復元してください</string>
@@ -590,4 +590,10 @@
     <string name="replace_action">置き換え</string>
     <string name="keep_current_action">現在のものを保持</string>
     <string name="mitm_addon_not_available">TLS 復号には PCAPdroid mitm アドオンが必要ですが、このビルドでは利用できません</string>
+    <string name="import_anyway_action">それでもインポート</string>
+    <string name="and_n_more">ほか %1$d 件</string>
+    <string name="import_sensitive_prefs_confirm">このバックアップは、デバイスのトラフィックを悪意のあるサーバーにリダイレクトするために悪用されうる重要な設定を変更します:\n%1$s\n\nご自身で作成したバックアップの場合のみ続行してください。他人から受け取ったものであれば、インポートを中止してください。</string>
+    <string name="restart_app_action">アプリを再起動</string>
+    <string name="skipped_prefs_import">注意: 次の設定は不明または無効なため、インポートできませんでした:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid で常時接続 VPN が有効になっているため、キャプチャは Android の設定から終了する必要があります。\n\n今すぐ VPN 設定を開きますか?</string>
 </resources>

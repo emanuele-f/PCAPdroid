@@ -2,6 +2,12 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [2.0.2] - 2026-09-20
+- Fix leaked connections listener causing IllegalStateException
+- Fix out-of-memory crash on large pcap files load with full payload enabled
+- Harden import settings to prevent crashes and protect from social engineering
+- Minor fixes and improvements
+
 ## [2.0.1] - 2026-09-09
 - Update maltrail malware blacklist URL
 - Bump mitm addon to 2.4, fixes decryption with root

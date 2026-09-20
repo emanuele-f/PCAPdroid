@@ -348,7 +348,7 @@
     <string name="once">Раз</string>
     <string name="forever">Назавжди</string>
     <string name="control_permissions_summary">Виберіть, яким програмам дозволено керувати захопленням PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Країна</string>
     <string name="send_report">Надіслати звіт</string>
     <string name="start_at_boot">Запускати при завантаженні</string>
@@ -596,7 +596,7 @@
     <string name="export_settings_summary">Зберегти налаштування додатку у файл, щоб відновити їх пізніше</string>
     <string name="import_settings">Імпортувати налаштування</string>
     <string name="import_settings_summary">Відновити налаштування додатку з попередньої резервної копії</string>
-    <string name="import_settings_confirm">Усі поточні налаштування буде замінено налаштуваннями, експортованими %1$s.\n\nДодаток буде перезапущено, щоб застосувати їх. Продовжити\?</string>
+    <string name="import_settings_confirm">Усі поточні налаштування буде замінено налаштуваннями, експортованими %1$s.\n\nПРИМІТКА: імпортуйте налаштування лише з надійного джерела.\n\nДодаток буде перезапущено, щоб застосувати їх. Продовжити?</string>
     <string name="settings_imported">Налаштування імпортовано</string>
     <string name="imported_license_invalid">Імпортована ліцензія недійсна на цьому пристрої, тому платні функції будуть недоступні. Ліцензії прив\'язані до конкретного пристрою та встановлення додатку</string>
     <string name="captures_not_accessible">%1$d захоплень з імпортованого списку недоступні. Якщо їхні файли досі наявні, виберіть папку, яка їх містить, щоб відновити список</string>
@@ -608,4 +608,10 @@
     <string name="replace_action">Замінити</string>
     <string name="keep_current_action">Залишити поточні</string>
     <string name="mitm_addon_not_available">Для дешифрування TLS потрібне доповнення mitm PCAPdroid, яке недоступне в цій збірці</string>
+    <string name="import_anyway_action">Усе одно імпортувати</string>
+    <string name="and_n_more">та ще %1$d</string>
+    <string name="import_sensitive_prefs_confirm">Резервна копія змінює деякі конфіденційні налаштування, які можуть бути використані для перенаправлення трафіку вашого пристрою на зловмисний сервер:\n%1$s\n\nПродовжуйте, лише якщо ви створили цю резервну копію самостійно. Якщо вона отримана від когось іншого, скасуйте імпорт.</string>
+    <string name="restart_app_action">Перезапустити додаток</string>
+    <string name="skipped_prefs_import">ПРИМІТКА: наведені нижче налаштування не вдалося імпортувати, оскільки вони невідомі або недійсні:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">Для PCAPdroid увімкнено постійний VPN, тому зупинити захоплення потрібно в налаштуваннях Android.\n\nВідкрити налаштування VPN зараз?</string>
 </resources>

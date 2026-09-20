@@ -168,7 +168,7 @@
     <string name="forever">ہمیشہ کے لیے</string>
     <string name="control_permissions">کنٹرول اجازتیں</string>
     <string name="control_permissions_summary">چیک کریں کہ کن ایپس کو PCAPdroid کیپچر کو کنٹرول کرنے کی اجازت ہے</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">کوئی اجازت طے نہیں کی گئی۔ اجازت کی درخواست دکھانے کے لیے PCAPdroid کو StartActivityForResult کے ذریعے طلب کریں</string>
     <string name="generate_api_key">API کلید بنائیں</string>
     <string name="show_api_key">API کلید دکھائیں</string>
@@ -259,11 +259,11 @@
     <string name="install_action">انسٹال کریں</string>
     <string name="export_action">ایکسپورٹ کریں</string>
     <string name="export_ellipsis">ایکسپورٹ کریں…</string>
-    <string name="install_the_mitm_addon">PCAPdroid <a href='%1$s'>mitm ایڈآن</a> انسٹال کریں</string>
+    <string name="install_the_mitm_addon">PCAPdroid <a href="%1$s">mitm ایڈآن</a> انسٹال کریں</string>
     <string name="export_ca_certificate">PCAPdroid CA سرٹیفکیٹ ایکسپورٹ کریں، پھر اینڈرائیڈ کی \"Encryption &amp; Credentials\" ترتیبات کھولیں اور اسے بطور \"CA certificate\" انسٹال کرنے کا انتخاب کریں</string>
     <string name="install_ca_certificate">PCAPdroid CA سرٹیفکیٹ انسٹال کریں، \"VPN and apps\" کا انتخاب کریں۔ اینڈرائیڈ آپ کی لاک اسکرین یا پاس ورڈ طلب کرے گا</string>
     <string name="checking_the_certificate">سرٹیفکیٹ چیک ہو رہا ہے…</string>
-    <string name="ca_cert_export_failed">CA سرٹیفکیٹ ایکسپورٹ کرتے وقت ایک خرابی پیش آئی\n\nاگر آپ کا آلہ پس منظر کی سروسز کے عمل کو محدود کرنے کے لیے Autostart یا اسی طرح کا سافٹ ویئر لاگو کرتا ہے، تو <a href='%1$s'>PCAPdroid کو وائٹ لسٹ</a> ضرور کریں</string>
+    <string name="ca_cert_export_failed">CA سرٹیفکیٹ ایکسپورٹ کرتے وقت ایک خرابی پیش آئی\n\nاگر آپ کا آلہ پس منظر کی سروسز کے عمل کو محدود کرنے کے لیے Autostart یا اسی طرح کا سافٹ ویئر لاگو کرتا ہے، تو <a href="%1$s">PCAPdroid کو وائٹ لسٹ</a> ضرور کریں</string>
     <string name="cert_exported_now_installed">سرٹیفکیٹ ایکسپورٹ ہو گیا، اب اسے اینڈرائیڈ ترتیبات سے انسٹال کریں</string>
     <string name="cert_installed_correctly">CA سرٹیفکیٹ انسٹال ہو گیا ہے</string>
     <string name="cert_reinstall_required">CA سرٹیفکیٹ انسٹال نہیں ہے، mitm سیٹ اپ وزرڈ چلائیں</string>
@@ -342,8 +342,8 @@
     <string name="block_quick">QUIC بلاک کریں</string>
     <string name="block_private_dns">پرائیویٹ DNS بلاک کریں</string>
     <string name="block_private_dns_summary">DNS ٹریفک کا معائنہ کرنے کے لیے پرائیویٹ DNS کا پتہ لگائیں اور ممکنہ طور پر بلاک کریں۔ اسے غیر فعال کرنا ٹریفک تجزیے میں رکاوٹ ڈال سکتا ہے</string>
-    <string name="mitm_setup_wizard_intro">یہ وزرڈ آپ کو PCAPdroid mitm ایڈآن اور سرٹیفکیشن اتھارٹی کی انسٹالیشن میں رہنمائی کرے گا، جو <a href='%1$s'>TLS ڈکرپشن</a> انجام دینے کے لیے درکار ہیں</string>
-    <string name="mitm_setup_wizard_done">PCAPdroid اب TLS ٹریفک ڈکرپٹ کرنے کے لیے تیار ہے\n\nان سیکیورٹی اقدامات کے بارے میں مزید جاننے کے لیے <a href='%1$s'>صارف رہنما</a> دیکھیں جو ڈکرپشن کو روک سکتے ہیں اور انہیں کیسے نظرانداز کریں</string>
+    <string name="mitm_setup_wizard_intro">یہ وزرڈ آپ کو PCAPdroid mitm ایڈآن اور سرٹیفکیشن اتھارٹی کی انسٹالیشن میں رہنمائی کرے گا، جو <a href="%1$s">TLS ڈکرپشن</a> انجام دینے کے لیے درکار ہیں</string>
+    <string name="mitm_setup_wizard_done">PCAPdroid اب TLS ٹریفک ڈکرپٹ کرنے کے لیے تیار ہے\n\nان سیکیورٹی اقدامات کے بارے میں مزید جاننے کے لیے <a href="%1$s">صارف رہنما</a> دیکھیں جو ڈکرپشن کو روک سکتے ہیں اور انہیں کیسے نظرانداز کریں</string>
     <string name="welcome_to_pcapdroid">PCAPdroid میں خوش آمدید</string>
     <string name="app_intro_next_button">اگلا</string>
     <string name="app_intro_skip_button">چھوڑیں</string>
@@ -351,14 +351,14 @@
     <string name="app_intro_done_button">مکمل</string>
     <string name="app_intro_welcome_msg">PCAPdroid ایک رازداری دوست ایپ ہے جو آپ کو اپنے آلے کی ایپس کے بنائے گئے کنکشنز کو ٹریک اور تجزیہ کرنے دیتی ہے\n\nمزید برآں، یہ آپ کو ٹریفک کا PCAP ڈمپ ایکسپورٹ کرنے، میٹا ڈیٹا نکالنے اور بہت کچھ کرنے کی اجازت دیتی ہے!</string>
     <string name="privacy_first">پہلے رازداری</string>
-    <string name="app_intro_privacy_msg">ایپ کوئی ٹریکنگ، تجزیات یا فون ہوم انسدادی خصوصیات استعمال نہیں کرتی\n\nآپ کیسے یقین کر سکتے ہیں؟ اس کی <a href='%1$s'>رازداری کی پالیسی</a> اور اس کا <a href='%2$s'>سورس کوڈ</a> دیکھیں</string>
+    <string name="app_intro_privacy_msg">ایپ کوئی ٹریکنگ، تجزیات یا فون ہوم انسدادی خصوصیات استعمال نہیں کرتی\n\nآپ کیسے یقین کر سکتے ہیں؟ اس کی <a href="%1$s">رازداری کی پالیسی</a> اور اس کا <a href="%2$s">سورس کوڈ</a> دیکھیں</string>
     <string name="country_and_asn">ملک اور ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid کسی دور دراز سرور کے ملک کا تعین کرنے کے لیے ایک مقامی ڈیٹابیس سے استفسار کر سکتا ہے\n\nآپ کو پہلے ایپ ترتیبات سے جیو لوکیشن ڈیٹابیس ڈاؤن لوڈ کرنا ہوگا</string>
     <string name="vpn_setup_msg">PCAPdroid روٹ کے بغیر نیٹ ورک ٹریفک کیپچر کرنے کے لیے ایک VPN کی نقل کرتا ہے۔\n\nکیپچر شروع کرنے کے لیے، آپ کو اگلی اسکرین میں VPN درخواست قبول کرنی ہوگی۔\n\n<b>نوٹ:</b> جاری رکھنے کے لیے، اینڈرائیڈ ترتیبات سے کوئی بھی ترتیب شدہ Always-on VPN غیر فعال کریں</string>
-    <string name="app_intro_traffic_inspection">بلٹ ان ڈیکوڈرز کی بدولت HTTP درخواستوں، جوابات اور خام ڈیٹا کا معائنہ کرنا آسان ہے\n\nکوئی انکرپٹڈ کنکشن ہے؟ آپ ڈکرپٹڈ ڈیٹا حاصل کرنے کے لیے <a href='%1$s'>TLS ڈکرپشن</a> فعال کر سکتے ہیں</string>
-    <string name="app_intro_firewall_msg">مربوط <a href='%1$s'>فائر وال</a> کے ساتھ آپ آسانی سے انفرادی ایپس، ڈومینز اور ممالک کی انٹرنیٹ رسائی بلاک کر سکتے ہیں\n\nاپنی رازداری کی حفاظت کے لیے حتمی آلہ حاصل کرنے کے لیے اسے بلٹ ان ٹریفک مرئیت کے ساتھ ملائیں</string>
-    <string name="app_intro_malware_detection"><a href='%1$s'>مالویئر پتہ لگانے</a> کی خصوصیت کے ساتھ اپنے آلے کی سیکیورٹی بڑھائیں\n\nتازہ ترین بلیک لسٹس کا استعمال کر کے، یہ بدنیت کنکشنز کا حقیقی وقت میں پتہ لگا سکتا ہے، بلاک کر سکتا ہے اور خبردار کر سکتا ہے</string>
-    <string name="app_intro_traffic_dump">PCAPdroid مزید تجزیے کے لیے ٹریفک کو معیاری PCAP فارمیٹ میں ڈمپ کرنے کے <a href='%1$s'>متعدد طریقے</a> فراہم کرتا ہے\n\n<a href='%2$s'>PCAPdroid ایکسٹینشنز آپشن</a> کے ذریعے، آپ پیکٹس میں ایپ کے نام شامل کر سکتے ہیں اور انہیں Wireshark میں دکھا سکتے ہیں</string>
+    <string name="app_intro_traffic_inspection">بلٹ ان ڈیکوڈرز کی بدولت HTTP درخواستوں، جوابات اور خام ڈیٹا کا معائنہ کرنا آسان ہے\n\nکوئی انکرپٹڈ کنکشن ہے؟ آپ ڈکرپٹڈ ڈیٹا حاصل کرنے کے لیے <a href="%1$s">TLS ڈکرپشن</a> فعال کر سکتے ہیں</string>
+    <string name="app_intro_firewall_msg">مربوط <a href="%1$s">فائر وال</a> کے ساتھ آپ آسانی سے انفرادی ایپس، ڈومینز اور ممالک کی انٹرنیٹ رسائی بلاک کر سکتے ہیں\n\nاپنی رازداری کی حفاظت کے لیے حتمی آلہ حاصل کرنے کے لیے اسے بلٹ ان ٹریفک مرئیت کے ساتھ ملائیں</string>
+    <string name="app_intro_malware_detection"><a href="%1$s">مالویئر پتہ لگانے</a> کی خصوصیت کے ساتھ اپنے آلے کی سیکیورٹی بڑھائیں\n\nتازہ ترین بلیک لسٹس کا استعمال کر کے، یہ بدنیت کنکشنز کا حقیقی وقت میں پتہ لگا سکتا ہے، بلاک کر سکتا ہے اور خبردار کر سکتا ہے</string>
+    <string name="app_intro_traffic_dump">PCAPdroid مزید تجزیے کے لیے ٹریفک کو معیاری PCAP فارمیٹ میں ڈمپ کرنے کے <a href="%1$s">متعدد طریقے</a> فراہم کرتا ہے\n\n<a href="%2$s">PCAPdroid ایکسٹینشنز آپشن</a> کے ذریعے، آپ پیکٹس میں ایپ کے نام شامل کر سکتے ہیں اور انہیں Wireshark میں دکھا سکتے ہیں</string>
     <string name="permission_granted">%1$s اجازت دے دی گئی</string>
     <string name="permission_grant_fail">%1$s اجازت نہیں دی جا سکی</string>
     <string name="connection_not_found">دیا گیا کنکشن نہیں مل سکا</string>
@@ -405,13 +405,13 @@
 </string>
     <string name="unlock_token_summary">ایک ٹوکن جسے ایپ کے نان گوگل پلے بلڈز (مثلاً F-Droid/Github) میں ادا شدہ خصوصیات ان لاک کرنے کے لیے استعمال کیا جا سکتا ہے</string>
     <string name="unlock_token_error">ان لاک ٹوکن کی درخواست نہیں کی جا سکی [%1$d]: %2$s</string>
-    <string name="access_paid_features_msg">ادا شدہ خصوصیات تک رسائی کا طریقہ جاننے کے لیے <a href='%1$s'>صارف رہنما</a> دیکھیں</string>
+    <string name="access_paid_features_msg">ادا شدہ خصوصیات تک رسائی کا طریقہ جاننے کے لیے <a href="%1$s">صارف رہنما</a> دیکھیں</string>
     <string name="license_service_unavailable">PCAPdroid لائسنس سروس فی الحال دستیاب نہیں ہے۔ براہ کرم کچھ منٹ میں دوبارہ کوشش کریں</string>
     <string name="requesting_unlock_token">ان لاک ٹوکن کی درخواست ہو رہی ہے، براہ کرم انتظار کریں</string>
     <string name="show_action">دکھائیں</string>
     <string name="show_connection">کنکشن دکھائیں</string>
     <string name="show_system_apps">سسٹم ایپس دکھائیں</string>
-    <string name="unlock_token_msg1">یہ آپ کا ان لاک ٹوکن ہے۔ اسے نوٹ کر لیں کیونکہ آپ کو <a href='%1$s'>اپنے لائسنس کوڈز بنانے</a> کے لیے اس کی ضرورت ہوگی</string>
+    <string name="unlock_token_msg1">یہ آپ کا ان لاک ٹوکن ہے۔ اسے نوٹ کر لیں کیونکہ آپ کو <a href="%1$s">اپنے لائسنس کوڈز بنانے</a> کے لیے اس کی ضرورت ہوگی</string>
     <string name="paid_feature">ادا شدہ خصوصیت</string>
     <string name="firewall_purchase_msg">کنکشنز بلاک کرنا شروع کرنے کے لیے <i>%1$s</i> خصوصیت خریدیں</string>
     <string name="feature_unavailable">\"%1$s\" خصوصیت دستیاب نہیں ہے</string>
@@ -532,7 +532,7 @@
     <string name="errno_ehostunreach">میزبان تک کوئی راستہ نہیں</string>
     <string name="errno_ehostunreach_msg">سسٹم منزل میزبان تک کوئی راستہ نہیں پا سکتا</string>
     <string name="dns_conn_info">DNS ایک ڈومین نام کو IP پتے میں ترجمہ کرتا ہے۔ اصل ڈیٹا عام طور پر بعد کے HTTPS/TLS کنکشنز پر تبادلہ ہوتا ہے</string>
-    <string name="tls_conn_info">TLS/HTTPS ٹریفک انکرپٹڈ ہے۔ اس ٹریفک کا معائنہ کرنے کے لیے، آپ کو اسے ڈکرپٹ کرنا ہوگا۔ تفصیلات کے لیے PCAPdroid <a href='%1$s'>صارف رہنما</a> دیکھیں</string>
+    <string name="tls_conn_info">TLS/HTTPS ٹریفک انکرپٹڈ ہے۔ اس ٹریفک کا معائنہ کرنے کے لیے، آپ کو اسے ڈکرپٹ کرنا ہوگا۔ تفصیلات کے لیے PCAPdroid <a href="%1$s">صارف رہنما</a> دیکھیں</string>
     <string name="tls_decryption_unsupported_target">TLS ڈکرپشن کے لیے Android 7 یا نیا اور ایک x86_64/aarch64 آلہ درکار ہے</string>
     <string name="filename_prefix">فائل نام سابقہ</string>
     <string name="filename_prefix_description">PCAPdroid کے ذریعے ایکسپورٹ کی گئی فائلوں، مثلاً PCAP فائلوں، کے لیے سابقہ مقرر کریں</string>
@@ -578,7 +578,7 @@
     <string name="export_settings_summary">ایپ کی ترتیبات کو ایک فائل میں محفوظ کریں، تاکہ انہیں بعد میں بحال کیا جا سکے</string>
     <string name="import_settings">ترتیبات امپورٹ کریں</string>
     <string name="import_settings_summary">پچھلے بیک اپ سے ایپ کی ترتیبات بحال کریں</string>
-    <string name="import_settings_confirm">تمام موجودہ ترتیبات کو %1$s پر ایکسپورٹ کی گئی ترتیبات سے بدل دیا جائے گا۔\n\nانہیں لاگو کرنے کے لیے ایپ دوبارہ شروع کی جائے گی۔ جاری رکھیں؟</string>
+    <string name="import_settings_confirm">تمام موجودہ ترتیبات کو %1$s پر ایکسپورٹ کی گئی ترتیبات سے بدل دیا جائے گا۔\n\nنوٹ: ترتیبات صرف قابل اعتماد ذریعے سے امپورٹ کریں۔\n\nانہیں لاگو کرنے کے لیے ایپ دوبارہ شروع کی جائے گی۔ جاری رکھیں؟</string>
     <string name="settings_imported">ترتیبات امپورٹ ہو گئیں</string>
     <string name="imported_license_invalid">امپورٹ کیا گیا لائسنس اس آلے پر درست نہیں ہے، اس لیے ادا شدہ خصوصیات دستیاب نہیں ہوں گی۔ لائسنسز ایک مخصوص آلے اور ایپ انسٹالیشن سے منسلک ہوتے ہیں</string>
     <string name="captures_not_accessible">امپورٹ کی گئی فہرست کے %1$d کیپچرز تک رسائی نہیں ہو سکتی۔ اگر ان کی فائلیں اب بھی دستیاب ہیں، تو فہرست بحال کرنے کے لیے وہ فولڈر منتخب کریں جس میں وہ موجود ہیں</string>
@@ -590,4 +590,10 @@
     <string name="replace_action">تبدیل کریں</string>
     <string name="keep_current_action">موجودہ رکھیں</string>
     <string name="mitm_addon_not_available">TLS ڈکرپشن کے لیے PCAPdroid mitm ایڈآن درکار ہے، جو اس بلڈ میں دستیاب نہیں ہے</string>
+    <string name="import_anyway_action">پھر بھی امپورٹ کریں</string>
+    <string name="and_n_more">اور %1$d مزید</string>
+    <string name="import_sensitive_prefs_confirm">یہ بیک اپ کچھ حساس ترتیبات تبدیل کرتا ہے، جنہیں آپ کے آلے کی ٹریفک کسی بدنیت سرور کی طرف موڑنے کے لیے استعمال کیا جا سکتا ہے:\n%1$s\n\nصرف اسی صورت میں جاری رکھیں جب آپ نے یہ بیک اپ خود بنایا ہو۔ اگر یہ کسی اور سے آیا ہے تو امپورٹ منسوخ کریں۔</string>
+    <string name="restart_app_action">ایپ دوبارہ شروع کریں</string>
+    <string name="skipped_prefs_import">نوٹ: درج ذیل ترتیبات امپورٹ نہیں کی جا سکیں، کیونکہ وہ نامعلوم یا غلط ہیں:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid کے لیے Always-on VPN فعال ہے، اس لیے آپ کو کیپچر اینڈرائیڈ ترتیبات سے روکنا ہوگا۔\n\nکیا آپ ابھی VPN ترتیبات کھولنا چاہتے ہیں؟</string>
 </resources>

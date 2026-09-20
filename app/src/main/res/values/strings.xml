@@ -219,7 +219,7 @@
     <string name="forever">Forever</string>
     <string name="control_permissions">Control permissions</string>
     <string name="control_permissions_summary">Check which apps are allowed to control the PCAPdroid capture</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">No permissions set. Invoke PCAPdroid via StartActivityForResult to show the permissions prompt</string>
     <string name="generate_api_key">Generate API key</string>
     <string name="show_api_key">Show API key</string>
@@ -371,6 +371,7 @@
     <string name="download">Download</string>
     <string name="connection_blocked">This connection has been blocked by PCAPdroid</string>
     <string name="import_action">Import</string>
+    <string name="import_anyway_action">Import anyway</string>
     <string name="import_failed">Import failed</string>
     <string name="invalid_backup">Invalid backup format</string>
     <string name="rules_import_success">Imported %1$d rules</string>
@@ -604,6 +605,7 @@
     <string name="last_capture">Last capture</string>
     <string name="view_all">View all</string>
     <string name="app_and_n_more">%1$s and %2$d more</string>
+    <string name="and_n_more">and %1$d more</string>
     <string name="capture_list_info">%1$s · %2$s · %3$s</string>
     <string name="capture_list">Capture list</string>
     <string name="captures_count">Captures (%1$d)</string>
@@ -630,8 +632,11 @@
     <string name="export_settings_summary">Save the app settings to a file, to restore them later</string>
     <string name="import_settings">Import settings</string>
     <string name="import_settings_summary">Restore the app settings from a previous backup</string>
-    <string name="import_settings_confirm">All the current settings will be replaced with the ones exported on %1$s.\n\nThe app will be restarted to apply them. Continue?</string>
+    <string name="import_settings_confirm">All the current settings will be replaced with the ones exported on %1$s.\n\nNOTE: only import settings from a trusted source.\n\nThe app will be restarted to apply them. Continue?</string>
+    <string name="import_sensitive_prefs_confirm">The backup changes some sensitive settings, which may be used to redirect your device traffic to a malicious server:\n%1$s\n\nOnly continue if you created this backup yourself. If it came from someone else, cancel the import.</string>
     <string name="settings_imported">Settings imported</string>
+    <string name="restart_app_action">Restart app</string>
+    <string name="skipped_prefs_import">NOTE: the following settings could not be imported, as they are unknown or invalid:\n%1$s</string>
     <string name="imported_license_invalid">The imported license is not valid on this device, so the paid features will not be available. Licenses are bound to a specific device and app installation</string>
     <string name="import_capture_list_confirm">The backup contains %1$d captures, while %2$d captures are already in the list of this device.\n\nHow would you like to proceed?</string>
     <string name="merge_action">Merge</string>
@@ -641,4 +646,5 @@
     <string name="captures_restored">%1$d captures restored, %2$d skipped</string>
     <string name="select_folder">Select folder</string>
     <string name="skip_action">Skip</string>
+    <string name="always_on_vpn_stop_notice">Always-on VPN is enabled for PCAPdroid, so you need to stop the capture from the Android settings.\n\nDo you want to open the VPN settings now?</string>
 </resources>

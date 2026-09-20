@@ -39,6 +39,7 @@ typedef struct payload_chunk {
   u_char *payload;
   int size;
   bool is_tx;
+  int64_t file_offset;
   struct payload_chunk *next;
 } payload_chunk_t;
 
@@ -52,7 +53,7 @@ void assert_pcap_header(pcap_hdr_t *hdr);
 u_char* next_pcap_record(pcap_rec_t *rec);
 
 // Callbacks
-bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size);
+bool dump_cb_payload_chunk(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id, const char *dump_data, int dump_size, int64_t file_offset);
 
 conn_and_tuple_t* assert_conn(pcapdroid_t *pd, int ipproto, const char *dst_ip, uint16_t dst_port, const char *info);
 

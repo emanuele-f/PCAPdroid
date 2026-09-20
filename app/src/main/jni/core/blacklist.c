@@ -453,15 +453,17 @@ static int bl_load_list_of_type(blacklist_t *bl, JNIEnv *env, jobject list, blac
                 default:
                     rv = -1;
             }
+
+            if((rv != 0) && (rv != -EADDRINUSE))
+                log_e("bl add %s failed: %d", val, rv);
+
             (*env)->ReleaseStringUTFChars(env, obj, val);
             (*env)->DeleteLocalRef(env, obj);
 
-            if(rv == 0) {
+            if(rv == 0)
                 num_loaded++;
-            } else if(rv != -EADDRINUSE) {
-                log_e("bl add %s failed: %d", val, rv);
+            else if(rv != -EADDRINUSE)
                 return -1;
-            }
         }
     }
 

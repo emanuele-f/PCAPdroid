@@ -22,8 +22,11 @@ package com.emanuelef.remote_capture.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
+import com.emanuelef.remote_capture.Log;
+import com.emanuelef.remote_capture.Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
@@ -93,15 +96,43 @@ public class PortMapping {
     }
 
     public boolean fromJson(String json_str) {
+        ArrayList<PortMap> mapping = parse(json_str);
+        if(mapping == null)
+            return false;
+
+        mMapping = mapping;
+        return true;
+    }
+
+    /* Returns null if the mapping cannot be parsed. Invalid entries are skipped */
+    private static @Nullable ArrayList<PortMap> parse(String json_str) {
+        ArrayList<PortMap> mapping;
+
         try {
             Type listOfMyClassObject = new TypeToken<ArrayList<PortMap>>() {}.getType();
             Gson gson = new Gson();
-            mMapping = gson.fromJson(json_str, listOfMyClassObject);
-            return true;
+            mapping = gson.fromJson(json_str, listOfMyClassObject);
         } catch (JsonParseException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
+
+        if(mapping == null)
+            return null;
+
+        Iterator<PortMap> it = mapping.iterator();
+        while(it.hasNext()) {
+            PortMap map = it.next();
+
+            if((map == null) || (map.redirect_host == null) || !Utils.validateHostOrIp(map.redirect_host) ||
+                    ((map.ipproto != 6) && (map.ipproto != 17)) ||
+                    !Utils.validatePort(map.orig_port) || !Utils.validatePort(map.redirect_port)) {
+                Log.w(TAG, "Skipping invalid port mapping");
+                it.remove();
+            }
+        }
+
+        return mapping;
     }
 
     public String toJson(boolean pretty_print) {

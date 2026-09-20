@@ -665,7 +665,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(DOCS_URL));
             Utils.startActivity(this, browserIntent);
         } else if (id == R.id.action_stats) {
-            if(mState == AppState.running) {
+            if(CaptureService.getConnsRegister() != null) {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 startActivity(intent);
             } else
@@ -957,6 +957,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void stopCapture() {
+        if(CaptureService.isAlwaysOnVPN()) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.always_on_vpn_stop_notice)
+                    .setPositiveButton(R.string.yes, (d, whichButton) -> Utils.startActivity(this, new Intent("android.net.vpn.SETTINGS")))
+                    .setNegativeButton(R.string.no, (d, whichButton) -> {})
+                    .show();
+            return;
+        }
+
         appStateStopping();
         CaptureService.stopService();
     }
@@ -1209,6 +1218,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
             // PCAP file can be big, copy in a different thread
             mPcapExecutor.execute(() -> {
+                // unlink the file before creating a new one to avoid truncating data
+                // from a previous capture load (ConnectionsRegister.getPcapFile)
+                out.delete();
+
                 try (InputStream in_stream = getContentResolver().openInputStream(pcap_uri)) {
                     Utils.copy(in_stream, out);
                 } catch (IOException | RuntimeException e) {

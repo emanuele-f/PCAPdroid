@@ -168,7 +168,7 @@
     <string name="forever">हमेशा</string>
     <string name="control_permissions">नियंत्रण अनुमतियाँ</string>
     <string name="control_permissions_summary">जाँचें कि किन ऐप्स को PCAPdroid कैप्चर नियंत्रित करने की अनुमति है</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">कोई अनुमति सेट नहीं है। अनुमति प्रॉम्प्ट दिखाने के लिए StartActivityForResult के माध्यम से PCAPdroid को कॉल करें</string>
     <string name="generate_api_key">API कुंजी जनरेट करें</string>
     <string name="show_api_key">API कुंजी दिखाएँ</string>
@@ -578,7 +578,7 @@
     <string name="export_settings_summary">ऐप सेटिंग्स को एक फ़ाइल में सहेजें, ताकि उन्हें बाद में पुनर्स्थापित किया जा सके</string>
     <string name="import_settings">सेटिंग्स इंपोर्ट करें</string>
     <string name="import_settings_summary">पिछले बैकअप से ऐप सेटिंग्स पुनर्स्थापित करें</string>
-    <string name="import_settings_confirm">सभी वर्तमान सेटिंग्स को %1$s को एक्सपोर्ट की गई सेटिंग्स से बदल दिया जाएगा।\n\nउन्हें लागू करने के लिए ऐप पुनः प्रारंभ किया जाएगा। जारी रखें?</string>
+    <string name="import_settings_confirm">सभी वर्तमान सेटिंग्स को %1$s को एक्सपोर्ट की गई सेटिंग्स से बदल दिया जाएगा।\n\nनोट: सेटिंग्स केवल विश्वसनीय स्रोत से ही इंपोर्ट करें।\n\nउन्हें लागू करने के लिए ऐप पुनः प्रारंभ किया जाएगा। जारी रखें?</string>
     <string name="settings_imported">सेटिंग्स इंपोर्ट की गईं</string>
     <string name="imported_license_invalid">इंपोर्ट किया गया लाइसेंस इस डिवाइस पर वैध नहीं है, इसलिए सशुल्क सुविधाएँ उपलब्ध नहीं होंगी। लाइसेंस एक विशिष्ट डिवाइस और ऐप स्थापना से बंधे होते हैं</string>
     <string name="captures_not_accessible">इंपोर्ट की गई सूची के %1$d कैप्चर तक पहुँचा नहीं जा सकता। यदि उनकी फ़ाइलें अभी भी उपलब्ध हैं, तो सूची पुनर्स्थापित करने के लिए उन्हें रखने वाला फ़ोल्डर चुनें</string>
@@ -590,4 +590,10 @@
     <string name="replace_action">बदलें</string>
     <string name="keep_current_action">मौजूदा रखें</string>
     <string name="mitm_addon_not_available">TLS डिक्रिप्शन के लिए PCAPdroid mitm ऐडऑन आवश्यक है, जो इस बिल्ड में उपलब्ध नहीं है</string>
+    <string name="import_anyway_action">फिर भी इंपोर्ट करें</string>
+    <string name="and_n_more">और %1$d अन्य</string>
+    <string name="import_sensitive_prefs_confirm">बैकअप कुछ संवेदनशील सेटिंग्स बदलता है, जिनका उपयोग आपके डिवाइस के ट्रैफ़िक को किसी दुर्भावनापूर्ण सर्वर पर पुनर्निर्देशित करने के लिए किया जा सकता है:\n%1$s\n\nकेवल तभी जारी रखें जब आपने यह बैकअप स्वयं बनाया हो। यदि यह किसी और से आया है, तो इंपोर्ट रद्द करें।</string>
+    <string name="restart_app_action">ऐप पुनः प्रारंभ करें</string>
+    <string name="skipped_prefs_import">नोट: निम्नलिखित सेटिंग्स इंपोर्ट नहीं की जा सकीं, क्योंकि वे अज्ञात या अमान्य हैं:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid के लिए Always-on VPN सक्षम है, इसलिए आपको कैप्चर को Android सेटिंग्स से बंद करना होगा।\n\nक्या आप अभी VPN सेटिंग्स खोलना चाहते हैं?</string>
 </resources>

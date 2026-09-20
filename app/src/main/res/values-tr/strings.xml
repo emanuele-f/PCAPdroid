@@ -102,7 +102,7 @@
     <string name="forever">Sonsuza kadar</string>
     <string name="control_permissions">Denetim izinleri</string>
     <string name="control_permissions_summary">Hangi uygulamaların PCAPdroid yakalamasını denetlemesine izin verildiğine göz atın</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Ülke</string>
     <string name="asn">ASN</string>
     <string name="country_val">Ülke: %1$s</string>
@@ -596,7 +596,7 @@
     <string name="export_settings_summary">Uygulama ayarlarını daha sonra geri yüklemek üzere bir dosyaya kaydedin</string>
     <string name="import_settings">Ayarları içe aktar</string>
     <string name="import_settings_summary">Uygulama ayarlarını önceki bir yedeklemeden geri yükleyin</string>
-    <string name="import_settings_confirm">Geçerli tüm ayarlar, %1$s tarihinde dışa aktarılanlarla değiştirilecek.\n\nBunları uygulamak için uygulama yeniden başlatılacak. Devam edilsin mi?</string>
+    <string name="import_settings_confirm">Geçerli tüm ayarlar, %1$s tarihinde dışa aktarılanlarla değiştirilecek.\n\nNOT: ayarları yalnızca güvenilir bir kaynaktan içe aktarın.\n\nBunları uygulamak için uygulama yeniden başlatılacak. Devam edilsin mi?</string>
     <string name="settings_imported">Ayarlar içe aktarıldı</string>
     <string name="imported_license_invalid">İçe aktarılan lisans bu aygıtta geçerli değil, bu nedenle ücretli özellikler kullanılamayacak. Lisanslar belirli bir aygıta ve uygulama kurulumuna bağlıdır</string>
     <string name="captures_not_accessible">İçe aktarılan listedeki %1$d yakalamaya erişilemiyor. Dosyaları hâlâ mevcutsa, listeyi geri yüklemek için onları içeren klasörü seçin</string>
@@ -608,4 +608,10 @@
     <string name="replace_action">Değiştir</string>
     <string name="keep_current_action">Mevcutları koru</string>
     <string name="mitm_addon_not_available">TLS şifre çözme, bu sürümde bulunmayan PCAPdroid ortadaki adam eklentisini gerektirir</string>
+    <string name="import_anyway_action">Yine de içe aktar</string>
+    <string name="and_n_more">ve %1$d daha</string>
+    <string name="import_sensitive_prefs_confirm">Yedekleme, cihazınızın trafiğini kötü amaçlı bir sunucuya yönlendirmek için kullanılabilecek bazı hassas ayarları değiştiriyor:\n%1$s\n\nYalnızca bu yedeklemeyi kendiniz oluşturduysanız devam edin. Başka birinden geldiyse içe aktarmayı iptal edin.</string>
+    <string name="restart_app_action">Uygulamayı yeniden başlat</string>
+    <string name="skipped_prefs_import">NOT: aşağıdaki ayarlar bilinmediği veya geçersiz olduğu için içe aktarılamadı:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid için her zaman açık VPN etkin, bu nedenle yakalamayı Android ayarlarından durdurmanız gerekiyor.\n\nVPN ayarlarını şimdi açmak ister misiniz?</string>
 </resources>

@@ -35,6 +35,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.emanuelef.remote_capture.CaptureService;
 import com.emanuelef.remote_capture.ConnectionsRegister;
@@ -111,7 +112,16 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
         }
 
         mRecyclerView = view.findViewById(R.id.payload);
-        EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext());
+        EmptyRecyclerView.MyLinearLayoutManager layoutMan = new EmptyRecyclerView.MyLinearLayoutManager(requireContext()) {
+            // Bind the chunks off-screen, so that they grow after being loaded asynchronously before becoming visible.
+            // Otherwise, when scrolling up, a growing chunk becomes the layout anchor and pushes the visible items down
+            @Override
+            protected void calculateExtraLayoutSpace(@NonNull RecyclerView.State state, @NonNull int[] extraLayoutSpace) {
+                int extra = getHeight();
+                extraLayoutSpace[0] = extra;
+                extraLayoutSpace[1] = extra;
+            }
+        };
         mRecyclerView.setLayoutManager(layoutMan);
 
         mTruncatedWarning = view.findViewById(R.id.truncated_warning);
@@ -141,13 +151,23 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
         });
 
         mCurChunks = mConn.getNumPayloadChunks();
-        mShowAsPrintable = true;
+        mShowAsPrintable = mActivity.getDisplayMode(this);
         mAdapter = new PayloadAdapter(requireContext(), mConn, mode, mShowAsPrintable);
         mAdapter.setExportPayloadHandler(mActivity);
 
         // only set adapter after acknowledged (see setMenuVisibility below)
         if(payloadNoticeAcknowledged(PreferenceManager.getDefaultSharedPreferences(requireContext())))
             mRecyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if(mAdapter != null) {
+            mAdapter.destroy();
+            mAdapter = null;
+        }
     }
 
     private void applyTruncatedWarningInsets(WindowInsetsCompat windowInsets) {
@@ -206,18 +226,11 @@ public class ConnectionPayload extends Fragment implements PayloadHostActivity.C
         if(mConn.getNumPayloadChunks() == 0)
             return mConn.l7proto.equals("HTTPS");
 
-        PayloadChunk firstChunk = mConn.getPayloadChunk(0);
-        if((firstChunk == null) || (firstChunk.type == PayloadChunk.ChunkType.HTTP))
+        if(mConn.getChunkType(0) == PayloadChunk.ChunkType.HTTP)
             return true;
 
         // guess based on the actual data
-        int maxLen = Math.min(firstChunk.payload.length, 16);
-        for(int i = 0; i < maxLen; i++) {
-            if(!Utils.isPrintable(firstChunk.payload[i]))
-                return false;
-        }
-
-        return true;
+        return mConn.isFirstChunkPrintable();
     }
 
     @Override

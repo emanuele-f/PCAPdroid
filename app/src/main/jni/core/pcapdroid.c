@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-25 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 #include <inttypes.h>
@@ -53,6 +53,203 @@ char *pd_os = (char*) "";
 static int netd_resolve_waiting;
 static u_int64_t last_connections_dump;
 static u_int64_t next_connections_dump;
+
+/* ******************************************************* */
+
+static blacklist_t *known_dns_servers = NULL;
+static pthread_mutex_t known_dns_servers_lock = PTHREAD_MUTEX_INITIALIZER;
+
+/* ******************************************************* */
+
+static blacklist_t* load_dns_servers(void) {
+    // IP addresses (both legacy and private DNS) and domains (only private DNS). These are used to count DNS queries and
+    // redirect DNS queries to the public DNS server (see check_dns_req_allowed)
+    // https://help.firewalla.com/hc/en-us/articles/360060661873-Dealing-DNS-over-HTTPS-and-DNS-over-TLS-on-your-network
+    // https://adguard-dns.io/kb/general/dns-providers/
+    blacklist_t *bl = blacklist_init();
+    if(!bl) {
+        log_e("blacklist_init failed for the known DNS servers");
+        return NULL;
+    }
+
+    // Google
+    blacklist_add_ipstr(bl, "8.8.8.8");
+    blacklist_add_ipstr(bl, "8.8.4.4");
+    blacklist_add_ipstr(bl, "2001:4860:4860::8888");
+    blacklist_add_ipstr(bl, "2001:4860:4860::8844");
+    blacklist_add_ipstr(bl, "2001:4860:4860::6464"); // DNS64
+    blacklist_add_ipstr(bl, "2001:4860:4860::64");   // DNS64
+    blacklist_add_domain(bl, "dns.google");
+    // Cloudflare
+    blacklist_add_ipstr(bl, "1.1.1.1");
+    blacklist_add_ipstr(bl, "1.0.0.1");
+    blacklist_add_ipstr(bl, "1.1.1.2");
+    blacklist_add_ipstr(bl, "1.0.0.2");
+    blacklist_add_ipstr(bl, "1.1.1.3");
+    blacklist_add_ipstr(bl, "1.0.0.3");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1111");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1001");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1112");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1002");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1113");
+    blacklist_add_ipstr(bl, "2606:4700:4700::1003");
+    blacklist_add_ipstr(bl, "2606:4700:4700::64");   // DNS64
+    blacklist_add_ipstr(bl, "2606:4700:4700::6400"); // DNS64
+    blacklist_add_domain(bl, "one.one.one.one");
+    blacklist_add_domain(bl, "dns.cloudflare.com");
+    blacklist_add_domain(bl, "chrome.cloudflare-dns.com");
+    blacklist_add_domain(bl, "mozilla.cloudflare-dns.com");
+    blacklist_add_domain(bl, "security.cloudflare-dns.com");
+    blacklist_add_domain(bl, "family.cloudflare-dns.com");
+    // Quad9
+    blacklist_add_ipstr(bl, "9.9.9.9");
+    blacklist_add_ipstr(bl, "149.112.112.112");
+    blacklist_add_ipstr(bl, "9.9.9.10");
+    blacklist_add_ipstr(bl, "149.112.112.10");
+    blacklist_add_ipstr(bl, "9.9.9.11");
+    blacklist_add_ipstr(bl, "149.112.112.11");
+    blacklist_add_ipstr(bl, "2620:fe::fe");
+    blacklist_add_ipstr(bl, "2620:fe::9");
+    blacklist_add_ipstr(bl, "2620:fe::10");
+    blacklist_add_ipstr(bl, "2620:fe::fe:10");
+    blacklist_add_ipstr(bl, "2620:fe::11");
+    blacklist_add_ipstr(bl, "2620:fe::fe:11");
+    blacklist_add_domain(bl, "dns.quad9.net");
+    blacklist_add_domain(bl, "dns10.quad9.net");
+    blacklist_add_domain(bl, "dns11.quad9.net");
+    // CleanBrowsing
+    blacklist_add_ipstr(bl, "185.228.168.168");
+    blacklist_add_ipstr(bl, "185.228.169.168");
+    blacklist_add_ipstr(bl, "185.228.168.10");
+    blacklist_add_ipstr(bl, "185.228.169.11");
+    blacklist_add_ipstr(bl, "185.228.168.9");
+    blacklist_add_ipstr(bl, "185.228.169.9");
+    blacklist_add_ipstr(bl, "2a0d:2a00:1::");
+    blacklist_add_ipstr(bl, "2a0d:2a00:2::");
+    blacklist_add_ipstr(bl, "2a0d:2a00:1::1");
+    blacklist_add_ipstr(bl, "2a0d:2a00:2::1");
+    blacklist_add_ipstr(bl, "2a0d:2a00:1::2");
+    blacklist_add_ipstr(bl, "2a0d:2a00:2::2");
+    blacklist_add_domain(bl, "doh.cleanbrowsing.org");
+    blacklist_add_domain(bl, "family-filter-dns.cleanbrowsing.org");
+    blacklist_add_domain(bl, "adult-filter-dns.cleanbrowsing.org");
+    blacklist_add_domain(bl, "security-filter-dns.cleanbrowsing.org");
+    // NextDNS
+    blacklist_add_domain(bl, "dns.nextdns.io");
+    blacklist_add_domain(bl, "anycast.dns.nextdns.io");
+    blacklist_add_domain(bl, "chromium.dns.nextdns.io");
+    blacklist_add_domain(bl, "firefox.dns.nextdns.io");
+    // OpenDNS
+    blacklist_add_ipstr(bl, "208.67.222.222");
+    blacklist_add_ipstr(bl, "208.67.220.220");
+    blacklist_add_ipstr(bl, "208.67.222.123");
+    blacklist_add_ipstr(bl, "208.67.220.123");
+    blacklist_add_ipstr(bl, "208.67.222.2");
+    blacklist_add_ipstr(bl, "208.67.220.2");
+    blacklist_add_ipstr(bl, "2620:119:35::35");
+    blacklist_add_ipstr(bl, "2620:119:53::53");
+    blacklist_add_domain(bl, "doh.opendns.com");
+    blacklist_add_domain(bl, "dns.opendns.com");
+    blacklist_add_domain(bl, "doh.familyshield.opendns.com");
+    blacklist_add_domain(bl, "familyshield.opendns.com");
+    blacklist_add_domain(bl, "doh.sandbox.opendns.com");
+    blacklist_add_domain(bl, "sandbox.opendns.com");
+    // Adguard
+    blacklist_add_ipstr(bl, "94.140.14.14");
+    blacklist_add_ipstr(bl, "94.140.15.15");
+    blacklist_add_ipstr(bl, "94.140.14.15");
+    blacklist_add_ipstr(bl, "94.140.15.16");
+    blacklist_add_ipstr(bl, "94.140.14.140");
+    blacklist_add_ipstr(bl, "94.140.14.141");
+    blacklist_add_ipstr(bl, "2a10:50c0::ad1:ff");
+    blacklist_add_ipstr(bl, "2a10:50c0::ad2:ff");
+    blacklist_add_ipstr(bl, "2a10:50c0::bad1:ff");
+    blacklist_add_ipstr(bl, "2a10:50c0::bad2:ff");
+    blacklist_add_ipstr(bl, "2a10:50c0::1:ff");
+    blacklist_add_ipstr(bl, "2a10:50c0::2:ff");
+    blacklist_add_domain(bl, "dns.adguard.com");
+    blacklist_add_domain(bl, "dns.adguard-dns.com");
+    blacklist_add_domain(bl, "family.adguard-dns.com");
+    blacklist_add_domain(bl, "unfiltered.adguard-dns.com");
+    // LibreDNS
+    blacklist_add_ipstr(bl, "88.198.92.222");
+    blacklist_add_ipstr(bl, "116.202.176.26");
+    blacklist_add_ipstr(bl, "2a01:4f8:1c0c:8274::1");
+    blacklist_add_domain(bl, "dot.libredns.gr");
+    blacklist_add_domain(bl, "doh.libredns.gr");
+    // DNSLify
+    blacklist_add_domain(bl, "dns.dnslify.com");
+    // Quadrant Security
+    blacklist_add_domain(bl, "dns-tls.qis.io");
+    blacklist_add_domain(bl, "doh.qis.io");
+    // Mullvad
+    blacklist_add_domain(bl, "dns.mullvad.net");
+    blacklist_add_domain(bl, "adblock.dns.mullvad.net");
+    blacklist_add_domain(bl, "base.dns.mullvad.net");
+    blacklist_add_domain(bl, "extended.dns.mullvad.net");
+    blacklist_add_domain(bl, "family.dns.mullvad.net");
+    blacklist_add_domain(bl, "all.dns.mullvad.net");
+    // ControlD
+    blacklist_add_ipstr(bl, "76.76.2.0");
+    blacklist_add_ipstr(bl, "76.76.10.0");
+    blacklist_add_ipstr(bl, "76.76.2.1");
+    blacklist_add_ipstr(bl, "76.76.2.2");
+    blacklist_add_ipstr(bl, "76.76.2.3");
+    blacklist_add_ipstr(bl, "2606:1a40::");
+    blacklist_add_ipstr(bl, "2606:1a40:1::");
+    blacklist_add_domain(bl, "freedns.controld.com");
+    blacklist_add_domain(bl, "p0.freedns.controld.com");
+    blacklist_add_domain(bl, "p1.freedns.controld.com");
+    blacklist_add_domain(bl, "p2.freedns.controld.com");
+    blacklist_add_domain(bl, "p3.freedns.controld.com");
+
+    return bl;
+}
+
+/* ******************************************************* */
+
+static blacklist_t* get_known_dns_servers(void) {
+    pthread_mutex_lock(&known_dns_servers_lock);
+
+    if(!known_dns_servers)
+        known_dns_servers = load_dns_servers();
+
+    blacklist_t *bl = known_dns_servers;
+    pthread_mutex_unlock(&known_dns_servers_lock);
+
+    return bl;
+}
+
+/* ******************************************************* */
+
+bool is_known_dns_ip(const zdtun_ip_t *ip, int ipver) {
+    blacklist_t *bl = get_known_dns_servers();
+    if(!bl)
+        return false;
+
+    return blacklist_match_ip(bl, ip, ipver);
+}
+
+/* ******************************************************* */
+
+// NOTE: domain matching updates the hash table internal state, so it's not thread safe
+bool is_known_dns_domain(const char *domain) {
+    blacklist_t *bl = get_known_dns_servers();
+    if(!bl)
+        return false;
+
+    return blacklist_match_domain(bl, domain);
+}
+
+/* ******************************************************* */
+
+bool is_known_dns_ipstr(const char *ip) {
+    blacklist_t *bl = get_known_dns_servers();
+    if(!bl)
+        return false;
+
+    return blacklist_match_ipstr(bl, ip);
+}
 
 /* ******************************************************* */
 
@@ -624,7 +821,7 @@ void pd_giveup_dpi(pcapdroid_t *pd, pd_conn_t *data, const zdtun_5tuple_t *tuple
 
 // dumps the payload and returns true if fully dumped, false if failed or truncated
 static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t ms, uint32_t stream_id,
-                         const char *to_dump, int dump_size)
+                         const char *to_dump, int dump_size, int64_t file_offset)
 {
     bool truncated = false;
 
@@ -633,10 +830,16 @@ static bool dump_payload(pcapdroid_t *pd, pd_conn_t *conn, bool is_tx, uint64_t 
         truncated = true;
     }
 
-    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size))
+    if(pd->cb.dump_payload_chunk(pd, conn, is_tx, ms, stream_id, to_dump, dump_size, file_offset)) {
         conn->has_payload[is_tx] = true;
-    else
+        pd->payload_bytes_since_heap_check += dump_size;
+    } else
         truncated = true;
+
+    if((pd->payload_bytes_since_heap_check >= PAYLOAD_HEAP_CHECK_BYTES) && pd->cb.check_available_heap) {
+        pd->payload_bytes_since_heap_check = 0;
+        pd->cb.check_available_heap(pd);
+    }
 
     return !truncated;
 }
@@ -671,13 +874,25 @@ static void process_payload(pcapdroid_t *pd, pkt_context_t *pctx) {
             for (unsigned int i = 0; i < pctx->plain_data->n_items; i++) {
                 const plain_data_item_t *item =  &pctx->plain_data->items[i];
 
+                // the payload may have been disabled by the heap check in dump_payload
+                if (pd->payload_mode == PAYLOAD_MODE_NONE) {
+                    truncated = true;
+                    break;
+                }
+
                 // use the item is_tx and ms timestamp data, rather than the ones from pctx because
                 // http2.c may buffer http responses/resets so they may be processed with a different pctx
                 truncated |= !dump_payload(pd, pctx->data, item->is_tx, item->ms, item->stream_id,
-                                           (const char*) item->data, (int) item->data_length);
+                                           (const char*) item->data, (int) item->data_length, -1);
             }
-        } else
-            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len);
+        } else {
+            int64_t file_offset = -1;
+
+            if (pctx->file_offset >= 0)
+                file_offset = pctx->file_offset + (pkt->l7 - pkt->buf);
+
+            truncated = !dump_payload(pd, pctx->data, pctx->is_tx, pctx->ms, 0, pkt->l7, pkt->l7_len, file_offset);
+        }
 
         updated = true;
     } else
@@ -1187,6 +1402,7 @@ void pd_init_pkt_context(pkt_context_t *pctx,
     pctx->tuple = tuple;
     pctx->data = data;
     pctx->plain_data = NULL; // managed by capture_libpcap
+    pctx->file_offset = -1;
 }
 
 /* ******************************************************* */

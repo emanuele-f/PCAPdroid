@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.model;
@@ -23,19 +23,24 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.annotation.WorkerThread;
 
 import com.emanuelef.remote_capture.AppsResolver;
 import com.emanuelef.remote_capture.CaptureService;
+import com.emanuelef.remote_capture.ConnectionsRegister;
 import com.emanuelef.remote_capture.HTTPReassembly;
 import com.emanuelef.remote_capture.HttpLog;
 import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
+import com.emanuelef.remote_capture.Utils;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -107,7 +112,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     public String info;
     public String url;
     public String l7proto;
-    private final ArrayList<PayloadChunk> payload_chunks; // must be synchronized
+    private final PayloadIndex payload_chunks; // must be synchronized
     public final int uid;
     public final int ifidx;
     public final int incr_id;
@@ -158,7 +163,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
         l7proto = "";
         country = _country;
         asn = new Geomodel.ASN();
-        payload_chunks = new ArrayList<>();
+        payload_chunks = new PayloadIndex();
         mitm_decrypt = _mitm_decrypt;
         internal_decrypt = false;
     }
@@ -219,10 +224,9 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
                             if (chunk.type == PayloadChunk.ChunkType.WEBSOCKET)
                                 has_websocket_data = true;
 
+                            payload_chunks.add(chunk);
                             chunk_pos++;
                         }
-
-                        payload_chunks.addAll(update.payload_chunks);
                     }
                     payload_truncated = update.payload_truncated;
                     internal_decrypt = update.payload_decrypted;
@@ -377,11 +381,74 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
 
     public synchronized int getNumPayloadChunks() { return payload_chunks.size(); }
 
+    // Returns null for the chunks on disk, which must be read via readPayloadChunk
     public synchronized @Nullable PayloadChunk getPayloadChunk(int idx) {
         if(getNumPayloadChunks() <= idx)
             return null;
-        return payload_chunks.get(idx);
+        return payload_chunks.getInMemory(idx);
     }
+
+    // Returns the chunk, possibly reading it from the PCAP file, or null on error
+    @WorkerThread
+    public @Nullable PayloadChunk readPayloadChunk(int idx) {
+        return readPayloadChunk(idx, Integer.MAX_VALUE);
+    }
+
+    // Only reads up to max_len bytes of the chunks on disk. The in-memory chunks are returned in full
+    @WorkerThread
+    public @Nullable PayloadChunk readPayloadChunk(int idx, int max_len) {
+        ConnectionsRegister reg = CaptureService.getConnsRegister();
+        return readPayloadChunk(idx, (reg != null) ? reg.getPcapFile() : null, max_len);
+    }
+
+    @VisibleForTesting
+    @WorkerThread
+    @Nullable PayloadChunk readPayloadChunk(int idx, @Nullable FileChannel pcapFile) {
+        return readPayloadChunk(idx, pcapFile, Integer.MAX_VALUE);
+    }
+
+    @VisibleForTesting
+    @WorkerThread
+    @Nullable PayloadChunk readPayloadChunk(int idx, @Nullable FileChannel pcapFile, int max_len) {
+        long offset;
+        int len;
+        PayloadChunk.ChunkType type;
+        boolean is_sent;
+        long timestamp;
+
+        synchronized (this) {
+            if(getNumPayloadChunks() <= idx)
+                return null;
+
+            if(!payload_chunks.isOnDisk(idx))
+                return payload_chunks.getInMemory(idx);
+
+            offset = payload_chunks.getFileOffset(idx);
+            len = Math.min(payload_chunks.getLength(idx), max_len);
+            type = payload_chunks.getType(idx);
+            is_sent = payload_chunks.isSent(idx);
+            timestamp = payload_chunks.getTimestamp(idx);
+        }
+
+        if(pcapFile == null)
+            return null;
+
+        try {
+            byte[] payload = Utils.readFully(pcapFile, offset, len);
+            return new PayloadChunk(payload, type, is_sent, timestamp, 0);
+        } catch (IOException e) {
+            Log.w(TAG, "Could not read chunk #" + idx + ": " + e);
+            return null;
+        }
+    }
+
+    public synchronized PayloadChunk.ChunkType getChunkType(int idx) { return payload_chunks.getType(idx); }
+    public synchronized boolean isChunkSent(int idx) { return payload_chunks.isSent(idx); }
+    public synchronized int getChunkLength(int idx) { return payload_chunks.getLength(idx); }
+    public synchronized long getChunkTimestamp(int idx) { return payload_chunks.getTimestamp(idx); }
+    public synchronized boolean isChunkOnDisk(int idx) { return payload_chunks.isOnDisk(idx); }
+    public synchronized boolean hasHttpChunks() { return payload_chunks.hasHttp(); }
+    public synchronized boolean isFirstChunkPrintable() { return payload_chunks.isFirstChunkPrintable(); }
 
     public synchronized void addPayloadChunkMitm(PayloadChunk chunk) {
         if (chunk.type == PayloadChunk.ChunkType.HTTP)
@@ -394,16 +461,14 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     }
 
     public synchronized void dropPayload() {
-        payload_chunks.clear();
+        payload_chunks.dropInMemory();
+
+        // the websocket chunks are always in memory, so they are gone
+        has_websocket_data = false;
     }
 
     private synchronized boolean hasHttp(boolean is_sent) {
-        for(PayloadChunk chunk: payload_chunks) {
-            if(chunk.is_sent == is_sent)
-                return (chunk.type == PayloadChunk.ChunkType.HTTP);
-        }
-
-        return false;
+        return (payload_chunks.getFirstChunkType(is_sent) == PayloadChunk.ChunkType.HTTP);
     }
     public boolean hasHttpRequest() { return hasHttp(true); }
     public boolean hasHttpResponse() { return hasHttp(false); }
@@ -421,9 +486,10 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
 
         // Possibly reassemble/decode the request
         for (int i = firstChunkPos; i < payload_chunks.size(); i++) {
-            PayloadChunk chunk = payload_chunks.get(i);
+            // the chunks on disk are RAW, so they cannot be part of the HTTP data
+            PayloadChunk chunk = payload_chunks.getInMemory(i);
 
-            if(chunk.is_sent == is_sent)
+            if((chunk != null) && (chunk.is_sent == is_sent))
                 reassembly.handleChunk(chunk);
 
             // Stop at the first reassembly/chunk

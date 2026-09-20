@@ -95,7 +95,7 @@
     <string name="netd_app_info">DNS 이름 확인을 수행 중인 시스템 데몬</string>
     <string name="phone_app_info">텔레포니 서비스</string>
     <string name="capture_prefs">캡처</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="ip_rules">IP 규칙</string>
     <string name="show_only_malicious">악성 커넥션</string>
     <string name="malicious_connection_filter">악성 연결</string>
@@ -579,7 +579,7 @@
     <string name="export_settings_summary">나중에 복원할 수 있도록 앱 설정을 파일로 저장합니다</string>
     <string name="import_settings">설정 가져오기</string>
     <string name="import_settings_summary">이전 백업에서 앱 설정을 복원합니다</string>
-    <string name="import_settings_confirm">현재 설정이 모두 %1$s에 추출된 설정으로 대체됩니다.\n\n설정을 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?</string>
+    <string name="import_settings_confirm">현재 설정이 모두 %1$s에 추출된 설정으로 대체됩니다.\n\n참고: 신뢰할 수 있는 출처의 설정만 가져오세요.\n\n설정을 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?</string>
     <string name="settings_imported">설정을 가져왔습니다</string>
     <string name="imported_license_invalid">가져온 라이선스가 이 기기에서 유효하지 않으므로 유료 기능을 사용할 수 없습니다. 라이선스는 특정 기기 및 앱 설치에 종속됩니다</string>
     <string name="captures_not_accessible">가져온 목록의 캡처 %1$d개에 접근할 수 없습니다. 해당 파일이 아직 남아 있다면, 파일이 들어 있는 폴더를 선택하여 목록을 복원하세요</string>
@@ -591,4 +591,10 @@
     <string name="replace_action">바꾸기</string>
     <string name="keep_current_action">현재 유지</string>
     <string name="mitm_addon_not_available">TLS 복호화에는 PCAPdroid mitm 애드온이 필요하지만, 이 빌드에서는 사용할 수 없습니다</string>
+    <string name="import_anyway_action">그래도 가져오기</string>
+    <string name="and_n_more">외 %1$d개</string>
+    <string name="import_sensitive_prefs_confirm">이 백업은 기기의 트래픽을 악성 서버로 전달하는 데 악용될 수 있는 민감한 설정을 변경합니다:\n%1$s\n\n직접 만든 백업인 경우에만 계속하세요. 다른 사람에게서 받은 것이라면 가져오기를 취소하세요.</string>
+    <string name="restart_app_action">앱 재시작</string>
+    <string name="skipped_prefs_import">참고: 다음 설정은 알 수 없거나 잘못되어 가져올 수 없습니다:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid에 Always-on VPN이 활성화되어 있으므로 안드로이드 설정에서 캡처를 중지해야 합니다.\n\n지금 VPN 설정을 여시겠습니까?</string>
 </resources>

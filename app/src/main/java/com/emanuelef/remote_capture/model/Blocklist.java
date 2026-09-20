@@ -139,17 +139,34 @@ public class Blocklist extends MatchList {
 
         try {
             for(JsonElement el : ruleObj.getAsJsonArray("allowlist")) {
-                JsonObject obj = el.getAsJsonObject();
-                RuleType type;
-
-                try {
-                    type = RuleType.valueOf(obj.get("type").getAsString());
-                } catch (IllegalArgumentException e) {
-                    Log.w(TAG, "Skipping unknown allowlist rule type: " + obj.get("type").getAsString());
+                if(!el.isJsonObject()) {
+                    Log.w(TAG, "Skipping invalid allowlist rule: " + el);
                     continue;
                 }
 
-                allowlist.addRule(new Rule(type, obj.get("value").getAsString()), false);
+                JsonObject obj = el.getAsJsonObject();
+                String typeStr = getPrimitiveString(obj, "type");
+                String val = getPrimitiveString(obj, "value");
+                if((typeStr == null) || (val == null)) {
+                    Log.w(TAG, "Skipping invalid allowlist rule: " + obj);
+                    continue;
+                }
+
+                RuleType type;
+
+                try {
+                    type = RuleType.valueOf(typeStr);
+                } catch (IllegalArgumentException e) {
+                    Log.w(TAG, "Skipping unknown allowlist rule type: " + typeStr);
+                    continue;
+                }
+
+                if(!isValidRuleValue(type, val)) {
+                    Log.w(TAG, "Skipping invalid allowlist rule: " + obj);
+                    continue;
+                }
+
+                allowlist.addRule(new Rule(type, val), false);
             }
         } catch (IllegalStateException | ClassCastException e) {
             Log.w(TAG, "invalid allowlist for " + rule.getValue() + ": " + e.getMessage());

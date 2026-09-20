@@ -91,12 +91,14 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.text.BidiFormatter;
 import androidx.core.text.HtmlCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -135,6 +137,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
@@ -1732,11 +1735,14 @@ public class Utils {
 
     public static boolean validatePort(String value) {
         try {
-            int val = Integer.parseInt(value);
-            return((val > 0) && (val < 65535));
+            return validatePort(Integer.parseInt(value));
         } catch(NumberFormatException e) {
             return false;
         }
+    }
+
+    public static boolean validatePort(int port) {
+        return((port > 0) && (port <= 65535));
     }
 
     // from bouncycastle
@@ -1860,6 +1866,8 @@ public class Utils {
                 (!is_v6 && (prefix <= 32)));
     }
 
+    private static final Pattern INVALID_HOST_CHARS = Pattern.compile("[A-Z\\s?!=`@]");
+
     // rough validation
     public static boolean validateHost(String host) {
         int len = host.length();
@@ -1867,9 +1875,21 @@ public class Utils {
             return false;
         if((host.charAt(0) == '-') || (host.charAt(len-1) == '-'))
             return false;
-        if(host.matches(".*[A-Z\\s?!=`@].*"))
+        if(INVALID_HOST_CHARS.matcher(host).find())
             return false;
         return true;
+    }
+
+    public static boolean isLocalhost(String host) {
+        if (host.equals("localhost") || host.equals("::1"))
+            return true;
+
+        return host.startsWith("127.") && validateIpv4Address(host);
+    }
+
+    // prevents the bidi reordering of a Latin/numeric value embedded in an RTL text
+    public static String bidiWrap(String text) {
+        return BidiFormatter.getInstance().unicodeWrap(text);
     }
 
     public static String uriToFilePath(Context ctx, Uri uri) {
@@ -2174,5 +2194,19 @@ public class Utils {
     public static boolean isSemanticVersionCompatible(String a, String b) {
         int va = getMajorVersion(a);
         return (va >= 0) && (va == getMajorVersion(b));
+    }
+
+    // Reads len bytes at the given offset. Positional reads are thread safe on the FileChannel
+    @WorkerThread
+    public static byte[] readFully(FileChannel channel, long offset, int len) throws IOException {
+        ByteBuffer buf = ByteBuffer.allocate(len);
+
+        while (buf.hasRemaining()) {
+            int read = channel.read(buf, offset + buf.position());
+            if (read < 0)
+                throw new IOException("Unexpected EOF at " + (offset + buf.position()));
+        }
+
+        return buf.array();
     }
 }

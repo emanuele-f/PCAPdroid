@@ -227,7 +227,7 @@ public class CaptureList {
                 .commit();
     }
 
-    /* Returns null if the captures could not be parsed */
+    /* Returns null if the captures could not be parsed. Invalid entries are skipped */
     public static @Nullable ArrayList<Capture> parseList(String json_str) {
         try {
             Type listType = new TypeToken<ArrayList<Capture>>() {}.getType();
@@ -235,10 +235,31 @@ public class CaptureList {
             ArrayList<Capture> captures = gson.fromJson(json_str, listType);
             if (captures == null)
                 captures = new ArrayList<>();
-            for (Capture c: captures) {
+
+            Iterator<Capture> it = captures.iterator();
+            while (it.hasNext()) {
+                Capture c = it.next();
+
+                if ((c == null) || (c.uri == null) || (c.name == null)) {
+                    Log.w(TAG, "parseList: skipping invalid capture");
+                    it.remove();
+                    continue;
+                }
+
                 if (c.apps == null)
                     c.apps = new ArrayList<>();
+
+                Iterator<App> appIt = c.apps.iterator();
+                while (appIt.hasNext()) {
+                    App app = appIt.next();
+
+                    if ((app == null) || (app.packageName() == null) || (app.name() == null)) {
+                        Log.w(TAG, "parseList: skipping invalid app");
+                        appIt.remove();
+                    }
+                }
             }
+
             return captures;
         } catch (JsonParseException e) {
             Log.e(TAG, "parseList: " + e.getMessage());

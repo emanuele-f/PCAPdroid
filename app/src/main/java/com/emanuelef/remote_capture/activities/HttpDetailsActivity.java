@@ -235,16 +235,20 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
             else
                 mMenuDisplayAs.setTitle(R.string.display_as_text);
         } else if(currentFragment instanceof ConnectionPayload wsFragment) {
-            if(mDisplayMode == null)
-                mDisplayMode = true;
-
-            wsFragment.setDisplayMode(mDisplayMode);
+            wsFragment.setDisplayMode(getDisplayMode(wsFragment));
 
             if(mDisplayMode)
                 mMenuDisplayAs.setTitle(R.string.display_as_hexdump);
             else
                 mMenuDisplayAs.setTitle(R.string.display_as_text);
         }
+    }
+
+    @Override
+    public boolean getDisplayMode(ConnectionPayload fragment) {
+        if(mDisplayMode == null)
+            mDisplayMode = true;
+        return mDisplayMode;
     }
 
     private Fragment getCurrentFragment() {

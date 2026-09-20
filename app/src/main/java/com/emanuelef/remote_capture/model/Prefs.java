@@ -121,6 +121,8 @@ public class Prefs {
     public static final String PREF_CAPTURE_LIST = "capture_list";
     public static final String PREF_CONNECTIONS_LOG_SIZE = "max_connections";
     public static final String PREF_LOCAL_NETWORK_NOTICE_SHOWN = "local_network_notice";
+    public static final String PREF_AVAILABLE_SKUS = "available_skus";
+    public static final String PREF_UNLOCK_TOKEN = "unlock_token";
 
     /* The default maximum connections to log into the ConnectionsRegister. Older connections are dropped.
      * Average Java-heap cost is ~2 KB per connection (covers payload-minimal mode and possible new additions);

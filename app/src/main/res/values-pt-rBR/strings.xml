@@ -137,7 +137,7 @@
     <string name="forever">Sempre</string>
     <string name="control_permissions">Permissões de controle</string>
     <string name="control_permissions_summary">Verifique quais apps são permitidos para controlar a captura do PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">País</string>
     <string name="asn">ASN</string>
     <string name="country_val">País: %1$s</string>
@@ -594,7 +594,7 @@
     <string name="export_settings_summary">Salve as configurações do app em um arquivo, para restaurá-las mais tarde</string>
     <string name="import_settings">Importar configurações</string>
     <string name="import_settings_summary">Restaure as configurações do app a partir de um backup anterior</string>
-    <string name="import_settings_confirm">Todas as configurações atuais serão substituídas pelas exportadas em %1$s.\n\nO app será reiniciado para aplicá-las. Deseja continuar?</string>
+    <string name="import_settings_confirm">Todas as configurações atuais serão substituídas pelas exportadas em %1$s.\n\nNOTA: importe configurações apenas de uma fonte confiável.\n\nO app será reiniciado para aplicá-las. Deseja continuar?</string>
     <string name="settings_imported">Configurações importadas</string>
     <string name="imported_license_invalid">A licença importada não é válida neste dispositivo, portanto as funcionalidades pagas não estarão disponíveis. As licenças estão vinculadas a um dispositivo e a uma instalação do app específicos</string>
     <string name="captures_not_accessible">%1$d capturas da lista importada não podem ser acessadas. Se os arquivos ainda estiverem disponíveis, selecione a pasta que os contém para restaurar a lista</string>
@@ -606,4 +606,10 @@
     <string name="replace_action">Substituir</string>
     <string name="keep_current_action">Manter as atuais</string>
     <string name="mitm_addon_not_available">A decriptação do TLS requer a extensão de mitm do PCAPdroid, que não está disponível nesta versão</string>
+    <string name="import_anyway_action">Importar mesmo assim</string>
+    <string name="and_n_more">e mais %1$d</string>
+    <string name="import_sensitive_prefs_confirm">O backup altera algumas configurações sensíveis, que podem ser usadas para redirecionar o tráfego do seu dispositivo para um servidor malicioso:\n%1$s\n\nContinue apenas se você mesmo criou este backup. Se ele veio de outra pessoa, cancele a importação.</string>
+    <string name="restart_app_action">Reiniciar o app</string>
+    <string name="skipped_prefs_import">NOTA: as configurações a seguir não puderam ser importadas, pois são desconhecidas ou inválidas:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">A VPN sempre ativa está ativada para o PCAPdroid, então você precisa parar a captura nas configurações do Android.\n\nDeseja abrir as configurações de VPN agora?</string>
 </resources>

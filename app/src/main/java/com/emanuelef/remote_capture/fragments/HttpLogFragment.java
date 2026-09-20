@@ -101,7 +101,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     private String mQueryToApply;
     private AppsResolver mApps;
     private boolean autoScroll;
-    private boolean listenerSet;
+    private HttpLog mHttpLog;
     private ActionMode mActionMode;
     private OnBackPressedCallback mBackCallback;
 
@@ -118,8 +118,8 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
 
         refreshEmptyText();
 
-        registerHttpListener();
-        mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+        updateHttpListener();
+        mRecyclerView.setEmptyView(mEmptyText); // after updateHttpListener, when the adapter is populated
 
         // Check scroll state after adapter is populated, to show FAB if needed.
         // Use post to ensure it executes after the RecyclerView has completed its layout
@@ -138,7 +138,7 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
     public void onPause() {
         super.onPause();
 
-        unregisterHttpListener();
+        updateHttpListener();
         mRecyclerView.setEmptyView(null);
 
         if(mSearchView != null)
@@ -187,31 +187,29 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         return inflater.inflate(R.layout.connections, container, false);
     }
 
-    private void registerHttpListener() {
-        if (!listenerSet) {
-            HttpLog httpLog = CaptureService.getHttpLog();
+    // Only listen while resumed: a fragment which is never resumed (e.g. an offscreen ViewPager2
+    // page) never gets onPause, so a listener registered in another state would be leaked
+    private void updateHttpListener() {
+        HttpLog httpLog = isResumed() ? CaptureService.getHttpLog() : null;
+        if (httpLog == mHttpLog)
+            return;
 
-            if (httpLog != null) {
-                httpLog.setListener(this);
-                listenerSet = true;
+        if (mHttpLog != null) {
+            mHttpLog.setListener(null);
 
-                // Sync adapter with data that arrived while listener was unregistered
-                // (similar to ConnectionsRegister.addListener() which calls connectionsChanges)
-                if (mAdapter != null) {
-                    mAdapter.notifyDataSetChanged();
-                }
-            }
+            // must be done after setListener, which waits for any in-progress notification
+            mHandler.removeCallbacksAndMessages(null);
         }
-    }
 
-    private void unregisterHttpListener() {
-        if(listenerSet) {
-            HttpLog httpLog = CaptureService.getHttpLog();
+        mHttpLog = httpLog;
+        if (httpLog != null) {
+            httpLog.setListener(this);
 
-            if (httpLog != null)
-                httpLog.setListener(null);
-
-            listenerSet = false;
+            // Sync adapter with data that arrived while listener was unregistered
+            // (similar to ConnectionsRegister.addListener() which calls connectionsChanges)
+            if (mAdapter != null) {
+                mAdapter.notifyDataSetChanged();
+            }
         }
     }
 
@@ -310,7 +308,6 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         });
 
         autoScroll = true;
-        listenerSet = false;
         showFabDown(false);
 
         ViewCompat.setOnApplyWindowInsetsListener(view.findViewById(R.id.linearlayout), (v, windowInsets) -> {
@@ -357,11 +354,10 @@ public class HttpLogFragment extends Fragment implements HttpLog.Listener, MenuP
         }
         refreshActiveFilter();
 
-        CaptureService.observeStatus(this, serviceStatus -> {
+        CaptureService.observeStatus(getViewLifecycleOwner(), serviceStatus -> {
             if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
                 // register the new http log listener
-                unregisterHttpListener();
-                registerHttpListener();
+                updateHttpListener();
 
                 autoScroll = true;
                 showFabDown(false);

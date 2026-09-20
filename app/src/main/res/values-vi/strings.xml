@@ -172,7 +172,7 @@
     <string name="forever">Mãi mãi</string>
     <string name="control_permissions">Quyền điều khiển</string>
     <string name="control_permissions_summary">Kiểm tra ứng dụng nào được phép điều khiển việc bắt gói tin của PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="no_permissions_set_info">Chưa thiết lập quyền nào. Gọi PCAPdroid qua StartActivityForResult để hiển thị lời nhắc quyền</string>
     <string name="generate_api_key">Tạo khóa API</string>
     <string name="show_api_key">Hiển thị khóa API</string>
@@ -354,7 +354,7 @@
     <string name="app_intro_privacy_msg">Ứng dụng không sử dụng bất kỳ tính năng theo dõi, phân tích hay gọi về máy chủ nào\n\nLàm sao bạn có thể chắc chắn? Hãy xem <a href="%1$s">chính sách quyền riêng tư</a> và <a href="%2$s">mã nguồn</a> của nó</string>
     <string name="country_and_asn">Quốc gia và ASN</string>
     <string name="app_intro_geolocation_msg">PCAPdroid có thể truy vấn một cơ sở dữ liệu cục bộ để xác định quốc gia của một máy chủ từ xa\n\nBạn phải tải xuống cơ sở dữ liệu định vị địa lý từ cài đặt ứng dụng trước</string>
-    <string name="vpn_setup_msg">PCAPdroid mô phỏng một VPN để bắt lưu lượng mạng mà không cần root.\n\nĐể bắt đầu bắt gói tin, bạn cần chấp nhận yêu cầu VPN ở màn hình tiếp theo.\n\n<b>LƯU Ý:</b> để tiếp tục, hãy tắt bất kỳ VPN Luôn bật nào đã cấu hình trong cài đặt Android</string>
+    <string name="vpn_setup_msg">PCAPdroid mô phỏng một VPN để bắt lưu lượng mạng mà không cần root.\n\nĐể bắt đầu bắt gói tin, bạn cần chấp nhận yêu cầu VPN ở màn hình tiếp theo.\n\n<b>LƯU Ý:</b> để tiếp tục, hãy tắt bất kỳ VPN luôn bật nào đã cấu hình trong cài đặt Android</string>
     <string name="app_intro_traffic_inspection">Việc kiểm tra các yêu cầu, phản hồi HTTP và dữ liệu thô rất dễ dàng, nhờ các bộ giải mã tích hợp\n\nCó một kết nối được mã hóa? Bạn có thể bật <a href="%1$s">giải mã TLS</a> để lấy dữ liệu đã giải mã</string>
     <string name="app_intro_firewall_msg">Với <a href="%1$s">Tường lửa</a> tích hợp, bạn có thể dễ dàng chặn truy cập Internet của từng ứng dụng, tên miền và quốc gia\n\nKết hợp điều này với khả năng hiển thị lưu lượng tích hợp để có công cụ tối thượng bảo vệ quyền riêng tư của bạn</string>
     <string name="app_intro_malware_detection">Nâng cao bảo mật cho thiết bị của bạn với tính năng <a href="%1$s">phát hiện mã độc</a>\n\nBằng cách sử dụng các danh sách đen được cập nhật, nó có thể phát hiện, chặn và cảnh báo các kết nối độc hại theo thời gian thực</string>
@@ -578,7 +578,7 @@
     <string name="export_settings_summary">Lưu cài đặt ứng dụng vào một tệp để khôi phục sau này</string>
     <string name="import_settings">Nhập cài đặt</string>
     <string name="import_settings_summary">Khôi phục cài đặt ứng dụng từ một bản sao lưu trước đó</string>
-    <string name="import_settings_confirm">Tất cả các cài đặt hiện tại sẽ được thay thế bằng các cài đặt đã xuất vào %1$s.\n\nỨng dụng sẽ được khởi động lại để áp dụng chúng. Tiếp tục?</string>
+    <string name="import_settings_confirm">Tất cả các cài đặt hiện tại sẽ được thay thế bằng các cài đặt đã xuất vào %1$s.\n\nLƯU Ý: chỉ nhập cài đặt từ nguồn đáng tin cậy.\n\nỨng dụng sẽ được khởi động lại để áp dụng chúng. Tiếp tục?</string>
     <string name="settings_imported">Đã nhập cài đặt</string>
     <string name="imported_license_invalid">Giấy phép đã nhập không hợp lệ trên thiết bị này, nên các tính năng trả phí sẽ không khả dụng. Giấy phép được gắn với một thiết bị và một bản cài đặt ứng dụng cụ thể</string>
     <string name="captures_not_accessible">Không thể truy cập %1$d bản bắt gói tin trong danh sách đã nhập. Nếu các tệp của chúng vẫn còn, hãy chọn thư mục chứa chúng để khôi phục danh sách</string>
@@ -590,4 +590,10 @@
     <string name="replace_action">Thay thế</string>
     <string name="keep_current_action">Giữ danh sách hiện tại</string>
     <string name="mitm_addon_not_available">Giải mã TLS yêu cầu addon mitm của PCAPdroid, addon này không có sẵn trong bản dựng này</string>
+    <string name="import_anyway_action">Vẫn nhập</string>
+    <string name="and_n_more">và %1$d khác</string>
+    <string name="import_sensitive_prefs_confirm">Bản sao lưu thay đổi một số cài đặt nhạy cảm, có thể bị dùng để chuyển hướng lưu lượng của thiết bị bạn đến một máy chủ độc hại:\n%1$s\n\nChỉ tiếp tục nếu chính bạn đã tạo bản sao lưu này. Nếu nó đến từ người khác, hãy hủy việc nhập.</string>
+    <string name="restart_app_action">Khởi động lại ứng dụng</string>
+    <string name="skipped_prefs_import">LƯU Ý: không thể nhập các cài đặt sau, vì chúng không xác định hoặc không hợp lệ:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">VPN luôn bật đang được kích hoạt cho PCAPdroid, vì vậy bạn cần dừng việc bắt gói tin trong cài đặt Android.\n\nBạn có muốn mở cài đặt VPN ngay bây giờ không?</string>
 </resources>

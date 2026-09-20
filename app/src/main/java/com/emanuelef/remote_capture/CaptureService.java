@@ -108,11 +108,13 @@ public class CaptureService extends VpnService implements Runnable {
     private static final String NOTIFY_CHAN_MALWARE_DETECTION = "Malware detection";
     private static final String NOTIFY_CHAN_OTHER = "Other";
     private static final int VPN_MTU = 10000;
+    private static final Pair<ConnectionDescriptor[], ConnectionUpdate[]> GC_REQUEST = new Pair<>(new ConnectionDescriptor[0], null);
     public static final int NOTIFY_ID_VPNSERVICE = 1;
     public static final int NOTIFY_ID_LOW_MEMORY = 2;
     public static final int NOTIFY_ID_APP_BLOCKED = 3;
     private static CaptureService INSTANCE;
     private static boolean HAS_ERROR = false;
+    private static boolean NATIVE_LIB_LOADED = false;
     final ReentrantLock mLock = new ReentrantLock();
     final Condition mCaptureStopped = mLock.newCondition();
     private ParcelFileDescriptor mParcelFileDescriptor;
@@ -172,7 +174,8 @@ public class CaptureService extends VpnService implements Runnable {
     private String mSocks5Auth;
     private static final MutableLiveData<CaptureStats> lastStats = new MutableLiveData<>();
     private static final MutableLiveData<ServiceStatus> serviceStatus = new MutableLiveData<>();
-    private boolean mLowMemory;
+    private volatile boolean mLowMemory;
+    private volatile boolean mGcPending;
     private BroadcastReceiver mNewAppsInstallReceiver;
     private Utils.PrivateDnsMode mPrivateDnsMode;
 
@@ -195,6 +198,7 @@ public class CaptureService extends VpnService implements Runnable {
         try {
             System.loadLibrary("capture");
             CaptureService.initPlatformInfo(Utils.getAppVersionString(), Utils.getDeviceModel(), Utils.getOsVersion());
+            NATIVE_LIB_LOADED = true;
         } catch (UnsatisfiedLinkError e) {
             // This should only happen while running tests
             //e.printStackTrace();
@@ -214,6 +218,9 @@ public class CaptureService extends VpnService implements Runnable {
         mNativeGeolocation = new Geolocation(this);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new CaptureSettings(this, mPrefs); // initialize to prevent NULL pointer exceptions in methods (e.g. isRootCapture)
+
+        if((INSTANCE != null) && (INSTANCE.conn_reg != null))
+            INSTANCE.conn_reg.cleanup();
 
         INSTANCE = this;
         super.onCreate();
@@ -386,7 +393,15 @@ public class CaptureService extends VpnService implements Runnable {
         mCaptureStartTimeMonotonic = SystemClock.elapsedRealtime();
         last_connections = 0;
         mLowMemory = false;
+        mGcPending = false;
+
+        if(conn_reg != null)
+            conn_reg.cleanup();
+
         conn_reg = new ConnectionsRegister(this, Prefs.getConnectionsLogSize(mPrefs));
+        if(mSettings.readFromPcap())
+            conn_reg.openPcapFile(mSettings.input_pcap_path);
+
         mHttpLog = mSettings.full_payload ? new HttpLog() : null;
         mDumper = null;
         mDumpQueue = null;
@@ -1365,6 +1380,12 @@ public class CaptureService extends VpnService implements Runnable {
                 break;
             }
 
+            if(item == GC_REQUEST) {
+                System.gc();
+                Log.i(TAG, "Memory stats full payload release:\n" + Utils.getMemoryStats(this));
+                continue;
+            }
+
             ConnectionDescriptor[] new_conns = item.first;
             ConnectionUpdate[] conns_updates = item.second;
 
@@ -1372,8 +1393,7 @@ public class CaptureService extends VpnService implements Runnable {
             if(mBlocklist.checkGracePeriods())
                 mHandler.post(this::reloadBlocklist);
 
-            if(!mLowMemory)
-                checkAvailableHeap();
+            checkAvailableHeap();
 
             if(conns_updates == null)
                 // wake-up request
@@ -1440,7 +1460,11 @@ public class CaptureService extends VpnService implements Runnable {
         }
     }
 
-    private void checkAvailableHeap() {
+    // also called from native, as payload chunks can exhaust the heap before the next connections dump
+    public synchronized void checkAvailableHeap() {
+        if(mLowMemory)
+            return;
+
         // This does not account per-app jvm limits
         long availableHeap = Utils.getAvailableHeap();
 
@@ -1466,7 +1490,10 @@ public class CaptureService extends VpnService implements Runnable {
             handleLowMemory();
     }
 
-    private void handleLowMemory() {
+    private synchronized void handleLowMemory() {
+        if(mLowMemory)
+            return;
+
         Log.w(TAG, "handleLowMemory called");
         mLowMemory = true;
         boolean fullPayload = getCurPayloadMode() == Prefs.PayloadMode.FULL;
@@ -1484,14 +1511,12 @@ public class CaptureService extends VpnService implements Runnable {
                 notifyLowMemory(getString(R.string.capture_stopped_low_memory));
             } else {
                 // Release memory for existing connections
-                if(conn_reg != null) {
+                if(conn_reg != null)
                     conn_reg.releasePayloadMemory();
 
-                    // *possibly* call the gc
-                    System.gc();
-
-                    Log.i(TAG, "Memory stats full payload release:\n" + Utils.getMemoryStats(this));
-                }
+                // Some payload is still referenced by native and by the pending updates, so the gc
+                // must run after they are processed, see updateConnections
+                mGcPending = true;
 
                 notifyLowMemory(getString(R.string.full_payload_disabled));
             }
@@ -1618,7 +1643,13 @@ public class CaptureService extends VpnService implements Runnable {
             Log.e(TAG, "The updates queue is full, this should never happen!");
             mQueueFull = true;
             mHandler.post(CaptureService::stopPacketLoop);
+            return;
         }
+
+        // Native has now flushed its pending payload, which will be dropped by the updates thread
+        // before processing the GC request
+        if(mGcPending && mPendingUpdates.offer(GC_REQUEST))
+            mGcPending = false;
     }
 
     public static boolean isUsharkAvailable(Context ctx) {
@@ -1882,6 +1913,12 @@ public class CaptureService extends VpnService implements Runnable {
         return isServiceActive() ? INSTANCE.mPrivateDnsMode : null;
     }
 
+    /* Returns true if the given IP address belongs to a well known public DNS server.
+     * Always false when the native library is not available, e.g. while running the tests. */
+    public static boolean isKnownDnsServer(String ip) {
+        return NATIVE_LIB_LOADED && nativeIsKnownDnsServer(ip);
+    }
+
     public static native int initLogger(String path, int level);
     public static native int writeLog(int logger, int lvl, String message);
     private static native void initPlatformInfo(String appver, String device, String os);
@@ -1908,4 +1945,5 @@ public class CaptureService extends VpnService implements Runnable {
     public static native void dumpMasterSecret(byte[] secret);
     public static native boolean hasSeenDumpExtensions();
     public static native boolean extractKeylogFromPcapng(String pcapng_path, String out_path);
+    private static native boolean nativeIsKnownDnsServer(String ip);
 }

@@ -137,7 +137,7 @@
     <string name="forever">Per sempre</string>
     <string name="control_permissions">Permessi di controllo</string>
     <string name="control_permissions_summary">Controlla a quali app è permesso controllare la cattura di PCAPdroid</string>
-    <string name="control_permissions_item">%1$s: %2$s</string>
+    <string name="name_value">%1$s: %2$s</string>
     <string name="country">Nazione</string>
     <string name="asn">ASN</string>
     <string name="country_val">Nazione: %1$s</string>
@@ -595,7 +595,7 @@
     <string name="export_settings_summary">Salva le impostazioni dell\'app in un file, per ripristinarle in seguito</string>
     <string name="import_settings">Importa impostazioni</string>
     <string name="import_settings_summary">Ripristina le impostazioni dell\'app da un backup precedente</string>
-    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
+    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nNOTA: importa le impostazioni solo da una fonte attendibile.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
     <string name="settings_imported">Impostazioni importate</string>
     <string name="imported_license_invalid">La licenza importata non è valida su questo dispositivo, quindi le funzioni a pagamento non saranno disponibili. Le licenze sono legate a uno specifico dispositivo e a una specifica installazione dell\'app</string>
     <string name="captures_not_accessible">%1$d catture della lista importata non sono accessibili. Se i relativi file sono ancora disponibili, seleziona la cartella che li contiene per ripristinare la lista</string>
@@ -607,4 +607,10 @@
     <string name="replace_action">Sostituisci</string>
     <string name="keep_current_action">Mantieni attuali</string>
     <string name="mitm_addon_not_available">La decrittazione TLS richiede l\'addon mitm di PCAPdroid, che non è disponibile in questa build</string>
+    <string name="import_anyway_action">Importa comunque</string>
+    <string name="and_n_more">e altre %1$d</string>
+    <string name="import_sensitive_prefs_confirm">Il backup modifica alcune impostazioni sensibili, che potrebbero essere usate per reindirizzare il traffico del tuo dispositivo verso un server malevolo:\n%1$s\n\nContinua solo se hai creato tu questo backup. Se proviene da qualcun altro, annulla l\'importazione.</string>
+    <string name="restart_app_action">Riavvia l\'app</string>
+    <string name="skipped_prefs_import">NOTA: le seguenti impostazioni non sono state importate, perché sconosciute o non valide:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">La VPN sempre attiva è abilitata per PCAPdroid, quindi devi fermare la cattura dalle impostazioni di Android.\n\nVuoi aprire le impostazioni VPN adesso?</string>
 </resources>

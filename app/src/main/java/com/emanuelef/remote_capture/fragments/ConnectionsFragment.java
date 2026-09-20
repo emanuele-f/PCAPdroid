@@ -106,7 +106,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     private TextView mEmptyText;
     private TextView mOldConnectionsText;
     private boolean autoScroll;
-    private boolean listenerSet;
+    private ConnectionsRegister mConnsRegister;
     private ChipGroup mActiveFilter;
     private Slider mSizeSlider;
     private boolean mSizeSliderActive = false;
@@ -134,8 +134,8 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         refreshEmptyText();
 
-        registerConnsListener();
-        mRecyclerView.setEmptyView(mEmptyText); // after registerConnsListener, when the adapter is populated
+        updateConnsListener();
+        mRecyclerView.setEmptyView(mEmptyText); // after updateConnsListener, when the adapter is populated
 
         refreshMenuIcons();
 
@@ -150,8 +150,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
     public void onPause() {
         super.onPause();
 
-        unregisterConnsListener();
-        mHandler.removeCallbacksAndMessages(null);
+        updateConnsListener();
         mRecyclerView.setEmptyView(null);
 
         if(mSearchView != null)
@@ -207,25 +206,23 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mEmptyText.setText(R.string.capture_not_running_status);
     }
 
-    private void registerConnsListener() {
-        if (!listenerSet) {
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
+    // Only listen while resumed: a fragment which is never resumed (e.g. an offscreen ViewPager2
+    // page) never gets onPause, so a listener registered in another state would be leaked
+    private void updateConnsListener() {
+        ConnectionsRegister reg = isResumed() ? CaptureService.getConnsRegister() : null;
+        if (reg == mConnsRegister)
+            return;
 
-            if (reg != null) {
-                reg.addListener(this);
-                listenerSet = true;
-            }
+        if (mConnsRegister != null) {
+            mConnsRegister.removeListener(this);
+
+            // must be done after removeListener, which waits for any in-progress notification
+            mHandler.removeCallbacksAndMessages(null);
         }
-    }
 
-    private void unregisterConnsListener() {
-        if(listenerSet) {
-            ConnectionsRegister reg = CaptureService.getConnsRegister();
-            if (reg != null)
-                reg.removeListener(this);
-
-            listenerSet = false;
-        }
+        mConnsRegister = reg;
+        if (reg != null)
+            reg.addListener(this);
     }
 
     @Override
@@ -278,7 +275,6 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
 
         mAdapter = new ConnectionsAdapter(requireContext(), mApps);
         mRecyclerView.setAdapter(mAdapter);
-        listenerSet = false;
         registerForContextMenu(mRecyclerView);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
@@ -398,11 +394,10 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
             mQueryToApply = search;
 
         // Register for service status
-        CaptureService.observeStatus(this, serviceStatus -> {
+        CaptureService.observeStatus(getViewLifecycleOwner(), serviceStatus -> {
             if(serviceStatus == CaptureService.ServiceStatus.STARTED) {
                 // register the new connection register
-                unregisterConnsListener();
-                registerConnsListener();
+                updateConnsListener();
 
                 autoScroll = true;
                 showFabDown(false);
@@ -1048,7 +1043,7 @@ public class ConnectionsFragment extends Fragment implements ConnectionsListener
         // Important: must use the provided num_connections rather than accessing the register
         // in order to avoid desyncs
 
-        // using runOnUi to populate the adapter as soon as registerConnsListener is called
+        // using runOnUi to populate the adapter as soon as updateConnsListener is called
         Utils.runOnUi(() -> {
             Log.d(TAG, "New connections size: " + num_connections);
 
