@@ -55,6 +55,7 @@ import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsParams.Product;
 import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
+import com.emanuelef.remote_capture.model.Prefs;
 import com.emanuelef.remote_capture.model.SkusAvailability;
 
 import org.json.JSONException;
@@ -85,7 +86,6 @@ import java.util.concurrent.Executors;
 
 public class PlayBilling extends Billing implements BillingClientStateListener, PurchasesUpdatedListener, ProductDetailsResponseListener {
     public static final String TAG = "PlayBilling";
-    private static final String PREF_LAST_UNLOCK_TOKEN = "unlock_token";
     private static final String LICENSE_GEN_URL = "https://pcapdroid.org/getlicense";
     private static final int PLAY_KEY_EXPONENT = 0x10001;
 
@@ -612,7 +612,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                                     // to purchase it again
                                     mListener.onSKUStateUpdate(Billing.UNLOCK_TOKEN_SKU, PurchaseState.UNSPECIFIED_STATE);
 
-                                mPrefs.edit().putString(PREF_LAST_UNLOCK_TOKEN, token).apply();
+                                mPrefs.edit().putString(Prefs.PREF_UNLOCK_TOKEN, token).apply();
 
                                 if(mPendingQrRequest != null)
                                     startQrActivation(mPendingQrRequest, token);
@@ -702,7 +702,7 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
     }
 
     public String getLastUnlockToken() {
-        return mPrefs.getString(PREF_LAST_UNLOCK_TOKEN, "");
+        return mPrefs.getString(Prefs.PREF_UNLOCK_TOKEN, "");
     }
 
     private void startQrActivation(QrActivationRequest qrActivation, String unlock_token) {

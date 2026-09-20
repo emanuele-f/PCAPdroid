@@ -33,7 +33,6 @@ import java.util.List;
 
 public class SkusAvailability implements Serializable {
     private final static String TAG = "SkusAvailability";
-    private final static String PREF_KEY = "available_skus";
     private final HashSet<String> mSkus;
 
     private SkusAvailability() {
@@ -41,7 +40,7 @@ public class SkusAvailability implements Serializable {
     }
 
     public static SkusAvailability load(SharedPreferences prefs) {
-        String serialized = prefs.getString(PREF_KEY, "");
+        String serialized = prefs.getString(Prefs.PREF_AVAILABLE_SKUS, "");
         Gson gson = new Gson();
         SkusAvailability obj = null;
 
@@ -61,7 +60,7 @@ public class SkusAvailability implements Serializable {
         String json = gson.toJson(this);
 
         SharedPreferences.Editor prefsEditor = pref.edit();
-        prefsEditor.putString(PREF_KEY, json);
+        prefsEditor.putString(Prefs.PREF_AVAILABLE_SKUS, json);
         prefsEditor.apply();
     }
 
