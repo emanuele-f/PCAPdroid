@@ -55,6 +55,7 @@ public class SettingsBackup {
     private static final String TYPE_STRING_SET = "string_set";
 
     private final ArrayMap<String, Object> mSettings = new ArrayMap<>();
+    private final ArrayMap<String, String> mSkipped = new ArrayMap<>();
     private int mAppVersion;
     private long mCreated;
 
@@ -100,19 +101,19 @@ public class SettingsBackup {
 
                 PrefsSchema.Type type = PrefsSchema.getType(key);
                 if (type == null) {
-                    Log.w(TAG, "skipping \"" + key + "\": unknown preference");
+                    rv.skip(key, entry.getValue(), "unknown preference");
                     continue;
                 }
 
                 Object value = decode(type, entry.getValue());
                 if (value == null) {
-                    Log.w(TAG, "skipping \"" + key + "\": invalid encoding");
+                    rv.skip(key, entry.getValue(), "invalid encoding");
                     continue;
                 }
 
                 String error = PrefsSchema.validate(key, value);
                 if (error != null) {
-                    Log.w(TAG, "skipping \"" + key + "\": " + error);
+                    rv.skip(key, entry.getValue(), error);
                     continue;
                 }
 
@@ -127,6 +128,20 @@ public class SettingsBackup {
             Log.e(TAG, "fromJson: " + e.getMessage());
             return null;
         }
+    }
+
+    private void skip(String key, JsonElement encoded, String reason) {
+        Log.w(TAG, "skipping \"" + key + "\": " + reason);
+        mSkipped.put(key, valueToString(encoded));
+    }
+
+    // the raw value of a preference which could not be decoded, only meant to be shown to the user
+    private static String valueToString(JsonElement encoded) {
+        JsonElement value = encoded.isJsonObject() ? encoded.getAsJsonObject().get("value") : null;
+        if (value == null)
+            value = encoded;
+
+        return isString(value) ? value.getAsString() : value.toString();
     }
 
     private static @Nullable JsonObject encode(Object value) {
@@ -273,6 +288,12 @@ public class SettingsBackup {
     public @NonNull String getString(String key) {
         Object value = mSettings.get(key);
         return (value instanceof String) ? (String) value : "";
+    }
+
+    /* The preferences of the backup which were not imported, as they are unknown or invalid,
+     * mapped to their raw value */
+    public @NonNull Map<String, String> getSkippedPrefs() {
+        return mSkipped;
     }
 
     public @NonNull String getValueAsString(String key) {

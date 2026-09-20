@@ -605,6 +605,7 @@
     <string name="last_capture">Last capture</string>
     <string name="view_all">View all</string>
     <string name="app_and_n_more">%1$s and %2$d more</string>
+    <string name="and_n_more">and %1$d more</string>
     <string name="capture_list_info">%1$s · %2$s · %3$s</string>
     <string name="capture_list">Capture list</string>
     <string name="captures_count">Captures (%1$d)</string>
@@ -634,6 +635,8 @@
     <string name="import_settings_confirm">All the current settings will be replaced with the ones exported on %1$s.\n\nNOTE: only import settings from a trusted source.\n\nThe app will be restarted to apply them. Continue?</string>
     <string name="import_sensitive_prefs_confirm">The backup changes some sensitive settings, which may be used to redirect your device traffic to a malicious server:\n%1$s\n\nOnly continue if you created this backup yourself. If it came from someone else, cancel the import.</string>
     <string name="settings_imported">Settings imported</string>
+    <string name="restart_app_action">Restart app</string>
+    <string name="skipped_prefs_import">NOTE: the following settings could not be imported, as they are unknown or invalid:\n%1$s</string>
     <string name="imported_license_invalid">The imported license is not valid on this device, so the paid features will not be available. Licenses are bound to a specific device and app installation</string>
     <string name="import_capture_list_confirm">The backup contains %1$d captures, while %2$d captures are already in the list of this device.\n\nHow would you like to proceed?</string>
     <string name="merge_action">Merge</string>
