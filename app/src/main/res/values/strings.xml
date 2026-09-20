@@ -646,4 +646,5 @@
     <string name="captures_restored">%1$d captures restored, %2$d skipped</string>
     <string name="select_folder">Select folder</string>
     <string name="skip_action">Skip</string>
+    <string name="always_on_vpn_stop_notice">Always-on VPN is enabled for PCAPdroid, so you need to stop the capture from the Android settings.\n\nDo you want to open the VPN settings now?</string>
 </resources>

@@ -923,6 +923,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void stopCapture() {
+        if(CaptureService.isAlwaysOnVPN()) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.always_on_vpn_stop_notice)
+                    .setPositiveButton(R.string.yes, (d, whichButton) -> Utils.startActivity(this, new Intent("android.net.vpn.SETTINGS")))
+                    .setNegativeButton(R.string.no, (d, whichButton) -> {})
+                    .show();
+            return;
+        }
+
         appStateStopping();
         CaptureService.stopService();
     }
