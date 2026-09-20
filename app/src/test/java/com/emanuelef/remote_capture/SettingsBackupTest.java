@@ -96,7 +96,6 @@ public class SettingsBackupTest {
         prefs.edit()
                 .putBoolean(Prefs.PREF_ROOT_CAPTURE, true)
                 .putString(Prefs.PREF_HTTP_SERVER_PORT, "8081")
-                .putString(Prefs.PREF_API_KEY, "s3cr3t")
                 .putString(Prefs.PREF_SOCKS5_PASSWORD_KEY, "p4ssw0rd")
                 .putInt(Prefs.PREF_FIREWALL_WHITELIST_INIT_VER, 1)
                 .putStringSet(Prefs.PREF_APP_FILTER, setOf("com.foo", "com.bar"))
@@ -111,7 +110,6 @@ public class SettingsBackupTest {
 
         assertTrue(prefs.getBoolean(Prefs.PREF_ROOT_CAPTURE, false));
         assertEquals("8081", prefs.getString(Prefs.PREF_HTTP_SERVER_PORT, ""));
-        assertEquals("s3cr3t", Prefs.getApiKey(prefs));
         assertEquals("p4ssw0rd", Prefs.getSocks5Password(prefs));
         assertEquals(1, prefs.getInt(Prefs.PREF_FIREWALL_WHITELIST_INIT_VER, 0));
         assertEquals(setOf("com.foo", "com.bar"), Prefs.getAppFilterRaw(prefs));
@@ -125,6 +123,8 @@ public class SettingsBackupTest {
                 .putInt(Prefs.PREF_APP_VERSION, 42)
                 .putString(PersistableUriPermission.PREF_KEY, "key|content://foo")
                 .putString(Blacklists.PREF_BLACKLISTS_STATUS, "{}")
+                .putString(Prefs.PREF_API_KEY, "s3cr3t")
+                .putString(CtrlPermissions.PREF_NAME, "{\"rules\": []}")
                 .putStringSet("peer_skus", setOf(Billing.PCAPNG_SKU))
                 .putString("available_skus", "{}")
                 .putString("unlock_token", "token")
@@ -139,6 +139,8 @@ public class SettingsBackupTest {
         assertFalse(json.contains(Prefs.PREF_APP_VERSION));
         assertFalse(json.contains(PersistableUriPermission.PREF_KEY));
         assertFalse(json.contains(Blacklists.PREF_BLACKLISTS_STATUS));
+        assertFalse(json.contains(Prefs.PREF_API_KEY));
+        assertFalse(json.contains(CtrlPermissions.PREF_NAME));
         assertFalse(json.contains("peer_skus"));
         assertFalse(json.contains("available_skus"));
         assertFalse(json.contains("unlock_token"));
@@ -157,6 +159,7 @@ public class SettingsBackupTest {
                 .putInt(Prefs.PREF_APP_VERSION, 42)
                 .putLong(Billing.SKU_PREF_PREFIX + Billing.PCAPNG_SKU, 1234)
                 .putString(Prefs.PREF_API_KEY, "local")
+                .putString(Prefs.PREF_SOCKS5_PASSWORD_KEY, "p4ssw0rd")
                 .commit();
 
         SettingsBackup backup = SettingsBackup.fromJson(json);
@@ -166,9 +169,10 @@ public class SettingsBackupTest {
         assertTrue(Prefs.isTLSDecryptionSetupDone(prefs));
         assertEquals(42, Prefs.getAppVersion(prefs));
         assertEquals(1234, prefs.getLong(Billing.SKU_PREF_PREFIX + Billing.PCAPNG_SKU, 0));
+        assertEquals("local", Prefs.getApiKey(prefs));
 
         // a key which is not in the bundle is dropped, as the import replaces the settings
-        assertEquals("", Prefs.getApiKey(prefs));
+        assertEquals("", Prefs.getSocks5Password(prefs));
     }
 
     @Test

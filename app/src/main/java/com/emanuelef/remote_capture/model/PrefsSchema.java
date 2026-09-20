@@ -146,8 +146,8 @@ public class PrefsSchema {
         // Other
         string(Prefs.PREF_APP_LANGUAGE, PrefsSchema::isNotEmpty);
         integer(Prefs.PREF_APP_VERSION).noBackup();
-        string(Prefs.PREF_API_KEY);
-        string(CtrlPermissions.PREF_NAME);
+        string(Prefs.PREF_API_KEY).noBackup();
+        string(CtrlPermissions.PREF_NAME).noBackup();
         string(PersistableUriPermission.PREF_KEY).noBackup();
         string(SettingsBackup.LICENSE_KEY);
 
