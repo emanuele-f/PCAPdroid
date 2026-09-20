@@ -1150,15 +1150,17 @@ static void* load_new_blacklists(void *data) {
 
         if(blacklist_load_file(bl, get_file_path(pd, subpath), blinfo->type, &stats) == 0) {
             // NOTE: cannot invoke JNI from this thread, must use an intermediate storage
-            if(status_arr->size >= status_arr->cur_items) {
+            if(status_arr->cur_items >= status_arr->size) {
                 /* Extend array */
-                status_arr->size = (status_arr->size == 0) ? 8 : (status_arr->size * 2);
-                status_arr->items = pd_realloc(status_arr->items, status_arr->size * sizeof(bl_status_t));
-                if(!status_arr->items) {
-                    log_e("realloc(bl_status_arr_t) (%d items) failed", status_arr->size);
-                    status_arr->size = 0;
+                int new_size = (status_arr->size == 0) ? 8 : (status_arr->size * 2);
+                bl_status_t *new_items = pd_realloc(status_arr->items, new_size * sizeof(bl_status_t));
+                if(!new_items) {
+                    log_e("realloc(bl_status_arr_t) (%d items) failed", new_size);
                     continue;
                 }
+
+                status_arr->items = new_items;
+                status_arr->size = new_size;
             }
 
             char *fname = pd_strdup(blinfo->fname);
