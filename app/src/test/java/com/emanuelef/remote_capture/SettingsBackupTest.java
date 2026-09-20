@@ -130,6 +130,7 @@ public class SettingsBackupTest {
                 .putString("available_skus", "{}")
                 .putString("unlock_token", "token")
                 .putLong(Billing.SKU_PREF_PREFIX + Billing.PCAPNG_SKU, 1234)
+                .putString(Prefs.PREF_COLLECTOR_IP_KEY, "1.2.3.4")
                 .putBoolean(Prefs.PREF_ROOT_CAPTURE, true)
                 .commit();
 
@@ -143,6 +144,7 @@ public class SettingsBackupTest {
         assertFalse(json.contains(Prefs.PREF_API_KEY));
         assertFalse(json.contains(CtrlPermissions.PREF_NAME));
         assertFalse(json.contains("peer_skus"));
+        assertFalse(json.contains(Prefs.PREF_COLLECTOR_IP_KEY));
         assertFalse(json.contains("available_skus"));
         assertFalse(json.contains("unlock_token"));
         assertFalse(json.contains(Billing.SKU_PREF_PREFIX));

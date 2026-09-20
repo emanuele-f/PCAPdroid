@@ -63,12 +63,14 @@ public class SettingsBackup {
         JsonObject settings = new JsonObject();
 
         for (Map.Entry<String, ?> entry: prefs.getAll().entrySet()) {
-            if (PrefsSchema.isExcludedFromBackup(entry.getKey()))
+            String key = entry.getKey();
+
+            if (PrefsSchema.isExcludedFromBackup(key) || !PrefsSchema.isKnown(key))
                 continue;
 
             JsonObject encoded = encode(entry.getValue());
             if (encoded != null)
-                settings.add(entry.getKey(), encoded);
+                settings.add(key, encoded);
         }
 
         JsonObject root = new JsonObject();
