@@ -231,15 +231,16 @@ static bool spoof_dns_reply(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_context_t *
 
     int remaining = pkt->l7_len - sizeof(dns_packet_t);
     int qlen=0;
-    while(remaining >= 5) {
-        if(!req->queries[qlen])
-            break;
+    while((remaining >= 5) && req->queries[qlen]) {
         qlen++;
         remaining--;
     }
 
-    if((req->queries[qlen] != 0) || (req->queries[qlen + 1] != 0) ||
-       (req->queries[qlen + 3] != 0) || (req->queries[qlen + 4] != 1))
+    if(remaining < 5)
+        return false; // no room for the query terminator and the type/class
+
+    if((req->queries[qlen + 1] != 0) || (req->queries[qlen + 3] != 0) ||
+       (req->queries[qlen + 4] != 1))
         return false; // invalid
 
     uint8_t qtype = req->queries[qlen + 2];
