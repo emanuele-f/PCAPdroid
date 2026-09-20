@@ -37,7 +37,7 @@ import java.util.Set;
 public class PrefsSchema {
     private static final ArrayMap<String, Spec> SCHEMA = new ArrayMap<>();
 
-    private enum Type {
+    public enum Type {
         BOOLEAN,
         INT,
         STRING,
@@ -187,6 +187,12 @@ public class PrefsSchema {
 
     public static boolean isKnown(String key) {
         return SCHEMA.containsKey(key);
+    }
+
+    // returns null if the preference is not part of the schema
+    public static @Nullable Type getType(String key) {
+        Spec spec = SCHEMA.get(key);
+        return (spec != null) ? spec.type : null;
     }
 
     // prefs which must not be exported, nor restored from a settings backup

@@ -243,6 +243,23 @@ public class SettingsBackupTest {
         assertSkipped(entry("unknown_pref", "boolean", "true"), "unknown_pref");
     }
 
+    // the type stored in the file is ignored, the schema determines how the value is decoded
+    @Test
+    public void testFileTypeIgnored() {
+        SettingsBackup backup = SettingsBackup.fromJson(backupJson(
+                entry(Prefs.PREF_ROOT_CAPTURE, "string", "true") + ", " +
+                entry(Prefs.PREF_HTTP_SERVER_PORT, "boolean", "\"8081\"") + ", " +
+                entry(Prefs.PREF_FIREWALL_WHITELIST_INIT_VER, "long", "1") + ", " +
+                entry(Prefs.PREF_APP_FILTER, "int", "[\"com.foo\"]")));
+        assertNotNull(backup);
+        backup.apply(prefs);
+
+        assertTrue(prefs.getBoolean(Prefs.PREF_ROOT_CAPTURE, false));
+        assertEquals("8081", prefs.getString(Prefs.PREF_HTTP_SERVER_PORT, ""));
+        assertEquals(1, prefs.getInt(Prefs.PREF_FIREWALL_WHITELIST_INIT_VER, 0));
+        assertEquals(setOf("com.foo"), Prefs.getAppFilterRaw(prefs));
+    }
+
     @Test
     public void testValidValuesApplied() {
         SettingsBackup backup = SettingsBackup.fromJson(backupJson(

@@ -96,14 +96,13 @@ public class SettingsBackup {
                 if (PrefsSchema.isExcludedFromBackup(key))
                     continue;
 
-                Object value;
-                try {
-                    value = decode(entry.getValue().getAsJsonObject());
-                } catch (RuntimeException e) {
-                    Log.w(TAG, "skipping \"" + key + "\": " + e.getMessage());
+                PrefsSchema.Type type = PrefsSchema.getType(key);
+                if (type == null) {
+                    Log.w(TAG, "skipping \"" + key + "\": unknown preference");
                     continue;
                 }
 
+                Object value = decode(type, entry.getValue());
                 if (value == null) {
                     Log.w(TAG, "skipping \"" + key + "\": invalid encoding");
                     continue;
@@ -131,6 +130,8 @@ public class SettingsBackup {
     private static @Nullable JsonObject encode(Object value) {
         JsonObject rv = new JsonObject();
 
+        // note: the "type" property is currently kept to avoid changing the format,
+        // but it's not actually used at import time
         if (value instanceof Boolean) {
             rv.addProperty("type", TYPE_BOOLEAN);
             rv.addProperty("value", (Boolean) value);
@@ -161,21 +162,21 @@ public class SettingsBackup {
         return rv;
     }
 
-    private static @Nullable Object decode(JsonObject obj) {
-        JsonElement type = obj.get("type");
-        JsonElement value = obj.get("value");
-        if ((type == null) || (value == null))
+    private static @Nullable Object decode(PrefsSchema.Type type, JsonElement encoded) {
+        if (!encoded.isJsonObject())
+            return null;
+
+        JsonElement value = encoded.getAsJsonObject().get("value");
+        if (value == null)
             return null;
 
         // Gson converts between primitive types (e.g. "abc".getAsBoolean() is false), which would
         // silently turn a wrong value into a valid one
-        switch (type.getAsString()) {
-            case TYPE_BOOLEAN:  return isBoolean(value) ? value.getAsBoolean() : null;
-            case TYPE_INT:      return isNumber(value) ? parseInt(value.getAsString()) : null;
-            case TYPE_LONG:     return isNumber(value) ? parseLong(value.getAsString()) : null;
-            case TYPE_FLOAT:    return isNumber(value) ? value.getAsFloat() : null;
-            case TYPE_STRING:   return isString(value) ? value.getAsString() : null;
-            case TYPE_STRING_SET:
+        switch (type) {
+            case BOOLEAN:   return isBoolean(value) ? value.getAsBoolean() : null;
+            case INT:       return isNumber(value) ? parseInt(value.getAsString()) : null;
+            case STRING:    return isString(value) ? value.getAsString() : null;
+            case STRING_SET:
                 if (!value.isJsonArray())
                     return null;
 
@@ -188,7 +189,6 @@ public class SettingsBackup {
                 return items;
         }
 
-        Log.w(TAG, "unhandled backup type: " + type.getAsString());
         return null;
     }
 
@@ -208,14 +208,6 @@ public class SettingsBackup {
     private static @Nullable Integer parseInt(String value) {
         try {
             return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
-    private static @Nullable Long parseLong(String value) {
-        try {
-            return Long.parseLong(value);
         } catch (NumberFormatException e) {
             return null;
         }
