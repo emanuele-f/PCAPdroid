@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 #include "test_utils.h"
@@ -1038,8 +1038,43 @@ static void test_app_allowlist_malware() {
 
 /* ******************************************************* */
 
+#define BL_FILE_PATH "/tmp/pcapdroid_test_blacklist.txt"
+
+static void test_load_file_cidr() {
+  FILE *f = fopen(BL_FILE_PATH, "w");
+  assert(f != NULL);
+
+  fputs("# a comment\n"
+        "1.2.3.4/256\n"    // truncates to /0 if not validated
+        "5.6.7.8/-1\n"
+        "9.9.9.9/abc\n"
+        "10.0.0.1/\n"
+        "dead::beef/129\n"
+        "172.16.0.0/16\n", f);
+  fclose(f);
+
+  blacklist_t *bl = blacklist_init();
+  assert(bl != NULL);
+
+  blacklist_stats_t stats;
+  assert0(blacklist_load_file(bl, BL_FILE_PATH, IP_BLACKLIST, &stats));
+  assert(stats.num_rules == 1);
+  assert(stats.num_failed == 5);
+
+  assert1(blacklist_match_ipstr(bl, "172.16.3.4"));
+  assert0(blacklist_match_ipstr(bl, "1.2.3.4"));
+  assert0(blacklist_match_ipstr(bl, "8.8.8.8"));
+  assert0(blacklist_match_ipstr(bl, "dead::beef"));
+
+  blacklist_destroy(bl);
+  unlink(BL_FILE_PATH);
+}
+
+/* ******************************************************* */
+
 int main(int argc, char **argv) {
   add_test("match", test_match);
+  add_test("load_file_cidr", test_load_file_cidr);
   add_test("detection", test_detection);
   add_test("malware_match", test_malware_match);
   add_test("firewall_match", test_firewall_match);

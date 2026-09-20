@@ -24,6 +24,7 @@ add_test(NAME dpi_payload_offsets COMMAND ./dpi payload_offsets)
 
 test_source(blacklist)
 add_test(NAME blacklist_match COMMAND ./blacklist match)
+add_test(NAME blacklist_load_file_cidr COMMAND ./blacklist load_file_cidr)
 add_test(NAME blacklist_detection COMMAND ./blacklist detection)
 add_test(NAME blacklist_malware_match COMMAND ./blacklist malware_match)
 add_test(NAME blacklist_firewall_match COMMAND ./blacklist firewall_match)
