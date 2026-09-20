@@ -19,6 +19,7 @@
 
 #include <sys/un.h>
 #include <sys/wait.h>
+#include <limits.h>
 #include <linux/limits.h>
 #include <netinet/tcp.h>
 #include "pcapdroid.h"
@@ -46,16 +47,26 @@ typedef struct pcap_conn_t {
 /* ******************************************************* */
 
 static int get_pcapd_pid() {
-    char pid_s[8];
+    char pid_s[16];
     FILE *f = fopen(PCAPD_PID, "r");
 
     if(f == NULL)
         return -1;
 
-    fgets(pid_s, sizeof(pid_s), f);
+    char *rv = fgets(pid_s, sizeof(pid_s), f);
     fclose(f);
 
-    return atoi(pid_s);
+    if(rv == NULL)
+        return -1;
+
+    char *endp;
+    errno = 0;
+    long pid = strtol(pid_s, &endp, 10);
+
+    if((endp == pid_s) || errno || (pid <= 0) || (pid > INT_MAX))
+        return -1;
+
+    return (int) pid;
 }
 
 /* ******************************************************* */
