@@ -583,8 +583,10 @@ static void getSocks5ProxyAuth(pcapdroid_t *pd) {
         return;
 
     *sep = '\0';
-    strncpy(pd->socks5.proxy_user, buf, sizeof(pd->socks5.proxy_user));
-    strncpy(pd->socks5.proxy_pass, sep + 1, sizeof(pd->socks5.proxy_pass));
+    strncpy(pd->socks5.proxy_user, buf, sizeof(pd->socks5.proxy_user) - 1);
+    pd->socks5.proxy_user[sizeof(pd->socks5.proxy_user) - 1] = '\0';
+    strncpy(pd->socks5.proxy_pass, sep + 1, sizeof(pd->socks5.proxy_pass) - 1);
+    pd->socks5.proxy_pass[sizeof(pd->socks5.proxy_pass) - 1] = '\0';
 
     //log_d("SOCKS5: user=%s pass=%s", pd->socks5.proxy_user, pd->socks5.proxy_pass);
 }
