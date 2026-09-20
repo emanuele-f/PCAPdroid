@@ -578,7 +578,7 @@
     <string name="export_settings_summary">後で復元できるように、アプリの設定をファイルに保存します</string>
     <string name="import_settings">設定をインポート</string>
     <string name="import_settings_summary">以前のバックアップからアプリの設定を復元します</string>
-    <string name="import_settings_confirm">現在の設定はすべて %1$s にエクスポートされたものに置き換えられます。\n\n適用するためにアプリを再起動します。続行しますか?</string>
+    <string name="import_settings_confirm">現在の設定はすべて %1$s にエクスポートされたものに置き換えられます。\n\n注意: 信頼できるソースからのみ設定をインポートしてください。\n\n適用するためにアプリを再起動します。続行しますか?</string>
     <string name="settings_imported">設定をインポートしました</string>
     <string name="imported_license_invalid">インポートされたライセンスはこのデバイスでは有効でないため、有料機能は利用できません。ライセンスは特定のデバイスとアプリのインストールに紐付けられています</string>
     <string name="captures_not_accessible">インポートされた一覧のうち %1$d 件のキャプチャにアクセスできません。ファイルがまだ存在する場合は、それらを含むフォルダーを選択して一覧を復元してください</string>

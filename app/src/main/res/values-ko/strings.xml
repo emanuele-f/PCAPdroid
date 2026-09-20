@@ -579,7 +579,7 @@
     <string name="export_settings_summary">나중에 복원할 수 있도록 앱 설정을 파일로 저장합니다</string>
     <string name="import_settings">설정 가져오기</string>
     <string name="import_settings_summary">이전 백업에서 앱 설정을 복원합니다</string>
-    <string name="import_settings_confirm">현재 설정이 모두 %1$s에 추출된 설정으로 대체됩니다.\n\n설정을 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?</string>
+    <string name="import_settings_confirm">현재 설정이 모두 %1$s에 추출된 설정으로 대체됩니다.\n\n참고: 신뢰할 수 있는 출처의 설정만 가져오세요.\n\n설정을 적용하기 위해 앱이 재시작됩니다. 계속하시겠습니까?</string>
     <string name="settings_imported">설정을 가져왔습니다</string>
     <string name="imported_license_invalid">가져온 라이선스가 이 기기에서 유효하지 않으므로 유료 기능을 사용할 수 없습니다. 라이선스는 특정 기기 및 앱 설치에 종속됩니다</string>
     <string name="captures_not_accessible">가져온 목록의 캡처 %1$d개에 접근할 수 없습니다. 해당 파일이 아직 남아 있다면, 파일이 들어 있는 폴더를 선택하여 목록을 복원하세요</string>

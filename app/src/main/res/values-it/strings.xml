@@ -595,7 +595,7 @@
     <string name="export_settings_summary">Salva le impostazioni dell\'app in un file, per ripristinarle in seguito</string>
     <string name="import_settings">Importa impostazioni</string>
     <string name="import_settings_summary">Ripristina le impostazioni dell\'app da un backup precedente</string>
-    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
+    <string name="import_settings_confirm">Tutte le impostazioni attuali saranno sostituite con quelle esportate il %1$s.\n\nNOTA: importa le impostazioni solo da una fonte attendibile.\n\nL\'app verrà riavviata per applicarle. Continuare?</string>
     <string name="settings_imported">Impostazioni importate</string>
     <string name="imported_license_invalid">La licenza importata non è valida su questo dispositivo, quindi le funzioni a pagamento non saranno disponibili. Le licenze sono legate a uno specifico dispositivo e a una specifica installazione dell\'app</string>
     <string name="captures_not_accessible">%1$d catture della lista importata non sono accessibili. Se i relativi file sono ancora disponibili, seleziona la cartella che li contiene per ripristinare la lista</string>

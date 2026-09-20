@@ -594,7 +594,7 @@
     <string name="export_settings_summary">Die App-Einstellungen in einer Datei speichern, um sie später wiederherzustellen</string>
     <string name="import_settings">Einstellungen importieren</string>
     <string name="import_settings_summary">Die App-Einstellungen aus einer früheren Sicherung wiederherstellen</string>
-    <string name="import_settings_confirm">Alle aktuellen Einstellungen werden durch die am %1$s exportierten ersetzt.\n\nDie App wird neu gestartet, um sie anzuwenden. Fortfahren?</string>
+    <string name="import_settings_confirm">Alle aktuellen Einstellungen werden durch die am %1$s exportierten ersetzt.\n\nHINWEIS: Importieren Sie Einstellungen nur aus einer vertrauenswürdigen Quelle.\n\nDie App wird neu gestartet, um sie anzuwenden. Fortfahren?</string>
     <string name="settings_imported">Einstellungen importiert</string>
     <string name="imported_license_invalid">Die importierte Lizenz ist auf diesem Gerät nicht gültig, daher sind die kostenpflichtigen Funktionen nicht verfügbar. Lizenzen sind an ein bestimmtes Gerät und eine bestimmte App-Installation gebunden</string>
     <string name="captures_not_accessible">Auf %1$d Aufnahmen der importierten Liste kann nicht zugegriffen werden. Wenn deren Dateien noch vorhanden sind, wählen Sie den Ordner aus, der sie enthält, um die Liste wiederherzustellen</string>

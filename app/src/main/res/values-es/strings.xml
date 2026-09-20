@@ -596,7 +596,7 @@
     <string name="export_settings_summary">Guarda los ajustes de la app en un archivo para restaurarlos más tarde</string>
     <string name="import_settings">Importar ajustes</string>
     <string name="import_settings_summary">Restaura los ajustes de la app desde una copia de seguridad anterior</string>
-    <string name="import_settings_confirm">Todos los ajustes actuales se reemplazarán por los exportados el %1$s.\n\nLa app se reiniciará para aplicarlos. ¿Continuar?</string>
+    <string name="import_settings_confirm">Todos los ajustes actuales se reemplazarán por los exportados el %1$s.\n\nNOTA: importa ajustes solo desde una fuente de confianza.\n\nLa app se reiniciará para aplicarlos. ¿Continuar?</string>
     <string name="settings_imported">Ajustes importados</string>
     <string name="imported_license_invalid">La licencia importada no es válida en este dispositivo, por lo que las funciones de pago no estarán disponibles. Las licencias están vinculadas a un dispositivo y a una instalación de la app específicos</string>
     <string name="captures_not_accessible">No se puede acceder a %1$d capturas de la lista importada. Si sus archivos siguen disponibles, selecciona la carpeta que los contiene para restaurar la lista</string>
@@ -610,7 +610,7 @@
     <string name="mitm_addon_not_available">El descifrado TLS requiere el complemento mitm de PCAPdroid, que no está disponible en esta versión</string>
     <string name="import_anyway_action">Importar de todos modos</string>
     <string name="and_n_more">y %1$d más</string>
-    <string name="import_sensitive_prefs_confirm">La copia de seguridad cambia algunos ajustes sensibles, que podrían usarse para redirigir el tráfico de tu dispositivo a un servidor malicioso:\n%1$s\n\nContinúa solo si has creado tú mismo esta copia de seguridad. Si procede de otra persona, cancela la importación.</string>
+    <string name="import_sensitive_prefs_confirm">La copia de seguridad cambia algunos ajustes sensibles, que podrían usarse para redirigir el tráfico de tu dispositivo a un servidor malicioso:\n%1$s\n\nContinúa solo si esta copia de seguridad la has creado tú. Si procede de otra persona, cancela la importación.</string>
     <string name="restart_app_action">Reiniciar la app</string>
     <string name="skipped_prefs_import">NOTA: los siguientes ajustes no se han podido importar, porque son desconocidos o no válidos:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">La VPN siempre activa está habilitada para PCAPdroid, por lo que debes detener la captura desde los ajustes de Android.\n\n¿Quieres abrir los ajustes de VPN ahora?</string>

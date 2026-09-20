@@ -596,7 +596,7 @@
     <string name="export_settings_summary">Simpan pengaturan aplikasi ke sebuah file, untuk memulihkannya nanti</string>
     <string name="import_settings">Impor pengaturan</string>
     <string name="import_settings_summary">Pulihkan pengaturan aplikasi dari cadangan sebelumnya</string>
-    <string name="import_settings_confirm">Semua pengaturan saat ini akan diganti dengan yang diekspor pada %1$s.\n\nAplikasi akan dimulai ulang untuk menerapkannya. Lanjutkan?</string>
+    <string name="import_settings_confirm">Semua pengaturan saat ini akan diganti dengan yang diekspor pada %1$s.\n\nCATATAN: impor pengaturan hanya dari sumber yang tepercaya.\n\nAplikasi akan dimulai ulang untuk menerapkannya. Lanjutkan?</string>
     <string name="settings_imported">Pengaturan diimpor</string>
     <string name="imported_license_invalid">Lisensi yang diimpor tidak valid pada perangkat ini, sehingga fitur berbayar tidak akan tersedia. Lisensi terikat pada perangkat dan instalasi aplikasi tertentu</string>
     <string name="captures_not_accessible">%1$d tangkapan dari daftar yang diimpor tidak dapat diakses. Jika file-nya masih tersedia, pilih folder yang berisi file tersebut untuk memulihkan daftarnya</string>

@@ -578,7 +578,7 @@
     <string name="export_settings_summary">Simpan tetapan aplikasi ke fail, untuk memulihkannya kemudian</string>
     <string name="import_settings">Import tetapan</string>
     <string name="import_settings_summary">Pulihkan tetapan aplikasi daripada sandaran terdahulu</string>
-    <string name="import_settings_confirm">Semua tetapan semasa akan digantikan dengan tetapan yang dieksport pada %1$s.\n\nAplikasi akan dimulakan semula untuk menggunakannya. Teruskan?</string>
+    <string name="import_settings_confirm">Semua tetapan semasa akan digantikan dengan tetapan yang dieksport pada %1$s.\n\nNOTA: import tetapan hanya daripada sumber yang dipercayai.\n\nAplikasi akan dimulakan semula untuk menggunakannya. Teruskan?</string>
     <string name="settings_imported">Tetapan diimport</string>
     <string name="imported_license_invalid">Lesen yang diimport tidak sah pada peranti ini, jadi ciri berbayar tidak akan tersedia. Lesen terikat pada peranti dan pemasangan aplikasi tertentu</string>
     <string name="captures_not_accessible">%1$d tangkapan dalam senarai yang diimport tidak dapat diakses. Jika failnya masih tersedia, pilih folder yang mengandunginya untuk memulihkan senarai</string>

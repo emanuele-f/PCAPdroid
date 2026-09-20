@@ -577,7 +577,7 @@
     <string name="port_map_exemptions_help">حدّد التطبيقات التي تريد استبعادها من عملية تخصيص المنافذ. ولتجنب حدوث حلقات في حركة المرور، يجب استبعاد التطبيقات التي تحتاج إلى الوصول إلى خوادمها الأصلية لإجراء عملية التمهيد (مثل برامج تحليل عناوين DNS عبر بروتوكول HTTPS)</string>
     <string name="feature_unavailable">الميزة \"%1$s\" غير متاحة</string>
     <string name="port_mapping_disabled_reminder">فعّل تعيين المنافذ لاستخدام هذه القاعدة</string>
-    <string name="tls_decryption_unsupported_target">يتطلب فك تعمية TLS نظام أندرويد 7 أو أحدث وجهازًا يعمل بنظام x86_64/aarch64</string>
+    <string name="tls_decryption_unsupported_target">يتطلب فك تعمية TLS نظام Android 7 أو أحدث وجهازًا يعمل بنظام x86_64/aarch64</string>
     <string name="save_as_csv">احفظ كملف CSV</string>
     <string name="connections_log_size">أقصى عدد للاتصالات المسجلة</string>
     <string name="connections_log_size_entry">%1$s (استُخدم حوالي %2$d م.بايت من ذاكرة الوصول العشوائي)</string>
@@ -592,7 +592,7 @@
     <string name="export_settings_summary">احفظ إعدادات التطبيق في ملف لاستعادتها لاحقًا</string>
     <string name="import_settings">استيراد الإعدادات</string>
     <string name="import_settings_summary">استعد إعدادات التطبيق من نسخة احتياطية سابقة</string>
-    <string name="import_settings_confirm">سيتم استبدال جميع الإعدادات الحالية بالإعدادات المُصدَّرة في %1$s.\n\nسيُعاد تشغيل التطبيق لتطبيقها. هل تريد المتابعة؟</string>
+    <string name="import_settings_confirm">سيتم استبدال جميع الإعدادات الحالية بالإعدادات المُصدَّرة في %1$s.\n\nملاحظة: لا تستورد الإعدادات إلا من مصدر موثوق.\n\nسيُعاد تشغيل التطبيق لتطبيقها. هل تريد المتابعة؟</string>
     <string name="settings_imported">استُوردت الإعدادات</string>
     <string name="imported_license_invalid">الترخيص المستورد غير صالح على هذا الجهاز، لذلك لن تكون الميزات المدفوعة متاحة. ترتبط التراخيص بجهاز محدد وبتثبيت محدد للتطبيق</string>
     <string name="captures_not_accessible">تعذر الوصول إلى %1$d من الالتقاطات في القائمة المستوردة. إذا كانت ملفاتها لا تزال متوفرة، فحدّد المجلد الذي يحتوي عليها لاستعادة القائمة</string>
@@ -609,5 +609,5 @@
     <string name="import_sensitive_prefs_confirm">تُغيّر النسخة الاحتياطية بعض الإعدادات الحساسة، التي قد تُستخدم لإعادة توجيه حركة مرور جهازك إلى خادم ضار:\n%1$s\n\nتابع فقط إذا كنت قد أنشأت هذه النسخة الاحتياطية بنفسك. إذا كانت من شخص آخر، فألغِ الاستيراد.</string>
     <string name="restart_app_action">إعادة تشغيل التطبيق</string>
     <string name="skipped_prefs_import">ملاحظة: تعذّر استيراد الإعدادات التالية، لأنها غير معروفة أو غير صالحة:\n%1$s</string>
-    <string name="always_on_vpn_stop_notice">شبكة VPN الدائمة مفعّلة لـ PCAPdroid، لذا عليك إيقاف الالتقاط من إعدادات أندرويد.\n\nهل تريد فتح إعدادات VPN الآن؟</string>
+    <string name="always_on_vpn_stop_notice">شبكة VPN الدائمة مفعّلة لـ PCAPdroid، لذا عليك إيقاف الالتقاط من إعدادات Android.\n\nهل تريد فتح إعدادات VPN الآن؟</string>
 </resources>
