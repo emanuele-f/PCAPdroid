@@ -606,6 +606,8 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
 
     uint64_t now_usec = (uint64_t)tv->tv_sec * 1000000 + tv->tv_usec;
     int8_t *buffer = alloc_dump_buffer(dumper, total_length);
+    if (!buffer)
+        return false;
 
     pcapng_enh_packet_block_t *epb = (pcapng_enh_packet_block_t*) buffer;
     epb->type = 0x00000006;
