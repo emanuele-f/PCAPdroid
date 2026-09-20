@@ -327,13 +327,16 @@ static int notif_connection(pcapdroid_t *pd, conn_array_t *arr, const zdtun_5tup
 
     if(arr->cur_items >= arr->size) {
         /* Extend array */
-        arr->size = (arr->size == 0) ? 8 : (arr->size * 2);
-        arr->items = pd_realloc(arr->items, arr->size * sizeof(conn_and_tuple_t));
+        int new_size = (arr->size == 0) ? 8 : (arr->size * 2);
+        conn_and_tuple_t *new_items = pd_realloc(arr->items, new_size * sizeof(conn_and_tuple_t));
 
-        if(arr->items == NULL) {
-            log_e("realloc(conn_array_t) (%d items) failed", arr->size);
+        if(new_items == NULL) {
+            log_e("realloc(conn_array_t) (%d items) failed", new_size);
             return -1;
         }
+
+        arr->items = new_items;
+        arr->size = new_size;
     }
 
     conn_and_tuple_t *slot = &arr->items[arr->cur_items++];
