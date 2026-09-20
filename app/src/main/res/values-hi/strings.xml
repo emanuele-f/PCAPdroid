@@ -590,4 +590,10 @@
     <string name="replace_action">बदलें</string>
     <string name="keep_current_action">मौजूदा रखें</string>
     <string name="mitm_addon_not_available">TLS डिक्रिप्शन के लिए PCAPdroid mitm ऐडऑन आवश्यक है, जो इस बिल्ड में उपलब्ध नहीं है</string>
+    <string name="import_anyway_action">फिर भी इंपोर्ट करें</string>
+    <string name="and_n_more">और %1$d अन्य</string>
+    <string name="import_sensitive_prefs_confirm">बैकअप कुछ संवेदनशील सेटिंग्स बदलता है, जिनका उपयोग आपके डिवाइस के ट्रैफ़िक को किसी दुर्भावनापूर्ण सर्वर पर पुनर्निर्देशित करने के लिए किया जा सकता है:\n%1$s\n\nकेवल तभी जारी रखें जब आपने यह बैकअप स्वयं बनाया हो। यदि यह किसी और से आया है, तो इंपोर्ट रद्द करें।</string>
+    <string name="restart_app_action">ऐप पुनः प्रारंभ करें</string>
+    <string name="skipped_prefs_import">नोट: निम्नलिखित सेटिंग्स इंपोर्ट नहीं की जा सकीं, क्योंकि वे अज्ञात या अमान्य हैं:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid के लिए Always-on VPN सक्षम है, इसलिए आपको कैप्चर को Android सेटिंग्स से बंद करना होगा।\n\nक्या आप अभी VPN सेटिंग्स खोलना चाहते हैं?</string>
 </resources>

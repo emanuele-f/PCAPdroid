@@ -604,4 +604,10 @@
     <string name="replace_action">استبدال</string>
     <string name="keep_current_action">إبقاء الحالية</string>
     <string name="mitm_addon_not_available">فك تعمية TLS يتطلب إضافة mitm الخاصة بـ PCAPdroid، وهي غير متوفرة في هذا الإصدار</string>
+    <string name="import_anyway_action">إستيراد على أي حال</string>
+    <string name="and_n_more">و %1$d أكثر</string>
+    <string name="import_sensitive_prefs_confirm">تُغيّر النسخة الاحتياطية بعض الإعدادات الحساسة، التي قد تُستخدم لإعادة توجيه حركة مرور جهازك إلى خادم ضار:\n%1$s\n\nتابع فقط إذا كنت قد أنشأت هذه النسخة الاحتياطية بنفسك. إذا كانت من شخص آخر، فألغِ الاستيراد.</string>
+    <string name="restart_app_action">إعادة تشغيل التطبيق</string>
+    <string name="skipped_prefs_import">ملاحظة: تعذّر استيراد الإعدادات التالية، لأنها غير معروفة أو غير صالحة:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">شبكة VPN الدائمة مفعّلة لـ PCAPdroid، لذا عليك إيقاف الالتقاط من إعدادات أندرويد.\n\nهل تريد فتح إعدادات VPN الآن؟</string>
 </resources>

@@ -583,4 +583,10 @@
     <string name="replace_action">Əvəz et</string>
     <string name="keep_current_action">Mövcudu saxla</string>
     <string name="mitm_addon_not_available">TLS deşifrələməsi PCAPdroid mitm əlavəsini tələb edir, lakin bu əlavə bu versiyada mövcud deyil</string>
+    <string name="import_anyway_action">Yenə də idxal et</string>
+    <string name="and_n_more">və daha %1$d</string>
+    <string name="import_sensitive_prefs_confirm">Ehtiyat nüsxə bəzi həssas parametrləri dəyişir, bunlar cihazınızın trafikini zərərli serverə yönləndirmək üçün istifadə edilə bilər:\n%1$s\n\nYalnız bu ehtiyat nüsxəni özünüz yaratmısınızsa davam edin. Başqasından gəlibsə, idxalı ləğv edin.</string>
+    <string name="restart_app_action">Tətbiqi yenidən başlat</string>
+    <string name="skipped_prefs_import">QEYD: aşağıdakı parametrlər naməlum və ya etibarsız olduğu üçün idxal edilə bilmədi:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid üçün hər zaman açıq VPN aktivdir, ona görə izləməni Android parametrlərindən dayandırmalısınız.\n\nVPN parametrlərini indi açmaq istəyirsiniz?</string>
 </resources>

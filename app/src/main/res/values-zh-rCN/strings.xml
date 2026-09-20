@@ -608,4 +608,10 @@
     <string name="replace_action">替换</string>
     <string name="keep_current_action">保留当前</string>
     <string name="mitm_addon_not_available">TLS 解密需要 PCAPdroid mitm 附加组件，但此版本中不可用</string>
+    <string name="import_anyway_action">仍然导入</string>
+    <string name="and_n_more">和另外 %1$d 个</string>
+    <string name="import_sensitive_prefs_confirm">该备份会更改一些敏感设置，它们可能被用于将你的设备流量重定向到恶意服务器：\n%1$s\n\n仅当此备份由你自己创建时才继续。如果它来自他人，请取消导入。</string>
+    <string name="restart_app_action">重启应用</string>
+    <string name="skipped_prefs_import">注意：以下设置无法导入，因为它们未知或无效：\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid 已启用始终开启的 VPN，因此需要在 Android 设置中停止捕获。\n\n要现在打开 VPN 设置吗？</string>
 </resources>

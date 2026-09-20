@@ -590,4 +590,10 @@
     <string name="replace_action">Thay thế</string>
     <string name="keep_current_action">Giữ danh sách hiện tại</string>
     <string name="mitm_addon_not_available">Giải mã TLS yêu cầu addon mitm của PCAPdroid, addon này không có sẵn trong bản dựng này</string>
+    <string name="import_anyway_action">Vẫn nhập</string>
+    <string name="and_n_more">và %1$d khác</string>
+    <string name="import_sensitive_prefs_confirm">Bản sao lưu thay đổi một số cài đặt nhạy cảm, có thể bị dùng để chuyển hướng lưu lượng của thiết bị bạn đến một máy chủ độc hại:\n%1$s\n\nChỉ tiếp tục nếu chính bạn đã tạo bản sao lưu này. Nếu nó đến từ người khác, hãy hủy việc nhập.</string>
+    <string name="restart_app_action">Khởi động lại ứng dụng</string>
+    <string name="skipped_prefs_import">LƯU Ý: không thể nhập các cài đặt sau, vì chúng không xác định hoặc không hợp lệ:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">VPN Luôn bật đang được bật cho PCAPdroid, vì vậy bạn cần dừng việc bắt gói tin trong cài đặt Android.\n\nBạn có muốn mở cài đặt VPN ngay bây giờ không?</string>
 </resources>

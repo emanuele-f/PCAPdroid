@@ -599,4 +599,10 @@
     <string name="replace_action">Заменить</string>
     <string name="keep_current_action">Оставить текущие</string>
     <string name="mitm_addon_not_available">Для дешифрования TLS требуется mitm дополнение PCAPdroid, которое недоступно в этой сборке</string>
+    <string name="import_anyway_action">Всё равно импортировать</string>
+    <string name="and_n_more">и еще %1$d</string>
+    <string name="import_sensitive_prefs_confirm">Резервная копия изменяет некоторые важные настройки, которые могут быть использованы для перенаправления трафика вашего устройства на вредоносный сервер:\n%1$s\n\nПродолжайте, только если вы создали эту резервную копию сами. Если она получена от кого-то другого, отмените импорт.</string>
+    <string name="restart_app_action">Перезапустить приложение</string>
+    <string name="skipped_prefs_import">ПРИМЕЧАНИЕ: следующие настройки не удалось импортировать, так как они неизвестны или недопустимы:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">Для PCAPdroid включён Постоянный VPN, поэтому остановить захват нужно из настроек Android.\n\nОткрыть настройки VPN сейчас?</string>
 </resources>

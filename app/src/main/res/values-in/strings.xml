@@ -608,4 +608,10 @@
     <string name="replace_action">Ganti</string>
     <string name="keep_current_action">Pertahankan yang ada</string>
     <string name="mitm_addon_not_available">Dekripsi TLS memerlukan addon mitm PCAPdroid, yang tidak tersedia di build ini</string>
+    <string name="import_anyway_action">Tetap impor</string>
+    <string name="and_n_more">dan %1$d lainnya</string>
+    <string name="import_sensitive_prefs_confirm">Cadangan ini mengubah beberapa pengaturan sensitif, yang dapat digunakan untuk mengalihkan lalu lintas perangkat Anda ke server berbahaya:\n%1$s\n\nLanjutkan hanya jika Anda sendiri yang membuat cadangan ini. Jika berasal dari orang lain, batalkan impor.</string>
+    <string name="restart_app_action">Mulai ulang aplikasi</string>
+    <string name="skipped_prefs_import">CATATAN: pengaturan berikut tidak dapat diimpor, karena tidak dikenal atau tidak valid:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">Always-on VPN aktif untuk PCAPdroid, jadi Anda perlu menghentikan tangkapan dari pengaturan Android.\n\nApakah Anda ingin membuka pengaturan VPN sekarang?</string>
 </resources>

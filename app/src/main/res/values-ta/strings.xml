@@ -583,4 +583,10 @@
     <string name="replace_action">மாற்றவும்</string>
     <string name="keep_current_action">தற்போதையதை வைத்திருங்கள்</string>
     <string name="mitm_addon_not_available">TLS மறைகுறியாக்கத்திற்கு PCAPdroid mitm addon தேவை, இது இந்த பதிப்பில் கிடைக்கவில்லை</string>
+    <string name="import_anyway_action">எப்படியும் இறக்குமதி செய்</string>
+    <string name="and_n_more">மற்றும் இன்னும் %1$d</string>
+    <string name="import_sensitive_prefs_confirm">இந்த காப்புப்பிரதி சில முக்கியமான அமைப்புகளை மாற்றுகிறது, அவை உங்கள் சாதனத்தின் போக்குவரத்தை ஒரு தீங்கிழைக்கும் சேவையகத்திற்கு திருப்பிவிடப் பயன்படுத்தப்படலாம்:\n%1$s\n\nஇந்த காப்புப்பிரதியை நீங்களே உருவாக்கியிருந்தால் மட்டும் தொடரவும். வேறு யாரிடமிருந்தாவது வந்திருந்தால், இறக்குமதியை ரத்து செய்யவும்.</string>
+    <string name="restart_app_action">பயன்பாட்டை மறுதொடக்கம் செய்</string>
+    <string name="skipped_prefs_import">குறிப்பு: பின்வரும் அமைப்புகள் தெரியாதவை அல்லது தவறானவை என்பதால் இறக்குமதி செய்ய முடியவில்லை:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid-க்கு எப்போதும் இயங்கும் VPN இயக்கப்பட்டுள்ளது, எனவே ஆண்ட்ராய்டு அமைப்புகளிலிருந்து பிடிப்பை நிறுத்த வேண்டும்.\n\nVPN அமைப்புகளை இப்போது திறக்க வேண்டுமா?</string>
 </resources>

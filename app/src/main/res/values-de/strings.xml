@@ -606,4 +606,10 @@
     <string name="replace_action">Ersetzen</string>
     <string name="keep_current_action">Aktuelle behalten</string>
     <string name="mitm_addon_not_available">Die TLS-Entschlüsselung erfordert das PCAPdroid mitm Addon, das in diesem Build nicht verfügbar ist</string>
+    <string name="import_anyway_action">Trotzdem importieren</string>
+    <string name="and_n_more">und %1$d weitere</string>
+    <string name="import_sensitive_prefs_confirm">Die Sicherung ändert einige sensible Einstellungen, die dazu verwendet werden können, den Datenverkehr Ihres Geräts auf einen bösartigen Server umzuleiten:\n%1$s\n\nFahren Sie nur fort, wenn Sie diese Sicherung selbst erstellt haben. Wenn sie von jemand anderem stammt, brechen Sie den Import ab.</string>
+    <string name="restart_app_action">App neu starten</string>
+    <string name="skipped_prefs_import">HINWEIS: Die folgenden Einstellungen konnten nicht importiert werden, da sie unbekannt oder ungültig sind:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">Always-on VPN ist für PCAPdroid aktiviert, daher müssen Sie die Aufnahme in den Android-Einstellungen stoppen.\n\nMöchten Sie jetzt die VPN-Einstellungen öffnen?</string>
 </resources>

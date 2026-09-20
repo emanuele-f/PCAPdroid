@@ -590,4 +590,10 @@
     <string name="replace_action">Ganti</string>
     <string name="keep_current_action">Kekalkan semasa</string>
     <string name="mitm_addon_not_available">Penyahsulitan TLS memerlukan tambahan mitm PCAPdroid, yang tidak tersedia dalam binaan ini</string>
+    <string name="import_anyway_action">Tetap import</string>
+    <string name="and_n_more">dan %1$d lagi</string>
+    <string name="import_sensitive_prefs_confirm">Sandaran ini mengubah beberapa tetapan sensitif, yang boleh digunakan untuk mengalihkan trafik peranti anda ke pelayan berniat jahat:\n%1$s\n\nTeruskan hanya jika anda sendiri yang mencipta sandaran ini. Jika ia datang daripada orang lain, batalkan import.</string>
+    <string name="restart_app_action">Mulakan semula aplikasi</string>
+    <string name="skipped_prefs_import">NOTA: tetapan berikut tidak dapat diimport, kerana ia tidak dikenali atau tidak sah:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">VPN Sentiasa Aktif didayakan untuk PCAPdroid, jadi anda perlu menghentikan tangkapan daripada tetapan Android.\n\nAdakah anda mahu membuka tetapan VPN sekarang?</string>
 </resources>

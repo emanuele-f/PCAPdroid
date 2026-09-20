@@ -590,4 +590,10 @@
     <string name="replace_action">تبدیل کریں</string>
     <string name="keep_current_action">موجودہ رکھیں</string>
     <string name="mitm_addon_not_available">TLS ڈکرپشن کے لیے PCAPdroid mitm ایڈآن درکار ہے، جو اس بلڈ میں دستیاب نہیں ہے</string>
+    <string name="import_anyway_action">پھر بھی امپورٹ کریں</string>
+    <string name="and_n_more">اور %1$d مزید</string>
+    <string name="import_sensitive_prefs_confirm">یہ بیک اپ کچھ حساس ترتیبات تبدیل کرتا ہے، جنہیں آپ کے آلے کی ٹریفک کسی بدنیت سرور کی طرف موڑنے کے لیے استعمال کیا جا سکتا ہے:\n%1$s\n\nصرف اسی صورت میں جاری رکھیں جب آپ نے یہ بیک اپ خود بنایا ہو۔ اگر یہ کسی اور سے آیا ہے تو امپورٹ منسوخ کریں۔</string>
+    <string name="restart_app_action">ایپ دوبارہ شروع کریں</string>
+    <string name="skipped_prefs_import">نوٹ: درج ذیل ترتیبات امپورٹ نہیں کی جا سکیں، کیونکہ وہ نامعلوم یا غلط ہیں:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid کے لیے Always-on VPN فعال ہے، اس لیے آپ کو کیپچر اینڈرائیڈ ترتیبات سے روکنا ہوگا۔\n\nکیا آپ ابھی VPN ترتیبات کھولنا چاہتے ہیں؟</string>
 </resources>

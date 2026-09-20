@@ -583,4 +583,10 @@
     <string name="replace_action">Substituir</string>
     <string name="keep_current_action">Manter as atuais</string>
     <string name="mitm_addon_not_available">A decriptação do TLS requer a extensão de mitm do PCAPdroid, que não está disponível nesta versão</string>
+    <string name="import_anyway_action">Importar mesmo assim</string>
+    <string name="and_n_more">e mais %1$d</string>
+    <string name="import_sensitive_prefs_confirm">O backup altera algumas configurações sensíveis, que podem ser usadas para redirecionar o tráfego do seu dispositivo para um servidor malicioso:\n%1$s\n\nContinue apenas se foi você que criou este backup. Se veio de outra pessoa, cancele a importação.</string>
+    <string name="restart_app_action">Reiniciar a app</string>
+    <string name="skipped_prefs_import">NOTA: as seguintes configurações não puderam ser importadas, por serem desconhecidas ou inválidas:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">A VPN sempre ativa está ativada para o PCAPdroid, por isso precisa de parar a captura nas configurações do Android.\n\nDeseja abrir as configurações de VPN agora?</string>
 </resources>

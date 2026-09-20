@@ -608,4 +608,10 @@
     <string name="replace_action">Değiştir</string>
     <string name="keep_current_action">Mevcutları koru</string>
     <string name="mitm_addon_not_available">TLS şifre çözme, bu sürümde bulunmayan PCAPdroid ortadaki adam eklentisini gerektirir</string>
+    <string name="import_anyway_action">Yine de içe aktar</string>
+    <string name="and_n_more">ve %1$d daha</string>
+    <string name="import_sensitive_prefs_confirm">Yedekleme, cihazınızın trafiğini kötü amaçlı bir sunucuya yönlendirmek için kullanılabilecek bazı hassas ayarları değiştiriyor:\n%1$s\n\nYalnızca bu yedeklemeyi kendiniz oluşturduysanız devam edin. Başka birinden geldiyse içe aktarmayı iptal edin.</string>
+    <string name="restart_app_action">Uygulamayı yeniden başlat</string>
+    <string name="skipped_prefs_import">NOT: aşağıdaki ayarlar bilinmediği veya geçersiz olduğu için içe aktarılamadı:\n%1$s</string>
+    <string name="always_on_vpn_stop_notice">PCAPdroid için her zaman açık VPN etkin, bu nedenle yakalamayı Android ayarlarından durdurmanız gerekiyor.\n\nVPN ayarlarını şimdi açmak ister misiniz?</string>
 </resources>
