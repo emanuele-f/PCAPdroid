@@ -1694,7 +1694,12 @@ public class CaptureService extends VpnService implements Runnable {
                     Log.i(TAG, "VPN disconnected, starting reconnect service");
 
                     final Intent intent = new Intent(this, VpnReconnectService.class);
-                    ContextCompat.startForegroundService(this, intent);
+                    try {
+                        ContextCompat.startForegroundService(this, intent);
+                    } catch (IllegalStateException e) {
+                        // e.g. ForegroundServiceStartNotAllowedException
+                        Log.e(TAG, "Could not start the reconnect service: " + e);
+                    }
                 }
             }
         }
