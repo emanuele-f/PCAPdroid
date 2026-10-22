@@ -148,6 +148,29 @@ If you see the above error "*client does not trust proxy's certificate*" while d
 
 - If you don't want to root your device or can't root it, you can try the same above steps on an Android emulator and it should give the same results. The recommended option is the Android Studio virtual device manager, as it lets you create emulators with any SDK version. Here is a [video tutorial](https://www.youtube.com/watch?v=QzsNn3GhYYk) on how to set up an Android emulator and root it
 
+#### Using a device with outdated certificate store
+
+If your device uses an outdated certificate store, or if the app you want to decrypt bundles an outdated store, there is a chance you can decrypt TLS connections without having to install a system certificate, which would require root.
+
+In October 2026, eMudhra disclosed that the private keys of their intermediate CA certificates have been compromised. What this means is that anyone can generate a valid TLS certificate for any domain. The certificate will work on any device/app using the outdated certificate store, where the compromised certificates were not revoked yet.
+
+Since PCAPdroid mitm v2.5, you can add the `--emudhra` or `--emudhra-old` mitmproxy flags to generate certificates using one of the compromised intermediate CAs:
+
+1. Install the latest [mitm addon](https://github.com/emanuele-f/PCAPdroid-mitm/releases) version
+2. In the TLS decryption setup in PCAPdroid, you can skip the certificate installation
+3. In the "Additional mitmproxy options", specify either the `--emudhra` or the `--emudhra-old` flag, depending on which outdated certificates your vulnerable certificate store trusts
+
+<p align="center">
+<img src="./images/tls_emudhra.png" width="300" />
+</p>
+
+You can read more about this approach in the [mitmproxy 12.3 release notes](https://www.mitmproxy.org/posts/releases/mitmproxy-12.3).
+This method has been tested on an outdated Android 17 device, successfully decrypting the [Glider for Hacker News app](https://f-droid.org/packages/nl.viter.glider).
+
+Beware that the following limitations apply:
+- this method does not bypass certificate pinning; you still need root to decrypt pinned apps
+- this method does not work on Android 17 on apps targeting SDK 37 or above, because of the [enforced certificate transparency](https://developer.android.com/privacy-and-security/security-config#CertificateTransparencySummary)
+
 #### Patching the APK
 
 - You can use [apk-mitm](https://github.com/shroudedcode/apk-mitm) which automates rebuilding the apk with the pinning logic disabled and signs the apk for installation without errors
