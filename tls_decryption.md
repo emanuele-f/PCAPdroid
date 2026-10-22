@@ -148,7 +148,7 @@ If you see the above error "*client does not trust proxy's certificate*" while d
 
 - If you don't want to root your device or can't root it, you can try the same above steps on an Android emulator and it should give the same results. The recommended option is the Android Studio virtual device manager, as it lets you create emulators with any SDK version. Here is a [video tutorial](https://www.youtube.com/watch?v=QzsNn3GhYYk) on how to set up an Android emulator and root it
 
-#### Using a device with outdated certificate store
+#### Using a device with an outdated certificate store
 
 If your device uses an outdated certificate store, or if the app you want to decrypt bundles an outdated store, there is a chance you can decrypt TLS connections without having to install a system certificate, which would require root.
 
