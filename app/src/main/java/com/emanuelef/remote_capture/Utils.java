@@ -1984,6 +1984,31 @@ public class Utils {
         public long size;
     }
 
+    public static boolean deleteUri(Context ctx, Uri uri) {
+        // The getContentResolver().delete in some Android versions does not work, try to delete
+        // using file path first
+        String fpath = uriToFilePath(ctx, uri);
+        if(fpath != null) {
+            Log.d(TAG, "deleteUri: path=" + fpath);
+
+            try {
+                return new File(fpath).delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        Log.d(TAG, "deleteUri: uri=" + uri);
+
+        try {
+            return (ctx.getContentResolver().delete(uri, null, null) == 1);
+        } catch (UnsupportedOperationException | SecurityException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // NOTE: in Android 7, the file size of a newly written file can be 0/less than actual size
     public static UriStat getUriStat(Context ctx, Uri uri) {
         String uri_str = uri.toString();

@@ -974,7 +974,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Log.d(TAG, "Pcap dump size is " + stats.pcap_dump_size);
 
         if(stats.pcap_dump_size <= 0) {
-            deletePcapFile(pcapUri); // empty file, delete
+            // empty file, already deleted by CaptureService
             discardKeylogFile();
             return;
         }
@@ -1052,30 +1052,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void deletePcapFile(Uri pcapUri) {
-        boolean deleted = false;
-
-        // The getContentResolver().delete in some Android versions does not work, try to delete
-        // using file path first
-        String fpath = Utils.uriToFilePath(this, pcapUri);
-        if(fpath != null) {
-            Log.d(TAG, "deletePcapFile: path=" + fpath);
-
-            try {
-                deleted = new File(fpath).delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            Log.d(TAG, "deletePcapFile: uri=" + pcapUri);
-
-            try {
-                deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
-            } catch (UnsupportedOperationException | SecurityException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if(!deleted)
+        if(!Utils.deleteUri(this, pcapUri))
             Utils.showToast(MainActivity.this, R.string.delete_error);
     }
 

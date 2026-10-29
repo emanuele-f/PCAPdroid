@@ -136,6 +136,7 @@ public class CaptureService extends VpnService implements Runnable {
     private String vpn_dns;
     private String dns_server;
     private long last_bytes;
+    private long last_pcap_dump_size;
     private int last_connections;
     private long mCaptureStartTime;
     private long mCaptureStartTimeMonotonic;
@@ -389,6 +390,7 @@ public class CaptureService extends VpnService implements Runnable {
         vpn_dns = VPN_VIRTUAL_DNS_SERVER;
         vpn_ipv4 = VPN_IP_ADDRESS;
         last_bytes = 0;
+        last_pcap_dump_size = 0;
         mCaptureStartTime = System.currentTimeMillis();
         mCaptureStartTimeMonotonic = SystemClock.elapsedRealtime();
         last_connections = 0;
@@ -1352,6 +1354,16 @@ public class CaptureService extends VpnService implements Runnable {
         // NOTE: join the threads here instead in onDestroy to avoid ANR
         stopAndJoinThreads();
 
+        // a user-provided pcap_uri belongs to the caller, so it's kept even if empty
+        if((mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) && mSettings.pcap_uri.isEmpty()
+                && (mPcapUri != null) && (last_pcap_dump_size <= 0))
+        {
+            Log.d(TAG, "Deleting empty PCAP file");
+
+            if(!Utils.deleteUri(this, mPcapUri))
+                Log.w(TAG, "Could not delete the empty PCAP file");
+        }
+
         stopService();
 
         mLock.lock();
@@ -1661,6 +1673,7 @@ public class CaptureService extends VpnService implements Runnable {
         //Log.d(TAG, "sendStatsDump");
 
         last_bytes = stats.bytes_sent + stats.bytes_rcvd;
+        last_pcap_dump_size = stats.pcap_dump_size;
         last_connections = stats.tot_conns;
         mHandler.post(this::updateNotification);
 
