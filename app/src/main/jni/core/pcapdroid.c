@@ -1283,6 +1283,7 @@ static int apply_malware_whitelist_cb(pcapdroid_t *pd, const zdtun_5tuple_t *tup
 /* ******************************************************* */
 
 static void stop_pcap_dump(pcapdroid_t *pd) {
+    pd->pcap_dump.last_dump_size = pcap_get_dump_size(pd->pcap_dump.dumper);
     pcap_destroy_dumper(pd->pcap_dump.dumper);
     pd->pcap_dump.dumper = NULL;
 

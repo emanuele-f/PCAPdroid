@@ -276,6 +276,7 @@ typedef struct pcapdroid {
         int max_pkts_per_flow;
         int max_dump_size;
         pcap_dumper_t *dumper;
+        uint64_t last_dump_size;
     } pcap_dump;
 
     struct {

@@ -94,7 +94,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
                            allocs_summary,
                            capstats->sent_bytes, capstats->rcvd_bytes,
                            capstats->ipv6_sent_bytes, capstats->ipv6_rcvd_bytes,
-                           (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0),
+                           (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : pd->pcap_dump.last_dump_size),
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
                            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
