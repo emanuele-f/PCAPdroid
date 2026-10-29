@@ -72,7 +72,7 @@ The result code tells if the command succeded or not. Check out the [PCAPReceive
 
 ## User Consent
 
-To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started, unless a valid `api_key` is provided (see below). If the user denies consent, then the request fails. After an app is granted start permission, subsequent requests from that app are automatically granted.
+To prevent malicious apps from monitoring/hijacking the device traffic, PCAPdroid will ask for user consent every time a capture is started or stopped, unless a valid `api_key` is provided (see below). If the user denies consent, then the request fails. After an app is granted start permission, subsequent requests from that app (e.g. `stop`) are automatically granted. The consent screen is instead shown when an app tries to stop a capture which it did not start, e.g. a capture started by another app or from the PCAPdroid UI.
 
 From the permission dialog the user can choose to permanently grant or deny the capture permission to an app. The permanently granted/denied permissions can be edited from the `Control Permissions` entry in the PCAPdroid settings.
 
