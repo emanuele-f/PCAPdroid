@@ -13,7 +13,10 @@ android {
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
-        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "hi", "in", "it", "iw", "ja", "ko",
+        // NOTE: Hebrew is shipped under both the legacy "iw" and the modern "he"
+        // qualifier, so that the translation is picked up regardless of the locale
+        // form used by the device. Keep the two string files in sync.
+        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "he", "hi", "in", "it", "iw", "ja", "ko",
                                    "ms", "pl", "pt", "pt-rBR", "ru", "ta", "tr", "uk", "ur", "vi", "zh-rCN"]
     }
 
