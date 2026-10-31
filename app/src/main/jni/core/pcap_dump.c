@@ -149,11 +149,8 @@ unlock:
 
 /* ******************************************************* */
 
+// NOTE: the buffered data is already within the max dump size, as checked in alloc_dump_buffer
 static void export_dump_buffer(pcap_dumper_t *dumper) {
-    // prevents exporting more than the max dump size
-    if (dumper->max_dump_size_reached)
-        return;
-
     export_keylog_buffer(dumper);
 
     if(dumper->buffer_idx == 0)
