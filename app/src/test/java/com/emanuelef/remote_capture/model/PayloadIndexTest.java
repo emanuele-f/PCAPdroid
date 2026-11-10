@@ -66,7 +66,7 @@ public class PayloadIndexTest {
     private ConnectionDescriptor newConn() {
         return new ConnectionDescriptor(1, 4, 17,
                 "192.168.1.100", "93.184.216.34", "US",
-                54321, 53, 0, 1000, 0, false, 0);
+                54321, 53, 0, 4, 1000, 0, false, 0);
     }
 
     private void addChunks(ConnectionDescriptor conn, PayloadChunk... chunks) {

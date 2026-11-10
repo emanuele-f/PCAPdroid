@@ -45,7 +45,7 @@ public class FilterDescriptorTest {
     private ConnectionDescriptor makeConn() {
         ConnectionDescriptor conn = new ConnectionDescriptor(0, 4, 6,
                 "1.1.1.1", "2.2.2.2", "", 51234, 80,
-                0, 1000, 0, false, 0);
+                0, 4, 1000, 0, false, 0);
         conn.l7proto = "HTTP";
         conn.status = ConnectionDescriptor.CONN_STATUS_CONNECTED;
         return conn;
@@ -152,7 +152,7 @@ public class FilterDescriptorTest {
 
         ConnectionDescriptor noMatch = new ConnectionDescriptor(1, 4, 6,
                 "1.1.1.1", "2.2.2.2", "", 51234, 80,
-                0, 2000, 0, false, 0);
+                0, 4, 2000, 0, false, 0);
         noMatch.l7proto = "HTTP";
         noMatch.status = ConnectionDescriptor.CONN_STATUS_CONNECTED;
         assertFalse(filter.matches(noMatch));

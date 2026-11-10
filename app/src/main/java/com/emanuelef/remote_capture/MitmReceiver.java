@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2022-24 - Emanuele Faranda
+ * Copyright 2022-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -57,7 +57,7 @@ import java.util.StringTokenizer;
  * The header is an ASCII string in the following format:
  *   "timestamp:ipver:ipproto:port:msg_type:msg_length\n"
  * - timestamp: milliseconds timestamp for the message
- * - ipver: the IP version (4 or 6) of the connection
+ * - ipver: the IP version (4 or 6) of the port socket, which is the SOCKS5 proxy one in VPN mode
  * - ipproto: the IP protocol number of the connection (e.g. 6 for TCP)
  * - port: the local port used by the SOCKS5 client
  * - msg_type: type of message, see parseMsgType for possible values
@@ -463,7 +463,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
                 if(!conn.isMitmDecrypt())
                     continue;
 
-                int key = getMitmConnKey(conn.ipver, conn.local_port);
+                int key = getMitmConnKey(conn.local_ipver, conn.local_port);
 
                 //Log.d(TAG, "[+] port " + conn.local_port);
                 mPortToConnId.put(key, conn.incr_id);
@@ -543,7 +543,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
             return null;
 
         ConnectionDescriptor conn = mReg.getConnById(conn_id);
-        if((conn == null) || (conn.ipver != ipver) || (conn.local_port != local_port))
+        if((conn == null) || (conn.local_ipver != ipver) || (conn.local_port != local_port))
             return null;
 
         // success

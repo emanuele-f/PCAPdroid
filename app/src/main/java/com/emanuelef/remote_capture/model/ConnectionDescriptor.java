@@ -99,6 +99,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
     public final int src_port;
     public final int dst_port;
     public final int local_port; // in VPN mode, this is the local port of the Internet connection
+    public final int local_ipver; // IP version of the local_port socket, differs from ipver when proxied via SOCKS5
 
     /* Data */
     public long first_seen;
@@ -147,7 +148,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
 
     // NOTE: invoked from JNI
     public ConnectionDescriptor(int _incr_id, int _ipver, int _ipproto, String _src_ip, String _dst_ip, String _country,
-                                int _src_port, int _dst_port, int _local_port, int _uid, int _ifidx,
+                                int _src_port, int _dst_port, int _local_port, int _local_ipver, int _uid, int _ifidx,
                                 boolean _mitm_decrypt, long when) {
         incr_id = _incr_id;
         ipver = _ipver;
@@ -157,6 +158,7 @@ public class ConnectionDescriptor implements HTTPReassembly.ReassemblyListener {
         src_port = _src_port;
         dst_port = _dst_port;
         local_port = _local_port;
+        local_ipver = _local_ipver;
         uid = _uid;
         ifidx = _ifidx;
         first_seen = last_seen = when;

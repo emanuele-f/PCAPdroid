@@ -625,10 +625,13 @@ int run_vpn(pcapdroid_t *pd) {
                             socklen_t addrlen = sizeof(local_addr);
 
                             if(getsockname(sock, (struct sockaddr*) &local_addr, &addrlen) == 0) {
-                                if(local_addr.ss_family == AF_INET6)
+                                if(local_addr.ss_family == AF_INET6) {
                                     data->vpn.local_port = ((struct sockaddr_in6*) &local_addr)->sin6_port;
-                                else
+                                    data->vpn.local_ipver = 6;
+                                } else {
                                     data->vpn.local_port = ((struct sockaddr_in*) &local_addr)->sin_port;
+                                    data->vpn.local_ipver = 4;
+                                }
                             }
                         }
                     }

@@ -89,7 +89,7 @@ public class HarWriterTest {
     private ConnectionDescriptor createConnection(int incrId, String dstIp, int dstPort) {
         return new ConnectionDescriptor(incrId, 4, 6,
                 "192.168.1.100", dstIp, "US",
-                54321, dstPort, 0, 1000, 0, false, System.currentTimeMillis());
+                54321, dstPort, 0, 4, 1000, 0, false, System.currentTimeMillis());
     }
 
     /**

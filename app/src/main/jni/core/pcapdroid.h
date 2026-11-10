@@ -92,6 +92,7 @@ typedef struct {
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet
             uint16_t local_port;         // local port, from zdtun to the Internet
+            uint8_t local_ipver;         // IP version of the local_port socket
         } vpn;
     };
 
