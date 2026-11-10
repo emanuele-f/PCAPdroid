@@ -279,8 +279,7 @@ public class CaptureService extends VpnService implements Runnable {
         unregisterNewAppsInstallReceiver();
         stopNetworkTracker();
 
-        if (VpnReconnectService.isAvailable())
-            VpnReconnectService.stopService();
+        VpnReconnectService.stopService();
 
         mHandler = new Handler(Looper.getMainLooper());
         mBilling = Billing.newInstance(this);
@@ -364,25 +363,23 @@ public class CaptureService extends VpnService implements Runnable {
             mIfIndexToName.put(iface.getIndex(), iface.getName());
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
-            mNetworkTracker = new UnderlyingNetworkTracker(this, !mSettings.root_capture && !mSettings.readFromPcap());
-            Network net = mNetworkTracker.getNetwork();
-            mUnderlyingNetwork = net;
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+        mNetworkTracker = new UnderlyingNetworkTracker(this, !mSettings.root_capture && !mSettings.readFromPcap());
+        Network net = mNetworkTracker.getNetwork();
+        mUnderlyingNetwork = net;
 
-            if(net != null)
-                handleLinkProperties(cm.getLinkProperties(net));
+        if(net != null)
+            handleLinkProperties(cm.getLinkProperties(net));
 
-            // The system DNS is tracked for the whole capture, as it changes with the network. The
-            // fallback DNS is only used while the system DNS is not available
-            if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
-                dns_server = getSystemDnsServer(cm, net);
+        // The system DNS is tracked for the whole capture, as it changes with the network. The
+        // fallback DNS is only used while the system DNS is not available
+        if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
+            dns_server = getSystemDnsServer(cm, net);
 
-                if(!mNetworkTracker.start(this::updateSystemDns)) {
-                    // the system DNS may become unreachable when the network changes
-                    Log.w(TAG, "Network tracking failed, DNS server detection disabled");
-                    dns_server = Prefs.getDnsServerV4(mPrefs);
-                }
+            if(!mNetworkTracker.start(this::updateSystemDns)) {
+                // the system DNS may become unreachable when the network changes
+                Log.w(TAG, "Network tracking failed, DNS server detection disabled");
+                dns_server = Prefs.getDnsServerV4(mPrefs);
             }
         }
 
@@ -1163,7 +1160,7 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     private String resolveHost(String host) {
-        if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M) || (mUnderlyingNetwork == null))
+        if(mUnderlyingNetwork == null)
             return null;
 
         try {
@@ -1674,16 +1671,14 @@ public class CaptureService extends VpnService implements Runnable {
             // and decides itself when to capture again
             if (mRevoked && Prefs.restartOnDisconnect(mPrefs) && !mIsAlwaysOnVPN
                     && !mSettings.api_capture && (isVpnCapture() == 1)) {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    Log.i(TAG, "VPN disconnected, starting reconnect service");
+                Log.i(TAG, "VPN disconnected, starting reconnect service");
 
-                    final Intent intent = new Intent(this, VpnReconnectService.class);
-                    try {
-                        ContextCompat.startForegroundService(this, intent);
-                    } catch (IllegalStateException e) {
-                        // e.g. ForegroundServiceStartNotAllowedException
-                        Log.e(TAG, "Could not start the reconnect service: " + e);
-                    }
+                final Intent intent = new Intent(this, VpnReconnectService.class);
+                try {
+                    ContextCompat.startForegroundService(this, intent);
+                } catch (IllegalStateException e) {
+                    // e.g. ForegroundServiceStartNotAllowedException
+                    Log.e(TAG, "Could not start the reconnect service: " + e);
                 }
             }
         }

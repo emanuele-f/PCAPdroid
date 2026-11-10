@@ -19,7 +19,6 @@
 
 package com.emanuelef.remote_capture;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -39,7 +38,6 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -51,7 +49,6 @@ import com.emanuelef.remote_capture.model.CaptureSettings;
  * Service which waits for other apps VPNService to terminate before
  * restarting the capture.
  */
-@RequiresApi(api = Build.VERSION_CODES.M)
 public class VpnReconnectService extends Service {
     private static final String TAG = "VpnReconnectService";
     private static final String NOTIFY_CHAN_VPNRECONNECT = "VPN Reconnection";
@@ -244,12 +241,6 @@ public class VpnReconnectService extends Service {
 
             mNetworkCallback = null;
         }
-    }
-
-    @SuppressLint("ObsoleteSdkInt")
-    @RequiresApi(api = Build.VERSION_CODES.BASE)
-    public static boolean isAvailable() {
-        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M;
     }
 
     @SuppressWarnings("deprecation")

@@ -384,14 +384,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void checkPermissions() {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                // Needed to write PCAP files
-                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    } catch (ActivityNotFoundException e) {
-                        Utils.showToastLong(this, R.string.no_intent_handler_found);
-                    }
+            // Needed to write PCAP files
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                try {
+                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                } catch (ActivityNotFoundException e) {
+                    Utils.showToastLong(this, R.string.no_intent_handler_found);
                 }
             }
         }
@@ -879,8 +877,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
-        if (VpnReconnectService.isAvailable())
-            VpnReconnectService.stopService();
+        VpnReconnectService.stopService();
 
         if(showRemoteServerAlert())
             return;

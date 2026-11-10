@@ -992,11 +992,9 @@ public class Utils {
             selectArgs = new String[]{relPath, fname};
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    Utils.showToastLong(context, R.string.external_storage_perm_required);
-                    return(null);
-                }
+            if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Utils.showToastLong(context, R.string.external_storage_perm_required);
+                return(null);
             }
 
             File folder = getDownloadsFolder();
@@ -1207,9 +1205,7 @@ public class Utils {
     }
 
     public static int getIntentFlags(int flags) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        return flags;
+        return flags | PendingIntent.FLAG_IMMUTABLE;
     }
 
     public static boolean ungzip(InputStream is, String dst) {

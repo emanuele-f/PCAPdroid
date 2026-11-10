@@ -374,7 +374,7 @@ public class MitmAddon {
     public static boolean isDozeEnabled(Context context) {
         final PowerManager manager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && (manager != null)
+        return (manager != null)
                 && !manager.isIgnoringBatteryOptimizations(MitmAPI.PACKAGE_NAME);
     }
 }
