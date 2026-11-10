@@ -484,36 +484,6 @@ public class Utils {
         }
     }
 
-    // Returns the non-VPN network with Internet access which is most likely the default one, i.e.
-    // the one underlying an active VPN. Mimics the Android preference for validated networks and
-    // for wifi/ethernet over cellular.
-    @SuppressWarnings("deprecation")
-    public static Network getNonVpnInternetNetwork(ConnectivityManager cm) {
-        Network best = null;
-        int bestScore = -1;
-
-        try {
-            for(Network net : cm.getAllNetworks()) {
-                NetworkCapabilities cap = cm.getNetworkCapabilities(net);
-                if((cap == null) || cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
-                        || !cap.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
-                    continue;
-
-                int score = (cap.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ? 2 : 0)
-                        + (cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ? 0 : 1);
-                if(score > bestScore) {
-                    best = net;
-                    bestScore = score;
-                }
-            }
-        } catch (SecurityException e) {
-            // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
-            e.printStackTrace();
-        }
-
-        return best;
-    }
-
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
     // API level 31 requires building a NetworkRequest, which in turn requires an asynchronous callback.
     // Using the deprecated API instead to keep things simple.

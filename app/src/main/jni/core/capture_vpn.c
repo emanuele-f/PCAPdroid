@@ -425,6 +425,9 @@ int run_vpn(pcapdroid_t *pd) {
         return (-1);
     }
 
+    // reset before reading the DNS server, to not lose a DNS server change happening meanwhile
+    new_dns_server = 0;
+
 #if ANDROID
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.block_quic_mode = getIntPref(pd->env, pd->capture_service, "getBlockQuickMode");
@@ -456,7 +459,6 @@ int run_vpn(pcapdroid_t *pd) {
 #endif
 
     pd->zdt = zdt;
-    new_dns_server = 0;
 
     if(pd->socks5.enabled) {
         zdtun_set_socks5_proxy(zdt, &pd->socks5.proxy_ip, pd->socks5.proxy_port, pd->socks5.proxy_ipver);

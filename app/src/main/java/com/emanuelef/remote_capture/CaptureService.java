@@ -35,8 +35,6 @@ import android.content.pm.ServiceInfo;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
@@ -148,9 +146,8 @@ public class CaptureService extends VpnService implements Runnable {
     private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
     private NotificationCompat.Builder mMalwareBuilder;
-    private long mMonitoredNetwork;
     private Network mUnderlyingNetwork;
-    private ConnectivityManager.NetworkCallback mNetworkCallback;
+    private UnderlyingNetworkTracker mNetworkTracker;
     private AppsResolver mNativeAppsResolver; // can only be accessed by native code to avoid concurrency issues
     private Geolocation mNativeGeolocation;   // only native
     private boolean mMalwareDetectionEnabled;
@@ -278,8 +275,9 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // onDestroy is not necessarily invoked between two captures on the same service instance,
-        // so a receiver registered by the previous capture may still be around
+        // so the receiver and network callbacks registered by the previous capture may still be around
         unregisterNewAppsInstallReceiver();
+        stopNetworkTracker();
 
         if (VpnReconnectService.isAvailable())
             VpnReconnectService.stopService();
@@ -348,11 +346,11 @@ public class CaptureService extends VpnService implements Runnable {
         }
 
         // Retrieve DNS server
-        String fallbackDnsV4 = Prefs.getDnsServerV4(mPrefs);
-        dns_server = fallbackDnsV4;
+        dns_server = Prefs.getDnsServerV4(mPrefs);
         mBlockPrivateDns = false;
         mStrictDnsNoticeShown = false;
         mDnsEncrypted = false;
+        mPrivateDnsMode = null;
         setPrivateDnsBlocked(false);
 
         // Map network interfaces
@@ -368,32 +366,23 @@ public class CaptureService extends VpnService implements Runnable {
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
-            Network net = cm.getActiveNetwork();
-
-            // Another VPN (e.g. another PCAPdroid build) may be active, which is going to be replaced
-            // by our VPN. Its DNS server would not be reachable afterwards, so use the network underlying it
-            if((net != null) && !mSettings.root_capture && !mSettings.readFromPcap() && Utils.isVpnNetwork(cm, net)) {
-                Network underlying = Utils.getNonVpnInternetNetwork(cm);
-                Log.i(TAG, "Active network " + net + " is a VPN, using underlying network " + underlying);
-                net = underlying;
-            }
+            mNetworkTracker = new UnderlyingNetworkTracker(this, !mSettings.root_capture && !mSettings.readFromPcap());
+            Network net = mNetworkTracker.getNetwork();
             mUnderlyingNetwork = net;
 
-            if(net != null) {
+            if(net != null)
                 handleLinkProperties(cm.getLinkProperties(net));
 
-                if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
-                    dns_server = Utils.getDnsServer(cm, net);
+            // The system DNS is tracked for the whole capture, as it changes with the network. The
+            // fallback DNS is only used while the system DNS is not available
+            if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
+                dns_server = getSystemDnsServer(cm, net);
 
-                    // Using our virtual DNS as the upstream DNS would make all the DNS queries loop back
-                    if((dns_server == null) || dns_server.equals(VPN_VIRTUAL_DNS_SERVER))
-                        dns_server = fallbackDnsV4;
-                    else {
-                        mMonitoredNetwork = net.getNetworkHandle();
-                        registerNetworkCallbacks();
-                    }
-                } else
-                    dns_server = fallbackDnsV4;
+                if(!mNetworkTracker.start(this::updateSystemDns)) {
+                    // the system DNS may become unreachable when the network changes
+                    Log.w(TAG, "Network tracking failed, DNS server detection disabled");
+                    dns_server = Prefs.getDnsServerV4(mPrefs);
+                }
             }
         }
 
@@ -687,7 +676,7 @@ public class CaptureService extends VpnService implements Runnable {
         // after the capture is stopped
         //INSTANCE = null;
 
-        unregisterNetworkCallbacks();
+        stopNetworkTracker();
 
         if(mBlacklists != null)
             mBlacklists.abortUpdate();
@@ -819,69 +808,39 @@ public class CaptureService extends VpnService implements Runnable {
         mHandler.post(() -> Utils.sendImportantNotification(this, NOTIFY_ID_LOW_MEMORY, notification));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void registerNetworkCallbacks() {
-        if(mNetworkCallback != null)
-            return;
-
-        String fallbackDns = Prefs.getDnsServerV4(mPrefs);
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
-        mNetworkCallback = new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onLost(@NonNull Network network) {
-                Log.d(TAG, "onLost " + network);
-
-                // If the network goes offline we roll back to the fallback DNS server to
-                // avoid possibly using a private IP DNS server not reachable anymore
-                if(network.getNetworkHandle() == mMonitoredNetwork) {
-                    Log.i(TAG, "Main network " + network + " lost, using fallback DNS " + fallbackDns);
-                    dns_server = fallbackDns;
-                    mMonitoredNetwork = 0;
-                    unregisterNetworkCallbacks();
-
-                    // change native
-                    setDnsServer(dns_server);
-                }
-            }
-
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onLinkPropertiesChanged(@NonNull Network network, @NonNull LinkProperties linkProperties) {
-                Log.d(TAG, "onLinkPropertiesChanged " + network);
-
-                if(network.getNetworkHandle() == mMonitoredNetwork)
-                    handleLinkProperties(linkProperties);
-            }
-        };
-
-        try {
-            Log.d(TAG, "registerNetworkCallback");
-            cm.registerNetworkCallback(
-                    new NetworkRequest.Builder()
-                            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
-                    mNetworkCallback);
-        } catch (SecurityException e) {
-            // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
-            e.printStackTrace();
-
-            Log.w(TAG, "registerNetworkCallback failed, DNS server detection disabled");
-            dns_server = fallbackDns;
-            mNetworkCallback = null;
+    private void stopNetworkTracker() {
+        if(mNetworkTracker != null) {
+            mNetworkTracker.stop();
+            mNetworkTracker = null;
         }
     }
 
-    private void unregisterNetworkCallbacks() {
-        if(mNetworkCallback != null) {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+    private String getSystemDnsServer(ConnectivityManager cm, Network net) {
+        String server = (net != null) ? Utils.getDnsServer(cm, net) : null;
 
-            try {
-                Log.d(TAG, "unregisterNetworkCallback");
-                cm.unregisterNetworkCallback(mNetworkCallback);
-            } catch(IllegalArgumentException e) {
-                Log.w(TAG, "unregisterNetworkCallback failed: " + e);
-            }
+        // Using our virtual DNS as the upstream DNS would make all the DNS queries loop back
+        if((server == null) || server.equals(VPN_VIRTUAL_DNS_SERVER)) {
+            server = Prefs.getDnsServerV4(mPrefs);
+            Log.d(TAG, "System DNS not available on network " + net + ", using fallback DNS " + server);
+        }
 
-            mNetworkCallback = null;
+        return server;
+    }
+
+    // Re-evaluates the system DNS server after a network change
+    private void updateSystemDns(Network net) {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
+
+        if(net != null)
+            handleLinkProperties(cm.getLinkProperties(net));
+
+        String server = getSystemDnsServer(cm, net);
+        if(!server.equals(dns_server)) {
+            Log.i(TAG, "DNS server changed: " + dns_server + " -> " + server + " (network " + net + ")");
+            dns_server = server;
+
+            // change native
+            setDnsServer(server);
         }
     }
 
@@ -897,8 +856,10 @@ public class CaptureService extends VpnService implements Runnable {
             return;
 
         if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            mPrivateDnsMode = Utils.getPrivateDnsMode(linkProperties);
-            Log.i(TAG, "Private DNS: " + mPrivateDnsMode);
+            Utils.PrivateDnsMode mode = Utils.getPrivateDnsMode(linkProperties);
+            if(mode != mPrivateDnsMode)
+                Log.i(TAG, "Private DNS: " + mode);
+            mPrivateDnsMode = mode;
 
             if(mSettings.readFromPcap()) {
                 mDnsEncrypted = false;
