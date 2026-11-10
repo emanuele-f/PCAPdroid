@@ -369,6 +369,14 @@ public class CaptureService extends VpnService implements Runnable {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Service.CONNECTIVITY_SERVICE);
             Network net = cm.getActiveNetwork();
+
+            // Another VPN (e.g. another PCAPdroid build) may be active, which is going to be replaced
+            // by our VPN. Its DNS server would not be reachable afterwards, so use the network underlying it
+            if((net != null) && !mSettings.root_capture && !mSettings.readFromPcap() && Utils.isVpnNetwork(cm, net)) {
+                Network underlying = Utils.getNonVpnInternetNetwork(cm);
+                Log.i(TAG, "Active network " + net + " is a VPN, using underlying network " + underlying);
+                net = underlying;
+            }
             mUnderlyingNetwork = net;
 
             if(net != null) {
@@ -376,7 +384,9 @@ public class CaptureService extends VpnService implements Runnable {
 
                 if(Prefs.useSystemDns(mPrefs) || mSettings.root_capture) {
                     dns_server = Utils.getDnsServer(cm, net);
-                    if (dns_server == null)
+
+                    // Using our virtual DNS as the upstream DNS would make all the DNS queries loop back
+                    if((dns_server == null) || dns_server.equals(VPN_VIRTUAL_DNS_SERVER))
                         dns_server = fallbackDnsV4;
                     else {
                         mMonitoredNetwork = net.getNetworkHandle();
