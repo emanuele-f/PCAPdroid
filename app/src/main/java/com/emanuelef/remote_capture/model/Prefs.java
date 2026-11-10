@@ -272,8 +272,8 @@ public class Prefs {
     public static String getMitmproxyOpts(SharedPreferences p)    { return(p.getString(PREF_MITMPROXY_OPTS, "")); }
     public static boolean isPortMappingEnabled(SharedPreferences p) { return(p.getBoolean(PREF_PORT_MAPPING_ENABLED, true)); }
     public static boolean useSystemDns(SharedPreferences p)     { return(p.getBoolean(PREF_USE_SYSTEM_DNS, true)); }
-    public static String getDnsServerV4(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V4, "1.1.1.1")); }
-    public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2606:4700:4700::1111")); }
+    public static String getDnsServerV4(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V4, "9.9.9.10")); }
+    public static String getDnsServerV6(SharedPreferences p)    { return(p.getString(PREF_DNS_SERVER_V6, "2620:fe::10")); }
     public static boolean isIgnoredMitmVersion(SharedPreferences p, String v) { return p.getString(PREF_IGNORED_MITM_VERSION, "").equals(v); }
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
     public static String getFilenamePrefix(SharedPreferences p)     { return(p.getString(PREF_FILENAME_PREFIX, "PCAPdroid_")); }
