@@ -136,6 +136,7 @@ static int connectPcapd(pcapdroid_t *pd) {
     int client = -1;
     char pcapd[PATH_MAX];
     char *bpf = pd->pcap.bpf ? pd->pcap.bpf : "";
+    char *log_path = pd->pcap.log_path ? pd->pcap.log_path : "pcapd.log";
 
     log_d("Starting pcapd...");
 
@@ -214,9 +215,9 @@ static int connectPcapd(pcapdroid_t *pd) {
 
     // Start the daemon
     char uids_filter_buf[128];
-    char args[256];
-    snprintf(args, sizeof(args), "-l pcapd.log -L %u -i '%s' -u %s -t -b '%s'%s",
-             getuid(), pd->pcap.capture_interface,
+    char args[1024];
+    snprintf(args, sizeof(args), "-l '%s' -L %u -i '%s' -u %s -t -b '%s'%s",
+             log_path, getuid(), pd->pcap.capture_interface,
              get_uids_filter(pd, uids_filter_buf, sizeof(uids_filter_buf)),
              bpf, pd->pcap.daemonize ? " -d" : "");
 
@@ -837,6 +838,7 @@ int run_pcap(pcapdroid_t *pd) {
 
 #if ANDROID
     char capture_interface[PATH_MAX] = "@inet";
+    char log_path[PATH_MAX];
     char bpf[256];
     bpf[0] = '\0';
 
@@ -844,6 +846,7 @@ int run_pcap(pcapdroid_t *pd) {
     pd->pcap.as_root = !pd->pcap_file_capture;
     pd->pcap.bpf = getStringPref(pd, "getPcapDumperBpf", bpf, sizeof(bpf));
     pd->pcap.capture_interface = getStringPref(pd, "getCaptureInterface", capture_interface, sizeof(capture_interface));
+    pd->pcap.log_path = getStringPref(pd, "getPcapdLogPath", log_path, sizeof(log_path));
 #endif
 
     if((pd->zdt = zdtun_init(&callbacks, NULL)) == NULL)

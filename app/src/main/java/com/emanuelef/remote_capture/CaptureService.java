@@ -1791,6 +1791,7 @@ public class CaptureService extends VpnService implements Runnable {
         return getCacheDir().getAbsolutePath();
     }
     public String getPersistentDir() { return getFilesDir().getAbsolutePath(); }
+    public String getPcapdLogPath() { return Log.getLogDir(this) + "/" + Log.ROOT_LOGGER_PATH; }
 
     public String getLibprogPath(String prog_name) {
         return getLibprogPath(this, prog_name);

@@ -261,6 +261,7 @@ typedef struct pcapdroid {
             bool daemonize;
             char *bpf;
             char *capture_interface;
+            char *log_path;
             int pcapd_pid;
             struct ushark *usk;
 

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -71,7 +71,7 @@ public class PCAPdroid extends Application {
         super.onCreate();
 
         if(!isUnderTest())
-            Log.init(getCacheDir().getAbsolutePath());
+            Log.init(Log.getLogDir(this));
 
         Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
         Log.i(TAG, "Build type: " + buildtp);

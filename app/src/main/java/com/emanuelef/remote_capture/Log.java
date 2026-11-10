@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
+
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,9 +32,13 @@ public class Log {
     public static int DEFAULT_LOGGER;
     public static int MITMADDON_LOGGER;
 
-    public static void init(String cachedir) {
-        DEFAULT_LOGGER = CaptureService.initLogger(cachedir + "/" + DEFAULT_LOGGER_PATH, LOG_LEVEL_INFO);
-        MITMADDON_LOGGER = CaptureService.initLogger(cachedir + "/" + MITM_LOGGER_PATH, LOG_LEVEL_INFO);
+    public static String getLogDir(Context ctx) {
+        return ctx.getNoBackupFilesDir().getAbsolutePath();
+    }
+
+    public static void init(String logdir) {
+        DEFAULT_LOGGER = CaptureService.initLogger(logdir + "/" + DEFAULT_LOGGER_PATH, LOG_LEVEL_INFO);
+        MITMADDON_LOGGER = CaptureService.initLogger(logdir + "/" + MITM_LOGGER_PATH, LOG_LEVEL_INFO);
     }
 
     public static void writeLog(int logger, int level, @Nullable String tag, @NonNull String message) {

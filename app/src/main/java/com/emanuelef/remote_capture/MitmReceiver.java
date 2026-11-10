@@ -153,7 +153,7 @@ public class MitmReceiver implements Runnable, ConnectionsListener, MitmListener
     }
 
     public static File getKeylogFilePath(Context ctx) {
-        return new File(ctx.getCacheDir(), "SSLKEYLOG.txt");
+        return new File(ctx.getNoBackupFilesDir(), "SSLKEYLOG.txt");
     }
 
     public boolean start() throws IOException {
