@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 
 import androidx.annotation.Nullable;
@@ -32,8 +31,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /* A class to query geolocation info from IP addresses. */
 public class Geolocation {
@@ -108,40 +109,74 @@ public class Geolocation {
         getAsnFile(ctx).delete();
     }
 
-    @SuppressLint("SimpleDateFormat")
     public static boolean downloadDb(Context ctx) {
-        String dateid = new SimpleDateFormat("yyyy-MM", Locale.US).format(new Date());
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM", Locale.US);
+        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
+
+        // The DB of the current month may not be published yet during its first day
+        for(int i = 0; i < 2; i++) {
+            Utils.DownloadResult res = downloadDb(ctx, fmt.format(cal.getTime()));
+            if(res != Utils.DownloadResult.NOT_FOUND)
+                return (res == Utils.DownloadResult.OK);
+
+            cal.add(Calendar.MONTH, -1);
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static Utils.DownloadResult downloadDb(Context ctx, String dateid) {
         String country_url = "https://download.db-ip.com/free/dbip-country-lite-" + dateid + ".mmdb.gz";
         String asn_url = "https://download.db-ip.com/free/dbip-asn-lite-" + dateid + ".mmdb.gz";
+        File country_file = getCountryFile(ctx);
+        File asn_file = getAsnFile(ctx);
+        File country_tmp = new File(country_file + ".tmp");
+        File asn_tmp = new File(asn_file + ".tmp");
 
+        // Only replace the current DBs if both the new ones are valid, to avoid mixing different versions
         try {
-            return downloadAndUnzip(ctx, "country", country_url, getCountryFile(ctx)) &&
-                    downloadAndUnzip(ctx, "asn", asn_url, getAsnFile(ctx));
+            Utils.DownloadResult res = downloadAndUnzip(ctx, "country", country_url, country_tmp);
+            if(res == Utils.DownloadResult.OK)
+                res = downloadAndUnzip(ctx, "asn", asn_url, asn_tmp);
+            if(res != Utils.DownloadResult.OK)
+                return res;
+
+            if(!country_tmp.renameTo(country_file) || !asn_tmp.renameTo(asn_file)) {
+                Log.w(TAG, "Could not replace the db files");
+                return Utils.DownloadResult.FAILED;
+            }
+
+            return Utils.DownloadResult.OK;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return Utils.DownloadResult.FAILED;
+        } finally {
+            country_tmp.delete();
+            asn_tmp.delete();
         }
     }
 
-    private static boolean downloadAndUnzip(Context ctx, String label, String url, File dst) throws IOException {
+    private static Utils.DownloadResult downloadAndUnzip(Context ctx, String label, String url, File dst) throws IOException {
         File tmp_file = new File(ctx.getCacheDir() + "/geoip_db.zip");
 
-        boolean rv = Utils.downloadFile(url, tmp_file.getAbsolutePath());
-        if(!rv) {
+        Utils.DownloadResult rv = Utils.downloadFileWithResult(url, tmp_file.getAbsolutePath());
+        if(rv != Utils.DownloadResult.OK) {
             Log.w(TAG, "Could not download " + label + " db from " +  url);
-            return false;
+            return rv;
         }
 
         try(FileInputStream is = new FileInputStream(tmp_file.getAbsolutePath())) {
             if(!Utils.ungzip(is, dst.getAbsolutePath())) {
                 Log.w(TAG, "ungzip of " + tmp_file + " failed");
-                return false;
+                return Utils.DownloadResult.FAILED;
             }
 
             // Verify - throws IOException on error
             getDbDate(dst);
 
-            return true;
+            return Utils.DownloadResult.OK;
         } finally {
             //noinspection ResultOfMethodCallIgnored
             tmp_file.delete();

@@ -203,6 +203,12 @@ public class Utils {
         }
     }
 
+    public enum DownloadResult {
+        OK,
+        NOT_FOUND,
+        FAILED,
+    }
+
     public static String[] list2array(List<String> l) {
         return l.toArray(new String[0]);
     }
@@ -1224,7 +1230,12 @@ public class Utils {
     }
 
     public static boolean downloadFile(String _url, String path) {
+        return (downloadFileWithResult(_url, path) == DownloadResult.OK);
+    }
+
+    public static DownloadResult downloadFileWithResult(String _url, String path) {
         boolean has_contents = false;
+        boolean not_found = false;
 
         try (FileOutputStream out = new FileOutputStream(path + ".tmp")) {
             try (BufferedOutputStream bos = new BufferedOutputStream(out)) {
@@ -1237,12 +1248,19 @@ public class Utils {
                     con.setConnectTimeout(15000);
                     con.setReadTimeout(15000);
 
-                    try(InputStream in = new BufferedInputStream(con.getInputStream())) {
-                        byte[] bytesIn = new byte[4096];
-                        int read;
-                        while ((read = in.read(bytesIn)) != -1) {
-                            bos.write(bytesIn, 0, read);
-                            has_contents |= (read > 0);
+                    try {
+                        if(con.getResponseCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
+                            Log.w(TAG, "Not found: " + _url);
+                            not_found = true;
+                        } else {
+                            try(InputStream in = new BufferedInputStream(con.getInputStream())) {
+                                byte[] bytesIn = new byte[4096];
+                                int read;
+                                while ((read = in.read(bytesIn)) != -1) {
+                                    bos.write(bytesIn, 0, read);
+                                    has_contents |= (read > 0);
+                                }
+                            }
                         }
                     } catch (SocketTimeoutException _ignored) {
                         Log.w(TAG, "Timeout while fetching " + _url);
@@ -1262,11 +1280,11 @@ public class Utils {
             } catch (Exception ignored) {
                 // ignore
             }
-            return false;
+            return not_found ? DownloadResult.NOT_FOUND : DownloadResult.FAILED;
         }
 
         // Only write the target path if it was successful
-        return (new File(path + ".tmp")).renameTo(new File(path));
+        return (new File(path + ".tmp")).renameTo(new File(path)) ? DownloadResult.OK : DownloadResult.FAILED;
     }
 
     public static String shorten(String s, int maxlen) {
