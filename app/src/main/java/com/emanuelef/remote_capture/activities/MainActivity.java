@@ -843,10 +843,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             appStateReady();
 
             // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
-            // the keylog file if exists
+            // the keylog file if not empty
             mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
-            if(mKeylogFile.exists())
+            if(mKeylogFile.length() > 0)
                 startExportSslkeylogfile();
+            else
+                discardKeylogFile();
         } else
             appStateRunning();
     }
