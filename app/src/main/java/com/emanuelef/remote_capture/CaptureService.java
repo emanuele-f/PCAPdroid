@@ -1716,12 +1716,10 @@ public class CaptureService extends VpnService implements Runnable {
     }
 
     public String getCountryCode(String host) {
-        if (mNativeGeolocation.isAvailable()) {
-            try {
-                InetAddress addr = InetAddress.getByName(host);
-                return mNativeGeolocation.getCountryCode(addr);
-            } catch (UnknownHostException ignored) {}
-        }
+        try {
+            InetAddress addr = InetAddress.getByName(host);
+            return mNativeGeolocation.getCountryCode(addr);
+        } catch (UnknownHostException ignored) {}
 
         return "";
     }

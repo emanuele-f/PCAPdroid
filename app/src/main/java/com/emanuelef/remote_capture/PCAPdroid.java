@@ -58,6 +58,7 @@ public class PCAPdroid extends Application {
     private MatchList mDecryptionList;
     private Blocklist mBlocklist;
     private Blacklists mBlacklists;
+    private GeoDbUpdater mGeoDbUpdater;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private boolean mIsDecryptingPcap = false;
@@ -89,6 +90,7 @@ public class PCAPdroid extends Application {
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
         mIsUsharkAvailable = CaptureService.isUsharkAvailable(this);
+        mGeoDbUpdater = new GeoDbUpdater(this);
 
         // Listen to package events
         IntentFilter filter = new IntentFilter();
@@ -119,6 +121,9 @@ public class PCAPdroid extends Application {
         }, filter);
 
         removeUninstalledAppsFromAppFilter();
+
+        if(!isUnderTest())
+            mGeoDbUpdater.start();
     }
 
     public static @NonNull PCAPdroid getInstance() {
@@ -140,6 +145,10 @@ public class PCAPdroid extends Application {
         if(mBlacklists == null)
             mBlacklists = new Blacklists(mLocalizedContext);
         return mBlacklists;
+    }
+
+    public GeoDbUpdater getGeoDbUpdater() {
+        return mGeoDbUpdater;
     }
 
     public MatchList getMalwareWhitelist() {

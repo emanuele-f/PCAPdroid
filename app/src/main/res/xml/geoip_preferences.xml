@@ -12,6 +12,13 @@
             android:data="https://db-ip.com/db/lite.php" />
     </Preference>
 
+    <SwitchPreference
+        app:key="geo_db_auto_update"
+        app:title="@string/auto_update"
+        app:summary="@string/geo_db_auto_update_summary"
+        app:iconSpaceReserved="false"
+        app:defaultValue="false" />
+
     <Preference
         app:key="download"
         app:title="@string/download"

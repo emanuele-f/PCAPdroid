@@ -121,6 +121,8 @@ public class Prefs {
     public static final String PREF_CAPTURE_LIST = "capture_list";
     public static final String PREF_CONNECTIONS_LOG_SIZE = "max_connections";
     public static final String PREF_LOCAL_NETWORK_NOTICE_SHOWN = "local_network_notice";
+    public static final String PREF_GEO_DB_AUTO_UPDATE = "geo_db_auto_update";
+    public static final String PREF_GEO_DB_NEXT_UPDATE = "geo_db_next_update";
     public static final String PREF_AVAILABLE_SKUS = "available_skus";
     public static final String PREF_UNLOCK_TOKEN = "unlock_token";
 
@@ -221,6 +223,10 @@ public class Prefs {
         p.edit().putBoolean(PREF_LOCAL_NETWORK_NOTICE_SHOWN, true).apply();
     }
 
+    public static void setGeoDbNextUpdate(SharedPreferences p, long when) {
+        p.edit().putLong(PREF_GEO_DB_NEXT_UPDATE, when).apply();
+    }
+
     /* Prefs with defaults */
     public static String getCollectorHost(SharedPreferences p) { return(p.getString(PREF_COLLECTOR_HOST_KEY, "127.0.0.1")); }
     public static int getCollectorPort(SharedPreferences p)  { return(Integer.parseInt(p.getString(PREF_COLLECTOR_PORT_KEY, "1234"))); }
@@ -278,6 +284,8 @@ public class Prefs {
     public static String getApiKey(SharedPreferences p)         { return(p.getString(PREF_API_KEY, "")); }
     public static String getFilenamePrefix(SharedPreferences p)     { return(p.getString(PREF_FILENAME_PREFIX, "PCAPdroid_")); }
     public static boolean localNetworkNoticeShown(SharedPreferences p)      { return(p.getBoolean(PREF_LOCAL_NETWORK_NOTICE_SHOWN, false)); }
+    public static boolean isGeoDbAutoUpdateEnabled(SharedPreferences p)     { return(p.getBoolean(PREF_GEO_DB_AUTO_UPDATE, false)); }
+    public static long getGeoDbNextUpdate(SharedPreferences p)      { return(p.getLong(PREF_GEO_DB_NEXT_UPDATE, 0)); }
 
     // Largest connections log size the current device's Java heap can safely host.
     // Rounded down to a power of two for a user-friendly dropdown.

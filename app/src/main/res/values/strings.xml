@@ -365,9 +365,11 @@
     <string name="country_rules_warning">To use country-based firewall rules, download the geolocation database from the PCAPdroid settings, otherwise country-based rules will be ineffective</string>
     <string name="database">Database</string>
     <string name="built_on">Built on: %1$s</string>
-    <string name="geo_db_download">Tap to download the latest database. New databases are available monthly</string>
+    <string name="geo_db_download">Tap to download the latest database</string>
     <string name="size_x">Size: %1$s</string>
-    <string name="geo_db_delete">Tap to delete the database and save space</string>
+    <string name="geo_db_delete">Tap to delete the database. Geolocation will be disabled</string>
+    <string name="auto_update">Automatic update</string>
+    <string name="geo_db_auto_update_summary">Automatically download the new database every month</string>
     <string name="download">Download</string>
     <string name="connection_blocked">This connection has been blocked by PCAPdroid</string>
     <string name="import_action">Import</string>

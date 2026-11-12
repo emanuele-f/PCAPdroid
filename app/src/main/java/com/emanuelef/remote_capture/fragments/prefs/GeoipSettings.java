@@ -14,34 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.fragments.prefs;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
+import androidx.preference.SwitchPreference;
 
 import com.emanuelef.remote_capture.Geolocation;
-import com.emanuelef.remote_capture.Log;
+import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.R;
 import com.emanuelef.remote_capture.Utils;
+import com.emanuelef.remote_capture.model.Prefs;
 
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class GeoipSettings extends SettingsSubFragment {
-    private static final String TAG = "GeoipSettings";
     private Preference mStatus;
+    private Preference mDownload;
     private Preference mDelete;
-    private AlertDialog mAlertDialog;
+    private SwitchPreference mAutoUpdate;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
@@ -49,29 +47,34 @@ public class GeoipSettings extends SettingsSubFragment {
         Context context = requireContext();
 
         mStatus = requirePreference("status");
+        mDownload = requirePreference("download");
         mDelete = requirePreference("delete");
+        mAutoUpdate = requirePreference(Prefs.PREF_GEO_DB_AUTO_UPDATE);
         refreshStatus(context);
 
         mDelete.setOnPreferenceClickListener(preference -> {
+            mAutoUpdate.setChecked(false);
             Geolocation.deleteDb(context);
             refreshStatus(context);
             return true;
         });
 
-        requirePreference("download")
-                .setOnPreferenceClickListener(preference -> {
-            downloadDatabases();
+        mDownload.setOnPreferenceClickListener(preference -> {
+            PCAPdroid.getInstance().getGeoDbUpdater().download(success -> {
+                if(!success)
+                    Utils.showToastLong(context, R.string.download_failed);
+            });
             return true;
         });
     }
 
     @Override
-    public void onDestroyView() {
-        // See https://stackoverflow.com/questions/22924825/view-not-attached-to-window-manager-crash
-        if(mAlertDialog != null)
-            mAlertDialog.dismiss();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        super.onDestroyView();
+        Context context = requireContext();
+        PCAPdroid.getInstance().getGeoDbUpdater().observeDownloading(getViewLifecycleOwner(),
+                downloading -> onDownloadStateChanged(context, downloading));
     }
 
     // NOTE: passing explicit context as this may be called when requireContext would return null
@@ -91,38 +94,15 @@ public class GeoipSettings extends SettingsSubFragment {
         mDelete.setVisible((builtDate != null));
     }
 
-    private void downloadDatabases() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
+    private void onDownloadStateChanged(Context context, boolean downloading) {
+        mDownload.setEnabled(!downloading);
+        mDelete.setEnabled(!downloading);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle(R.string.downloading);
-        builder.setMessage(R.string.download_in_progress);
-
-        mAlertDialog = builder.create();
-        mAlertDialog.setCanceledOnTouchOutside(false);
-        mAlertDialog.show();
-
-        mAlertDialog.setOnCancelListener(dialogInterface -> {
-            Log.i(TAG, "Abort download");
-            executor.shutdownNow();
-        });
-        mAlertDialog.setOnDismissListener(dialog -> mAlertDialog = null);
-
-        // Hold reference to context to avoid garbage collection before the handler is called
-        final Context context = requireContext();
-        executor.execute(() -> {
-            boolean result = Geolocation.downloadDb(context);
-
-            handler.post(() -> {
-                if(!result)
-                    Utils.showToastLong(context, R.string.download_failed);
-
-                if(mAlertDialog != null)
-                    mAlertDialog.dismiss();
-                refreshStatus(context);
-            });
-        });
+        if(downloading) {
+            mStatus.setSummary(R.string.download_in_progress);
+            mStatus.setEnabled(false);
+        } else
+            refreshStatus(context);
     }
 
     private @NonNull
