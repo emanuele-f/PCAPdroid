@@ -289,12 +289,11 @@
     <string name="display_as_text">Mostrar como texto</string>
     <string name="display_as_hexdump">Mostrar como volcado hexadecimal</string>
     <string name="geolocation">Geolocalización</string>
-    <string name="downloading">Descargando…</string>
     <string name="built_on">Montada en: %1$s</string>
-    <string name="geo_db_download">Toca para descargar la última base de datos. Nuevas bases de datos están disponibles cada mes</string>
+    <string name="geo_db_download">Descargar la última base de datos</string>
     <string name="size_x">Tamaño: %1$s</string>
     <string name="download">Descargar</string>
-    <string name="geo_db_delete">Toca para borrar la base de datos y ahorrar espacio</string>
+    <string name="geo_db_delete">Borrar la base de datos. La geolocalización se deshabilitará</string>
     <string name="connection_blocked">Esta conexión ha sido bloqueada por PCAPdroid</string>
     <string name="import_action">Importar</string>
     <string name="import_failed">Importación fallida</string>
@@ -614,4 +613,6 @@
     <string name="restart_app_action">Reiniciar la app</string>
     <string name="skipped_prefs_import">NOTA: los siguientes ajustes no se han podido importar, porque son desconocidos o no válidos:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">La VPN siempre activa está habilitada para PCAPdroid, por lo que debes detener la captura desde los ajustes de Android.\n\n¿Quieres abrir los ajustes de VPN ahora?</string>
+    <string name="auto_update">Actualización automática</string>
+    <string name="geo_db_auto_update_summary">Descargar automáticamente la nueva base de datos cada mes</string>
 </resources>

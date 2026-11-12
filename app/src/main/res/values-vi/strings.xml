@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">Hiển thị dưới dạng hexdump</string>
     <string name="geolocation">Định vị địa lý</string>
     <string name="geolocation_summary">Hiển thị thông tin quốc gia và ASN bằng cách thực hiện tra cứu ngoại tuyến</string>
-    <string name="downloading">Đang tải xuống…</string>
     <string name="download_in_progress">Đang tải xuống, vui lòng đợi</string>
     <string name="pcap_load_in_progress">Đang nạp bản bắt gói tin, vui lòng đợi</string>
     <string name="download_failed">Tải xuống thất bại</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">Để sử dụng các luật tường lửa dựa trên quốc gia, hãy tải xuống cơ sở dữ liệu định vị địa lý từ cài đặt PCAPdroid, nếu không các luật dựa trên quốc gia sẽ không có hiệu lực</string>
     <string name="database">Cơ sở dữ liệu</string>
     <string name="built_on">Được tạo vào: %1$s</string>
-    <string name="geo_db_download">Nhấn để tải xuống cơ sở dữ liệu mới nhất. Cơ sở dữ liệu mới có sẵn hàng tháng</string>
+    <string name="geo_db_download">Tải xuống cơ sở dữ liệu mới nhất</string>
     <string name="size_x">Kích thước: %1$s</string>
-    <string name="geo_db_delete">Nhấn để xóa cơ sở dữ liệu và tiết kiệm dung lượng</string>
+    <string name="geo_db_delete">Xóa cơ sở dữ liệu. Định vị địa lý sẽ bị tắt</string>
     <string name="download">Tải xuống</string>
     <string name="connection_blocked">Kết nối này đã bị PCAPdroid chặn</string>
     <string name="import_action">Nhập</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">Khởi động lại ứng dụng</string>
     <string name="skipped_prefs_import">LƯU Ý: không thể nhập các cài đặt sau, vì chúng không xác định hoặc không hợp lệ:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">VPN luôn bật đang được kích hoạt cho PCAPdroid, vì vậy bạn cần dừng việc bắt gói tin trong cài đặt Android.\n\nBạn có muốn mở cài đặt VPN ngay bây giờ không?</string>
+    <string name="auto_update">Tự động cập nhật</string>
+    <string name="geo_db_auto_update_summary">Tự động tải xuống cơ sở dữ liệu mới mỗi tháng</string>
 </resources>

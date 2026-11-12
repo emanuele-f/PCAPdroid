@@ -313,15 +313,14 @@
     <string name="hexdump">تفريغ سداسي (Hexdump)</string>
     <string name="geolocation">تحديد الموقع الجغرافي</string>
     <string name="geolocation_summary">قم بعرض معلومات البلد ورقم ASN من خلال إجراء عمليات بحث في وضع عدم الاتصال</string>
-    <string name="downloading">جارى التحميل…</string>
     <string name="download_in_progress">التنزيل قيد التقدم، يُرجى الأنتظار</string>
     <string name="download_failed">فشل التحميل</string>
     <string name="pcap_load_in_progress">تحميل الالتقاط قيد التقدم، يُرجى الانتظار</string>
     <string name="geo_db_not_found">لم يتم العثور على قاعدة البيانات. تم تعطيل تحديد الموقع الجغرافي</string>
     <string name="database">قاعدة البيانات</string>
     <string name="built_on">مبني على: %1$s</string>
-    <string name="geo_db_download">انقر لتنزيل أحدث قاعدة بيانات. قواعد بيانات جديدة متاحة شهريا</string>
-    <string name="geo_db_delete">انقر لحذف قاعدة البيانات وتوفير المساحة</string>
+    <string name="geo_db_download">تنزيل أحدث قاعدة بيانات</string>
+    <string name="geo_db_delete">حذف قاعدة البيانات. سيتم تعطيل تحديد الموقع الجغرافي</string>
     <string name="download">تحميل</string>
     <string name="connection_blocked">تم حظر هذا الاتصال بواسطة PCAPdroid</string>
     <string name="import_action">إستيراد</string>
@@ -610,4 +609,6 @@
     <string name="restart_app_action">إعادة تشغيل التطبيق</string>
     <string name="skipped_prefs_import">ملاحظة: تعذّر استيراد الإعدادات التالية، لأنها غير معروفة أو غير صالحة:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">شبكة VPN الدائمة مفعّلة لـ PCAPdroid، لذا عليك إيقاف الالتقاط من إعدادات Android.\n\nهل تريد فتح إعدادات VPN الآن؟</string>
+    <string name="auto_update">التحديث التلقائي</string>
+    <string name="geo_db_auto_update_summary">تنزيل قاعدة البيانات الجديدة تلقائيًا كل شهر</string>
 </resources>

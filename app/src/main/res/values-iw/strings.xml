@@ -304,7 +304,6 @@
     <string name="display_as_hexdump">הצג כ-hexdump</string>
     <string name="geolocation">מיקום גיאוגרפי</string>
     <string name="geolocation_summary">הצגת מדינה ומידע ASN באמצעות חיפושים מקומיים ללא חיבור לאינטרנט</string>
-    <string name="downloading">מוריד…</string>
     <string name="download_in_progress">ההורדה בתהליך, אנא המתן</string>
     <string name="pcap_load_in_progress">טעינת הלכידה בתהליך, אנא המתן</string>
     <string name="download_failed">ההורדה נכשלה</string>
@@ -315,9 +314,9 @@
     <string name="country_rules_warning">כדי להשתמש בכללי חומת אש מבוססי מדינה, יש להוריד את מסד נתוני המיקום מהגדרות PCAPdroid; אחרת הכללים לא יהיו יעילים</string>
     <string name="database">מסד נתונים</string>
     <string name="built_on">נבנה בתאריך: %1$s</string>
-    <string name="geo_db_download">הקש כדי להוריד את מסד הנתונים העדכני. מסדי נתונים חדשים זמינים מדי חודש</string>
+    <string name="geo_db_download">הורד את מסד הנתונים העדכני</string>
     <string name="size_x">גודל: %1$s</string>
-    <string name="geo_db_delete">הקש כדי למחוק את מסד הנתונים ולפנות מקום</string>
+    <string name="geo_db_delete">מחק את מסד הנתונים. המיקום הגיאוגרפי יושבת</string>
     <string name="download">הורדה</string>
     <string name="connection_blocked">חיבור זה נחסם על ידי PCAPdroid</string>
     <string name="import_action">ייבוא</string>
@@ -590,4 +589,6 @@
     <string name="select_folder">בחר תיקייה</string>
     <string name="skip_action">דלג</string>
     <string name="always_on_vpn_stop_notice">VPN תמידי מופעל עבור PCAPdroid, ולכן עליך לעצור את הלכידה מהגדרות Android.\n\nלפתוח את הגדרות ה-VPN כעת?</string>
+    <string name="auto_update">עדכון אוטומטי</string>
+    <string name="geo_db_auto_update_summary">הורדה אוטומטית של מסד הנתונים החדש מדי חודש</string>
 </resources>

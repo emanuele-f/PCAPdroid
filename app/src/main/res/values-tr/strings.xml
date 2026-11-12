@@ -231,10 +231,9 @@
     <string name="hexdump">Onaltılık sayı dökümü</string>
     <string name="geolocation">Coğrafi konum</string>
     <string name="geolocation_summary">Çevrim dışı aramalar yaparak ülke ve ASN bilgilerini göster</string>
-    <string name="downloading">İndiriliyor…</string>
     <string name="database">Veri tabanı</string>
     <string name="built_on">Oluşturuldu: %1$s</string>
-    <string name="geo_db_download">En son veri tabanını indirmek için dokunun. Aylık olarak yeni veri tabanları yayınlanır</string>
+    <string name="geo_db_download">En son veri tabanını indir</string>
     <string name="size_x">Boyut: %1$s</string>
     <string name="keep_action">Koru</string>
     <string name="connections_blocked">Engellenen bağlantılar</string>
@@ -267,7 +266,7 @@
     <string name="import_action">İçe aktar</string>
     <string name="last_firewall_block">Son engellenen</string>
     <string name="app_info">Uygulama bilgisi</string>
-    <string name="geo_db_delete">Veri tabanını silmek ve yerden tasarruf etmek için dokunun</string>
+    <string name="geo_db_delete">Veri tabanını sil. Coğrafi konum devre dışı bırakılacak</string>
     <string name="download">İndir</string>
     <string name="connection_blocked">Bu bağlantı PCAPdroid tarafından engellendi</string>
     <string name="invalid_backup">Geçersiz yedekleme biçimi</string>
@@ -614,4 +613,6 @@
     <string name="restart_app_action">Uygulamayı yeniden başlat</string>
     <string name="skipped_prefs_import">NOT: aşağıdaki ayarlar bilinmediği veya geçersiz olduğu için içe aktarılamadı:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid için her zaman açık VPN etkin, bu nedenle yakalamayı Android ayarlarından durdurmanız gerekiyor.\n\nVPN ayarlarını şimdi açmak ister misiniz?</string>
+    <string name="auto_update">Otomatik güncelleme</string>
+    <string name="geo_db_auto_update_summary">Yeni veri tabanını her ay otomatik olarak indir</string>
 </resources>

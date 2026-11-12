@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">हेक्सडंप के रूप में दिखाएँ</string>
     <string name="geolocation">भू-स्थान</string>
     <string name="geolocation_summary">ऑफ़लाइन लुकअप करके देश और ASN जानकारी दिखाएँ</string>
-    <string name="downloading">डाउनलोड हो रहा है…</string>
     <string name="download_in_progress">डाउनलोड प्रगति पर है, कृपया प्रतीक्षा करें</string>
     <string name="pcap_load_in_progress">कैप्चर लोडिंग प्रगति पर है, कृपया प्रतीक्षा करें</string>
     <string name="download_failed">डाउनलोड विफल</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">देश-आधारित फ़ायरवॉल नियमों का उपयोग करने के लिए, PCAPdroid सेटिंग्स से भू-स्थान डेटाबेस डाउनलोड करें, अन्यथा देश-आधारित नियम अप्रभावी होंगे</string>
     <string name="database">डेटाबेस</string>
     <string name="built_on">निर्मित: %1$s</string>
-    <string name="geo_db_download">नवीनतम डेटाबेस डाउनलोड करने के लिए टैप करें। नए डेटाबेस मासिक रूप से उपलब्ध होते हैं</string>
+    <string name="geo_db_download">नवीनतम डेटाबेस डाउनलोड करें</string>
     <string name="size_x">आकार: %1$s</string>
-    <string name="geo_db_delete">डेटाबेस हटाने और स्थान बचाने के लिए टैप करें</string>
+    <string name="geo_db_delete">डेटाबेस हटाएँ। भू-स्थान अक्षम हो जाएगा</string>
     <string name="download">डाउनलोड करें</string>
     <string name="connection_blocked">इस कनेक्शन को PCAPdroid द्वारा अवरुद्ध कर दिया गया है</string>
     <string name="import_action">इंपोर्ट करें</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">ऐप पुनः प्रारंभ करें</string>
     <string name="skipped_prefs_import">नोट: निम्नलिखित सेटिंग्स इंपोर्ट नहीं की जा सकीं, क्योंकि वे अज्ञात या अमान्य हैं:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid के लिए Always-on VPN सक्षम है, इसलिए आपको कैप्चर को Android सेटिंग्स से बंद करना होगा।\n\nक्या आप अभी VPN सेटिंग्स खोलना चाहते हैं?</string>
+    <string name="auto_update">स्वचालित अपडेट</string>
+    <string name="geo_db_auto_update_summary">हर महीने नया डेटाबेस स्वचालित रूप से डाउनलोड करें</string>
 </resources>

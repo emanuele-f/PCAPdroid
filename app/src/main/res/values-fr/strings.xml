@@ -232,7 +232,6 @@
     <string name="warn_no_app_data">Aucune donnée de l\'app n\'a été echangée</string>
     <string name="hexdump">En hexadécimal</string>
     <string name="geolocation">Géolocalisation</string>
-    <string name="downloading">Téléchargement…</string>
     <string name="database">Base de données</string>
     <string name="download_in_progress">Téléchargement en cours, veuillez patienter</string>
     <string name="geo_db_not_found">Aucune base de données trouvée. La géolocalisation est désactivée</string>
@@ -240,8 +239,8 @@
     <string name="download">Télécharger</string>
     <string name="import_action">Importer</string>
     <string name="import_failed">Échec de l\'importation</string>
-    <string name="geo_db_delete">Tapez pour supprimer la base de données et récupérer de l\'espace disque</string>
-    <string name="geo_db_download">Tapez pour télécharger la dernière base de données. De nouvelles bases sont disponibles chaque mois</string>
+    <string name="geo_db_delete">Supprimer la base de données. La géolocalisation sera désactivée</string>
+    <string name="geo_db_download">Télécharger la dernière base de données</string>
     <string name="size_x">Taille : %1$s</string>
     <string name="built_on">Construit avec : %1$s</string>
     <string name="connection_blocked">Cette connexion a été bloquée par PCAPdroid</string>
@@ -601,4 +600,6 @@
     <string name="restart_app_action">Redémarrer l\'application</string>
     <string name="skipped_prefs_import">NOTE : les paramètres suivants n\'ont pas pu être importés, car ils sont inconnus ou invalides :\n%1$s</string>
     <string name="always_on_vpn_stop_notice">Le VPN permanent est activé pour PCAPdroid, vous devez donc arrêter la capture depuis les paramètres Android.\n\nVoulez-vous ouvrir les paramètres VPN maintenant ?</string>
+    <string name="auto_update">Mise à jour automatique</string>
+    <string name="geo_db_auto_update_summary">Télécharger automatiquement la nouvelle base de données chaque mois</string>
 </resources>

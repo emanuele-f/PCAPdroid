@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">بطور ہیکس ڈمپ دکھائیں</string>
     <string name="geolocation">جیو لوکیشن</string>
     <string name="geolocation_summary">آف لائن تلاش انجام دے کر ملک اور ASN معلومات دکھائیں</string>
-    <string name="downloading">ڈاؤن لوڈ ہو رہا ہے…</string>
     <string name="download_in_progress">ڈاؤن لوڈ جاری ہے، براہ کرم انتظار کریں</string>
     <string name="pcap_load_in_progress">کیپچر لوڈ ہو رہا ہے، براہ کرم انتظار کریں</string>
     <string name="download_failed">ڈاؤن لوڈ ناکام ہوا</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">ملک پر مبنی فائر وال قواعد استعمال کرنے کے لیے، PCAPdroid ترتیبات سے جیو لوکیشن ڈیٹابیس ڈاؤن لوڈ کریں، ورنہ ملک پر مبنی قواعد غیر مؤثر رہیں گے</string>
     <string name="database">ڈیٹابیس</string>
     <string name="built_on">بنایا گیا: %1$s</string>
-    <string name="geo_db_download">تازہ ترین ڈیٹابیس ڈاؤن لوڈ کرنے کے لیے تھپتھپائیں۔ نئے ڈیٹابیس ماہانہ دستیاب ہوتے ہیں</string>
+    <string name="geo_db_download">تازہ ترین ڈیٹابیس ڈاؤن لوڈ کریں</string>
     <string name="size_x">سائز: %1$s</string>
-    <string name="geo_db_delete">ڈیٹابیس حذف کر کے جگہ بچانے کے لیے تھپتھپائیں</string>
+    <string name="geo_db_delete">ڈیٹابیس حذف کریں۔ جیو لوکیشن غیر فعال ہو جائے گی</string>
     <string name="download">ڈاؤن لوڈ کریں</string>
     <string name="connection_blocked">اس کنکشن کو PCAPdroid نے بلاک کر دیا ہے</string>
     <string name="import_action">امپورٹ کریں</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">ایپ دوبارہ شروع کریں</string>
     <string name="skipped_prefs_import">نوٹ: درج ذیل ترتیبات امپورٹ نہیں کی جا سکیں، کیونکہ وہ نامعلوم یا غلط ہیں:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid کے لیے Always-on VPN فعال ہے، اس لیے آپ کو کیپچر اینڈرائیڈ ترتیبات سے روکنا ہوگا۔\n\nکیا آپ ابھی VPN ترتیبات کھولنا چاہتے ہیں؟</string>
+    <string name="auto_update">خودکار اپ ڈیٹ</string>
+    <string name="geo_db_auto_update_summary">ہر ماہ نیا ڈیٹابیس خودکار طور پر ڈاؤن لوڈ کریں</string>
 </resources>

@@ -225,7 +225,7 @@
 \n
 \nSe seu dispositivo implementa a iniciação automática ou solução similar para limitar a execução de serviços em segundo plano, certifique-se de incluir <a href="%1$s">PCAPdroid na lista de permitidos</a></string>
     <string name="geolocation_summary">Mostrar informações sobre o país e o ASN realizando pesquisas offline</string>
-    <string name="geo_db_delete">Toque para excluir a base de dados e preservar o espaço</string>
+    <string name="geo_db_delete">Excluir a base de dados. A geolocalização será desativada</string>
     <string name="action_block">Bloquear</string>
     <string name="action_unblock">Desbloquear</string>
     <string name="app_intro_geolocation_msg">PCAPdroid pode consultar uma base de dados local para determinar o país de um servidor remoto
@@ -287,11 +287,10 @@
     <string name="waiting_application_data">Aguardando dados</string>
     <string name="hexdump">Hexdump</string>
     <string name="geolocation">Geolocalização</string>
-    <string name="downloading">Baixando…</string>
     <string name="download_in_progress">Download em execução, por favor aguarde</string>
     <string name="download_failed">Download falhou</string>
     <string name="geo_db_not_found">Base de dados não encontrada. A geolocalização está desativada</string>
-    <string name="geo_db_download">Toque para baixar a base de dados mais recente. Novas versões estão disponíveis mensalmente</string>
+    <string name="geo_db_download">Baixar a base de dados mais recente</string>
     <string name="size_x">Tamanho: %1$s</string>
     <string name="download">Download</string>
     <string name="database">Base de dados</string>
@@ -612,4 +611,6 @@
     <string name="restart_app_action">Reiniciar o app</string>
     <string name="skipped_prefs_import">NOTA: as configurações a seguir não puderam ser importadas, pois são desconhecidas ou inválidas:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">A VPN sempre ativa está ativada para o PCAPdroid, então você precisa parar a captura nas configurações do Android.\n\nDeseja abrir as configurações de VPN agora?</string>
+    <string name="auto_update">Atualização automática</string>
+    <string name="geo_db_auto_update_summary">Baixar automaticamente a nova base de dados todo mês</string>
 </resources>

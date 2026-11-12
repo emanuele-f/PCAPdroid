@@ -286,7 +286,6 @@
     <string name="display_as_hexdump">ஹெக்ஸ்டம்ப்பாகக் காட்டு</string>
     <string name="geolocation">புவிஇருப்பிடம்</string>
     <string name="geolocation_summary">இணைப்பில்லாத தேடல்களைச் செய்வதன் மூலம் நாடு மற்றும் ஏ.எச்.என் தகவலைக் காட்டு</string>
-    <string name="downloading">பதிவிறக்கம்…</string>
     <string name="download_in_progress">பதிவிறக்கம் முன்னேற்றம், தயவுசெய்து காத்திருங்கள்</string>
     <string name="pcap_load_in_progress">கைப்பற்றல்ஏற்றுதல்முன்னேற்றத்தஉள்ளது,தயவுசெய்காத்திருங்கள்</string>
     <string name="download_failed">பதிவிறக்கம் தோல்வியடைந்தது</string>
@@ -295,9 +294,9 @@
     <string name="geo_db_not_found">தரவுத்தளம் கிடைக்கவில்லை. புவிஇருப்பிடம் முடக்கப்பட்டுள்ளது</string>
     <string name="database">தரவுத்தளம்</string>
     <string name="built_on">கட்டப்பட்டது: %1$s</string>
-    <string name="geo_db_download">அண்மைக் கால தரவுத்தளத்தைப் பதிவிறக்க தட்டவும். புதிய தரவுத்தளங்கள் மாதந்தோறும் கிடைக்கின்றன</string>
+    <string name="geo_db_download">அண்மைக் கால தரவுத்தளத்தைப் பதிவிறக்கவும்</string>
     <string name="size_x">அளவு: %1$s</string>
-    <string name="geo_db_delete">தரவுத்தளத்தை நீக்க மற்றும் இடத்தை சேமிக்க தட்டவும்</string>
+    <string name="geo_db_delete">தரவுத்தளத்தை நீக்கவும். புவிஇருப்பிடம் முடக்கப்படும்</string>
     <string name="download">பதிவிறக்கம்</string>
     <string name="connection_blocked">இந்த இணைப்பு pcapdroid ஆல் தடுக்கப்பட்டுள்ளது</string>
     <string name="import_action">இறக்குமதி</string>
@@ -589,4 +588,6 @@
     <string name="restart_app_action">பயன்பாட்டை மறுதொடக்கம் செய்</string>
     <string name="skipped_prefs_import">குறிப்பு: பின்வரும் அமைப்புகள் தெரியாதவை அல்லது தவறானவை என்பதால் இறக்குமதி செய்ய முடியவில்லை:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid-க்கு எப்போதும் இயங்கும் VPN இயக்கப்பட்டுள்ளது, எனவே ஆண்ட்ராய்டு அமைப்புகளிலிருந்து பிடிப்பை நிறுத்த வேண்டும்.\n\nVPN அமைப்புகளை இப்போது திறக்க வேண்டுமா?</string>
+    <string name="auto_update">தானியங்கு புதுப்பிப்பு</string>
+    <string name="geo_db_auto_update_summary">ஒவ்வொரு மாதமும் புதிய தரவுத்தளத்தைத் தானாகப் பதிவிறக்கவும்</string>
 </resources>

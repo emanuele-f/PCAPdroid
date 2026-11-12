@@ -354,7 +354,6 @@
     <string name="display_as_hexdump">Display as hexdump</string>
     <string name="geolocation">Geolocation</string>
     <string name="geolocation_summary">Show country and ASN info by performing offline lookups</string>
-    <string name="downloading">Downloading…</string>
     <string name="download_in_progress">Download in progress, please wait</string>
     <string name="pcap_load_in_progress">Capture loading in progress, please wait</string>
     <string name="download_failed">Download failed</string>
@@ -365,9 +364,9 @@
     <string name="country_rules_warning">To use country-based firewall rules, download the geolocation database from the PCAPdroid settings, otherwise country-based rules will be ineffective</string>
     <string name="database">Database</string>
     <string name="built_on">Built on: %1$s</string>
-    <string name="geo_db_download">Tap to download the latest database</string>
+    <string name="geo_db_download">Download the latest database</string>
     <string name="size_x">Size: %1$s</string>
-    <string name="geo_db_delete">Tap to delete the database. Geolocation will be disabled</string>
+    <string name="geo_db_delete">Delete the database. Geolocation will be disabled</string>
     <string name="auto_update">Automatic update</string>
     <string name="geo_db_auto_update_summary">Automatically download the new database every month</string>
     <string name="download">Download</string>

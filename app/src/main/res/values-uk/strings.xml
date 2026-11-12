@@ -420,16 +420,15 @@
     <string name="network_traffic">Трафік</string>
     <string name="warn_no_app_data">Дані програми не обміняно</string>
     <string name="geolocation">Геолокація</string>
-    <string name="downloading">Завантаження…</string>
     <string name="download_in_progress">Триває завантаження, зачекайте, будь ласка</string>
     <string name="pcap_load_in_progress">Триває завантаження захоплення, будь ласка, зачекайте</string>
     <string name="download_failed">Не вдалося завантажити</string>
     <string name="exporting">Експорт…</string>
     <string name="export_in_progress">Експорт виконується, зачекайте</string>
     <string name="built_on">Створено: %1$s</string>
-    <string name="geo_db_download">Торкніться, щоб завантажити останню базу даних. Нові бази даних доступні щомісячно</string>
+    <string name="geo_db_download">Завантажити останню базу даних</string>
     <string name="size_x">Розмір: %1$s</string>
-    <string name="geo_db_delete">Торкніться, щоб видалити базу даних і заощадити місце</string>
+    <string name="geo_db_delete">Видалити базу даних. Геолокацію буде вимкнено</string>
     <string name="download">Завантажити</string>
     <string name="connection_blocked">Це з\'єднання заблоковано PCAPdroid-ом</string>
     <string name="import_action">Імпортувати</string>
@@ -614,4 +613,6 @@
     <string name="restart_app_action">Перезапустити додаток</string>
     <string name="skipped_prefs_import">ПРИМІТКА: наведені нижче налаштування не вдалося імпортувати, оскільки вони невідомі або недійсні:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">Для PCAPdroid увімкнено постійний VPN, тому зупинити захоплення потрібно в налаштуваннях Android.\n\nВідкрити налаштування VPN зараз?</string>
+    <string name="auto_update">Автоматичне оновлення</string>
+    <string name="geo_db_auto_update_summary">Автоматично завантажувати нову базу даних щомісяця</string>
 </resources>
