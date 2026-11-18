@@ -276,7 +276,6 @@
     <string name="display_as_hexdump">Wyświetl jako zrzut szesnastkowy</string>
     <string name="geolocation">Geolokalizacja</string>
     <string name="geolocation_summary">Pokaż informacje o kraju i ASN, przeprowadzając wyszukiwanie offline</string>
-    <string name="downloading">Pobieranie…</string>
     <string name="download_in_progress">Trwa pobieranie, proszę czekać</string>
     <string name="download_failed">Pobieranie nie udane</string>
     <string name="exporting">Eksportowanie…</string>
@@ -285,9 +284,9 @@
     <string name="country_rules_warning">Aby korzystać z reguł zapory opartych na krajach, pobierz bazę danych geolokalizacji z ustawień PCAPdroid, w przeciwnym razie reguły oparte na krajach będą nieskuteczne</string>
     <string name="database">Bazy danych</string>
     <string name="built_on">Zbudowany na: %1$s</string>
-    <string name="geo_db_download">Stuknij, aby pobrać najnowszą bazę danych. Nowe bazy danych są dostępne co miesiąc</string>
+    <string name="geo_db_download">Pobierz najnowszą bazę danych</string>
     <string name="size_x">Rozmiar: %1$s</string>
-    <string name="geo_db_delete">Stuknij, aby usunąć bazę danych i zaoszczędzić miejsce</string>
+    <string name="geo_db_delete">Usuń bazę danych. Geolokalizacja zostanie wyłączona</string>
     <string name="download">Pobierz</string>
     <string name="connection_blocked">To połączenie zostało zablokowane przez PCAPdroid</string>
     <string name="import_action">Import</string>
@@ -589,4 +588,6 @@
     <string name="restart_app_action">Uruchom ponownie aplikację</string>
     <string name="skipped_prefs_import">UWAGA: poniższych ustawień nie można zaimportować, ponieważ są nieznane lub nieprawidłowe:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">Dla PCAPdroid włączona jest funkcja Always-on VPN, więc przechwytywanie musisz zatrzymać w ustawieniach Androida.\n\nCzy chcesz teraz otworzyć ustawienia VPN?</string>
+    <string name="auto_update">Automatyczna aktualizacja</string>
+    <string name="geo_db_auto_update_summary">Automatycznie pobieraj nową bazę danych co miesiąc</string>
 </resources>

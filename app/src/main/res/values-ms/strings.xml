@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">Papar sebagai hexdump</string>
     <string name="geolocation">Geolokasi</string>
     <string name="geolocation_summary">Paparkan maklumat negara dan ASN dengan melakukan carian luar talian</string>
-    <string name="downloading">Memuat turun…</string>
     <string name="download_in_progress">Muat turun sedang berlangsung, sila tunggu</string>
     <string name="pcap_load_in_progress">Pemuatan tangkapan sedang berlangsung, sila tunggu</string>
     <string name="download_failed">Muat turun gagal</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">Untuk menggunakan peraturan firewall berasaskan negara, muat turun pangkalan data geolokasi daripada tetapan PCAPdroid, jika tidak peraturan berasaskan negara tidak akan berkesan</string>
     <string name="database">Pangkalan data</string>
     <string name="built_on">Dibina pada: %1$s</string>
-    <string name="geo_db_download">Ketik untuk memuat turun pangkalan data terkini. Pangkalan data baharu tersedia setiap bulan</string>
+    <string name="geo_db_download">Muat turun pangkalan data terkini</string>
     <string name="size_x">Saiz: %1$s</string>
-    <string name="geo_db_delete">Ketik untuk memadam pangkalan data dan menjimatkan ruang</string>
+    <string name="geo_db_delete">Padam pangkalan data. Geolokasi akan dilumpuhkan</string>
     <string name="download">Muat turun</string>
     <string name="connection_blocked">Sambungan ini telah disekat oleh PCAPdroid</string>
     <string name="import_action">Import</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">Mulakan semula aplikasi</string>
     <string name="skipped_prefs_import">NOTA: tetapan berikut tidak dapat diimport, kerana ia tidak dikenali atau tidak sah:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">VPN Sentiasa Aktif didayakan untuk PCAPdroid, jadi anda perlu menghentikan tangkapan daripada tetapan Android.\n\nAdakah anda mahu membuka tetapan VPN sekarang?</string>
+    <string name="auto_update">Kemas kini automatik</string>
+    <string name="geo_db_auto_update_summary">Muat turun pangkalan data baharu secara automatik setiap bulan</string>
 </resources>

@@ -13,13 +13,13 @@
         app:key="dns_v4"
         app:title="@string/ipv4_dns_server"
         app:iconSpaceReserved="false"
-        app:defaultValue="1.1.1.1"
+        app:defaultValue="9.9.9.10"
         app:useSimpleSummaryProvider="true" />
 
     <EditTextPreference
         app:key="dns_v6"
         app:title="@string/ipv6_dns_server"
         app:iconSpaceReserved="false"
-        app:defaultValue="2606:4700:4700::1111"
+        app:defaultValue="2620:fe::10"
         app:useSimpleSummaryProvider="true" />
 </PreferenceScreen>

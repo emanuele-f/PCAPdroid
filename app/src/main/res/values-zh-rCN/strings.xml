@@ -278,12 +278,11 @@
     <string name="payload">载荷</string>
     <string name="download">下载</string>
     <string name="full_payload_summary">显示完整的连接载荷 （例如完整的 HTTP 请求和响应）。这需要大量的内存，不要长时间使用</string>
-    <string name="downloading">下载中…</string>
     <string name="database">数据库</string>
-    <string name="geo_db_download">轻按下载最新数据库。每月有新数据库可用</string>
+    <string name="geo_db_download">下载最新数据库</string>
     <string name="tx_direction">发送</string>
     <string name="size_x">大小：%1$s</string>
-    <string name="geo_db_delete">轻按删除数据库并节省空间</string>
+    <string name="geo_db_delete">删除数据库。定位将被关闭</string>
     <string name="no_rules_to_export">无规则可导出</string>
     <string name="keep_action">保留</string>
     <string name="app_intro_traffic_inspection">由于内置的解码器，检查 HTTP 请求、响应和原始数据很容易
@@ -614,4 +613,6 @@
     <string name="restart_app_action">重启应用</string>
     <string name="skipped_prefs_import">注意：以下设置无法导入，因为它们未知或无效：\n%1$s</string>
     <string name="always_on_vpn_stop_notice">已为 PCAPdroid 启用始终开启的 VPN，因此需要在 Android 设置中停止捕获。\n\n要现在打开 VPN 设置吗？</string>
+    <string name="auto_update">自动更新</string>
+    <string name="geo_db_auto_update_summary">每月自动下载新数据库</string>
 </resources>

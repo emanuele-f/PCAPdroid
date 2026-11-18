@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -74,11 +74,11 @@ public class LogviewActivity extends BaseActivity implements MenuProvider {
     }
 
     private static class StateAdapter extends FragmentStateAdapter {
-        final String mCacheDir;
+        final String mLogDir;
 
         StateAdapter(final FragmentActivity fa) {
             super(fa);
-            mCacheDir = fa.getCacheDir().getAbsolutePath();
+            mLogDir = Log.getLogDir(fa);
         }
 
         @NonNull
@@ -86,12 +86,12 @@ public class LogviewActivity extends BaseActivity implements MenuProvider {
         public Fragment createFragment(int pos) {
             switch (pos) {
                 case POS_APP_LOG:
-                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.DEFAULT_LOGGER_PATH);
+                    return LogviewFragment.newInstance(mLogDir + "/" + Log.DEFAULT_LOGGER_PATH);
                 case POS_ROOT_LOG:
-                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.ROOT_LOGGER_PATH);
+                    return LogviewFragment.newInstance(mLogDir + "/" + Log.ROOT_LOGGER_PATH);
                 case POS_MITM_LOG:
                 default:
-                    return LogviewFragment.newInstance(mCacheDir + "/" + Log.MITM_LOGGER_PATH);
+                    return LogviewFragment.newInstance(mLogDir + "/" + Log.MITM_LOGGER_PATH);
             }
         }
 

@@ -270,7 +270,6 @@
     <string name="network_traffic">Trafikk</string>
     <string name="connection_start_not_seen">PCAPdroid har ikke sett starten på denne tilkoblingen. Noe av infoen kan mangle.</string>
     <string name="waiting_application_data">Venter på data …</string>
-    <string name="downloading">Laster ned …</string>
     <string name="download_in_progress">Laster ned …</string>
     <string name="download_failed">Nedlasting mislyktes</string>
     <string name="geo_db_not_found">Fant ikke databasen. Geoposisjonering er avskrudd.</string>
@@ -304,8 +303,8 @@
     <string name="hexdump">Heksadesimal dump</string>
     <string name="geolocation">Geoposisjon</string>
     <string name="geolocation_summary">Vis land og ASN-info ved å utføre frakoblet oppslag</string>
-    <string name="geo_db_download">Trykk for å laste ned siste database. De slippes månedlig.</string>
-    <string name="geo_db_delete">Trykk for å slette databasen og spare plass.</string>
+    <string name="geo_db_download">Last ned siste database</string>
+    <string name="geo_db_delete">Slett databasen. Geoposisjonering blir avskrudd</string>
     <string name="import_failed">Import mislyktes</string>
     <string name="invalid_backup">Ugyldig sikkerhetskopieringsformat</string>
     <string name="rules_import_success">Importerte %1$d regler</string>
@@ -335,4 +334,6 @@
 \n
 \nVia <a href="%2$s">trailer-alternativet</a>, kan du legge til programnavn i pakkene og vise dem i Wireshark.</string>
     <string name="mitm_addon_new_version">MITM-tillegget for PCAPdroid må oppgraderes.</string>
+    <string name="auto_update">Automatisk oppdatering</string>
+    <string name="geo_db_auto_update_summary">Last ned den nye databasen automatisk hver måned</string>
 </resources>

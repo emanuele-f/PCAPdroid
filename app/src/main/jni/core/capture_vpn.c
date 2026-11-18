@@ -231,15 +231,16 @@ static bool spoof_dns_reply(pcapdroid_t *pd, zdtun_conn_t *conn, pkt_context_t *
 
     int remaining = pkt->l7_len - sizeof(dns_packet_t);
     int qlen=0;
-    while(remaining >= 5) {
-        if(!req->queries[qlen])
-            break;
+    while((remaining >= 5) && req->queries[qlen]) {
         qlen++;
         remaining--;
     }
 
-    if((req->queries[qlen] != 0) || (req->queries[qlen + 1] != 0) ||
-       (req->queries[qlen + 3] != 0) || (req->queries[qlen + 4] != 1))
+    if(remaining < 5)
+        return false; // no room for the query terminator and the type/class
+
+    if((req->queries[qlen + 1] != 0) || (req->queries[qlen + 3] != 0) ||
+       (req->queries[qlen + 4] != 1))
         return false; // invalid
 
     uint8_t qtype = req->queries[qlen + 2];
@@ -424,6 +425,9 @@ int run_vpn(pcapdroid_t *pd) {
         return (-1);
     }
 
+    // reset before reading the DNS server, to not lose a DNS server change happening meanwhile
+    new_dns_server = 0;
+
 #if ANDROID
     pd->vpn.resolver = init_uid_resolver(pd->sdk_ver, pd->env, pd->capture_service);
     pd->vpn.block_quic_mode = getIntPref(pd->env, pd->capture_service, "getBlockQuickMode");
@@ -455,7 +459,6 @@ int run_vpn(pcapdroid_t *pd) {
 #endif
 
     pd->zdt = zdt;
-    new_dns_server = 0;
 
     if(pd->socks5.enabled) {
         zdtun_set_socks5_proxy(zdt, &pd->socks5.proxy_ip, pd->socks5.proxy_port, pd->socks5.proxy_ipver);
@@ -622,10 +625,13 @@ int run_vpn(pcapdroid_t *pd) {
                             socklen_t addrlen = sizeof(local_addr);
 
                             if(getsockname(sock, (struct sockaddr*) &local_addr, &addrlen) == 0) {
-                                if(local_addr.ss_family == AF_INET6)
+                                if(local_addr.ss_family == AF_INET6) {
                                     data->vpn.local_port = ((struct sockaddr_in6*) &local_addr)->sin6_port;
-                                else
+                                    data->vpn.local_ipver = 6;
+                                } else {
                                     data->vpn.local_port = ((struct sockaddr_in*) &local_addr)->sin_port;
+                                    data->vpn.local_ipver = 4;
+                                }
                             }
                         }
                     }

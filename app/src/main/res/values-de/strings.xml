@@ -259,11 +259,10 @@
     <string name="connection_start_not_seen">PCAPdroid hat den Beginn dieser Verbindung nicht gesehen. Einige Informationen fehlen möglicherweise</string>
     <string name="warn_no_app_data">Es wurden keine Anwendungsdaten ausgetauscht</string>
     <string name="waiting_application_data">Wartende Daten</string>
-    <string name="downloading">Wird heruntergeladen…</string>
     <string name="download_in_progress">Download läuft, bitte warten</string>
     <string name="download_failed">Download fehlgeschlagen</string>
-    <string name="geo_db_download">Tippen Sie hier, um die neueste Datenbank herunterzuladen. Neue Datenbanken sind monatlich verfügbar</string>
-    <string name="geo_db_delete">Tippen Sie, um die Datenbank zu löschen und Speicherplatz zu sparen</string>
+    <string name="geo_db_download">Die neueste Datenbank herunterladen</string>
+    <string name="geo_db_delete">Die Datenbank löschen. Die Geolokalisierung wird deaktiviert</string>
     <string name="size_x">Größe: %1$s</string>
     <string name="download">Download</string>
     <string name="import_action">Importieren</string>
@@ -612,4 +611,6 @@
     <string name="restart_app_action">App neu starten</string>
     <string name="skipped_prefs_import">HINWEIS: Die folgenden Einstellungen konnten nicht importiert werden, da sie unbekannt oder ungültig sind:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">Always-on VPN ist für PCAPdroid aktiviert, daher müssen Sie die Aufnahme in den Android-Einstellungen stoppen.\n\nMöchten Sie jetzt die VPN-Einstellungen öffnen?</string>
+    <string name="auto_update">Automatische Aktualisierung</string>
+    <string name="geo_db_auto_update_summary">Die neue Datenbank jeden Monat automatisch herunterladen</string>
 </resources>

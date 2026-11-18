@@ -54,7 +54,6 @@ import com.emanuelef.remote_capture.Log;
 import com.emanuelef.remote_capture.PCAPdroid;
 import com.emanuelef.remote_capture.Utils;
 import com.emanuelef.remote_capture.MitmAddon;
-import com.emanuelef.remote_capture.VpnReconnectService;
 import com.emanuelef.remote_capture.activities.BaseActivity;
 import com.emanuelef.remote_capture.activities.IABActivity;
 import com.emanuelef.remote_capture.activities.MainActivity;
@@ -361,7 +360,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 mRootCaptureEnabled.setVisible(false);
 
             mRestartOnDisconnect = requirePreference(Prefs.PREF_RESTART_ON_DISCONNECT);
-            mRestartOnDisconnect.setVisible(VpnReconnectService.isAvailable());
 
             mDnsSettings = requirePreference("dns_settings");;
             mVpnExceptions = requirePreference(Prefs.PREF_VPN_EXCEPTIONS);
@@ -610,9 +608,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
                 socks5ProxyHideShow(mTlsDecryption.isChecked(), false);
             }
 
-            if (VpnReconnectService.isAvailable())
-                mRestartOnDisconnect.setVisible(!enabled);
-
+            mRestartOnDisconnect.setVisible(!enabled);
             mIpMode.setVisible(!enabled);
             mCapInterface.setVisible(enabled);
             mVpnExceptions.setVisible(!enabled);

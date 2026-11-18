@@ -415,14 +415,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void checkPermissions() {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                // Needed to write PCAP files
-                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    } catch (ActivityNotFoundException e) {
-                        Utils.showToastLong(this, R.string.no_intent_handler_found);
-                    }
+            // Needed to write PCAP files
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                try {
+                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                } catch (ActivityNotFoundException e) {
+                    Utils.showToastLong(this, R.string.no_intent_handler_found);
                 }
             }
         }
@@ -879,10 +877,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             appStateReady();
 
             // PCAPdroid could have been closed unexpectedly (e.g. due to low memory), try to export
-            // the keylog file if exists
+            // the keylog file if not empty
             mKeylogFile = MitmReceiver.getKeylogFilePath(MainActivity.this);
-            if(mKeylogFile.exists())
+            if(mKeylogFile.length() > 0)
                 startExportSslkeylogfile();
+            else
+                discardKeylogFile();
         } else
             appStateRunning();
     }
@@ -913,8 +913,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void startCapture() {
-        if (VpnReconnectService.isAvailable())
-            VpnReconnectService.stopService();
+        VpnReconnectService.stopService();
 
         if(showRemoteServerAlert())
             return;
@@ -1008,7 +1007,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Log.d(TAG, "Pcap dump size is " + stats.pcap_dump_size);
 
         if(stats.pcap_dump_size <= 0) {
-            deletePcapFile(pcapUri); // empty file, delete
+            // empty file, already deleted by CaptureService
             discardKeylogFile();
             return;
         }
@@ -1086,30 +1085,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void deletePcapFile(Uri pcapUri) {
-        boolean deleted = false;
-
-        // The getContentResolver().delete in some Android versions does not work, try to delete
-        // using file path first
-        String fpath = Utils.uriToFilePath(this, pcapUri);
-        if(fpath != null) {
-            Log.d(TAG, "deletePcapFile: path=" + fpath);
-
-            try {
-                deleted = new File(fpath).delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            Log.d(TAG, "deletePcapFile: uri=" + pcapUri);
-
-            try {
-                deleted = (getContentResolver().delete(pcapUri, null, null) == 1);
-            } catch (UnsupportedOperationException | SecurityException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if(!deleted)
+        if(!Utils.deleteUri(this, pcapUri))
             Utils.showToast(MainActivity.this, R.string.delete_error);
     }
 

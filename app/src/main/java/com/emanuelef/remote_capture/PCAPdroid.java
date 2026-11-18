@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture;
@@ -58,6 +58,7 @@ public class PCAPdroid extends Application {
     private MatchList mDecryptionList;
     private Blocklist mBlocklist;
     private Blacklists mBlacklists;
+    private GeoDbUpdater mGeoDbUpdater;
     private CtrlPermissions mCtrlPermissions;
     private Context mLocalizedContext;
     private boolean mIsDecryptingPcap = false;
@@ -71,7 +72,7 @@ public class PCAPdroid extends Application {
         super.onCreate();
 
         if(!isUnderTest())
-            Log.init(getCacheDir().getAbsolutePath());
+            Log.init(Log.getLogDir(this));
 
         Utils.BuildType buildtp = Utils.getVerifiedBuild(this);
         Log.i(TAG, "Build type: " + buildtp);
@@ -89,6 +90,7 @@ public class PCAPdroid extends Application {
         mInstance = new WeakReference<>(this);
         mLocalizedContext = createConfigurationContext(Utils.getLocalizedConfig(this));
         mIsUsharkAvailable = CaptureService.isUsharkAvailable(this);
+        mGeoDbUpdater = new GeoDbUpdater(this);
 
         // Listen to package events
         IntentFilter filter = new IntentFilter();
@@ -119,6 +121,9 @@ public class PCAPdroid extends Application {
         }, filter);
 
         removeUninstalledAppsFromAppFilter();
+
+        if(!isUnderTest())
+            mGeoDbUpdater.start();
     }
 
     public static @NonNull PCAPdroid getInstance() {
@@ -140,6 +145,10 @@ public class PCAPdroid extends Application {
         if(mBlacklists == null)
             mBlacklists = new Blacklists(mLocalizedContext);
         return mBlacklists;
+    }
+
+    public GeoDbUpdater getGeoDbUpdater() {
+        return mGeoDbUpdater;
     }
 
     public MatchList getMalwareWhitelist() {

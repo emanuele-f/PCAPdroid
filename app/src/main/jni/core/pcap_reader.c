@@ -330,15 +330,23 @@ static reader_rv read_enhanced_packet_block(pd_reader_t *reader, pcapd_hdr_t *hd
 
     // Possibly parse the UID
     uint8_t packet_padding = (~enh.captured_len + 1) & 0x3;
-    int opts_offset = sizeof(enh) + enh.captured_len + packet_padding;
-    int max_read = enh.total_length - opts_offset - 4 /* total size */;
+    int64_t opts_offset = (int64_t)sizeof(enh) + enh.captured_len + packet_padding;
+    int64_t max_read = (int64_t)enh.total_length - opts_offset - 4 /* total size */;
 
-    if (fseek(reader->fp, reader->cur_block_pos + opts_offset, SEEK_SET) == 0) {
+    // NOTE: max_read is negative when the block leaves no room for the options
+    if ((max_read >= (int)sizeof(pcapng_enh_option_t)) &&
+        (fseek(reader->fp, reader->cur_block_pos + (long)opts_offset, SEEK_SET) == 0)
+    ) {
         pcapng_enh_option_t opt;
 
-        while ((max_read >= sizeof(opt)) &&
+        while ((max_read >= (int)sizeof(opt)) &&
                fread(&opt, sizeof(opt), 1, reader->fp) == 1
         ) {
+            int length_padded = opt.length + (uint8_t)((~opt.length + 1) & 0x3);
+
+            if ((length_padded + (int)sizeof(opt)) > max_read)
+                break;
+
             if ((opt.code == 1) && (opt.length > 0)) { // comment
                 char comment[16];
 
@@ -388,8 +396,7 @@ static reader_rv read_enhanced_packet_block(pd_reader_t *reader, pcapd_hdr_t *hd
                 }
             }
 
-            int length_padded = opt.length + (uint8_t)((~opt.length + 1) & 0x3);
-            max_read -= length_padded + sizeof(opt);
+            max_read -= length_padded + (int)sizeof(opt);
             fseek(reader->fp, length_padded, SEEK_CUR);
         }
     }
@@ -402,6 +409,13 @@ static reader_rv read_interface_description_block(pd_reader_t *reader) {
 
     if (fread(&idb, sizeof(idb), 1, reader->fp) != 1) {
         log_e("Error reading the IDB block[%u]: %s", errno, strerror(errno));
+        reader->has_error = true;
+        return READER_ERROR;
+    }
+
+    if (idb.total_length < (sizeof(idb) + 4 /* total size */)) {
+        log_e("IDB block bad length: total=%u", idb.total_length);
+        errno = EINVAL;
         reader->has_error = true;
         return READER_ERROR;
     }
@@ -422,12 +436,17 @@ static reader_rv read_interface_description_block(pd_reader_t *reader) {
         log_w("Pcapng interface #%d has unsupported linktype %d. Its packets will be ignored", idx, idb.linktype);
 
     // check if interface name is specified
-    int max_read = idb.total_length - sizeof(idb) - 4 /* total size */;
+    int64_t max_read = (int64_t)idb.total_length - (int64_t)sizeof(idb) - 4 /* total size */;
     pcapng_enh_option_t opt;
 
-    while ((max_read >= sizeof(opt)) &&
+    while ((max_read >= (int)sizeof(opt)) &&
         fread(&opt, sizeof(opt), 1, reader->fp) == 1
     ) {
+        int length_padded = opt.length + (uint8_t)((~opt.length + 1) & 0x3);
+
+        if ((length_padded + (int)sizeof(opt)) > max_read)
+            break;
+
         if (opt.code == 2) { // if_name
             size_t read_size = min(opt.length, sizeof(intf->name) - 1);
             fread(intf->name, read_size, 1, reader->fp);
@@ -435,8 +454,7 @@ static reader_rv read_interface_description_block(pd_reader_t *reader) {
             break;
         }
 
-        int length_padded = opt.length + (uint8_t)((~opt.length + 1) & 0x3);
-        max_read -= length_padded + sizeof(opt);
+        max_read -= length_padded + (int)sizeof(opt);
         fseek(reader->fp, length_padded, SEEK_CUR);
     }
 

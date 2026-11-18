@@ -2,6 +2,17 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [2.0.3] - 2026-11-18
+- Add auto-update of the geolocation DB
+- Improve system DNS server usage across the capture
+- Switch the fallback DNS server to Quad9
+- Add Hebrew translation (credits: wspdyb)
+- Fix decryption and SOCKS5 redirection not working on IPv6
+- Fix TCP upload truncated when the client closes with queued data
+- Fix crash on "Forget VPN" with "restart on disconnection" enabled
+- Minor improvements in the TCP/IP stack implementation
+- Other minor fixes
+
 ## [2.0.2] - 2026-09-20
 - Fix leaked connections listener causing IllegalStateException
 - Fix out-of-memory crash on large pcap files load with full payload enabled

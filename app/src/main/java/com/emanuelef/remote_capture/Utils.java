@@ -203,6 +203,12 @@ public class Utils {
         }
     }
 
+    public enum DownloadResult {
+        OK,
+        NOT_FOUND,
+        FAILED,
+    }
+
     public static String[] list2array(List<String> l) {
         return l.toArray(new String[0]);
     }
@@ -471,6 +477,17 @@ public class Utils {
         }
 
         return null;
+    }
+
+    public static boolean isVpnNetwork(ConnectivityManager cm, Network net) {
+        try {
+            NetworkCapabilities cap = cm.getNetworkCapabilities(net);
+            return((cap != null) && cap.hasTransport(NetworkCapabilities.TRANSPORT_VPN));
+        } catch (SecurityException e) {
+            // this is a bug in Android 11 - https://issuetracker.google.com/issues/175055271?pli=1
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // https://gist.github.com/mathieugerard/0de2b6f5852b6b0b37ed106cab41eba1
@@ -981,11 +998,9 @@ public class Utils {
             selectArgs = new String[]{relPath, fname};
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    Utils.showToastLong(context, R.string.external_storage_perm_required);
-                    return(null);
-                }
+            if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Utils.showToastLong(context, R.string.external_storage_perm_required);
+                return(null);
             }
 
             File folder = getDownloadsFolder();
@@ -1196,9 +1211,7 @@ public class Utils {
     }
 
     public static int getIntentFlags(int flags) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        return flags;
+        return flags | PendingIntent.FLAG_IMMUTABLE;
     }
 
     public static boolean ungzip(InputStream is, String dst) {
@@ -1217,7 +1230,12 @@ public class Utils {
     }
 
     public static boolean downloadFile(String _url, String path) {
+        return (downloadFileWithResult(_url, path) == DownloadResult.OK);
+    }
+
+    public static DownloadResult downloadFileWithResult(String _url, String path) {
         boolean has_contents = false;
+        boolean not_found = false;
 
         try (FileOutputStream out = new FileOutputStream(path + ".tmp")) {
             try (BufferedOutputStream bos = new BufferedOutputStream(out)) {
@@ -1230,12 +1248,19 @@ public class Utils {
                     con.setConnectTimeout(15000);
                     con.setReadTimeout(15000);
 
-                    try(InputStream in = new BufferedInputStream(con.getInputStream())) {
-                        byte[] bytesIn = new byte[4096];
-                        int read;
-                        while ((read = in.read(bytesIn)) != -1) {
-                            bos.write(bytesIn, 0, read);
-                            has_contents |= (read > 0);
+                    try {
+                        if(con.getResponseCode() == HttpsURLConnection.HTTP_NOT_FOUND) {
+                            Log.w(TAG, "Not found: " + _url);
+                            not_found = true;
+                        } else {
+                            try(InputStream in = new BufferedInputStream(con.getInputStream())) {
+                                byte[] bytesIn = new byte[4096];
+                                int read;
+                                while ((read = in.read(bytesIn)) != -1) {
+                                    bos.write(bytesIn, 0, read);
+                                    has_contents |= (read > 0);
+                                }
+                            }
                         }
                     } catch (SocketTimeoutException _ignored) {
                         Log.w(TAG, "Timeout while fetching " + _url);
@@ -1255,11 +1280,11 @@ public class Utils {
             } catch (Exception ignored) {
                 // ignore
             }
-            return false;
+            return not_found ? DownloadResult.NOT_FOUND : DownloadResult.FAILED;
         }
 
         // Only write the target path if it was successful
-        return (new File(path + ".tmp")).renameTo(new File(path));
+        return (new File(path + ".tmp")).renameTo(new File(path)) ? DownloadResult.OK : DownloadResult.FAILED;
     }
 
     public static String shorten(String s, int maxlen) {
@@ -1369,7 +1394,7 @@ public class Utils {
                 case "511140392BFF2CFB4BD825895DD6510CE1807F6D":
                     return BuildType.DEBUG;
                 case "EE953D4F988C8AC17575DFFAA1E3BBCE2E29E81D":
-                    return isPlaystore() ? BuildType.PLAYSTORE : BuildType.UNKNOWN;
+                    return BuildType.PLAYSTORE;
                 case "77DA81218F6E0D91220700317B2BCB906F4D4255":
                     return BuildType.GITHUB;
                 case "72777D6939EF150099219BBB68C17220DB28EA8E":
@@ -1982,6 +2007,31 @@ public class Utils {
     public static class UriStat {
         public String name;
         public long size;
+    }
+
+    public static boolean deleteUri(Context ctx, Uri uri) {
+        // The getContentResolver().delete in some Android versions does not work, try to delete
+        // using file path first
+        String fpath = uriToFilePath(ctx, uri);
+        if(fpath != null) {
+            Log.d(TAG, "deleteUri: path=" + fpath);
+
+            try {
+                return new File(fpath).delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        Log.d(TAG, "deleteUri: uri=" + uri);
+
+        try {
+            return (ctx.getContentResolver().delete(uri, null, null) == 1);
+        } catch (UnsupportedOperationException | SecurityException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // NOTE: in Android 7, the file size of a newly written file can be 0/less than actual size

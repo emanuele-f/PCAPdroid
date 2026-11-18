@@ -288,7 +288,7 @@
 #define PACKAGE_NAME "pcap"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "pcap 1.10.6"
+#define PACKAGE_STRING "pcap 1.10.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcap"
@@ -297,7 +297,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.10.6"
+#define PACKAGE_VERSION "1.10.7"
 
 /* target host supports Bluetooth sniffing */
 /* #undef PCAP_SUPPORT_BT */

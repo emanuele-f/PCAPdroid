@@ -240,7 +240,7 @@
     <string name="database">База данных</string>
     <string name="geo_db_not_found">База данных не найдена. Геолокация выключена</string>
     <string name="built_on">Дата сборки: %1$s</string>
-    <string name="geo_db_delete">Нажмите чтобы удалить базу данных и освободить место</string>
+    <string name="geo_db_delete">Удалить базу данных. Геолокация будет выключена</string>
     <string name="rules_import_success">Импортировано %1$d правил</string>
     <string name="connection_blocked">Это соединение было заблокировано PCAPdroid</string>
     <string name="download">Скачать</string>
@@ -270,12 +270,11 @@
     <string name="decrypted">Дешифровано</string>
     <string name="decryption">Дешифрование</string>
     <string name="waiting_application_data">Ожидаем данные</string>
-    <string name="downloading">Скачивание…</string>
     <string name="import_action">Импорт</string>
     <string name="firewall_is_enabled">Файрвол включен</string>
     <string name="import_failed">Импорт не удался</string>
     <string name="invalid_backup">Неверный формат резервной копии</string>
-    <string name="geo_db_download">Нажмите для загрузки новейшей базы данных. Новые базы данных доступны ежемесячно</string>
+    <string name="geo_db_download">Загрузить новейшую базу данных</string>
     <string name="firewall_is_disabled">Файрвол выключен</string>
     <string name="geolocation_summary">Отображать информацию о стране и ASN посредством локальных проверок</string>
     <string name="no_root_firewall">Файрвол не требующий root</string>
@@ -605,4 +604,6 @@
     <string name="restart_app_action">Перезапустить приложение</string>
     <string name="skipped_prefs_import">ПРИМЕЧАНИЕ: следующие настройки не удалось импортировать, так как они неизвестны или недопустимы:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">Для PCAPdroid включён Постоянный VPN, поэтому остановить захват нужно из настроек Android.\n\nОткрыть настройки VPN сейчас?</string>
+    <string name="auto_update">Автоматическое обновление</string>
+    <string name="geo_db_auto_update_summary">Автоматически загружать новую базу данных каждый месяц</string>
 </resources>

@@ -92,6 +92,7 @@ typedef struct {
         struct {
             struct pkt_context *fw_pctx; // context for the forwarded packet
             uint16_t local_port;         // local port, from zdtun to the Internet
+            uint8_t local_ipver;         // IP version of the local_port socket
         } vpn;
     };
 
@@ -260,6 +261,7 @@ typedef struct pcapdroid {
             bool daemonize;
             char *bpf;
             char *capture_interface;
+            char *log_path;
             int pcapd_pid;
             struct ushark *usk;
 
@@ -276,6 +278,7 @@ typedef struct pcapdroid {
         int max_pkts_per_flow;
         int max_dump_size;
         pcap_dumper_t *dumper;
+        uint64_t last_dump_size;
     } pcap_dump;
 
     struct {

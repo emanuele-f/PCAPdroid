@@ -149,11 +149,8 @@ unlock:
 
 /* ******************************************************* */
 
+// NOTE: the buffered data is already within the max dump size, as checked in alloc_dump_buffer
 static void export_dump_buffer(pcap_dumper_t *dumper) {
-    // prevents exporting more than the max dump size
-    if (dumper->max_dump_size_reached)
-        return;
-
     export_keylog_buffer(dumper);
 
     if(dumper->buffer_idx == 0)
@@ -553,12 +550,13 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
         HASH_FIND_INT(dumper->dumped_interfaces, &ifidx, item);
 
         if (!item) {
-            if (dump_pcapng_interface(dumper, ifidx)) {
-                item = pd_calloc(sizeof(dumped_interface_t), 1);
-                item->ifidx = ifidx;
-                item->pcapng_ifid = pcapng_ifid = ++dumper->num_dumped_interfaces;
-                HASH_ADD_INT(dumper->dumped_interfaces, ifidx, item);
-            }
+            if (!dump_pcapng_interface(dumper, ifidx))
+                return false;
+
+            item = pd_calloc(sizeof(dumped_interface_t), 1);
+            item->ifidx = ifidx;
+            item->pcapng_ifid = pcapng_ifid = ++dumper->num_dumped_interfaces;
+            HASH_ADD_INT(dumper->dumped_interfaces, ifidx, item);
         } else
             pcapng_ifid = item->pcapng_ifid;
     }
@@ -606,6 +604,8 @@ static bool dump_packet_pcapng(pcap_dumper_t *dumper, const char *pkt, int pktle
 
     uint64_t now_usec = (uint64_t)tv->tv_sec * 1000000 + tv->tv_usec;
     int8_t *buffer = alloc_dump_buffer(dumper, total_length);
+    if (!buffer)
+        return false;
 
     pcapng_enh_packet_block_t *epb = (pcapng_enh_packet_block_t*) buffer;
     epb->type = 0x00000006;

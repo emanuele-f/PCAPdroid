@@ -94,7 +94,7 @@ static void sendStatsDump(pcapdroid_t *pd) {
                            allocs_summary,
                            capstats->sent_bytes, capstats->rcvd_bytes,
                            capstats->ipv6_sent_bytes, capstats->ipv6_rcvd_bytes,
-                           (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : 0),
+                           (jlong)(pd->pcap_dump.dumper ? pcap_get_dump_size(pd->pcap_dump.dumper) : pd->pcap_dump.last_dump_size),
                            capstats->sent_pkts, capstats->rcvd_pkts,
                            min(pd->num_dropped_pkts, INT_MAX), pd->num_dropped_connections,
                            stats->num_open_sockets, stats->all_max_fd, active_conns, tot_conns,
@@ -253,6 +253,7 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
     jobject country_code = jniNewStringUTF(env, data->country_code);
     u_int ifidx = (pd->vpn_capture ? 0 : data->pcap.ifidx);
     u_int local_port = (pd->vpn_capture ? data->vpn.local_port : conn_info->src_port);
+    u_int local_ipver = (pd->vpn_capture ? data->vpn.local_ipver : conn_info->ipver);
     bool mitm_decrypt = (pd->tls_decryption.enabled && data->proxied);
     jobject conn_descriptor = NULL;
 
@@ -261,7 +262,7 @@ static int dumpNewConnection(pcapdroid_t *pd, const conn_and_tuple_t *conn, jobj
                                             conn_info->ipver, conn_info->ipproto,
                                             src_string, dst_string, country_code,
                                             ntohs(conn_info->src_port), ntohs(conn_info->dst_port),
-                                            ntohs(local_port),
+                                            ntohs(local_port), local_ipver,
                                             data->uid, ifidx, mitm_decrypt, data->first_seen);
     }
 
@@ -583,8 +584,10 @@ static void getSocks5ProxyAuth(pcapdroid_t *pd) {
         return;
 
     *sep = '\0';
-    strncpy(pd->socks5.proxy_user, buf, sizeof(pd->socks5.proxy_user));
-    strncpy(pd->socks5.proxy_pass, sep + 1, sizeof(pd->socks5.proxy_pass));
+    strncpy(pd->socks5.proxy_user, buf, sizeof(pd->socks5.proxy_user) - 1);
+    pd->socks5.proxy_user[sizeof(pd->socks5.proxy_user) - 1] = '\0';
+    strncpy(pd->socks5.proxy_pass, sep + 1, sizeof(pd->socks5.proxy_pass) - 1);
+    pd->socks5.proxy_pass[sizeof(pd->socks5.proxy_pass) - 1] = '\0';
 
     //log_d("SOCKS5: user=%s pass=%s", pd->socks5.proxy_user, pd->socks5.proxy_pass);
 }
@@ -622,7 +625,7 @@ static void init_jni(JNIEnv *env) {
     mids.getBlacklistsInfo = jniGetMethodID(env, cls.vpn_service, "getBlacklistsInfo", "()[Lcom/emanuelef/remote_capture/model/BlacklistDescriptor;");
     mids.checkAvailableHeap = jniGetMethodID(env, cls.vpn_service, "checkAvailableHeap", "()V");
 
-    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIZJ)V");
+    mids.connInit = jniGetMethodID(env, cls.conn, "<init>", "(IIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;IIIIIIZJ)V");
     mids.connProcessUpdate = jniGetMethodID(env, cls.conn, "processUpdate", "(Lcom/emanuelef/remote_capture/model/ConnectionUpdate;)V");
     mids.connUpdateInit = jniGetMethodID(env, cls.conn_update, "<init>", "(I)V");
     mids.connUpdateSetStats = jniGetMethodID(env, cls.conn_update, "setStats", "(JJJJIIIII)V");

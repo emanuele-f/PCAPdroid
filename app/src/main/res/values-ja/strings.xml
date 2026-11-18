@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">Hexdump として表示</string>
     <string name="geolocation">地理位置情報</string>
     <string name="geolocation_summary">オフライン検索を実行して国と ASN の情報を表示します</string>
-    <string name="downloading">ダウンロードしています…</string>
     <string name="download_in_progress">ダウンロード中です。しばらくお待ちください</string>
     <string name="pcap_load_in_progress">キャプチャの読み込み中です。しばらくお待ちください</string>
     <string name="download_failed">ダウンロードに失敗しました</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">国ベースのファイアウォール ルールを使用するには、PCAPdroid の設定から地理位置情報データベースをダウンロードしてください。ダウンロードしない場合、国ベースのルールは効果がありません</string>
     <string name="database">データベース</string>
     <string name="built_on">作成日: %1$s</string>
-    <string name="geo_db_download">タップして最新のデータベースをダウンロードします。新しいデータベースは毎月利用可能です</string>
+    <string name="geo_db_download">最新のデータベースをダウンロードします</string>
     <string name="size_x">サイズ: %1$s</string>
-    <string name="geo_db_delete">タップしてデータベースを削除し、容量を節約します</string>
+    <string name="geo_db_delete">データベースを削除します。地理位置情報は無効になります</string>
     <string name="download">ダウンロード</string>
     <string name="connection_blocked">この接続は PCAPdroid によってブロックされました</string>
     <string name="import_action">インポート</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">アプリを再起動</string>
     <string name="skipped_prefs_import">注意: 次の設定は不明または無効なため、インポートできませんでした:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid で常時接続 VPN が有効になっているため、キャプチャは Android の設定から終了する必要があります。\n\n今すぐ VPN 設定を開きますか?</string>
+    <string name="auto_update">自動更新</string>
+    <string name="geo_db_auto_update_summary">毎月新しいデータベースを自動的にダウンロードします</string>
 </resources>

@@ -212,13 +212,21 @@ int blacklist_load_file(blacklist_t *bl, const char *path, blacklist_type btype,
                 continue;
             }
 
-            int bits;
-            if(slash)
-                bits = atoi(slash + 1); // subnet
-            else if(ipver == 4)
-                bits = 32;
-            else
-                bits = 128;
+            int max_bits = (ipver == 4) ? 32 : 128;
+            int bits = max_bits;
+
+            if(slash) { // subnet
+                char *endp;
+                long val = strtol(slash + 1, &endp, 10);
+
+                if((endp == (slash + 1)) || (*endp != '\0') || (val < 0) || (val > max_bits)) {
+                    log_w("Invalid subnet \"%s/%s\" in blacklist %s", buffer, slash + 1, path);
+                    num_fail++;
+                    continue;
+                }
+
+                bits = (int) val;
+            }
 
             // Validate IPv4
             if(((ipver == 4) && (bits == 32)) &&

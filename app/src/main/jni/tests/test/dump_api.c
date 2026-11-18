@@ -132,12 +132,15 @@ static void max_dump_size() {
 
   // Verify
   assert_pcap_header(&hdr);
-  dump_size = sizeof(hdr);
+  dump_size = 0;
 
   while(next_pcap_record(&rec))
     dump_size += sizeof(rec) + rec.incl_len;
 
-  assert(dump_size <= TEST_MAX_SIZE);
+  // all the accounted bytes must be written, including the ones still buffered when the limit is hit
+  assert(dump_size > 0);
+  assert(dump_size == pd->pcap_dump.last_dump_size);
+  assert((dump_size + sizeof(hdr)) <= TEST_MAX_SIZE);
 
   pd_free_test(pd);
 }

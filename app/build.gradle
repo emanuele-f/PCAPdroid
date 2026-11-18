@@ -16,12 +16,12 @@ android {
         minSdkVersion 23
         compileSdk 37
         targetSdk 37
-        versionCode 95
-        versionName "2.0.2"
+        versionCode 96
+        versionName "2.0.3"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
-        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "hi", "in", "it", "ja", "ko",
+        resourceConfigurations += ["en", "ar", "az", "bn", "de", "es", "fr", "hi", "in", "it", "iw", "ja", "ko",
                                    "ms", "pl", "pt", "pt-rBR", "ru", "ta", "tr", "uk", "ur", "vi", "zh-rCN"]
     }
 
@@ -100,6 +100,7 @@ android {
         unitTests.includeAndroidResources = true
         unitTests.all {
             systemProperty "java.library.path", "${buildDir}/hostJni"
+            jvmArgs '--add-exports=java.base/jdk.internal.access=ALL-UNNAMED'
         }
     }
     namespace = 'com.emanuelef.remote_capture'
@@ -143,13 +144,13 @@ dependencies {
 // Tests
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.7.0'
-    testImplementation "org.robolectric:robolectric:4.16.1"
+    testImplementation "org.robolectric:robolectric:4.17"
 
 // AndroidX
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    implementation 'androidx.fragment:fragment:1.8.9'
+    implementation 'androidx.fragment:fragment:1.9.1'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
@@ -159,7 +160,7 @@ dependencies {
 
 // Google
     implementation 'com.google.android.material:material:1.14.0'
-    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'com.google.code.gson:gson:2.15.0'
     implementation 'org.brotli:dec:0.1.2'
 
 // Third-party

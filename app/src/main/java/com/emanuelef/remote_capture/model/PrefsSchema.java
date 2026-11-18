@@ -40,6 +40,7 @@ public class PrefsSchema {
     public enum Type {
         BOOLEAN,
         INT,
+        LONG,
         STRING,
         STRING_SET,
         JSON
@@ -156,6 +157,8 @@ public class PrefsSchema {
         json(CtrlPermissions.PREF_NAME).noBackup();
         string(PersistableUriPermission.PREF_KEY).noBackup();
         string(SettingsBackup.LICENSE_KEY);
+        bool(Prefs.PREF_GEO_DB_AUTO_UPDATE);
+        longInt(Prefs.PREF_GEO_DB_NEXT_UPDATE).noBackup();
 
         /* Billing state: the play build re-validates the purchases via the billing library, while
          * the peer skus are advertised by the mitm addon at runtime */
@@ -177,6 +180,10 @@ public class PrefsSchema {
 
     private static Spec integer(String key) {
         return register(key, new Spec(Type.INT, null));
+    }
+
+    private static Spec longInt(String key) {
+        return register(key, new Spec(Type.LONG, null));
     }
 
     private static Spec string(String key) {
@@ -252,6 +259,7 @@ public class PrefsSchema {
         switch (type) {
             case BOOLEAN:       return (value instanceof Boolean);
             case INT:           return (value instanceof Integer);
+            case LONG:          return (value instanceof Long);
             case STRING:
             case JSON:          return (value instanceof String);
             case STRING_SET:    return (value instanceof Set);

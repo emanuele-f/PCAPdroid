@@ -62,7 +62,7 @@ public class PayloadAdapterTest {
 
         ConnectionDescriptor conn = new ConnectionDescriptor(1, 4, 6,
                 "192.168.1.100", "93.184.216.34", "US",
-                54321, 443, 0, 1000, 0, false, System.currentTimeMillis());
+                54321, 443, 0, 4, 1000, 0, false, System.currentTimeMillis());
 
         adapter = new PayloadAdapter(context, conn, ChunkType.HTTP, true);
     }
@@ -363,7 +363,7 @@ public class PayloadAdapterTest {
     private Object expandChunk(PayloadChunk chunk, boolean as_printable) throws Exception {
         ConnectionDescriptor conn = new ConnectionDescriptor(3, 4, 6,
                 "192.168.1.100", "93.184.216.34", "US",
-                54321, 80, 0, 1000, 0, false, 0);
+                54321, 80, 0, 4, 1000, 0, false, 0);
 
         ArrayList<PayloadChunk> chunks = new ArrayList<>();
         chunks.add(chunk);
@@ -413,7 +413,7 @@ public class PayloadAdapterTest {
     public void testRawModeWithChunksOnDisk() {
         ConnectionDescriptor conn = new ConnectionDescriptor(2, 4, 17,
                 "192.168.1.100", "93.184.216.34", "US",
-                54321, 53, 0, 1000, 0, false, 0);
+                54321, 53, 0, 4, 1000, 0, false, 0);
 
         ArrayList<PayloadChunk> chunks = new ArrayList<>();
         chunks.add(new PayloadChunk(ChunkType.RAW, true, 100, 0, 1000, 5000, false));

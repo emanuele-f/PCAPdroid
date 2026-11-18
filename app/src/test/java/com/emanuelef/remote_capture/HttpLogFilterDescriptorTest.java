@@ -40,7 +40,7 @@ public class HttpLogFilterDescriptorTest {
         filter = new HttpLogFilterDescriptor();
         conn = new ConnectionDescriptor(0, 4, 6,
                 "1.1.1.1", "2.2.2.2", "", 51234, 443,
-                0, -1, 0, false, 0);
+                0, 4, -1, 0, false, 0);
         conn.l7proto = "TLS";
     }
 

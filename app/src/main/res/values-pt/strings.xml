@@ -256,15 +256,14 @@
     <string name="hexdump">Hexdump</string>
     <string name="geolocation">Geolocalização</string>
     <string name="geolocation_summary">Mostrar informações sobre o país e o ASN realizando pesquisas offline</string>
-    <string name="downloading">A descarregar…</string>
     <string name="download_in_progress">Descarga em execução, por favor aguarde</string>
     <string name="download_failed">A descarga falhou</string>
     <string name="geo_db_not_found">Base de dados não encontrada. A geolocalização está desativada</string>
     <string name="database">Base de dados</string>
     <string name="built_on">Compilado em: %1$s</string>
-    <string name="geo_db_download">Toque para descarregar a base de dados mais recente. Novas versões estão disponíveis mensalmente</string>
+    <string name="geo_db_download">Descarregar a base de dados mais recente</string>
     <string name="size_x">Tamanho: %1$s</string>
-    <string name="geo_db_delete">Toque para apagar a base de dados e preservar o espaço</string>
+    <string name="geo_db_delete">Apagar a base de dados. A geolocalização será desativada</string>
     <string name="download">Descarregar</string>
     <string name="connection_blocked">Esta conexão foi bloqueada pelo PCAPdroid</string>
     <string name="import_action">Importar</string>
@@ -589,4 +588,6 @@
     <string name="restart_app_action">Reiniciar a app</string>
     <string name="skipped_prefs_import">NOTA: as seguintes configurações não puderam ser importadas, por serem desconhecidas ou inválidas:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">A VPN sempre ativa está ativada para o PCAPdroid, por isso precisa de parar a captura nas configurações do Android.\n\nDeseja abrir as configurações de VPN agora?</string>
+    <string name="auto_update">Atualização automática</string>
+    <string name="geo_db_auto_update_summary">Descarregar automaticamente a nova base de dados todos os meses</string>
 </resources>

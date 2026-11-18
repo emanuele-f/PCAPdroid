@@ -303,7 +303,6 @@
     <string name="display_as_hexdump">Hexdump로 표시</string>
     <string name="geolocation">위치정보</string>
     <string name="geolocation_summary">오프라인 조회를 수행하여 국가 및 ASN 정보를 표시합니다</string>
-    <string name="downloading">다운로드 중…</string>
     <string name="download_in_progress">다운로드가 진행 중입니다. 잠시 기다려주세요</string>
     <string name="pcap_load_in_progress">캡처 로딩이 진행 중입니다. 잠시 기다려주세요</string>
     <string name="download_failed">다운로드 실패</string>
@@ -314,9 +313,9 @@
     <string name="country_rules_warning">국가 기반 방화벽 규칙을 사용하려면 PCAPdroid 설정에서 위치정보 데이터베이스를 다운로드하세요. 그렇지 않으면 국가 기반 규칙이 적용되지 않습니다</string>
     <string name="database">데이터베이스</string>
     <string name="built_on">빌드일: %1$s</string>
-    <string name="geo_db_download">탭하여 최신 데이터베이스를 다운로드하세요. 새 데이터베이스는 매월 제공됩니다</string>
+    <string name="geo_db_download">최신 데이터베이스를 다운로드합니다</string>
     <string name="size_x">크기: %1$s</string>
-    <string name="geo_db_delete">탭하여 데이터베이스를 삭제하고 공간을 절약하세요</string>
+    <string name="geo_db_delete">데이터베이스를 삭제합니다. 위치정보가 비활성화됩니다</string>
     <string name="download">다운로드</string>
     <string name="connection_blocked">이 커넥션은 PCAPdroid에 의해 차단되었습니다</string>
     <string name="import_action">가져오기</string>
@@ -597,4 +596,6 @@
     <string name="restart_app_action">앱 재시작</string>
     <string name="skipped_prefs_import">참고: 다음 설정은 알 수 없거나 잘못되어 가져올 수 없습니다:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid에 Always-on VPN이 활성화되어 있으므로 안드로이드 설정에서 캡처를 중지해야 합니다.\n\n지금 VPN 설정을 여시겠습니까?</string>
+    <string name="auto_update">자동 업데이트</string>
+    <string name="geo_db_auto_update_summary">매월 새 데이터베이스를 자동으로 다운로드합니다</string>
 </resources>

@@ -230,7 +230,6 @@
     <string name="hexdump">In esadecimale</string>
     <string name="geolocation">Geolocalizzazione</string>
     <string name="geolocation_summary">Mostra informazioni quali nazione e ASN tramite ricerche in un database locale</string>
-    <string name="downloading">In scaricamento…</string>
     <string name="connection_blocked">Questa connessione è stata bloccata da PCAPdroid</string>
     <string name="import_action">Importa</string>
     <string name="import_failed">Importazione fallita</string>
@@ -288,8 +287,8 @@
     <string name="download_failed">Download fallito</string>
     <string name="firewall_is_enabled">Il firewall è abilitato</string>
     <string name="built_on">Build del: %1$s</string>
-    <string name="geo_db_download">Premere per scaricare l\'ultima versione del database. Nuove versioni sono disponibili mensilmente</string>
-    <string name="geo_db_delete">Premere per eliminare il database e far spazio</string>
+    <string name="geo_db_download">Scarica l\'ultima versione del database</string>
+    <string name="geo_db_delete">Elimina il database. La geolocalizzazione verrà disabilitata</string>
     <string name="last_firewall_block">Ultimo blocco</string>
     <string name="connections_blocked">Connessioni bloccate</string>
     <string name="netd_block_missed">Questa connessione è stata iniziata da netd, quindi non è stato possibile bloccarla</string>
@@ -613,4 +612,6 @@
     <string name="restart_app_action">Riavvia l\'app</string>
     <string name="skipped_prefs_import">NOTA: le seguenti impostazioni non sono state importate, perché sconosciute o non valide:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">La VPN sempre attiva è abilitata per PCAPdroid, quindi devi fermare la cattura dalle impostazioni di Android.\n\nVuoi aprire le impostazioni VPN adesso?</string>
+    <string name="auto_update">Aggiornamento automatico</string>
+    <string name="geo_db_auto_update_summary">Scarica automaticamente il nuovo database ogni mese</string>
 </resources>

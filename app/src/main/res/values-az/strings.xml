@@ -286,7 +286,7 @@
     <string name="hexdump">Heksdempinq (hexdump)</string>
     <string name="display_as_text">Mətn kimi göstər</string>
     <string name="display_as_hexdump">Hexdump kimi göstər</string>
-    <string name="geolocation">Bölgə</string>
+    <string name="geolocation">Geolokasiya</string>
     <string name="geolocation_summary">Oflayn axtarışlar edərək ölkə və ASN məlumatlarını göstər</string>
     <string name="download_in_progress">Yükləmə davam edir, zəhmət olmasa, gözləyin</string>
     <string name="pcap_load_in_progress">Yaxalamanın yüklənməsi davam edir, zəhmət olmasa gözləyin</string>
@@ -323,7 +323,7 @@
     <string name="app_intro_welcome_msg">PCAPdroid, cihazınızda tətbiqlərin bağlantılarını izləmək və analiz etməyinizə yardım edən gizlilik-əsaslı bir tətbiqdir\n\nƏlavə olaraq, trafikin PCAP dempinqini idxal etməyinizə, meta məlumatları və daha çoxunu ixrac etməyinizə şərait yaradır!</string>
     <string name="privacy_first">Öncə gizlilik</string>
     <string name="country_and_asn">Ölkə və ASN</string>
-    <string name="app_intro_geolocation_msg">PCAPdroid, uzaq serverin ölkəsini müəyyənləşdirmək üçün lokal məlumat bazasını sorğulaya bilər\n\nÖncə tətbiq parametrlərindən GPS məlumat bazasını yükləməlisiniz</string>
+    <string name="app_intro_geolocation_msg">PCAPdroid, uzaq serverin ölkəsini müəyyənləşdirmək üçün lokal məlumat bazasını sorğulaya bilər\n\nÖncə tətbiq parametrlərindən geolokasiya məlumat bazasını yükləməlisiniz</string>
     <string name="app_intro_malware_detection"><a href="%1$s">Zərərli fayl, tətbiq aşkarlama</a> xüsusiyyəti ilə cihazınızın təlhükəsizliyini daha da artırın\n\nO, yenilənmiş qara siyahılardan istifadə edərək gerçək zamanlı zərərli bağlantıları aşkarlaya, bloklama və onlar barədə xəbərdarlıq edə bilər</string>
     <string name="low_memory">Aşağı yaddaş</string>
     <string name="low_memory_info">Tətbiqin yaddaşı azalır, çökmələr gözlənilir</string>
@@ -427,10 +427,9 @@
     <string name="malware_detection_learn_more">Zərərli fayl, tətbiq aşkarlama funksiyası haqqında daha çox məlumat əldə edin</string>
     <string name="connection_start_not_seen">PCAPdroid bu bağlantının başlanğıcını təsbit etmədi. Bəzi məlumatlar əskik ola bilər</string>
     <string name="network_traffic">Trafik</string>
-    <string name="downloading">Yüklənir…</string>
-    <string name="geo_db_delete">Məlumat bazasını silmək və boş yer açmaq üçün toxunun</string>
-    <string name="geo_db_not_found">Məlumat bazası tapılmadı. GPS aktiv deyil</string>
-    <string name="geo_db_download">Ən son məlumat bazasını yükləmək üçün toxunun. Yeni məlumat bazaları aylıq olaraq yayımlanır</string>
+    <string name="geo_db_delete">Məlumat bazasını silin. Geolokasiya deaktiv ediləcək</string>
+    <string name="geo_db_not_found">Məlumat bazası tapılmadı. Geolokasiya aktiv deyil</string>
+    <string name="geo_db_download">Ən son məlumat bazasını yükləyin</string>
     <string name="size_x">Ölçü: %1$s</string>
     <string name="import_action">İdxal et</string>
     <string name="firewall_is_disabled">Təhlükəsizlik divarı aktiv deyil</string>
@@ -589,4 +588,6 @@
     <string name="restart_app_action">Tətbiqi yenidən başlat</string>
     <string name="skipped_prefs_import">QEYD: aşağıdakı parametrlər naməlum və ya etibarsız olduğu üçün idxal edilə bilmədi:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid üçün hər zaman açıq VPN aktivdir, ona görə izləməni Android parametrlərindən dayandırmalısınız.\n\nVPN parametrlərini indi açmaq istəyirsiniz?</string>
+    <string name="auto_update">Avtomatik yeniləmə</string>
+    <string name="geo_db_auto_update_summary">Yeni məlumat bazasını hər ay avtomatik yükləyin</string>
 </resources>

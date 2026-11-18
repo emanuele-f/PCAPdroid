@@ -302,7 +302,6 @@
     <string name="display_as_hexdump">হেক্সডাম্প হিসেবে প্রদর্শন করুন</string>
     <string name="geolocation">জিওলোকেশন</string>
     <string name="geolocation_summary">অফলাইন লুকআপ সম্পাদন করে দেশ ও ASN তথ্য দেখান</string>
-    <string name="downloading">ডাউনলোড হচ্ছে…</string>
     <string name="download_in_progress">ডাউনলোড চলছে, অনুগ্রহ করে অপেক্ষা করুন</string>
     <string name="pcap_load_in_progress">ক্যাপচার লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন</string>
     <string name="download_failed">ডাউনলোড ব্যর্থ হয়েছে</string>
@@ -313,9 +312,9 @@
     <string name="country_rules_warning">দেশ-ভিত্তিক ফায়ারওয়াল নিয়ম ব্যবহার করতে, PCAPdroid সেটিংস থেকে জিওলোকেশন ডাটাবেস ডাউনলোড করুন, অন্যথায় দেশ-ভিত্তিক নিয়ম অকার্যকর হবে</string>
     <string name="database">ডাটাবেস</string>
     <string name="built_on">তৈরি করা হয়েছে: %1$s</string>
-    <string name="geo_db_download">সর্বশেষ ডাটাবেস ডাউনলোড করতে ট্যাপ করুন। নতুন ডাটাবেস প্রতি মাসে উপলব্ধ হয়</string>
+    <string name="geo_db_download">সর্বশেষ ডাটাবেস ডাউনলোড করুন</string>
     <string name="size_x">আকার: %1$s</string>
-    <string name="geo_db_delete">ডাটাবেস মুছে ফেলে স্থান সংরক্ষণ করতে ট্যাপ করুন</string>
+    <string name="geo_db_delete">ডাটাবেস মুছে ফেলুন। জিওলোকেশন নিষ্ক্রিয় হয়ে যাবে</string>
     <string name="download">ডাউনলোড করুন</string>
     <string name="connection_blocked">এই সংযোগটি PCAPdroid দ্বারা ব্লক করা হয়েছে</string>
     <string name="import_action">আমদানি করুন</string>
@@ -596,4 +595,6 @@
     <string name="restart_app_action">অ্যাপ পুনরায় চালু করুন</string>
     <string name="skipped_prefs_import">দ্রষ্টব্য: নিম্নলিখিত সেটিংস অজানা বা অবৈধ হওয়ায় আমদানি করা যায়নি:\n%1$s</string>
     <string name="always_on_vpn_stop_notice">PCAPdroid-এর জন্য সর্বদা-সক্রিয় VPN চালু আছে, তাই আপনাকে অ্যান্ড্রয়েড সেটিংস থেকে ক্যাপচার বন্ধ করতে হবে।\n\nআপনি কি এখন VPN সেটিংস খুলতে চান?</string>
+    <string name="auto_update">স্বয়ংক্রিয় আপডেট</string>
+    <string name="geo_db_auto_update_summary">প্রতি মাসে স্বয়ংক্রিয়ভাবে নতুন ডাটাবেস ডাউনলোড করুন</string>
 </resources>

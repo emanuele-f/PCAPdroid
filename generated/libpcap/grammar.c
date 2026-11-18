@@ -983,28 +983,28 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,   418,   418,   430,   432,   434,   435,   436,   437,   438,
-     440,   442,   444,   445,   447,   449,   450,   469,   488,   507,
-     532,   557,   558,   559,   561,   563,   565,   566,   567,   569,
-     571,   573,   574,   576,   577,   578,   579,   580,   588,   590,
-     591,   592,   593,   595,   597,   598,   599,   600,   601,   602,
-     605,   606,   609,   610,   611,   612,   613,   614,   615,   616,
-     617,   618,   619,   620,   623,   624,   625,   626,   629,   631,
-     632,   633,   634,   635,   636,   637,   638,   639,   640,   641,
-     642,   643,   644,   645,   646,   647,   648,   649,   650,   651,
-     652,   653,   654,   655,   656,   657,   658,   659,   660,   661,
-     662,   663,   664,   665,   666,   667,   668,   669,   671,   672,
-     673,   674,   675,   676,   677,   678,   679,   680,   681,   682,
-     683,   684,   685,   686,   687,   688,   689,   690,   693,   694,
-     695,   696,   697,   698,   701,   706,   709,   713,   716,   722,
-     731,   737,   760,   777,   778,   802,   805,   806,   822,   823,
-     826,   829,   830,   831,   833,   834,   835,   837,   838,   840,
-     841,   842,   843,   844,   845,   846,   847,   848,   849,   850,
-     851,   852,   853,   854,   856,   857,   858,   859,   860,   862,
-     863,   865,   866,   867,   868,   869,   870,   871,   873,   874,
-     875,   876,   879,   880,   882,   883,   884,   885,   887,   894,
-     895,   898,   899,   900,   901,   902,   903,   906,   907,   908,
-     909,   910,   911,   912,   913,   915,   916,   917,   918,   920,
-     933,   934
+     440,   442,   444,   445,   447,   449,   450,   469,   489,   508,
+     533,   558,   559,   560,   562,   564,   566,   567,   568,   570,
+     572,   574,   575,   577,   578,   579,   580,   581,   589,   591,
+     592,   593,   594,   596,   598,   599,   600,   601,   602,   603,
+     606,   607,   610,   611,   612,   613,   614,   615,   616,   617,
+     618,   619,   620,   621,   624,   625,   626,   627,   630,   632,
+     633,   634,   635,   636,   637,   638,   639,   640,   641,   642,
+     643,   644,   645,   646,   647,   648,   649,   650,   651,   652,
+     653,   654,   655,   656,   657,   658,   659,   660,   661,   662,
+     663,   664,   665,   666,   667,   668,   669,   670,   672,   673,
+     674,   675,   676,   677,   678,   679,   680,   681,   682,   683,
+     684,   685,   686,   687,   688,   689,   690,   691,   694,   695,
+     696,   697,   698,   699,   702,   707,   710,   714,   717,   723,
+     732,   738,   761,   778,   779,   803,   806,   807,   823,   824,
+     827,   830,   831,   832,   834,   835,   836,   838,   839,   841,
+     842,   843,   844,   845,   846,   847,   848,   849,   850,   851,
+     852,   853,   854,   855,   857,   858,   859,   860,   861,   863,
+     864,   866,   867,   868,   869,   870,   871,   872,   874,   875,
+     876,   877,   880,   881,   883,   884,   885,   886,   888,   895,
+     896,   899,   900,   901,   902,   903,   904,   907,   908,   909,
+     910,   911,   912,   913,   914,   916,   917,   918,   919,   921,
+     934,   935
 };
 #endif
 
@@ -1997,6 +1997,7 @@ yyreduce:
 #line 469 "grammar.y"
                                 {
 				  CHECK_PTR_VAL((yyvsp[-2].s));
+				  CHECK_PTR_VAL((yyvsp[0].s));
 				  /* Check whether HID mask HID is being used when appropriate */
 				  (yyval.blk).q = (yyvsp[-3].blk).q;
 				  if ((yyval.blk).q.addr == Q_PORT) {
@@ -2014,11 +2015,11 @@ yyreduce:
 				  }
 				  CHECK_PTR_VAL(((yyval.blk).b = gen_mcode(cstate, (yyvsp[-2].s), (yyvsp[0].s), 0, (yyval.blk).q)));
 				}
-#line 2018 "grammar.c"
+#line 2019 "grammar.c"
     break;
 
   case 18: /* nid: HID  */
-#line 488 "grammar.y"
+#line 489 "grammar.y"
                                 {
 				  CHECK_PTR_VAL((yyvsp[0].s));
 				  /* Check whether HID is being used when appropriate */
@@ -2038,11 +2039,11 @@ yyreduce:
 				  }
 				  CHECK_PTR_VAL(((yyval.blk).b = gen_ncode(cstate, (yyvsp[0].s), 0, (yyval.blk).q)));
 				}
-#line 2042 "grammar.c"
+#line 2043 "grammar.c"
     break;
 
   case 19: /* nid: HID6 '/' NUM  */
-#line 507 "grammar.y"
+#line 508 "grammar.y"
                                 {
 				  CHECK_PTR_VAL((yyvsp[-2].s));
 #ifdef INET6
@@ -2068,11 +2069,11 @@ yyreduce:
 				  YYABORT;
 #endif /*INET6*/
 				}
-#line 2072 "grammar.c"
+#line 2073 "grammar.c"
     break;
 
   case 20: /* nid: HID6  */
-#line 532 "grammar.y"
+#line 533 "grammar.y"
                                 {
 				  CHECK_PTR_VAL((yyvsp[0].s));
 #ifdef INET6
@@ -2098,90 +2099,90 @@ yyreduce:
 				  YYABORT;
 #endif /*INET6*/
 				}
-#line 2102 "grammar.c"
+#line 2103 "grammar.c"
     break;
 
   case 21: /* nid: EID  */
-#line 557 "grammar.y"
+#line 558 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_PTR_VAL(((yyval.blk).b = gen_ecode(cstate, (yyvsp[0].s), (yyval.blk).q = (yyvsp[-1].blk).q))); }
-#line 2108 "grammar.c"
+#line 2109 "grammar.c"
     break;
 
   case 22: /* nid: AID  */
-#line 558 "grammar.y"
+#line 559 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_PTR_VAL(((yyval.blk).b = gen_acode(cstate, (yyvsp[0].s), (yyval.blk).q = (yyvsp[-1].blk).q))); }
-#line 2114 "grammar.c"
+#line 2115 "grammar.c"
     break;
 
   case 23: /* nid: not id  */
-#line 559 "grammar.y"
+#line 560 "grammar.y"
                                 { gen_not((yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 2120 "grammar.c"
+#line 2121 "grammar.c"
     break;
 
   case 24: /* not: '!'  */
-#line 561 "grammar.y"
+#line 562 "grammar.y"
                                 { (yyval.blk) = (yyvsp[-1].blk); }
-#line 2126 "grammar.c"
+#line 2127 "grammar.c"
     break;
 
   case 25: /* paren: '('  */
-#line 563 "grammar.y"
+#line 564 "grammar.y"
                                 { (yyval.blk) = (yyvsp[-1].blk); }
-#line 2132 "grammar.c"
+#line 2133 "grammar.c"
     break;
 
   case 27: /* pid: qid and id  */
-#line 566 "grammar.y"
+#line 567 "grammar.y"
                                 { gen_and((yyvsp[-2].blk).b, (yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 2138 "grammar.c"
+#line 2139 "grammar.c"
     break;
 
   case 28: /* pid: qid or id  */
-#line 567 "grammar.y"
+#line 568 "grammar.y"
                                 { gen_or((yyvsp[-2].blk).b, (yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 2144 "grammar.c"
+#line 2145 "grammar.c"
     break;
 
   case 29: /* qid: pnum  */
-#line 569 "grammar.y"
+#line 570 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_ncode(cstate, NULL, (yyvsp[0].h),
 						   (yyval.blk).q = (yyvsp[-1].blk).q))); }
-#line 2151 "grammar.c"
+#line 2152 "grammar.c"
     break;
 
   case 32: /* term: not term  */
-#line 574 "grammar.y"
+#line 575 "grammar.y"
                                 { gen_not((yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 2157 "grammar.c"
+#line 2158 "grammar.c"
     break;
 
   case 33: /* head: pqual dqual aqual  */
-#line 576 "grammar.y"
+#line 577 "grammar.y"
                                 { QSET((yyval.blk).q, (yyvsp[-2].i), (yyvsp[-1].i), (yyvsp[0].i)); }
-#line 2163 "grammar.c"
+#line 2164 "grammar.c"
     break;
 
   case 34: /* head: pqual dqual  */
-#line 577 "grammar.y"
+#line 578 "grammar.y"
                                 { QSET((yyval.blk).q, (yyvsp[-1].i), (yyvsp[0].i), Q_DEFAULT); }
-#line 2169 "grammar.c"
+#line 2170 "grammar.c"
     break;
 
   case 35: /* head: pqual aqual  */
-#line 578 "grammar.y"
+#line 579 "grammar.y"
                                 { QSET((yyval.blk).q, (yyvsp[-1].i), Q_DEFAULT, (yyvsp[0].i)); }
-#line 2175 "grammar.c"
+#line 2176 "grammar.c"
     break;
 
   case 36: /* head: pqual PROTO  */
-#line 579 "grammar.y"
+#line 580 "grammar.y"
                                 { QSET((yyval.blk).q, (yyvsp[-1].i), Q_DEFAULT, Q_PROTO); }
-#line 2181 "grammar.c"
+#line 2182 "grammar.c"
     break;
 
   case 37: /* head: pqual PROTOCHAIN  */
-#line 580 "grammar.y"
+#line 581 "grammar.y"
                                 {
 #ifdef NO_PROTOCHAIN
 				  bpf_set_error(cstate, "protochain not supported");
@@ -2190,626 +2191,626 @@ yyreduce:
 				  QSET((yyval.blk).q, (yyvsp[-1].i), Q_DEFAULT, Q_PROTOCHAIN);
 #endif
 				}
-#line 2194 "grammar.c"
+#line 2195 "grammar.c"
     break;
 
   case 38: /* head: pqual ndaqual  */
-#line 588 "grammar.y"
+#line 589 "grammar.y"
                                 { QSET((yyval.blk).q, (yyvsp[-1].i), Q_DEFAULT, (yyvsp[0].i)); }
-#line 2200 "grammar.c"
+#line 2201 "grammar.c"
     break;
 
   case 39: /* rterm: head id  */
-#line 590 "grammar.y"
+#line 591 "grammar.y"
                                 { (yyval.blk) = (yyvsp[0].blk); }
-#line 2206 "grammar.c"
+#line 2207 "grammar.c"
     break;
 
   case 40: /* rterm: paren expr ')'  */
-#line 591 "grammar.y"
+#line 592 "grammar.y"
                                 { (yyval.blk).b = (yyvsp[-1].blk).b; (yyval.blk).q = (yyvsp[-2].blk).q; }
-#line 2212 "grammar.c"
+#line 2213 "grammar.c"
     break;
 
   case 41: /* rterm: pname  */
-#line 592 "grammar.y"
+#line 593 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_proto_abbrev(cstate, (yyvsp[0].i)))); (yyval.blk).q = qerr; }
-#line 2218 "grammar.c"
+#line 2219 "grammar.c"
     break;
 
   case 42: /* rterm: arth relop arth  */
-#line 593 "grammar.y"
+#line 594 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_relation(cstate, (yyvsp[-1].i), (yyvsp[-2].a), (yyvsp[0].a), 0)));
 				  (yyval.blk).q = qerr; }
-#line 2225 "grammar.c"
+#line 2226 "grammar.c"
     break;
 
   case 43: /* rterm: arth irelop arth  */
-#line 595 "grammar.y"
+#line 596 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_relation(cstate, (yyvsp[-1].i), (yyvsp[-2].a), (yyvsp[0].a), 1)));
 				  (yyval.blk).q = qerr; }
-#line 2232 "grammar.c"
+#line 2233 "grammar.c"
     break;
 
   case 44: /* rterm: other  */
-#line 597 "grammar.y"
+#line 598 "grammar.y"
                                 { (yyval.blk).b = (yyvsp[0].rblk); (yyval.blk).q = qerr; }
-#line 2238 "grammar.c"
+#line 2239 "grammar.c"
     break;
 
   case 45: /* rterm: atmtype  */
-#line 598 "grammar.y"
+#line 599 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_atmtype_abbrev(cstate, (yyvsp[0].i)))); (yyval.blk).q = qerr; }
-#line 2244 "grammar.c"
+#line 2245 "grammar.c"
     break;
 
   case 46: /* rterm: atmmultitype  */
-#line 599 "grammar.y"
+#line 600 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_atmmulti_abbrev(cstate, (yyvsp[0].i)))); (yyval.blk).q = qerr; }
-#line 2250 "grammar.c"
+#line 2251 "grammar.c"
     break;
 
   case 47: /* rterm: atmfield atmvalue  */
-#line 600 "grammar.y"
+#line 601 "grammar.y"
                                 { (yyval.blk).b = (yyvsp[0].blk).b; (yyval.blk).q = qerr; }
-#line 2256 "grammar.c"
+#line 2257 "grammar.c"
     break;
 
   case 48: /* rterm: mtp2type  */
-#line 601 "grammar.y"
+#line 602 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_mtp2type_abbrev(cstate, (yyvsp[0].i)))); (yyval.blk).q = qerr; }
-#line 2262 "grammar.c"
+#line 2263 "grammar.c"
     break;
 
   case 49: /* rterm: mtp3field mtp3value  */
-#line 602 "grammar.y"
+#line 603 "grammar.y"
                                 { (yyval.blk).b = (yyvsp[0].blk).b; (yyval.blk).q = qerr; }
-#line 2268 "grammar.c"
+#line 2269 "grammar.c"
     break;
 
   case 51: /* pqual: %empty  */
-#line 606 "grammar.y"
+#line 607 "grammar.y"
                                 { (yyval.i) = Q_DEFAULT; }
-#line 2274 "grammar.c"
+#line 2275 "grammar.c"
     break;
 
   case 52: /* dqual: SRC  */
-#line 609 "grammar.y"
+#line 610 "grammar.y"
                                 { (yyval.i) = Q_SRC; }
-#line 2280 "grammar.c"
+#line 2281 "grammar.c"
     break;
 
   case 53: /* dqual: DST  */
-#line 610 "grammar.y"
+#line 611 "grammar.y"
                                 { (yyval.i) = Q_DST; }
-#line 2286 "grammar.c"
+#line 2287 "grammar.c"
     break;
 
   case 54: /* dqual: SRC OR DST  */
-#line 611 "grammar.y"
+#line 612 "grammar.y"
                                 { (yyval.i) = Q_OR; }
-#line 2292 "grammar.c"
+#line 2293 "grammar.c"
     break;
 
   case 55: /* dqual: DST OR SRC  */
-#line 612 "grammar.y"
+#line 613 "grammar.y"
                                 { (yyval.i) = Q_OR; }
-#line 2298 "grammar.c"
+#line 2299 "grammar.c"
     break;
 
   case 56: /* dqual: SRC AND DST  */
-#line 613 "grammar.y"
+#line 614 "grammar.y"
                                 { (yyval.i) = Q_AND; }
-#line 2304 "grammar.c"
+#line 2305 "grammar.c"
     break;
 
   case 57: /* dqual: DST AND SRC  */
-#line 614 "grammar.y"
+#line 615 "grammar.y"
                                 { (yyval.i) = Q_AND; }
-#line 2310 "grammar.c"
+#line 2311 "grammar.c"
     break;
 
   case 58: /* dqual: ADDR1  */
-#line 615 "grammar.y"
+#line 616 "grammar.y"
                                 { (yyval.i) = Q_ADDR1; }
-#line 2316 "grammar.c"
+#line 2317 "grammar.c"
     break;
 
   case 59: /* dqual: ADDR2  */
-#line 616 "grammar.y"
+#line 617 "grammar.y"
                                 { (yyval.i) = Q_ADDR2; }
-#line 2322 "grammar.c"
+#line 2323 "grammar.c"
     break;
 
   case 60: /* dqual: ADDR3  */
-#line 617 "grammar.y"
+#line 618 "grammar.y"
                                 { (yyval.i) = Q_ADDR3; }
-#line 2328 "grammar.c"
+#line 2329 "grammar.c"
     break;
 
   case 61: /* dqual: ADDR4  */
-#line 618 "grammar.y"
+#line 619 "grammar.y"
                                 { (yyval.i) = Q_ADDR4; }
-#line 2334 "grammar.c"
+#line 2335 "grammar.c"
     break;
 
   case 62: /* dqual: RA  */
-#line 619 "grammar.y"
+#line 620 "grammar.y"
                                 { (yyval.i) = Q_RA; }
-#line 2340 "grammar.c"
+#line 2341 "grammar.c"
     break;
 
   case 63: /* dqual: TA  */
-#line 620 "grammar.y"
+#line 621 "grammar.y"
                                 { (yyval.i) = Q_TA; }
-#line 2346 "grammar.c"
+#line 2347 "grammar.c"
     break;
 
   case 64: /* aqual: HOST  */
-#line 623 "grammar.y"
+#line 624 "grammar.y"
                                 { (yyval.i) = Q_HOST; }
-#line 2352 "grammar.c"
+#line 2353 "grammar.c"
     break;
 
   case 65: /* aqual: NET  */
-#line 624 "grammar.y"
+#line 625 "grammar.y"
                                 { (yyval.i) = Q_NET; }
-#line 2358 "grammar.c"
+#line 2359 "grammar.c"
     break;
 
   case 66: /* aqual: PORT  */
-#line 625 "grammar.y"
+#line 626 "grammar.y"
                                 { (yyval.i) = Q_PORT; }
-#line 2364 "grammar.c"
+#line 2365 "grammar.c"
     break;
 
   case 67: /* aqual: PORTRANGE  */
-#line 626 "grammar.y"
+#line 627 "grammar.y"
                                 { (yyval.i) = Q_PORTRANGE; }
-#line 2370 "grammar.c"
+#line 2371 "grammar.c"
     break;
 
   case 68: /* ndaqual: GATEWAY  */
-#line 629 "grammar.y"
+#line 630 "grammar.y"
                                 { (yyval.i) = Q_GATEWAY; }
-#line 2376 "grammar.c"
+#line 2377 "grammar.c"
     break;
 
   case 69: /* pname: LINK  */
-#line 631 "grammar.y"
+#line 632 "grammar.y"
                                 { (yyval.i) = Q_LINK; }
-#line 2382 "grammar.c"
+#line 2383 "grammar.c"
     break;
 
   case 70: /* pname: IP  */
-#line 632 "grammar.y"
+#line 633 "grammar.y"
                                 { (yyval.i) = Q_IP; }
-#line 2388 "grammar.c"
+#line 2389 "grammar.c"
     break;
 
   case 71: /* pname: ARP  */
-#line 633 "grammar.y"
+#line 634 "grammar.y"
                                 { (yyval.i) = Q_ARP; }
-#line 2394 "grammar.c"
+#line 2395 "grammar.c"
     break;
 
   case 72: /* pname: RARP  */
-#line 634 "grammar.y"
+#line 635 "grammar.y"
                                 { (yyval.i) = Q_RARP; }
-#line 2400 "grammar.c"
+#line 2401 "grammar.c"
     break;
 
   case 73: /* pname: SCTP  */
-#line 635 "grammar.y"
+#line 636 "grammar.y"
                                 { (yyval.i) = Q_SCTP; }
-#line 2406 "grammar.c"
+#line 2407 "grammar.c"
     break;
 
   case 74: /* pname: TCP  */
-#line 636 "grammar.y"
+#line 637 "grammar.y"
                                 { (yyval.i) = Q_TCP; }
-#line 2412 "grammar.c"
+#line 2413 "grammar.c"
     break;
 
   case 75: /* pname: UDP  */
-#line 637 "grammar.y"
+#line 638 "grammar.y"
                                 { (yyval.i) = Q_UDP; }
-#line 2418 "grammar.c"
+#line 2419 "grammar.c"
     break;
 
   case 76: /* pname: ICMP  */
-#line 638 "grammar.y"
+#line 639 "grammar.y"
                                 { (yyval.i) = Q_ICMP; }
-#line 2424 "grammar.c"
+#line 2425 "grammar.c"
     break;
 
   case 77: /* pname: IGMP  */
-#line 639 "grammar.y"
+#line 640 "grammar.y"
                                 { (yyval.i) = Q_IGMP; }
-#line 2430 "grammar.c"
+#line 2431 "grammar.c"
     break;
 
   case 78: /* pname: IGRP  */
-#line 640 "grammar.y"
+#line 641 "grammar.y"
                                 { (yyval.i) = Q_IGRP; }
-#line 2436 "grammar.c"
+#line 2437 "grammar.c"
     break;
 
   case 79: /* pname: PIM  */
-#line 641 "grammar.y"
+#line 642 "grammar.y"
                                 { (yyval.i) = Q_PIM; }
-#line 2442 "grammar.c"
+#line 2443 "grammar.c"
     break;
 
   case 80: /* pname: VRRP  */
-#line 642 "grammar.y"
+#line 643 "grammar.y"
                                 { (yyval.i) = Q_VRRP; }
-#line 2448 "grammar.c"
+#line 2449 "grammar.c"
     break;
 
   case 81: /* pname: CARP  */
-#line 643 "grammar.y"
+#line 644 "grammar.y"
                                 { (yyval.i) = Q_CARP; }
-#line 2454 "grammar.c"
+#line 2455 "grammar.c"
     break;
 
   case 82: /* pname: ATALK  */
-#line 644 "grammar.y"
+#line 645 "grammar.y"
                                 { (yyval.i) = Q_ATALK; }
-#line 2460 "grammar.c"
+#line 2461 "grammar.c"
     break;
 
   case 83: /* pname: AARP  */
-#line 645 "grammar.y"
+#line 646 "grammar.y"
                                 { (yyval.i) = Q_AARP; }
-#line 2466 "grammar.c"
+#line 2467 "grammar.c"
     break;
 
   case 84: /* pname: DECNET  */
-#line 646 "grammar.y"
+#line 647 "grammar.y"
                                 { (yyval.i) = Q_DECNET; }
-#line 2472 "grammar.c"
+#line 2473 "grammar.c"
     break;
 
   case 85: /* pname: LAT  */
-#line 647 "grammar.y"
+#line 648 "grammar.y"
                                 { (yyval.i) = Q_LAT; }
-#line 2478 "grammar.c"
+#line 2479 "grammar.c"
     break;
 
   case 86: /* pname: SCA  */
-#line 648 "grammar.y"
+#line 649 "grammar.y"
                                 { (yyval.i) = Q_SCA; }
-#line 2484 "grammar.c"
+#line 2485 "grammar.c"
     break;
 
   case 87: /* pname: MOPDL  */
-#line 649 "grammar.y"
+#line 650 "grammar.y"
                                 { (yyval.i) = Q_MOPDL; }
-#line 2490 "grammar.c"
+#line 2491 "grammar.c"
     break;
 
   case 88: /* pname: MOPRC  */
-#line 650 "grammar.y"
+#line 651 "grammar.y"
                                 { (yyval.i) = Q_MOPRC; }
-#line 2496 "grammar.c"
+#line 2497 "grammar.c"
     break;
 
   case 89: /* pname: IPV6  */
-#line 651 "grammar.y"
+#line 652 "grammar.y"
                                 { (yyval.i) = Q_IPV6; }
-#line 2502 "grammar.c"
+#line 2503 "grammar.c"
     break;
 
   case 90: /* pname: ICMPV6  */
-#line 652 "grammar.y"
+#line 653 "grammar.y"
                                 { (yyval.i) = Q_ICMPV6; }
-#line 2508 "grammar.c"
+#line 2509 "grammar.c"
     break;
 
   case 91: /* pname: AH  */
-#line 653 "grammar.y"
+#line 654 "grammar.y"
                                 { (yyval.i) = Q_AH; }
-#line 2514 "grammar.c"
+#line 2515 "grammar.c"
     break;
 
   case 92: /* pname: ESP  */
-#line 654 "grammar.y"
+#line 655 "grammar.y"
                                 { (yyval.i) = Q_ESP; }
-#line 2520 "grammar.c"
+#line 2521 "grammar.c"
     break;
 
   case 93: /* pname: ISO  */
-#line 655 "grammar.y"
+#line 656 "grammar.y"
                                 { (yyval.i) = Q_ISO; }
-#line 2526 "grammar.c"
+#line 2527 "grammar.c"
     break;
 
   case 94: /* pname: ESIS  */
-#line 656 "grammar.y"
+#line 657 "grammar.y"
                                 { (yyval.i) = Q_ESIS; }
-#line 2532 "grammar.c"
+#line 2533 "grammar.c"
     break;
 
   case 95: /* pname: ISIS  */
-#line 657 "grammar.y"
+#line 658 "grammar.y"
                                 { (yyval.i) = Q_ISIS; }
-#line 2538 "grammar.c"
+#line 2539 "grammar.c"
     break;
 
   case 96: /* pname: L1  */
-#line 658 "grammar.y"
+#line 659 "grammar.y"
                                 { (yyval.i) = Q_ISIS_L1; }
-#line 2544 "grammar.c"
+#line 2545 "grammar.c"
     break;
 
   case 97: /* pname: L2  */
-#line 659 "grammar.y"
+#line 660 "grammar.y"
                                 { (yyval.i) = Q_ISIS_L2; }
-#line 2550 "grammar.c"
+#line 2551 "grammar.c"
     break;
 
   case 98: /* pname: IIH  */
-#line 660 "grammar.y"
+#line 661 "grammar.y"
                                 { (yyval.i) = Q_ISIS_IIH; }
-#line 2556 "grammar.c"
+#line 2557 "grammar.c"
     break;
 
   case 99: /* pname: LSP  */
-#line 661 "grammar.y"
+#line 662 "grammar.y"
                                 { (yyval.i) = Q_ISIS_LSP; }
-#line 2562 "grammar.c"
+#line 2563 "grammar.c"
     break;
 
   case 100: /* pname: SNP  */
-#line 662 "grammar.y"
+#line 663 "grammar.y"
                                 { (yyval.i) = Q_ISIS_SNP; }
-#line 2568 "grammar.c"
+#line 2569 "grammar.c"
     break;
 
   case 101: /* pname: PSNP  */
-#line 663 "grammar.y"
+#line 664 "grammar.y"
                                 { (yyval.i) = Q_ISIS_PSNP; }
-#line 2574 "grammar.c"
+#line 2575 "grammar.c"
     break;
 
   case 102: /* pname: CSNP  */
-#line 664 "grammar.y"
+#line 665 "grammar.y"
                                 { (yyval.i) = Q_ISIS_CSNP; }
-#line 2580 "grammar.c"
+#line 2581 "grammar.c"
     break;
 
   case 103: /* pname: CLNP  */
-#line 665 "grammar.y"
+#line 666 "grammar.y"
                                 { (yyval.i) = Q_CLNP; }
-#line 2586 "grammar.c"
+#line 2587 "grammar.c"
     break;
 
   case 104: /* pname: STP  */
-#line 666 "grammar.y"
+#line 667 "grammar.y"
                                 { (yyval.i) = Q_STP; }
-#line 2592 "grammar.c"
+#line 2593 "grammar.c"
     break;
 
   case 105: /* pname: IPX  */
-#line 667 "grammar.y"
+#line 668 "grammar.y"
                                 { (yyval.i) = Q_IPX; }
-#line 2598 "grammar.c"
+#line 2599 "grammar.c"
     break;
 
   case 106: /* pname: NETBEUI  */
-#line 668 "grammar.y"
+#line 669 "grammar.y"
                                 { (yyval.i) = Q_NETBEUI; }
-#line 2604 "grammar.c"
+#line 2605 "grammar.c"
     break;
 
   case 107: /* pname: RADIO  */
-#line 669 "grammar.y"
+#line 670 "grammar.y"
                                 { (yyval.i) = Q_RADIO; }
-#line 2610 "grammar.c"
+#line 2611 "grammar.c"
     break;
 
   case 108: /* other: pqual TK_BROADCAST  */
-#line 671 "grammar.y"
+#line 672 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_broadcast(cstate, (yyvsp[-1].i)))); }
-#line 2616 "grammar.c"
+#line 2617 "grammar.c"
     break;
 
   case 109: /* other: pqual TK_MULTICAST  */
-#line 672 "grammar.y"
+#line 673 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_multicast(cstate, (yyvsp[-1].i)))); }
-#line 2622 "grammar.c"
+#line 2623 "grammar.c"
     break;
 
   case 110: /* other: LESS NUM  */
-#line 673 "grammar.y"
+#line 674 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_less(cstate, (yyvsp[0].h)))); }
-#line 2628 "grammar.c"
+#line 2629 "grammar.c"
     break;
 
   case 111: /* other: GREATER NUM  */
-#line 674 "grammar.y"
+#line 675 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_greater(cstate, (yyvsp[0].h)))); }
-#line 2634 "grammar.c"
+#line 2635 "grammar.c"
     break;
 
   case 112: /* other: CBYTE NUM byteop NUM  */
-#line 675 "grammar.y"
+#line 676 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_byteop(cstate, (yyvsp[-1].i), (yyvsp[-2].h), (yyvsp[0].h)))); }
-#line 2640 "grammar.c"
+#line 2641 "grammar.c"
     break;
 
   case 113: /* other: INBOUND  */
-#line 676 "grammar.y"
+#line 677 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_inbound(cstate, 0))); }
-#line 2646 "grammar.c"
+#line 2647 "grammar.c"
     break;
 
   case 114: /* other: OUTBOUND  */
-#line 677 "grammar.y"
+#line 678 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_inbound(cstate, 1))); }
-#line 2652 "grammar.c"
+#line 2653 "grammar.c"
     break;
 
   case 115: /* other: IFINDEX NUM  */
-#line 678 "grammar.y"
+#line 679 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_ifindex(cstate, (yyvsp[0].h)))); }
-#line 2658 "grammar.c"
+#line 2659 "grammar.c"
     break;
 
   case 116: /* other: VLAN pnum  */
-#line 679 "grammar.y"
+#line 680 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_vlan(cstate, (yyvsp[0].h), 1))); }
-#line 2664 "grammar.c"
+#line 2665 "grammar.c"
     break;
 
   case 117: /* other: VLAN  */
-#line 680 "grammar.y"
+#line 681 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_vlan(cstate, 0, 0))); }
-#line 2670 "grammar.c"
+#line 2671 "grammar.c"
     break;
 
   case 118: /* other: MPLS pnum  */
-#line 681 "grammar.y"
+#line 682 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_mpls(cstate, (yyvsp[0].h), 1))); }
-#line 2676 "grammar.c"
+#line 2677 "grammar.c"
     break;
 
   case 119: /* other: MPLS  */
-#line 682 "grammar.y"
+#line 683 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_mpls(cstate, 0, 0))); }
-#line 2682 "grammar.c"
+#line 2683 "grammar.c"
     break;
 
   case 120: /* other: PPPOED  */
-#line 683 "grammar.y"
+#line 684 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pppoed(cstate))); }
-#line 2688 "grammar.c"
+#line 2689 "grammar.c"
     break;
 
   case 121: /* other: PPPOES pnum  */
-#line 684 "grammar.y"
+#line 685 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pppoes(cstate, (yyvsp[0].h), 1))); }
-#line 2694 "grammar.c"
+#line 2695 "grammar.c"
     break;
 
   case 122: /* other: PPPOES  */
-#line 685 "grammar.y"
+#line 686 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pppoes(cstate, 0, 0))); }
-#line 2700 "grammar.c"
+#line 2701 "grammar.c"
     break;
 
   case 123: /* other: GENEVE pnum  */
-#line 686 "grammar.y"
+#line 687 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_geneve(cstate, (yyvsp[0].h), 1))); }
-#line 2706 "grammar.c"
+#line 2707 "grammar.c"
     break;
 
   case 124: /* other: GENEVE  */
-#line 687 "grammar.y"
+#line 688 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_geneve(cstate, 0, 0))); }
-#line 2712 "grammar.c"
+#line 2713 "grammar.c"
     break;
 
   case 125: /* other: pfvar  */
-#line 688 "grammar.y"
+#line 689 "grammar.y"
                                 { (yyval.rblk) = (yyvsp[0].rblk); }
-#line 2718 "grammar.c"
+#line 2719 "grammar.c"
     break;
 
   case 126: /* other: pqual p80211  */
-#line 689 "grammar.y"
+#line 690 "grammar.y"
                                 { (yyval.rblk) = (yyvsp[0].rblk); }
-#line 2724 "grammar.c"
+#line 2725 "grammar.c"
     break;
 
   case 127: /* other: pllc  */
-#line 690 "grammar.y"
+#line 691 "grammar.y"
                                 { (yyval.rblk) = (yyvsp[0].rblk); }
-#line 2730 "grammar.c"
+#line 2731 "grammar.c"
     break;
 
   case 128: /* pfvar: PF_IFNAME ID  */
-#line 693 "grammar.y"
+#line 694 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_PTR_VAL(((yyval.rblk) = gen_pf_ifname(cstate, (yyvsp[0].s)))); }
-#line 2736 "grammar.c"
+#line 2737 "grammar.c"
     break;
 
   case 129: /* pfvar: PF_RSET ID  */
-#line 694 "grammar.y"
+#line 695 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_PTR_VAL(((yyval.rblk) = gen_pf_ruleset(cstate, (yyvsp[0].s)))); }
-#line 2742 "grammar.c"
+#line 2743 "grammar.c"
     break;
 
   case 130: /* pfvar: PF_RNR NUM  */
-#line 695 "grammar.y"
+#line 696 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pf_rnr(cstate, (yyvsp[0].h)))); }
-#line 2748 "grammar.c"
+#line 2749 "grammar.c"
     break;
 
   case 131: /* pfvar: PF_SRNR NUM  */
-#line 696 "grammar.y"
+#line 697 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pf_srnr(cstate, (yyvsp[0].h)))); }
-#line 2754 "grammar.c"
+#line 2755 "grammar.c"
     break;
 
   case 132: /* pfvar: PF_REASON reason  */
-#line 697 "grammar.y"
+#line 698 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pf_reason(cstate, (yyvsp[0].i)))); }
-#line 2760 "grammar.c"
+#line 2761 "grammar.c"
     break;
 
   case 133: /* pfvar: PF_ACTION action  */
-#line 698 "grammar.y"
+#line 699 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_pf_action(cstate, (yyvsp[0].i)))); }
-#line 2766 "grammar.c"
+#line 2767 "grammar.c"
     break;
 
   case 134: /* p80211: TYPE type SUBTYPE subtype  */
-#line 702 "grammar.y"
+#line 703 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_p80211_type(cstate, (yyvsp[-2].i) | (yyvsp[0].i),
 					IEEE80211_FC0_TYPE_MASK |
 					IEEE80211_FC0_SUBTYPE_MASK)));
 				}
-#line 2775 "grammar.c"
+#line 2776 "grammar.c"
     break;
 
   case 135: /* p80211: TYPE type  */
-#line 706 "grammar.y"
+#line 707 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_p80211_type(cstate, (yyvsp[0].i),
 					IEEE80211_FC0_TYPE_MASK)));
 				}
-#line 2783 "grammar.c"
+#line 2784 "grammar.c"
     break;
 
   case 136: /* p80211: SUBTYPE type_subtype  */
-#line 709 "grammar.y"
+#line 710 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_p80211_type(cstate, (yyvsp[0].i),
 					IEEE80211_FC0_TYPE_MASK |
 					IEEE80211_FC0_SUBTYPE_MASK)));
 				}
-#line 2792 "grammar.c"
+#line 2793 "grammar.c"
     break;
 
   case 137: /* p80211: DIR dir  */
-#line 713 "grammar.y"
+#line 714 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_p80211_fcdir(cstate, (yyvsp[0].i)))); }
-#line 2798 "grammar.c"
+#line 2799 "grammar.c"
     break;
 
   case 138: /* type: NUM  */
-#line 716 "grammar.y"
+#line 717 "grammar.y"
                                 { if (((yyvsp[0].h) & (~IEEE80211_FC0_TYPE_MASK)) != 0) {
 					bpf_set_error(cstate, "invalid 802.11 type value 0x%02x", (yyvsp[0].h));
 					YYABORT;
 				  }
 				  (yyval.i) = (int)(yyvsp[0].h);
 				}
-#line 2809 "grammar.c"
+#line 2810 "grammar.c"
     break;
 
   case 139: /* type: ID  */
-#line 722 "grammar.y"
+#line 723 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s));
 				  (yyval.i) = str2tok((yyvsp[0].s), ieee80211_types);
 				  if ((yyval.i) == -1) {
@@ -2817,22 +2818,22 @@ yyreduce:
 					YYABORT;
 				  }
 				}
-#line 2821 "grammar.c"
+#line 2822 "grammar.c"
     break;
 
   case 140: /* subtype: NUM  */
-#line 731 "grammar.y"
+#line 732 "grammar.y"
                                 { if (((yyvsp[0].h) & (~IEEE80211_FC0_SUBTYPE_MASK)) != 0) {
 					bpf_set_error(cstate, "invalid 802.11 subtype value 0x%02x", (yyvsp[0].h));
 					YYABORT;
 				  }
 				  (yyval.i) = (int)(yyvsp[0].h);
 				}
-#line 2832 "grammar.c"
+#line 2833 "grammar.c"
     break;
 
   case 141: /* subtype: ID  */
-#line 737 "grammar.y"
+#line 738 "grammar.y"
                                 { const struct tok *types = NULL;
 				  int i;
 				  CHECK_PTR_VAL((yyvsp[0].s));
@@ -2854,11 +2855,11 @@ yyreduce:
 					YYABORT;
 				  }
 				}
-#line 2858 "grammar.c"
+#line 2859 "grammar.c"
     break;
 
   case 142: /* type_subtype: ID  */
-#line 760 "grammar.y"
+#line 761 "grammar.y"
                                 { int i;
 				  CHECK_PTR_VAL((yyvsp[0].s));
 				  for (i = 0;; i++) {
@@ -2874,17 +2875,17 @@ yyreduce:
 					}
 				  }
 				}
-#line 2878 "grammar.c"
+#line 2879 "grammar.c"
     break;
 
   case 143: /* pllc: LLC  */
-#line 777 "grammar.y"
+#line 778 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_llc(cstate))); }
-#line 2884 "grammar.c"
+#line 2885 "grammar.c"
     break;
 
   case 144: /* pllc: LLC ID  */
-#line 778 "grammar.y"
+#line 779 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s));
 				  if (pcapint_strcasecmp((yyvsp[0].s), "i") == 0) {
 					CHECK_PTR_VAL(((yyval.rblk) = gen_llc_i(cstate)));
@@ -2908,23 +2909,23 @@ yyreduce:
 					}
 				  }
 				}
-#line 2912 "grammar.c"
+#line 2913 "grammar.c"
     break;
 
   case 145: /* pllc: LLC PF_RNR  */
-#line 802 "grammar.y"
+#line 803 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.rblk) = gen_llc_s_subtype(cstate, LLC_RNR))); }
-#line 2918 "grammar.c"
+#line 2919 "grammar.c"
     break;
 
   case 146: /* dir: NUM  */
-#line 805 "grammar.y"
+#line 806 "grammar.y"
                                 { (yyval.i) = (int)(yyvsp[0].h); }
-#line 2924 "grammar.c"
+#line 2925 "grammar.c"
     break;
 
   case 147: /* dir: ID  */
-#line 806 "grammar.y"
+#line 807 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s));
 				  if (pcapint_strcasecmp((yyvsp[0].s), "nods") == 0)
 					(yyval.i) = IEEE80211_FC1_DIR_NODS;
@@ -2939,412 +2940,412 @@ yyreduce:
 					YYABORT;
 				  }
 				}
-#line 2943 "grammar.c"
+#line 2944 "grammar.c"
     break;
 
   case 148: /* reason: NUM  */
-#line 822 "grammar.y"
+#line 823 "grammar.y"
                                 { (yyval.i) = (yyvsp[0].h); }
-#line 2949 "grammar.c"
+#line 2950 "grammar.c"
     break;
 
   case 149: /* reason: ID  */
-#line 823 "grammar.y"
+#line 824 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_INT_VAL(((yyval.i) = pfreason_to_num(cstate, (yyvsp[0].s)))); }
-#line 2955 "grammar.c"
+#line 2956 "grammar.c"
     break;
 
   case 150: /* action: ID  */
-#line 826 "grammar.y"
+#line 827 "grammar.y"
                                 { CHECK_PTR_VAL((yyvsp[0].s)); CHECK_INT_VAL(((yyval.i) = pfaction_to_num(cstate, (yyvsp[0].s)))); }
-#line 2961 "grammar.c"
+#line 2962 "grammar.c"
     break;
 
   case 151: /* relop: '>'  */
-#line 829 "grammar.y"
+#line 830 "grammar.y"
                                 { (yyval.i) = BPF_JGT; }
-#line 2967 "grammar.c"
+#line 2968 "grammar.c"
     break;
 
   case 152: /* relop: GEQ  */
-#line 830 "grammar.y"
+#line 831 "grammar.y"
                                 { (yyval.i) = BPF_JGE; }
-#line 2973 "grammar.c"
+#line 2974 "grammar.c"
     break;
 
   case 153: /* relop: '='  */
-#line 831 "grammar.y"
+#line 832 "grammar.y"
                                 { (yyval.i) = BPF_JEQ; }
-#line 2979 "grammar.c"
+#line 2980 "grammar.c"
     break;
 
   case 154: /* irelop: LEQ  */
-#line 833 "grammar.y"
+#line 834 "grammar.y"
                                 { (yyval.i) = BPF_JGT; }
-#line 2985 "grammar.c"
+#line 2986 "grammar.c"
     break;
 
   case 155: /* irelop: '<'  */
-#line 834 "grammar.y"
+#line 835 "grammar.y"
                                 { (yyval.i) = BPF_JGE; }
-#line 2991 "grammar.c"
+#line 2992 "grammar.c"
     break;
 
   case 156: /* irelop: NEQ  */
-#line 835 "grammar.y"
+#line 836 "grammar.y"
                                 { (yyval.i) = BPF_JEQ; }
-#line 2997 "grammar.c"
+#line 2998 "grammar.c"
     break;
 
   case 157: /* arth: pnum  */
-#line 837 "grammar.y"
+#line 838 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.a) = gen_loadi(cstate, (yyvsp[0].h)))); }
-#line 3003 "grammar.c"
+#line 3004 "grammar.c"
     break;
 
   case 159: /* narth: pname '[' arth ']'  */
-#line 840 "grammar.y"
+#line 841 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_load(cstate, (yyvsp[-3].i), (yyvsp[-1].a), 1))); }
-#line 3009 "grammar.c"
+#line 3010 "grammar.c"
     break;
 
   case 160: /* narth: pname '[' arth ':' NUM ']'  */
-#line 841 "grammar.y"
+#line 842 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_load(cstate, (yyvsp[-5].i), (yyvsp[-3].a), (yyvsp[-1].h)))); }
-#line 3015 "grammar.c"
+#line 3016 "grammar.c"
     break;
 
   case 161: /* narth: arth '+' arth  */
-#line 842 "grammar.y"
+#line 843 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_ADD, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3021 "grammar.c"
+#line 3022 "grammar.c"
     break;
 
   case 162: /* narth: arth '-' arth  */
-#line 843 "grammar.y"
+#line 844 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_SUB, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3027 "grammar.c"
+#line 3028 "grammar.c"
     break;
 
   case 163: /* narth: arth '*' arth  */
-#line 844 "grammar.y"
+#line 845 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_MUL, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3033 "grammar.c"
+#line 3034 "grammar.c"
     break;
 
   case 164: /* narth: arth '/' arth  */
-#line 845 "grammar.y"
+#line 846 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_DIV, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3039 "grammar.c"
+#line 3040 "grammar.c"
     break;
 
   case 165: /* narth: arth '%' arth  */
-#line 846 "grammar.y"
+#line 847 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_MOD, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3045 "grammar.c"
+#line 3046 "grammar.c"
     break;
 
   case 166: /* narth: arth '&' arth  */
-#line 847 "grammar.y"
+#line 848 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_AND, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3051 "grammar.c"
+#line 3052 "grammar.c"
     break;
 
   case 167: /* narth: arth '|' arth  */
-#line 848 "grammar.y"
+#line 849 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_OR, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3057 "grammar.c"
+#line 3058 "grammar.c"
     break;
 
   case 168: /* narth: arth '^' arth  */
-#line 849 "grammar.y"
+#line 850 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_XOR, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3063 "grammar.c"
+#line 3064 "grammar.c"
     break;
 
   case 169: /* narth: arth LSH arth  */
-#line 850 "grammar.y"
+#line 851 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_LSH, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3069 "grammar.c"
+#line 3070 "grammar.c"
     break;
 
   case 170: /* narth: arth RSH arth  */
-#line 851 "grammar.y"
+#line 852 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_arth(cstate, BPF_RSH, (yyvsp[-2].a), (yyvsp[0].a)))); }
-#line 3075 "grammar.c"
+#line 3076 "grammar.c"
     break;
 
   case 171: /* narth: '-' arth  */
-#line 852 "grammar.y"
+#line 853 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_neg(cstate, (yyvsp[0].a)))); }
-#line 3081 "grammar.c"
+#line 3082 "grammar.c"
     break;
 
   case 172: /* narth: paren narth ')'  */
-#line 853 "grammar.y"
+#line 854 "grammar.y"
                                         { (yyval.a) = (yyvsp[-1].a); }
-#line 3087 "grammar.c"
+#line 3088 "grammar.c"
     break;
 
   case 173: /* narth: LEN  */
-#line 854 "grammar.y"
+#line 855 "grammar.y"
                                         { CHECK_PTR_VAL(((yyval.a) = gen_loadlen(cstate))); }
-#line 3093 "grammar.c"
+#line 3094 "grammar.c"
     break;
 
   case 174: /* byteop: '&'  */
-#line 856 "grammar.y"
+#line 857 "grammar.y"
                                 { (yyval.i) = '&'; }
-#line 3099 "grammar.c"
+#line 3100 "grammar.c"
     break;
 
   case 175: /* byteop: '|'  */
-#line 857 "grammar.y"
+#line 858 "grammar.y"
                                 { (yyval.i) = '|'; }
-#line 3105 "grammar.c"
+#line 3106 "grammar.c"
     break;
 
   case 176: /* byteop: '<'  */
-#line 858 "grammar.y"
+#line 859 "grammar.y"
                                 { (yyval.i) = '<'; }
-#line 3111 "grammar.c"
+#line 3112 "grammar.c"
     break;
 
   case 177: /* byteop: '>'  */
-#line 859 "grammar.y"
+#line 860 "grammar.y"
                                 { (yyval.i) = '>'; }
-#line 3117 "grammar.c"
+#line 3118 "grammar.c"
     break;
 
   case 178: /* byteop: '='  */
-#line 860 "grammar.y"
+#line 861 "grammar.y"
                                 { (yyval.i) = '='; }
-#line 3123 "grammar.c"
+#line 3124 "grammar.c"
     break;
 
   case 180: /* pnum: paren pnum ')'  */
-#line 863 "grammar.y"
+#line 864 "grammar.y"
                                 { (yyval.h) = (yyvsp[-1].h); }
-#line 3129 "grammar.c"
+#line 3130 "grammar.c"
     break;
 
   case 181: /* atmtype: LANE  */
-#line 865 "grammar.y"
+#line 866 "grammar.y"
                                 { (yyval.i) = A_LANE; }
-#line 3135 "grammar.c"
+#line 3136 "grammar.c"
     break;
 
   case 182: /* atmtype: METAC  */
-#line 866 "grammar.y"
+#line 867 "grammar.y"
                                 { (yyval.i) = A_METAC;	}
-#line 3141 "grammar.c"
+#line 3142 "grammar.c"
     break;
 
   case 183: /* atmtype: BCC  */
-#line 867 "grammar.y"
+#line 868 "grammar.y"
                                 { (yyval.i) = A_BCC; }
-#line 3147 "grammar.c"
+#line 3148 "grammar.c"
     break;
 
   case 184: /* atmtype: OAMF4EC  */
-#line 868 "grammar.y"
+#line 869 "grammar.y"
                                 { (yyval.i) = A_OAMF4EC; }
-#line 3153 "grammar.c"
+#line 3154 "grammar.c"
     break;
 
   case 185: /* atmtype: OAMF4SC  */
-#line 869 "grammar.y"
+#line 870 "grammar.y"
                                 { (yyval.i) = A_OAMF4SC; }
-#line 3159 "grammar.c"
+#line 3160 "grammar.c"
     break;
 
   case 186: /* atmtype: SC  */
-#line 870 "grammar.y"
+#line 871 "grammar.y"
                                 { (yyval.i) = A_SC; }
-#line 3165 "grammar.c"
+#line 3166 "grammar.c"
     break;
 
   case 187: /* atmtype: ILMIC  */
-#line 871 "grammar.y"
+#line 872 "grammar.y"
                                 { (yyval.i) = A_ILMIC; }
-#line 3171 "grammar.c"
+#line 3172 "grammar.c"
     break;
 
   case 188: /* atmmultitype: OAM  */
-#line 873 "grammar.y"
+#line 874 "grammar.y"
                                 { (yyval.i) = A_OAM; }
-#line 3177 "grammar.c"
+#line 3178 "grammar.c"
     break;
 
   case 189: /* atmmultitype: OAMF4  */
-#line 874 "grammar.y"
+#line 875 "grammar.y"
                                 { (yyval.i) = A_OAMF4; }
-#line 3183 "grammar.c"
+#line 3184 "grammar.c"
     break;
 
   case 190: /* atmmultitype: CONNECTMSG  */
-#line 875 "grammar.y"
+#line 876 "grammar.y"
                                 { (yyval.i) = A_CONNECTMSG; }
-#line 3189 "grammar.c"
+#line 3190 "grammar.c"
     break;
 
   case 191: /* atmmultitype: METACONNECT  */
-#line 876 "grammar.y"
+#line 877 "grammar.y"
                                 { (yyval.i) = A_METACONNECT; }
-#line 3195 "grammar.c"
+#line 3196 "grammar.c"
     break;
 
   case 192: /* atmfield: VPI  */
-#line 879 "grammar.y"
+#line 880 "grammar.y"
                                 { (yyval.blk).atmfieldtype = A_VPI; }
-#line 3201 "grammar.c"
+#line 3202 "grammar.c"
     break;
 
   case 193: /* atmfield: VCI  */
-#line 880 "grammar.y"
+#line 881 "grammar.y"
                                 { (yyval.blk).atmfieldtype = A_VCI; }
-#line 3207 "grammar.c"
+#line 3208 "grammar.c"
     break;
 
   case 195: /* atmvalue: relop NUM  */
-#line 883 "grammar.y"
+#line 884 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_atmfield_code(cstate, (yyvsp[-2].blk).atmfieldtype, (yyvsp[0].h), (yyvsp[-1].i), 0))); }
-#line 3213 "grammar.c"
+#line 3214 "grammar.c"
     break;
 
   case 196: /* atmvalue: irelop NUM  */
-#line 884 "grammar.y"
+#line 885 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_atmfield_code(cstate, (yyvsp[-2].blk).atmfieldtype, (yyvsp[0].h), (yyvsp[-1].i), 1))); }
-#line 3219 "grammar.c"
+#line 3220 "grammar.c"
     break;
 
   case 197: /* atmvalue: paren atmlistvalue ')'  */
-#line 885 "grammar.y"
+#line 886 "grammar.y"
                                  { (yyval.blk).b = (yyvsp[-1].blk).b; (yyval.blk).q = qerr; }
-#line 3225 "grammar.c"
+#line 3226 "grammar.c"
     break;
 
   case 198: /* atmfieldvalue: NUM  */
-#line 887 "grammar.y"
+#line 888 "grammar.y"
                    {
 	(yyval.blk).atmfieldtype = (yyvsp[-1].blk).atmfieldtype;
 	if ((yyval.blk).atmfieldtype == A_VPI ||
 	    (yyval.blk).atmfieldtype == A_VCI)
 		CHECK_PTR_VAL(((yyval.blk).b = gen_atmfield_code(cstate, (yyval.blk).atmfieldtype, (yyvsp[0].h), BPF_JEQ, 0)));
 	}
-#line 3236 "grammar.c"
+#line 3237 "grammar.c"
     break;
 
   case 200: /* atmlistvalue: atmlistvalue or atmfieldvalue  */
-#line 895 "grammar.y"
+#line 896 "grammar.y"
                                         { gen_or((yyvsp[-2].blk).b, (yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 3242 "grammar.c"
+#line 3243 "grammar.c"
     break;
 
   case 201: /* mtp2type: FISU  */
-#line 898 "grammar.y"
+#line 899 "grammar.y"
                                 { (yyval.i) = M_FISU; }
-#line 3248 "grammar.c"
+#line 3249 "grammar.c"
     break;
 
   case 202: /* mtp2type: LSSU  */
-#line 899 "grammar.y"
+#line 900 "grammar.y"
                                 { (yyval.i) = M_LSSU; }
-#line 3254 "grammar.c"
+#line 3255 "grammar.c"
     break;
 
   case 203: /* mtp2type: MSU  */
-#line 900 "grammar.y"
+#line 901 "grammar.y"
                                 { (yyval.i) = M_MSU; }
-#line 3260 "grammar.c"
+#line 3261 "grammar.c"
     break;
 
   case 204: /* mtp2type: HFISU  */
-#line 901 "grammar.y"
+#line 902 "grammar.y"
                                 { (yyval.i) = MH_FISU; }
-#line 3266 "grammar.c"
+#line 3267 "grammar.c"
     break;
 
   case 205: /* mtp2type: HLSSU  */
-#line 902 "grammar.y"
+#line 903 "grammar.y"
                                 { (yyval.i) = MH_LSSU; }
-#line 3272 "grammar.c"
+#line 3273 "grammar.c"
     break;
 
   case 206: /* mtp2type: HMSU  */
-#line 903 "grammar.y"
+#line 904 "grammar.y"
                                 { (yyval.i) = MH_MSU; }
-#line 3278 "grammar.c"
+#line 3279 "grammar.c"
     break;
 
   case 207: /* mtp3field: SIO  */
-#line 906 "grammar.y"
+#line 907 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = M_SIO; }
-#line 3284 "grammar.c"
+#line 3285 "grammar.c"
     break;
 
   case 208: /* mtp3field: OPC  */
-#line 907 "grammar.y"
+#line 908 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = M_OPC; }
-#line 3290 "grammar.c"
+#line 3291 "grammar.c"
     break;
 
   case 209: /* mtp3field: DPC  */
-#line 908 "grammar.y"
+#line 909 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = M_DPC; }
-#line 3296 "grammar.c"
+#line 3297 "grammar.c"
     break;
 
   case 210: /* mtp3field: SLS  */
-#line 909 "grammar.y"
+#line 910 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = M_SLS; }
-#line 3302 "grammar.c"
+#line 3303 "grammar.c"
     break;
 
   case 211: /* mtp3field: HSIO  */
-#line 910 "grammar.y"
+#line 911 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = MH_SIO; }
-#line 3308 "grammar.c"
+#line 3309 "grammar.c"
     break;
 
   case 212: /* mtp3field: HOPC  */
-#line 911 "grammar.y"
+#line 912 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = MH_OPC; }
-#line 3314 "grammar.c"
+#line 3315 "grammar.c"
     break;
 
   case 213: /* mtp3field: HDPC  */
-#line 912 "grammar.y"
+#line 913 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = MH_DPC; }
-#line 3320 "grammar.c"
+#line 3321 "grammar.c"
     break;
 
   case 214: /* mtp3field: HSLS  */
-#line 913 "grammar.y"
+#line 914 "grammar.y"
                                 { (yyval.blk).mtp3fieldtype = MH_SLS; }
-#line 3326 "grammar.c"
+#line 3327 "grammar.c"
     break;
 
   case 216: /* mtp3value: relop NUM  */
-#line 916 "grammar.y"
+#line 917 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_mtp3field_code(cstate, (yyvsp[-2].blk).mtp3fieldtype, (yyvsp[0].h), (yyvsp[-1].i), 0))); }
-#line 3332 "grammar.c"
+#line 3333 "grammar.c"
     break;
 
   case 217: /* mtp3value: irelop NUM  */
-#line 917 "grammar.y"
+#line 918 "grammar.y"
                                 { CHECK_PTR_VAL(((yyval.blk).b = gen_mtp3field_code(cstate, (yyvsp[-2].blk).mtp3fieldtype, (yyvsp[0].h), (yyvsp[-1].i), 1))); }
-#line 3338 "grammar.c"
+#line 3339 "grammar.c"
     break;
 
   case 218: /* mtp3value: paren mtp3listvalue ')'  */
-#line 918 "grammar.y"
+#line 919 "grammar.y"
                                   { (yyval.blk).b = (yyvsp[-1].blk).b; (yyval.blk).q = qerr; }
-#line 3344 "grammar.c"
+#line 3345 "grammar.c"
     break;
 
   case 219: /* mtp3fieldvalue: NUM  */
-#line 920 "grammar.y"
+#line 921 "grammar.y"
                     {
 	(yyval.blk).mtp3fieldtype = (yyvsp[-1].blk).mtp3fieldtype;
 	if ((yyval.blk).mtp3fieldtype == M_SIO ||
@@ -3357,17 +3358,17 @@ yyreduce:
 	    (yyval.blk).mtp3fieldtype == MH_SLS)
 		CHECK_PTR_VAL(((yyval.blk).b = gen_mtp3field_code(cstate, (yyval.blk).mtp3fieldtype, (yyvsp[0].h), BPF_JEQ, 0)));
 	}
-#line 3361 "grammar.c"
+#line 3362 "grammar.c"
     break;
 
   case 221: /* mtp3listvalue: mtp3listvalue or mtp3fieldvalue  */
-#line 934 "grammar.y"
+#line 935 "grammar.y"
                                           { gen_or((yyvsp[-2].blk).b, (yyvsp[0].blk).b); (yyval.blk) = (yyvsp[0].blk); }
-#line 3367 "grammar.c"
+#line 3368 "grammar.c"
     break;
 
 
-#line 3371 "grammar.c"
+#line 3372 "grammar.c"
 
       default: break;
     }
@@ -3560,5 +3561,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 936 "grammar.y"
+#line 937 "grammar.y"
 

@@ -194,6 +194,7 @@ public class SettingsBackup {
         switch (type) {
             case BOOLEAN:   return isBoolean(value) ? value.getAsBoolean() : null;
             case INT:       return isNumber(value) ? parseInt(value.getAsString()) : null;
+            case LONG:      return isNumber(value) ? parseLong(value.getAsString()) : null;
             case STRING:
             case JSON:      return isString(value) ? value.getAsString() : null;
             case STRING_SET:
@@ -228,6 +229,14 @@ public class SettingsBackup {
     private static @Nullable Integer parseInt(String value) {
         try {
             return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static @Nullable Long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
         } catch (NumberFormatException e) {
             return null;
         }

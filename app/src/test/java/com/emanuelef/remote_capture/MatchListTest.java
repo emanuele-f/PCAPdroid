@@ -55,7 +55,7 @@ public class MatchListTest {
     private ConnectionDescriptor makeConn(String dstIp, String info, String l7proto, String country) {
         ConnectionDescriptor conn = new ConnectionDescriptor(0, 4, 6,
                 "1.1.1.1", dstIp, country, 51234, 80,
-                0, -1, 0, false, 0);
+                0, 4, -1, 0, false, 0);
         conn.info = info;
         conn.l7proto = l7proto;
         return conn;

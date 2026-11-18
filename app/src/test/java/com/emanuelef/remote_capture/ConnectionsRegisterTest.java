@@ -71,7 +71,7 @@ public class ConnectionsRegisterTest {
     private ConnectionDescriptor newConn(int uid) {
         ConnectionDescriptor conn = new ConnectionDescriptor(incrId++, 4, 6,
                 "1.1.1.1", "2.2.2.2", "", 51234, 80,
-                0, uid, 0, false, 0);
+                0, 4, uid, 0, false, 0);
         conn.status = ConnectionDescriptor.CONN_STATUS_CONNECTED;
         conn.l7proto = "";
         return conn;
