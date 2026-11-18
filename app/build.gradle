@@ -75,6 +75,13 @@ android {
         }
     }
 
+    // Disable the DEPENDENCY_INFO_BLOCK, which contains an encrypted binary blob
+    // with the app dependencies, embedded by the AGP
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     externalNativeBuild {
         cmake {
             path file('src/main/jni/CMakeLists.txt')
