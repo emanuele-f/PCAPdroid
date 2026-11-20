@@ -142,9 +142,39 @@ tasks.register('buildHostZstdJni', BuildHostZstdJniTask) {
     outputDir = file("${buildDir}/hostJni")
 }
 
+// Prevent release builds with submodules not matching the commits pinned in the repo
+abstract class CheckSubmodulesTask extends DefaultTask {
+    @Inject abstract ExecOperations getExecOps()
+
+    @Internal File repoDir
+
+    @TaskAction
+    void check() {
+        def out = new ByteArrayOutputStream()
+        execOps.exec {
+            commandLine 'git', 'submodule', 'status'
+            workingDir repoDir
+            standardOutput = out
+        }
+
+        // a non-space prefix means: '+' different commit checked out, '-' not initialized, 'U' merge conflicts
+        def mismatching = out.toString().readLines().findAll { !it.startsWith(' ') }
+        if (!mismatching.isEmpty()) {
+            throw new GradleException("Submodules do not match the pinned commits:\n  " +
+                    mismatching.join("\n  ") + "\nRun: git submodule update --init")
+        }
+    }
+}
+
+tasks.register('checkSubmodules', CheckSubmodulesTask) {
+    repoDir = rootDir
+}
+
 tasks.configureEach { task ->
     if (task.name.startsWith("test") && task.name.endsWith("UnitTest")) {
         task.dependsOn buildHostZstdJni
+    } else if (task.name ==~ /pre\w+ReleaseBuild/) {
+        task.dependsOn checkSubmodules
     }
 }
 
