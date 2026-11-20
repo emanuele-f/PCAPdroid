@@ -2,6 +2,10 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [2.0.4] - 2026-11-20
+- Add the native modules fixes claimed in 2.0.3 but missing from the Github apk
+- Changes to make the build reproducible
+
 ## [2.0.3] - 2026-11-18
 - Add auto-update of the geolocation DB
 - Improve system DNS server usage across the capture
