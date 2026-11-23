@@ -325,6 +325,9 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
                 updateNavigationButtons();
                 updateMenuVisibility();
+
+                // the listener may have been removed when the previous connection was closed
+                registerConnsListener();
                 return;
             }
         }
