@@ -86,10 +86,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
         displayBackAction();
         setContentView(R.layout.fragment_activity);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment, new SettingsFragment(), "root")
-                .commit();
+        // on recreation, the fragments are restored. Replacing them would orphan any open preference dialog
+        if (savedInstanceState == null)
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment, new SettingsFragment(), "root")
+                    .commit();
 
         getSupportFragmentManager().addOnBackStackChangedListener(this);
 
@@ -108,6 +110,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             };
             getOnBackPressedDispatcher().addCallback(this, mLangRestartCallback);
         }
+
+        if (savedInstanceState != null)
+            onBackStackChanged();
     }
 
     @Nullable
@@ -137,16 +142,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
         Log.d(TAG, "startFragment: " + prefKey);
 
-        if(prefKey.equals("geolocation")) {
+        if(prefKey.equals("geolocation"))
             targetFragment = new GeoipSettings();
-            setTitle(R.string.geolocation);
-        } else if(prefKey.equals("dns_settings")) {
+        else if(prefKey.equals("dns_settings"))
             targetFragment = new DnsSettings();
-            setTitle(R.string.dns_servers);
-        } else if(prefKey.equals("socks5_settings")) {
+        else if(prefKey.equals("socks5_settings"))
             targetFragment = new Socks5Settings();
-            setTitle(R.string.socks5_proxy);
-        }
 
         if(targetFragment != null) {
             getSupportFragmentManager()
@@ -172,7 +173,12 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
             var view = f.getView();
             if ((mInsets != null) && (view != null))
                 ViewCompat.dispatchApplyWindowInsets(view, mInsets);
-        }
+        } else if (f instanceof GeoipSettings)
+            setTitle(R.string.geolocation);
+        else if (f instanceof DnsSettings)
+            setTitle(R.string.dns_servers);
+        else if (f instanceof Socks5Settings)
+            setTitle(R.string.socks5_proxy);
 
         if (mLangRestartCallback != null)
             mLangRestartCallback.setEnabled(atRoot);
