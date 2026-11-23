@@ -70,7 +70,6 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
     private StateAdapter mPagerAdapter;
     private int mReqPos;
     private ArrayList<Integer> mFilteredPositions;
-    private int mFilteredIndex;
     private MenuItem mMenuPrev;
     private MenuItem mMenuNext;
     private MenuItem mMenuDisplayAs;
@@ -99,18 +98,8 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
         // Get filtered positions if provided
         mFilteredPositions = getIntent().getIntegerArrayListExtra(FILTERED_POSITIONS_KEY);
-        mFilteredIndex = -1;
-
-        // Find the index of the current position in the filtered list
-        if (mFilteredPositions != null) {
-            for (int i = 0; i < mFilteredPositions.size(); i++) {
-                if (mFilteredPositions.get(i) == mReqPos) {
-                    mFilteredIndex = i;
-                    break;
-                }
-            }
-            Log.d(TAG, "Using filtered navigation: " + mFilteredPositions.size() + " items, index=" + mFilteredIndex);
-        }
+        if (mFilteredPositions != null)
+            Log.d(TAG, "Using filtered navigation: " + mFilteredPositions.size() + " items");
 
         if(mReqPos != -1) {
             setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
@@ -197,8 +186,9 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
         if (mFilteredPositions != null) {
             // Using filtered navigation
-            hasPrev = mFilteredIndex > 0;
-            hasNext = mFilteredIndex < mFilteredPositions.size() - 1;
+            int filteredIndex = mFilteredPositions.indexOf(mReqPos);
+            hasPrev = filteredIndex > 0;
+            hasNext = filteredIndex < mFilteredPositions.size() - 1;
         } else {
             // Using unfiltered navigation
             HttpLog httpLog = CaptureService.getHttpLog();
@@ -283,43 +273,37 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
     private void navigateToPrevious() {
         if (mFilteredPositions != null) {
-            if (mFilteredIndex > 0) {
-                mFilteredIndex--;
-                mReqPos = mFilteredPositions.get(mFilteredIndex);
-                loadHttpRequest();
-            }
+            int filteredIndex = mFilteredPositions.indexOf(mReqPos);
+            if (filteredIndex > 0)
+                loadHttpRequest(mFilteredPositions.get(filteredIndex - 1));
         } else {
-            if (mReqPos > 0) {
-                mReqPos--;
-                loadHttpRequest();
-            }
+            if (mReqPos > 0)
+                loadHttpRequest(mReqPos - 1);
         }
     }
 
     private void navigateToNext() {
         if (mFilteredPositions != null) {
-            if (mFilteredIndex < mFilteredPositions.size() - 1) {
-                mFilteredIndex++;
-                mReqPos = mFilteredPositions.get(mFilteredIndex);
-                loadHttpRequest();
-            }
+            int filteredIndex = mFilteredPositions.indexOf(mReqPos);
+            if (filteredIndex < mFilteredPositions.size() - 1)
+                loadHttpRequest(mFilteredPositions.get(filteredIndex + 1));
         } else {
             HttpLog httpLog = CaptureService.getHttpLog();
             int httpLogSize = (httpLog != null) ? httpLog.getSize() : 0;
 
-            if (mReqPos < httpLogSize - 1) {
-                mReqPos++;
-                loadHttpRequest();
-            }
+            if (mReqPos < httpLogSize - 1)
+                loadHttpRequest(mReqPos + 1);
         }
     }
 
-    private void loadHttpRequest() {
+    private void loadHttpRequest(int pos) {
         HttpLog httpLog = CaptureService.getHttpLog();
         if(httpLog != null) {
-            mHttpReq = httpLog.getRequest(mReqPos);
+            HttpLog.HttpRequest req = httpLog.getRequest(pos);
 
-            if(mHttpReq != null) {
+            if(req != null) {
+                mHttpReq = req;
+                mReqPos = pos;
                 setTitle(String.format(getString(R.string.http_request_number), mReqPos + 1));
 
                 // Check if this HTTP request has associated websocket data
@@ -341,10 +325,12 @@ public class HttpDetailsActivity extends PayloadExportActivity implements Connec
 
                 updateNavigationButtons();
                 updateMenuVisibility();
-            } else {
-                Log.w(TAG, "HTTP request with position " + mReqPos + " not found");
+                return;
             }
         }
+
+        Log.w(TAG, "HTTP request with position " + pos + " not found");
+        Utils.showToast(this, R.string.item_not_found);
     }
 
     private void registerConnsListener() {
